@@ -196,13 +196,31 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void memoryUsageString() {
-    jedis.set("foo", "ba");
+    jedis.set("foo", "bar");
     Long usage = jedis.memoryUsage("foo");
-    assertEquals(49 + 3, (long) usage);
+    assertEquals(53, (long) usage);
 
-    jedis.lpush("loo", "ba", "da", "sha");
-    usage = jedis.memoryUsage("loo", 2);
-    assertEquals(141 + 3, (long) usage);
+    jedis.lpush("foobar", "fo", "ba", "sha");
+    usage = jedis.memoryUsage("foobar", 2);
+    assertEquals(144, (long) usage);
+
+    usage = jedis.memoryUsage("roo", 2);
+    assertEquals(null, usage);
+  }
+
+  @Test
+  public void memoryUsageBinary() {
+    byte[] bfoo = {0x01, 0x02, 0x03, 0x04};
+    byte[] bbar = {0x05, 0x06, 0x07, 0x08};
+    byte[] bfoobar = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+
+    jedis.set(bfoo, bbar);
+    Long usage = jedis.memoryUsage(bfoo);
+    assertEquals(54, (long) usage);
+
+    jedis.lpush(bfoobar, new byte[]{0x01, 0x02}, new byte[]{0x05, 0x06}, new byte[]{0x00});
+    usage = jedis.memoryUsage(bfoobar, 2);
+    assertEquals(150, (long) usage);
 
     usage = jedis.memoryUsage("roo", 2);
     assertEquals(null, usage);

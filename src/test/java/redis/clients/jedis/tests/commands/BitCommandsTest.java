@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -151,11 +152,11 @@ public class BitCommandsTest extends JedisCommandTestBase {
     jedis.setbit("foo", 40, true);
     jedis.setbit("foo", 56, true);
 
-    long c4 = jedis.bitcount("foo");
-    assertEquals(4, c4);
+    assertEquals(4, (long) jedis.bitcount("foo"));
+    assertEquals(4, (long) jedis.bitcount("foo".getBytes()));
 
-    long c3 = jedis.bitcount("foo", 2L, 5L);
-    assertEquals(3, c3);
+    assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L));
+    assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L));
   }
 
   @Test
@@ -182,12 +183,34 @@ public class BitCommandsTest extends JedisCommandTestBase {
     jedis.setbit("key", 4, true);
 
     jedis.bitop(BitOP.NOT, "resultNot", "key");
-
     String resultNot = jedis.get("resultNot");
     assertEquals("\u0077", resultNot);
   }
 
-  @Test(expected = redis.clients.jedis.exceptions.JedisDataException.class)
+  @Test
+  public void bitOpBinary() {
+    byte[] dest = {0x0};
+    byte[] key1 = {0x1};
+    byte[] key2 = {0x2};
+
+    jedis.set(key1, new byte[]{0x6});
+    jedis.set(key2, new byte[]{0x3});
+
+    jedis.bitop(BitOP.AND, dest, key1, key2);
+    assertArrayEquals(new byte[]{0x2}, jedis.get(dest));
+
+    jedis.bitop(BitOP.OR, dest, key1, key2);
+    assertArrayEquals(new byte[]{0x7}, jedis.get(dest));
+
+    jedis.bitop(BitOP.XOR, dest, key1, key2);
+    assertArrayEquals(new byte[]{0x5}, jedis.get(dest));
+
+    jedis.setbit(key1, 0, true);
+    jedis.bitop(BitOP.NOT, dest, key1);
+    assertArrayEquals(new byte[]{0x79}, jedis.get(dest));
+  }
+
+  @Test(expected = JedisDataException.class)
   public void bitOpNotMultiSourceShouldFail() {
     jedis.bitop(BitOP.NOT, "dest", "src1", "src2");
   }

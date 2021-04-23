@@ -3961,6 +3961,11 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
   }
 
+  /**
+   * WARNING: This will be changed to {@code protected} in next major release.
+   *
+   * @param jedisPool
+   */
   public void setDataSource(JedisPoolAbstract jedisPool) {
     this.dataSource = jedisPool;
   }

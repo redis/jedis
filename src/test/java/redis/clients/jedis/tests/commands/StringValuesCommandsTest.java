@@ -33,6 +33,43 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void getDel() {
+    String status = jedis.set("foo", "bar");
+    assertEquals("OK", status);
+
+    String value = jedis.getDel("foo");
+    assertEquals("bar", value);
+
+    assertNull(jedis.get("foo"));
+  }
+
+  @Test
+  public void getEx() {
+    assertNull(jedis.getEx("foo", GetExParams.getExParams().ex(1)));
+    jedis.set("foo", "bar");
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().ex(10)));
+    long ttl = jedis.ttl("foo");
+    assertTrue(ttl > 0 && ttl <= 10);
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().px(20000l)));
+    ttl = jedis.ttl("foo");
+    assertTrue(ttl > 10 && ttl <= 20);
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
+    ttl = jedis.ttl("foo");
+    assertTrue(ttl > 20 && ttl <= 30);
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
+    ttl = jedis.ttl("foo");
+    assertTrue(ttl > 30 && ttl <= 40);
+
+    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().persist()));
+    ttl = jedis.ttl("foo");
+    assertEquals(-1, ttl);
+  }
+
+  @Test
   public void mget() {
     List<String> values = jedis.mget("foo", "bar");
     List<String> expected = new ArrayList<String>();
@@ -100,12 +137,6 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     assertEquals("foo", jedis.get("bar"));
   }
 
-  @Test(expected = JedisDataException.class)
-  public void incrWrongValue() {
-    jedis.set("foo", "bar");
-    jedis.incr("foo");
-  }
-
   @Test
   public void incr() {
     long value = jedis.incr("foo");
@@ -115,17 +146,31 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test(expected = JedisDataException.class)
-  public void incrByWrongValue() {
+  public void incrWrongValue() {
     jedis.set("foo", "bar");
-    jedis.incrBy("foo", 2);
+    jedis.incr("foo");
   }
 
   @Test
   public void incrBy() {
     long value = jedis.incrBy("foo", 2);
     assertEquals(2, value);
-    value = jedis.incrBy("foo", 2);
-    assertEquals(4, value);
+    value = jedis.incrBy("foo", 3);
+    assertEquals(5, value);
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void incrByWrongValue() {
+    jedis.set("foo", "bar");
+    jedis.incrBy("foo", 2);
+  }
+
+  @Test
+  public void incrByFloat() {
+    double value = jedis.incrByFloat("foo", 10.5);
+    assertEquals(10.5, value, 0.0);
+    value = jedis.incrByFloat("foo", 0.1);
+    assertEquals(10.6, value, 0.0);
   }
 
   @Test(expected = JedisDataException.class)
@@ -148,18 +193,18 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(-2, value);
   }
 
-  @Test(expected = JedisDataException.class)
-  public void decrByWrongValue() {
-    jedis.set("foo", "bar");
-    jedis.decrBy("foo", 2);
-  }
-
   @Test
   public void decrBy() {
     long value = jedis.decrBy("foo", 2);
     assertEquals(-2, value);
     value = jedis.decrBy("foo", 2);
     assertEquals(-4, value);
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void decrByWrongValue() {
+    jedis.set("foo", "bar");
+    jedis.decrBy("foo", 2);
   }
 
   @Test
@@ -202,55 +247,10 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void incrByFloat() {
-    double value = jedis.incrByFloat("foo", 10.5);
-    assertEquals(10.5, value, 0.0);
-    value = jedis.incrByFloat("foo", 0.1);
-    assertEquals(10.6, value, 0.0);
-  }
-
-  @Test
   public void psetex() {
     String status = jedis.psetex("foo", 20000, "bar");
     assertEquals("OK", status);
     long ttl = jedis.ttl("foo");
     assertTrue(ttl > 0 && ttl <= 20000);
-  }
-
-  @Test
-  public void getDel() {
-    String status = jedis.set("foo", "bar");
-    assertEquals("OK", status);
-
-    String value = jedis.getDel("foo");
-    assertEquals("bar", value);
-
-    assertNull(jedis.get("foo"));
-  }
-
-  @Test
-  public void getEx() {
-    assertNull(jedis.getEx("foo", GetExParams.getExParams().ex(1)));
-    jedis.set("foo", "bar");
-
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().ex(10)));
-    long ttl = jedis.ttl("foo");
-    assertTrue(ttl > 0 && ttl <= 10);
-
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().px(20000l)));
-    ttl = jedis.ttl("foo");
-    assertTrue(ttl > 10 && ttl <= 20);
-
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().exAt(System.currentTimeMillis() / 1000 + 30)));
-    ttl = jedis.ttl("foo");
-    assertTrue(ttl > 20 && ttl <= 30);
-
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().pxAt(System.currentTimeMillis() + 40000l)));
-    ttl = jedis.ttl("foo");
-    assertTrue(ttl > 30 && ttl <= 40);
-
-    assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().persist()));
-    ttl = jedis.ttl("foo");
-    assertEquals(-1, ttl);
   }
 }

@@ -79,6 +79,10 @@ public interface BinaryJedisCommands {
 
   Boolean setbit(byte[] key, long offset, boolean value);
 
+  /**
+   * @deprecated Use {@link #setbit(byte[], long, boolean)}.
+   */
+  @Deprecated
   Boolean setbit(byte[] key, long offset, byte[] value);
 
   Boolean getbit(byte[] key, long offset);

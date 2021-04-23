@@ -132,33 +132,6 @@ public class ExceptionsTest {
   }
 
   @Test
-  public void maxAttempts() {
-    try {
-      throw new JedisClusterMaxAttemptsException(MESSAGE);
-    } catch (Exception e) {
-      assertEquals(JedisClusterMaxAttemptsException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertNull(e.getCause());
-    }
-
-    try {
-      throw new JedisClusterMaxAttemptsException(CAUSE);
-    } catch (Exception e) {
-      assertEquals(JedisClusterMaxAttemptsException.class, e.getClass());
-      assertEquals(CAUSE, e.getCause());
-      assertEquals(CAUSE.toString(), e.getMessage());
-    }
-
-    try {
-      throw new JedisClusterMaxAttemptsException(MESSAGE, CAUSE);
-    } catch (Exception e) {
-      assertEquals(JedisClusterMaxAttemptsException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertEquals(CAUSE, e.getCause());
-    }
-  }
-
-  @Test
   public void clusterOperation() {
     try {
       throw new JedisClusterOperationException(MESSAGE);
@@ -318,33 +291,6 @@ public class ExceptionsTest {
       throw new JedisMovedDataException(MESSAGE, CAUSE, hap, slot);
     } catch (Exception e) {
       assertEquals(JedisMovedDataException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertEquals(CAUSE, e.getCause());
-    }
-  }
-
-  @Test
-  public void noReachableNode() {
-    try {
-      throw new JedisNoReachableClusterNodeException(MESSAGE);
-    } catch (Exception e) {
-      assertEquals(JedisNoReachableClusterNodeException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertNull(e.getCause());
-    }
-
-    try {
-      throw new JedisNoReachableClusterNodeException(CAUSE);
-    } catch (Exception e) {
-      assertEquals(JedisNoReachableClusterNodeException.class, e.getClass());
-      assertEquals(CAUSE, e.getCause());
-      assertEquals(CAUSE.toString(), e.getMessage());
-    }
-
-    try {
-      throw new JedisNoReachableClusterNodeException(MESSAGE, CAUSE);
-    } catch (Exception e) {
-      assertEquals(JedisNoReachableClusterNodeException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }

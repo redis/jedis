@@ -352,7 +352,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
     checkIsInMultiOrPipeline();
     client.copy(srcKey, dstKey, db, replace);
-    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+    return BuilderFactory.BOOLEAN.build(client.getOne());
   }
 
   /**
@@ -367,7 +367,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace) {
     checkIsInMultiOrPipeline();
     client.copy(srcKey, dstKey, replace);
-    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+    return BuilderFactory.BOOLEAN.build(client.getOne());
   }
 
   /**
@@ -3707,10 +3707,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
-  public void sync() {
-    client.sync();
-  }
-
   @Override
   public Long lpushx(final byte[] key, final byte[]... string) {
     checkIsInMultiOrPipeline();
@@ -3799,6 +3795,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  @Deprecated
   public Boolean setbit(final byte[] key, final long offset, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);
@@ -4937,6 +4934,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
     return client.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
+    return client.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
+    return client.getObjectMultiBulkReply();
   }
 
   @Override

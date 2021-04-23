@@ -8,28 +8,16 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public abstract class Pool<T> implements Closeable {
 
-  /**
-   * @deprecated This will be private in future.
-   */
-  @Deprecated
-  protected GenericObjectPool<T> internalPool;
-
-  /**
-   * Using this constructor means you have to set and initialize the internalPool yourself.
-   *
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public Pool() {
-  }
+  private final GenericObjectPool<T> internalPool;
 
   public Pool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
-    initPool(poolConfig, factory);
+    this.internalPool = new GenericObjectPool<>(factory, poolConfig);
   }
 
   @Override
@@ -39,24 +27,6 @@ public abstract class Pool<T> implements Closeable {
 
   public boolean isClosed() {
     return this.internalPool.isClosed();
-  }
-
-  /**
-   * @param poolConfig
-   * @param factory
-   * @deprecated This method will be private in future.
-   */
-  @Deprecated
-  public void initPool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
-
-    if (this.internalPool != null) {
-      try {
-        closeInternalPool();
-      } catch (Exception e) {
-      }
-    }
-
-    this.internalPool = new GenericObjectPool<>(factory, poolConfig);
   }
 
   /**
@@ -73,6 +43,8 @@ public abstract class Pool<T> implements Closeable {
   public T getResource() {
     try {
       return internalPool.borrowObject();
+    } catch (JedisDataException jde) {
+      throw jde;
     } catch (NoSuchElementException nse) {
       if (null == nse.getCause()) { // The exception was caused by an exhausted pool
         throw new JedisExhaustedPoolException(

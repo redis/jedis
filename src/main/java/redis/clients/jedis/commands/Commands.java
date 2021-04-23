@@ -17,6 +17,7 @@ import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
@@ -560,6 +561,12 @@ public interface Commands {
 
   void xclaimJustId(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
+
+  void xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params);
+
+  void xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params);
 
   void xinfoStream (String key);
 

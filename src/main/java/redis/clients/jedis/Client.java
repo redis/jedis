@@ -1629,6 +1629,20 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    xautoclaim(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
+      minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), params);
+  }
+
+  @Override
+  public void xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    xautoclaimJustId(SafeEncoder.encode(key), SafeEncoder.encode(group), SafeEncoder.encode(consumerName),
+            minIdleTime, SafeEncoder.encode(start == null ? "-" : start.toString()), params);
+  }
+
+  @Override
   public void xinfoStream(String key) {
     xinfoStream(SafeEncoder.encode(key));
   }

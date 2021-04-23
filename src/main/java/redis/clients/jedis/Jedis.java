@@ -17,6 +17,7 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
 
@@ -24,11 +25,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     AdvancedJedisCommands, ScriptingCommands, BasicCommands, ClusterCommands, SentinelCommands,
     ModuleCommands {
 
-  /**
-   * @deprecated This will be private in future.
-   */
-  @Deprecated
-  protected JedisPoolAbstract dataSource = null;
+  private Pool<Jedis> dataSource = null;
 
   public Jedis() {
     super();
@@ -180,7 +177,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Boolean copy(String srcKey, String dstKey, int db, boolean replace) {
     checkIsInMultiOrPipeline();
     client.copy(srcKey, dstKey, db, replace);
-    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+    return BuilderFactory.BOOLEAN.build(client.getOne());
   }
 
   /**
@@ -195,7 +192,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public Boolean copy(String srcKey, String dstKey, boolean replace) {
     checkIsInMultiOrPipeline();
     client.copy(srcKey, dstKey, replace);
-    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+    return BuilderFactory.BOOLEAN.build(client.getOne());
   }
 
   /**
@@ -1658,6 +1655,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getBulkReply();
   }
 
+  /**
+   * Return a random elements from a Set, without removing the elements. If the Set is empty or the
+   * key does not exist, an empty list is returned.
+   * <p>
+   * The SPOP command does a similar work but the returned elements is popped (removed) from the Set.
+   * <p>
+   * Time complexity O(1)
+   * @param key
+   * @param count if positive, return an array of distinct elements.
+   *        If negative the behavior changes and the command is allowed to
+   *        return the same element multiple times  
+   * @return list of elements
+   */
   @Override
   public List<String> srandmember(final String key, final int count) {
     checkIsInMultiOrPipeline();
@@ -2202,7 +2212,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.blpop(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getMultiBulkReply());
+      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2281,7 +2291,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.brpop(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getMultiBulkReply());
+      return BuilderFactory.KEYED_LIST_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2327,7 +2337,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.bzpopmax(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -2339,7 +2349,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.bzpopmin(timeout, keys);
     client.setTimeoutInfinite();
     try {
-      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getObjectMultiBulkReply());
+      return BuilderFactory.KEYED_ZSET_ELEMENT.build(client.getBinaryMultiBulkReply());
     } finally {
       client.rollbackTimeout();
     }
@@ -3087,6 +3097,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  @Deprecated
   public Boolean setbit(final String key, final long offset, final String value) {
     checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);
@@ -3931,7 +3942,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public void close() {
     if (dataSource != null) {
-      JedisPoolAbstract pool = this.dataSource;
+      Pool<Jedis> pool = this.dataSource;
       this.dataSource = null;
       if (isBroken()) {
         pool.returnBrokenResource(this);
@@ -3943,7 +3954,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
   }
 
-  public void setDataSource(JedisPoolAbstract jedisPool) {
+  protected void setDataSource(Pool<Jedis> jedisPool) {
     this.dataSource = jedisPool;
   }
 
@@ -4509,6 +4520,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
 
     return BuilderFactory.STREAM_ENTRY_ID_LIST.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaim(key, group, consumerName, minIdleTime, start, params);
+
+    return BuilderFactory.STREAM_AUTO_CLAIM_RESPONSE.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    checkIsInMultiOrPipeline();
+    client.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
+
+    return BuilderFactory.STREAM_AUTO_CLAIM_ID_RESPONSE.build(client.getObjectMultiBulkReply());
   }
 
   @Override

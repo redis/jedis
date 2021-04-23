@@ -18,6 +18,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XTrimParams;
@@ -429,6 +430,12 @@ public interface RedisPipeline {
 
   Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids);
+
+  Response<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params);
+
+  Response<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumerName,
+      long minIdleTime, StreamEntryID start, XAutoClaimParams params);
 
   Response<Long> bitpos(String key, boolean value);
 

@@ -23,6 +23,7 @@ import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class JedisPoolTest {
@@ -251,8 +252,7 @@ public class JedisPoolTest {
 
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
-    JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared");
-    pool.initPool(config, new CrashingJedisPooledObjectFactory());
+    JedisPool pool = new JedisPool(config, new CrashingJedisPooledObjectFactory());
     Jedis crashingJedis = pool.getResource();
 
     try {
@@ -405,7 +405,7 @@ public class JedisPoolTest {
         factory.setPassword("wrong password");
         try (Jedis obj2 = pool.getResource()) {
           fail("Should not get resource from pool");
-        } catch (JedisConnectionException e) { }
+        } catch (JedisException e) { }
         assertEquals(1, pool.getNumActive());
       }
       assertEquals(0, pool.getNumActive());
@@ -420,7 +420,7 @@ public class JedisPoolTest {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       try (Jedis obj1 = pool.getResource()) {
         fail("Should not get resource from pool");
-      } catch (JedisConnectionException e) { }
+      } catch (JedisException e) { }
       assertEquals(0, pool.getNumActive());
 
       factory.setPassword("foobared");

@@ -11,8 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.util.Pool;
 
-public class JedisPool extends JedisPoolAbstract {
+public class JedisPool extends Pool<Jedis> {
 
   private static final Logger log = LoggerFactory.getLogger(JedisPool.class);
 
@@ -29,43 +30,36 @@ public class JedisPool extends JedisPoolAbstract {
   }
 
   /**
+   * WARNING: This constructor only accepts a uri string as {@code url}.
+   * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
+   * <p>
+   * To use a host string, {@link #JedisPool(java.lang.String, int)} can be used with
+   * {@link Protocol#DEFAULT_PORT}.
+   *
    * @param url
-   * @deprecated This constructor will not accept a host string in future. It will accept only a uri
-   * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
    */
-  @Deprecated
   public JedisPool(final String url) {
-    URI uri = URI.create(url);
-    if (JedisURIHelper.isValid(uri)) {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(uri,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null));
-    } else {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(url, Protocol.DEFAULT_PORT,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null));
-    }
+    this(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(URI.create(url), Protocol.DEFAULT_TIMEOUT,
+        Protocol.DEFAULT_TIMEOUT, null));
   }
 
   /**
+   * WARNING: This constructor only accepts a uri string as {@code url}.
+   * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
+   * <p>
+   * To use a host string,
+   * {@link #JedisPool(java.lang.String, int, boolean, javax.net.ssl.SSLSocketFactory, javax.net.ssl.SSLParameters, javax.net.ssl.HostnameVerifier)}
+   * can be used with {@link Protocol#DEFAULT_PORT} and {@code ssl=true}.
+   *
    * @param url
    * @param sslSocketFactory
    * @param sslParameters
    * @param hostnameVerifier
-   * @deprecated This constructor will not accept a host string in future. It will accept only a uri
-   * string. You can use {@link JedisURIHelper#isValid(java.net.URI)} before this.
    */
-  @Deprecated
   public JedisPool(final String url, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    URI uri = URI.create(url);
-    if (JedisURIHelper.isValid(uri)) {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(uri,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory,
-          sslParameters, hostnameVerifier));
-    } else {
-      initPool(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(url, Protocol.DEFAULT_PORT,
-          Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, null, Protocol.DEFAULT_DATABASE, null,
-          false, null, null, null));
-    }
+    this(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(URI.create(url), Protocol.DEFAULT_TIMEOUT,
+        Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
   public JedisPool(final URI uri) {

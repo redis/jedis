@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
@@ -12,6 +13,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
@@ -19,9 +23,14 @@ import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.KeyedListElement;
 
 public class ListCommandsTest extends JedisCommandTestBase {
+
+  private static final Logger logger = LogManager.getLogger();
+
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x05 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
   final byte[] bA = { 0x0A };
@@ -420,6 +429,19 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertEquals("foo", result.get(0));
     assertEquals("bar", result.get(1));
 
+    // Multi keys
+    result = jedis.blpop(1, "foo", "foo1");
+    assertNull(result);
+
+    jedis.lpush("foo", "bar");
+    jedis.lpush("foo1", "bar1");
+    result = jedis.blpop(1, "foo1", "foo");
+
+    assertNotNull(result);
+    assertEquals(2, result.size());
+    assertEquals("foo1", result.get(0));
+    assertEquals("bar1", result.get(1));
+
     // Binary
     jedis.lpush(bfoo, bbar);
     List<byte[]> bresult = jedis.blpop(1, bfoo);
@@ -429,6 +451,95 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertArrayEquals(bfoo, bresult.get(0));
     assertArrayEquals(bbar, bresult.get(1));
 
+    // Binary Multi keys
+    bresult = jedis.blpop(1, bfoo, bfoo1);
+    assertNull(bresult);
+
+    jedis.lpush(bfoo, bbar);
+    jedis.lpush(bfoo1, bcar);
+    bresult = jedis.blpop(1, bfoo, bfoo1);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
+  }
+
+  @Test
+  public void blpopDouble() throws InterruptedException {
+    KeyedListElement result = jedis.blpop(0.1, "foo");
+    assertNull(result);
+
+    jedis.lpush("foo", "bar");
+    result = jedis.blpop(3.2, "foo");
+
+    assertNotNull(result);
+    assertEquals("foo", result.getKey());
+    assertEquals("bar", result.getElement());
+
+    // Multi keys
+    result = jedis.blpop(0.18, "foo", "foo1");
+    assertNull(result);
+
+    jedis.lpush("foo", "bar");
+    jedis.lpush("foo1", "bar1");
+    result = jedis.blpop(1d, "foo1", "foo");
+
+    assertNotNull(result);
+    assertEquals("foo1", result.getKey());
+    assertEquals("bar1", result.getElement());
+
+    // Binary
+    jedis.lpush(bfoo, bbar);
+    List<byte[]> bresult = jedis.blpop(3.12, bfoo);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
+
+    // Binary Multi keys
+    bresult = jedis.blpop(0.11, bfoo, bfoo1);
+    assertNull(bresult);
+
+    jedis.lpush(bfoo, bbar);
+    jedis.lpush(bfoo1, bcar);
+    bresult = jedis.blpop(1d, bfoo, bfoo1);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
+  }
+
+  @Test
+  public void blpopDoubleWithSleep() {
+    long startMillis, totalMillis;
+
+    startMillis = System.currentTimeMillis();
+    KeyedListElement result = jedis.blpop(0.04, "foo");
+    totalMillis = System.currentTimeMillis() - startMillis;
+    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
+    assertNull(result);
+
+    startMillis = System.currentTimeMillis();
+    new Thread(() -> {
+      try {
+        Thread.sleep(30);
+      } catch(InterruptedException e) {
+        logger.error("", e);
+      }
+      try (Jedis j = createJedis()) {
+        j.lpush("foo", "bar");
+      }
+    }).start();
+    result = jedis.blpop(1.2, "foo");
+    totalMillis = System.currentTimeMillis() - startMillis;
+    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
+
+    assertNotNull(result);
+    assertEquals("foo", result.getKey());
+    assertEquals("bar", result.getElement());
   }
 
   @Test
@@ -443,8 +554,20 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertEquals("foo", result.get(0));
     assertEquals("bar", result.get(1));
 
-    // Binary
+    // Multi keys
+    result = jedis.brpop(1, "foo", "foo1");
+    assertNull(result);
 
+    jedis.lpush("foo", "bar");
+    jedis.lpush("foo1", "bar1");
+    result = jedis.brpop(1, "foo1", "foo");
+
+    assertNotNull(result);
+    assertEquals(2, result.size());
+    assertEquals("foo1", result.get(0));
+    assertEquals("bar1", result.get(1));
+
+    // Binary
     jedis.lpush(bfoo, bbar);
     List<byte[]> bresult = jedis.brpop(1, bfoo);
     assertNotNull(bresult);
@@ -452,6 +575,95 @@ public class ListCommandsTest extends JedisCommandTestBase {
     assertArrayEquals(bfoo, bresult.get(0));
     assertArrayEquals(bbar, bresult.get(1));
 
+    // Binary Multi keys
+    bresult = jedis.brpop(1, bfoo, bfoo1);
+    assertNull(bresult);
+
+    jedis.lpush(bfoo, bbar);
+    jedis.lpush(bfoo1, bcar);
+    bresult = jedis.brpop(1, bfoo, bfoo1);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
+  }
+
+  @Test
+  public void brpopDouble() throws InterruptedException {
+    KeyedListElement result = jedis.brpop(0.1, "foo");
+    assertNull(result);
+
+    jedis.lpush("foo", "bar");
+    result = jedis.brpop(3.2, "foo");
+
+    assertNotNull(result);
+    assertEquals("foo", result.getKey());
+    assertEquals("bar", result.getElement());
+
+    // Multi keys
+    result = jedis.brpop(0.18, "foo", "foo1");
+    assertNull(result);
+
+    jedis.lpush("foo", "bar");
+    jedis.lpush("foo1", "bar1");
+    result = jedis.brpop(1d, "foo1", "foo");
+
+    assertNotNull(result);
+    assertEquals("foo1", result.getKey());
+    assertEquals("bar1", result.getElement());
+
+    // Binary
+    jedis.lpush(bfoo, bbar);
+    List<byte[]> bresult = jedis.brpop(3.12, bfoo);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
+
+    // Binary Multi keys
+    bresult = jedis.brpop(0.11, bfoo, bfoo1);
+    assertNull(bresult);
+
+    jedis.lpush(bfoo, bbar);
+    jedis.lpush(bfoo1, bcar);
+    bresult = jedis.brpop(1d, bfoo, bfoo1);
+
+    assertNotNull(bresult);
+    assertEquals(2, bresult.size());
+    assertArrayEquals(bfoo, bresult.get(0));
+    assertArrayEquals(bbar, bresult.get(1));
+  }
+
+  @Test
+  public void brpopDoubleWithSleep() {
+    long startMillis, totalMillis;
+
+    startMillis = System.currentTimeMillis();
+    KeyedListElement result = jedis.brpop(0.04, "foo");
+    totalMillis = System.currentTimeMillis() - startMillis;
+    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
+    assertNull(result);
+
+    startMillis = System.currentTimeMillis();
+    new Thread(() -> {
+      try {
+        Thread.sleep(30);
+      } catch(InterruptedException e) {
+        logger.error("", e);
+      }
+      try (Jedis j = createJedis()) {
+        j.lpush("foo", "bar");
+      }
+    }).start();
+    result = jedis.brpop(1.2, "foo");
+    totalMillis = System.currentTimeMillis() - startMillis;
+    assertTrue("TotalMillis=" + totalMillis, totalMillis < 200);
+
+    assertNotNull(result);
+    assertEquals("foo", result.getKey());
+    assertEquals("bar", result.getElement());
   }
 
   @Test
@@ -538,11 +750,11 @@ public class ListCommandsTest extends JedisCommandTestBase {
       public void run() {
         try {
           Thread.sleep(100);
-          try (Jedis j = createJedis()) {
-            j.lpush("foo", "a");
-          }
         } catch (InterruptedException e) {
-          org.apache.logging.log4j.LogManager.getLogger().error("Interruption in string lpush", e);
+          logger.error("", e);
+        }
+        try (Jedis j = createJedis()) {
+          j.lpush("foo", "a");
         }
       }
     }).start();
@@ -560,11 +772,11 @@ public class ListCommandsTest extends JedisCommandTestBase {
       public void run() {
         try {
           Thread.sleep(100);
-          try (Jedis j = createJedis()) {
-            j.lpush(bfoo, bA);
-          }
         } catch (InterruptedException e) {
-          org.apache.logging.log4j.LogManager.getLogger().error("Interruption in binary lpush", e);
+          logger.error("", e);
+        }
+        try (Jedis j = createJedis()) {
+          j.lpush(bfoo, bA);
         }
       }
     }).start();
@@ -678,7 +890,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
-        // ignore
+        logger.error("", e);
       }
       try (Jedis j = createJedis()) {
         j.rpush("foo", "bar1", "bar2", "bar3");
@@ -694,7 +906,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
       try {
         Thread.sleep(100);
       } catch (InterruptedException e) {
-        // ignore
+        logger.error("", e);
       }
       try (Jedis j = createJedis()) {
         j.rpush(bfoo, b1, b2, b3);

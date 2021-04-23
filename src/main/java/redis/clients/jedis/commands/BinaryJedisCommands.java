@@ -79,6 +79,10 @@ public interface BinaryJedisCommands {
 
   Boolean setbit(byte[] key, long offset, boolean value);
 
+  /**
+   * @deprecated Use {@link #setbit(byte[], long, boolean)}.
+   */
+  @Deprecated
   Boolean setbit(byte[] key, long offset, byte[] value);
 
   Boolean getbit(byte[] key, long offset);
@@ -449,6 +453,12 @@ public interface BinaryJedisCommands {
   List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
 
   List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+
+  List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params);
+
+  List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params);
 
   /**
    * @deprecated Use {@link #xinfoStreamBinary(byte[])}.

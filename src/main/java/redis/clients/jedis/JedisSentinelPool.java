@@ -14,8 +14,9 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.Pool;
 
-public class JedisSentinelPool extends JedisPoolAbstract {
+public class JedisSentinelPool extends Pool<Jedis> {
 
   private static final Logger LOG = LoggerFactory.getLogger(JedisSentinelPool.class);
 

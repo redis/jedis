@@ -17,7 +17,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardInfo;
 import redis.clients.jedis.ShardedJedis;
-import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.ShardedJedisPool;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
@@ -200,39 +199,6 @@ public class ShardedJedisPoolTest {
     jedis = jedises[1];
     assertEquals("PONG", jedis.ping());
     assertEquals("bar", jedis.get("foo"));
-  }
-
-  @Test
-  public void returnResourceShouldResetState() throws URISyntaxException {
-    GenericObjectPoolConfig<ShardedJedis> config = new GenericObjectPoolConfig<ShardedJedis>();
-    config.setMaxTotal(1);
-    config.setBlockWhenExhausted(false);
-
-    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
-    shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
-
-    ShardedJedisPool pool = new ShardedJedisPool(config, shards);
-
-    ShardedJedis jedis = pool.getResource();
-    jedis.set("pipelined", String.valueOf(0));
-    jedis.set("pipelined2", String.valueOf(0));
-
-    ShardedJedisPipeline pipeline = jedis.pipelined();
-
-    pipeline.incr("pipelined");
-    pipeline.incr("pipelined2");
-
-    jedis.resetState();
-
-    pipeline = jedis.pipelined();
-    pipeline.incr("pipelined");
-    pipeline.incr("pipelined2");
-    List<Object> results = pipeline.syncAndReturnAll();
-
-    assertEquals(2, results.size());
-    jedis.close();
-    pool.destroy();
   }
 
   @Test

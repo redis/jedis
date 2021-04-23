@@ -156,4 +156,14 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     clear();
   }
 
+  public Response<String> watch(String... keys) {
+    client.watch(keys);
+    return getResponse(BuilderFactory.STRING);
+  }
+
+  public Response<String> watch(byte[]... keys) {
+    client.watch(keys);
+    return getResponse(BuilderFactory.STRING);
+  }
+
 }

@@ -107,6 +107,10 @@ public interface JedisCommands {
 
   Boolean setbit(String key, long offset, boolean value);
 
+  /**
+   * @deprecated Use {@link #setbit(java.lang.String, long, boolean)}.
+   */
+  @Deprecated
   Boolean setbit(String key, long offset, String value);
 
   Boolean getbit(String key, long offset);

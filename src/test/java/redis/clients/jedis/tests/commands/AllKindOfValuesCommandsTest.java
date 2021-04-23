@@ -188,13 +188,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     reply = jedis.unlink("foo1", "foo2");
     assertEquals(0, reply);
 
-    // Test single key unlink
-    jedis.set("foo1", "bar1");    
-
-    reply = jedis.unlink("foo1");
+    jedis.set("foo", "bar");
+    reply = jedis.unlink("foo");
     assertEquals(1, reply);
-    
-    // Binary ...
+    assertFalse(jedis.exists("foo"));
+
+    // Binary
     jedis.set(bfoo1, bbar1);
     jedis.set(bfoo2, bbar2);
     jedis.set(bfoo3, bbar3);
@@ -212,6 +211,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     reply = jedis.unlink(bfoo1, bfoo2);
     assertEquals(0, reply);
+
+    jedis.set(bfoo, bbar);
+    reply = jedis.unlink(bfoo);
+    assertEquals(1, reply);
+    assertFalse(jedis.exists(bfoo));
   }
 
   @Test
@@ -650,6 +654,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     byte[] sv = jedis.dump("foo1");
     jedis.restore("foo2", 0, sv);
     assertEquals("bar", jedis.get("foo2"));
+
+    jedis.set(bfoo1, bbar);
+    sv = jedis.dump(bfoo1);
+    jedis.restore(bfoo2, 0, sv);
+    assertArrayEquals(bbar, jedis.get(bfoo2));
   }
 
   @Test
@@ -733,6 +742,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     long pttl = jedis.pttl("foo2");
     assertTrue(pttl > 100000000000L);
+
+    // Binary
+    status = jedis.pexpire(bfoo, 10000);
+    assertEquals(0, status);
+
+    jedis.set(bfoo, bbar);
+    status = jedis.pexpire(bfoo, 10000);
+    assertEquals(1, status);
   }
 
   @Test
@@ -743,8 +760,15 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, status);
 
     jedis.set("foo", "bar");
-    unixTime = (System.currentTimeMillis()) + 10000;
     status = jedis.pexpireAt("foo", unixTime);
+    assertEquals(1, status);
+
+    // Binary
+    status = jedis.pexpireAt(bfoo, unixTime);
+    assertEquals(0, status);
+
+    jedis.set(bfoo, bbar);
+    status = jedis.pexpireAt(bfoo, unixTime);
     assertEquals(1, status);
   }
 
@@ -760,17 +784,31 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.pexpire("foo", 20000);
     pttl = jedis.pttl("foo");
     assertTrue(pttl >= 0 && pttl <= 20000);
+
+    // Binary
+    pttl = jedis.pttl(bfoo);
+    assertEquals(-2, pttl);
+
+    jedis.set(bfoo, bbar);
+    pttl = jedis.pttl(bfoo);
+    assertEquals(-1, pttl);
+
+    jedis.pexpire(bfoo, 20000);
+    pttl = jedis.pttl(bfoo);
+    assertTrue(pttl >= 0 && pttl <= 20000);
   }
 
   @Test
   public void psetex() {
-    long pttl = jedis.pttl("foo");
-    assertEquals(-2, pttl);
+    long pttl;
 
-    String status = jedis.psetex("foo", 200000000000L, "bar");
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
-
+    jedis.psetex("foo", 200000000000L, "bar");
     pttl = jedis.pttl("foo");
+    assertTrue(pttl > 100000000000L);
+
+    // Binary
+    jedis.psetex(bfoo, 200000000000L, bbar);
+    pttl = jedis.pttl(bfoo);
     assertTrue(pttl > 100000000000L);
   }
 
@@ -988,20 +1026,39 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void copy() {
-    jedis.set("foo", "bar");
-    assertTrue(jedis.copy("foo", "bar", false));
-    assertFalse(jedis.copy("unknown", "bar1", false));
-    assertEquals("bar", jedis.get("bar"));
+    assertFalse(jedis.copy("unknown", "foo", false));
+
+    jedis.set("foo1", "bar");
+    assertTrue(jedis.copy("foo1", "foo2", false));
+    assertEquals("bar", jedis.get("foo2"));
 
     // with destinationDb
-    assertTrue(jedis.copy("foo", "bar1", 2, false));
+    assertTrue(jedis.copy("foo1", "foo3", 2, false));
     jedis.select(2);
-    assertEquals("bar", jedis.get("bar1"));
+    assertEquals("bar", jedis.get("foo3"));
+    jedis.select(0); // getting back to original db, for next tests
 
     // replace
-    jedis.set("foo", "bar");
-    jedis.set("bar2", "b");
-    assertTrue(jedis.copy("foo", "bar2", true));
-    assertEquals("bar", jedis.get("bar2"));
+    jedis.set("foo1", "bar1");
+    assertTrue(jedis.copy("foo1", "foo2", true));
+    assertEquals("bar1", jedis.get("foo2"));
+
+    // Binary
+    assertFalse(jedis.copy(bfoobar, bfoo, false));
+
+    jedis.set(bfoo1, bbar);
+    assertTrue(jedis.copy(bfoo1, bfoo2, false));
+    assertArrayEquals(bbar, jedis.get(bfoo2));
+
+    // with destinationDb
+    assertTrue(jedis.copy(bfoo1, bfoo3, 3, false));
+    jedis.select(3);
+    assertArrayEquals(bbar, jedis.get(bfoo3));
+    jedis.select(0); // getting back to original db, for next tests
+
+    // replace
+    jedis.set(bfoo1, bbar1);
+    assertTrue(jedis.copy(bfoo1, bfoo2, true));
+    assertArrayEquals(bbar1, jedis.get(bfoo2));
   }
 }

@@ -423,7 +423,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Get the value of the specified key. If the key does not exist the special value 'nil' is
+   * Get the value of the specified key. If the key does not exist the special value 'null is
    * returned. If the value stored at key is not a string an error is returned because GET can only
    * handle string values.
    * <p>
@@ -857,7 +857,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Get the values of all the specified keys. If one or more keys don't exist or is not of type
-   * String, a 'nil' value is returned instead of the value of the specified key, but the operation
+   * String, a 'null value is returned instead of the value of the specified key, but the operation
    * never fails.
    * <p>
    * Time complexity: O(1) for every key
@@ -1147,7 +1147,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   /**
    * If key holds a hash, retrieve the value associated to the specified field.
    * <p>
-   * If the field is not found or the key does not exist, a special 'nil' value is returned.
+   * If the field is not found or the key does not exist, a special 'null value is returned.
    * <p>
    * <b>Time complexity:</b> O(1)
    * @param key
@@ -1522,7 +1522,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * the penultimate and so on.
    * <p>
    * If the value stored at key is not of list type an error is returned. If the index is out of
-   * range a 'nil' reply is returned.
+   * range a 'null reply is returned.
    * <p>
    * Note that even if the average time complexity is O(n) asking for the first or the last element
    * of the list is O(1).
@@ -1592,7 +1592,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * if the list contains the elements "a","b","c" LPOP will return "a" and the list will become
    * "b","c".
    * <p>
-   * If the key does not exist or the list is already empty the special value 'nil' is returned.
+   * If the key does not exist or the list is already empty the special value 'null is returned.
    * @see #rpop(byte[])
    * @param key
    * @return Bulk reply
@@ -1614,14 +1614,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   /**
    * Returns the index of the first matching element inside a redis list. If the element is found,
    * its index (the zero-based position in the list) is returned. Otherwise, if no match is found,
-   * 'nil' is returned.
+   * 'null is returned.
    * <p>
    * Time complexity: O(N) where N is the number of elements in the list
    * @see #lpos(byte[], byte[])
    * @param key
    * @param element
    * @return Integer Reply, specifically: The index of first matching element in the list. Value will
-   * be 'nil' when the element is not present in the list.
+   * be 'null when the element is not present in the list.
    */
   @Override
   public Long lpos(final byte[] key, final byte[] element) {
@@ -1681,7 +1681,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * if the list contains the elements "a","b","c" LPOP will return "a" and the list will become
    * "b","c".
    * <p>
-   * If the key does not exist or the list is already empty the special value 'nil' is returned.
+   * If the key does not exist or the list is already empty the special value 'null is returned.
    * @see #lpop(byte[])
    * @param key
    * @return Bulk reply
@@ -1706,7 +1706,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * elements "a","b","c" and the destination list contains the elements "foo","bar" after an
    * RPOPLPUSH command the content of the two lists will be "a","b" and "c","foo","bar".
    * <p>
-   * If the key does not exist or the list is already empty the special value 'nil' is returned. If
+   * If the key does not exist or the list is already empty the special value 'null is returned. If
    * the srckey and dstkey are the same the operation is equivalent to removing the last element
    * from the list and pushing it as first element of the list, so it's a "list rotation" command.
    * <p>
@@ -2124,7 +2124,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Return the rank (or index) or member in the sorted set at key, with scores being ordered from
    * low to high.
    * <p>
-   * When the given member does not exist in the sorted set, the special value 'nil' is returned.
+   * When the given member does not exist in the sorted set, the special value 'null is returned.
    * The returned rank (or index) of the member is 0-based for both commands.
    * <p>
    * <b>Time complexity:</b>
@@ -2147,7 +2147,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Return the rank (or index) or member in the sorted set at key, with scores being ordered from
    * high to low.
    * <p>
-   * When the given member does not exist in the sorted set, the special value 'nil' is returned.
+   * When the given member does not exist in the sorted set, the special value 'null is returned.
    * The returned rank (or index) of the member is 0-based for both commands.
    * <p>
    * <b>Time complexity:</b>
@@ -2225,7 +2225,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Return the score of the specified element of the sorted set at key. If the specified element
-   * does not exist in the sorted set, or the key does not exist at all, a special 'nil' value is
+   * does not exist in the sorted set, or the key does not exist at all, a special 'null value is
    * returned.
    * <p>
    * <b>Time complexity:</b> O(1)

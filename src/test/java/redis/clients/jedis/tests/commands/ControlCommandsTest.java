@@ -131,7 +131,16 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     List<byte[]> info = jedis.configGet(maxmemory);
     assertArrayEquals(maxmemory, info.get(0));
     byte[] memory = info.get(1);
-    assertEquals("OK", jedis.configSet(maxmemory, memory));
+    assertArrayEquals("OK".getBytes(), jedis.configSet(maxmemory, memory));
+  }
+
+  @Test
+  public void configGetSetBinary2() {
+    byte[] maxmemory = SafeEncoder.encode("maxmemory");
+    List<byte[]> info = jedis.configGet(maxmemory);
+    assertArrayEquals(maxmemory, info.get(0));
+    byte[] memory = info.get(1);
+    assertEquals("OK", jedis.configSetBinary(maxmemory, memory));
   }
 
   @Test

@@ -1490,7 +1490,7 @@ public class Client extends BinaryClient implements Commands {
     final byte[][] args = new byte[paramLength + 1 + streams.size() * 2][];
     System.arraycopy(bparams, 0, args, 0, paramLength);
 
-    args[paramLength] = Protocol.Keyword.STREAMS.raw;
+    args[paramLength] = Protocol.Keyword.STREAMS.getRaw();
     int keyIndex = paramLength + 1;
     int idsIndex = keyIndex + streams.size();
     for (Entry<String, StreamEntryID> entry : streams.entrySet()) {
@@ -1571,13 +1571,13 @@ public class Client extends BinaryClient implements Commands {
 
     final byte[][] args = new byte[3 + paramLength + 1 + streams.size() * 2][];
     int index = 0;
-    args[index++] = Protocol.Keyword.GROUP.raw;
+    args[index++] = Protocol.Keyword.GROUP.getRaw();
     args[index++] = SafeEncoder.encode(groupname);
     args[index++] = SafeEncoder.encode(consumer);
     System.arraycopy(bparams, 0, args, index, paramLength);
     index += paramLength;
 
-    args[index++] = Protocol.Keyword.STREAMS.raw;
+    args[index++] = Protocol.Keyword.STREAMS.getRaw();
     int keyIndex = index;
     int idsIndex = keyIndex + streams.size();
     for (Entry<String, StreamEntryID> entry : streams.entrySet()) {

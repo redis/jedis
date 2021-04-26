@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -18,6 +19,7 @@ import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
@@ -117,10 +119,28 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
   public void configSet() {
     List<String> info = jedis.configGet("maxmemory");
+    assertEquals("maxmemory", info.get(0));
     String memory = info.get(1);
-    String status = jedis.configSet("maxmemory", "200");
-    assertEquals("OK", status);
-    jedis.configSet("maxmemory", memory);
+    assertEquals("OK", jedis.configSet("maxmemory", "200"));
+    assertEquals("OK", jedis.configSet("maxmemory", memory));
+  }
+
+  @Test
+  public void configGetSetBinary() {
+    byte[] maxmemory = SafeEncoder.encode("maxmemory");
+    List<byte[]> info = jedis.configGet(maxmemory);
+    assertArrayEquals(maxmemory, info.get(0));
+    byte[] memory = info.get(1);
+    assertArrayEquals("OK".getBytes(), jedis.configSet(maxmemory, memory));
+  }
+
+  @Test
+  public void configGetSetBinary2() {
+    byte[] maxmemory = SafeEncoder.encode("maxmemory");
+    List<byte[]> info = jedis.configGet(maxmemory);
+    assertArrayEquals(maxmemory, info.get(0));
+    byte[] memory = info.get(1);
+    assertEquals("OK", jedis.configSetBinary(maxmemory, memory));
   }
 
   @Test

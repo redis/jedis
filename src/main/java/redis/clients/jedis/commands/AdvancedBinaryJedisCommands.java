@@ -11,7 +11,19 @@ public interface AdvancedBinaryJedisCommands {
 
   List<byte[]> configGet(byte[] pattern);
 
+  /**
+   * @param parameter
+   * @param value
+   * @return OK
+   * @deprecated The return type will be changed to {@link String}, representing {@code OK} response,
+   * in next major release. If you are not checking you continue using this method. Otherwise, you
+   * can choose to use either {@link #configSet(byte[], byte[]) this method} or
+   * {@link #configSetBinary(byte[], byte[])}.
+   */
+  @Deprecated
   byte[] configSet(byte[] parameter, byte[] value);
+
+  String configSetBinary(byte[] parameter, byte[] value);
 
   String slowlogReset();
 

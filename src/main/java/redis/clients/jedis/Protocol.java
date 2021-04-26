@@ -288,11 +288,7 @@ public final class Protocol {
     GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS, LOG, INCR, SAVE, JUSTID, WITHVALUES, UNBLOCK,
     NOMKSTREAM, MINID, DB, ABSTTL;
 
-    /**
-     * @deprecated This will be private in future. Use {@link #getRaw()}.
-     */
-    @Deprecated
-    public final byte[] raw;
+    private final byte[] raw;
 
     Keyword() {
       raw = SafeEncoder.encode(this.name().toLowerCase(Locale.ENGLISH));

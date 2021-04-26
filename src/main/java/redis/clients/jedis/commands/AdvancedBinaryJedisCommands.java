@@ -13,6 +13,14 @@ public interface AdvancedBinaryJedisCommands {
 
   String configSet(byte[] parameter, byte[] value);
 
+  /**
+   * @deprecated Use {@link #configSet(byte[], byte[])}.
+   */
+  @Deprecated
+  default String configSetBinary(byte[] parameter, byte[] value) {
+    return configSet(parameter, value);
+  }
+
   String slowlogReset();
 
   Long slowlogLen();

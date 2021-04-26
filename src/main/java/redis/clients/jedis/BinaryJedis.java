@@ -352,7 +352,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
     checkIsInMultiOrPipeline();
     client.copy(srcKey, dstKey, db, replace);
-    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+    return BuilderFactory.BOOLEAN.build(client.getOne());
   }
 
   /**
@@ -367,7 +367,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace) {
     checkIsInMultiOrPipeline();
     client.copy(srcKey, dstKey, replace);
-    return BuilderFactory.BOOLEAN.build(client.getIntegerReply());
+    return BuilderFactory.BOOLEAN.build(client.getOne());
   }
 
   /**
@@ -3795,6 +3795,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  @Deprecated
   public Boolean setbit(final byte[] key, final long offset, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);

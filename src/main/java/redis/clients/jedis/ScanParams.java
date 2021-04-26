@@ -52,7 +52,7 @@ public class ScanParams {
   public Collection<byte[]> getParams() {
     List<byte[]> paramsList = new ArrayList<>(params.size());
     for (Map.Entry<Keyword, ByteBuffer> param : params.entrySet()) {
-      paramsList.add(param.getKey().raw);
+      paramsList.add(param.getKey().getRaw());
       paramsList.add(param.getValue().array());
     }
     return Collections.unmodifiableCollection(paramsList);

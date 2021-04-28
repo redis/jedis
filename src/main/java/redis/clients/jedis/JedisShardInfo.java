@@ -27,28 +27,35 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
 
-  public JedisShardInfo(String host) {
-    super(Sharded.DEFAULT_WEIGHT);
-    URI uri = URI.create(host);
-    if (JedisURIHelper.isValid(uri)) {
-      this.host = uri.getHost();
-      this.port = uri.getPort();
-      this.user = JedisURIHelper.getUser(uri);
-      this.password = JedisURIHelper.getPassword(uri);
-      this.db = JedisURIHelper.getDBIndex(uri);
-      this.ssl = JedisURIHelper.isRedisSSLScheme(uri);
-    } else {
-      this.host = host;
-      this.port = Protocol.DEFAULT_PORT;
-    }
+  /**
+   * WARNING: This constructor only accepts a uri string.
+   * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
+   * <p>
+   * To use a host string, {@link #JedisShardInfo(java.lang.String, int)} can be used with
+   * {@link Protocol#DEFAULT_PORT}.
+   *
+   * @param uri 
+   */
+  public JedisShardInfo(String uri) {
+    this(URI.create(uri));
   }
 
-  public JedisShardInfo(String host, SSLSocketFactory sslSocketFactory,
+  /**
+   * WARNING: This constructor only accepts a uri string.
+   * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
+   * <p>
+   * To use a host string,
+   * {@link #JedisShardInfo(java.lang.String, int, boolean, javax.net.ssl.SSLSocketFactory, javax.net.ssl.SSLParameters, javax.net.ssl.HostnameVerifier)}
+   * can be used with {@link Protocol#DEFAULT_PORT}.
+   *
+   * @param uri
+   * @param sslSocketFactory
+   * @param sslParameters
+   * @param hostnameVerifier 
+   */
+  public JedisShardInfo(String uri, SSLSocketFactory sslSocketFactory,
       SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-    this(host);
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
+    this(URI.create(uri), sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
   public JedisShardInfo(String host, String name) {

@@ -36,16 +36,6 @@ public class Connection implements Closeable {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
-  /**
-   * @param host
-   * @deprecated This constructor will be removed in future. It can be replaced with
-   * {@link #Connection(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
-   */
-  @Deprecated
-  public Connection(final String host) {
-    this(host, Protocol.DEFAULT_PORT);
-  }
-
   public Connection(final String host, final int port) {
     this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().build());
   }

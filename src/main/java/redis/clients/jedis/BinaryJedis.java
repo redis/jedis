@@ -47,21 +47,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * @deprecated This constructor will not support a host string in future. It will accept only a
-   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
-   * constructor was being used with a host, it can be replaced with
-   * {@link #BinaryJedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
-   * @param uriString
+   * WARNING: This constructor only accepts a uri string as {@code url}.
+   * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
+   * <p>
+   * To use a host string, {@link #BinaryJedis(java.lang.String, int)} can be used with
+   * {@link Protocol#DEFAULT_PORT}.
+   *
+   * @param uri 
    */
-  @Deprecated
-  public BinaryJedis(final String uriString) {
-    URI uri = URI.create(uriString);
-    if (JedisURIHelper.isValid(uri)) {
-      client = createClientFromURI(uri);
-      initializeFromURI(uri);
-    } else {
-      client = new Client(uriString);
-    }
+  public BinaryJedis(final String uri) {
+    this(URI.create(uri));
   }
 
   public BinaryJedis(final HostAndPort hp) {

@@ -47,16 +47,6 @@ public class BinaryClient extends Connection {
     super();
   }
 
-  /**
-   * @param host
-   * @deprecated This constructor will be removed in future. It can be replaced with
-   * {@link #BinaryClient(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
-   */
-  @Deprecated
-  public BinaryClient(final String host) {
-    super(host);
-  }
-
   public BinaryClient(final String host, final int port) {
     super(host, port);
   }

@@ -30,35 +30,35 @@ public class JedisPool extends Pool<Jedis> {
   }
 
   /**
-   * WARNING: This constructor only accepts a uri string as {@code url}.
+   * WARNING: This constructor only accepts a uri string.
    * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
    * <p>
    * To use a host string, {@link #JedisPool(java.lang.String, int)} can be used with
    * {@link Protocol#DEFAULT_PORT}.
    *
-   * @param url
+   * @param uri
    */
-  public JedisPool(final String url) {
-    this(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(URI.create(url), Protocol.DEFAULT_TIMEOUT,
+  public JedisPool(final String uri) {
+    this(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(URI.create(uri), Protocol.DEFAULT_TIMEOUT,
         Protocol.DEFAULT_TIMEOUT, null));
   }
 
   /**
-   * WARNING: This constructor only accepts a uri string as {@code url}.
+   * WARNING: This constructor only accepts a uri string.
    * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
    * <p>
    * To use a host string,
    * {@link #JedisPool(java.lang.String, int, boolean, javax.net.ssl.SSLSocketFactory, javax.net.ssl.SSLParameters, javax.net.ssl.HostnameVerifier)}
-   * can be used with {@link Protocol#DEFAULT_PORT} and {@code ssl=true}.
+   * can be used with {@link Protocol#DEFAULT_PORT}.
    *
-   * @param url
+   * @param uri
    * @param sslSocketFactory
    * @param sslParameters
    * @param hostnameVerifier
    */
-  public JedisPool(final String url, final SSLSocketFactory sslSocketFactory,
+  public JedisPool(final String uri, final SSLSocketFactory sslSocketFactory,
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
-    this(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(URI.create(url), Protocol.DEFAULT_TIMEOUT,
+    this(new GenericObjectPoolConfig<Jedis>(), new JedisFactory(URI.create(uri), Protocol.DEFAULT_TIMEOUT,
         Protocol.DEFAULT_TIMEOUT, null, sslSocketFactory, sslParameters, hostnameVerifier));
   }
 

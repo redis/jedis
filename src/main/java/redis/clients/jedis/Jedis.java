@@ -32,13 +32,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
-   * @deprecated This constructor will not support a host string in future. It will accept only a
-   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
-   * constructor was being used with a host, it can be replaced with
-   * {@link #Jedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
-   * @param uri
+   * WARNING: This constructor only accepts a uri string.
+   * {@link JedisURIHelper#isValid(java.net.URI)} can be used before this.
+   * <p>
+   * To use a host string, {@link #Jedis(java.lang.String, int)} can be used with
+   * {@link Protocol#DEFAULT_PORT}.
+   *
+   * @param uri 
    */
-  @Deprecated
   public Jedis(final String uri) {
     super(uri);
   }

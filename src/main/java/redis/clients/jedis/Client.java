@@ -21,16 +21,6 @@ public class Client extends BinaryClient implements Commands {
     super();
   }
 
-  /**
-   * @param host
-   * @deprecated This constructor will be removed in future. It can be replaced with
-   * {@link #Client(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
-   */
-  @Deprecated
-  public Client(final String host) {
-    super(host);
-  }
-
   public Client(final String host, final int port) {
     super(host, port);
   }

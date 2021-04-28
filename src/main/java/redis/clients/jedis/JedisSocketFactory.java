@@ -30,23 +30,11 @@ public interface JedisSocketFactory {
   String getHost();
 
   @Deprecated
-  void setHost(String host);
-
-  @Deprecated
   int getPort();
-
-  @Deprecated
-  void setPort(int port);
 
   @Deprecated
   int getConnectionTimeout();
 
   @Deprecated
-  void setConnectionTimeout(int connectionTimeout);
-
-  @Deprecated
   int getSoTimeout();
-
-  @Deprecated
-  void setSoTimeout(int soTimeout);
 }

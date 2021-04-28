@@ -132,16 +132,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.hostAndPort;
   }
 
-  /**
-   * @param hostAndPort
-   * @deprecated This will be removed in next major release. Use
-   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
-   */
-  @Deprecated
-  public void setHostAndPort(HostAndPort hostAndPort) {
-    this.hostAndPort = hostAndPort;
-  }
-
   @Override
   public String getDescription() {
     return this.hostAndPort.toString();
@@ -152,31 +142,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.hostAndPort.getHost();
   }
 
-  /**
-   * @param host
-   * @deprecated This will be removed in next major release. Use
-   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
-   */
-  @Override
-  @Deprecated
-  public void setHost(String host) {
-    this.hostAndPort = new HostAndPort(host, this.hostAndPort.getPort());
-  }
-
   @Override
   public int getPort() {
     return this.hostAndPort.getPort();
-  }
-
-  /**
-   * @param port
-   * @deprecated This will be removed in next major release. Use
-   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
-   */
-  @Override
-  @Deprecated
-  public void setPort(int port) {
-    this.hostAndPort = new HostAndPort(this.hostAndPort.getHost(), port);
   }
 
   @Override
@@ -184,94 +152,29 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.connectionTimeout;
   }
 
-  /**
-   * @param connectionTimeout
-   * @deprecated This will be removed in next major release.
-   */
-  @Override
-  @Deprecated
-  public void setConnectionTimeout(int connectionTimeout) {
-    this.connectionTimeout = connectionTimeout;
-  }
-
   @Override
   public int getSoTimeout() {
     return this.socketTimeout;
-  }
-
-  /**
-   * @param soTimeout
-   * @deprecated This will be removed in next major release.
-   */
-  @Override
-  @Deprecated
-  public void setSoTimeout(int soTimeout) {
-    this.socketTimeout = soTimeout;
   }
 
   public boolean isSsl() {
     return ssl;
   }
 
-  /**
-   * @param ssl
-   * @deprecated This will be removed in next major release.
-   */
-  @Deprecated
-  public void setSsl(boolean ssl) {
-    this.ssl = ssl;
-  }
-
   public SSLSocketFactory getSslSocketFactory() {
     return sslSocketFactory;
-  }
-
-  /**
-   * @param sslSocketFactory
-   * @deprecated This will be removed in next major release.
-   */
-  @Deprecated
-  public void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
-    this.sslSocketFactory = sslSocketFactory;
   }
 
   public SSLParameters getSslParameters() {
     return sslParameters;
   }
 
-  /**
-   * @param sslParameters
-   * @deprecated This will be removed in next major release.
-   */
-  @Deprecated
-  public void setSslParameters(SSLParameters sslParameters) {
-    this.sslParameters = sslParameters;
-  }
-
   public HostnameVerifier getHostnameVerifier() {
     return hostnameVerifier;
   }
 
-  /**
-   * @param hostnameVerifier
-   * @deprecated This will be removed in next major release.
-   */
-  @Deprecated
-  public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
-    this.hostnameVerifier = hostnameVerifier;
-  }
-
   public HostAndPortMapper getHostAndPortMapper() {
     return hostAndPortMapper;
-  }
-
-  /**
-   * @param hostAndPortMapper
-   * @deprecated This will be removed in next major release.
-   */
-  @Deprecated
-  public void setHostAndPortMapper(HostAndPortMapper hostAndPortMapper) {
-    this.hostAndPortMapper = hostAndPortMapper;
   }
 
   @Override

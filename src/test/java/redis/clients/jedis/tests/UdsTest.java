@@ -55,16 +55,8 @@ public class UdsTest {
     }
 
     @Override
-    public void setHost(String host) {
-    }
-
-    @Override
     public int getPort() {
       return 0;
-    }
-
-    @Override
-    public void setPort(int port) {
     }
 
     @Override
@@ -73,16 +65,8 @@ public class UdsTest {
     }
 
     @Override
-    public void setConnectionTimeout(int connectionTimeout) {
-    }
-
-    @Override
     public int getSoTimeout() {
       return Protocol.DEFAULT_TIMEOUT;
-    }
-
-    @Override
-    public void setSoTimeout(int soTimeout) {
     }
   }
 }

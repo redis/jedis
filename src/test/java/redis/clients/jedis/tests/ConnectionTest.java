@@ -23,23 +23,8 @@ public class ConnectionTest {
   }
 
   @Test(expected = JedisConnectionException.class)
-  public void checkUnkownHostBackwardCompatible() {
-    client = new Connection();
-    client.setHost("someunknownhost");
-    client.connect();
-  }
-
-  @Test(expected = JedisConnectionException.class)
   public void checkUnkownHost() {
     client = new Connection("someunknownhost", Protocol.DEFAULT_PORT);
-    client.connect();
-  }
-
-  @Test(expected = JedisConnectionException.class)
-  public void checkWrongPortBackwardCompatible() {
-    client = new Connection();
-    client.setHost("localhost");
-    client.setPort(55665);
     client.connect();
   }
 

@@ -23,7 +23,6 @@ public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private boolean socketParamModified = false; // for backward compatibility
   private JedisSocketFactory socketFactory; // TODO: should be final
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -98,18 +97,7 @@ public class Connection implements Closeable {
     return soTimeout;
   }
 
-  /**
-   * @param connectionTimeout
-   * @deprecated This method is not supported anymore and is kept for backward compatibility. It
-   * will be removed in future.
-   */
-  @Deprecated
-  public void setConnectionTimeout(int connectionTimeout) {
-    socketFactory.setConnectionTimeout(connectionTimeout);
-  }
-
   public void setSoTimeout(int soTimeout) {
-    socketFactory.setSoTimeout(soTimeout);
     this.soTimeout = soTimeout;
     if (this.socket != null) {
       try {
@@ -189,38 +177,11 @@ public class Connection implements Closeable {
     return socketFactory.getHost();
   }
 
-  /**
-   * @param host
-   * @deprecated This method will be removed in future.
-   */
-  @Deprecated
-  public void setHost(final String host) {
-    socketFactory.setHost(host);
-    socketParamModified = true;
-  }
-
   public int getPort() {
     return socketFactory.getPort();
   }
 
-  /**
-   * @param port
-   * @deprecated This method will be removed in future.
-   */
-  @Deprecated
-  public void setPort(final int port) {
-    socketFactory.setPort(port);
-    socketParamModified = true;
-  }
-
   public void connect() throws JedisConnectionException {
-    if (socketParamModified) { // this is only for backward compatibility
-      try {
-        disconnect();
-      } catch (Exception e) {
-        // swallow
-      }
-    }
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();

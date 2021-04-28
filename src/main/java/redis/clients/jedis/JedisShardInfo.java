@@ -27,9 +27,17 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
   private SSLParameters sslParameters;
   private HostnameVerifier hostnameVerifier;
 
-  public JedisShardInfo(String host) {
+  /**
+   * @deprecated This constructor will not support a host string in future. It will accept only a
+   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
+   * constructor was being used with a host, it can be replaced with
+   * {@link #JedisShardInfo(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   * @param uriString
+   */
+  @Deprecated
+  public JedisShardInfo(String uriString) {
     super(Sharded.DEFAULT_WEIGHT);
-    URI uri = URI.create(host);
+    URI uri = URI.create(uriString);
     if (JedisURIHelper.isValid(uri)) {
       this.host = uri.getHost();
       this.port = uri.getPort();
@@ -38,14 +46,26 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
       this.db = JedisURIHelper.getDBIndex(uri);
       this.ssl = JedisURIHelper.isRedisSSLScheme(uri);
     } else {
-      this.host = host;
+      this.host = uriString;
       this.port = Protocol.DEFAULT_PORT;
     }
   }
 
-  public JedisShardInfo(String host, SSLSocketFactory sslSocketFactory,
+  /**
+   * @deprecated This constructor will not support a host string in future. It will accept only a
+   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
+   * constructor was being used with a host, it can be replaced with
+   * {@link #JedisShardInfo(java.lang.String, int, boolean, javax.net.ssl.SSLSocketFactory, javax.net.ssl.SSLParameters, javax.net.ssl.HostnameVerifier)}
+   * with the host and {@link Protocol#DEFAULT_PORT}.
+   * @param uriString
+   * @param sslSocketFactory
+   * @param sslParameters
+   * @param hostnameVerifier
+   */
+  @Deprecated
+  public JedisShardInfo(String uriString, SSLSocketFactory sslSocketFactory,
       SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
-    this(host);
+    this(uriString);
     this.sslSocketFactory = sslSocketFactory;
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;

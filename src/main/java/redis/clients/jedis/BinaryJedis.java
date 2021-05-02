@@ -31,7 +31,6 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,

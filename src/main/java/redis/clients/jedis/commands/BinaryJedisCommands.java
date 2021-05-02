@@ -325,6 +325,11 @@ public interface BinaryJedisCommands {
 
   byte[] echo(byte[] arg);
 
+  /**
+   * @deprecated This method will be removed from this interface. Use
+   * {@link AdvancedBinaryJedisCommands#move(byte[], int)}.
+   */
+  @Deprecated
   Long move(byte[] key, int dbIndex);
 
   Long bitcount(byte[] key);
@@ -373,15 +378,21 @@ public interface BinaryJedisCommands {
   List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor);
+  default ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
+    return hscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params);
 
-  ScanResult<byte[]> sscan(byte[] key, byte[] cursor);
+  default ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
+    return sscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params);
 
-  ScanResult<Tuple> zscan(byte[] key, byte[] cursor);
+  default ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
+    return zscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params);
 
@@ -483,4 +494,8 @@ public interface BinaryJedisCommands {
   List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group);
 
   List<Object> xinfoConsumersBinary(byte[] key, byte[] group);
+
+  Long memoryUsage(byte[] key);
+
+  Long memoryUsage(byte[] key, int samples);
 }

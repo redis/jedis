@@ -3708,11 +3708,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor) {
-    return hscan(key, cursor, new ScanParams());
-  }
-
-  @Override
   public ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
@@ -3730,11 +3725,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public ScanResult<String> sscan(final String key, final String cursor) {
-    return sscan(key, cursor, new ScanParams());
-  }
-
-  @Override
   public ScanResult<String> sscan(final String key, final String cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
     client.sscan(key, cursor, params);
@@ -3746,11 +3736,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       results.add(SafeEncoder.encode(bs));
     }
     return new ScanResult<>(newcursor, results);
-  }
-
-  @Override
-  public ScanResult<Tuple> zscan(final String key, final String cursor) {
-    return zscan(key, cursor, new ScanParams());
   }
 
   @Override
@@ -4376,11 +4361,8 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     }
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
-  public long xack(final String key, final String group, final StreamEntryID... ids) {
+  public Long xack(final String key, final String group, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xack(key, group, ids);
     return client.getIntegerReply();
@@ -4402,7 +4384,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long xgroupDestroy(final String key, final String groupname) {
+  public Long xgroupDestroy(final String key, final String groupname) {
     checkIsInMultiOrPipeline();
     client.xgroupDestroy(key, groupname);
     return client.getIntegerReply();
@@ -4416,29 +4398,26 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long xdel(final String key, final StreamEntryID... ids) {
+  public Long xdel(final String key, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     client.xdel(key, ids);
     return client.getIntegerReply();
   }
 
   @Override
-  public long xtrim(final String key, final long maxLen, final boolean approximateLength) {
+  public Long xtrim(final String key, final long maxLen, final boolean approximateLength) {
     checkIsInMultiOrPipeline();
     client.xtrim(key, maxLen, approximateLength);
     return client.getIntegerReply();
   }
 
   @Override
-  public long xtrim(final String key, final XTrimParams params) {
+  public Long xtrim(final String key, final XTrimParams params) {
     checkIsInMultiOrPipeline();
     client.xtrim(key, params);
     return client.getIntegerReply();
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
       final String consumer, final int count, final long block, final boolean noAck,

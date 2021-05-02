@@ -3,6 +3,8 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
@@ -18,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 public interface MultiKeyBinaryCommands {
+
   Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
 
   Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
@@ -123,6 +126,10 @@ public interface MultiKeyBinaryCommands {
   Long pfcount(byte[]... keys);
 
   Long touch(byte[]... keys);
+
+  ScanResult<byte[]> scan(byte[] cursor);
+
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use

@@ -361,6 +361,11 @@ public interface JedisCommands {
 
   String echo(String string);
 
+  /**
+   * @deprecated This method will be removed from this interface. Use
+   * {@link AdvancedJedisCommands#move(java.lang.String, int)}.
+   */
+  @Deprecated
   Long move(String key, int dbIndex);
 
   Long bitcount(String key);
@@ -371,17 +376,23 @@ public interface JedisCommands {
 
   Long bitpos(String key, boolean value, BitPosParams params);
 
-  ScanResult<Map.Entry<String, String>> hscan(String key, String cursor);
+  default ScanResult<Map.Entry<String, String>> hscan(String key, String cursor) {
+    return hscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params);
 
-  ScanResult<String> sscan(String key, String cursor);
-
-  ScanResult<Tuple> zscan(String key, String cursor);
-
-  ScanResult<Tuple> zscan(String key, String cursor, ScanParams params);
+  default ScanResult<String> sscan(String key, String cursor) {
+    return sscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<String> sscan(String key, String cursor, ScanParams params);
+
+  default ScanResult<Tuple> zscan(String key, String cursor) {
+    return zscan(key, cursor, new ScanParams());
+  }
+
+  ScanResult<Tuple> zscan(String key, String cursor, ScanParams params);
 
   Long pfadd(String key, String... elements);
 
@@ -533,7 +544,7 @@ public interface JedisCommands {
    * @param ids
    * @return
    */
-  long xack(String key, String group,  StreamEntryID... ids);
+  Long xack(String key, String group, StreamEntryID... ids);
 
   /**
    * XGROUP CREATE <key> <groupname> <id or $>
@@ -563,7 +574,7 @@ public interface JedisCommands {
    * @param groupname
    * @return
    */
-  long xgroupDestroy( String key, String groupname);
+  Long xgroupDestroy(String key, String groupname);
 
   /**
    * XGROUP DELCONSUMER <key> <groupname> <consumername>
@@ -612,7 +623,7 @@ public interface JedisCommands {
    * @param ids
    * @return
    */
-  long xdel( String key, StreamEntryID... ids);
+  Long xdel(String key, StreamEntryID... ids);
 
   /**
    * XTRIM key MAXLEN [~] count
@@ -621,7 +632,7 @@ public interface JedisCommands {
    * @param approximate
    * @return
    */
-  long xtrim( String key, long maxLen, boolean approximate);
+  Long xtrim(String key, long maxLen, boolean approximate);
 
   /**
    * XTRIM key MAXLEN|MINID [=|~] threshold [LIMIT count]
@@ -629,7 +640,7 @@ public interface JedisCommands {
    * @param params
    * @return
    */
-  long xtrim(String key, XTrimParams params);
+  Long xtrim(String key, XTrimParams params);
 
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
@@ -703,4 +714,8 @@ public interface JedisCommands {
    * to the the group
    */
   List<StreamConsumersInfo> xinfoConsumers (String key, String group);
+
+  Long memoryUsage(String key);
+
+  Long memoryUsage(String key, int samples);
 }

@@ -6,7 +6,6 @@ import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -268,7 +267,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long expire(final byte[] key, final int seconds) {
+  public Long expire(final byte[] key, final long seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2353,6 +2352,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public String unwatch() {
+    throw new UnsupportedOperationException(); // TODO
+  }
+
+  @Override
   public Set<byte[]> keys(final byte[] pattern) {
     if (pattern == null || pattern.length == 0) {
       throw new IllegalArgumentException(this.getClass().getSimpleName()
@@ -2808,6 +2812,36 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
       }
     }.runBinary(key);
+  }
+
+  @Override
+  public StreamInfo xinfoStream(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
+  }
+
+  @Override
+  public Object xinfoStreamBinary(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
+  }
+
+  @Override
+  public List<Object> xinfoGroupBinary(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
+  }
+
+  @Override
+  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
+  }
+
+  @Override
+  public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
+    throw new UnsupportedOperationException("Not supported yet."); // TODO
   }
 
   @Override

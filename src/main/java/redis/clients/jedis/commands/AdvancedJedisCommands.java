@@ -10,6 +10,9 @@ import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
 
 public interface AdvancedJedisCommands {
+
+  Long move(String key, int dbIndex);
+
   List<String> configGet(String pattern);
 
   String configSet(String parameter, String value);

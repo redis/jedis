@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.io.IOException;
 import java.net.Socket;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -17,12 +16,10 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public interface JedisSocketFactory {
 
   /**
-   * WARNING: Throwing IOException will not be supported in future.
    * @return Socket
-   * @throws IOException this will be removed in future
    * @throws JedisConnectionException
    */
-  Socket createSocket() throws IOException, JedisConnectionException;
+  Socket createSocket() throws JedisConnectionException;
 
   void updateHostAndPort(HostAndPort hostAndPort);
 

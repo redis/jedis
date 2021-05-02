@@ -426,7 +426,7 @@ public interface Commands {
   void restore(String key, long ttl, byte[] serializedValue);
 
   /**
-   * @deprecated Use {@link #restoreReplace(java.lang.String, long, byte[])}.
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   default void restoreReplace(String key, int ttl, byte[] serializedValue) {

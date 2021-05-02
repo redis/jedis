@@ -1261,7 +1261,7 @@ public class BinaryClient extends Connection {
   }
 
   /**
-   * @deprecated Use {@link #restoreReplace(byte[], long, byte[])}.
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   public void restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {

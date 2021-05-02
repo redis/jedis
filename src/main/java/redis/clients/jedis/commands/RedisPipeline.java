@@ -330,13 +330,17 @@ public interface RedisPipeline {
   Response<String> restore(String key, long ttl, byte[] serializedValue);
 
   /**
-   * @deprecated Use {@link #restoreReplace(java.lang.String, long, byte[])}.
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   default Response<String> restoreReplace(String key, int ttl, byte[] serializedValue) {
     return restoreReplace(key, (long) ttl, serializedValue);
   }
 
+  /**
+   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
   Response<String> restoreReplace(String key, long ttl, byte[] serializedValue);
 
   Response<String> restore(String key, long ttl, byte[] serializedValue, RestoreParams params);

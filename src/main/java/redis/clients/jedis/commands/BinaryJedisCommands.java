@@ -40,7 +40,7 @@ public interface BinaryJedisCommands {
   String restore(byte[] key, long ttl, byte[] serializedValue);
 
   /**
-   * @deprecated Use {@link #restoreReplace(byte[], long, byte[])}.
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   default String restoreReplace(byte[] key, int ttl, byte[] serializedValue) {

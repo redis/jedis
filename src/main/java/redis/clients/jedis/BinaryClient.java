@@ -1253,7 +1253,7 @@ public class BinaryClient extends Connection {
   }
 
   /**
-   * @deprecated Use {@link #restoreReplace(byte[], long, byte[])}.
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   public void restoreReplace(final byte[] key, final int ttl, final byte[] serializedValue) {
@@ -1763,7 +1763,7 @@ public class BinaryClient extends Connection {
     final byte[][] args = new byte[paramLength + 1 + streams.length * 2][];
     System.arraycopy(bparams, 0, args, 0, paramLength);
 
-    args[paramLength] = Keyword.STREAMS.raw;
+    args[paramLength] = Keyword.STREAMS.getRaw();
     int keyIndex = paramLength + 1;
     int idsIndex = keyIndex + streams.length;
     for (final Entry<byte[], byte[]> entry : streams) {
@@ -1882,13 +1882,13 @@ public class BinaryClient extends Connection {
 
     final byte[][] args = new byte[3 + paramLength + 1 + streams.length * 2][];
     int index = 0;
-    args[index++] = Keyword.GROUP.raw;
+    args[index++] = Keyword.GROUP.getRaw();
     args[index++] = groupname;
     args[index++] = consumer;
     System.arraycopy(bparams, 0, args, index, paramLength);
     index += paramLength;
 
-    args[index++] = Keyword.STREAMS.raw;
+    args[index++] = Keyword.STREAMS.getRaw();
     int keyIndex = index;
     int idsIndex = keyIndex + streams.length;
     for (final Entry<byte[], byte[]> entry : streams) {

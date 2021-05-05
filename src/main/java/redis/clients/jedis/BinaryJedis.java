@@ -3692,12 +3692,24 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param parameter
    * @param value
    * @return Status code reply
+   * @deprecated The return type will be changed to {@link String}, representing {@code OK} response,
+   * in next major release. If you are not checking you continue using this method. Otherwise, you
+   * can choose to use either {@link #configSet(byte[], byte[]) this method} or
+   * {@link #configSetBinary(byte[], byte[])}.
    */
   @Override
+  @Deprecated
   public byte[] configSet(final byte[] parameter, final byte[] value) {
     checkIsInMultiOrPipeline();
     client.configSet(parameter, value);
     return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public String configSetBinary(final byte[] parameter, final byte[] value) {
+    checkIsInMultiOrPipeline();
+    client.configSet(parameter, value);
+    return client.getStatusCodeReply();
   }
 
   @Override

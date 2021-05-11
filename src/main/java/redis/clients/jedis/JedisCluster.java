@@ -89,7 +89,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
@@ -102,7 +102,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisCluster(HostAndPort node, int connectionTimeout, int soTimeout, int maxAttempts,
@@ -192,7 +192,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
@@ -205,7 +205,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
@@ -219,7 +219,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
@@ -232,7 +232,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,
@@ -248,7 +248,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   /**
    * @param maxTotalRetriesDuration After this amount of time we will do no more retries and report
    * the operation as failed.
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,

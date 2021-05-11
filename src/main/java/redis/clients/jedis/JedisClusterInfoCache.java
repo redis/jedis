@@ -64,7 +64,7 @@ public class JedisClusterInfoCache {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
@@ -86,7 +86,7 @@ public class JedisClusterInfoCache {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
@@ -108,7 +108,7 @@ public class JedisClusterInfoCache {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,

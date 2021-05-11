@@ -108,7 +108,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
@@ -121,7 +121,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
@@ -135,7 +135,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
@@ -151,7 +151,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   /**
    * @param maxTotalRetriesDuration After this amount of time we will do no more retries and report
    * the operation as failed.
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout, int soTimeout,

@@ -23,6 +23,7 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.Endpoint;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.resps.KeyedZSetElement;
@@ -783,6 +784,18 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bresult = jedis.zcount(bfoo, SafeEncoder.encode("(0.01"), SafeEncoder.encode("+inf"));
 
     assertEquals(3, bresult);
+  }
+
+  @Test
+  public void zcountEndpoint() {
+    jedis.zadd("foo", 1d, "a");
+    jedis.zadd("foo", 2d, "b");
+    jedis.zadd("foo", 5d, "c");
+
+    long result = jedis.zcount("foo", Endpoint.of(0.01d, true), Endpoint.of(5d));
+    assertEquals(3, result);
+    result = jedis.zcount("foo", Endpoint.of(0.01d, true), Endpoint.of(5d).exclusive());
+    assertEquals(2, result);
   }
 
   @Test

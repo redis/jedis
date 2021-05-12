@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import redis.clients.jedis.args.Endpoint;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.GeoAddParams;
@@ -735,6 +736,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
   @Override
   public Long zcount(final String key, final String min, final String max) {
+    Jedis j = getShard(key);
+    return j.zcount(key, min, max);
+  }
+
+  @Override
+  public Long zcount(String key, Endpoint<Double> min, Endpoint<Double> max) {
     Jedis j = getShard(key);
     return j.zcount(key, min, max);
   }

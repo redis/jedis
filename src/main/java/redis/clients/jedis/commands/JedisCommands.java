@@ -20,6 +20,7 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.args.Endpoint;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
@@ -290,6 +291,8 @@ public interface JedisCommands {
   long zcount(String key, double min, double max);
 
   long zcount(String key, String min, String max);
+
+  Long zcount(String key, Endpoint<Double> min, Endpoint<Double> max);
 
   Set<String> zrangeByScore(String key, double min, double max);
 

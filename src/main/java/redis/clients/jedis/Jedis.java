@@ -2391,6 +2391,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public Long zcount(String key, Endpoint<Double> min, Endpoint<Double> max) {
+    checkIsInMultiOrPipeline();
+    client.zcount(key, min, max);
+    return client.getIntegerReply();
+  }
+
   /**
    * Return the all the elements in the sorted set at key with a score between min and max
    * (including elements with score equal to min or max).

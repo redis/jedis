@@ -2881,17 +2881,32 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public StreamInfo xinfoStream(String key) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
+    return new JedisClusterCommand<StreamInfo>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public StreamInfo execute(Jedis connection) {
+        return connection.xinfoStream(key);
+      }
+    }.run(key);
   }
 
   @Override
   public List<StreamGroupInfo> xinfoGroup(String key) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
+    return new JedisClusterCommand<List<StreamGroupInfo>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<StreamGroupInfo> execute(Jedis connection) {
+        return connection.xinfoGroup(key);
+      }
+    }.run(key);
   }
 
   @Override
   public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
+    return new JedisClusterCommand<List<StreamConsumersInfo>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<StreamConsumersInfo> execute(Jedis connection) {
+        return connection.xinfoConsumers(key, group);
+      }
+    }.run(key);
   }
 
   @Override

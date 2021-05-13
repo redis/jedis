@@ -2353,7 +2353,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public String unwatch() {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("UNWATCH is not supported in cluster mode.");
   }
 
   @Override
@@ -2815,33 +2815,33 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public StreamInfo xinfoStream(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
-  }
-
-  @Override
   public Object xinfoStreamBinary(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
-  }
-
-  @Override
-  public List<StreamGroupInfo> xinfoGroup(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.xinfoStreamBinary(key);
+      }
+    }.runBinary(key);
   }
 
   @Override
   public List<Object> xinfoGroupBinary(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
-  }
-
-  @Override
-  public List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
+    return new JedisClusterCommand<List<Object>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<Object> execute(Jedis connection) {
+        return connection.xinfoGroupBinary(key);
+      }
+    }.runBinary(key);
   }
 
   @Override
   public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
-    throw new UnsupportedOperationException("Not supported yet."); // TODO
+    return new JedisClusterCommand<List<Object>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<Object> execute(Jedis connection) {
+        return connection.xinfoConsumersBinary(key, group);
+      }
+    }.runBinary(key);
   }
 
   @Override

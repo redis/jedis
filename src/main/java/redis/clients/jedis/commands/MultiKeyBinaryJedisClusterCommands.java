@@ -24,7 +24,7 @@ public interface MultiKeyBinaryJedisClusterCommands extends MultiKeyBinaryComman
    */
   @Override
   default List<byte[]> blpop(byte[]... args) {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("Use other versions of BLPOP.");
   }
 
   /**
@@ -33,7 +33,7 @@ public interface MultiKeyBinaryJedisClusterCommands extends MultiKeyBinaryComman
    */
   @Override
   default List<byte[]> brpop(byte[]... args) {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("Use other versions of BRPOP");
   }
 
   /**
@@ -41,7 +41,7 @@ public interface MultiKeyBinaryJedisClusterCommands extends MultiKeyBinaryComman
    */
   @Override
   default String watch(byte[]... keys) {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("WATCH in cluster mode is not supported yet.");
   }
 
   /**
@@ -49,7 +49,7 @@ public interface MultiKeyBinaryJedisClusterCommands extends MultiKeyBinaryComman
    */
   @Override
   default byte[] randomBinaryKey() {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("RANDOMKEY in cluster mode is not supproted yet.");
   }
 
   /**

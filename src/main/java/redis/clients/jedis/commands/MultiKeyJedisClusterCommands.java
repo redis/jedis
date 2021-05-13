@@ -24,7 +24,7 @@ public interface MultiKeyJedisClusterCommands extends MultiKeyCommands {
    */
   @Override
   default List<String> blpop(String... args) {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("Use other versions of BLPOP.");
   }
 
   /**
@@ -33,7 +33,7 @@ public interface MultiKeyJedisClusterCommands extends MultiKeyCommands {
    */
   @Override
   default List<String> brpop(String... args) {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("Use other versions of BRPOP");
   }
 
   /**
@@ -41,7 +41,7 @@ public interface MultiKeyJedisClusterCommands extends MultiKeyCommands {
    */
   @Override
   default String watch(String... keys) {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("WATCH in cluster mode is not supproted yet.");
   }
 
   /**
@@ -49,7 +49,7 @@ public interface MultiKeyJedisClusterCommands extends MultiKeyCommands {
    */
   @Override
   default String randomKey() {
-    throw new UnsupportedOperationException(); // TODO
+    throw new UnsupportedOperationException("RANDOMKEY in cluster mode is not supproted yet.");
   }
 
   /**

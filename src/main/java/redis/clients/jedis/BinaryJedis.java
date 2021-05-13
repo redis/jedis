@@ -3471,18 +3471,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * {@link #save() SAVE} and then {@link #quit() QUIT} because other clients may alter the DB data
    * between the two commands.
    * @return Status code reply on error. On success nothing is returned since the server quits and
-   *         the connection is closed.
+   *         the connection is closed. The return type will be void in next major release. Please
+   *         don't use the return.
+   * @deprecated The return type will be void in next major release. Please don't use the return.
    */
   @Override
-  public String shutdown() {
+  @Deprecated
+  public String shutdown() throws JedisException {
     client.shutdown();
-    String status;
     try {
-      status = client.getStatusCodeReply();
-    } catch (JedisException ex) {
-      status = null;
+      String status = client.getStatusCodeReply();
+      throw new JedisException(status);
+    } catch (JedisConnectionException ce) {
+      // expected
     }
-    return status;
+    return null;
   }
 
   @Override

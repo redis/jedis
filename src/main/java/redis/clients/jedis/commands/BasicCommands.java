@@ -134,9 +134,13 @@ public interface BasicCommands {
   /**
    * Stop all the client. Perform a SAVE (if one save point is configured). Flush the append only
    * file if AOF is enabled quit the server
-   * @return only in case of error.
+   * @return only in case of error. The return type will be void in next major release. Please don't
+   * use the return.
+   * @throws JedisException only in case of error.
+   * @deprecated The return type will be void in next major release. Please don't use the return.
    */
-  String shutdown();
+  @Deprecated
+  String shutdown() throws JedisException;
 
   /**
    * @see SaveMode

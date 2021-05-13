@@ -48,6 +48,10 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
         clientName);
   }
 
+  /**
+   * @deprecated This constructor will be removed in next major release.
+   */
+  @Deprecated
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
       GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout,
       String password, String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
@@ -57,6 +61,10 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
         sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
+  /**
+   * @deprecated This constructor will be removed in next major release.
+   */
+  @Deprecated
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
       GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout, String user,
       String password, String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
@@ -66,6 +74,10 @@ public class JedisSlotBasedConnectionHandler extends JedisClusterConnectionHandl
         sslSocketFactory, sslParameters, hostnameVerifier, portMap);
   }
 
+  /**
+   * @deprecated This constructor will be removed in next major release.
+   */
+  @Deprecated
   public JedisSlotBasedConnectionHandler(Set<HostAndPort> nodes,
       GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout,
       int infiniteSoTimeout, String user, String password, String clientName, boolean ssl,

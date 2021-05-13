@@ -42,7 +42,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
@@ -55,7 +55,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
@@ -68,7 +68,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
@@ -89,7 +89,7 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   }
 
   /**
-   * @deprecated This constructor will be removed in future.
+   * @deprecated This constructor will be removed in next major release.
    */
   @Deprecated
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,

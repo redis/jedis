@@ -1,7 +1,7 @@
 package redis.clients.jedis;
 
 /**
- * @deprecated This will be removed in future. Prefer to use {@link HostAndPortMapper} instead.
+ * @deprecated This interface will be removed in next major release. Use {@link HostAndPortMapper}.
  */
 @Deprecated
 public interface JedisClusterHostAndPortMap extends HostAndPortMapper {

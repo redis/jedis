@@ -317,7 +317,7 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void testAddObject() throws Exception {
+  public void testAddObject() {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
       pool.addObjects(1);
       assertEquals(1, pool.getNumIdle());

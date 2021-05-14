@@ -18,6 +18,11 @@ public class Pool<T> extends GenericObjectPool<T> implements Closeable {
     super(factory, poolConfig);
   }
 
+  @Override
+  public void close() {
+    destroy();
+  }
+
   public T getResource() {
     try {
       return super.borrowObject();
@@ -54,6 +59,25 @@ public class Pool<T> extends GenericObjectPool<T> implements Closeable {
       super.invalidateObject(resource);
     } catch (Exception e) {
       throw new JedisException("Could not return the broken resource to the pool", e);
+    }
+  }
+
+  public void destroy() {
+    try {
+      super.close();
+    } catch (Exception e) {
+      throw new JedisException("Could not destroy the pool", e);
+    }
+  }
+
+  @Override
+  public void addObjects(int count) {
+    try {
+      for (int i = 0; i < count; i++) {
+        addObject();
+      }
+    } catch (Exception e) {
+      throw new JedisException("Error trying to add idle objects", e);
     }
   }
 }

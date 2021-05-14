@@ -184,12 +184,12 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   @Override
-  public void close() {
+  public void destroy() {
     for (MasterListener m : masterListeners) {
       m.shutdown();
     }
 
-    super.close();
+    super.destroy();
   }
 
   public HostAndPort getCurrentHostMaster() {

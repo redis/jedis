@@ -71,7 +71,7 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
       JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
           "default", "foobared", 2);
       pool.getResource().close();
-      pool.close();
+      pool.destroy();
     }
   }
 
@@ -82,14 +82,14 @@ public class JedisSentinelPoolWithCompleteCredentialsTest {
     wrongSentinels.add(new HostAndPort("localhost", 65431).toString());
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, wrongSentinels);
-    pool.close();
+    pool.destroy();
   }
 
   @Test(expected = JedisException.class)
   public void initializeWithNotMonitoredMasterNameShouldThrowException() {
     final String wrongMasterName = "wrongMasterName";
     JedisSentinelPool pool = new JedisSentinelPool(wrongMasterName, sentinels);
-    pool.close();
+    pool.destroy();
   }
 
   @Test

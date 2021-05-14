@@ -132,6 +132,12 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.hostAndPort;
   }
 
+  /**
+   * @param hostAndPort
+   * @deprecated This will be removed in next major release. Use
+   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
+   */
+  @Deprecated
   public void setHostAndPort(HostAndPort hostAndPort) {
     this.hostAndPort = hostAndPort;
   }
@@ -146,7 +152,13 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.hostAndPort.getHost();
   }
 
+  /**
+   * @param host
+   * @deprecated This will be removed in next major release. Use
+   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
+   */
   @Override
+  @Deprecated
   public void setHost(String host) {
     this.hostAndPort = new HostAndPort(host, this.hostAndPort.getPort());
   }
@@ -156,7 +168,13 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.hostAndPort.getPort();
   }
 
+  /**
+   * @param port
+   * @deprecated This will be removed in next major release. Use
+   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
+   */
   @Override
+  @Deprecated
   public void setPort(int port) {
     this.hostAndPort = new HostAndPort(this.hostAndPort.getHost(), port);
   }
@@ -166,7 +184,12 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.connectionTimeout;
   }
 
+  /**
+   * @param connectionTimeout
+   * @deprecated This will be removed in next major release.
+   */
   @Override
+  @Deprecated
   public void setConnectionTimeout(int connectionTimeout) {
     this.connectionTimeout = connectionTimeout;
   }
@@ -176,7 +199,12 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return this.socketTimeout;
   }
 
+  /**
+   * @param soTimeout
+   * @deprecated This will be removed in next major release.
+   */
   @Override
+  @Deprecated
   public void setSoTimeout(int soTimeout) {
     this.socketTimeout = soTimeout;
   }
@@ -185,6 +213,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return ssl;
   }
 
+  /**
+   * @param ssl
+   * @deprecated This will be removed in next major release.
+   */
+  @Deprecated
   public void setSsl(boolean ssl) {
     this.ssl = ssl;
   }
@@ -193,6 +226,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return sslSocketFactory;
   }
 
+  /**
+   * @param sslSocketFactory
+   * @deprecated This will be removed in next major release.
+   */
+  @Deprecated
   public void setSslSocketFactory(SSLSocketFactory sslSocketFactory) {
     this.sslSocketFactory = sslSocketFactory;
   }
@@ -201,6 +239,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return sslParameters;
   }
 
+  /**
+   * @param sslParameters
+   * @deprecated This will be removed in next major release.
+   */
+  @Deprecated
   public void setSslParameters(SSLParameters sslParameters) {
     this.sslParameters = sslParameters;
   }
@@ -209,6 +252,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return hostnameVerifier;
   }
 
+  /**
+   * @param hostnameVerifier
+   * @deprecated This will be removed in next major release.
+   */
+  @Deprecated
   public void setHostnameVerifier(HostnameVerifier hostnameVerifier) {
     this.hostnameVerifier = hostnameVerifier;
   }
@@ -217,6 +265,11 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     return hostAndPortMapper;
   }
 
+  /**
+   * @param hostAndPortMapper
+   * @deprecated This will be removed in next major release.
+   */
+  @Deprecated
   public void setHostAndPortMapper(HostAndPortMapper hostAndPortMapper) {
     this.hostAndPortMapper = hostAndPortMapper;
   }

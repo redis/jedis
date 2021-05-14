@@ -528,6 +528,9 @@ public interface JedisCommands {
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
+  List<StreamEntry> xrange(String key, Endpoint<redis.clients.jedis.args.StreamEntryID> min,
+      Endpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev);
+
   /**
    * XACK key group ID [ID ...]
    *

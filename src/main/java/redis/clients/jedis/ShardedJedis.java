@@ -1229,6 +1229,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public List<StreamEntry> xrange(String key, Endpoint<redis.clients.jedis.args.StreamEntryID> min,
+      Endpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev) {
+    Jedis j = getShard(key);
+    return j.xrange(key, min, max, count, rev);
+  }
+
+  @Override
   public StreamPendingSummary xpending(String key, String groupname) {
     Jedis j = getShard(key);
     return j.xpending(key, groupname);

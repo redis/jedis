@@ -1523,6 +1523,27 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xrange(String key, Endpoint<redis.clients.jedis.args.StreamEntryID> min,
+      Endpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev) {
+    final int len = 3 + (count == null ? 0 : 2);
+    byte[][] args = new byte[len][];
+    args[0] = SafeEncoder.encode(key);
+    if (count != null) {
+      args[3] = Protocol.Keyword.COUNT.getRaw();
+      args[4] = Protocol.toByteArray(count);
+    }
+    if (!rev) {
+      args[1] = (min == null ? redis.clients.jedis.args.StreamEntryIdFactory.SMALLEST : min).getRaw();
+      args[2] = (max == null ? redis.clients.jedis.args.StreamEntryIdFactory.LARGEST : max).getRaw();
+      sendCommand(Protocol.Command.XRANGE, args);
+    } else {
+      args[1] = (max == null ? redis.clients.jedis.args.StreamEntryIdFactory.LARGEST : max).getRaw();
+      args[2] = (min == null ? redis.clients.jedis.args.StreamEntryIdFactory.SMALLEST : min).getRaw();
+      sendCommand(Protocol.Command.XREVRANGE, args);
+    }
+  }
+
+  @Override
   public void xread(final int count, final long block,
       final Entry<String, StreamEntryID>... streams) {
     final Map<byte[], byte[]> bhash = new HashMap<>(streams.length);

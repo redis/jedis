@@ -4359,6 +4359,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
+  @Override
+  public List<StreamEntry> xrange(String key, Endpoint<redis.clients.jedis.args.StreamEntryID> min,
+      Endpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev) {
+    checkIsInMultiOrPipeline();
+    client.xrange(key, min, max, count, rev);
+    return BuilderFactory.STREAM_ENTRY_LIST.build(client.getObjectMultiBulkReply());
+  }
+
   /**
    * {@inheritDoc}
    */

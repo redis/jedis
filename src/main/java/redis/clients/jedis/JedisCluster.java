@@ -2668,6 +2668,19 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public List<StreamEntry> xrange(final String key,
+      final Endpoint<redis.clients.jedis.args.StreamEntryID> min,
+      final Endpoint<redis.clients.jedis.args.StreamEntryID> max,
+      final Integer count, final boolean rev) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrange(key, min, max, count, rev);
+      }
+    }.run(key);
+  }
+
+  @Override
   public List<Entry<String, List<StreamEntry>>> xread(final int count, final long block,
       final Entry<String, StreamEntryID>... streams) {
     String[] keys = new String[streams.length];

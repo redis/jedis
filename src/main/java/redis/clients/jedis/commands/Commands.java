@@ -521,6 +521,9 @@ public interface Commands {
 
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
+  void xrange(String key, Endpoint<redis.clients.jedis.args.StreamEntryID> min,
+      Endpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev);
+
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
    * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.

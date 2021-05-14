@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.Endpoint;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.XAddParams;
@@ -213,6 +214,28 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void xrange2() {
+    assertEquals(0, jedis.xrange("xrange-stream", null, null, null, false).size());
+
+    Map<String, String> map = java.util.Collections.singletonMap("f1", "v1");
+    StreamEntryID id1 = jedis.xadd("xrange-stream", null, map);
+    StreamEntryID id2 = jedis.xadd("xrange-stream", null, map);
+
+    assertEquals(2, jedis.xrange("xrange-stream", null, null, 3, false).size());
+
+    assertEquals(2, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)), null, 2, false).size());
+    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1), true), null, 2, false).size());
+
+    assertEquals(2, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2)), 2, false).size());
+    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1), true), Endpoint.of(Endpoint.convert(id2)), 2, false).size());
+    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2), true), 2, false).size());
+    assertEquals(0, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1), true), Endpoint.of(Endpoint.convert(id2), true), 2, false).size());
+
+    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id2)), null, 2, false).size());
+    assertEquals(0, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id2), true), null, 2, false).size());
+  }
+
+  @Test
   public void xread() {
 
     Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>(
@@ -361,6 +384,28 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
     List<StreamEntry> range8 = jedis.xrevrange("xrevrange-stream", null, null);
     assertEquals(3, range8.size());
+  }
+
+  @Test
+  public void xrevrange2() {
+    assertEquals(0, jedis.xrange("xrevrange-stream", null, null, null, true).size());
+
+    Map<String, String> map = java.util.Collections.singletonMap("f1", "v1");
+
+    StreamEntryID id1 = jedis.xadd("xrevrange-stream", null, map);
+    StreamEntryID id2 = jedis.xadd("xrevrange-stream", null, map);
+
+    assertEquals(2, jedis.xrange("xrevrange-stream", null, null, 3, true).size());
+
+    assertEquals(2, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)), null, 2, true).size());
+    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1), true), null, 2, true).size());
+
+    assertEquals(2, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2)), 2, true).size());
+    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1), true), Endpoint.of(Endpoint.convert(id2)), 2, true).size());
+    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2), true), 2, true).size());
+    assertEquals(0, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1), true), Endpoint.of(Endpoint.convert(id2), true), 2, true).size());
+
+    assertEquals(0, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id2), true), null, 4, true).size());
   }
 
   @Test

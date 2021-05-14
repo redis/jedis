@@ -66,4 +66,25 @@ public interface Endpoint<T> extends Rawable {
     };
   }
 
+  public static Endpoint<StreamEntryID> of(StreamEntryID value) {
+    return new AbstractEndpoint<StreamEntryID>(value) {
+    };
+  }
+
+  public static Endpoint<StreamEntryID> of(StreamEntryID value, boolean exclusive) {
+    return new AbstractEndpoint<StreamEntryID>(value, exclusive) {
+    };
+  }
+
+  // Just to help out
+  public static StreamEntryID convert(redis.clients.jedis.StreamEntryID id) {
+    String str = id.toString();
+    if (str.length() == 1) {
+      return new StreamEntryIdFactory.SpecialStreamEntryID(str);
+    }
+//    if (id.getSequence() == 0) {
+//      return new StreamEntryIdFactory.DefaultStreamEntryID(id.getTime());
+//    }
+    return new StreamEntryIdFactory.DefaultStreamEntryID(id.getTime(), id.getSequence());
+  }
 }

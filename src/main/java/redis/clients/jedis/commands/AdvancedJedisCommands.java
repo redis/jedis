@@ -11,7 +11,7 @@ import redis.clients.jedis.util.Slowlog;
 
 public interface AdvancedJedisCommands {
 
-  Long move(String key, int dbIndex);
+  long move(String key, int dbIndex);
 
   List<String> configGet(String pattern);
 

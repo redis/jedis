@@ -361,13 +361,6 @@ public interface JedisCommands {
 
   String echo(String string);
 
-  /**
-   * @deprecated This method will be removed from this interface. Use
-   * {@link AdvancedJedisCommands#move(java.lang.String, int)}.
-   */
-  @Deprecated
-  Long move(String key, int dbIndex);
-
   Long bitcount(String key);
 
   Long bitcount(String key, long start, long end);

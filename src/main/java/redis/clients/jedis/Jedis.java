@@ -527,7 +527,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    *         already present on the target DB or was not found in the current DB.
    */
   @Override
-  public Long move(final String key, final int dbIndex) {
+  public long move(final String key, final int dbIndex) {
     checkIsInMultiOrPipeline();
     client.move(key, dbIndex);
     return client.getIntegerReply();

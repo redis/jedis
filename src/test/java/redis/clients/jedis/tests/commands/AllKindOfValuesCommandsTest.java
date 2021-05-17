@@ -505,12 +505,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void move() {
-    long status = jedis.move("foo", 1);
-    assertEquals(0, status);
+    assertEquals(0, jedis.move("foo", 1));
 
     jedis.set("foo", "bar");
-    status = jedis.move("foo", 1);
-    assertEquals(1, status);
+    assertEquals(1, jedis.move("foo", 1));
     assertNull(jedis.get("foo"));
 
     jedis.select(1);
@@ -518,12 +516,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     // Binary
     jedis.select(0);
-    long bstatus = jedis.move(bfoo, 1);
-    assertEquals(0, bstatus);
+    assertEquals(0, jedis.move(bfoo, 1));
 
     jedis.set(bfoo, bbar);
-    bstatus = jedis.move(bfoo, 1);
-    assertEquals(1, bstatus);
+    assertEquals(1, jedis.move(bfoo, 1));
     assertNull(jedis.get(bfoo));
 
     jedis.select(1);

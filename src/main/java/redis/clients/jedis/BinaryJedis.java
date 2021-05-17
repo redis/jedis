@@ -808,7 +808,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         already present on the target DB or was not found in the current DB.
    */
   @Override
-  public Long move(final byte[] key, final int dbIndex) {
+  public long move(final byte[] key, final int dbIndex) {
     checkIsInMultiOrPipeline();
     client.move(key, dbIndex);
     return client.getIntegerReply();

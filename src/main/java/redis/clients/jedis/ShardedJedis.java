@@ -412,8 +412,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
     return j.strlen(key);
   }
 
-  @Override
-  public Long move(final String key, final int dbIndex) {
+  public long move(final String key, final int dbIndex) {
     Jedis j = getShard(key);
     return j.move(key, dbIndex);
   }

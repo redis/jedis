@@ -931,8 +931,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     return j.getrange(key, startOffset, endOffset);
   }
 
-  @Override
-  public Long move(final byte[] key, final int dbIndex) {
+  public long move(final byte[] key, final int dbIndex) {
     Jedis j = getShard(key);
     return j.move(key, dbIndex);
   }

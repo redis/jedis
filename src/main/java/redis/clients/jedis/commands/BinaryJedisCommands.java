@@ -325,13 +325,6 @@ public interface BinaryJedisCommands {
 
   byte[] echo(byte[] arg);
 
-  /**
-   * @deprecated This method will be removed from this interface. Use
-   * {@link AdvancedBinaryJedisCommands#move(byte[], int)}.
-   */
-  @Deprecated
-  Long move(byte[] key, int dbIndex);
-
   Long bitcount(byte[] key);
 
   Long bitcount(byte[] key, long start, long end);

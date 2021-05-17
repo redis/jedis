@@ -6,7 +6,6 @@ import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -268,7 +267,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long expire(final byte[] key, final int seconds) {
+  public Long expire(final byte[] key, final long seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2353,6 +2352,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public String unwatch() {
+    throw new UnsupportedOperationException("UNWATCH is not supported in cluster mode.");
+  }
+
+  @Override
   public Set<byte[]> keys(final byte[] pattern) {
     if (pattern == null || pattern.length == 0) {
       throw new IllegalArgumentException(this.getClass().getSimpleName()
@@ -2806,6 +2810,36 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public List<Object> execute(Jedis connection) {
         return connection.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public Object xinfoStreamBinary(byte[] key) {
+    return new JedisClusterCommand<Object>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Object execute(Jedis connection) {
+        return connection.xinfoStreamBinary(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<Object> xinfoGroupBinary(byte[] key) {
+    return new JedisClusterCommand<List<Object>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<Object> execute(Jedis connection) {
+        return connection.xinfoGroupBinary(key);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
+    return new JedisClusterCommand<List<Object>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<Object> execute(Jedis connection) {
+        return connection.xinfoConsumersBinary(key, group);
       }
     }.runBinary(key);
   }

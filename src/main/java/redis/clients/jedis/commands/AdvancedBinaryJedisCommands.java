@@ -9,6 +9,8 @@ import redis.clients.jedis.params.ClientKillParams;
 
 public interface AdvancedBinaryJedisCommands {
 
+  Long move(byte[] key, int dbIndex);
+
   List<byte[]> configGet(byte[] pattern);
 
   /**

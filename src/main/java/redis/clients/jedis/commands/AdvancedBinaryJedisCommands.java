@@ -52,8 +52,6 @@ public interface AdvancedBinaryJedisCommands {
 
   long clientKill(ClientKillParams params);
 
-  Long clientUnblock(long clientId, UnblockType unblockType);
-
   byte[] clientGetnameBinary();
 
   byte[] clientListBinary();
@@ -65,6 +63,8 @@ public interface AdvancedBinaryJedisCommands {
   String clientSetname(byte[] name);
 
   Long clientId();
+
+  long clientUnblock(long clientId, UnblockType unblockType);
 
   byte[] memoryDoctorBinary();
 

@@ -4333,7 +4333,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return
    */
   @Override
-  public Long clientUnblock(final long clientId, final UnblockType unblockType) {
+  public long clientUnblock(final long clientId, final UnblockType unblockType) {
     checkIsInMultiOrPipeline();
     client.clientUnblock(clientId, unblockType);
     return client.getIntegerReply();

@@ -58,7 +58,7 @@ public interface AdvancedJedisCommands {
 
   Long clientId();
 
-  Long clientUnblock(long clientId, UnblockType unblockType);
+  long clientUnblock(long clientId, UnblockType unblockType);
 
   String memoryDoctor();
 

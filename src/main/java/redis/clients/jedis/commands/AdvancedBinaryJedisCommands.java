@@ -62,7 +62,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String clientSetname(byte[] name);
 
-  Long clientId();
+  long clientId();
 
   long clientUnblock(long clientId, UnblockType unblockType);
 

@@ -65,14 +65,13 @@ public class ClientCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void clientId() {
-    Long clientId = client.clientId();
+    long clientId = client.clientId();
+
     String info = findInClientList();
     Matcher matcher = Pattern.compile("\\bid=(\\d+)\\b").matcher(info);
     matcher.find();
 
-    Long longId = Long.parseLong(matcher.group(1));
-
-    assertEquals(clientId, longId);
+    assertEquals(clientId, Long.parseLong(matcher.group(1)));
   }
 
   @Test
@@ -81,11 +80,8 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     client2.auth("foobared");
     client2.clientSetname("fancy_jedis_another_name");
 
-    long clientId1 = client.clientId();
-    long clientId2 = client2.clientId();
-
     // client-id is monotonically increasing
-    assertTrue(clientId1 < clientId2);
+    assertTrue(client.clientId() < client2.clientId());
 
     client2.close();
   }
@@ -232,7 +228,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void clientListWithClientId() {
-    Long id = client.clientId();
+    long id = client.clientId();
     String listInfo = jedis.clientList(id);
     assertNotNull(listInfo);
     assertTrue(listInfo.contains(clientName));

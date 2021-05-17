@@ -56,7 +56,7 @@ public interface AdvancedJedisCommands {
 
   String clientSetname(String name);
 
-  Long clientId();
+  long clientId();
 
   long clientUnblock(long clientId, UnblockType unblockType);
 

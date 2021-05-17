@@ -105,7 +105,7 @@ public interface JedisCommands {
 
   long touch(String key);
 
-  Boolean setbit(String key, long offset, boolean value);
+  boolean setbit(String key, long offset, boolean value);
 
   /**
    * @deprecated Use {@link #setbit(java.lang.String, long, boolean)}.
@@ -113,9 +113,9 @@ public interface JedisCommands {
   @Deprecated
   Boolean setbit(String key, long offset, String value);
 
-  Boolean getbit(String key, long offset);
+  boolean getbit(String key, long offset);
 
-  Long setrange(String key, long offset, String value);
+  long setrange(String key, long offset, String value);
 
   String getrange(String key, long startOffset, long endOffset);
 

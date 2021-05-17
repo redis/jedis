@@ -347,7 +347,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Boolean setbit(final byte[] key, final long offset, final boolean value) {
+  public boolean setbit(final byte[] key, final long offset, final boolean value) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {
@@ -367,7 +367,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Boolean getbit(final byte[] key, final long offset) {
+  public boolean getbit(final byte[] key, final long offset) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {
@@ -377,7 +377,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Long setrange(final byte[] key, final long offset, final byte[] value) {
+  public long setrange(final byte[] key, final long offset, final byte[] value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {

@@ -77,7 +77,7 @@ public interface BinaryJedisCommands {
 
   long touch(byte[] key);
 
-  Boolean setbit(byte[] key, long offset, boolean value);
+  boolean setbit(byte[] key, long offset, boolean value);
 
   /**
    * @deprecated Use {@link #setbit(byte[], long, boolean)}.
@@ -85,9 +85,9 @@ public interface BinaryJedisCommands {
   @Deprecated
   Boolean setbit(byte[] key, long offset, byte[] value);
 
-  Boolean getbit(byte[] key, long offset);
+  boolean getbit(byte[] key, long offset);
 
-  Long setrange(byte[] key, long offset, byte[] value);
+  long setrange(byte[] key, long offset, byte[] value);
 
   byte[] getrange(byte[] key, long startOffset, long endOffset);
 

@@ -3090,7 +3090,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return
    */
   @Override
-  public Boolean setbit(final String key, final long offset, final boolean value) {
+  public boolean setbit(final String key, final long offset, final boolean value) {
     checkIsInMultiOrPipeline();
     client.setbit(key, offset, value);
     return client.getIntegerReply() == 1;
@@ -3111,14 +3111,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @return
    */
   @Override
-  public Boolean getbit(final String key, final long offset) {
+  public boolean getbit(final String key, final long offset) {
     checkIsInMultiOrPipeline();
     client.getbit(key, offset);
     return client.getIntegerReply() == 1;
   }
 
   @Override
-  public Long setrange(final String key, final long offset, final String value) {
+  public long setrange(final String key, final long offset, final String value) {
     checkIsInMultiOrPipeline();
     client.setrange(key, offset, value);
     return client.getIntegerReply();

@@ -902,7 +902,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Boolean setbit(final byte[] key, final long offset, boolean value) {
+  public boolean setbit(final byte[] key, final long offset, boolean value) {
     Jedis j = getShard(key);
     return j.setbit(key, offset, value);
   }
@@ -914,13 +914,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Boolean getbit(final byte[] key, final long offset) {
+  public boolean getbit(final byte[] key, final long offset) {
     Jedis j = getShard(key);
     return j.getbit(key, offset);
   }
 
   @Override
-  public Long setrange(final byte[] key, final long offset, final byte[] value) {
+  public long setrange(final byte[] key, final long offset, final byte[] value) {
     Jedis j = getShard(key);
     return j.setrange(key, offset, value);
   }

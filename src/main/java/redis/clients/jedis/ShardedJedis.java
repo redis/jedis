@@ -155,7 +155,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Boolean setbit(final String key, final long offset, boolean value) {
+  public boolean setbit(final String key, final long offset, boolean value) {
     Jedis j = getShard(key);
     return j.setbit(key, offset, value);
   }
@@ -167,13 +167,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Boolean getbit(final String key, final long offset) {
+  public boolean getbit(final String key, final long offset) {
     Jedis j = getShard(key);
     return j.getbit(key, offset);
   }
 
   @Override
-  public Long setrange(final String key, final long offset, final String value) {
+  public long setrange(final String key, final long offset, final String value) {
     Jedis j = getShard(key);
     return j.setrange(key, offset, value);
   }

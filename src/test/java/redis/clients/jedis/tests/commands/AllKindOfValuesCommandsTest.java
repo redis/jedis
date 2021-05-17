@@ -372,98 +372,82 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   public void expireAt() {
     long unixTime = (System.currentTimeMillis() / 1000L) + 20;
 
-    long status = jedis.expireAt("foo", unixTime);
-    assertEquals(0, status);
+    assertEquals(0, jedis.expireAt("foo", unixTime));
 
     jedis.set("foo", "bar");
     unixTime = (System.currentTimeMillis() / 1000L) + 20;
-    status = jedis.expireAt("foo", unixTime);
-    assertEquals(1, status);
+    assertEquals(1, jedis.expireAt("foo", unixTime));
 
     // Binary
-    long bstatus = jedis.expireAt(bfoo, unixTime);
-    assertEquals(0, bstatus);
+    assertEquals(0, jedis.expireAt(bfoo, unixTime));
 
     jedis.set(bfoo, bbar);
     unixTime = (System.currentTimeMillis() / 1000L) + 20;
-    bstatus = jedis.expireAt(bfoo, unixTime);
-    assertEquals(1, bstatus);
+    assertEquals(1, jedis.expireAt(bfoo, unixTime));
 
   }
 
   @Test
   public void ttl() {
-    long ttl = jedis.ttl("foo");
-    assertEquals(-2, ttl);
+    assertEquals(-2, jedis.ttl("foo"));
 
     jedis.set("foo", "bar");
-    ttl = jedis.ttl("foo");
-    assertEquals(-1, ttl);
+    assertEquals(-1, jedis.ttl("foo"));
 
     jedis.expire("foo", 20);
-    ttl = jedis.ttl("foo");
+    long ttl = jedis.ttl("foo");
     assertTrue(ttl >= 0 && ttl <= 20);
 
     // Binary
-    long bttl = jedis.ttl(bfoo);
-    assertEquals(-2, bttl);
+    assertEquals(-2, jedis.ttl(bfoo));
 
     jedis.set(bfoo, bbar);
-    bttl = jedis.ttl(bfoo);
-    assertEquals(-1, bttl);
+    assertEquals(-1, jedis.ttl(bfoo));
 
     jedis.expire(bfoo, 20);
-    bttl = jedis.ttl(bfoo);
+    long bttl = jedis.ttl(bfoo);
     assertTrue(bttl >= 0 && bttl <= 20);
 
   }
 
   @Test
   public void touch() throws Exception {
-    long reply = jedis.touch("foo1", "foo2", "foo3");
-    assertEquals(0, reply);
+    assertEquals(0, jedis.touch("foo1", "foo2", "foo3"));
 
     jedis.set("foo1", "bar1");
 
     Thread.sleep(1100); // little over 1 sec
     assertTrue(jedis.objectIdletime("foo1") > 0);
 
-    reply = jedis.touch("foo1");
-    assertEquals(1, reply);
+    assertEquals(1, jedis.touch("foo1"));
     assertEquals(0L, jedis.objectIdletime("foo1").longValue());
 
-    reply = jedis.touch("foo1", "foo2", "foo3");
-    assertEquals(1, reply);
+    assertEquals(1, jedis.touch("foo1", "foo2", "foo3"));
 
     jedis.set("foo2", "bar2");
 
     jedis.set("foo3", "bar3");
 
-    reply = jedis.touch("foo1", "foo2", "foo3");
-    assertEquals(3, reply);
+    assertEquals(3, jedis.touch("foo1", "foo2", "foo3"));
 
     // Binary
-    reply = jedis.touch(bfoo1, bfoo2, bfoo3);
-    assertEquals(0, reply);
+    assertEquals(0, jedis.touch(bfoo1, bfoo2, bfoo3));
 
     jedis.set(bfoo1, bbar1);
 
     Thread.sleep(1100); // little over 1 sec
     assertTrue(jedis.objectIdletime(bfoo1) > 0);
 
-    reply = jedis.touch(bfoo1);
-    assertEquals(1, reply);
+    assertEquals(1, jedis.touch(bfoo1));
     assertEquals(0L, jedis.objectIdletime(bfoo1).longValue());
 
-    reply = jedis.touch(bfoo1, bfoo2, bfoo3);
-    assertEquals(1, reply);
+    assertEquals(1, jedis.touch(bfoo1, bfoo2, bfoo3));
 
     jedis.set(bfoo2, bbar2);
 
     jedis.set(bfoo3, bbar3);
 
-    reply = jedis.touch(bfoo1, bfoo2, bfoo3);
-    assertEquals(3, reply);
+    assertEquals(3, jedis.touch(bfoo1, bfoo2, bfoo3));
 
   }
 
@@ -612,14 +596,13 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.setex("foo", 60 * 60, "bar");
     assertTrue(jedis.ttl("foo") > 0);
     assertEquals(1, jedis.persist("foo"));
-    assertEquals(-1, jedis.ttl("foo").intValue());
+    assertEquals(-1, jedis.ttl("foo"));
 
     // Binary
     jedis.setex(bfoo, 60 * 60, bbar);
     assertTrue(jedis.ttl(bfoo) > 0);
     assertEquals(1, jedis.persist(bfoo));
-    assertEquals(-1, jedis.ttl(bfoo).intValue());
-
+    assertEquals(-1, jedis.ttl(bfoo));
   }
 
   @Test
@@ -713,69 +696,56 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void pexpire() {
-    long status = jedis.pexpire("foo", 10000);
-    assertEquals(0, status);
+    assertEquals(0, jedis.pexpire("foo", 10000));
 
     jedis.set("foo1", "bar1");
-    status = jedis.pexpire("foo1", 10000);
-    assertEquals(1, status);
+    assertEquals(1, jedis.pexpire("foo1", 10000));
 
     jedis.set("foo2", "bar2");
-    status = jedis.pexpire("foo2", 200000000000L);
-    assertEquals(1, status);
+    assertEquals(1, jedis.pexpire("foo2", 200000000000L));
 
     long pttl = jedis.pttl("foo2");
     assertTrue(pttl > 100000000000L);
 
     // Binary
-    status = jedis.pexpire(bfoo, 10000);
-    assertEquals(0, status);
+    assertEquals(0, jedis.pexpire(bfoo, 10000));
 
     jedis.set(bfoo, bbar);
-    status = jedis.pexpire(bfoo, 10000);
-    assertEquals(1, status);
+    assertEquals(1, jedis.pexpire(bfoo, 10000));
   }
 
   @Test
   public void pexpireAt() {
     long unixTime = (System.currentTimeMillis()) + 10000;
 
-    long status = jedis.pexpireAt("foo", unixTime);
-    assertEquals(0, status);
+    assertEquals(0, jedis.pexpireAt("foo", unixTime));
 
     jedis.set("foo", "bar");
-    status = jedis.pexpireAt("foo", unixTime);
-    assertEquals(1, status);
+    assertEquals(1, jedis.pexpireAt("foo", unixTime));
 
     // Binary
-    status = jedis.pexpireAt(bfoo, unixTime);
-    assertEquals(0, status);
+    assertEquals(0, jedis.pexpireAt(bfoo, unixTime));
 
     jedis.set(bfoo, bbar);
-    status = jedis.pexpireAt(bfoo, unixTime);
-    assertEquals(1, status);
+    assertEquals(1, jedis.pexpireAt(bfoo, unixTime));
   }
 
   @Test
   public void pttl() {
-    long pttl = jedis.pttl("foo");
-    assertEquals(-2, pttl);
+    assertEquals(-2, jedis.pttl("foo"));
 
     jedis.set("foo", "bar");
-    pttl = jedis.pttl("foo");
-    assertEquals(-1, pttl);
+    assertEquals(-1, jedis.pttl("foo"));
 
     jedis.pexpire("foo", 20000);
-    pttl = jedis.pttl("foo");
+    long pttl = jedis.pttl("foo");
     assertTrue(pttl >= 0 && pttl <= 20000);
 
     // Binary
-    pttl = jedis.pttl(bfoo);
-    assertEquals(-2, pttl);
+    assertEquals(-2, jedis.pttl(bfoo));
 
     jedis.set(bfoo, bbar);
-    pttl = jedis.pttl(bfoo);
-    assertEquals(-1, pttl);
+    assertEquals(-1, jedis.pttl(bfoo));
 
     jedis.pexpire(bfoo, 20000);
     pttl = jedis.pttl(bfoo);

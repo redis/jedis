@@ -91,19 +91,19 @@ public interface JedisCommands {
     return expire(key, (long) seconds);
   }
 
-  Long expire(String key, long seconds);
+  long expire(String key, long seconds);
 
-  Long pexpire(String key, long milliseconds);
+  long pexpire(String key, long milliseconds);
 
-  Long expireAt(String key, long unixTime);
+  long expireAt(String key, long unixTime);
 
-  Long pexpireAt(String key, long millisecondsTimestamp);
+  long pexpireAt(String key, long millisecondsTimestamp);
 
-  Long ttl(String key);
+  long ttl(String key);
 
-  Long pttl(String key);
+  long pttl(String key);
 
-  Long touch(String key);
+  long touch(String key);
 
   Boolean setbit(String key, long offset, boolean value);
 

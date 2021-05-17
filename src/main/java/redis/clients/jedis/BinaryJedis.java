@@ -702,7 +702,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   @Override
-  public Long expire(final byte[] key, final long seconds) {
+  public long expire(final byte[] key, final long seconds) {
     checkIsInMultiOrPipeline();
     client.expire(key, seconds);
     return client.getIntegerReply();
@@ -732,7 +732,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   @Override
-  public Long expireAt(final byte[] key, final long unixTime) {
+  public long expireAt(final byte[] key, final long unixTime) {
     checkIsInMultiOrPipeline();
     client.expireAt(key, unixTime);
     return client.getIntegerReply();
@@ -748,7 +748,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         returned.
    */
   @Override
-  public Long ttl(final byte[] key) {
+  public long ttl(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.ttl(key);
     return client.getIntegerReply();
@@ -761,14 +761,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Integer reply: The number of keys that were touched.
    */
   @Override
-  public Long touch(final byte[]... keys) {
+  public long touch(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     client.touch(keys);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long touch(final byte[] key) {
+  public long touch(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.touch(key);
     return client.getIntegerReply();
@@ -4101,21 +4101,21 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
    */
   @Override
-  public Long pexpire(final byte[] key, final long milliseconds) {
+  public long pexpire(final byte[] key, final long milliseconds) {
     checkIsInMultiOrPipeline();
     client.pexpire(key, milliseconds);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
+  public long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
     checkIsInMultiOrPipeline();
     client.pexpireAt(key, millisecondsTimestamp);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long pttl(final byte[] key) {
+  public long pttl(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.pttl(key);
     return client.getIntegerReply();

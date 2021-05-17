@@ -63,19 +63,19 @@ public interface BinaryJedisCommands {
     return expire(key, (long) seconds);
   }
 
-  Long expire(byte[] key, long seconds);
+  long expire(byte[] key, long seconds);
 
-  Long pexpire(byte[] key, long milliseconds);
+  long pexpire(byte[] key, long milliseconds);
 
-  Long expireAt(byte[] key, long unixTime);
+  long expireAt(byte[] key, long unixTime);
 
-  Long pexpireAt(byte[] key, long millisecondsTimestamp);
+  long pexpireAt(byte[] key, long millisecondsTimestamp);
 
-  Long ttl(byte[] key);
+  long ttl(byte[] key);
 
-  Long pttl(byte[] key);
+  long pttl(byte[] key);
 
-  Long touch(byte[] key);
+  long touch(byte[] key);
 
   Boolean setbit(byte[] key, long offset, boolean value);
 

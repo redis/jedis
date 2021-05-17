@@ -143,43 +143,43 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long expire(final byte[] key, final long seconds) {
+  public long expire(final byte[] key, final long seconds) {
     Jedis j = getShard(key);
     return j.expire(key, seconds);
   }
 
   @Override
-  public Long pexpire(final byte[] key, final long milliseconds) {
+  public long pexpire(final byte[] key, final long milliseconds) {
     Jedis j = getShard(key);
     return j.pexpire(key, milliseconds);
   }
 
   @Override
-  public Long expireAt(final byte[] key, final long unixTime) {
+  public long expireAt(final byte[] key, final long unixTime) {
     Jedis j = getShard(key);
     return j.expireAt(key, unixTime);
   }
 
   @Override
-  public Long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
+  public long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
     Jedis j = getShard(key);
     return j.pexpireAt(key, millisecondsTimestamp);
   }
 
   @Override
-  public Long ttl(final byte[] key) {
+  public long ttl(final byte[] key) {
     Jedis j = getShard(key);
     return j.ttl(key);
   }
 
   @Override
-  public Long pttl(final byte[] key) {
+  public long pttl(final byte[] key) {
     Jedis j = getShard(key);
     return j.pttl(key);
   }
 
   @Override
-  public Long touch(final byte[] key) {
+  public long touch(final byte[] key) {
     Jedis j = getShard(key);
     return j.touch(key);
   }

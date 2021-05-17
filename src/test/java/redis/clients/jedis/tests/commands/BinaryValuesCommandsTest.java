@@ -191,8 +191,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertTrue(ttl > 30 && ttl <= 40);
 
     assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().persist()));
-    ttl = jedis.ttl(bfoo);
-    assertEquals(-1, ttl);
+    assertEquals(-1, jedis.ttl(bfoo));
   }
 
   @Test

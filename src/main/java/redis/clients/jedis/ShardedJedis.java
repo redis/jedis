@@ -119,37 +119,37 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long expire(final String key, final long seconds) {
+  public long expire(final String key, final long seconds) {
     Jedis j = getShard(key);
     return j.expire(key, seconds);
   }
 
   @Override
-  public Long pexpire(final String key, final long milliseconds) {
+  public long pexpire(final String key, final long milliseconds) {
     Jedis j = getShard(key);
     return j.pexpire(key, milliseconds);
   }
 
   @Override
-  public Long expireAt(final String key, final long unixTime) {
+  public long expireAt(final String key, final long unixTime) {
     Jedis j = getShard(key);
     return j.expireAt(key, unixTime);
   }
 
   @Override
-  public Long pexpireAt(final String key, final long millisecondsTimestamp) {
+  public long pexpireAt(final String key, final long millisecondsTimestamp) {
     Jedis j = getShard(key);
     return j.pexpireAt(key, millisecondsTimestamp);
   }
 
   @Override
-  public Long ttl(final String key) {
+  public long ttl(final String key) {
     Jedis j = getShard(key);
     return j.ttl(key);
   }
 
   @Override
-  public Long pttl(final String key) {
+  public long pttl(final String key) {
     Jedis j = getShard(key);
     return j.pttl(key);
   }
@@ -989,7 +989,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long touch(final String key) {
+  public long touch(final String key) {
     Jedis j = getShard(key);
     return j.touch(key);
   }

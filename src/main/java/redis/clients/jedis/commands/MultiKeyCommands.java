@@ -211,7 +211,7 @@ public interface MultiKeyCommands {
 
   long pfcount(String... keys);
 
-  Long touch(String... keys);
+  long touch(String... keys);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]

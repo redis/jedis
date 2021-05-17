@@ -65,8 +65,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     assertTrue(ttl > 30 && ttl <= 40);
 
     assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().persist()));
-    ttl = jedis.ttl("foo");
-    assertEquals(-1, ttl);
+    assertEquals(-1, jedis.ttl("foo"));
   }
 
   @Test

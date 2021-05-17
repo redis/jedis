@@ -125,7 +125,7 @@ public interface MultiKeyBinaryCommands {
 
   Long pfcount(byte[]... keys);
 
-  Long touch(byte[]... keys);
+  long touch(byte[]... keys);
 
   ScanResult<byte[]> scan(byte[] cursor);
 

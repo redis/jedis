@@ -424,7 +424,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long persist(final String key) {
+  public long persist(final String key) {
     Jedis j = getShard(key);
     return j.persist(key);
   }

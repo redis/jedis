@@ -3734,7 +3734,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    *         happens when key not set).
    */
   @Override
-  public Long persist(final byte[] key) {
+  public long persist(final byte[] key) {
     checkIsInMultiOrPipeline();
     client.persist(key);
     return client.getIntegerReply();

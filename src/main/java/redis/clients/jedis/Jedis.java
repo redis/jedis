@@ -3035,7 +3035,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    *         happens when key not set).
    */
   @Override
-  public Long persist(final String key) {
+  public long persist(final String key) {
     checkIsInMultiOrPipeline();
     client.persist(key);
     return client.getIntegerReply();

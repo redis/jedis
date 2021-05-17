@@ -389,7 +389,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public Long persist(final byte[] key) {
+  public long persist(final byte[] key) {
     Jedis j = getShard(key);
     return j.persist(key);
   }

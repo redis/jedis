@@ -51,7 +51,7 @@ public interface JedisCommands {
 
   boolean exists(String key);
 
-  Long persist(String key);
+  long persist(String key);
 
   String type(String key);
 

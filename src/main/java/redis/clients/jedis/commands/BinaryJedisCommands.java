@@ -23,7 +23,7 @@ public interface BinaryJedisCommands {
 
   boolean exists(byte[] key);
 
-  Long persist(byte[] key);
+  long persist(byte[] key);
 
   String type(byte[] key);
 

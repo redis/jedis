@@ -611,15 +611,13 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   public void persist() {
     jedis.setex("foo", 60 * 60, "bar");
     assertTrue(jedis.ttl("foo") > 0);
-    long status = jedis.persist("foo");
-    assertEquals(1, status);
+    assertEquals(1, jedis.persist("foo"));
     assertEquals(-1, jedis.ttl("foo").intValue());
 
     // Binary
     jedis.setex(bfoo, 60 * 60, bbar);
     assertTrue(jedis.ttl(bfoo) > 0);
-    long bstatus = jedis.persist(bfoo);
-    assertEquals(1, bstatus);
+    assertEquals(1, jedis.persist(bfoo));
     assertEquals(-1, jedis.ttl(bfoo).intValue());
 
   }

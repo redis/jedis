@@ -558,63 +558,63 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void flushDB() {
     jedis.set("foo", "bar");
-    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals(1, jedis.dbSize());
     jedis.set("bar", "foo");
     jedis.move("bar", 1);
     String status = jedis.flushDB();
     assertEquals("OK", status);
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
     jedis.select(1);
-    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals(1, jedis.dbSize());
     assertEquals("OK", jedis.flushDB(FlushMode.SYNC));
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
 
     // Binary
     jedis.select(0);
     jedis.set(bfoo, bbar);
-    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals(1, jedis.dbSize());
     jedis.set(bbar, bfoo);
     jedis.move(bbar, 1);
     String bstatus = jedis.flushDB();
     assertEquals("OK", bstatus);
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
     jedis.select(1);
-    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals(1, jedis.dbSize());
     assertEquals("OK", jedis.flushDB(FlushMode.ASYNC));
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
   }
 
   @Test
   public void flushAll() {
     jedis.set("foo", "bar");
-    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals(1, jedis.dbSize());
     jedis.set("bar", "foo");
     jedis.move("bar", 1);
     String status = jedis.flushAll();
     assertEquals("OK", status);
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
     jedis.select(1);
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
     jedis.set("foo", "bar");
-    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals(1, jedis.dbSize());
     assertEquals("OK", jedis.flushAll(FlushMode.SYNC));
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
 
     // Binary
     jedis.select(0);
     jedis.set(bfoo, bbar);
-    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals(1, jedis.dbSize());
     jedis.set(bbar, bfoo);
     jedis.move(bbar, 1);
     String bstatus = jedis.flushAll();
     assertEquals("OK", bstatus);
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
     jedis.select(1);
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
     jedis.set(bfoo, bbar);
-    assertEquals(1, jedis.dbSize().intValue());
+    assertEquals(1, jedis.dbSize());
     assertEquals("OK", jedis.flushAll(FlushMode.ASYNC));
-    assertEquals(0, jedis.dbSize().intValue());
+    assertEquals(0, jedis.dbSize());
   }
 
   @Test

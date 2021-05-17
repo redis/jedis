@@ -39,7 +39,7 @@ public interface BasicCommands {
    * Return the number of keys in the currently-selected database.
    * @return the number of key in the currently-selected database.
    */
-  Long dbSize();
+  long dbSize();
 
   /**
    * Select the DB with having the specified zero-based numeric index.

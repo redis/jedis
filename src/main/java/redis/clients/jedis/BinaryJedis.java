@@ -674,7 +674,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Integer reply
    */
   @Override
-  public Long dbSize() {
+  public long dbSize() {
     checkIsInMultiOrPipeline();
     client.dbSize();
     return client.getIntegerReply();

@@ -3831,14 +3831,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Long clusterKeySlot(final String key) {
+  public long clusterKeySlot(final String key) {
     checkIsInMultiOrPipeline();
     client.clusterKeySlot(key);
     return client.getIntegerReply();
   }
 
   @Override
-  public Long clusterCountKeysInSlot(final int slot) {
+  public long clusterCountKeysInSlot(final int slot) {
     checkIsInMultiOrPipeline();
     client.clusterCountKeysInSlot(slot);
     return client.getIntegerReply();

@@ -19,7 +19,7 @@ public interface AdvancedJedisCommands {
 
   String slowlogReset();
 
-  Long slowlogLen();
+  long slowlogLen();
 
   List<Slowlog> slowlogGet();
 

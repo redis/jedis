@@ -25,7 +25,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String slowlogReset();
 
-  Long slowlogLen();
+  long slowlogLen();
 
   List<Object> slowlogGetBinary();
 

@@ -3982,7 +3982,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long slowlogLen() {
+  public long slowlogLen() {
     client.slowlogLen();
     return client.getIntegerReply();
   }

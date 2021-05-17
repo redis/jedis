@@ -86,7 +86,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String aclSetUser(byte[] name, byte[]... keys);
 
-  Long aclDelUser(byte[] name);
+  long aclDelUser(byte[] name);
 
   List<byte[]> aclCatBinary();
 

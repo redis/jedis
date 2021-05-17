@@ -4207,7 +4207,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long aclDelUser(byte[] name) {
+  public long aclDelUser(byte[] name) {
     checkIsInMultiOrPipeline();
     client.aclDelUser(name);
     return client.getIntegerReply();

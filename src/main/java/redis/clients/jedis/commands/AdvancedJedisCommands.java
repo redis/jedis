@@ -80,7 +80,7 @@ public interface AdvancedJedisCommands {
 
   String aclSetUser(String name, String... keys);
 
-  Long aclDelUser(String name);
+  long aclDelUser(String name);
 
   List<String> aclCat();
 

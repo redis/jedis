@@ -4115,7 +4115,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Long aclDelUser(final String name) {
+  public long aclDelUser(final String name) {
     client.aclDelUser(name);
     return client.getIntegerReply();
   }

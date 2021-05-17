@@ -49,7 +49,7 @@ public interface JedisCommands {
 
   String getEx(String key, GetExParams params);
 
-  Boolean exists(String key);
+  boolean exists(String key);
 
   Long persist(String key);
 

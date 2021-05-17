@@ -82,7 +82,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Boolean exists(final String key) {
+  public boolean exists(final String key) {
     Jedis j = getShard(key);
     return j.exists(key);
   }

@@ -83,11 +83,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     status = jedis.set(bfoo, bbar);
     assertEquals("OK", status);
 
-    boolean reply = jedis.exists("foo");
-    assertTrue(reply);
+    assertTrue(jedis.exists("foo"));
 
-    reply = jedis.exists(bfoo);
-    assertTrue(reply);
+    assertTrue(jedis.exists(bfoo));
 
     long lreply = jedis.del("foo");
     assertEquals(1, lreply);
@@ -95,11 +93,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     lreply = jedis.del(bfoo);
     assertEquals(1, lreply);
 
-    reply = jedis.exists("foo");
-    assertFalse(reply);
+    assertFalse(jedis.exists("foo"));
 
-    reply = jedis.exists(bfoo);
-    assertFalse(reply);
+    assertFalse(jedis.exists(bfoo));
   }
 
   @Test
@@ -129,12 +125,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     long reply = jedis.del("foo1", "foo2", "foo3");
     assertEquals(3, reply);
 
-    Boolean breply = jedis.exists("foo1");
-    assertFalse(breply);
-    breply = jedis.exists("foo2");
-    assertFalse(breply);
-    breply = jedis.exists("foo3");
-    assertFalse(breply);
+    assertFalse(jedis.exists("foo1"));
+    assertFalse(jedis.exists("foo2"));
+    assertFalse(jedis.exists("foo3"));
 
     jedis.set("foo1", "bar1");
 
@@ -152,12 +145,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     reply = jedis.del(bfoo1, bfoo2, bfoo3);
     assertEquals(3, reply);
 
-    breply = jedis.exists(bfoo1);
-    assertFalse(breply);
-    breply = jedis.exists(bfoo2);
-    assertFalse(breply);
-    breply = jedis.exists(bfoo3);
-    assertFalse(breply);
+    assertFalse(jedis.exists(bfoo1));
+    assertFalse(jedis.exists(bfoo2));
+    assertFalse(jedis.exists(bfoo3));
 
     jedis.set(bfoo1, bbar1);
 

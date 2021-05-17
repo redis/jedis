@@ -206,7 +206,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public Boolean exists(final byte[] key) {
+  public boolean exists(final byte[] key) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {

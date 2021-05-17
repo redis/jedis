@@ -21,7 +21,7 @@ public interface BinaryJedisCommands {
 
   byte[] getEx(byte[] key, GetExParams params);
 
-  Boolean exists(byte[] key);
+  boolean exists(byte[] key);
 
   Long persist(byte[] key);
 

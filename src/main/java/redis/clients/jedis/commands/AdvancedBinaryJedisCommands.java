@@ -50,7 +50,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String clientKill(String ip, int port);
 
-  Long clientKill(ClientKillParams params);
+  long clientKill(ClientKillParams params);
 
   Long clientUnblock(long clientId, UnblockType unblockType);
 

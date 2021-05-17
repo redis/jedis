@@ -4277,7 +4277,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public Long clientKill(ClientKillParams params) {
+  public long clientKill(ClientKillParams params) {
     checkIsInMultiOrPipeline();
     this.client.clientKill(params);
     return this.client.getIntegerReply();

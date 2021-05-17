@@ -44,7 +44,7 @@ public interface AdvancedJedisCommands {
 
   String clientKill(String ip, int port);
 
-  Long clientKill(ClientKillParams params);
+  long clientKill(ClientKillParams params);
 
   String clientGetname();
 

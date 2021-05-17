@@ -123,8 +123,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     matcher.find();
     String id = matcher.group(1);
 
-    long clients = jedis.clientKill(new ClientKillParams().id(id));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().id(id)));
 
     assertDisconnected(client);
   }
@@ -136,8 +135,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     matcher.find();
     byte[] id = matcher.group(1).getBytes();
 
-    long clients = jedis.clientKill(new ClientKillParams().id(id));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().id(id)));
 
     assertDisconnected(client);
   }
@@ -160,8 +158,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   public void killSkipmeYesNo() {
     jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
-    long clients = jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.NO));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.NO)));
     assertDisconnected(jedis);
   }
 
@@ -172,8 +169,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     matcher.find();
     String addr = matcher.group(1);
 
-    long clients = jedis.clientKill(new ClientKillParams().addr(addr));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().addr(addr)));
 
     assertDisconnected(client);
   }
@@ -185,8 +181,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     matcher.find();
     String addr = matcher.group(1);
 
-    long clients = jedis.clientKill(new ClientKillParams().addr(addr));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().addr(addr)));
 
     assertDisconnected(client);
   }
@@ -212,8 +207,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     String addr = matcher.group(1);
     String[] hp = HostAndPort.extractParts(addr);
 
-    long clients = jedis.clientKill(new ClientKillParams().addr(hp[0], Integer.parseInt(hp[1])));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().addr(hp[0], Integer.parseInt(hp[1]))));
 
     assertDisconnected(client);
   }
@@ -223,8 +217,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
     client.aclSetUser("test_kill", "on", "+acl", ">password1");
     client2.auth("test_kill", "password1");
-    long clients = jedis.clientKill(new ClientKillParams().user("test_kill"));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
     assertDisconnected(client2);
     jedis.aclDelUser("test_kill");
   }

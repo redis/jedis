@@ -46,8 +46,4 @@ public interface BinaryJedisClusterCommands extends BinaryJedisCommands {
   }
 
   long waitReplicas(byte[] key, int replicas, long timeout);
-
-  Long memoryUsage(byte[] key);
-
-  Long memoryUsage(byte[] key, int samples);
 }

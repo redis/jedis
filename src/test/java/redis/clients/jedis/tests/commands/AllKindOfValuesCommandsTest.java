@@ -87,11 +87,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     assertTrue(jedis.exists(bfoo));
 
-    long lreply = jedis.del("foo");
-    assertEquals(1, lreply);
+    assertEquals(1, jedis.del("foo"));
 
-    lreply = jedis.del(bfoo);
-    assertEquals(1, lreply);
+    assertEquals(1, jedis.del(bfoo));
 
     assertFalse(jedis.exists("foo"));
 
@@ -106,14 +104,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     status = jedis.set("foo2", "bar2");
     assertEquals("OK", status);
 
-    long reply = jedis.exists("foo1", "foo2");
-    assertEquals(2, reply);
+    assertEquals(2, jedis.exists("foo1", "foo2"));
 
-    long lreply = jedis.del("foo1");
-    assertEquals(1, lreply);
+    assertEquals(1, jedis.del("foo1"));
 
-    reply = jedis.exists("foo1", "foo2");
-    assertEquals(1, reply);
+    assertEquals(1, jedis.exists("foo1", "foo2"));
   }
 
   @Test
@@ -122,8 +117,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set("foo2", "bar2");
     jedis.set("foo3", "bar3");
 
-    long reply = jedis.del("foo1", "foo2", "foo3");
-    assertEquals(3, reply);
+    assertEquals(3, jedis.del("foo1", "foo2", "foo3"));
 
     assertFalse(jedis.exists("foo1"));
     assertFalse(jedis.exists("foo2"));
@@ -131,19 +125,16 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set("foo1", "bar1");
 
-    reply = jedis.del("foo1", "foo2");
-    assertEquals(1, reply);
+    assertEquals(1, jedis.del("foo1", "foo2"));
 
-    reply = jedis.del("foo1", "foo2");
-    assertEquals(0, reply);
+    assertEquals(0, jedis.del("foo1", "foo2"));
 
     // Binary ...
     jedis.set(bfoo1, bbar1);
     jedis.set(bfoo2, bbar2);
     jedis.set(bfoo3, bbar3);
 
-    reply = jedis.del(bfoo1, bfoo2, bfoo3);
-    assertEquals(3, reply);
+    assertEquals(3, jedis.del(bfoo1, bfoo2, bfoo3));
 
     assertFalse(jedis.exists(bfoo1));
     assertFalse(jedis.exists(bfoo2));
@@ -151,11 +142,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set(bfoo1, bbar1);
 
-    reply = jedis.del(bfoo1, bfoo2);
-    assertEquals(1, reply);
+    assertEquals(1, jedis.del(bfoo1, bfoo2));
 
-    reply = jedis.del(bfoo1, bfoo2);
-    assertEquals(0, reply);
+    assertEquals(0, jedis.del(bfoo1, bfoo2));
   }
 
   @Test
@@ -164,23 +153,18 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set("foo2", "bar2");
     jedis.set("foo3", "bar3");
 
-    long reply = jedis.unlink("foo1", "foo2", "foo3");
-    assertEquals(3, reply);
+    assertEquals(3, jedis.unlink("foo1", "foo2", "foo3"));
 
-    reply = jedis.exists("foo1", "foo2", "foo3");
-    assertEquals(0, reply);
+    assertEquals(0, jedis.exists("foo1", "foo2", "foo3"));
 
     jedis.set("foo1", "bar1");
 
-    reply = jedis.unlink("foo1", "foo2");
-    assertEquals(1, reply);
+    assertEquals(1, jedis.unlink("foo1", "foo2"));
 
-    reply = jedis.unlink("foo1", "foo2");
-    assertEquals(0, reply);
+    assertEquals(0, jedis.unlink("foo1", "foo2"));
 
     jedis.set("foo", "bar");
-    reply = jedis.unlink("foo");
-    assertEquals(1, reply);
+    assertEquals(1, jedis.unlink("foo"));
     assertFalse(jedis.exists("foo"));
 
     // Binary
@@ -188,36 +172,29 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set(bfoo2, bbar2);
     jedis.set(bfoo3, bbar3);
 
-    reply = jedis.unlink(bfoo1, bfoo2, bfoo3);
-    assertEquals(3, reply);
+    assertEquals(3, jedis.unlink(bfoo1, bfoo2, bfoo3));
 
-    reply = jedis.exists(bfoo1, bfoo2, bfoo3);
-    assertEquals(0, reply);
+    assertEquals(0, jedis.exists(bfoo1, bfoo2, bfoo3));
 
     jedis.set(bfoo1, bbar1);
 
-    reply = jedis.unlink(bfoo1, bfoo2);
-    assertEquals(1, reply);
+    assertEquals(1, jedis.unlink(bfoo1, bfoo2));
 
-    reply = jedis.unlink(bfoo1, bfoo2);
-    assertEquals(0, reply);
+    assertEquals(0, jedis.unlink(bfoo1, bfoo2));
 
     jedis.set(bfoo, bbar);
-    reply = jedis.unlink(bfoo);
-    assertEquals(1, reply);
+    assertEquals(1, jedis.unlink(bfoo));
     assertFalse(jedis.exists(bfoo));
   }
 
   @Test
   public void type() {
     jedis.set("foo", "bar");
-    String status = jedis.type("foo");
-    assertEquals("string", status);
+    assertEquals("string", jedis.type("foo"));
 
     // Binary
     jedis.set(bfoo, bbar);
-    status = jedis.type(bfoo);
-    assertEquals("string", status);
+    assertEquals("string", jedis.type(bfoo));
   }
 
   @Test
@@ -285,22 +262,18 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     String status = jedis.rename("foo", "bar");
     assertEquals("OK", status);
 
-    String value = jedis.get("foo");
-    assertNull(value);
+    assertNull(jedis.get("foo"));
 
-    value = jedis.get("bar");
-    assertEquals("bar", value);
+    assertEquals("bar", jedis.get("bar"));
 
     // Binary
     jedis.set(bfoo, bbar);
     String bstatus = jedis.rename(bfoo, bbar);
     assertEquals("OK", bstatus);
 
-    byte[] bvalue = jedis.get(bfoo);
-    assertNull(bvalue);
+    assertNull(jedis.get(bfoo));
 
-    bvalue = jedis.get(bbar);
-    assertArrayEquals(bbar, bvalue);
+    assertArrayEquals(bbar, jedis.get(bbar));
   }
 
   @Test
@@ -316,56 +289,44 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void renamenx() {
     jedis.set("foo", "bar");
-    long status = jedis.renamenx("foo", "bar");
-    assertEquals(1, status);
+    assertEquals(1, jedis.renamenx("foo", "bar"));
 
     jedis.set("foo", "bar");
-    status = jedis.renamenx("foo", "bar");
-    assertEquals(0, status);
+    assertEquals(0, jedis.renamenx("foo", "bar"));
 
     // Binary
     jedis.set(bfoo, bbar);
-    long bstatus = jedis.renamenx(bfoo, bbar);
-    assertEquals(1, bstatus);
+    assertEquals(1, jedis.renamenx(bfoo, bbar));
 
     jedis.set(bfoo, bbar);
-    bstatus = jedis.renamenx(bfoo, bbar);
-    assertEquals(0, bstatus);
+    assertEquals(0, jedis.renamenx(bfoo, bbar));
 
   }
 
   @Test
   public void dbSize() {
-    long size = jedis.dbSize();
-    assertEquals(0, size);
+    assertEquals(0, jedis.dbSize());
 
     jedis.set("foo", "bar");
-    size = jedis.dbSize();
-    assertEquals(1, size);
+    assertEquals(1, jedis.dbSize());
 
     // Binary
     jedis.set(bfoo, bbar);
-    size = jedis.dbSize();
-    assertEquals(2, size);
+    assertEquals(2, jedis.dbSize());
   }
 
   @Test
   public void expire() {
-    long status = jedis.expire("foo", 20);
-    assertEquals(0, status);
+    assertEquals(0, jedis.expire("foo", 20L));
 
     jedis.set("foo", "bar");
-    status = jedis.expire("foo", 20);
-    assertEquals(1, status);
+    assertEquals(1, jedis.expire("foo", 20L));
 
     // Binary
-    long bstatus = jedis.expire(bfoo, 20);
-    assertEquals(0, bstatus);
+    assertEquals(0, jedis.expire(bfoo, 20L));
 
     jedis.set(bfoo, bbar);
-    bstatus = jedis.expire(bfoo, 20);
-    assertEquals(1, bstatus);
-
+    assertEquals(1, jedis.expire(bfoo, 20L));
   }
 
   @Test
@@ -384,7 +345,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set(bfoo, bbar);
     unixTime = (System.currentTimeMillis() / 1000L) + 20;
     assertEquals(1, jedis.expireAt(bfoo, unixTime));
-
   }
 
   @Test
@@ -407,7 +367,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.expire(bfoo, 20);
     long bttl = jedis.ttl(bfoo);
     assertTrue(bttl >= 0 && bttl <= 20);
-
   }
 
   @Test
@@ -885,11 +844,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     String bstatus = jedis.set(bworld, bhello, setParams().nx().ex(expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(bstatus));
     byte[] bvalue = jedis.get(bworld);
-    assertTrue(Arrays.equals(bhello, bvalue));
+    assertArrayEquals(bhello, bvalue);
 
     jedis.set(bworld, bbar, setParams().nx().ex(expireSeconds));
     bvalue = jedis.get(bworld);
-    assertTrue(Arrays.equals(bhello, bvalue));
+    assertArrayEquals(bhello, bvalue);
 
     long bttl = jedis.ttl(bworld);
     assertTrue(bttl > 0 && bttl <= expireSeconds);

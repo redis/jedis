@@ -129,7 +129,7 @@ public interface BasicCommands {
    * Return the UNIX TIME of the last DB save executed with success.
    * @return the unix latest save
    */
-  Long lastsave();
+  long lastsave();
 
   /**
    * Stop all the client. Perform a SAVE (if one save point is configured). Flush the append only

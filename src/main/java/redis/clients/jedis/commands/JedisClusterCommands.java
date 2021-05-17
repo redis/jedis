@@ -12,5 +12,5 @@ public interface JedisClusterCommands extends JedisCommands {
     return restore(key, ttl, serializedValue, RestoreParams.restoreParams().replace());
   }
 
-  Long waitReplicas(String key, int replicas, long timeout);
+  long waitReplicas(String key, int replicas, long timeout);
 }

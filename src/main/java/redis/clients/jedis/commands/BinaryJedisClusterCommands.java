@@ -45,7 +45,7 @@ public interface BinaryJedisClusterCommands extends BinaryJedisCommands {
     throw new UnsupportedOperationException("Use other version of XINFO CONSUMERS.");
   }
 
-  Long waitReplicas(byte[] key, int replicas, long timeout);
+  long waitReplicas(byte[] key, int replicas, long timeout);
 
   Long memoryUsage(byte[] key);
 

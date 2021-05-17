@@ -200,14 +200,18 @@ public interface BasicCommands {
   String configRewrite();
 
   /**
+   * Syncrhonous replication of Redis as described here: http://antirez.com/news/66.
+   * <p>
    * Blocks until all the previous write commands are successfully transferred and acknowledged by
    * at least the specified number of replicas. If the timeout, specified in milliseconds, is
    * reached, the command returns even if the specified number of replicas were not yet reached.
+   * <p>
+   * Since Java Object class has implemented {@code wait} method, we cannot use it.
    * @param replicas successfully transferred and acknowledged by at least the specified number of
    *          replicas
    * @param timeout the time to block in milliseconds, a timeout of 0 means to block forever
    * @return the number of replicas reached by all the writes performed in the context of the
    *         current connection
    */
-  Long waitReplicas(int replicas, long timeout);
+  long waitReplicas(int replicas, long timeout);
 }

@@ -219,13 +219,13 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void incrLargeNumbers() {
     assertEquals(1, jedis.incr("foo"));
-    assertEquals(1L + Integer.MAX_VALUE, (long) jedis.incrBy("foo", Integer.MAX_VALUE));
+    assertEquals(1L + Integer.MAX_VALUE, jedis.incrBy("foo", Integer.MAX_VALUE));
   }
 
   @Test(expected = JedisDataException.class)
   public void incrReallyLargeNumbers() {
     jedis.set("foo", Long.toString(Long.MAX_VALUE));
-    jedis.incr("foo");
+    jedis.incr("foo"); // Should throw an exception 
   }
 
   @Test

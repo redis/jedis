@@ -146,7 +146,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void getDel() {
-    assertEquals("OK", jedis.set(bfoo, bbar));
+    assertEquals(Keyword.OK.name(), jedis.set(bfoo, bbar));
 
     assertArrayEquals(bbar, jedis.getDel(bfoo));
 
@@ -175,7 +175,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertTrue(ttl > 30 && ttl <= 40);
 
     assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().persist()));
-    assertEquals(-1, jedis.ttl(bfoo));
+    assertEquals(-1L, jedis.ttl(bfoo));
   }
 
   @Test

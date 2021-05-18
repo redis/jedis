@@ -139,9 +139,9 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
     // minid
     jedis.xadd("xadd-stream3", map6, XAddParams.xAddParams().minId("2").id("2"));
-    assertEquals(1, jedis.xlen("xadd-stream3"));
+    assertEquals(1L, jedis.xlen("xadd-stream3"));
     jedis.xadd("xadd-stream3", map6, XAddParams.xAddParams().minId("4").id("3"));
-    assertEquals(0, jedis.xlen("xadd-stream3"));
+    assertEquals(0L, jedis.xlen("xadd-stream3"));
   }
 
   @Test

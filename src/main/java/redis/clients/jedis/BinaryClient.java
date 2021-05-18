@@ -26,6 +26,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
@@ -1049,6 +1050,14 @@ public class BinaryClient extends Connection {
 
   public void shutdown() {
     sendCommand(SHUTDOWN);
+  }
+
+  public void shutdown(SaveMode saveMode) {
+    if (saveMode == null) {
+      sendCommand(SHUTDOWN);
+    } else {
+      sendCommand(SHUTDOWN, saveMode.getRaw());
+    }
   }
 
   public void info() {

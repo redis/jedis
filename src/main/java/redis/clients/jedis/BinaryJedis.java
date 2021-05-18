@@ -3905,6 +3905,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  @Deprecated
   public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
     checkIsInMultiOrPipeline();
     client.eval(script, keyCount, params);

@@ -801,6 +801,7 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  @Deprecated
   public Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params) {
     getClient(script).eval(script, keyCount, params);
     return getResponse(BuilderFactory.RAW_OBJECT);

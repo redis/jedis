@@ -29,6 +29,8 @@ import redis.clients.jedis.commands.BinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.JedisURIHelper;
@@ -3481,6 +3483,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       status = null;
     }
     return status;
+  }
+
+  @Override
+  public void shutdown(final SaveMode saveMode) throws JedisException {
+    client.shutdown(saveMode);
+    try {
+      throw new JedisDataException(client.getStatusCodeReply());
+    } catch (JedisConnectionException ex) {
+      // expected
+    }
   }
 
   /**

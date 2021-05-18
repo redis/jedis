@@ -156,7 +156,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertNotNull(id2);
     assertEquals(2L, jedis.xlen("xdel-stream").longValue());
 
-    assertEquals(1L, jedis.xdel("xdel-stream", id1));
+    assertEquals(1L, jedis.xdel("xdel-stream", id1).longValue());
     assertEquals(1L, jedis.xlen("xdel-stream").longValue());
   }
 
@@ -494,7 +494,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(1, range.size());
 
     assertEquals(1L,
-      jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
+      jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()).longValue());
   }
 
   @Test
@@ -548,7 +548,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(1, claimRange.size());
 
     // Deleted events should return as null on XClaim
-    assertEquals(1, jedis.xdel("xpendeing-stream", id1));
+    assertEquals(1, jedis.xdel("xpendeing-stream", id1).longValue());
     List<StreamEntry> claimRangeDel = jedis.xclaim("xpendeing-stream", "xpendeing-group",
       "xpendeing-consumer2", 0, 0, 0, false, id1);
     assertEquals(1, claimRangeDel.size());

@@ -2,6 +2,8 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.SaveMode;
+import redis.clients.jedis.exceptions.JedisException;
 
 public interface BasicCommands {
 
@@ -135,6 +137,14 @@ public interface BasicCommands {
    * @return only in case of error.
    */
   String shutdown();
+
+  /**
+   * @see SaveMode
+   * @param saveMode modifier to alter the data save behavior of SHUTDOWN. {@code null} would
+   * trigger the default behavior.
+   * @throws JedisException
+   */
+  void shutdown(SaveMode saveMode) throws JedisException;
 
   /**
    * The INFO command returns information and statistics about the server in a format that is simple

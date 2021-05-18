@@ -18,6 +18,7 @@ import org.junit.Test;
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -131,7 +132,8 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     List<byte[]> info = jedis.configGet(maxmemory);
     assertArrayEquals(maxmemory, info.get(0));
     byte[] memory = info.get(1);
-    assertArrayEquals("OK".getBytes(), jedis.configSet(maxmemory, memory));
+    assertEquals("OK", jedis.configSet(maxmemory, Protocol.toByteArray(200)));
+    assertEquals("OK", jedis.configSet(maxmemory, memory));
   }
 
   @Test

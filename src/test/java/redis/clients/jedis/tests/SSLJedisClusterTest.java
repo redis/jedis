@@ -20,8 +20,7 @@ import redis.clients.jedis.HostAndPortMapper;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
-import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.tests.SSLJedisTest.BasicHostnameVerifier;
 
 public class SSLJedisClusterTest extends JedisClusterTest {

@@ -87,9 +87,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     assertTrue(jedis.exists(bfoo));
 
-    assertEquals(1, jedis.del("foo"));
+    assertEquals(1L, jedis.del("foo"));
 
-    assertEquals(1, jedis.del(bfoo));
+    assertEquals(1L, jedis.del(bfoo));
 
     assertFalse(jedis.exists("foo"));
 
@@ -104,11 +104,11 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     status = jedis.set("foo2", "bar2");
     assertEquals("OK", status);
 
-    assertEquals(2, jedis.exists("foo1", "foo2"));
+    assertEquals(2L, jedis.exists("foo1", "foo2"));
 
-    assertEquals(1, jedis.del("foo1"));
+    assertEquals(1L, jedis.del("foo1"));
 
-    assertEquals(1, jedis.exists("foo1", "foo2"));
+    assertEquals(1L, jedis.exists("foo1", "foo2"));
   }
 
   @Test
@@ -117,7 +117,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.set("foo2", "bar2");
     jedis.set("foo3", "bar3");
 
-    assertEquals(3, jedis.del("foo1", "foo2", "foo3"));
+    assertEquals(3L, jedis.del("foo1", "foo2", "foo3"));
 
     assertFalse(jedis.exists("foo1"));
     assertFalse(jedis.exists("foo2"));
@@ -125,16 +125,16 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
 
     jedis.set("foo1", "bar1");
 
-    assertEquals(1, jedis.del("foo1", "foo2"));
+    assertEquals(1L, jedis.del("foo1", "foo2"));
 
-    assertEquals(0, jedis.del("foo1", "foo2"));
+    assertEquals(0L, jedis.del("foo1", "foo2"));
 
     // Binary ...
     jedis.set(bfoo1, bbar1);
     jedis.set(bfoo2, bbar2);
     jedis.set(bfoo3, bbar3);
 
-    assertEquals(3, jedis.del(bfoo1, bfoo2, bfoo3));
+    assertEquals(3L, jedis.del(bfoo1, bfoo2, bfoo3));
 
     assertFalse(jedis.exists(bfoo1));
     assertFalse(jedis.exists(bfoo2));

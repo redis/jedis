@@ -1078,12 +1078,6 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
-    Jedis j = getShard(key);
-    return j.hscan(key, cursor);
-  }
-
-  @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
     Jedis j = getShard(key);
@@ -1091,21 +1085,9 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor) {
-    Jedis j = getShard(key);
-    return j.sscan(key, cursor);
-  }
-
-  @Override
   public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor, final ScanParams params) {
     Jedis j = getShard(key);
     return j.sscan(key, cursor, params);
-  }
-
-  @Override
-  public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor) {
-    Jedis j = getShard(key);
-    return j.zscan(key, cursor);
   }
 
   @Override
@@ -1311,6 +1293,18 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public List<Object> xinfoConsumersBinary(byte[] key, byte[] group) {
     Jedis j = getShard(key);
     return j.xinfoConsumersBinary(key, group);
+  }
+
+  @Override
+  public Long memoryUsage(byte[] key) {
+    Jedis j = getShard(key);
+    return j.memoryUsage(key);
+  }
+
+  @Override
+  public Long memoryUsage(byte[] key, int samples) {
+    Jedis j = getShard(key);
+    return j.memoryUsage(key, samples);
   }
 
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {

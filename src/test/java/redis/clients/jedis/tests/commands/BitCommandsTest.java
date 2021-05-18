@@ -17,19 +17,17 @@ import redis.clients.jedis.util.SafeEncoder;
 import java.util.List;
 
 public class BitCommandsTest extends JedisCommandTestBase {
+
   @Test
   public void setAndgetbit() {
-    boolean bit = jedis.setbit("foo", 0, true);
-    assertEquals(false, bit);
+    assertFalse(jedis.setbit("foo", 0, true));
 
-    bit = jedis.getbit("foo", 0);
-    assertEquals(true, bit);
+    assertTrue(jedis.getbit("foo", 0));
 
-    boolean bbit = jedis.setbit("bfoo".getBytes(), 0, "1".getBytes());
-    assertFalse(bbit);
+    // Binary
+    assertFalse(jedis.setbit("bfoo".getBytes(), 0, true));
 
-    bbit = jedis.getbit("bfoo".getBytes(), 0);
-    assertTrue(bbit);
+    assertTrue(jedis.getbit("bfoo".getBytes(), 0));
   }
 
   @Test
@@ -136,8 +134,7 @@ public class BitCommandsTest extends JedisCommandTestBase {
   @Test
   public void setAndgetrange() {
     jedis.set("key1", "Hello World");
-    long reply = jedis.setrange("key1", 6, "Jedis");
-    assertEquals(11, reply);
+    assertEquals(11, jedis.setrange("key1", 6, "Jedis"));
 
     assertEquals("Hello Jedis", jedis.get("key1"));
 

@@ -156,8 +156,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void waitReplicas() {
-    Long replicas = jedis.waitReplicas(1, 100);
-    assertEquals(1, replicas.longValue());
+    assertEquals(1, jedis.waitReplicas(1, 100));
   }
 
   @Test

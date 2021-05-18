@@ -13,7 +13,6 @@ import static redis.clients.jedis.params.SetParams.setParams;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Before;
@@ -52,8 +51,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     String status = jedis.set(bfoo, binaryValue);
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
 
-    byte[] value = jedis.get(bfoo);
-    assertTrue(Arrays.equals(binaryValue, value));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
 
     assertNull(jedis.get(bbar));
   }
@@ -62,8 +60,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   public void setNxExAndGet() {
     String status = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
     assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
-    byte[] value = jedis.get(bfoo);
-    assertTrue(Arrays.equals(binaryValue, value));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
 
     assertNull(jedis.get(bbar));
   }
@@ -71,13 +68,11 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void setIfNotExistAndGet() {
     String status = jedis.set(bfoo, binaryValue);
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    assertEquals(Keyword.OK.name(), status);
     // nx should fail if value exists
-    String statusFail = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
-    assertNull(statusFail);
+    assertNull(jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds)));
 
-    byte[] value = jedis.get(bfoo);
-    assertTrue(Arrays.equals(binaryValue, value));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
 
     assertNull(jedis.get(bbar));
   }
@@ -85,13 +80,13 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void setIfExistAndGet() {
     String status = jedis.set(bfoo, binaryValue);
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    assertEquals(Keyword.OK.name(), status);
     // nx should fail if value exists
-    String statusSuccess = jedis.set(bfoo, binaryValue, setParams().xx().ex(expireSeconds));
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(statusSuccess));
+    status = jedis.set(bfoo, binaryValue, setParams().xx().ex(expireSeconds));
+    assertEquals(Keyword.OK.name(), status);
 
     byte[] value = jedis.get(bfoo);
-    assertTrue(Arrays.equals(binaryValue, value));
+    assertArrayEquals(binaryValue, value);
 
     assertNull(jedis.get(bbar));
   }
@@ -99,32 +94,27 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   @Test
   public void setFailIfNotExistAndGet() {
     // xx should fail if value does NOT exists
-    String statusFail = jedis.set(bfoo, binaryValue, setParams().xx().ex(expireSeconds));
-    assertNull(statusFail);
+    assertNull(jedis.set(bfoo, binaryValue, setParams().xx().ex(expireSeconds)));
   }
 
   @Test
   public void setAndExpireMillis() {
-    String status = jedis.set(bfoo, binaryValue, setParams().nx().px(expireMillis));
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    assertEquals(Keyword.OK.name(), jedis.set(bfoo, binaryValue, setParams().nx().px(expireMillis)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
   }
 
   @Test
   public void setAndExpire() {
-    String status = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    assertEquals(Keyword.OK.name(), jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
   }
 
   @Test
   public void setAndKeepttl() {
-    String status = jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds));
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
-    status = jedis.set(bfoo, binaryValue, setParams().keepttl());
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    assertEquals(Keyword.OK.name(), jedis.set(bfoo, binaryValue, setParams().nx().ex(expireSeconds)));
+    assertEquals(Keyword.OK.name(), jedis.set(bfoo, binaryValue, setParams().keepttl()));
     long ttl = jedis.ttl(bfoo);
     assertTrue(0 < ttl && ttl <= expireSeconds);
     jedis.set(bfoo, binaryValue);
@@ -134,37 +124,31 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setAndPxat() {
-    String status = jedis.set(bfoo, binaryValue,
-      setParams().nx().pxAt(System.currentTimeMillis() + expireMillis));
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    assertEquals(Keyword.OK.name(), jedis.set(bfoo, binaryValue,
+        setParams().nx().pxAt(System.currentTimeMillis() + expireMillis)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
   }
 
   @Test
   public void setAndExat() {
-    String status = jedis.set(bfoo, binaryValue,
-      setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds));
-    assertTrue(Keyword.OK.name().equalsIgnoreCase(status));
+    assertEquals(Keyword.OK.name(), jedis.set(bfoo, binaryValue,
+        setParams().nx().exAt(System.currentTimeMillis() / 1000 + expireSeconds)));
     long ttl = jedis.ttl(bfoo);
     assertTrue(ttl > 0 && ttl <= expireSeconds);
   }
 
   @Test
   public void getSet() {
-    byte[] value = jedis.getSet(bfoo, binaryValue);
-    assertNull(value);
-    value = jedis.get(bfoo);
-    assertTrue(Arrays.equals(binaryValue, value));
+    assertNull(jedis.getSet(bfoo, binaryValue));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
   }
 
   @Test
   public void getDel() {
-    String status = jedis.set(bfoo, bbar);
-    assertEquals("OK", status);
+    assertEquals(Keyword.OK.name(), jedis.set(bfoo, bbar));
 
-    byte[] value = jedis.getDel(bfoo);
-    assertArrayEquals(bbar, value);
+    assertArrayEquals(bbar, jedis.getDel(bfoo));
 
     assertNull(jedis.get(bfoo));
   }
@@ -191,8 +175,7 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     assertTrue(ttl > 30 && ttl <= 40);
 
     assertArrayEquals(bbar, jedis.getEx(bfoo, GetExParams.getExParams().persist()));
-    ttl = jedis.ttl(bfoo);
-    assertEquals(-1, ttl);
+    assertEquals(-1L, jedis.ttl(bfoo));
   }
 
   @Test
@@ -209,29 +192,23 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     expected = new ArrayList<>();
     expected.add(binaryValue);
     expected.add(null);
-    values = jedis.mget(bfoo, bbar);
-
-    assertByteArrayListEquals(expected, values);
+    assertByteArrayListEquals(expected, jedis.mget(bfoo, bbar));
 
     jedis.set(bbar, bfoo);
 
     expected = new ArrayList<>();
     expected.add(binaryValue);
     expected.add(bfoo);
-    values = jedis.mget(bfoo, bbar);
-
-    assertByteArrayListEquals(expected, values);
+    assertByteArrayListEquals(expected, jedis.mget(bfoo, bbar));
   }
 
   @Test
   public void setnx() {
-    long status = jedis.setnx(bfoo, binaryValue);
-    assertEquals(1, status);
-    assertTrue(Arrays.equals(binaryValue, jedis.get(bfoo)));
+    assertEquals(1, jedis.setnx(bfoo, binaryValue));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
 
-    status = jedis.setnx(bfoo, bbar);
-    assertEquals(0, status);
-    assertTrue(Arrays.equals(binaryValue, jedis.get(bfoo)));
+    assertEquals(0, jedis.setnx(bfoo, bbar));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
   }
 
   @Test
@@ -244,31 +221,26 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void mset() {
-    String status = jedis.mset(bfoo, binaryValue, bbar, bfoo);
-    assertEquals(Keyword.OK.name(), status);
-    assertTrue(Arrays.equals(binaryValue, jedis.get(bfoo)));
-    assertTrue(Arrays.equals(bfoo, jedis.get(bbar)));
+    assertEquals(Keyword.OK.name(), jedis.mset(bfoo, binaryValue, bbar, bfoo));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
+    assertArrayEquals(bfoo, jedis.get(bbar));
   }
 
   @Test
   public void msetnx() {
-    long status = jedis.msetnx(bfoo, binaryValue, bbar, bfoo);
-    assertEquals(1, status);
-    assertTrue(Arrays.equals(binaryValue, jedis.get(bfoo)));
-    assertTrue(Arrays.equals(bfoo, jedis.get(bbar)));
+    assertEquals(1, jedis.msetnx(bfoo, binaryValue, bbar, bfoo));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
+    assertArrayEquals(bfoo, jedis.get(bbar));
 
-    status = jedis.msetnx(bfoo, bbar, "bar2".getBytes(), "foo2".getBytes());
-    assertEquals(0, status);
-    assertTrue(Arrays.equals(binaryValue, jedis.get(bfoo)));
-    assertTrue(Arrays.equals(bfoo, jedis.get(bbar)));
+    assertEquals(0, jedis.msetnx(bfoo, bbar, "bar2".getBytes(), "foo2".getBytes()));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
+    assertArrayEquals(bfoo, jedis.get(bbar));
   }
 
   @Test
   public void incr() {
-    long value = jedis.incr(bfoo);
-    assertEquals(1, value);
-    value = jedis.incr(bfoo);
-    assertEquals(2, value);
+    assertEquals(1, jedis.incr(bfoo));
+    assertEquals(2, jedis.incr(bfoo));
   }
 
   @Test(expected = JedisDataException.class)
@@ -279,10 +251,8 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void incrBy() {
-    long value = jedis.incrBy(bfoo, 2);
-    assertEquals(2, value);
-    value = jedis.incrBy(bfoo, 2);
-    assertEquals(4, value);
+    assertEquals(2, jedis.incrBy(bfoo, 2));
+    assertEquals(4, jedis.incrBy(bfoo, 2));
   }
 
   @Test(expected = JedisDataException.class)
@@ -293,18 +263,14 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void incrByFloat() {
-    double value = jedis.incrByFloat(bfoo, 10.5);
-    assertEquals(10.5, value, 0.0);
-    value = jedis.incrByFloat(bfoo, 0.1);
-    assertEquals(10.6, value, 0.0);
+    assertEquals(10.5, jedis.incrByFloat(bfoo, 10.5), 0.0);
+    assertEquals(10.6, jedis.incrByFloat(bfoo, 0.1), 0.0);
   }
 
   @Test
   public void decr() {
-    long value = jedis.decr(bfoo);
-    assertEquals(-1, value);
-    value = jedis.decr(bfoo);
-    assertEquals(-2, value);
+    assertEquals(-1, jedis.decr(bfoo));
+    assertEquals(-2, jedis.decr(bfoo));
   }
 
   @Test(expected = JedisDataException.class)
@@ -315,10 +281,8 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void decrBy() {
-    long value = jedis.decrBy(bfoo, 2);
-    assertEquals(-2, value);
-    value = jedis.decrBy(bfoo, 2);
-    assertEquals(-4, value);
+    assertEquals(-2, jedis.decrBy(bfoo, 2));
+    assertEquals(-4, jedis.decrBy(bfoo, 2));
   }
 
   @Test(expected = JedisDataException.class)
@@ -331,16 +295,14 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
   public void append() {
     byte[] first512 = new byte[512];
     System.arraycopy(binaryValue, 0, first512, 0, 512);
-    long value = jedis.append(bfoo, first512);
-    assertEquals(512, value);
-    assertTrue(Arrays.equals(first512, jedis.get(bfoo)));
+    assertEquals(512, jedis.append(bfoo, first512));
+    assertArrayEquals(first512, jedis.get(bfoo));
 
     byte[] rest = new byte[binaryValue.length - 512];
     System.arraycopy(binaryValue, 512, rest, 0, binaryValue.length - 512);
-    value = jedis.append(bfoo, rest);
-    assertEquals(binaryValue.length, value);
+    assertEquals(binaryValue.length, jedis.append(bfoo, rest));
 
-    assertTrue(Arrays.equals(binaryValue, jedis.get(bfoo)));
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
   }
 
   @Test
@@ -350,21 +312,21 @@ public class BinaryValuesCommandsTest extends JedisCommandTestBase {
     byte[] first512 = new byte[512];
     System.arraycopy(binaryValue, 0, first512, 0, 512);
     byte[] rfirst512 = jedis.substr(bfoo, 0, 511);
-    assertTrue(Arrays.equals(first512, rfirst512));
+    assertArrayEquals(first512, rfirst512);
 
     byte[] last512 = new byte[512];
     System.arraycopy(binaryValue, binaryValue.length - 512, last512, 0, 512);
-    assertTrue(Arrays.equals(last512, jedis.substr(bfoo, -512, -1)));
+    assertArrayEquals(last512, jedis.substr(bfoo, -512, -1));
 
-    assertTrue(Arrays.equals(binaryValue, jedis.substr(bfoo, 0, -1)));
+    assertArrayEquals(binaryValue, jedis.substr(bfoo, 0, -1));
 
-    assertTrue(Arrays.equals(last512, jedis.substr(bfoo, binaryValue.length - 512, 100000)));
+    assertArrayEquals(last512, jedis.substr(bfoo, binaryValue.length - 512, 100000));
   }
 
   @Test
   public void strlen() {
     jedis.set(bfoo, binaryValue);
-    assertEquals(binaryValue.length, jedis.strlen(bfoo).intValue());
+    assertEquals(binaryValue.length, jedis.strlen(bfoo));
   }
 
   @Test

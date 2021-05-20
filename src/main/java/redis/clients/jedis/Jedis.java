@@ -3885,6 +3885,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getStatusCodeReply();
   }
 
+  public List<String> pubsubChannels() {
+    checkIsInMultiOrPipeline();
+    client.pubsubChannels();
+    return client.getMultiBulkReply();
+  }
+
   public List<String> pubsubChannels(final String pattern) {
     checkIsInMultiOrPipeline();
     client.pubsubChannels(pattern);

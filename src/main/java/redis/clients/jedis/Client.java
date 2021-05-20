@@ -958,6 +958,10 @@ public class Client extends BinaryClient implements Commands {
     subscribe(SafeEncoder.encodeMany(channels));
   }
 
+  public void pubsubChannels() {
+    pubsub(Protocol.PUBSUB_CHANNELS);
+  }
+
   public void pubsubChannels(final String pattern) {
     pubsub(Protocol.PUBSUB_CHANNELS, pattern);
   }

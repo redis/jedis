@@ -66,6 +66,27 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   @Test
   public void pubSubChannels() {
     final List<String> expectedActiveChannels = Arrays
+                                                    .asList("testchan1", "testchan2", "testchan3");
+    jedis.subscribe(new JedisPubSub() {
+      private int count = 0;
+
+      @Override
+      public void onSubscribe(String channel, int subscribedChannels) {
+        count++;
+        // All channels are subscribed
+        if (count == 3) {
+          Jedis otherJedis = createJedis();
+          List<String> activeChannels = otherJedis.pubsubChannels();
+          assertTrue(expectedActiveChannels.containsAll(activeChannels));
+          unsubscribe();
+        }
+      }
+    }, "testchan1", "testchan2", "testchan3");
+  }
+
+  @Test
+  public void pubSubChannelsWithArgument() {
+    final List<String> expectedActiveChannels = Arrays
         .asList("testchan1", "testchan2", "testchan3");
     jedis.subscribe(new JedisPubSub() {
       private int count = 0;

@@ -65,8 +65,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void pubSubChannels() {
-    final List<String> expectedActiveChannels = Arrays
-                                                    .asList("testchan1", "testchan2", "testchan3");
+    final List<String> expectedActiveChannels = Arrays.asList("testchan1", "testchan2",
+      "testchan3", "__sentinel__:hello");
     jedis.subscribe(new JedisPubSub() {
       private int count = 0;
 

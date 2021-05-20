@@ -85,7 +85,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void pubSubChannelsWithArgument() {
+  public void pubSubChannelsWithPattern() {
     final List<String> expectedActiveChannels = Arrays
         .asList("testchan1", "testchan2", "testchan3");
     jedis.subscribe(new JedisPubSub() {

@@ -22,8 +22,8 @@ import redis.clients.jedis.ShardedJedisPoolConfig;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class ShardedJedisPoolTest {
-  private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
-  private static HostAndPort redis2 = HostAndPortUtil.getRedisServers().get(1);
+  private static final HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
+  private static final HostAndPort redis2 = HostAndPortUtil.getRedisServers().get(1);
 
   private List<JedisShardInfo> shards;
 
@@ -148,7 +148,7 @@ public class ShardedJedisPoolTest {
     j.set("foo", "bar");
     j.disconnect();
 
-    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    List<JedisShardInfo> shards = new ArrayList<>();
     shards.add(new JedisShardInfo("redis://:foobared@localhost:6380"));
     shards.add(new JedisShardInfo("redis://:foobared@localhost:6379"));
 
@@ -178,7 +178,7 @@ public class ShardedJedisPoolTest {
     j.set("foo", "bar");
     j.disconnect();
 
-    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    List<JedisShardInfo> shards = new ArrayList<>();
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
 
@@ -202,7 +202,7 @@ public class ShardedJedisPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
 
-    List<JedisShardInfo> shards = new ArrayList<JedisShardInfo>();
+    List<JedisShardInfo> shards = new ArrayList<>();
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6380")));
     shards.add(new JedisShardInfo(new URI("redis://:foobared@localhost:6379")));
 
@@ -215,11 +215,8 @@ public class ShardedJedisPoolTest {
       jedis.close();
     }
 
-    ShardedJedis jedis2 = pool.getResource();
-    try {
+    try (ShardedJedis jedis2 = pool.getResource()) {
       assertEquals(jedis, jedis2);
-    } finally {
-      jedis2.close();
     }
   }
 

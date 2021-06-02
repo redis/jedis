@@ -65,6 +65,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void pubSubChannels() {
+    // Since we are utilizing sentinel for the tests, there is an additional '__sentinel__:hello'
+    // channel that has subscribers.
     final List<String> expectedActiveChannels = Arrays.asList("testchan1", "testchan2",
       "testchan3", "__sentinel__:hello");
     jedis.subscribe(new JedisPubSub() {

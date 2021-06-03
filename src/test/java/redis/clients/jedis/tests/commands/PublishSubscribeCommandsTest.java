@@ -78,8 +78,8 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
           Jedis otherJedis = createJedis();
           List<String> activeChannels = otherJedis.pubsubChannels();
           // Since we are utilizing sentinel for the tests, there is an additional
-          // '__sentinel__:hello'
-          // channel that has subscribers and will be returned from PUBSUB CHANNELS.
+          // '__sentinel__:hello' channel that has subscribers and will be returned from PUBSUB
+          // CHANNELS.
           assertTrue(activeChannels.containsAll(expectedActiveChannels));
           unsubscribe();
         }

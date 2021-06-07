@@ -33,9 +33,9 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   protected int maxAttempts;
 
   /**
-   * After this amount of time we will do no more retries and report the operation as failed.
+   * After this amount of time there will be no more retries and the operation will be failed.
    *
-   * Defaults to {@link #DEFAULT_TIMEOUT} if unset, or {@code soTimeout} if available.
+   * Defaults to {@code soTimeout * maxAttempts}.
    */
   protected Duration maxTotalRetriesDuration;
 

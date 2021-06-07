@@ -77,7 +77,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         connectionTimeout, soTimeout, user, password, clientName);
     this.maxAttempts = maxAttempts;
-    this.maxTotalRetriesDuration = Duration.ofMillis(soTimeout);
+    this.maxTotalRetriesDuration = Duration.ofMillis((long) soTimeout * maxAttempts);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
@@ -86,7 +86,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     this.connectionHandler = new JedisSlotBasedConnectionHandler(jedisClusterNode, poolConfig,
         connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName);
     this.maxAttempts = maxAttempts;
-    this.maxTotalRetriesDuration = Duration.ofMillis(soTimeout);
+    this.maxTotalRetriesDuration = Duration.ofMillis((long) soTimeout * maxAttempts);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
@@ -109,7 +109,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, JedisClientConfig clientConfig,
       int maxAttempts, GenericObjectPoolConfig<Jedis> poolConfig) {
     this(jedisClusterNode, clientConfig, maxAttempts,
-        Duration.ofMillis((long) DEFAULT_TIMEOUT * maxAttempts), poolConfig);
+        Duration.ofMillis((long) clientConfig.getSocketTimeoutMillis() * maxAttempts), poolConfig);
   }
 
   public BinaryJedisCluster(Set<HostAndPort> jedisClusterNode, JedisClientConfig clientConfig,

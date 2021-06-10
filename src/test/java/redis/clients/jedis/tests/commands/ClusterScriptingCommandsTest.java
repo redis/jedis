@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -73,6 +74,7 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     byte[] byteKey = "key1".getBytes();
     jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
     assertEquals("OK", jedisCluster.scriptFlush(byteKey));
+    assertEquals("OK", jedisCluster.scriptFlush(byteKey, FlushMode.SYNC));
   }
 
   @Test(expected = JedisDataException.class)

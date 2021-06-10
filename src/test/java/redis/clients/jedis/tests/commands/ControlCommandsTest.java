@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -17,7 +18,9 @@ import org.junit.Test;
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
@@ -84,7 +87,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
           Thread.sleep(100);
         } catch (InterruptedException e) {
         }
-        Jedis j = new Jedis("localhost");
+        Jedis j = new Jedis();
         j.auth("foobared");
         for (int i = 0; i < 5; i++) {
           j.incr("foobared");
@@ -117,15 +120,29 @@ public class ControlCommandsTest extends JedisCommandTestBase {
   @Test
   public void configSet() {
     List<String> info = jedis.configGet("maxmemory");
+    assertEquals("maxmemory", info.get(0));
     String memory = info.get(1);
-    String status = jedis.configSet("maxmemory", "200");
-    assertEquals("OK", status);
-    jedis.configSet("maxmemory", memory);
+    assertEquals("OK", jedis.configSet("maxmemory", "200"));
+    assertEquals("OK", jedis.configSet("maxmemory", memory));
   }
 
   @Test
-  public void sync() {
-    jedis.sync();
+  public void configGetSetBinary() {
+    byte[] maxmemory = SafeEncoder.encode("maxmemory");
+    List<byte[]> info = jedis.configGet(maxmemory);
+    assertArrayEquals(maxmemory, info.get(0));
+    byte[] memory = info.get(1);
+    assertEquals("OK", jedis.configSet(maxmemory, Protocol.toByteArray(200)));
+    assertEquals("OK", jedis.configSet(maxmemory, memory));
+  }
+
+  @Test
+  public void configGetSetBinary2() {
+    byte[] maxmemory = SafeEncoder.encode("maxmemory");
+    List<byte[]> info = jedis.configGet(maxmemory);
+    assertArrayEquals(maxmemory, info.get(0));
+    byte[] memory = info.get(1);
+    assertEquals("OK", jedis.configSetBinary(maxmemory, memory));
   }
 
   @Test
@@ -139,8 +156,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void waitReplicas() {
-    Long replicas = jedis.waitReplicas(1, 100);
-    assertEquals(1, replicas.longValue());
+    assertEquals(1, jedis.waitReplicas(1, 100));
   }
 
   @Test
@@ -198,18 +214,36 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     byte[] memoryInfo = jedis.memoryDoctorBinary();
     assertNotNull(memoryInfo);
   }
-  
+
   @Test
   public void memoryUsageString() {
-    jedis.set("foo", "ba");
+    jedis.set("foo", "bar");
     Long usage = jedis.memoryUsage("foo");
-    assertEquals(49+3, (long)usage);
-    
-    jedis.lpush("loo", "ba", "da", "sha");
-    usage = jedis.memoryUsage("loo", 2);    
-    assertEquals(141+3, (long)usage);
-    
-    usage = jedis.memoryUsage("roo", 2);    
+    assertEquals(53, (long) usage);
+
+    jedis.lpush("foobar", "fo", "ba", "sha");
+    usage = jedis.memoryUsage("foobar", 2);
+    assertEquals(144, (long) usage);
+
+    usage = jedis.memoryUsage("roo", 2);
+    assertEquals(null, usage);
+  }
+
+  @Test
+  public void memoryUsageBinary() {
+    byte[] bfoo = {0x01, 0x02, 0x03, 0x04};
+    byte[] bbar = {0x05, 0x06, 0x07, 0x08};
+    byte[] bfoobar = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+
+    jedis.set(bfoo, bbar);
+    Long usage = jedis.memoryUsage(bfoo);
+    assertEquals(54, (long) usage);
+
+    jedis.lpush(bfoobar, new byte[]{0x01, 0x02}, new byte[]{0x05, 0x06}, new byte[]{0x00});
+    usage = jedis.memoryUsage(bfoobar, 2);
+    assertEquals(150, (long) usage);
+
+    usage = jedis.memoryUsage("roo", 2);
     assertEquals(null, usage);
   }
 }

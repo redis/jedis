@@ -11,7 +11,6 @@ import static redis.clients.jedis.Protocol.Command.*;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import org.junit.After;
@@ -115,7 +114,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     t.set(bmykey, bfoo);
     resp = t.exec();
     assertNull(resp);
-    assertTrue(Arrays.equals(bbar, jedis.get(bmykey)));
+    assertArrayEquals(bbar, jedis.get(bmykey));
   }
 
   @Test
@@ -156,7 +155,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", resp.get(0));
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = IllegalStateException.class)
   public void validateWhenInMulti() {
     jedis.multi();
     jedis.ping();
@@ -215,7 +214,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     assertArrayEquals("foo".getBytes(), set.get());
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = IllegalStateException.class)
   public void transactionResponseWithinPipeline() {
     jedis.set("string", "foo");
 
@@ -360,7 +359,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
-  public void testTransactionWithGeneralCommand(){
+  public void testTransactionWithGeneralCommand() {
     Transaction t = jedis.multi();
     t.set("string", "foo");
     t.lpush("list", "foo");

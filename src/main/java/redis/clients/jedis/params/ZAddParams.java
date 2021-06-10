@@ -10,6 +10,8 @@ public class ZAddParams extends Params {
   private static final String XX = "xx";
   private static final String NX = "nx";
   private static final String CH = "ch";
+  private static final String LT = "lt";
+  private static final String GT = "gt";
 
   public ZAddParams() {
   }
@@ -46,6 +48,24 @@ public class ZAddParams extends Params {
     return this;
   }
 
+  /**
+   * Only update existing elements if the new score is greater than the current score.
+   * @return ZAddParams
+   */
+  public ZAddParams gt() {
+    addParam(GT);
+    return this;
+  }
+
+  /**
+   * Only update existing elements if the new score is less than the current score.
+   * @return ZAddParams
+   */
+  public ZAddParams lt() {
+    addParam(LT);
+    return this;
+  }
+
   public byte[][] getByteParams(byte[] key, byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<>();
     byteParams.add(key);
@@ -58,6 +78,12 @@ public class ZAddParams extends Params {
     }
     if (contains(CH)) {
       byteParams.add(SafeEncoder.encode(CH));
+    }
+    if (contains(LT)) {
+      byteParams.add(SafeEncoder.encode(LT));
+    }
+    if (contains(GT)) {
+      byteParams.add(SafeEncoder.encode(GT));
     }
 
     Collections.addAll(byteParams, args);

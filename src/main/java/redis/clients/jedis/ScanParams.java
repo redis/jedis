@@ -31,7 +31,7 @@ public class ScanParams {
    * @see <a href="https://redis.io/commands/scan#the-match-option">MATCH option in Redis documentation</a>
    * 
    * @param pattern
-   * @return 
+   * @return
    */
   public ScanParams match(final String pattern) {
     params.put(MATCH, ByteBuffer.wrap(SafeEncoder.encode(pattern)));
@@ -42,7 +42,7 @@ public class ScanParams {
    * @see <a href="https://redis.io/commands/scan#the-count-option">COUNT option in Redis documentation</a>
    * 
    * @param count
-   * @return 
+   * @return
    */
   public ScanParams count(final Integer count) {
     params.put(COUNT, ByteBuffer.wrap(Protocol.toByteArray(count)));
@@ -52,7 +52,7 @@ public class ScanParams {
   public Collection<byte[]> getParams() {
     List<byte[]> paramsList = new ArrayList<>(params.size());
     for (Map.Entry<Keyword, ByteBuffer> param : params.entrySet()) {
-      paramsList.add(param.getKey().raw);
+      paramsList.add(param.getKey().getRaw());
       paramsList.add(param.getValue().array());
     }
     return Collections.unmodifiableCollection(paramsList);

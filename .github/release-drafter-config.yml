@@ -1,0 +1,23 @@
+name-template: '$NEXT_MAJOR_VERSION'
+tag-template: 'jedis-$NEXT_MAJOR_VERSION'
+categories:
+  - title: 'Features'
+    labels:
+      - 'ENHANCEMENT'
+  - title: 'Bug Fixes'
+    labels:
+      - 'BUG'
+  - title: 'Maintenance'
+    label: 'chore'
+change-template: '- $TITLE (#$NUMBER)'
+exclude-labels:
+  - 'skip-changelog'
+template: |
+  ## Changes
+
+  $CHANGES
+
+  ## Contributors
+  We'd like to thank all the contributors who worked on this release!
+  
+  $CONTRIBUTORS

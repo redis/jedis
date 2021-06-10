@@ -11,8 +11,8 @@ public final class HostAndPortUtil {
   private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<>();
   private static List<HostAndPort> clusterHostAndPortList = new ArrayList<>();
 
-  private HostAndPortUtil(){
-    throw new InstantiationError( "Must not instantiate this class" );
+  private HostAndPortUtil() {
+    throw new InstantiationError("Must not instantiate this class");
   }
 
   static {

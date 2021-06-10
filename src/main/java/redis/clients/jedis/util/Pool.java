@@ -11,22 +11,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public abstract class Pool<T> implements Closeable {
+  
   private final Logger logger = LoggerFactory.getLogger(getClass().getName());
 
-  protected GenericObjectPool<T> internalPool;
+  private final GenericObjectPool<T> internalPool;
 
-  /**
-   * Using this constructor means you have to set and initialize the internalPool yourself.
-   */
-  public Pool() {
-  }
-
-  public Pool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
-    initPool(poolConfig, factory);
+  public Pool(final GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
+    this.internalPool = new GenericObjectPool<>(factory, poolConfig);
   }
 
   @Override
@@ -38,15 +34,15 @@ public abstract class Pool<T> implements Closeable {
     return this.internalPool.isClosed();
   }
 
-  public void initPool(final GenericObjectPoolConfig poolConfig, PooledObjectFactory<T> factory) {
-    if (this.internalPool != null) {
-      try {
-        closeInternalPool();
-      } catch (Exception e) {
-      }
+  /**
+   * This call only clears idle instances, not borrowed instances.
+   */
+  protected void clearInternalPool() {
+    try {
+      this.internalPool.clear();
+    } catch (Exception e) {
+      throw new JedisException("Could not clear the pool", e);
     }
-
-    this.internalPool = new GenericObjectPool<>(factory, poolConfig);
   }
 
   public void prepareInternalPool() {
@@ -60,6 +56,8 @@ public abstract class Pool<T> implements Closeable {
   public T getResource() {
     try {
       return internalPool.borrowObject();
+    } catch (JedisDataException jde) {
+      throw jde;
     } catch (NoSuchElementException nse) {
       if (null == nse.getCause()) { // The exception was caused by an exhausted pool
         throw new JedisExhaustedPoolException(
@@ -73,9 +71,6 @@ public abstract class Pool<T> implements Closeable {
   }
 
   protected void returnResourceObject(final T resource) {
-    if (resource == null) {
-      return;
-    }
     try {
       internalPool.returnObject(resource);
     } catch (Exception e) {
@@ -83,13 +78,13 @@ public abstract class Pool<T> implements Closeable {
     }
   }
 
-  protected void returnBrokenResource(final T resource) {
+  public void returnBrokenResource(final T resource) {
     if (resource != null) {
       returnBrokenResourceObject(resource);
     }
   }
 
-  protected void returnResource(final T resource) {
+  public void returnResource(final T resource) {
     if (resource != null) {
       returnResourceObject(resource);
     }

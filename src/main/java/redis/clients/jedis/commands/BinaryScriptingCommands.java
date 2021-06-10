@@ -1,9 +1,15 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.args.FlushMode;
+
 import java.util.List;
 
 public interface BinaryScriptingCommands {
 
+  /**
+   * @deprecated Use {@link #eval(byte..., int, byte[]...)}.
+   */
+  @Deprecated
   Object eval(byte[] script, byte[] keyCount, byte[]... params);
 
   Object eval(byte[] script, int keyCount, byte[]... params);
@@ -24,6 +30,8 @@ public interface BinaryScriptingCommands {
   byte[] scriptLoad(byte[] script);
 
   String scriptFlush();
+
+  String scriptFlush(FlushMode flushMode);
 
   String scriptKill();
 }

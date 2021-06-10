@@ -17,6 +17,7 @@ import org.junit.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoRadiusResponse;
 import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.util.SafeEncoder;
@@ -29,34 +30,60 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   final byte[] bD = { 0x0D };
   final byte[] bNotexist = { 0x0F };
 
+  private static final double EPSILON = 1e-5;
+
   @Test
   public void geoadd() {
-    long size = jedis.geoadd("foo", 1, 2, "a");
-    assertEquals(1, size);
-    size = jedis.geoadd("foo", 2, 3, "a");
-    assertEquals(0, size);
+    assertEquals(1, jedis.geoadd("foo", 1, 2, "a"));
+    assertEquals(0, jedis.geoadd("foo", 2, 3, "a"));
 
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("a", new GeoCoordinate(3, 4));
     coordinateMap.put("b", new GeoCoordinate(2, 3));
     coordinateMap.put("c", new GeoCoordinate(3.314, 2.3241));
 
-    size = jedis.geoadd("foo", coordinateMap);
-    assertEquals(2, size);
+    assertEquals(2, jedis.geoadd("foo", coordinateMap));
 
     // binary
-    size = jedis.geoadd(bfoo, 1, 2, bA);
-    assertEquals(1, size);
-    size = jedis.geoadd(bfoo, 2, 3, bA);
-    assertEquals(0, size);
+    assertEquals(1, jedis.geoadd(bfoo, 1, 2, bA));
+    assertEquals(0, jedis.geoadd(bfoo, 2, 3, bA));
 
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(3, 4));
     bcoordinateMap.put(bB, new GeoCoordinate(2, 3));
     bcoordinateMap.put(bC, new GeoCoordinate(3.314, 2.3241));
 
-    size = jedis.geoadd(bfoo, bcoordinateMap);
-    assertEquals(2, size);
+    assertEquals(2, jedis.geoadd(bfoo, bcoordinateMap));
+  }
+
+  @Test
+  public void geoaddWithParams() {
+    assertEquals(1, jedis.geoadd("foo", 1, 2, "a"));
+
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
+    coordinateMap.put("a", new GeoCoordinate(3, 4));
+    assertEquals(0, jedis.geoadd("foo", GeoAddParams.geoAddParams().nx(), coordinateMap));
+    assertEquals(1, jedis.geoadd("foo", GeoAddParams.geoAddParams().xx().ch(), coordinateMap));
+
+    coordinateMap.clear();
+    coordinateMap.put("b", new GeoCoordinate(6, 7));
+    // never add elements.
+    assertEquals(0, jedis.geoadd("foo", GeoAddParams.geoAddParams().xx(), coordinateMap));
+    assertEquals(1, jedis.geoadd("foo", GeoAddParams.geoAddParams().nx(), coordinateMap));
+
+    // binary
+    assertEquals(1, jedis.geoadd(bfoo, 1, 2, bA));
+
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
+    bcoordinateMap.put(bA, new GeoCoordinate(3, 4));
+    assertEquals(0, jedis.geoadd(bfoo, GeoAddParams.geoAddParams().nx(), bcoordinateMap));
+    assertEquals(1, jedis.geoadd(bfoo, GeoAddParams.geoAddParams().xx().ch(), bcoordinateMap));
+
+    bcoordinateMap.clear();
+    bcoordinateMap.put(bB, new GeoCoordinate(6, 7));
+    // never add elements.
+    assertEquals(0, jedis.geoadd(bfoo, GeoAddParams.geoAddParams().xx(), bcoordinateMap));
+    assertEquals(1, jedis.geoadd(bfoo, GeoAddParams.geoAddParams().nx(), bcoordinateMap));
   }
 
   @Test
@@ -113,25 +140,25 @@ public class GeoCommandsTest extends JedisCommandTestBase {
 
     List<GeoCoordinate> coordinates = jedis.geopos("foo", "a", "b", "notexist");
     assertEquals(3, coordinates.size());
-    assertTrue(equalsWithinEpsilon(3.0, coordinates.get(0).getLongitude()));
-    assertTrue(equalsWithinEpsilon(4.0, coordinates.get(0).getLatitude()));
-    assertTrue(equalsWithinEpsilon(2.0, coordinates.get(1).getLongitude()));
-    assertTrue(equalsWithinEpsilon(3.0, coordinates.get(1).getLatitude()));
+    assertEquals(3.0, coordinates.get(0).getLongitude(), EPSILON);
+    assertEquals(4.0, coordinates.get(0).getLatitude(), EPSILON);
+    assertEquals(2.0, coordinates.get(1).getLongitude(), EPSILON);
+    assertEquals(3.0, coordinates.get(1).getLatitude(), EPSILON);
     assertNull(coordinates.get(2));
 
     List<GeoCoordinate> bcoordinates = jedis.geopos(bfoo, bA, bB, bNotexist);
     assertEquals(3, bcoordinates.size());
-    assertTrue(equalsWithinEpsilon(3.0, bcoordinates.get(0).getLongitude()));
-    assertTrue(equalsWithinEpsilon(4.0, bcoordinates.get(0).getLatitude()));
-    assertTrue(equalsWithinEpsilon(2.0, bcoordinates.get(1).getLongitude()));
-    assertTrue(equalsWithinEpsilon(3.0, bcoordinates.get(1).getLatitude()));
+    assertEquals(3.0, bcoordinates.get(0).getLongitude(), EPSILON);
+    assertEquals(4.0, bcoordinates.get(0).getLatitude(), EPSILON);
+    assertEquals(2.0, bcoordinates.get(1).getLongitude(), EPSILON);
+    assertEquals(3.0, bcoordinates.get(1).getLatitude(), EPSILON);
     assertNull(bcoordinates.get(2));
   }
 
   @Test
   public void georadius() {
     // prepare datas
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     coordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd("Sicily", coordinateMap);
@@ -156,9 +183,9 @@ public class GeoCommandsTest extends JedisCommandTestBase {
         .sortAscending().count(1).withCoord().withDist().withHash());
     assertEquals(1, members.size());
     GeoRadiusResponse response = members.get(0);
-    assertTrue(equalsWithinEpsilon(56.4413, response.getDistance()));
-    assertTrue(equalsWithinEpsilon(15.087269, response.getCoordinate().getLongitude()));
-    assertTrue(equalsWithinEpsilon(37.502669, response.getCoordinate().getLatitude()));
+    assertEquals(56.4413, response.getDistance(), EPSILON);
+    assertEquals(15.087269, response.getCoordinate().getLongitude(), EPSILON);
+    assertEquals(37.502669, response.getCoordinate().getLatitude(), EPSILON);
     assertEquals(3479447370796909L, response.getRawScore());
 
     // sort, count 1, with hash
@@ -172,15 +199,16 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadiusStore() {
     // prepare datas
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     coordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd("Sicily", coordinateMap);
 
     long size = jedis.georadiusStore("Sicily", 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<String>();
+    Set<String> expected = new LinkedHashSet<>();
     expected.add("Palermo");
     expected.add("Catania");
     assertEquals(expected, jedis.zrange("SicilyStore", 0, -1));
@@ -189,7 +217,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadiusReadonly() {
     // prepare datas
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("Palermo", new GeoCoordinate(13.361389, 38.115556));
     coordinateMap.put("Catania", new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd("Sicily", coordinateMap);
@@ -198,31 +226,31 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     assertEquals(2, members.size());
 
     // sort
-    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending());
+    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertEquals("Catania", members.get(0).getMemberByString());
     assertEquals("Palermo", members.get(1).getMemberByString());
 
     // sort, count 1
-    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending().count(1));
+    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending().count(1));
     assertEquals(1, members.size());
 
     // sort, count 1, withdist, withcoord
-    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusReadonly("Sicily", 15, 37, 200, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
     GeoRadiusResponse response = members.get(0);
-    assertTrue(equalsWithinEpsilon(56.4413, response.getDistance()));
-    assertTrue(equalsWithinEpsilon(15.087269, response.getCoordinate().getLongitude()));
-    assertTrue(equalsWithinEpsilon(37.502669, response.getCoordinate().getLatitude()));
+    assertEquals(56.4413, response.getDistance(), EPSILON);
+    assertEquals(15.087269, response.getCoordinate().getLongitude(), EPSILON);
+    assertEquals(37.502669, response.getCoordinate().getLatitude(), EPSILON);
   }
 
   @Test
   public void georadiusBinary() {
     // prepare datas
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(13.361389, 38.115556));
     bcoordinateMap.put(bB, new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd(bfoo, bcoordinateMap);
@@ -247,23 +275,24 @@ public class GeoCommandsTest extends JedisCommandTestBase {
         .sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
     GeoRadiusResponse response = members.get(0);
-    assertTrue(equalsWithinEpsilon(56.4413, response.getDistance()));
-    assertTrue(equalsWithinEpsilon(15.087269, response.getCoordinate().getLongitude()));
-    assertTrue(equalsWithinEpsilon(37.502669, response.getCoordinate().getLatitude()));
+    assertEquals(56.4413, response.getDistance(), EPSILON);
+    assertEquals(15.087269, response.getCoordinate().getLongitude(), EPSILON);
+    assertEquals(37.502669, response.getCoordinate().getLatitude(), EPSILON);
   }
 
   @Test
   public void georadiusStoreBinary() {
     // prepare datas
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(13.361389, 38.115556));
     bcoordinateMap.put(bB, new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd(bfoo, bcoordinateMap);
 
     long size = jedis.georadiusStore(bfoo, 15, 37, 200, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    Set<byte[]> bexpected = new LinkedHashSet<>();
     bexpected.add(bA);
     bexpected.add(bB);
     assertByteArraySetEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
@@ -272,7 +301,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   @Test
   public void georadiusReadonlyBinary() {
     // prepare datas
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(13.361389, 38.115556));
     bcoordinateMap.put(bB, new GeoCoordinate(15.087269, 37.502669));
     jedis.geoadd(bfoo, bcoordinateMap);
@@ -281,25 +310,25 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     assertEquals(2, members.size());
 
     // sort
-    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending());
+    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertArrayEquals(bB, members.get(0).getMember());
     assertArrayEquals(bA, members.get(1).getMember());
 
     // sort, count 1
-    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending().count(1));
+    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending().count(1));
     assertEquals(1, members.size());
 
     // sort, count 1, withdist, withcoord
-    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusReadonly(bfoo, 15, 37, 200, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
     GeoRadiusResponse response = members.get(0);
-    assertTrue(equalsWithinEpsilon(56.4413, response.getDistance()));
-    assertTrue(equalsWithinEpsilon(15.087269, response.getCoordinate().getLongitude()));
-    assertTrue(equalsWithinEpsilon(37.502669, response.getCoordinate().getLatitude()));
+    assertEquals(56.4413, response.getDistance(), EPSILON);
+    assertEquals(15.087269, response.getCoordinate().getLongitude(), EPSILON);
+    assertEquals(37.502669, response.getCoordinate().getLatitude(), EPSILON);
   }
 
   @Test
@@ -324,9 +353,9 @@ public class GeoCommandsTest extends JedisCommandTestBase {
 
     GeoRadiusResponse member = members.get(0);
     assertEquals("Agrigento", member.getMemberByString());
-    assertTrue(equalsWithinEpsilon(0, member.getDistance()));
-    assertTrue(equalsWithinEpsilon(13.583333, member.getCoordinate().getLongitude()));
-    assertTrue(equalsWithinEpsilon(37.316667, member.getCoordinate().getLatitude()));
+    assertEquals(0, member.getDistance(), EPSILON);
+    assertEquals(13.583333, member.getCoordinate().getLongitude(), EPSILON);
+    assertEquals(37.316667, member.getCoordinate().getLatitude(), EPSILON);
   }
 
   @Test
@@ -335,10 +364,11 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     jedis.geoadd("Sicily", 13.361389, 38.115556, "Palermo");
     jedis.geoadd("Sicily", 15.087269, 37.502669, "Catania");
 
-    long size = jedis.georadiusByMemberStore("Sicily", "Agrigento", 100,
-        GeoUnit.KM, GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
+    long size = jedis.georadiusByMemberStore("Sicily", "Agrigento", 100, GeoUnit.KM,
+      GeoRadiusParam.geoRadiusParam(),
+      GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<String>();
+    Set<String> expected = new LinkedHashSet<>();
     expected.add("Agrigento");
     expected.add("Palermo");
     assertEquals(expected, jedis.zrange("SicilyStore", 0, -1));
@@ -354,21 +384,21 @@ public class GeoCommandsTest extends JedisCommandTestBase {
       GeoUnit.KM);
     assertEquals(2, members.size());
 
-    members = jedis.georadiusByMemberReadonly("Sicily", "Agrigento", 100, GeoUnit.KM, GeoRadiusParam
-        .geoRadiusParam().sortAscending());
+    members = jedis.georadiusByMemberReadonly("Sicily", "Agrigento", 100, GeoUnit.KM,
+      GeoRadiusParam.geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertEquals("Agrigento", members.get(0).getMemberByString());
     assertEquals("Palermo", members.get(1).getMemberByString());
 
-    members = jedis.georadiusByMemberReadonly("Sicily", "Agrigento", 100, GeoUnit.KM, GeoRadiusParam
-        .geoRadiusParam().sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusByMemberReadonly("Sicily", "Agrigento", 100, GeoUnit.KM,
+      GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
 
     GeoRadiusResponse member = members.get(0);
     assertEquals("Agrigento", member.getMemberByString());
-    assertTrue(equalsWithinEpsilon(0, member.getDistance()));
-    assertTrue(equalsWithinEpsilon(13.583333, member.getCoordinate().getLongitude()));
-    assertTrue(equalsWithinEpsilon(37.316667, member.getCoordinate().getLatitude()));
+    assertEquals(0, member.getDistance(), EPSILON);
+    assertEquals(13.583333, member.getCoordinate().getLongitude(), EPSILON);
+    assertEquals(37.316667, member.getCoordinate().getLatitude(), EPSILON);
   }
 
   @Test
@@ -380,21 +410,21 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     List<GeoRadiusResponse> members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM);
     assertEquals(2, members.size());
 
-    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending());
+    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertArrayEquals(bA, members.get(0).getMember());
     assertArrayEquals(bB, members.get(1).getMember());
 
-    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusByMember(bfoo, bA, 100, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
 
     GeoRadiusResponse member = members.get(0);
     assertArrayEquals(bA, member.getMember());
-    assertTrue(equalsWithinEpsilon(0, member.getDistance()));
-    assertTrue(equalsWithinEpsilon(13.583333, member.getCoordinate().getLongitude()));
-    assertTrue(equalsWithinEpsilon(37.316667, member.getCoordinate().getLatitude()));
+    assertEquals(0, member.getDistance(), EPSILON);
+    assertEquals(13.583333, member.getCoordinate().getLongitude(), EPSILON);
+    assertEquals(37.316667, member.getCoordinate().getLatitude(), EPSILON);
   }
 
   @Test
@@ -403,10 +433,10 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     jedis.geoadd(bfoo, 13.361389, 38.115556, bB);
     jedis.geoadd(bfoo, 15.087269, 37.502669, bC);
 
-    long size = jedis.georadiusByMemberStore(bfoo, bA, 100, GeoUnit.KM,
-        GeoRadiusParam.geoRadiusParam(), GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
-    assertEquals(2, size);
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    assertEquals(2, jedis.georadiusByMemberStore(bfoo, bA, 100, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam(),
+        GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore")));
+    Set<byte[]> bexpected = new LinkedHashSet<>();
     bexpected.add(bA);
     bexpected.add(bB);
     assertByteArraySetEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
@@ -421,39 +451,37 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     List<GeoRadiusResponse> members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM);
     assertEquals(2, members.size());
 
-    members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending());
+    members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending());
     assertEquals(2, members.size());
     assertArrayEquals(bA, members.get(0).getMember());
     assertArrayEquals(bB, members.get(1).getMember());
 
-    members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .sortAscending().count(1).withCoord().withDist());
+    members = jedis.georadiusByMemberReadonly(bfoo, bA, 100, GeoUnit.KM,
+        GeoRadiusParam.geoRadiusParam().sortAscending().count(1).withCoord().withDist());
     assertEquals(1, members.size());
 
     GeoRadiusResponse member = members.get(0);
     assertArrayEquals(bA, member.getMember());
-    assertTrue(equalsWithinEpsilon(0, member.getDistance()));
-    assertTrue(equalsWithinEpsilon(13.583333, member.getCoordinate().getLongitude()));
-    assertTrue(equalsWithinEpsilon(37.316667, member.getCoordinate().getLatitude()));
+    assertEquals(0, member.getDistance(), EPSILON);
+    assertEquals(13.583333, member.getCoordinate().getLongitude(), EPSILON);
+    assertEquals(37.316667, member.getCoordinate().getLatitude(), EPSILON);
   }
 
   private void prepareGeoData() {
-    Map<String, GeoCoordinate> coordinateMap = new HashMap<String, GeoCoordinate>();
+    Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
     coordinateMap.put("a", new GeoCoordinate(3, 4));
     coordinateMap.put("b", new GeoCoordinate(2, 3));
     coordinateMap.put("c", new GeoCoordinate(3.314, 2.3241));
 
-    long size = jedis.geoadd("foo", coordinateMap);
-    assertEquals(3, size);
+    assertEquals(3, jedis.geoadd("foo", coordinateMap));
 
-    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<byte[], GeoCoordinate>();
+    Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
     bcoordinateMap.put(bA, new GeoCoordinate(3, 4));
     bcoordinateMap.put(bB, new GeoCoordinate(2, 3));
     bcoordinateMap.put(bC, new GeoCoordinate(3.314, 2.3241));
 
-    size = jedis.geoadd(bfoo, bcoordinateMap);
-    assertEquals(3, size);
+    assertEquals(3, jedis.geoadd(bfoo, bcoordinateMap));
   }
 
   private boolean equalsWithinEpsilon(double d1, double d2) {

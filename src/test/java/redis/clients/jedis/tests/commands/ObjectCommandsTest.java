@@ -97,13 +97,14 @@ public class ObjectCommandsTest extends JedisCommandTestBase {
     // Binary
     count = lfuJedis.objectFreq(binaryKey);
     assertTrue(count > 0);
-    
+
     assertNull(lfuJedis.objectFreq("no_such_key"));
-    
+
     try {
       jedis.set(key, "test2");
       jedis.objectFreq(key);
       fail("Freq is only allowed with LFU policy");
-    }catch(JedisDataException e) {}
+    } catch (JedisDataException e) {
+    }
   }
 }

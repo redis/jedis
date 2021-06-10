@@ -50,7 +50,7 @@ public class SortingParams {
    * @return the SortingParams Object
    */
   public SortingParams by(final byte[] pattern) {
-    params.add(BY.raw);
+    params.add(BY.getRaw());
     params.add(pattern);
     return this;
   }
@@ -63,8 +63,8 @@ public class SortingParams {
    * @return the SortingParams Object
    */
   public SortingParams nosort() {
-    params.add(BY.raw);
-    params.add(NOSORT.raw);
+    params.add(BY.getRaw());
+    params.add(NOSORT.getRaw());
     return this;
   }
 
@@ -77,7 +77,7 @@ public class SortingParams {
    * @return the sortingParams Object
    */
   public SortingParams desc() {
-    params.add(DESC.raw);
+    params.add(DESC.getRaw());
     return this;
   }
 
@@ -86,7 +86,7 @@ public class SortingParams {
    * @return the SortingParams Object
    */
   public SortingParams asc() {
-    params.add(ASC.raw);
+    params.add(ASC.getRaw());
     return this;
   }
 
@@ -97,7 +97,7 @@ public class SortingParams {
    * @return the SortingParams Object
    */
   public SortingParams limit(final int start, final int count) {
-    params.add(LIMIT.raw);
+    params.add(LIMIT.getRaw());
     params.add(Protocol.toByteArray(start));
     params.add(Protocol.toByteArray(count));
     return this;
@@ -109,7 +109,7 @@ public class SortingParams {
    * @return the SortingParams Object
    */
   public SortingParams alpha() {
-    params.add(ALPHA.raw);
+    params.add(ALPHA.getRaw());
     return this;
   }
 
@@ -129,7 +129,7 @@ public class SortingParams {
    */
   public SortingParams get(String... patterns) {
     for (final String pattern : patterns) {
-      params.add(GET.raw);
+      params.add(GET.getRaw());
       params.add(SafeEncoder.encode(pattern));
     }
     return this;
@@ -151,7 +151,7 @@ public class SortingParams {
    */
   public SortingParams get(byte[]... patterns) {
     for (final byte[] pattern : patterns) {
-      params.add(GET.raw);
+      params.add(GET.getRaw());
       params.add(pattern);
     }
     return this;

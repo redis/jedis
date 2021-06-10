@@ -13,7 +13,9 @@ import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContain
 import static redis.clients.jedis.tests.utils.ByteArrayUtil.byteArrayCollectionRemoveAll;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
@@ -512,8 +514,15 @@ public class SetCommandsTest extends JedisCommandTestBase {
     assertTrue("a".equals(member) || "b".equals(member));
     assertEquals(2, jedis.smembers("foo").size());
 
+    List<String> members = jedis.srandmember("foo", 2);
+    members.sort(Comparator.naturalOrder());
+    assertEquals( Arrays.asList("a", "b"), members);
+
     member = jedis.srandmember("bar");
     assertNull(member);
+    
+    members = jedis.srandmember("bar", 2);
+    assertEquals(0, members.size());
 
     // Binary
     jedis.sadd(bfoo, ba);
@@ -523,9 +532,15 @@ public class SetCommandsTest extends JedisCommandTestBase {
 
     assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
     assertEquals(2, jedis.smembers(bfoo).size());
+    
+    List<byte[]> bmembers = jedis.srandmember(bfoo, 2);
+    assertEquals(2, bmembers.size());
 
     bmember = jedis.srandmember(bbar);
     assertNull(bmember);
+    
+    members = jedis.srandmember("bbar", 2);
+    assertEquals(0, members.size());
   }
 
   @Test

@@ -1,17 +1,22 @@
 package redis.clients.jedis.exceptions;
 
-public class JedisNoReachableClusterNodeException extends JedisConnectionException {
-    private static final long serialVersionUID = 3878122572474110407L;
+/**
+ * @deprecated This exception class will be removed in future. Use
+ * {@link JedisClusterOperationException} instead.
+ */
+public class JedisNoReachableClusterNodeException extends JedisClusterOperationException {
 
-    public JedisNoReachableClusterNodeException(String message) {
-        super(message);
-    }
+  private static final long serialVersionUID = 3878122572474110407L;
 
-    public JedisNoReachableClusterNodeException(Throwable cause) {
-        super(cause);
-    }
+  public JedisNoReachableClusterNodeException(String message) {
+    super(message);
+  }
 
-    public JedisNoReachableClusterNodeException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  public JedisNoReachableClusterNodeException(Throwable cause) {
+    super(cause);
+  }
+
+  public JedisNoReachableClusterNodeException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

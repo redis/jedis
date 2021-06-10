@@ -27,7 +27,6 @@ public class ScanResult<T> {
 
   /**
    * Is the iteration complete. I.e. was the complete dataset scanned.
-   *
    * @return true if the iteration is complete
    */
   public boolean isCompleteIteration() {

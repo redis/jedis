@@ -4,22 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.GeoRadiusResponse;
-import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamConsumersInfo;
-import redis.clients.jedis.StreamGroupInfo;
-import redis.clients.jedis.StreamInfo;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.*;
+import redis.clients.jedis.params.*;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis
@@ -31,85 +17,131 @@ public interface BinaryJedisCommands {
 
   byte[] get(byte[] key);
 
-  Boolean exists(byte[] key);
+  byte[] getDel(byte[] key);
 
-  Long persist(byte[] key);
+  byte[] getEx(byte[] key, GetExParams params);
+
+  boolean exists(byte[] key);
+
+  long persist(byte[] key);
 
   String type(byte[] key);
 
   byte[] dump(byte[] key);
 
-  String restore(byte[] key, int ttl, byte[] serializedValue);
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[])}.
+   */
+  @Deprecated
+  default String restore(byte[] key, int ttl, byte[] serializedValue) {
+    return restore(key, (long) ttl, serializedValue);
+  }
 
-  String restoreReplace(byte[] key, int ttl, byte[] serializedValue);
+  String restore(byte[] key, long ttl, byte[] serializedValue);
 
-  Long expire(byte[] key, int seconds);
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
+  default String restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
+    return restoreReplace(key, (long) ttl, serializedValue);
+  }
 
-  Long pexpire(byte[] key, long milliseconds);
+  /**
+   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   */
+  @Deprecated
+  String restoreReplace(byte[] key, long ttl, byte[] serializedValue);
 
-  Long expireAt(byte[] key, long unixTime);
+  String restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
 
-  Long pexpireAt(byte[] key, long millisecondsTimestamp);
+  /**
+   * @deprecated Use {@link #expire(byte[], long)}.
+   */
+  @Deprecated
+  default Long expire(byte[] key, int seconds) {
+    return expire(key, (long) seconds);
+  }
 
-  Long ttl(byte[] key);
+  long expire(byte[] key, long seconds);
 
-  Long pttl(byte[] key);
+  long pexpire(byte[] key, long milliseconds);
 
-  Long touch(byte[] key);
+  long expireAt(byte[] key, long unixTime);
 
-  Boolean setbit(byte[] key, long offset, boolean value);
+  long pexpireAt(byte[] key, long millisecondsTimestamp);
 
+  long ttl(byte[] key);
+
+  long pttl(byte[] key);
+
+  long touch(byte[] key);
+
+  boolean setbit(byte[] key, long offset, boolean value);
+
+  /**
+   * @deprecated Use {@link #setbit(byte[], long, boolean)}.
+   */
+  @Deprecated
   Boolean setbit(byte[] key, long offset, byte[] value);
 
-  Boolean getbit(byte[] key, long offset);
+  boolean getbit(byte[] key, long offset);
 
-  Long setrange(byte[] key, long offset, byte[] value);
+  long setrange(byte[] key, long offset, byte[] value);
 
   byte[] getrange(byte[] key, long startOffset, long endOffset);
 
   byte[] getSet(byte[] key, byte[] value);
 
-  Long setnx(byte[] key, byte[] value);
+  long setnx(byte[] key, byte[] value);
 
-  String setex(byte[] key, int seconds, byte[] value);
+  /**
+   * @deprecated Use {@link #setex(byte[], long, byte[])}.
+   */
+  @Deprecated
+  default String setex(byte[] key, int seconds, byte[] value) {
+    return setex(key, (long) seconds, value);
+  }
+
+  String setex(byte[] key, long seconds, byte[] value);
 
   String psetex(byte[] key, long milliseconds, byte[] value);
 
-  Long decrBy(byte[] key, long decrement);
+  long decrBy(byte[] key, long decrement);
 
-  Long decr(byte[] key);
+  long decr(byte[] key);
 
-  Long incrBy(byte[] key, long increment);
+  long incrBy(byte[] key, long increment);
 
-  Double incrByFloat(byte[] key, double increment);
+  double incrByFloat(byte[] key, double increment);
 
-  Long incr(byte[] key);
+  long incr(byte[] key);
 
-  Long append(byte[] key, byte[] value);
+  long append(byte[] key, byte[] value);
 
   byte[] substr(byte[] key, int start, int end);
 
-  Long hset(byte[] key, byte[] field, byte[] value);
+  long hset(byte[] key, byte[] field, byte[] value);
 
-  Long hset(byte[] key, Map<byte[], byte[]> hash);
+  long hset(byte[] key, Map<byte[], byte[]> hash);
 
   byte[] hget(byte[] key, byte[] field);
 
-  Long hsetnx(byte[] key, byte[] field, byte[] value);
+  long hsetnx(byte[] key, byte[] field, byte[] value);
 
   String hmset(byte[] key, Map<byte[], byte[]> hash);
 
   List<byte[]> hmget(byte[] key, byte[]... fields);
 
-  Long hincrBy(byte[] key, byte[] field, long value);
+  long hincrBy(byte[] key, byte[] field, long value);
 
-  Double hincrByFloat(byte[] key, byte[] field, double value);
+  double hincrByFloat(byte[] key, byte[] field, double value);
 
-  Boolean hexists(byte[] key, byte[] field);
+  boolean hexists(byte[] key, byte[] field);
 
-  Long hdel(byte[] key, byte[]... field);
+  long hdel(byte[] key, byte[]... field);
 
-  Long hlen(byte[] key);
+  long hlen(byte[] key);
 
   Set<byte[]> hkeys(byte[] key);
 
@@ -117,11 +149,17 @@ public interface BinaryJedisCommands {
 
   Map<byte[], byte[]> hgetAll(byte[] key);
 
-  Long rpush(byte[] key, byte[]... args);
+  byte[] hrandfield(byte[] key);
 
-  Long lpush(byte[] key, byte[]... args);
+  List<byte[]> hrandfield(byte[] key, long count);
 
-  Long llen(byte[] key);
+  Map<byte[], byte[]> hrandfieldWithValues(byte[] key, long count);
+
+  long rpush(byte[] key, byte[]... args);
+
+  long lpush(byte[] key, byte[]... args);
+
+  long llen(byte[] key);
 
   List<byte[]> lrange(byte[] key, long start, long stop);
 
@@ -131,9 +169,11 @@ public interface BinaryJedisCommands {
 
   String lset(byte[] key, long index, byte[] value);
 
-  Long lrem(byte[] key, long count, byte[] value);
+  long lrem(byte[] key, long count, byte[] value);
 
   byte[] lpop(byte[] key);
+
+  List<byte[]> lpop(byte[] key, int count);
 
   Long lpos(byte[] key, byte[] element);
 
@@ -143,19 +183,21 @@ public interface BinaryJedisCommands {
 
   byte[] rpop(byte[] key);
 
-  Long sadd(byte[] key, byte[]... member);
+  List<byte[]> rpop(byte[] key, int count);
+
+  long sadd(byte[] key, byte[]... member);
 
   Set<byte[]> smembers(byte[] key);
 
-  Long srem(byte[] key, byte[]... member);
+  long srem(byte[] key, byte[]... member);
 
   byte[] spop(byte[] key);
 
   Set<byte[]> spop(byte[] key, long count);
 
-  Long scard(byte[] key);
+  long scard(byte[] key);
 
-  Boolean sismember(byte[] key, byte[] member);
+  boolean sismember(byte[] key, byte[] member);
 
   List<Boolean> smismember(byte[] key, byte[]... members);
 
@@ -163,21 +205,23 @@ public interface BinaryJedisCommands {
 
   List<byte[]> srandmember(byte[] key, int count);
 
-  Long strlen(byte[] key);
+  long strlen(byte[] key);
 
-  Long zadd(byte[] key, double score, byte[] member);
+  long zadd(byte[] key, double score, byte[] member);
 
-  Long zadd(byte[] key, double score, byte[] member, ZAddParams params);
+  long zadd(byte[] key, double score, byte[] member, ZAddParams params);
 
-  Long zadd(byte[] key, Map<byte[], Double> scoreMembers);
+  long zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
-  Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
+  long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
+
+  Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
 
   Set<byte[]> zrange(byte[] key, long start, long stop);
 
-  Long zrem(byte[] key, byte[]... members);
+  long zrem(byte[] key, byte[]... members);
 
-  Double zincrby(byte[] key, double increment, byte[] member);
+  double zincrby(byte[] key, double increment, byte[] member);
 
   Double zincrby(byte[] key, double increment, byte[] member, ZIncrByParams params);
 
@@ -191,7 +235,13 @@ public interface BinaryJedisCommands {
 
   Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
 
-  Long zcard(byte[] key);
+  byte[] zrandmember(byte[] key);
+
+  Set<byte[]> zrandmember(byte[] key, long count);
+
+  Set<Tuple> zrandmemberWithScores(byte[] key, long count);
+
+  long zcard(byte[] key);
 
   Double zscore(byte[] key, byte[] member);
 
@@ -209,9 +259,9 @@ public interface BinaryJedisCommands {
 
   List<byte[]> sort(byte[] key, SortingParams sortingParameters);
 
-  Long zcount(byte[] key, double min, double max);
+  long zcount(byte[] key, double min, double max);
 
-  Long zcount(byte[] key, byte[] min, byte[] max);
+  long zcount(byte[] key, byte[] min, byte[] max);
 
   Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
@@ -245,53 +295,51 @@ public interface BinaryJedisCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-  Long zremrangeByRank(byte[] key, long start, long stop);
+  long zremrangeByRank(byte[] key, long start, long stop);
 
-  Long zremrangeByScore(byte[] key, double min, double max);
+  long zremrangeByScore(byte[] key, double min, double max);
 
-  Long zremrangeByScore(byte[] key, byte[] min, byte[] max);
+  long zremrangeByScore(byte[] key, byte[] min, byte[] max);
 
-  Long zlexcount(byte[] key, byte[] min, byte[] max);
+  long zlexcount(byte[] key, byte[] min, byte[] max);
 
   Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset,
-      int count);
+  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
 
   Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset,
-      int count);
+  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-  Long zremrangeByLex(byte[] key, byte[] min, byte[] max);
+  long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
+  long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
 
-  Long lpushx(byte[] key, byte[]... arg);
+  long lpushx(byte[] key, byte[]... arg);
 
-  Long rpushx(byte[] key, byte[]... arg);
+  long rpushx(byte[] key, byte[]... arg);
 
-  Long del(byte[] key);
+  long del(byte[] key);
 
-  Long unlink(byte[] key);
+  long unlink(byte[] key);
 
   byte[] echo(byte[] arg);
 
-  Long move(byte[] key, int dbIndex);
+  long bitcount(byte[] key);
 
-  Long bitcount(byte[] key);
+  long bitcount(byte[] key, long start, long end);
 
-  Long bitcount(byte[] key, long start, long end);
-
-  Long pfadd(byte[] key, byte[]... elements);
+  long pfadd(byte[] key, byte[]... elements);
 
   long pfcount(byte[] key);
 
   // Geo Commands
 
-  Long geoadd(byte[] key, double longitude, double latitude, byte[] member);
+  long geoadd(byte[] key, double longitude, double latitude, byte[] member);
 
-  Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
+  long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
+
+  long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
   Double geodist(byte[] key, byte[] member1, byte[] member2);
 
@@ -304,14 +352,14 @@ public interface BinaryJedisCommands {
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit);
 
-  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit);
+  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param);
 
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit);
 
@@ -320,18 +368,24 @@ public interface BinaryJedisCommands {
   List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param);
 
-  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit,
-      GeoRadiusParam param);
+  List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius,
+      GeoUnit unit, GeoRadiusParam param);
 
-  ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor);
+  default ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
+    return hscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params);
 
-  ScanResult<byte[]> sscan(byte[] key, byte[] cursor);
+  default ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
+    return sscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params);
 
-  ScanResult<Tuple> zscan(byte[] key, byte[] cursor);
+  default ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
+    return zscan(key, cursor, new ScanParams());
+  }
 
   ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params);
 
@@ -339,50 +393,101 @@ public interface BinaryJedisCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return 
+   * @return
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
 
   List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
-  
+
   /**
    * Used for HSTRLEN Redis command
-   * @param key 
+   * @param key
    * @param field
    * @return lenth of the value for key
    */
-  Long hstrlen(byte[] key, byte[] field);
-  
-  
-  byte[] xadd(final byte[] key, final byte[] id, final Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
+  long hstrlen(byte[] key, byte[] field);
 
-  Long xlen(final byte[] key);
- 
-  List<byte[]> xrange(final byte[] key, final byte[] start, final byte[] end, final long count);
+  byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
-  List<byte[]> xrevrange(final byte[] key, final byte[] end, final byte[] start, final int count);
+  byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
 
-  Long xack(final byte[] key, final byte[] group, final byte[]... ids);
- 
-  String xgroupCreate(final byte[] key, final byte[] consumer, final byte[] id, boolean makeStream);
+  long xlen(byte[] key);
 
-  String xgroupSetID(final byte[] key, final byte[] consumer, final byte[] id);
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
 
-  Long xgroupDestroy(final byte[] key, final byte[] consumer);
+  /**
+   * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
+   */
+  @Deprecated
+  default List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
+    return xrange(key, start, end, (int) Math.min(count, (long) Integer.MAX_VALUE));
+  }
 
-  Long xgroupDelConsumer(final byte[] key, final byte[] consumer, final byte[] consumerName);
- 
-  Long xdel(final byte[] key, final byte[]... ids);
+  List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
 
-  Long xtrim(byte[] key, long maxLen, boolean approximateLength);
+  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start);
 
-  List<byte[]> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
-  List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[][] ids);
+  long xack(byte[] key, byte[] group, byte[]... ids);
 
-  StreamInfo xinfoStream (byte[] key);
+  String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream);
 
-  List<StreamGroupInfo> xinfoGroup (byte[] key);
+  String xgroupSetID(byte[] key, byte[] consumer, byte[] id);
 
-  List<StreamConsumersInfo> xinfoConsumers (byte[] key, byte[] group);
+  long xgroupDestroy(byte[] key, byte[] consumer);
+
+  long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
+
+  long xdel(byte[] key, byte[]... ids);
+
+  long xtrim(byte[] key, long maxLen, boolean approximateLength);
+
+  long xtrim(byte[] key, XTrimParams params);
+
+  Object xpending(byte[] key, byte[] groupname);
+
+  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+
+  List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params);
+
+  List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
+
+  List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+
+  List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+
+  List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params);
+
+  List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
+      long minIdleTime, byte[] start, XAutoClaimParams params);
+
+  /**
+   * @deprecated Use {@link #xinfoStreamBinary(byte[])}.
+   */
+  @Deprecated
+  StreamInfo xinfoStream(byte[] key);
+
+  Object xinfoStreamBinary(byte[] key);
+
+  /**
+   * @deprecated Use {@link #xinfoGroupBinary(byte[])}.
+   */
+  @Deprecated
+  List<StreamGroupInfo> xinfoGroup(byte[] key);
+
+  List<Object> xinfoGroupBinary(byte[] key);
+
+  /**
+   * @deprecated Use {@link #xinfoConsumersBinary(byte[], byte[])}.
+   */
+  @Deprecated
+  List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group);
+
+  List<Object> xinfoConsumersBinary(byte[] key, byte[] group);
+
+  Long memoryUsage(byte[] key);
+
+  Long memoryUsage(byte[] key, int samples);
 }

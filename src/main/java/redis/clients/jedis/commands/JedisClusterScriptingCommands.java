@@ -9,15 +9,17 @@ public interface JedisClusterScriptingCommands {
 
   /**
    * @param script
-   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
-   * @return 
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is
+   *          assigned to
+   * @return
    */
   Object eval(String script, String sampleKey);
 
   /**
    * @param sha1
-   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
-   * @return 
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is
+   *          assigned to
+   * @return
    */
   Object evalsha(String sha1, String sampleKey);
 
@@ -27,34 +29,39 @@ public interface JedisClusterScriptingCommands {
 
   /**
    * @param sha1
-   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
-   * @return 
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is
+   *          assigned to
+   * @return
    */
   Boolean scriptExists(String sha1, String sampleKey);
 
   /**
-   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is
+   *          assigned to
    * @param sha1
-   * @return 
+   * @return
    */
   List<Boolean> scriptExists(String sampleKey, String... sha1);
 
   /**
    * @param script
-   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
-   * @return 
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is
+   *          assigned to
+   * @return
    */
   String scriptLoad(String script, String sampleKey);
 
   /**
-   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
-   * @return 
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is
+   *          assigned to
+   * @return
    */
   String scriptFlush(String sampleKey);
 
   /**
-   * @param sampleKey Command will be executed in the node where the hash slot of this key is assigned to
-   * @return 
+   * @param sampleKey Command will be executed in the node where the hash slot of this key is
+   *          assigned to
+   * @return
    */
   String scriptKill(String sampleKey);
 }

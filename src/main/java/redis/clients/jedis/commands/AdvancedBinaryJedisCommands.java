@@ -3,18 +3,29 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 
 public interface AdvancedBinaryJedisCommands {
 
+  long move(byte[] key, int dbIndex);
+
   List<byte[]> configGet(byte[] pattern);
 
-  byte[] configSet(byte[] parameter, byte[] value);
+  String configSet(byte[] parameter, byte[] value);
+
+  /**
+   * @deprecated Use {@link #configSet(byte[], byte[])}.
+   */
+  @Deprecated
+  default String configSetBinary(byte[] parameter, byte[] value) {
+    return configSet(parameter, value);
+  }
 
   String slowlogReset();
 
-  Long slowlogLen();
+  long slowlogLen();
 
   List<Object> slowlogGetBinary();
 
@@ -32,24 +43,31 @@ public interface AdvancedBinaryJedisCommands {
 
   String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 
-  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys);
+  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
+      byte[]... keys);
 
   String clientKill(byte[] ipPort);
 
   String clientKill(String ip, int port);
 
-  Long clientKill(ClientKillParams params);
+  long clientKill(ClientKillParams params);
 
   byte[] clientGetnameBinary();
 
   byte[] clientListBinary();
 
+  byte[] clientListBinary(long... clientIds);
+
+  byte[] clientInfoBinary();
+
   String clientSetname(byte[] name);
 
-  Long clientId();
+  long clientId();
+
+  long clientUnblock(long clientId, UnblockType unblockType);
 
   byte[] memoryDoctorBinary();
-  
+
   Long memoryUsage(byte[] key);
 
   Long memoryUsage(byte[] key, int samples);
@@ -68,7 +86,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String aclSetUser(byte[] name, byte[]... keys);
 
-  Long aclDelUser(byte[] name);
+  long aclDelUser(byte[] name);
 
   List<byte[]> aclCatBinary();
 
@@ -80,5 +98,7 @@ public interface AdvancedBinaryJedisCommands {
 
   byte[] aclLog(byte[] options);
 
-  // TODO: Implements ACL LOAD/SAVE commands
+  String aclLoad();
+
+  String aclSave();
 }

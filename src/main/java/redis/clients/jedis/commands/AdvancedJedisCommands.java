@@ -4,18 +4,22 @@ import java.util.List;
 
 import redis.clients.jedis.AccessControlLogEntry;
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.util.Slowlog;
 
 public interface AdvancedJedisCommands {
+
+  long move(String key, int dbIndex);
+
   List<String> configGet(String pattern);
 
   String configSet(String parameter, String value);
 
   String slowlogReset();
 
-  Long slowlogLen();
+  long slowlogLen();
 
   List<Slowlog> slowlogGet();
 
@@ -33,26 +37,33 @@ public interface AdvancedJedisCommands {
 
   String migrate(String host, int port, String key, int destinationDB, int timeout);
 
-  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
+  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
+      String... keys);
 
   String clientKill(String ipPort);
 
   String clientKill(String ip, int port);
 
-  Long clientKill(ClientKillParams params);
+  long clientKill(ClientKillParams params);
 
   String clientGetname();
 
   String clientList();
 
+  String clientList(long... clientIds);
+
+  String clientInfo();
+
   String clientSetname(String name);
 
-  Long clientId();
+  long clientId();
+
+  long clientUnblock(long clientId, UnblockType unblockType);
 
   String memoryDoctor();
-  
+
   Long memoryUsage(String key);
-  
+
   Long memoryUsage(String key, int samples);
 
   String aclWhoAmI();
@@ -69,7 +80,7 @@ public interface AdvancedJedisCommands {
 
   String aclSetUser(String name, String... keys);
 
-  Long aclDelUser(String name);
+  long aclDelUser(String name);
 
   List<String> aclCat();
 
@@ -81,5 +92,7 @@ public interface AdvancedJedisCommands {
 
   String aclLog(String options);
 
-  // TODO: Implements ACL LOAD/SAVE commands
+  String aclLoad();
+
+  String aclSave();
 }

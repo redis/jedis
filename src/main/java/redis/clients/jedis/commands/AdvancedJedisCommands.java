@@ -11,7 +11,7 @@ import redis.clients.jedis.util.Slowlog;
 
 public interface AdvancedJedisCommands {
 
-  Long move(String key, int dbIndex);
+  long move(String key, int dbIndex);
 
   List<String> configGet(String pattern);
 
@@ -19,7 +19,7 @@ public interface AdvancedJedisCommands {
 
   String slowlogReset();
 
-  Long slowlogLen();
+  long slowlogLen();
 
   List<Slowlog> slowlogGet();
 
@@ -44,7 +44,7 @@ public interface AdvancedJedisCommands {
 
   String clientKill(String ip, int port);
 
-  Long clientKill(ClientKillParams params);
+  long clientKill(ClientKillParams params);
 
   String clientGetname();
 
@@ -56,9 +56,9 @@ public interface AdvancedJedisCommands {
 
   String clientSetname(String name);
 
-  Long clientId();
+  long clientId();
 
-  Long clientUnblock(long clientId, UnblockType unblockType);
+  long clientUnblock(long clientId, UnblockType unblockType);
 
   String memoryDoctor();
 
@@ -80,7 +80,7 @@ public interface AdvancedJedisCommands {
 
   String aclSetUser(String name, String... keys);
 
-  Long aclDelUser(String name);
+  long aclDelUser(String name);
 
   List<String> aclCat();
 

@@ -222,8 +222,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     String statusSetUser = jedis.aclSetUser(USER_YYY);
     assertEquals("OK", statusSetUser);
     int before = jedis.aclList().size();
-    Long statusDelUser = jedis.aclDelUser(USER_YYY);
-    assertEquals(1, statusDelUser.longValue());
+    assertEquals(1L, jedis.aclDelUser(USER_YYY));
     int after = jedis.aclList().size();
     assertEquals(before - 1, after);
   }
@@ -445,7 +444,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     jedis.aclSetUser(USER_ZZZ.getBytes());
     assertNotNull(jedis.aclGetUser(USER_ZZZ));
 
-    assertEquals(Long.valueOf(1L), jedis.aclDelUser(USER_ZZZ.getBytes()));
+    assertEquals(1L, jedis.aclDelUser(USER_ZZZ.getBytes()));
 
     jedis.aclSetUser(USER_ZZZ.getBytes(), "reset".getBytes(), "+@all".getBytes(), "~*".getBytes(),
       "-@string".getBytes(), "+incr".getBytes(), "-debug".getBytes(), "+debug|digest".getBytes());

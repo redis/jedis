@@ -9,7 +9,7 @@ import redis.clients.jedis.params.ClientKillParams;
 
 public interface AdvancedBinaryJedisCommands {
 
-  Long move(byte[] key, int dbIndex);
+  long move(byte[] key, int dbIndex);
 
   List<byte[]> configGet(byte[] pattern);
 
@@ -25,7 +25,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String slowlogReset();
 
-  Long slowlogLen();
+  long slowlogLen();
 
   List<Object> slowlogGetBinary();
 
@@ -50,9 +50,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String clientKill(String ip, int port);
 
-  Long clientKill(ClientKillParams params);
-
-  Long clientUnblock(long clientId, UnblockType unblockType);
+  long clientKill(ClientKillParams params);
 
   byte[] clientGetnameBinary();
 
@@ -64,7 +62,9 @@ public interface AdvancedBinaryJedisCommands {
 
   String clientSetname(byte[] name);
 
-  Long clientId();
+  long clientId();
+
+  long clientUnblock(long clientId, UnblockType unblockType);
 
   byte[] memoryDoctorBinary();
 
@@ -86,7 +86,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String aclSetUser(byte[] name, byte[]... keys);
 
-  Long aclDelUser(byte[] name);
+  long aclDelUser(byte[] name);
 
   List<byte[]> aclCatBinary();
 

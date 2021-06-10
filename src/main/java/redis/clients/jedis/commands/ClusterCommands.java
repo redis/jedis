@@ -29,9 +29,9 @@ public interface ClusterCommands {
 
   String clusterFlushSlots();
 
-  Long clusterKeySlot(String key);
+  long clusterKeySlot(String key);
 
-  Long clusterCountKeysInSlot(int slot);
+  long clusterCountKeysInSlot(int slot);
 
   String clusterSaveConfig();
 

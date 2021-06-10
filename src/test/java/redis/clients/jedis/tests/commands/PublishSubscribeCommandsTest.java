@@ -76,6 +76,30 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
         // All channels are subscribed
         if (count == 3) {
           Jedis otherJedis = createJedis();
+          List<String> activeChannels = otherJedis.pubsubChannels();
+          // Since we are utilizing sentinel for the tests, there is an additional
+          // '__sentinel__:hello' channel that has subscribers and will be returned from PUBSUB
+          // CHANNELS.
+          assertTrue(activeChannels.containsAll(expectedActiveChannels));
+          unsubscribe();
+        }
+      }
+    }, "testchan1", "testchan2", "testchan3");
+  }
+
+  @Test
+  public void pubSubChannelsWithPattern() {
+    final List<String> expectedActiveChannels = Arrays
+        .asList("testchan1", "testchan2", "testchan3");
+    jedis.subscribe(new JedisPubSub() {
+      private int count = 0;
+
+      @Override
+      public void onSubscribe(String channel, int subscribedChannels) {
+        count++;
+        // All channels are subscribed
+        if (count == 3) {
+          Jedis otherJedis = createJedis();
           List<String> activeChannels = otherJedis.pubsubChannels("test*");
           assertTrue(expectedActiveChannels.containsAll(activeChannels));
           unsubscribe();

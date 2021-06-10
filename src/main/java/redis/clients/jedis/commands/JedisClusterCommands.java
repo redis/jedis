@@ -12,13 +12,5 @@ public interface JedisClusterCommands extends JedisCommands {
     return restore(key, ttl, serializedValue, RestoreParams.restoreParams().replace());
   }
 
-  /**
-   * @throws UnsupportedOperationException Redis Cluster does not support MOVE command.
-   */
-  @Override
-  default Long move(String key, int dbIndex) {
-    throw new UnsupportedOperationException("Redis Cluster does not support MOVE command.");
-  }
-
-  Long waitReplicas(String key, int replicas, long timeout);
+  long waitReplicas(String key, int replicas, long timeout);
 }

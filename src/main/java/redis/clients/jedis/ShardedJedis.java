@@ -82,7 +82,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Boolean exists(final String key) {
+  public boolean exists(final String key) {
     Jedis j = getShard(key);
     return j.exists(key);
   }
@@ -119,43 +119,43 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long expire(final String key, final long seconds) {
+  public long expire(final String key, final long seconds) {
     Jedis j = getShard(key);
     return j.expire(key, seconds);
   }
 
   @Override
-  public Long pexpire(final String key, final long milliseconds) {
+  public long pexpire(final String key, final long milliseconds) {
     Jedis j = getShard(key);
     return j.pexpire(key, milliseconds);
   }
 
   @Override
-  public Long expireAt(final String key, final long unixTime) {
+  public long expireAt(final String key, final long unixTime) {
     Jedis j = getShard(key);
     return j.expireAt(key, unixTime);
   }
 
   @Override
-  public Long pexpireAt(final String key, final long millisecondsTimestamp) {
+  public long pexpireAt(final String key, final long millisecondsTimestamp) {
     Jedis j = getShard(key);
     return j.pexpireAt(key, millisecondsTimestamp);
   }
 
   @Override
-  public Long ttl(final String key) {
+  public long ttl(final String key) {
     Jedis j = getShard(key);
     return j.ttl(key);
   }
 
   @Override
-  public Long pttl(final String key) {
+  public long pttl(final String key) {
     Jedis j = getShard(key);
     return j.pttl(key);
   }
 
   @Override
-  public Boolean setbit(final String key, final long offset, boolean value) {
+  public boolean setbit(final String key, final long offset, boolean value) {
     Jedis j = getShard(key);
     return j.setbit(key, offset, value);
   }
@@ -167,13 +167,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Boolean getbit(final String key, final long offset) {
+  public boolean getbit(final String key, final long offset) {
     Jedis j = getShard(key);
     return j.getbit(key, offset);
   }
 
   @Override
-  public Long setrange(final String key, final long offset, final String value) {
+  public long setrange(final String key, final long offset, final String value) {
     Jedis j = getShard(key);
     return j.setrange(key, offset, value);
   }
@@ -191,7 +191,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long setnx(final String key, final String value) {
+  public long setnx(final String key, final String value) {
     Jedis j = getShard(key);
     return j.setnx(key, value);
   }
@@ -233,37 +233,37 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long decrBy(final String key, final long decrement) {
+  public long decrBy(final String key, final long decrement) {
     Jedis j = getShard(key);
     return j.decrBy(key, decrement);
   }
 
   @Override
-  public Long decr(final String key) {
+  public long decr(final String key) {
     Jedis j = getShard(key);
     return j.decr(key);
   }
 
   @Override
-  public Long incrBy(final String key, final long increment) {
+  public long incrBy(final String key, final long increment) {
     Jedis j = getShard(key);
     return j.incrBy(key, increment);
   }
 
   @Override
-  public Double incrByFloat(final String key, final double increment) {
+  public double incrByFloat(final String key, final double increment) {
     Jedis j = getShard(key);
     return j.incrByFloat(key, increment);
   }
 
   @Override
-  public Long incr(final String key) {
+  public long incr(final String key) {
     Jedis j = getShard(key);
     return j.incr(key);
   }
 
   @Override
-  public Long append(final String key, final String value) {
+  public long append(final String key, final String value) {
     Jedis j = getShard(key);
     return j.append(key, value);
   }
@@ -275,13 +275,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long hset(final String key, final String field, final String value) {
+  public long hset(final String key, final String field, final String value) {
     Jedis j = getShard(key);
     return j.hset(key, field, value);
   }
 
   @Override
-  public Long hset(final String key, final Map<String, String> hash) {
+  public long hset(final String key, final Map<String, String> hash) {
     Jedis j = getShard(key);
     return j.hset(key, hash);
   }
@@ -293,7 +293,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long hsetnx(final String key, final String field, final String value) {
+  public long hsetnx(final String key, final String field, final String value) {
     Jedis j = getShard(key);
     return j.hsetnx(key, field, value);
   }
@@ -311,43 +311,43 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long hincrBy(final String key, final String field, final long value) {
+  public long hincrBy(final String key, final String field, final long value) {
     Jedis j = getShard(key);
     return j.hincrBy(key, field, value);
   }
 
   @Override
-  public Double hincrByFloat(final String key, final String field, final double value) {
+  public double hincrByFloat(final String key, final String field, final double value) {
     Jedis j = getShard(key);
     return j.hincrByFloat(key, field, value);
   }
 
   @Override
-  public Boolean hexists(final String key, final String field) {
+  public boolean hexists(final String key, final String field) {
     Jedis j = getShard(key);
     return j.hexists(key, field);
   }
 
   @Override
-  public Long del(final String key) {
+  public long del(final String key) {
     Jedis j = getShard(key);
     return j.del(key);
   }
 
   @Override
-  public Long unlink(final String key) {
+  public long unlink(final String key) {
     Jedis j = getShard(key);
     return j.unlink(key);
   }
 
   @Override
-  public Long hdel(final String key, String... fields) {
+  public long hdel(final String key, String... fields) {
     Jedis j = getShard(key);
     return j.hdel(key, fields);
   }
 
   @Override
-  public Long hlen(final String key) {
+  public long hlen(final String key) {
     Jedis j = getShard(key);
     return j.hlen(key);
   }
@@ -389,49 +389,48 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long rpush(final String key, String... strings) {
+  public long rpush(final String key, String... strings) {
     Jedis j = getShard(key);
     return j.rpush(key, strings);
   }
 
   @Override
-  public Long lpush(final String key, String... strings) {
+  public long lpush(final String key, String... strings) {
     Jedis j = getShard(key);
     return j.lpush(key, strings);
   }
 
   @Override
-  public Long lpushx(final String key, String... string) {
+  public long lpushx(final String key, String... string) {
     Jedis j = getShard(key);
     return j.lpushx(key, string);
   }
 
   @Override
-  public Long strlen(final String key) {
+  public long strlen(final String key) {
     Jedis j = getShard(key);
     return j.strlen(key);
   }
 
-  @Override
-  public Long move(final String key, final int dbIndex) {
+  public long move(final String key, final int dbIndex) {
     Jedis j = getShard(key);
     return j.move(key, dbIndex);
   }
 
   @Override
-  public Long rpushx(final String key, String... string) {
+  public long rpushx(final String key, String... string) {
     Jedis j = getShard(key);
     return j.rpushx(key, string);
   }
 
   @Override
-  public Long persist(final String key) {
+  public long persist(final String key) {
     Jedis j = getShard(key);
     return j.persist(key);
   }
 
   @Override
-  public Long llen(final String key) {
+  public long llen(final String key) {
     Jedis j = getShard(key);
     return j.llen(key);
   }
@@ -461,7 +460,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long lrem(final String key, final long count, final String value) {
+  public long lrem(final String key, final long count, final String value) {
     Jedis j = getShard(key);
     return j.lrem(key, count, value);
   }
@@ -510,7 +509,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long sadd(final String key, String... members) {
+  public long sadd(final String key, String... members) {
     Jedis j = getShard(key);
     return j.sadd(key, members);
   }
@@ -522,7 +521,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long srem(final String key, String... members) {
+  public long srem(final String key, String... members) {
     Jedis j = getShard(key);
     return j.srem(key, members);
   }
@@ -540,13 +539,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long scard(final String key) {
+  public long scard(final String key) {
     Jedis j = getShard(key);
     return j.scard(key);
   }
 
   @Override
-  public Boolean sismember(final String key, final String member) {
+  public boolean sismember(final String key, final String member) {
     Jedis j = getShard(key);
     return j.sismember(key, member);
   }
@@ -570,26 +569,26 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zadd(final String key, final double score, final String member) {
+  public long zadd(final String key, final double score, final String member) {
     Jedis j = getShard(key);
     return j.zadd(key, score, member);
   }
 
   @Override
-  public Long zadd(final String key, final double score, final String member,
+  public long zadd(final String key, final double score, final String member,
       final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zadd(key, score, member, params);
   }
 
   @Override
-  public Long zadd(final String key, final Map<String, Double> scoreMembers) {
+  public long zadd(final String key, final Map<String, Double> scoreMembers) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers);
   }
 
   @Override
-  public Long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
+  public long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
     Jedis j = getShard(key);
     return j.zadd(key, scoreMembers, params);
   }
@@ -607,13 +606,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zrem(final String key, String... members) {
+  public long zrem(final String key, String... members) {
     Jedis j = getShard(key);
     return j.zrem(key, members);
   }
 
   @Override
-  public Double zincrby(final String key, final double increment, final String member) {
+  public double zincrby(final String key, final double increment, final String member) {
     Jedis j = getShard(key);
     return j.zincrby(key, increment, member);
   }
@@ -674,7 +673,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zcard(final String key) {
+  public long zcard(final String key) {
     Jedis j = getShard(key);
     return j.zcard(key);
   }
@@ -728,13 +727,13 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zcount(final String key, final double min, final double max) {
+  public long zcount(final String key, final double min, final double max) {
     Jedis j = getShard(key);
     return j.zcount(key, min, max);
   }
 
   @Override
-  public Long zcount(final String key, final String min, final String max) {
+  public long zcount(final String key, final String min, final String max) {
     Jedis j = getShard(key);
     return j.zcount(key, min, max);
   }
@@ -844,25 +843,25 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zremrangeByRank(final String key, final long start, final long stop) {
+  public long zremrangeByRank(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
     return j.zremrangeByRank(key, start, stop);
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final double min, final double max) {
+  public long zremrangeByScore(final String key, final double min, final double max) {
     Jedis j = getShard(key);
     return j.zremrangeByScore(key, min, max);
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final String min, final String max) {
+  public long zremrangeByScore(final String key, final String min, final String max) {
     Jedis j = getShard(key);
     return j.zremrangeByScore(key, min, max);
   }
 
   @Override
-  public Long zlexcount(final String key, final String min, final String max) {
+  public long zlexcount(final String key, final String min, final String max) {
     return getShard(key).zlexcount(key, min, max);
   }
 
@@ -889,37 +888,37 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long zremrangeByLex(final String key, final String min, final String max) {
+  public long zremrangeByLex(final String key, final String min, final String max) {
     return getShard(key).zremrangeByLex(key, min, max);
   }
 
   @Override
-  public Long linsert(final String key, final ListPosition where, final String pivot,
+  public long linsert(final String key, final ListPosition where, final String pivot,
       final String value) {
     Jedis j = getShard(key);
     return j.linsert(key, where, pivot, value);
   }
 
   @Override
-  public Long bitcount(final String key) {
+  public long bitcount(final String key) {
     Jedis j = getShard(key);
     return j.bitcount(key);
   }
 
   @Override
-  public Long bitcount(final String key, final long start, final long end) {
+  public long bitcount(final String key, final long start, final long end) {
     Jedis j = getShard(key);
     return j.bitcount(key, start, end);
   }
 
   @Override
-  public Long bitpos(final String key, final boolean value) {
+  public long bitpos(final String key, final boolean value) {
     Jedis j = getShard(key);
     return j.bitpos(key, value);
   }
 
   @Override
-  public Long bitpos(final String key, boolean value, final BitPosParams params) {
+  public long bitpos(final String key, boolean value, final BitPosParams params) {
     Jedis j = getShard(key);
     return j.bitpos(key, value, params);
   }
@@ -978,7 +977,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long pfadd(final String key, final String... elements) {
+  public long pfadd(final String key, final String... elements) {
     Jedis j = getShard(key);
     return j.pfadd(key, elements);
   }
@@ -990,26 +989,26 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long touch(final String key) {
+  public long touch(final String key) {
     Jedis j = getShard(key);
     return j.touch(key);
   }
 
   @Override
-  public Long geoadd(final String key, final double longitude, final double latitude,
+  public long geoadd(final String key, final double longitude, final double latitude,
       final String member) {
     Jedis j = getShard(key);
     return j.geoadd(key, longitude, latitude, member);
   }
 
   @Override
-  public Long geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
+  public long geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
     Jedis j = getShard(key);
     return j.geoadd(key, memberCoordinateMap);
   }
 
   @Override
-  public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+  public long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
     Jedis j = getShard(key);
     return j.geoadd(key, params, memberCoordinateMap);
   }
@@ -1108,7 +1107,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long hstrlen(final String key, final String field) {
+  public long hstrlen(final String key, final String field) {
     Jedis j = getShard(key);
     return j.hstrlen(key, field);
   }
@@ -1145,7 +1144,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long xlen(String key) {
+  public long xlen(String key) {
     Jedis j = getShard(key);
     return j.xlen(key);
   }
@@ -1163,7 +1162,7 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long xack(String key, String group, StreamEntryID... ids) {
+  public long xack(String key, String group, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xack(key, group, ids);
   }
@@ -1181,31 +1180,31 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public Long xgroupDestroy(String key, String groupname) {
+  public long xgroupDestroy(String key, String groupname) {
     Jedis j = getShard(key);
     return j.xgroupDestroy(key, groupname);
   }
 
   @Override
-  public Long xgroupDelConsumer(String key, String groupname, String consumername) {
+  public long xgroupDelConsumer(String key, String groupname, String consumername) {
     Jedis j = getShard(key);
     return j.xgroupDelConsumer(key, groupname, consumername);
   }
 
   @Override
-  public Long xdel(String key, StreamEntryID... ids) {
+  public long xdel(String key, StreamEntryID... ids) {
     Jedis j = getShard(key);
     return j.xdel(key, ids);
   }
 
   @Override
-  public Long xtrim(String key, long maxLen, boolean approximateLength) {
+  public long xtrim(String key, long maxLen, boolean approximateLength) {
     Jedis j = getShard(key);
     return j.xtrim(key, maxLen, approximateLength);
   }
 
   @Override
-  public Long xtrim(String key, XTrimParams params) {
+  public long xtrim(String key, XTrimParams params) {
     Jedis j = getShard(key);
     return j.xtrim(key, params);
   }

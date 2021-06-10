@@ -47,31 +47,22 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void zadd() {
-    long status = jedis.zadd("foo", 1d, "a");
-    assertEquals(1, status);
+    assertEquals(1, jedis.zadd("foo", 1d, "a"));
 
-    status = jedis.zadd("foo", 10d, "b");
-    assertEquals(1, status);
+    assertEquals(1, jedis.zadd("foo", 10d, "b"));
 
-    status = jedis.zadd("foo", 0.1d, "c");
-    assertEquals(1, status);
+    assertEquals(1, jedis.zadd("foo", 0.1d, "c"));
 
-    status = jedis.zadd("foo", 2d, "a");
-    assertEquals(0, status);
+    assertEquals(0, jedis.zadd("foo", 2d, "a"));
 
     // Binary
-    long bstatus = jedis.zadd(bfoo, 1d, ba);
-    assertEquals(1, bstatus);
+    assertEquals(1, jedis.zadd(bfoo, 1d, ba));
 
-    bstatus = jedis.zadd(bfoo, 10d, bb);
-    assertEquals(1, bstatus);
+    assertEquals(1, jedis.zadd(bfoo, 10d, bb));
 
-    bstatus = jedis.zadd(bfoo, 0.1d, bc);
-    assertEquals(1, bstatus);
+    assertEquals(1, jedis.zadd(bfoo, 0.1d, bc));
 
-    bstatus = jedis.zadd(bfoo, 2d, ba);
-    assertEquals(0, bstatus);
-
+    assertEquals(0, jedis.zadd(bfoo, 2d, ba));
   }
 
   @Test
@@ -79,21 +70,18 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.del("foo");
 
     // xx: never add new member
-    long status = jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().xx());
-    assertEquals(0L, status);
+    assertEquals(0L, jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().xx()));
 
     jedis.zadd("foo", 1d, "a");
     // nx: never update current member
-    status = jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
-    assertEquals(0L, status);
+    assertEquals(0L, jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx()));
     assertEquals(Double.valueOf(1d), jedis.zscore("foo", "a"));
 
     Map<String, Double> scoreMembers = new HashMap<String, Double>();
     scoreMembers.put("a", 2d);
     scoreMembers.put("b", 1d);
     // ch: return count of members not only added, but also updated
-    status = jedis.zadd("foo", scoreMembers, ZAddParams.zAddParams().ch());
-    assertEquals(2L, status);
+    assertEquals(2L, jedis.zadd("foo", scoreMembers, ZAddParams.zAddParams().ch()));
 
     // lt: only update existing elements if the new score is less than the current score.
     jedis.zadd("foo", 3d, "a", ZAddParams.zAddParams().lt());
@@ -118,21 +106,18 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.del(bfoo);
 
     // xx: never add new member
-    status = jedis.zadd(bfoo, 1d, ba, ZAddParams.zAddParams().xx());
-    assertEquals(0L, status);
+    assertEquals(0L, jedis.zadd(bfoo, 1d, ba, ZAddParams.zAddParams().xx()));
 
     jedis.zadd(bfoo, 1d, ba);
     // nx: never update current member
-    status = jedis.zadd(bfoo, 2d, ba, ZAddParams.zAddParams().nx());
-    assertEquals(0L, status);
+    assertEquals(0L, jedis.zadd(bfoo, 2d, ba, ZAddParams.zAddParams().nx()));
     assertEquals(Double.valueOf(1d), jedis.zscore(bfoo, ba));
 
     Map<byte[], Double> binaryScoreMembers = new HashMap<byte[], Double>();
     binaryScoreMembers.put(ba, 2d);
     binaryScoreMembers.put(bb, 1d);
     // ch: return count of members not only added, but also updated
-    status = jedis.zadd(bfoo, binaryScoreMembers, ZAddParams.zAddParams().ch());
-    assertEquals(2L, status);
+    assertEquals(2L, jedis.zadd(bfoo, binaryScoreMembers, ZAddParams.zAddParams().ch()));
 
     // lt: only update existing elements if the new score is less than the current score.
     jedis.zadd(bfoo, 3d, ba, ZAddParams.zAddParams().lt());
@@ -188,7 +173,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(bb);
     brange = jedis.zrange(bfoo, 0, 100);
     assertByteArraySetEquals(bexpected, brange);
-
   }
 
   @Test
@@ -309,7 +293,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(bc);
     brange = jedis.zrevrange(bfoo, 0, 100);
     assertByteArraySetEquals(bexpected, brange);
-
   }
 
   @Test
@@ -317,34 +300,27 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 2d, "b");
 
-    long status = jedis.zrem("foo", "a");
+    assertEquals(1, jedis.zrem("foo", "a"));
 
     Set<String> expected = new LinkedHashSet<String>();
     expected.add("b");
 
-    assertEquals(1, status);
     assertEquals(expected, jedis.zrange("foo", 0, 100));
 
-    status = jedis.zrem("foo", "bar");
-
-    assertEquals(0, status);
+    assertEquals(0, jedis.zrem("foo", "bar"));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 2d, bb);
 
-    long bstatus = jedis.zrem(bfoo, ba);
+    assertEquals(1, jedis.zrem(bfoo, ba));
 
     Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bb);
 
-    assertEquals(1, bstatus);
     assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
-    bstatus = jedis.zrem(bfoo, bbar);
-
-    assertEquals(0, bstatus);
-
+    assertEquals(0, jedis.zrem(bfoo, bbar));
   }
 
   @Test
@@ -352,28 +328,25 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 2d, "b");
 
-    double score = jedis.zincrby("foo", 2d, "a");
+    assertEquals(3d, jedis.zincrby("foo", 2d, "a"), 0);
 
     Set<String> expected = new LinkedHashSet<String>();
     expected.add("a");
     expected.add("b");
 
-    assertEquals(3d, score, 0);
     assertEquals(expected, jedis.zrange("foo", 0, 100));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 2d, bb);
 
-    double bscore = jedis.zincrby(bfoo, 2d, ba);
+    assertEquals(3d, jedis.zincrby(bfoo, 2d, ba), 0);
 
     Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bb);
     bexpected.add(ba);
 
-    assertEquals(3d, bscore, 0);
     assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
-
   }
 
   @Test
@@ -381,14 +354,12 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.del("foo");
 
     // xx: never add new member
-    Double score = jedis.zincrby("foo", 2d, "a", ZIncrByParams.zIncrByParams().xx());
-    assertNull(score);
+    assertNull(jedis.zincrby("foo", 2d, "a", ZIncrByParams.zIncrByParams().xx()));
 
     jedis.zadd("foo", 2d, "a");
 
     // nx: never update current member
-    score = jedis.zincrby("foo", 1d, "a", ZIncrByParams.zIncrByParams().nx());
-    assertNull(score);
+    assertNull(jedis.zincrby("foo", 1d, "a", ZIncrByParams.zIncrByParams().nx()));
     assertEquals(Double.valueOf(2d), jedis.zscore("foo", "a"));
 
     // Binary
@@ -396,14 +367,12 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.del(bfoo);
 
     // xx: never add new member
-    score = jedis.zincrby(bfoo, 2d, ba, ZIncrByParams.zIncrByParams().xx());
-    assertNull(score);
+    assertNull(jedis.zincrby(bfoo, 2d, ba, ZIncrByParams.zIncrByParams().xx()));
 
     jedis.zadd(bfoo, 2d, ba);
 
     // nx: never update current member
-    score = jedis.zincrby(bfoo, 1d, ba, ZIncrByParams.zIncrByParams().nx());
-    assertNull(score);
+    assertNull(jedis.zincrby(bfoo, 1d, ba, ZIncrByParams.zIncrByParams().nx()));
     assertEquals(Double.valueOf(2d), jedis.zscore(bfoo, ba));
   }
 
@@ -431,7 +400,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(1, brank);
 
     assertNull(jedis.zrank(bcar, bb));
-
   }
 
   @Test
@@ -454,7 +422,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     brank = jedis.zrevrank(bfoo, bb);
     assertEquals(0, brank);
-
   }
 
   @Test
@@ -528,7 +495,6 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bexpected.add(new Tuple(bc, 0.1d));
     brange = jedis.zrevrangeWithScores(bfoo, 0, 100);
     assertEquals(bexpected, brange);
-
   }
 
   @Test
@@ -538,8 +504,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    long size = jedis.zcard("foo");
-    assertEquals(3, size);
+    assertEquals(3, jedis.zcard("foo"));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
@@ -547,9 +512,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    long bsize = jedis.zcard(bfoo);
-    assertEquals(3, bsize);
-
+    assertEquals(3, jedis.zcard(bfoo));
   }
 
   @Test
@@ -559,14 +522,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    Double score = jedis.zscore("foo", "b");
-    assertEquals((Double) 10d, score);
+    assertEquals((Double) 10d, jedis.zscore("foo", "b"));
 
-    score = jedis.zscore("foo", "c");
-    assertEquals((Double) 0.1d, score);
+    assertEquals((Double) 0.1d, jedis.zscore("foo", "c"));
 
-    score = jedis.zscore("foo", "s");
-    assertNull(score);
+    assertNull(jedis.zscore("foo", "s"));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
@@ -574,14 +534,11 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Double bscore = jedis.zscore(bfoo, bb);
-    assertEquals((Double) 10d, bscore);
+    assertEquals((Double) 10d, jedis.zscore(bfoo, bb));
 
-    bscore = jedis.zscore(bfoo, bc);
-    assertEquals((Double) 0.1d, bscore);
+    assertEquals((Double) 0.1d, jedis.zscore(bfoo, bc));
 
-    bscore = jedis.zscore(bfoo, SafeEncoder.encode("s"));
-    assertNull(bscore);
+    assertNull(jedis.zscore(bfoo, SafeEncoder.encode("s")));
 
   }
 
@@ -733,8 +690,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     assertEquals(expected, range);
 
-    Tuple tuple = jedis.zpopmin("foo");
-    assertEquals(new Tuple("b", 10d), tuple);
+    assertEquals(new Tuple("b", 10d), jedis.zpopmin("foo"));
 
     // Binary
 
@@ -751,8 +707,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     assertEquals(bexpected, brange);
 
-    tuple = jedis.zpopmin(bfoo);
-    assertEquals(new Tuple(bb, 10d), tuple);
+    assertEquals(new Tuple(bb, 10d), jedis.zpopmin(bfoo));
   }
 
   @Test
@@ -762,13 +717,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    long result = jedis.zcount("foo", 0.01d, 2.1d);
+    assertEquals(2, jedis.zcount("foo", 0.01d, 2.1d));
 
-    assertEquals(2, result);
-
-    result = jedis.zcount("foo", "(0.01", "+inf");
-
-    assertEquals(3, result);
+    assertEquals(3, jedis.zcount("foo", "(0.01", "+inf"));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
@@ -776,13 +727,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    long bresult = jedis.zcount(bfoo, 0.01d, 2.1d);
+    assertEquals(2, jedis.zcount(bfoo, 0.01d, 2.1d));
 
-    assertEquals(2, bresult);
-
-    bresult = jedis.zcount(bfoo, SafeEncoder.encode("(0.01"), SafeEncoder.encode("+inf"));
-
-    assertEquals(3, bresult);
+    assertEquals(3, jedis.zcount(bfoo, SafeEncoder.encode("(0.01"), SafeEncoder.encode("+inf")));
   }
 
   @Test
@@ -792,17 +739,13 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 1, "c");
     jedis.zadd("foo", 1, "aa");
 
-    long result = jedis.zlexcount("foo", "[aa", "(c");
-    assertEquals(2, result);
+    assertEquals(2, jedis.zlexcount("foo", "[aa", "(c"));
 
-    result = jedis.zlexcount("foo", "-", "+");
-    assertEquals(4, result);
+    assertEquals(4, jedis.zlexcount("foo", "-", "+"));
 
-    result = jedis.zlexcount("foo", "-", "(c");
-    assertEquals(3, result);
+    assertEquals(3, jedis.zlexcount("foo", "-", "(c"));
 
-    result = jedis.zlexcount("foo", "[aa", "+");
-    assertEquals(3, result);
+    assertEquals(3, jedis.zlexcount("foo", "[aa", "+"));
   }
 
   @Test
@@ -812,11 +755,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 1, bc);
     jedis.zadd(bfoo, 1, bb);
 
-    long result = jedis.zlexcount(bfoo, bInclusiveB, bExclusiveC);
-    assertEquals(1, result);
+    assertEquals(1, jedis.zlexcount(bfoo, bInclusiveB, bExclusiveC));
 
-    result = jedis.zlexcount(bfoo, bLexMinusInf, bLexPlusInf);
-    assertEquals(3, result);
+    assertEquals(3, jedis.zlexcount(bfoo, bLexMinusInf, bLexPlusInf));
   }
 
   @Test
@@ -1091,9 +1032,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    long result = jedis.zremrangeByRank("foo", 0, 0);
-
-    assertEquals(1, result);
+    assertEquals(1, jedis.zremrangeByRank("foo", 0, 0));
 
     Set<String> expected = new LinkedHashSet<String>();
     expected.add("a");
@@ -1107,9 +1046,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    long bresult = jedis.zremrangeByRank(bfoo, 0, 0);
-
-    assertEquals(1, bresult);
+    assertEquals(1, jedis.zremrangeByRank(bfoo, 0, 0));
 
     Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(ba);
@@ -1126,9 +1063,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    long result = jedis.zremrangeByScore("foo", 0, 2);
-
-    assertEquals(2, result);
+    assertEquals(2, jedis.zremrangeByScore("foo", 0, 2));
 
     Set<String> expected = new LinkedHashSet<String>();
     expected.add("b");
@@ -1141,9 +1076,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    long bresult = jedis.zremrangeByScore(bfoo, 0, 2);
-
-    assertEquals(2, bresult);
+    assertEquals(2, jedis.zremrangeByScore(bfoo, 0, 2));
 
     Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bb);
@@ -1157,14 +1090,14 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 0d, "c");
     jedis.zadd("foo", 2d, "b");
 
-    assertEquals(Long.valueOf(1), jedis.zremrangeByScore("foo", "(0", "(2"));
+    assertEquals(1, jedis.zremrangeByScore("foo", "(0", "(2"));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 0d, bc);
     jedis.zadd(bfoo, 2d, bb);
 
-    assertEquals(Long.valueOf(1), jedis.zremrangeByScore(bfoo, "(0".getBytes(), "(2".getBytes()));
+    assertEquals(1, jedis.zremrangeByScore(bfoo, "(0".getBytes(), "(2".getBytes()));
   }
 
   @Test
@@ -1174,9 +1107,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 1, "c");
     jedis.zadd("foo", 1, "aa");
 
-    long result = jedis.zremrangeByLex("foo", "[aa", "(c");
-
-    assertEquals(2, result);
+    assertEquals(2, jedis.zremrangeByLex("foo", "[aa", "(c"));
 
     Set<String> expected = new LinkedHashSet<String>();
     expected.add("a");
@@ -1191,9 +1122,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 1, bc);
     jedis.zadd(bfoo, 1, bb);
 
-    long bresult = jedis.zremrangeByLex(bfoo, bInclusiveB, bExclusiveC);
-
-    assertEquals(1, bresult);
+    assertEquals(1, jedis.zremrangeByLex(bfoo, bInclusiveB, bExclusiveC));
 
     Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(ba);
@@ -1249,9 +1178,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("bar", 2, "a");
     jedis.zadd("bar", 2, "b");
 
-    long result = jedis.zunionstore("dst", "foo", "bar");
-
-    assertEquals(2, result);
+    assertEquals(2, jedis.zunionstore("dst", "foo", "bar"));
 
     Set<Tuple> expected = new LinkedHashSet<Tuple>();
     expected.add(new Tuple("b", new Double(4)));
@@ -1265,9 +1192,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bbar, 2, ba);
     jedis.zadd(bbar, 2, bb);
 
-    long bresult = jedis.zunionstore(SafeEncoder.encode("dst"), bfoo, bbar);
-
-    assertEquals(2, bresult);
+    assertEquals(2, jedis.zunionstore(SafeEncoder.encode("dst"), bfoo, bbar));
 
     Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
     bexpected.add(new Tuple(bb, new Double(4)));
@@ -1286,9 +1211,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     ZParams params = new ZParams();
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
-    long result = jedis.zunionstore("dst", params, "foo", "bar");
 
-    assertEquals(2, result);
+    assertEquals(2, jedis.zunionstore("dst", params, "foo", "bar"));
 
     Set<Tuple> expected = new LinkedHashSet<Tuple>();
     expected.add(new Tuple("b", new Double(9)));
@@ -1305,9 +1229,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     ZParams bparams = new ZParams();
     bparams.weights(2, 2.5);
     bparams.aggregate(ZParams.Aggregate.SUM);
-    long bresult = jedis.zunionstore(SafeEncoder.encode("dst"), bparams, bfoo, bbar);
 
-    assertEquals(2, bresult);
+    assertEquals(2, jedis.zunionstore(SafeEncoder.encode("dst"), bparams, bfoo, bbar));
 
     Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
     bexpected.add(new Tuple(bb, new Double(9)));
@@ -1350,9 +1273,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 2, "b");
     jedis.zadd("bar", 2, "a");
 
-    long result = jedis.zinterstore("dst", "foo", "bar");
-
-    assertEquals(1, result);
+    assertEquals(1, jedis.zinterstore("dst", "foo", "bar"));
 
     Set<Tuple> expected = new LinkedHashSet<Tuple>();
     expected.add(new Tuple("a", new Double(3)));
@@ -1364,9 +1285,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 2, bb);
     jedis.zadd(bbar, 2, ba);
 
-    long bresult = jedis.zinterstore(SafeEncoder.encode("dst"), bfoo, bbar);
-
-    assertEquals(1, bresult);
+    assertEquals(1, jedis.zinterstore(SafeEncoder.encode("dst"), bfoo, bbar));
 
     Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
     bexpected.add(new Tuple(ba, new Double(3)));
@@ -1383,9 +1302,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     ZParams params = new ZParams();
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
-    long result = jedis.zinterstore("dst", params, "foo", "bar");
 
-    assertEquals(1, result);
+    assertEquals(1, jedis.zinterstore("dst", params, "foo", "bar"));
 
     Set<Tuple> expected = new LinkedHashSet<Tuple>();
     expected.add(new Tuple("a", new Double(7)));
@@ -1400,9 +1318,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     ZParams bparams = new ZParams();
     bparams.weights(2, 2.5);
     bparams.aggregate(ZParams.Aggregate.SUM);
-    long bresult = jedis.zinterstore(SafeEncoder.encode("dst"), bparams, bfoo, bbar);
 
-    assertEquals(1, bresult);
+    assertEquals(1, jedis.zinterstore(SafeEncoder.encode("dst"), bparams, bfoo, bbar));
 
     Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
     bexpected.add(new Tuple(ba, new Double(7)));
@@ -1565,8 +1482,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 2.0, "b");
     jedis.zadd("bar", 1.0, "a");
 
-    assertEquals(0, jedis.zdiffStore("bar3", "bar1", "bar2").longValue());
-    assertEquals(1, jedis.zdiffStore("bar3", "foo", "bar").longValue());
+    assertEquals(0, jedis.zdiffStore("bar3", "bar1", "bar2"));
+    assertEquals(1, jedis.zdiffStore("bar3", "foo", "bar"));
     assertEquals(Collections.singleton("b"), jedis.zrange("bar3", 0, -1));
 
     // binary
@@ -1575,8 +1492,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 2.0, bb);
     jedis.zadd(bbar, 1.0, ba);
 
-    assertEquals(0, jedis.zdiffStore(bbar3, bbar1, bbar2).longValue());
-    assertEquals(1, jedis.zdiffStore(bbar3, bfoo, bbar).longValue());
+    assertEquals(0, jedis.zdiffStore(bbar3, bbar1, bbar2));
+    assertEquals(1, jedis.zdiffStore(bbar3, bfoo, bbar));
     Set<byte[]> bactual = jedis.zrange(bbar3, 0, -1);
     assertArrayEquals(bb, bactual.iterator().next());
   }

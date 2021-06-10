@@ -173,7 +173,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Boolean copy(String srcKey, String dstKey, boolean replace) {
+  public boolean copy(String srcKey, String dstKey, boolean replace) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {
@@ -233,7 +233,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Boolean exists(final String key) {
+  public boolean exists(final String key) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {
@@ -243,7 +243,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long exists(final String... keys) {
+  public long exists(final String... keys) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -253,7 +253,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long persist(final String key) {
+  public long persist(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -304,7 +304,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long expire(final String key, final long seconds) {
+  public long expire(final String key, final long seconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -314,7 +314,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long pexpire(final String key, final long milliseconds) {
+  public long pexpire(final String key, final long milliseconds) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -324,7 +324,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long expireAt(final String key, final long unixTime) {
+  public long expireAt(final String key, final long unixTime) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -334,7 +334,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long pexpireAt(final String key, final long millisecondsTimestamp) {
+  public long pexpireAt(final String key, final long millisecondsTimestamp) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -344,7 +344,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long ttl(final String key) {
+  public long ttl(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -354,7 +354,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long pttl(final String key) {
+  public long pttl(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -364,7 +364,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long touch(final String key) {
+  public long touch(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -374,7 +374,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long touch(final String... keys) {
+  public long touch(final String... keys) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -384,7 +384,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Boolean setbit(final String key, final long offset, final boolean value) {
+  public boolean setbit(final String key, final long offset, final boolean value) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {
@@ -404,7 +404,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Boolean getbit(final String key, final long offset) {
+  public boolean getbit(final String key, final long offset) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {
@@ -414,7 +414,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long setrange(final String key, final long offset, final String value) {
+  public long setrange(final String key, final long offset, final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -444,7 +444,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long setnx(final String key, final String value) {
+  public long setnx(final String key, final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -474,7 +474,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long decrBy(final String key, final long decrement) {
+  public long decrBy(final String key, final long decrement) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -484,7 +484,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long decr(final String key) {
+  public long decr(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -494,7 +494,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long incrBy(final String key, final long increment) {
+  public long incrBy(final String key, final long increment) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -504,7 +504,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Double incrByFloat(final String key, final double increment) {
+  public double incrByFloat(final String key, final double increment) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Double execute(Jedis connection) {
@@ -514,7 +514,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long incr(final String key) {
+  public long incr(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -524,7 +524,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long append(final String key, final String value) {
+  public long append(final String key, final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -544,7 +544,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long hset(final String key, final String field, final String value) {
+  public long hset(final String key, final String field, final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -554,7 +554,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long hset(final String key, final Map<String, String> hash) {
+  public long hset(final String key, final Map<String, String> hash) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -574,7 +574,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long hsetnx(final String key, final String field, final String value) {
+  public long hsetnx(final String key, final String field, final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -604,7 +604,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long hincrBy(final String key, final String field, final long value) {
+  public long hincrBy(final String key, final String field, final long value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -614,7 +614,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Double hincrByFloat(final String key, final String field, final double value) {
+  public double hincrByFloat(final String key, final String field, final double value) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Double execute(Jedis connection) {
@@ -624,7 +624,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Boolean hexists(final String key, final String field) {
+  public boolean hexists(final String key, final String field) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {
@@ -634,7 +634,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long hdel(final String key, final String... field) {
+  public long hdel(final String key, final String... field) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -644,7 +644,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long hlen(final String key) {
+  public long hlen(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -714,7 +714,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long rpush(final String key, final String... string) {
+  public long rpush(final String key, final String... string) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -724,7 +724,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long lpush(final String key, final String... string) {
+  public long lpush(final String key, final String... string) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -734,7 +734,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long llen(final String key) {
+  public long llen(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -784,7 +784,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long lrem(final String key, final long count, final String value) {
+  public long lrem(final String key, final long count, final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -865,7 +865,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long sadd(final String key, final String... member) {
+  public long sadd(final String key, final String... member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -885,7 +885,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long srem(final String key, final String... member) {
+  public long srem(final String key, final String... member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -915,7 +915,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long scard(final String key) {
+  public long scard(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -925,7 +925,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Boolean sismember(final String key, final String member) {
+  public boolean sismember(final String key, final String member) {
     return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Boolean execute(Jedis connection) {
@@ -965,7 +965,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long strlen(final String key) {
+  public long strlen(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -975,7 +975,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zadd(final String key, final double score, final String member) {
+  public long zadd(final String key, final double score, final String member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -985,7 +985,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zadd(final String key, final double score, final String member,
+  public long zadd(final String key, final double score, final String member,
       final ZAddParams params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
@@ -996,7 +996,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zadd(final String key, final Map<String, Double> scoreMembers) {
+  public long zadd(final String key, final Map<String, Double> scoreMembers) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1006,7 +1006,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
+  public long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1046,7 +1046,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zdiffStore(final String dstkey, final String... keys) {
+  public long zdiffStore(final String dstkey, final String... keys) {
     String[] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
@@ -1067,7 +1067,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zrem(final String key, final String... members) {
+  public long zrem(final String key, final String... members) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1077,7 +1077,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Double zincrby(final String key, final double increment, final String member) {
+  public double zincrby(final String key, final double increment, final String member) {
     return new JedisClusterCommand<Double>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Double execute(Jedis connection) {
@@ -1178,7 +1178,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zcard(final String key) {
+  public long zcard(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1268,7 +1268,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zcount(final String key, final double min, final double max) {
+  public long zcount(final String key, final double min, final double max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1278,7 +1278,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zcount(final String key, final String min, final String max) {
+  public long zcount(final String key, final String min, final String max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1456,7 +1456,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zremrangeByRank(final String key, final long start, final long stop) {
+  public long zremrangeByRank(final String key, final long start, final long stop) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1466,7 +1466,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final double min, final double max) {
+  public long zremrangeByScore(final String key, final double min, final double max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1476,7 +1476,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zremrangeByScore(final String key, final String min, final String max) {
+  public long zremrangeByScore(final String key, final String min, final String max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1486,7 +1486,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zlexcount(final String key, final String min, final String max) {
+  public long zlexcount(final String key, final String min, final String max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1538,7 +1538,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zremrangeByLex(final String key, final String min, final String max) {
+  public long zremrangeByLex(final String key, final String min, final String max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1548,7 +1548,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long linsert(final String key, final ListPosition where, final String pivot,
+  public long linsert(final String key, final ListPosition where, final String pivot,
       final String value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
@@ -1559,7 +1559,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long lpushx(final String key, final String... string) {
+  public long lpushx(final String key, final String... string) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1569,7 +1569,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long rpushx(final String key, final String... string) {
+  public long rpushx(final String key, final String... string) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1579,7 +1579,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long del(final String key) {
+  public long del(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1589,7 +1589,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long unlink(final String key) {
+  public long unlink(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1599,7 +1599,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long unlink(final String... keys) {
+  public long unlink(final String... keys) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1620,7 +1620,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long bitcount(final String key) {
+  public long bitcount(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1630,7 +1630,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long bitcount(final String key, final long start, final long end) {
+  public long bitcount(final String key, final long start, final long end) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1640,7 +1640,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long bitpos(String key, boolean value) {
+  public long bitpos(String key, boolean value) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1650,7 +1650,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long bitpos(String key, boolean value, BitPosParams params) {
+  public long bitpos(String key, boolean value, BitPosParams params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1738,7 +1738,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long pfadd(final String key, final String... elements) {
+  public long pfadd(final String key, final String... elements) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1758,7 +1758,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long del(final String... keys) {
+  public long del(final String... keys) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1917,7 +1917,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long msetnx(final String... keysvalues) {
+  public long msetnx(final String... keysvalues) {
     String[] keys = new String[keysvalues.length / 2];
 
     for (int keyIdx = 0; keyIdx < keys.length; keyIdx++) {
@@ -1943,7 +1943,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long renamenx(final String oldkey, final String newkey) {
+  public long renamenx(final String oldkey, final String newkey) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1973,7 +1973,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long sdiffstore(final String dstkey, final String... keys) {
+  public long sdiffstore(final String dstkey, final String... keys) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, keys);
 
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -1995,7 +1995,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long sinterstore(final String dstkey, final String... keys) {
+  public long sinterstore(final String dstkey, final String... keys) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, keys);
 
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2007,7 +2007,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long smove(final String srckey, final String dstkey, final String member) {
+  public long smove(final String srckey, final String dstkey, final String member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2017,7 +2017,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long sort(final String key, final SortingParams sortingParameters, final String dstkey) {
+  public long sort(final String key, final SortingParams sortingParameters, final String dstkey) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2027,7 +2027,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long sort(final String key, final String dstkey) {
+  public long sort(final String key, final String dstkey) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2047,7 +2047,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long sunionstore(final String dstkey, final String... keys) {
+  public long sunionstore(final String dstkey, final String... keys) {
     String[] wholeKeys = KeyMergeUtil.merge(dstkey, keys);
 
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2079,7 +2079,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zinterstore(final String dstkey, final String... sets) {
+  public long zinterstore(final String dstkey, final String... sets) {
     String[] wholeKeys = KeyMergeUtil.merge(dstkey, sets);
 
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2091,7 +2091,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zinterstore(final String dstkey, final ZParams params, final String... sets) {
+  public long zinterstore(final String dstkey, final ZParams params, final String... sets) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
 
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2123,7 +2123,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zunionstore(final String dstkey, final String... sets) {
+  public long zunionstore(final String dstkey, final String... sets) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
 
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2135,7 +2135,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zunionstore(final String dstkey, final ZParams params, final String... sets) {
+  public long zunionstore(final String dstkey, final ZParams params, final String... sets) {
     String[] mergedKeys = KeyMergeUtil.merge(dstkey, sets);
 
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2189,7 +2189,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long bitop(final BitOP op, final String destKey, final String... srcKeys) {
+  public long bitop(final BitOP op, final String destKey, final String... srcKeys) {
     String[] mergedKeys = KeyMergeUtil.merge(destKey, srcKeys);
 
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2333,7 +2333,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long geoadd(final String key, final double longitude, final double latitude,
+  public long geoadd(final String key, final double longitude, final double latitude,
       final String member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
@@ -2344,7 +2344,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
+  public long geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2354,7 +2354,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+  public long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2438,7 +2438,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long georadiusStore(final String key, final double longitude, final double latitude,
+  public long georadiusStore(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit, final GeoRadiusParam param,
       final GeoRadiusStoreParam storeParam) {
     String[] keys = storeParam.getStringKeys(key);
@@ -2495,7 +2495,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long georadiusByMemberStore(final String key, final String member, final double radius,
+  public long georadiusByMemberStore(final String key, final String member, final double radius,
       final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
     String[] keys = storeParam.getStringKeys(key);
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2538,7 +2538,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long hstrlen(final String key, final String field) {
+  public long hstrlen(final String key, final String field) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2599,7 +2599,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xlen(final String key) {
+  public long xlen(final String key) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2680,7 +2680,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xack(final String key, final String group, final StreamEntryID... ids) {
+  public long xack(final String key, final String group, final StreamEntryID... ids) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2711,7 +2711,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xgroupDestroy(final String key, final String groupname) {
+  public long xgroupDestroy(final String key, final String groupname) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2721,7 +2721,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xgroupDelConsumer(final String key, final String groupname, final String consumername) {
+  public long xgroupDelConsumer(final String key, final String groupname, final String consumername) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2793,7 +2793,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xdel(final String key, final StreamEntryID... ids) {
+  public long xdel(final String key, final StreamEntryID... ids) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2803,7 +2803,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xtrim(final String key, final long maxLen, final boolean approximateLength) {
+  public long xtrim(final String key, final long maxLen, final boolean approximateLength) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2813,7 +2813,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long xtrim(final String key, final XTrimParams params) {
+  public long xtrim(final String key, final XTrimParams params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2910,7 +2910,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long waitReplicas(final String key, final int replicas, final long timeout) {
+  public long waitReplicas(final String key, final int replicas, final long timeout) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {

@@ -45,54 +45,40 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void rpush() {
-    long size = jedis.rpush("foo", "bar");
-    assertEquals(1, size);
-    size = jedis.rpush("foo", "foo");
-    assertEquals(2, size);
-    size = jedis.rpush("foo", "bar", "foo");
-    assertEquals(4, size);
+    assertEquals(1, jedis.rpush("foo", "bar"));
+    assertEquals(2, jedis.rpush("foo", "foo"));
+    assertEquals(4, jedis.rpush("foo", "bar", "foo"));
 
     // Binary
-    long bsize = jedis.rpush(bfoo, bbar);
-    assertEquals(1, bsize);
-    bsize = jedis.rpush(bfoo, bfoo);
-    assertEquals(2, bsize);
-    bsize = jedis.rpush(bfoo, bbar, bfoo);
-    assertEquals(4, bsize);
-
+    assertEquals(1, jedis.rpush(bfoo, bbar));
+    assertEquals(2, jedis.rpush(bfoo, bfoo));
+    assertEquals(4, jedis.rpush(bfoo, bbar, bfoo));
   }
 
   @Test
   public void lpush() {
-    long size = jedis.lpush("foo", "bar");
-    assertEquals(1, size);
-    size = jedis.lpush("foo", "foo");
-    assertEquals(2, size);
-    size = jedis.lpush("foo", "bar", "foo");
-    assertEquals(4, size);
+    assertEquals(1, jedis.lpush("foo", "bar"));
+    assertEquals(2, jedis.lpush("foo", "foo"));
+    assertEquals(4, jedis.lpush("foo", "bar", "foo"));
 
     // Binary
-    long bsize = jedis.lpush(bfoo, bbar);
-    assertEquals(1, bsize);
-    bsize = jedis.lpush(bfoo, bfoo);
-    assertEquals(2, bsize);
-    bsize = jedis.lpush(bfoo, bbar, bfoo);
-    assertEquals(4, bsize);
-
+    assertEquals(1, jedis.lpush(bfoo, bbar));
+    assertEquals(2, jedis.lpush(bfoo, bfoo));
+    assertEquals(4, jedis.lpush(bfoo, bbar, bfoo));
   }
 
   @Test
   public void llen() {
-    assertEquals(0, jedis.llen("foo").intValue());
+    assertEquals(0, jedis.llen("foo"));
     jedis.lpush("foo", "bar");
     jedis.lpush("foo", "car");
-    assertEquals(2, jedis.llen("foo").intValue());
+    assertEquals(2, jedis.llen("foo"));
 
     // Binary
-    assertEquals(0, jedis.llen(bfoo).intValue());
+    assertEquals(0, jedis.llen(bfoo));
     jedis.lpush(bfoo, bbar);
     jedis.lpush(bfoo, bcar);
-    assertEquals(2, jedis.llen(bfoo).intValue());
+    assertEquals(2, jedis.llen(bfoo));
 
   }
 
@@ -112,7 +98,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
       fail("JedisDataException expected");
     } catch (final JedisDataException e) {
     }
-
   }
 
   @Test
@@ -167,7 +152,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
     brange = jedis.lrange(bfoo, 2, 1);
     assertByteArrayListEquals(Collections.<byte[]> emptyList(), brange);
-
   }
 
   @Test
@@ -182,7 +166,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     expected.add("2");
 
     assertEquals("OK", status);
-    assertEquals(2, jedis.llen("foo").intValue());
+    assertEquals(2, jedis.llen("foo"));
     assertEquals(expected, jedis.lrange("foo", 0, 100));
 
     // Binary
@@ -196,9 +180,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     bexpected.add(b2);
 
     assertEquals("OK", bstatus);
-    assertEquals(2, jedis.llen(bfoo).intValue());
+    assertEquals(2, jedis.llen(bfoo));
     assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 100));
-
   }
 
   @Test
@@ -249,7 +232,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
     assertArrayEquals(b3, jedis.lindex(bfoo, 0));
     assertNull(jedis.lindex(bfoo, 100));
-
   }
 
   @Test
@@ -262,8 +244,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpush("foo", "b");
     jedis.lpush("foo", "a");
 
-    long count = jedis.lrem("foo", -2, "hello");
-
     List<String> expected = new ArrayList<String>();
     expected.add("a");
     expected.add("b");
@@ -271,9 +251,9 @@ public class ListCommandsTest extends JedisCommandTestBase {
     expected.add("hello");
     expected.add("x");
 
-    assertEquals(2, count);
+    assertEquals(2, jedis.lrem("foo", -2, "hello"));
     assertEquals(expected, jedis.lrange("foo", 0, 1000));
-    assertEquals(0, jedis.lrem("bar", 100, "foo").intValue());
+    assertEquals(0, jedis.lrem("bar", 100, "foo"));
 
     // Binary
     jedis.lpush(bfoo, bhello);
@@ -284,8 +264,6 @@ public class ListCommandsTest extends JedisCommandTestBase {
     jedis.lpush(bfoo, bB);
     jedis.lpush(bfoo, bA);
 
-    long bcount = jedis.lrem(bfoo, -2, bhello);
-
     List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(bA);
     bexpected.add(bB);
@@ -293,9 +271,9 @@ public class ListCommandsTest extends JedisCommandTestBase {
     bexpected.add(bhello);
     bexpected.add(bx);
 
-    assertEquals(2, bcount);
+    assertEquals(2, jedis.lrem(bfoo, -2, bhello));
     assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 1000));
-    assertEquals(0, jedis.lrem(bbar, 100, bfoo).intValue());
+    assertEquals(0, jedis.lrem(bbar, 100, bfoo));
 
   }
 
@@ -668,77 +646,60 @@ public class ListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void lpushx() {
-    long status = jedis.lpushx("foo", "bar");
-    assertEquals(0, status);
+    assertEquals(0, jedis.lpushx("foo", "bar"));
 
     jedis.lpush("foo", "a");
-    status = jedis.lpushx("foo", "b");
-    assertEquals(2, status);
+    assertEquals(2, jedis.lpushx("foo", "b"));
 
     // Binary
-    long bstatus = jedis.lpushx(bfoo, bbar);
-    assertEquals(0, bstatus);
+    assertEquals(0, jedis.lpushx(bfoo, bbar));
 
     jedis.lpush(bfoo, bA);
-    bstatus = jedis.lpushx(bfoo, bB);
-    assertEquals(2, bstatus);
-
+    assertEquals(2, jedis.lpushx(bfoo, bB));
   }
 
   @Test
   public void rpushx() {
-    long status = jedis.rpushx("foo", "bar");
-    assertEquals(0, status);
+    assertEquals(0, jedis.rpushx("foo", "bar"));
 
     jedis.lpush("foo", "a");
-    status = jedis.rpushx("foo", "b");
-    assertEquals(2, status);
+    assertEquals(2, jedis.rpushx("foo", "b"));
 
     // Binary
-    long bstatus = jedis.rpushx(bfoo, bbar);
-    assertEquals(0, bstatus);
+    assertEquals(0, jedis.rpushx(bfoo, bbar));
 
     jedis.lpush(bfoo, bA);
-    bstatus = jedis.rpushx(bfoo, bB);
-    assertEquals(2, bstatus);
+    assertEquals(2, jedis.rpushx(bfoo, bB));
   }
 
   @Test
   public void linsert() {
-    long status = jedis.linsert("foo", ListPosition.BEFORE, "bar", "car");
-    assertEquals(0, status);
+    assertEquals(0, jedis.linsert("foo", ListPosition.BEFORE, "bar", "car"));
 
     jedis.lpush("foo", "a");
-    status = jedis.linsert("foo", ListPosition.AFTER, "a", "b");
-    assertEquals(2, status);
+    assertEquals(2, jedis.linsert("foo", ListPosition.AFTER, "a", "b"));
 
-    List<String> actual = jedis.lrange("foo", 0, 100);
     List<String> expected = new ArrayList<String>();
     expected.add("a");
     expected.add("b");
 
-    assertEquals(expected, actual);
+    assertEquals(expected, jedis.lrange("foo", 0, 100));
 
-    status = jedis.linsert("foo", ListPosition.BEFORE, "bar", "car");
-    assertEquals(-1, status);
+    assertEquals(-1, jedis.linsert("foo", ListPosition.BEFORE, "bar", "car"));
 
     // Binary
-    long bstatus = jedis.linsert(bfoo, ListPosition.BEFORE, bbar, bcar);
-    assertEquals(0, bstatus);
+    assertEquals(0, jedis.linsert(bfoo, ListPosition.BEFORE, bbar, bcar));
 
     jedis.lpush(bfoo, bA);
-    bstatus = jedis.linsert(bfoo, ListPosition.AFTER, bA, bB);
-    assertEquals(2, bstatus);
+    assertEquals(2, jedis.linsert(bfoo, ListPosition.AFTER, bA, bB));
 
-    List<byte[]> bactual = jedis.lrange(bfoo, 0, 100);
     List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(bA);
     bexpected.add(bB);
 
-    assertByteArrayListEquals(bexpected, bactual);
+    assertByteArrayListEquals(bexpected, jedis.lrange(bfoo, 0, 100));
 
-    bstatus = jedis.linsert(bfoo, ListPosition.BEFORE, bbar, bcar);
-    assertEquals(-1, bstatus);
+    assertEquals(-1, jedis.linsert(bfoo, ListPosition.BEFORE, bbar, bcar));
 
   }
 
@@ -762,7 +723,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
     String element = jedis.brpoplpush("foo", "bar", 0);
 
     assertEquals("a", element);
-    assertEquals(1, jedis.llen("bar").longValue());
+    assertEquals(1, jedis.llen("bar"));
     assertEquals("a", jedis.lrange("bar", 0, -1).get(0));
 
     // Binary
@@ -784,9 +745,8 @@ public class ListCommandsTest extends JedisCommandTestBase {
     byte[] belement = jedis.brpoplpush(bfoo, bbar, 0);
 
     assertArrayEquals(bA, belement);
-    assertEquals(1, jedis.llen("bar").longValue());
+    assertEquals(1, jedis.llen("bar"));
     assertArrayEquals(bA, jedis.lrange(bbar, 0, -1).get(0));
-
   }
 
   @Test

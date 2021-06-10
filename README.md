@@ -59,8 +59,6 @@ Or use it as a maven dependency:
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
     <version>3.6.0</version>
-    <type>jar</type>
-    <scope>compile</scope>
 </dependency>
 ```
 

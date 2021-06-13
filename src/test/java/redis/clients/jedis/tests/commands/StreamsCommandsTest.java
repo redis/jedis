@@ -224,15 +224,15 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(2, jedis.xrange("xrange-stream", null, null, 3, false).size());
 
     assertEquals(2, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)), null, 2, false).size());
-    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1), true), null, 2, false).size());
+    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)).exclusive(), null, 2, false).size());
 
     assertEquals(2, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2)), 2, false).size());
-    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1), true), Endpoint.of(Endpoint.convert(id2)), 2, false).size());
-    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2), true), 2, false).size());
-    assertEquals(0, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1), true), Endpoint.of(Endpoint.convert(id2), true), 2, false).size());
+    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)).exclusive(), Endpoint.of(Endpoint.convert(id2)), 2, false).size());
+    assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2)).exclusive(), 2, false).size());
+    assertEquals(0, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id1)).exclusive(), Endpoint.of(Endpoint.convert(id2)).exclusive(), 2, false).size());
 
     assertEquals(1, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id2)), null, 2, false).size());
-    assertEquals(0, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id2), true), null, 2, false).size());
+    assertEquals(0, jedis.xrange("xrange-stream", Endpoint.of(Endpoint.convert(id2)).exclusive(), null, 2, false).size());
   }
 
   @Test
@@ -398,14 +398,14 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     assertEquals(2, jedis.xrange("xrevrange-stream", null, null, 3, true).size());
 
     assertEquals(2, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)), null, 2, true).size());
-    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1), true), null, 2, true).size());
+    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)).exclusive(), null, 2, true).size());
 
     assertEquals(2, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2)), 2, true).size());
-    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1), true), Endpoint.of(Endpoint.convert(id2)), 2, true).size());
-    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2), true), 2, true).size());
-    assertEquals(0, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1), true), Endpoint.of(Endpoint.convert(id2), true), 2, true).size());
+    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)).exclusive(), Endpoint.of(Endpoint.convert(id2)), 2, true).size());
+    assertEquals(1, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)), Endpoint.of(Endpoint.convert(id2)).exclusive(), 2, true).size());
+    assertEquals(0, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id1)).exclusive(), Endpoint.of(Endpoint.convert(id2)).exclusive(), 2, true).size());
 
-    assertEquals(0, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id2), true), null, 4, true).size());
+    assertEquals(0, jedis.xrange("xrevrange-stream", Endpoint.of(Endpoint.convert(id2)).exclusive(), null, 4, true).size());
   }
 
   @Test

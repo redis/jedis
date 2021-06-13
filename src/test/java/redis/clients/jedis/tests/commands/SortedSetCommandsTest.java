@@ -739,9 +739,9 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd("foo", 2d, "b");
     jedis.zadd("foo", 5d, "c");
 
-    long result = jedis.zcount("foo", Endpoint.of(0.01d, true), Endpoint.of(5d));
+    long result = jedis.zcount("foo", Endpoint.of(0.01d).exclusive(), Endpoint.of(5d));
     assertEquals(3, result);
-    result = jedis.zcount("foo", Endpoint.of(0.01d, true), Endpoint.of(5d).exclusive());
+    result = jedis.zcount("foo", Endpoint.of(0.01d).exclusive(), Endpoint.of(5d).exclusive());
     assertEquals(2, result);
   }
 

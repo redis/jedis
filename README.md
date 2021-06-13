@@ -110,7 +110,7 @@ For more usage examples check the tests.
 
 Please check the [wiki](http://github.com/redis/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
 
-Master branch javadocs can be found here: http://redis.github.io/jedis/
+Latest release javadocs can be found here: https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html
 
 And you are done!
 

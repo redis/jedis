@@ -1288,7 +1288,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public Long zcount(final String key, final Endpoint<Double> min, final Endpoint<Double> max) {
+  public Long zcount(final String key, final RangeEndpoint<Double> min, final RangeEndpoint<Double> max) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2669,8 +2669,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<StreamEntry> xrange(final String key,
-      final Endpoint<redis.clients.jedis.args.StreamEntryID> min,
-      final Endpoint<redis.clients.jedis.args.StreamEntryID> max,
+      final RangeEndpoint<redis.clients.jedis.args.StreamEntryID> min,
+      final RangeEndpoint<redis.clients.jedis.args.StreamEntryID> max,
       final Integer count, final boolean rev) {
     return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override

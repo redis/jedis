@@ -20,7 +20,6 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
-import redis.clients.jedis.args.Endpoint;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
@@ -35,6 +34,7 @@ import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
+import redis.clients.jedis.args.RangeEndpoint;
 
 /**
  * Common interface for sharded and non-sharded Jedis
@@ -292,7 +292,7 @@ public interface JedisCommands {
 
   long zcount(String key, String min, String max);
 
-  Long zcount(String key, Endpoint<Double> min, Endpoint<Double> max);
+  Long zcount(String key, RangeEndpoint<Double> min, RangeEndpoint<Double> max);
 
   Set<String> zrangeByScore(String key, double min, double max);
 
@@ -528,8 +528,8 @@ public interface JedisCommands {
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
-  List<StreamEntry> xrange(String key, Endpoint<redis.clients.jedis.args.StreamEntryID> min,
-      Endpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev);
+  List<StreamEntry> xrange(String key, RangeEndpoint<redis.clients.jedis.args.StreamEntryID> min,
+      RangeEndpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev);
 
   /**
    * XACK key group ID [ID ...]

@@ -14,8 +14,8 @@ import redis.clients.jedis.Protocol.ClusterKeyword;
 import redis.clients.jedis.Protocol.SentinelKeyword;
 import redis.clients.jedis.args.ClusterFailoverOption;
 import redis.clients.jedis.args.ClusterResetType;
-import redis.clients.jedis.args.Endpoint;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.RangeEndpoint;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
@@ -695,7 +695,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zcount(final String key, final Endpoint<Double> min, final Endpoint<Double> max) {
+  public void zcount(final String key, final RangeEndpoint<Double> min, final RangeEndpoint<Double> max) {
     zcount(SafeEncoder.encode(key), min.getRaw(), max.getRaw());
   }
 
@@ -1523,8 +1523,8 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void xrange(String key, Endpoint<redis.clients.jedis.args.StreamEntryID> min,
-      Endpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev) {
+  public void xrange(String key, RangeEndpoint<redis.clients.jedis.args.StreamEntryID> min,
+      RangeEndpoint<redis.clients.jedis.args.StreamEntryID> max, Integer count, boolean rev) {
     final int len = 3 + (count == null ? 0 : 2);
     byte[][] args = new byte[len][];
     args[0] = SafeEncoder.encode(key);

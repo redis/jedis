@@ -10,10 +10,9 @@ public interface Endpoint<T> extends Rawable {
 
   public static abstract class AbstractEndpoint<T> implements Endpoint<T> {
 
-    private final byte[] raw;
-    private boolean exclusive;
+    private byte[] raw;
 
-    public AbstractEndpoint(T data, boolean exclusive) {
+    public AbstractEndpoint(T data) {
       if (data instanceof Rawable) {
         this.raw = ((Rawable) data).getRaw();
       } else if (data instanceof Integer) {
@@ -23,34 +22,25 @@ public interface Endpoint<T> extends Rawable {
       } else {
         throw new IllegalArgumentException(); // TODO message
       }
-      this.exclusive = exclusive;
-    }
-
-    public AbstractEndpoint(T data) {
-      this(data, false);
     }
 
     @Override
     public Endpoint<T> exclusive() {
-      exclusive = true;
+      byte[] b = new byte[1 + raw.length];
+      b[0] = EXCLUSIVE_PREFIX;
+      System.arraycopy(raw, 0, b, 1, raw.length);
+      this.raw = b;
       return this;
     }
 
     @Override
     public Endpoint<T> inclusive() {
-      exclusive = false;
       return this;
     }
 
     @Override
     public byte[] getRaw() {
-      if (!exclusive) {
-        return raw;
-      }
-      byte[] b = new byte[1 + raw.length];
-      b[0] = EXCLUSIVE_PREFIX;
-      System.arraycopy(raw, 0, b, 1, raw.length);
-      return b;
+      return raw;
     }
   }
 
@@ -58,11 +48,6 @@ public interface Endpoint<T> extends Rawable {
 
   public static Endpoint<Double> of(double value) {
     return new AbstractEndpoint<Double>(value) {
-    };
-  }
-
-  public static Endpoint<Double> of(double value, boolean exclusive) {
-    return new AbstractEndpoint<Double>(value, exclusive) {
     };
   }
 

@@ -2,17 +2,19 @@ package redis.clients.jedis.args;
 
 import redis.clients.jedis.Protocol;
 
-public interface Endpoint<T> extends Rawable {
+public interface RangeEndpoint<T> extends Rawable {
 
-  Endpoint<T> inclusive();
+  RangeEndpoint<T> inclusive();
 
-  Endpoint<T> exclusive();
+  RangeEndpoint<T> exclusive();
 
-  public static abstract class AbstractEndpoint<T> implements Endpoint<T> {
+  public static abstract class AbstractRangeEndpoint<T> implements RangeEndpoint<T> {
+
+    protected static final byte EXCLUSIVE_PREFIX = '(';
 
     private byte[] raw;
 
-    public AbstractEndpoint(T data) {
+    public AbstractRangeEndpoint(T data) {
       if (data instanceof Rawable) {
         this.raw = ((Rawable) data).getRaw();
       } else if (data instanceof Integer) {
@@ -25,7 +27,7 @@ public interface Endpoint<T> extends Rawable {
     }
 
     @Override
-    public Endpoint<T> exclusive() {
+    public RangeEndpoint<T> exclusive() {
       byte[] b = new byte[1 + raw.length];
       b[0] = EXCLUSIVE_PREFIX;
       System.arraycopy(raw, 0, b, 1, raw.length);
@@ -34,7 +36,7 @@ public interface Endpoint<T> extends Rawable {
     }
 
     @Override
-    public Endpoint<T> inclusive() {
+    public RangeEndpoint<T> inclusive() {
       return this;
     }
 
@@ -44,11 +46,8 @@ public interface Endpoint<T> extends Rawable {
     }
   }
 
-  static final byte EXCLUSIVE_PREFIX = '(';
-
-  public static Endpoint<Double> of(double value) {
-    return new AbstractEndpoint<Double>(value) {
-    };
+  public static RangeEndpoint<Double> of(double value) {
+    return new AbstractRangeEndpoint<Double>(value) { };
   }
 
 }

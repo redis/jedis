@@ -2390,7 +2390,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public Long zcount(String key, Endpoint<Double> min, Endpoint<Double> max) {
+  public Long zcount(String key, RangeEndpoint<Double> min, RangeEndpoint<Double> max) {
     checkIsInMultiOrPipeline();
     client.zcount(key, min, max);
     return client.getIntegerReply();

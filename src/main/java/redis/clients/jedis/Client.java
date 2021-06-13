@@ -10,8 +10,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.args.Endpoint;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.RangeEndpoint;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
@@ -691,7 +691,7 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zcount(final String key, final Endpoint<Double> min, final Endpoint<Double> max) {
+  public void zcount(final String key, final RangeEndpoint<Double> min, final RangeEndpoint<Double> max) {
     zcount(SafeEncoder.encode(key), min.getRaw(), max.getRaw());
   }
 

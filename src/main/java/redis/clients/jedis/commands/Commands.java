@@ -8,8 +8,8 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.ListPosition;
 import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.args.Endpoint;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.RangeEndpoint;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.GetExParams;
@@ -312,7 +312,7 @@ public interface Commands {
 
   void zcount(String key, String min, String max);
 
-  void zcount(String key, Endpoint<Double> min, Endpoint<Double> max);
+  void zcount(String key, RangeEndpoint<Double> min, RangeEndpoint<Double> max);
 
   void zrangeByScore(String key, double min, double max);
 

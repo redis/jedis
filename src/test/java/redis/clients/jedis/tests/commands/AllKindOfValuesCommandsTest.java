@@ -22,6 +22,7 @@ import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContain
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -793,6 +794,37 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+  }
+
+  @Test
+  public void scanType() {
+    ScanResult<String> scanResult;
+
+    jedis.set("a", "a");
+    jedis.hset("b", "b", "b");
+    jedis.set("c", "c");
+    jedis.sadd("d", "d");
+    jedis.set("e", "e");
+    jedis.zadd("f", 0d, "f");
+    jedis.set("g", "g");
+
+    ScanParams pagingParams = new ScanParams().count(4);
+    scanResult = jedis.scan(SCAN_POINTER_START, pagingParams, "string");
+    assertFalse(scanResult.isCompleteIteration());
+    int page1Count = scanResult.getResult().size();
+    scanResult = jedis.scan(scanResult.getCursor(), pagingParams, "string");
+    assertTrue(scanResult.isCompleteIteration());
+    int page2Count = scanResult.getResult().size();
+    assertEquals(4, page1Count + page2Count);
+
+    ScanParams noParams = new ScanParams();
+
+    scanResult = jedis.scan(SCAN_POINTER_START, noParams, "hash");
+    assertEquals(Collections.singletonList("b"), scanResult.getResult());
+    scanResult = jedis.scan(SCAN_POINTER_START, noParams, "set");
+    assertEquals(Collections.singletonList("d"), scanResult.getResult());
+    scanResult = jedis.scan(SCAN_POINTER_START, noParams, "zset");
+    assertEquals(Collections.singletonList("f"), scanResult.getResult());
   }
 
   @Test

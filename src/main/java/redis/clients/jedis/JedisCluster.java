@@ -1681,6 +1681,11 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public ScanResult<String> scan(final String cursor, final ScanParams params) {
+    return scan(cursor, params, null);
+  }
+
+  @Override
+  public ScanResult<String> scan(final String cursor, final ScanParams params, final String type) {
 
     String matchPattern = null;
 
@@ -1700,7 +1705,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
         maxTotalRetriesDuration) {
       @Override
       public ScanResult<String> execute(Jedis connection) {
-        return connection.scan(cursor, params);
+        return connection.scan(cursor, params, type);
       }
     }.run(matchPattern);
   }

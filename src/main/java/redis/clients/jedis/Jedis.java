@@ -3674,8 +3674,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public ScanResult<String> scan(final String cursor, final ScanParams params) {
+    return scan(cursor, params, null);
+  }
+
+  @Override
+  public ScanResult<String> scan(final String cursor, final ScanParams params, final String type) {
     checkIsInMultiOrPipeline();
-    client.scan(cursor, params);
+    client.scan(cursor, params, type);
     List<Object> result = client.getObjectMultiBulkReply();
     String newcursor = new String((byte[]) result.get(0));
     List<String> results = new ArrayList<>();

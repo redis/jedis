@@ -443,6 +443,8 @@ public interface Commands {
 
   void scan(String cursor, ScanParams params);
 
+  void scan(String cursor, ScanParams params, String type);
+
   void hscan(String key, String cursor, ScanParams params);
 
   void sscan(String key, String cursor, ScanParams params);

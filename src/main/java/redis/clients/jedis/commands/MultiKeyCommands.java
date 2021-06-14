@@ -207,6 +207,8 @@ public interface MultiKeyCommands {
    */
   ScanResult<String> scan(String cursor, ScanParams params);
 
+  ScanResult<String> scan(String cursor, ScanParams params, String type);
+
   String pfmerge(String destkey, String... sourcekeys);
 
   long pfcount(String... keys);

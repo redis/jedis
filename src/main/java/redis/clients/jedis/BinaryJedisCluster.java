@@ -2378,6 +2378,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
 
   @Override
   public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) {
+    return scan(cursor, params, null);
+  }
+
+  @Override
+  public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params, final byte[] type) {
 
     byte[] matchPattern = null;
 
@@ -2397,7 +2402,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         maxTotalRetriesDuration) {
       @Override
       public ScanResult<byte[]> execute(Jedis connection) {
-        return connection.scan(cursor, params);
+        return connection.scan(cursor, params, type);
       }
     }.runBinary(matchPattern);
   }

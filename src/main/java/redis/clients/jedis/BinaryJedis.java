@@ -4402,13 +4402,25 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  @Override
   public ScanResult<byte[]> scan(final byte[] cursor) {
     return scan(cursor, new ScanParams());
   }
 
+  @Override
   public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
     client.scan(cursor, params);
+    List<Object> result = client.getObjectMultiBulkReply();
+    byte[] newcursor = (byte[]) result.get(0);
+    List<byte[]> rawResults = (List<byte[]>) result.get(1);
+    return new ScanResult<>(newcursor, rawResults);
+  }
+
+  @Override
+  public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params, final byte[] type) {
+    checkIsInMultiOrPipeline();
+    client.scan(cursor, params, type);
     List<Object> result = client.getObjectMultiBulkReply();
     byte[] newcursor = (byte[]) result.get(0);
     List<byte[]> rawResults = (List<byte[]>) result.get(1);

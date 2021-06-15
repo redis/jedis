@@ -114,6 +114,8 @@ public interface MultiKeyBinaryJedisClusterCommands {
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type);
+
   Set<byte[]> keys(byte[] pattern);
 
   /**

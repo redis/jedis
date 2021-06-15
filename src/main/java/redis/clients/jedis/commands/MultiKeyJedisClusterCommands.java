@@ -116,6 +116,8 @@ public interface MultiKeyJedisClusterCommands {
 
   ScanResult<String> scan(String cursor, ScanParams params);
 
+  ScanResult<String> scan(String cursor, ScanParams params, String type);
+
   Set<String> keys(String pattern);
 
   Long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit,

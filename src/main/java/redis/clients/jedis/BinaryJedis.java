@@ -21,6 +21,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;

@@ -3,6 +3,8 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.ScanParams;
+import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
@@ -123,6 +125,10 @@ public interface MultiKeyBinaryCommands {
   Long pfcount(byte[]... keys);
 
   Long touch(byte[]... keys);
+
+  ScanResult<byte[]> scan(byte[] cursor);
+
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type);
 

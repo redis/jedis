@@ -124,6 +124,8 @@ public interface MultiKeyBinaryCommands {
 
   Long touch(byte[]... keys);
 
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type);
+
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
    * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.

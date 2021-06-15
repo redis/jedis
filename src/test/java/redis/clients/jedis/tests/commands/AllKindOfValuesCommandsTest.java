@@ -18,10 +18,12 @@ import static redis.clients.jedis.Protocol.Command.XINFO;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.SetParams.setParams;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -793,6 +795,70 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+  }
+
+  @Test
+  public void scanType() {
+    ScanParams noParams = new ScanParams();
+    ScanParams pagingParams = new ScanParams().count(4);
+
+    jedis.set("a", "a");
+    jedis.hset("b", "b", "b");
+    jedis.set("c", "c");
+    jedis.sadd("d", "d");
+    jedis.set("e", "e");
+    jedis.zadd("f", 0d, "f");
+    jedis.set("g", "g");
+
+    // string
+    ScanResult<String> scanResult;
+
+    scanResult = jedis.scan(SCAN_POINTER_START, pagingParams, "string");
+    assertFalse(scanResult.isCompleteIteration());
+    int page1Count = scanResult.getResult().size();
+    scanResult = jedis.scan(scanResult.getCursor(), pagingParams, "string");
+    assertTrue(scanResult.isCompleteIteration());
+    int page2Count = scanResult.getResult().size();
+    assertEquals(4, page1Count + page2Count);
+
+
+    scanResult = jedis.scan(SCAN_POINTER_START, noParams, "hash");
+    assertEquals(Collections.singletonList("b"), scanResult.getResult());
+    scanResult = jedis.scan(SCAN_POINTER_START, noParams, "set");
+    assertEquals(Collections.singletonList("d"), scanResult.getResult());
+    scanResult = jedis.scan(SCAN_POINTER_START, noParams, "zset");
+    assertEquals(Collections.singletonList("f"), scanResult.getResult());
+
+    // binary
+    final byte[] string = "string".getBytes();
+    final byte[] hash = "hash".getBytes();
+    final byte[] set = "set".getBytes();
+    final byte[] zset = "zset".getBytes();
+
+    ScanResult<byte[]> binaryResult;
+
+    jedis.set("a", "a");
+    jedis.hset("b", "b", "b");
+    jedis.set("c", "c");
+    jedis.sadd("d", "d");
+    jedis.set("e", "e");
+    jedis.zadd("f", 0d, "f");
+    jedis.set("g", "g");
+
+    binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, pagingParams, string);
+    assertFalse(binaryResult.isCompleteIteration());
+    page1Count = binaryResult.getResult().size();
+    binaryResult = jedis.scan(binaryResult.getCursorAsBytes(), pagingParams, string);
+    assertTrue(binaryResult.isCompleteIteration());
+    page2Count = binaryResult.getResult().size();
+    assertEquals(4, page1Count + page2Count);
+
+    binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, hash);
+    assertByteArrayListEquals(Collections.singletonList(new byte[]{98}), binaryResult.getResult());
+    binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, set);
+    assertByteArrayListEquals(Collections.singletonList(new byte[]{100}), binaryResult.getResult());
+    binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, zset);
+    assertByteArrayListEquals(Collections.singletonList(new byte[]{102}), binaryResult.getResult());
   }
 
   @Test

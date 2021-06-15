@@ -131,6 +131,8 @@ public interface MultiKeyBinaryCommands {
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type);
+
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
    * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.

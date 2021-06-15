@@ -1125,6 +1125,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void scan(final String cursor, final ScanParams params, final String type) {
+    scan(SafeEncoder.encode(cursor), params, type != null ? SafeEncoder.encode(type) : null);
+  }
+
+  @Override
   public void hscan(final String key, final String cursor, final ScanParams params) {
     hscan(SafeEncoder.encode(key), SafeEncoder.encode(cursor), params);
   }

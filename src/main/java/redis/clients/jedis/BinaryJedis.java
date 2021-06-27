@@ -3482,12 +3482,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   @Deprecated
   public String shutdown() {
     client.shutdown();
+    String status;
     try {
-      return client.getStatusCodeReply();
+      status = client.getStatusCodeReply();
     } catch (JedisException ex) {
-      // expected
+      status = null;
     }
-    return null;
+    return status;
   }
 
   @Override

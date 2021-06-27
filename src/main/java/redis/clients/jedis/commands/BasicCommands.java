@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
 
 public interface BasicCommands {
@@ -38,7 +39,7 @@ public interface BasicCommands {
    * Return the number of keys in the currently-selected database.
    * @return the number of key in the currently-selected database.
    */
-  Long dbSize();
+  long dbSize();
 
   /**
    * Select the DB with having the specified zero-based numeric index.
@@ -128,7 +129,7 @@ public interface BasicCommands {
    * Return the UNIX TIME of the last DB save executed with success.
    * @return the unix latest save
    */
-  Long lastsave();
+  long lastsave();
 
   /**
    * Stop all the client. Perform a SAVE (if one save point is configured). Flush the append only
@@ -136,6 +137,14 @@ public interface BasicCommands {
    * @throws JedisException only in case of error.
    */
   void shutdown() throws JedisException;
+
+  /**
+   * @see SaveMode
+   * @param saveMode modifier to alter the data save behavior of SHUTDOWN. {@code null} would
+   * trigger the default behavior.
+   * @throws JedisException
+   */
+  void shutdown(SaveMode saveMode) throws JedisException;
 
   /**
    * The INFO command returns information and statistics about the server in a format that is simple
@@ -191,14 +200,18 @@ public interface BasicCommands {
   String configRewrite();
 
   /**
+   * Syncrhonous replication of Redis as described here: http://antirez.com/news/66.
+   * <p>
    * Blocks until all the previous write commands are successfully transferred and acknowledged by
    * at least the specified number of replicas. If the timeout, specified in milliseconds, is
    * reached, the command returns even if the specified number of replicas were not yet reached.
+   * <p>
+   * Since Java Object class has implemented {@code wait} method, we cannot use it.
    * @param replicas successfully transferred and acknowledged by at least the specified number of
    *          replicas
    * @param timeout the time to block in milliseconds, a timeout of 0 means to block forever
    * @return the number of replicas reached by all the writes performed in the context of the
    *         current connection
    */
-  Long waitReplicas(int replicas, long timeout);
+  long waitReplicas(int replicas, long timeout);
 }

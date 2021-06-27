@@ -49,9 +49,9 @@ public interface JedisCommands {
 
   String getEx(String key, GetExParams params);
 
-  Boolean exists(String key);
+  boolean exists(String key);
 
-  Long persist(String key);
+  long persist(String key);
 
   String type(String key);
 
@@ -91,21 +91,21 @@ public interface JedisCommands {
     return expire(key, (long) seconds);
   }
 
-  Long expire(String key, long seconds);
+  long expire(String key, long seconds);
 
-  Long pexpire(String key, long milliseconds);
+  long pexpire(String key, long milliseconds);
 
-  Long expireAt(String key, long unixTime);
+  long expireAt(String key, long unixTime);
 
-  Long pexpireAt(String key, long millisecondsTimestamp);
+  long pexpireAt(String key, long millisecondsTimestamp);
 
-  Long ttl(String key);
+  long ttl(String key);
 
-  Long pttl(String key);
+  long pttl(String key);
 
-  Long touch(String key);
+  long touch(String key);
 
-  Boolean setbit(String key, long offset, boolean value);
+  boolean setbit(String key, long offset, boolean value);
 
   /**
    * @deprecated Use {@link #setbit(java.lang.String, long, boolean)}.
@@ -113,15 +113,15 @@ public interface JedisCommands {
   @Deprecated
   Boolean setbit(String key, long offset, String value);
 
-  Boolean getbit(String key, long offset);
+  boolean getbit(String key, long offset);
 
-  Long setrange(String key, long offset, String value);
+  long setrange(String key, long offset, String value);
 
   String getrange(String key, long startOffset, long endOffset);
 
   String getSet(String key, String value);
 
-  Long setnx(String key, String value);
+  long setnx(String key, String value);
 
   /**
    * @deprecated Use {@link #setex(java.lang.String, long, java.lang.String)}.
@@ -135,41 +135,41 @@ public interface JedisCommands {
 
   String psetex(String key, long milliseconds, String value);
 
-  Long decrBy(String key, long decrement);
+  long decrBy(String key, long decrement);
 
-  Long decr(String key);
+  long decr(String key);
 
-  Long incrBy(String key, long increment);
+  long incrBy(String key, long increment);
 
-  Double incrByFloat(String key, double increment);
+  double incrByFloat(String key, double increment);
 
-  Long incr(String key);
+  long incr(String key);
 
-  Long append(String key, String value);
+  long append(String key, String value);
 
   String substr(String key, int start, int end);
 
-  Long hset(String key, String field, String value);
+  long hset(String key, String field, String value);
 
-  Long hset(String key, Map<String, String> hash);
+  long hset(String key, Map<String, String> hash);
 
   String hget(String key, String field);
 
-  Long hsetnx(String key, String field, String value);
+  long hsetnx(String key, String field, String value);
 
   String hmset(String key, Map<String, String> hash);
 
   List<String> hmget(String key, String... fields);
 
-  Long hincrBy(String key, String field, long value);
+  long hincrBy(String key, String field, long value);
 
-  Double hincrByFloat(String key, String field, double value);
+  double hincrByFloat(String key, String field, double value);
 
-  Boolean hexists(String key, String field);
+  boolean hexists(String key, String field);
 
-  Long hdel(String key, String... field);
+  long hdel(String key, String... field);
 
-  Long hlen(String key);
+  long hlen(String key);
 
   Set<String> hkeys(String key);
 
@@ -183,11 +183,11 @@ public interface JedisCommands {
 
   Map<String, String> hrandfieldWithValues(String key, long count);
 
-  Long rpush(String key, String... string);
+  long rpush(String key, String... string);
 
-  Long lpush(String key, String... string);
+  long lpush(String key, String... string);
 
-  Long llen(String key);
+  long llen(String key);
 
   List<String> lrange(String key, long start, long stop);
 
@@ -197,7 +197,7 @@ public interface JedisCommands {
 
   String lset(String key, long index, String value);
 
-  Long lrem(String key, long count, String value);
+  long lrem(String key, long count, String value);
 
   String lpop(String key);
 
@@ -213,19 +213,19 @@ public interface JedisCommands {
 
   List<String> rpop(String key, int count);
 
-  Long sadd(String key, String... member);
+  long sadd(String key, String... member);
 
   Set<String> smembers(String key);
 
-  Long srem(String key, String... member);
+  long srem(String key, String... member);
 
   String spop(String key);
 
   Set<String> spop(String key, long count);
 
-  Long scard(String key);
+  long scard(String key);
 
-  Boolean sismember(String key, String member);
+  boolean sismember(String key, String member);
 
   List<Boolean> smismember(String key, String... members);
 
@@ -233,23 +233,23 @@ public interface JedisCommands {
 
   List<String> srandmember(String key, int count);
 
-  Long strlen(String key);
+  long strlen(String key);
 
-  Long zadd(String key, double score, String member);
+  long zadd(String key, double score, String member);
 
-  Long zadd(String key, double score, String member, ZAddParams params);
+  long zadd(String key, double score, String member, ZAddParams params);
 
-  Long zadd(String key, Map<String, Double> scoreMembers);
+  long zadd(String key, Map<String, Double> scoreMembers);
 
-  Long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
+  long zadd(String key, Map<String, Double> scoreMembers, ZAddParams params);
 
   Double zaddIncr(String key, double score, String member, ZAddParams params);
 
   Set<String> zrange(String key, long start, long stop);
 
-  Long zrem(String key, String... members);
+  long zrem(String key, String... members);
 
-  Double zincrby(String key, double increment, String member);
+  double zincrby(String key, double increment, String member);
 
   Double zincrby(String key, double increment, String member, ZIncrByParams params);
 
@@ -269,7 +269,7 @@ public interface JedisCommands {
 
   Set<Tuple> zrandmemberWithScores(String key, long count);
 
-  Long zcard(String key);
+  long zcard(String key);
 
   Double zscore(String key, String member);
 
@@ -287,9 +287,9 @@ public interface JedisCommands {
 
   List<String> sort(String key, SortingParams sortingParameters);
 
-  Long zcount(String key, double min, double max);
+  long zcount(String key, double min, double max);
 
-  Long zcount(String key, String min, String max);
+  long zcount(String key, String min, String max);
 
   Set<String> zrangeByScore(String key, double min, double max);
 
@@ -323,13 +323,13 @@ public interface JedisCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
-  Long zremrangeByRank(String key, long start, long stop);
+  long zremrangeByRank(String key, long start, long stop);
 
-  Long zremrangeByScore(String key, double min, double max);
+  long zremrangeByScore(String key, double min, double max);
 
-  Long zremrangeByScore(String key, String min, String max);
+  long zremrangeByScore(String key, String min, String max);
 
-  Long zlexcount(String key, String min, String max);
+  long zlexcount(String key, String min, String max);
 
   Set<String> zrangeByLex(String key, String min, String max);
 
@@ -339,13 +339,13 @@ public interface JedisCommands {
 
   Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
-  Long zremrangeByLex(String key, String min, String max);
+  long zremrangeByLex(String key, String min, String max);
 
-  Long linsert(String key, ListPosition where, String pivot, String value);
+  long linsert(String key, ListPosition where, String pivot, String value);
 
-  Long lpushx(String key, String... string);
+  long lpushx(String key, String... string);
 
-  Long rpushx(String key, String... string);
+  long rpushx(String key, String... string);
 
   List<String> blpop(int timeout, String key);
 
@@ -355,26 +355,19 @@ public interface JedisCommands {
 
   KeyedListElement brpop(double timeout, String key);
 
-  Long del(String key);
+  long del(String key);
 
-  Long unlink(String key);
+  long unlink(String key);
 
   String echo(String string);
 
-  /**
-   * @deprecated This method will be removed from this interface. Use
-   * {@link AdvancedJedisCommands#move(java.lang.String, int)}.
-   */
-  @Deprecated
-  Long move(String key, int dbIndex);
+  long bitcount(String key);
 
-  Long bitcount(String key);
+  long bitcount(String key, long start, long end);
 
-  Long bitcount(String key, long start, long end);
+  long bitpos(String key, boolean value);
 
-  Long bitpos(String key, boolean value);
-
-  Long bitpos(String key, boolean value, BitPosParams params);
+  long bitpos(String key, boolean value, BitPosParams params);
 
   default ScanResult<Map.Entry<String, String>> hscan(String key, String cursor) {
     return hscan(key, cursor, new ScanParams());
@@ -394,17 +387,17 @@ public interface JedisCommands {
 
   ScanResult<Tuple> zscan(String key, String cursor, ScanParams params);
 
-  Long pfadd(String key, String... elements);
+  long pfadd(String key, String... elements);
 
   long pfcount(String key);
 
   // Geo Commands
 
-  Long geoadd(String key, double longitude, double latitude, String member);
+  long geoadd(String key, double longitude, double latitude, String member);
 
-  Long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
+  long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
 
-  Long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap);
+  long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap);
 
   Double geodist(String key, String member1, String member2);
 
@@ -452,7 +445,7 @@ public interface JedisCommands {
    * @param field
    * @return length of the value for key
    */
-  Long hstrlen(String key, String field);
+  long hstrlen(String key, String field);
 
   /**
    * XADD key ID field string [field string ...]
@@ -492,7 +485,7 @@ public interface JedisCommands {
    * @param key
    * @return
    */
-  Long xlen(String key);
+  long xlen(String key);
 
   /**
    * XRANGE key start end
@@ -544,7 +537,7 @@ public interface JedisCommands {
    * @param ids
    * @return
    */
-  Long xack(String key, String group, StreamEntryID... ids);
+  long xack(String key, String group, StreamEntryID... ids);
 
   /**
    * XGROUP CREATE <key> <groupname> <id or $>
@@ -574,7 +567,7 @@ public interface JedisCommands {
    * @param groupname
    * @return
    */
-  Long xgroupDestroy(String key, String groupname);
+  long xgroupDestroy(String key, String groupname);
 
   /**
    * XGROUP DELCONSUMER <key> <groupname> <consumername>
@@ -583,7 +576,7 @@ public interface JedisCommands {
    * @param consumername
    * @return
    */
-  Long xgroupDelConsumer( String key, String groupname, String consumername);
+  long xgroupDelConsumer( String key, String groupname, String consumername);
 
   /**
    * XPENDING key group
@@ -623,7 +616,7 @@ public interface JedisCommands {
    * @param ids
    * @return
    */
-  Long xdel(String key, StreamEntryID... ids);
+  long xdel(String key, StreamEntryID... ids);
 
   /**
    * XTRIM key MAXLEN [~] count
@@ -632,7 +625,7 @@ public interface JedisCommands {
    * @param approximate
    * @return
    */
-  Long xtrim(String key, long maxLen, boolean approximate);
+  long xtrim(String key, long maxLen, boolean approximate);
 
   /**
    * XTRIM key MAXLEN|MINID [=|~] threshold [LIMIT count]
@@ -640,7 +633,7 @@ public interface JedisCommands {
    * @param params
    * @return
    */
-  Long xtrim(String key, XTrimParams params);
+  long xtrim(String key, XTrimParams params);
 
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>

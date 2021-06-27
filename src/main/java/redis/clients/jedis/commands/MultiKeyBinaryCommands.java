@@ -21,15 +21,15 @@ import java.util.Set;
 
 public interface MultiKeyBinaryCommands {
 
-  Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
+  boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
 
-  Boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
+  boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
 
-  Long del(byte[]... keys);
+  long del(byte[]... keys);
 
-  Long unlink(byte[]... keys);
+  long unlink(byte[]... keys);
 
-  Long exists(byte[]... keys);
+  long exists(byte[]... keys);
 
   byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
@@ -57,31 +57,31 @@ public interface MultiKeyBinaryCommands {
 
   String mset(byte[]... keysvalues);
 
-  Long msetnx(byte[]... keysvalues);
+  long msetnx(byte[]... keysvalues);
 
   String rename(byte[] oldkey, byte[] newkey);
 
-  Long renamenx(byte[] oldkey, byte[] newkey);
+  long renamenx(byte[] oldkey, byte[] newkey);
 
   byte[] rpoplpush(byte[] srckey, byte[] dstkey);
 
   Set<byte[]> sdiff(byte[]... keys);
 
-  Long sdiffstore(byte[] dstkey, byte[]... keys);
+  long sdiffstore(byte[] dstkey, byte[]... keys);
 
   Set<byte[]> sinter(byte[]... keys);
 
-  Long sinterstore(byte[] dstkey, byte[]... keys);
+  long sinterstore(byte[] dstkey, byte[]... keys);
 
-  Long smove(byte[] srckey, byte[] dstkey, byte[] member);
+  long smove(byte[] srckey, byte[] dstkey, byte[] member);
 
-  Long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
+  long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
 
-  Long sort(byte[] key, byte[] dstkey);
+  long sort(byte[] key, byte[] dstkey);
 
   Set<byte[]> sunion(byte[]... keys);
 
-  Long sunionstore(byte[] dstkey, byte[]... keys);
+  long sunionstore(byte[] dstkey, byte[]... keys);
 
   String watch(byte[]... keys);
 
@@ -91,23 +91,23 @@ public interface MultiKeyBinaryCommands {
 
   Set<Tuple> zdiffWithScores(byte[]... keys);
 
-  Long zdiffStore(byte[] dstkey, byte[]... keys);
+  long zdiffStore(byte[] dstkey, byte[]... keys);
 
   Set<byte[]> zinter(ZParams params, byte[]... keys);
 
   Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
 
-  Long zinterstore(byte[] dstkey, byte[]... sets);
+  long zinterstore(byte[] dstkey, byte[]... sets);
 
-  Long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
+  long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
 
   Set<byte[]> zunion(ZParams params, byte[]... keys);
 
   Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 
-  Long zunionstore(byte[] dstkey, byte[]... sets);
+  long zunionstore(byte[] dstkey, byte[]... sets);
 
-  Long zunionstore(byte[] dstkey, ZParams params, byte[]... sets);
+  long zunionstore(byte[] dstkey, ZParams params, byte[]... sets);
 
   byte[] brpoplpush(byte[] source, byte[] destination, int timeout);
 
@@ -119,17 +119,19 @@ public interface MultiKeyBinaryCommands {
 
   byte[] randomBinaryKey();
 
-  Long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
+  long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
   String pfmerge(byte[] destkey, byte[]... sourcekeys);
 
-  Long pfcount(byte[]... keys);
+  long pfcount(byte[]... keys);
 
-  Long touch(byte[]... keys);
+  long touch(byte[]... keys);
 
   ScanResult<byte[]> scan(byte[] cursor);
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
+
+  ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type);
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
@@ -151,9 +153,9 @@ public interface MultiKeyBinaryCommands {
   List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
       Entry<byte[], byte[]>... streams);
 
-  Long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
+  long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
-  Long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
+  long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 }

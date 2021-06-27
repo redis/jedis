@@ -14,7 +14,7 @@ public interface MultiKeyJedisClusterCommands extends MultiKeyCommands {
    * @throws UnsupportedOperationException Use {@link #copy(java.lang.String, java.lang.String, boolean)}.
    */
   @Override
-  default Boolean copy(String srcKey, String dstKey, int db, boolean replace) {
+  default boolean copy(String srcKey, String dstKey, int db, boolean replace) {
     throw new UnsupportedOperationException("Cluster mode does not support databse operations.");
   }
 

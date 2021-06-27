@@ -13,6 +13,7 @@ import static redis.clients.jedis.Protocol.Command.SAVE;
 import static redis.clients.jedis.Protocol.Command.SET;
 import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
 import static redis.clients.jedis.Protocol.Command.TIME;
+import static redis.clients.jedis.Protocol.Command.TYPE;
 import static redis.clients.jedis.Protocol.Command.UNSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
@@ -26,6 +27,7 @@ import javax.net.ssl.SSLSocketFactory;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
@@ -1051,6 +1053,14 @@ public class BinaryClient extends Connection {
     sendCommand(SHUTDOWN);
   }
 
+  public void shutdown(SaveMode saveMode) {
+    if (saveMode == null) {
+      sendCommand(SHUTDOWN);
+    } else {
+      sendCommand(SHUTDOWN, saveMode.getRaw());
+    }
+  }
+
   public void info() {
     sendCommand(INFO);
   }
@@ -1396,9 +1406,17 @@ public class BinaryClient extends Connection {
   }
 
   public void scan(final byte[] cursor, final ScanParams params) {
+    scan(cursor, params, (byte[]) null);
+  }
+
+  public void scan(final byte[] cursor, final ScanParams params, final byte[] type) {
     final List<byte[]> args = new ArrayList<>();
     args.add(cursor);
     args.addAll(params.getParams());
+    if (type != null) {
+      args.add(Keyword.TYPE.getRaw());
+      args.add(type);
+    }
     sendCommand(SCAN, args.toArray(new byte[args.size()][]));
   }
 

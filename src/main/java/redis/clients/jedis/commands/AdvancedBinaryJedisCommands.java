@@ -9,27 +9,23 @@ import redis.clients.jedis.params.ClientKillParams;
 
 public interface AdvancedBinaryJedisCommands {
 
-  Long move(byte[] key, int dbIndex);
+  long move(byte[] key, int dbIndex);
 
   List<byte[]> configGet(byte[] pattern);
 
+  String configSet(byte[] parameter, byte[] value);
+
   /**
-   * @param parameter
-   * @param value
-   * @return OK
-   * @deprecated The return type will be changed to {@link String}, representing {@code OK} response,
-   * in next major release. If you are not checking you continue using this method. Otherwise, you
-   * can choose to use either {@link #configSet(byte[], byte[]) this method} or
-   * {@link #configSetBinary(byte[], byte[])}.
+   * @deprecated Use {@link #configSet(byte[], byte[])}.
    */
   @Deprecated
-  byte[] configSet(byte[] parameter, byte[] value);
-
-  String configSetBinary(byte[] parameter, byte[] value);
+  default String configSetBinary(byte[] parameter, byte[] value) {
+    return configSet(parameter, value);
+  }
 
   String slowlogReset();
 
-  Long slowlogLen();
+  long slowlogLen();
 
   List<Object> slowlogGetBinary();
 
@@ -54,9 +50,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String clientKill(String ip, int port);
 
-  Long clientKill(ClientKillParams params);
-
-  Long clientUnblock(long clientId, UnblockType unblockType);
+  long clientKill(ClientKillParams params);
 
   byte[] clientGetnameBinary();
 
@@ -68,7 +62,9 @@ public interface AdvancedBinaryJedisCommands {
 
   String clientSetname(byte[] name);
 
-  Long clientId();
+  long clientId();
+
+  long clientUnblock(long clientId, UnblockType unblockType);
 
   byte[] memoryDoctorBinary();
 
@@ -90,7 +86,7 @@ public interface AdvancedBinaryJedisCommands {
 
   String aclSetUser(byte[] name, byte[]... keys);
 
-  Long aclDelUser(byte[] name);
+  long aclDelUser(byte[] name);
 
   List<byte[]> aclCatBinary();
 

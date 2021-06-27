@@ -24,15 +24,15 @@ import java.util.Set;
 
 public interface MultiKeyCommands {
 
-  Boolean copy(String srcKey, String dstKey, int db, boolean replace);
+  boolean copy(String srcKey, String dstKey, int db, boolean replace);
 
-  Boolean copy(String srcKey, String dstKey, boolean replace);
+  boolean copy(String srcKey, String dstKey, boolean replace);
 
-  Long del(String... keys);
+  long del(String... keys);
 
-  Long unlink(String... keys);
+  long unlink(String... keys);
 
-  Long exists(String... keys);
+  long exists(String... keys);
 
   String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
@@ -89,31 +89,31 @@ public interface MultiKeyCommands {
 
   String mset(String... keysvalues);
 
-  Long msetnx(String... keysvalues);
+  long msetnx(String... keysvalues);
 
   String rename(String oldkey, String newkey);
 
-  Long renamenx(String oldkey, String newkey);
+  long renamenx(String oldkey, String newkey);
 
   String rpoplpush(String srckey, String dstkey);
 
   Set<String> sdiff(String... keys);
 
-  Long sdiffstore(String dstkey, String... keys);
+  long sdiffstore(String dstkey, String... keys);
 
   Set<String> sinter(String... keys);
 
-  Long sinterstore(String dstkey, String... keys);
+  long sinterstore(String dstkey, String... keys);
 
-  Long smove(String srckey, String dstkey, String member);
+  long smove(String srckey, String dstkey, String member);
 
-  Long sort(String key, SortingParams sortingParameters, String dstkey);
+  long sort(String key, SortingParams sortingParameters, String dstkey);
 
-  Long sort(String key, String dstkey);
+  long sort(String key, String dstkey);
 
   Set<String> sunion(String... keys);
 
-  Long sunionstore(String dstkey, String... keys);
+  long sunionstore(String dstkey, String... keys);
 
   String watch(String... keys);
 
@@ -123,11 +123,11 @@ public interface MultiKeyCommands {
 
   Set<Tuple> zdiffWithScores(String... keys);
 
-  Long zdiffStore(String dstkey, String... keys);
+  long zdiffStore(String dstkey, String... keys);
 
-  Long zinterstore(String dstkey, String... sets);
+  long zinterstore(String dstkey, String... sets);
 
-  Long zinterstore(String dstkey, ZParams params, String... sets);
+  long zinterstore(String dstkey, ZParams params, String... sets);
 
   Set<String> zinter(ZParams params, String... keys);
 
@@ -137,9 +137,9 @@ public interface MultiKeyCommands {
 
   Set<Tuple> zunionWithScores(ZParams params, String... keys);
 
-  Long zunionstore(String dstkey, String... sets);
+  long zunionstore(String dstkey, String... sets);
 
-  Long zunionstore(String dstkey, ZParams params, String... sets);
+  long zunionstore(String dstkey, ZParams params, String... sets);
 
   String brpoplpush(String source, String destination, int timeout);
 
@@ -151,7 +151,7 @@ public interface MultiKeyCommands {
 
   String randomKey();
 
-  Long bitop(BitOP op, String destKey, String... srcKeys);
+  long bitop(BitOP op, String destKey, String... srcKeys);
 
   /**
    * @see #scan(String, ScanParams)
@@ -207,11 +207,13 @@ public interface MultiKeyCommands {
    */
   ScanResult<String> scan(String cursor, ScanParams params);
 
+  ScanResult<String> scan(String cursor, ScanParams params, String type);
+
   String pfmerge(String destkey, String... sourcekeys);
 
   long pfcount(String... keys);
 
-  Long touch(String... keys);
+  long touch(String... keys);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
@@ -250,9 +252,9 @@ public interface MultiKeyCommands {
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
-  Long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit,
+  long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
-  Long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
+  long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 }

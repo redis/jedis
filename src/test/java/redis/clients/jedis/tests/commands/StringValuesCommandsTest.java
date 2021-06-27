@@ -65,8 +65,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
     assertTrue(ttl > 30 && ttl <= 40);
 
     assertEquals("bar", jedis.getEx("foo", GetExParams.getExParams().persist()));
-    ttl = jedis.ttl("foo");
-    assertEquals(-1, ttl);
+    assertEquals(-1, jedis.ttl("foo"));
   }
 
   @Test
@@ -99,12 +98,10 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void setnx() {
-    long status = jedis.setnx("foo", "bar");
-    assertEquals(1, status);
+    assertEquals(1, jedis.setnx("foo", "bar"));
     assertEquals("bar", jedis.get("foo"));
 
-    status = jedis.setnx("foo", "bar2");
-    assertEquals(0, status);
+    assertEquals(0, jedis.setnx("foo", "bar2"));
     assertEquals("bar", jedis.get("foo"));
   }
 
@@ -126,23 +123,19 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void msetnx() {
-    long status = jedis.msetnx("foo", "bar", "bar", "foo");
-    assertEquals(1, status);
+    assertEquals(1, jedis.msetnx("foo", "bar", "bar", "foo"));
     assertEquals("bar", jedis.get("foo"));
     assertEquals("foo", jedis.get("bar"));
 
-    status = jedis.msetnx("foo", "bar1", "bar2", "foo2");
-    assertEquals(0, status);
+    assertEquals(0, jedis.msetnx("foo", "bar1", "bar2", "foo2"));
     assertEquals("bar", jedis.get("foo"));
     assertEquals("foo", jedis.get("bar"));
   }
 
   @Test
   public void incr() {
-    long value = jedis.incr("foo");
-    assertEquals(1, value);
-    value = jedis.incr("foo");
-    assertEquals(2, value);
+    assertEquals(1, jedis.incr("foo"));
+    assertEquals(2, jedis.incr("foo"));
   }
 
   @Test(expected = JedisDataException.class)
@@ -153,10 +146,8 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void incrBy() {
-    long value = jedis.incrBy("foo", 2);
-    assertEquals(2, value);
-    value = jedis.incrBy("foo", 3);
-    assertEquals(5, value);
+    assertEquals(2, jedis.incrBy("foo", 2));
+    assertEquals(5, jedis.incrBy("foo", 3));
   }
 
   @Test(expected = JedisDataException.class)
@@ -167,10 +158,8 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void incrByFloat() {
-    double value = jedis.incrByFloat("foo", 10.5);
-    assertEquals(10.5, value, 0.0);
-    value = jedis.incrByFloat("foo", 0.1);
-    assertEquals(10.6, value, 0.0);
+    assertEquals(10.5, jedis.incrByFloat("foo", 10.5), 0.0);
+    assertEquals(10.6, jedis.incrByFloat("foo", 0.1), 0.0);
   }
 
   @Test(expected = JedisDataException.class)
@@ -187,18 +176,14 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void decr() {
-    long value = jedis.decr("foo");
-    assertEquals(-1, value);
-    value = jedis.decr("foo");
-    assertEquals(-2, value);
+    assertEquals(-1, jedis.decr("foo"));
+    assertEquals(-2, jedis.decr("foo"));
   }
 
   @Test
   public void decrBy() {
-    long value = jedis.decrBy("foo", 2);
-    assertEquals(-2, value);
-    value = jedis.decrBy("foo", 2);
-    assertEquals(-4, value);
+    assertEquals(-2, jedis.decrBy("foo", 2));
+    assertEquals(-4, jedis.decrBy("foo", 2));
   }
 
   @Test(expected = JedisDataException.class)
@@ -209,11 +194,9 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void append() {
-    long value = jedis.append("foo", "bar");
-    assertEquals(3, value);
+    assertEquals(3, jedis.append("foo", "bar"));
     assertEquals("bar", jedis.get("foo"));
-    value = jedis.append("foo", "bar");
-    assertEquals(6, value);
+    assertEquals(6, jedis.append("foo", "bar"));
     assertEquals("barbar", jedis.get("foo"));
   }
 
@@ -228,22 +211,21 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void strlen() {
-    jedis.set("s", "This is a string");
-    assertEquals("This is a string".length(), jedis.strlen("s").intValue());
+    String str = "This is a string";
+    jedis.set("s", str);
+    assertEquals(str.length(), jedis.strlen("s"));
   }
 
   @Test
   public void incrLargeNumbers() {
-    long value = jedis.incr("foo");
-    assertEquals(1, value);
-    assertEquals(1L + Integer.MAX_VALUE, (long) jedis.incrBy("foo", Integer.MAX_VALUE));
+    assertEquals(1, jedis.incr("foo"));
+    assertEquals(1L + Integer.MAX_VALUE, jedis.incrBy("foo", Integer.MAX_VALUE));
   }
 
   @Test(expected = JedisDataException.class)
   public void incrReallyLargeNumbers() {
     jedis.set("foo", Long.toString(Long.MAX_VALUE));
-    long value = jedis.incr("foo");
-    assertEquals(Long.MIN_VALUE, value);
+    jedis.incr("foo"); // Should throw an exception 
   }
 
   @Test

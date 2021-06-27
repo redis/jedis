@@ -303,7 +303,7 @@ public class PipeliningTest extends JedisCommandTestBase {
   @Test
   public void multiWatch() {
     final String key = "foo";
-    assertEquals(Long.valueOf(5L), jedis.incrBy(key, 5L));
+    assertEquals(5L, jedis.incrBy(key, 5L));
 
     List<Object> expect = new ArrayList<>();
     List<Object> expMulti = null; // MULTI will fail
@@ -316,7 +316,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     assertEquals(expect, pipe.syncAndReturnAll());      expect.clear();
 
     try (Jedis tweak = createJedis()) {
-      assertEquals(Long.valueOf(10L), tweak.incrBy(key, 2L));
+      assertEquals(10L, tweak.incrBy(key, 2L));
     }
 
     pipe.incrBy(key, 4L);   expect.add("QUEUED");
@@ -328,7 +328,7 @@ public class PipeliningTest extends JedisCommandTestBase {
   @Test
   public void multiUnwatch() {
     final String key = "foo";
-    assertEquals(Long.valueOf(5L), jedis.incrBy(key, 5L));
+    assertEquals(5L, jedis.incrBy(key, 5L));
 
     List<Object> expect = new ArrayList<>();
     List<Object> expMulti = new ArrayList<>();
@@ -342,7 +342,7 @@ public class PipeliningTest extends JedisCommandTestBase {
     assertEquals(expect, pipe.syncAndReturnAll());  expect.clear();
 
     try (Jedis tweak = createJedis()) {
-      assertEquals(Long.valueOf(10L), tweak.incrBy(key, 2L));
+      assertEquals(10L, tweak.incrBy(key, 2L));
     }
 
     pipe.incrBy(key, 4L);   expect.add("QUEUED");   expMulti.add(20L);

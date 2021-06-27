@@ -29,9 +29,9 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
     hash.put("foo2", "bar");
     jedis.hmset("foo", hash);
 
-    assertEquals(0, jedis.hdel("bar", "foo", "foo1").intValue());
-    assertEquals(0, jedis.hdel("foo", "foo", "foo1").intValue());
-    assertEquals(2, jedis.hdel("foo", "bar", "foo2").intValue());
+    assertEquals(0, jedis.hdel("bar", "foo", "foo1"));
+    assertEquals(0, jedis.hdel("foo", "foo", "foo1"));
+    assertEquals(2, jedis.hdel("foo", "bar", "foo2"));
     assertNull(jedis.hget("foo", "bar"));
 
     // Binary
@@ -41,9 +41,9 @@ public class VariadicCommandsTest extends JedisCommandTestBase {
     bhash.put(bfoo2, bbar);
     jedis.hmset(bfoo, bhash);
 
-    assertEquals(0, jedis.hdel(bbar, bfoo, bfoo1).intValue());
-    assertEquals(0, jedis.hdel(bfoo, bfoo, bfoo1).intValue());
-    assertEquals(2, jedis.hdel(bfoo, bbar, bfoo2).intValue());
+    assertEquals(0, jedis.hdel(bbar, bfoo, bfoo1));
+    assertEquals(0, jedis.hdel(bfoo, bfoo, bfoo1));
+    assertEquals(2, jedis.hdel(bfoo, bbar, bfoo2));
     assertNull(jedis.hget(bfoo, bbar));
 
   }

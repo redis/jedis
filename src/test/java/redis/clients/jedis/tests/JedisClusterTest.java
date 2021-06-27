@@ -521,13 +521,13 @@ public class JedisClusterTest {
   public void testClusterKeySlot() {
     // It assumes JedisClusterCRC16 is correctly implemented
     assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
-      node1.clusterKeySlot("{user1000}.following").intValue());
+      node1.clusterKeySlot("{user1000}.following"));
     assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"),
-        node1.clusterKeySlot("foo{bar}{zap}").intValue());
+        node1.clusterKeySlot("foo{bar}{zap}"));
     assertEquals(JedisClusterCRC16.getSlot("foo{}{bar}"),
-        node1.clusterKeySlot("foo{}{bar}").intValue());
+        node1.clusterKeySlot("foo{}{bar}"));
     assertEquals(JedisClusterCRC16.getSlot("foo{{bar}}zap"),
-        node1.clusterKeySlot("foo{{bar}}zap").intValue());
+        node1.clusterKeySlot("foo{{bar}}zap"));
   }
 
   @Test
@@ -544,7 +544,7 @@ public class JedisClusterTest {
       }
 
       int slot = JedisClusterCRC16.getSlot("foo{bar}");
-      assertEquals(count, node1.clusterCountKeysInSlot(slot).intValue());
+      assertEquals(count, node1.clusterCountKeysInSlot(slot));
     }
   }
 

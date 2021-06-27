@@ -292,6 +292,19 @@ public class JedisPoolTest {
   }
 
   @Test
+  public void getNumActiveWhenPoolIsClosed() {
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+        "foobared", 0, "my_shiny_client_name");
+
+    try (Jedis j = pool.getResource()) {
+      j.ping();
+    }
+
+    pool.close();
+    assertEquals(0, pool.getNumActive());
+  }
+
+  @Test
   public void getNumActiveReturnsTheCorrectNumber() {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000)) {
       Jedis jedis = pool.getResource();

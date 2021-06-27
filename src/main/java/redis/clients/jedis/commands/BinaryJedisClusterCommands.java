@@ -19,14 +19,6 @@ public interface BinaryJedisClusterCommands extends BinaryJedisCommands {
   }
 
   /**
-   * @throws UnsupportedOperationException Redis Cluster does not support MOVE command.
-   */
-  @Override
-  default Long move(byte[] key, int dbIndex) {
-    throw new UnsupportedOperationException("Redis Cluster does not support MOVE command.");
-  }
-
-  /**
    * @deprecated Use {@link #xinfoStreamBinary(byte[])}.
    */
   @Override
@@ -53,9 +45,5 @@ public interface BinaryJedisClusterCommands extends BinaryJedisCommands {
     throw new UnsupportedOperationException("Use other version of XINFO CONSUMERS.");
   }
 
-  Long waitReplicas(byte[] key, int replicas, long timeout);
-
-  Long memoryUsage(byte[] key);
-
-  Long memoryUsage(byte[] key, int samples);
+  long waitReplicas(byte[] key, int replicas, long timeout);
 }

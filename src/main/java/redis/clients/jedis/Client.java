@@ -958,6 +958,10 @@ public class Client extends BinaryClient implements Commands {
     subscribe(SafeEncoder.encodeMany(channels));
   }
 
+  public void pubsubChannels() {
+    pubsub(Protocol.PUBSUB_CHANNELS);
+  }
+
   public void pubsubChannels(final String pattern) {
     pubsub(Protocol.PUBSUB_CHANNELS, pattern);
   }
@@ -1118,6 +1122,11 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void scan(final String cursor, final ScanParams params) {
     scan(SafeEncoder.encode(cursor), params);
+  }
+
+  @Override
+  public void scan(final String cursor, final ScanParams params, final String type) {
+    scan(SafeEncoder.encode(cursor), params, type != null ? SafeEncoder.encode(type) : null);
   }
 
   @Override

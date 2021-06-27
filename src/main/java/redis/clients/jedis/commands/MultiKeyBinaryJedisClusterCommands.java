@@ -14,7 +14,7 @@ public interface MultiKeyBinaryJedisClusterCommands extends MultiKeyBinaryComman
    * @throws UnsupportedOperationException Use {@link #copy(byte[], byte[], boolean)}.
    */
   @Override
-  default Boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+  default boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
     throw new UnsupportedOperationException("Cluster mode does not support databse operations.");
   }
 

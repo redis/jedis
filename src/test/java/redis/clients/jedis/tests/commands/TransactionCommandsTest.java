@@ -11,7 +11,6 @@ import static redis.clients.jedis.Protocol.Command.*;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import org.junit.After;
@@ -115,7 +114,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     t.set(bmykey, bfoo);
     resp = t.exec();
     assertNull(resp);
-    assertTrue(Arrays.equals(bbar, jedis.get(bmykey)));
+    assertArrayEquals(bbar, jedis.get(bmykey));
   }
 
   @Test

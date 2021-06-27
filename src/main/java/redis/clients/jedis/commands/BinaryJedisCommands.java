@@ -21,9 +21,9 @@ public interface BinaryJedisCommands {
 
   byte[] getEx(byte[] key, GetExParams params);
 
-  Boolean exists(byte[] key);
+  boolean exists(byte[] key);
 
-  Long persist(byte[] key);
+  long persist(byte[] key);
 
   String type(byte[] key);
 
@@ -63,21 +63,21 @@ public interface BinaryJedisCommands {
     return expire(key, (long) seconds);
   }
 
-  Long expire(byte[] key, long seconds);
+  long expire(byte[] key, long seconds);
 
-  Long pexpire(byte[] key, long milliseconds);
+  long pexpire(byte[] key, long milliseconds);
 
-  Long expireAt(byte[] key, long unixTime);
+  long expireAt(byte[] key, long unixTime);
 
-  Long pexpireAt(byte[] key, long millisecondsTimestamp);
+  long pexpireAt(byte[] key, long millisecondsTimestamp);
 
-  Long ttl(byte[] key);
+  long ttl(byte[] key);
 
-  Long pttl(byte[] key);
+  long pttl(byte[] key);
 
-  Long touch(byte[] key);
+  long touch(byte[] key);
 
-  Boolean setbit(byte[] key, long offset, boolean value);
+  boolean setbit(byte[] key, long offset, boolean value);
 
   /**
    * @deprecated Use {@link #setbit(byte[], long, boolean)}.
@@ -85,15 +85,15 @@ public interface BinaryJedisCommands {
   @Deprecated
   Boolean setbit(byte[] key, long offset, byte[] value);
 
-  Boolean getbit(byte[] key, long offset);
+  boolean getbit(byte[] key, long offset);
 
-  Long setrange(byte[] key, long offset, byte[] value);
+  long setrange(byte[] key, long offset, byte[] value);
 
   byte[] getrange(byte[] key, long startOffset, long endOffset);
 
   byte[] getSet(byte[] key, byte[] value);
 
-  Long setnx(byte[] key, byte[] value);
+  long setnx(byte[] key, byte[] value);
 
   /**
    * @deprecated Use {@link #setex(byte[], long, byte[])}.
@@ -107,41 +107,41 @@ public interface BinaryJedisCommands {
 
   String psetex(byte[] key, long milliseconds, byte[] value);
 
-  Long decrBy(byte[] key, long decrement);
+  long decrBy(byte[] key, long decrement);
 
-  Long decr(byte[] key);
+  long decr(byte[] key);
 
-  Long incrBy(byte[] key, long increment);
+  long incrBy(byte[] key, long increment);
 
-  Double incrByFloat(byte[] key, double increment);
+  double incrByFloat(byte[] key, double increment);
 
-  Long incr(byte[] key);
+  long incr(byte[] key);
 
-  Long append(byte[] key, byte[] value);
+  long append(byte[] key, byte[] value);
 
   byte[] substr(byte[] key, int start, int end);
 
-  Long hset(byte[] key, byte[] field, byte[] value);
+  long hset(byte[] key, byte[] field, byte[] value);
 
-  Long hset(byte[] key, Map<byte[], byte[]> hash);
+  long hset(byte[] key, Map<byte[], byte[]> hash);
 
   byte[] hget(byte[] key, byte[] field);
 
-  Long hsetnx(byte[] key, byte[] field, byte[] value);
+  long hsetnx(byte[] key, byte[] field, byte[] value);
 
   String hmset(byte[] key, Map<byte[], byte[]> hash);
 
   List<byte[]> hmget(byte[] key, byte[]... fields);
 
-  Long hincrBy(byte[] key, byte[] field, long value);
+  long hincrBy(byte[] key, byte[] field, long value);
 
-  Double hincrByFloat(byte[] key, byte[] field, double value);
+  double hincrByFloat(byte[] key, byte[] field, double value);
 
-  Boolean hexists(byte[] key, byte[] field);
+  boolean hexists(byte[] key, byte[] field);
 
-  Long hdel(byte[] key, byte[]... field);
+  long hdel(byte[] key, byte[]... field);
 
-  Long hlen(byte[] key);
+  long hlen(byte[] key);
 
   Set<byte[]> hkeys(byte[] key);
 
@@ -155,11 +155,11 @@ public interface BinaryJedisCommands {
 
   Map<byte[], byte[]> hrandfieldWithValues(byte[] key, long count);
 
-  Long rpush(byte[] key, byte[]... args);
+  long rpush(byte[] key, byte[]... args);
 
-  Long lpush(byte[] key, byte[]... args);
+  long lpush(byte[] key, byte[]... args);
 
-  Long llen(byte[] key);
+  long llen(byte[] key);
 
   List<byte[]> lrange(byte[] key, long start, long stop);
 
@@ -169,7 +169,7 @@ public interface BinaryJedisCommands {
 
   String lset(byte[] key, long index, byte[] value);
 
-  Long lrem(byte[] key, long count, byte[] value);
+  long lrem(byte[] key, long count, byte[] value);
 
   byte[] lpop(byte[] key);
 
@@ -185,19 +185,19 @@ public interface BinaryJedisCommands {
 
   List<byte[]> rpop(byte[] key, int count);
 
-  Long sadd(byte[] key, byte[]... member);
+  long sadd(byte[] key, byte[]... member);
 
   Set<byte[]> smembers(byte[] key);
 
-  Long srem(byte[] key, byte[]... member);
+  long srem(byte[] key, byte[]... member);
 
   byte[] spop(byte[] key);
 
   Set<byte[]> spop(byte[] key, long count);
 
-  Long scard(byte[] key);
+  long scard(byte[] key);
 
-  Boolean sismember(byte[] key, byte[] member);
+  boolean sismember(byte[] key, byte[] member);
 
   List<Boolean> smismember(byte[] key, byte[]... members);
 
@@ -205,23 +205,23 @@ public interface BinaryJedisCommands {
 
   List<byte[]> srandmember(byte[] key, int count);
 
-  Long strlen(byte[] key);
+  long strlen(byte[] key);
 
-  Long zadd(byte[] key, double score, byte[] member);
+  long zadd(byte[] key, double score, byte[] member);
 
-  Long zadd(byte[] key, double score, byte[] member, ZAddParams params);
+  long zadd(byte[] key, double score, byte[] member, ZAddParams params);
 
-  Long zadd(byte[] key, Map<byte[], Double> scoreMembers);
+  long zadd(byte[] key, Map<byte[], Double> scoreMembers);
 
-  Long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
+  long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params);
 
   Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
 
   Set<byte[]> zrange(byte[] key, long start, long stop);
 
-  Long zrem(byte[] key, byte[]... members);
+  long zrem(byte[] key, byte[]... members);
 
-  Double zincrby(byte[] key, double increment, byte[] member);
+  double zincrby(byte[] key, double increment, byte[] member);
 
   Double zincrby(byte[] key, double increment, byte[] member, ZIncrByParams params);
 
@@ -241,7 +241,7 @@ public interface BinaryJedisCommands {
 
   Set<Tuple> zrandmemberWithScores(byte[] key, long count);
 
-  Long zcard(byte[] key);
+  long zcard(byte[] key);
 
   Double zscore(byte[] key, byte[] member);
 
@@ -259,9 +259,9 @@ public interface BinaryJedisCommands {
 
   List<byte[]> sort(byte[] key, SortingParams sortingParameters);
 
-  Long zcount(byte[] key, double min, double max);
+  long zcount(byte[] key, double min, double max);
 
-  Long zcount(byte[] key, byte[] min, byte[] max);
+  long zcount(byte[] key, byte[] min, byte[] max);
 
   Set<byte[]> zrangeByScore(byte[] key, double min, double max);
 
@@ -295,13 +295,13 @@ public interface BinaryJedisCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-  Long zremrangeByRank(byte[] key, long start, long stop);
+  long zremrangeByRank(byte[] key, long start, long stop);
 
-  Long zremrangeByScore(byte[] key, double min, double max);
+  long zremrangeByScore(byte[] key, double min, double max);
 
-  Long zremrangeByScore(byte[] key, byte[] min, byte[] max);
+  long zremrangeByScore(byte[] key, byte[] min, byte[] max);
 
-  Long zlexcount(byte[] key, byte[] min, byte[] max);
+  long zlexcount(byte[] key, byte[] min, byte[] max);
 
   Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
@@ -311,42 +311,35 @@ public interface BinaryJedisCommands {
 
   Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-  Long zremrangeByLex(byte[] key, byte[] min, byte[] max);
+  long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
+  long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
 
-  Long lpushx(byte[] key, byte[]... arg);
+  long lpushx(byte[] key, byte[]... arg);
 
-  Long rpushx(byte[] key, byte[]... arg);
+  long rpushx(byte[] key, byte[]... arg);
 
-  Long del(byte[] key);
+  long del(byte[] key);
 
-  Long unlink(byte[] key);
+  long unlink(byte[] key);
 
   byte[] echo(byte[] arg);
 
-  /**
-   * @deprecated This method will be removed from this interface. Use
-   * {@link AdvancedBinaryJedisCommands#move(byte[], int)}.
-   */
-  @Deprecated
-  Long move(byte[] key, int dbIndex);
+  long bitcount(byte[] key);
 
-  Long bitcount(byte[] key);
+  long bitcount(byte[] key, long start, long end);
 
-  Long bitcount(byte[] key, long start, long end);
-
-  Long pfadd(byte[] key, byte[]... elements);
+  long pfadd(byte[] key, byte[]... elements);
 
   long pfcount(byte[] key);
 
   // Geo Commands
 
-  Long geoadd(byte[] key, double longitude, double latitude, byte[] member);
+  long geoadd(byte[] key, double longitude, double latitude, byte[] member);
 
-  Long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
+  long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
-  Long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
+  long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap);
 
   Double geodist(byte[] key, byte[] member1, byte[] member2);
 
@@ -412,14 +405,13 @@ public interface BinaryJedisCommands {
    * @param field
    * @return lenth of the value for key
    */
-  Long hstrlen(byte[] key, byte[] field);
-
+  long hstrlen(byte[] key, byte[] field);
 
   byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
 
-  Long xlen(byte[] key);
+  long xlen(byte[] key);
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
 
@@ -437,21 +429,21 @@ public interface BinaryJedisCommands {
 
   List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
-  Long xack(byte[] key, byte[] group, byte[]... ids);
+  long xack(byte[] key, byte[] group, byte[]... ids);
 
   String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream);
 
   String xgroupSetID(byte[] key, byte[] consumer, byte[] id);
 
-  Long xgroupDestroy(byte[] key, byte[] consumer);
+  long xgroupDestroy(byte[] key, byte[] consumer);
 
-  Long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
+  long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
 
-  Long xdel(byte[] key, byte[]... ids);
+  long xdel(byte[] key, byte[]... ids);
 
-  Long xtrim(byte[] key, long maxLen, boolean approximateLength);
+  long xtrim(byte[] key, long maxLen, boolean approximateLength);
 
-  Long xtrim(byte[] key, XTrimParams params);
+  long xtrim(byte[] key, XTrimParams params);
 
   Object xpending(byte[] key, byte[] groupname);
 

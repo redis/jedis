@@ -218,8 +218,8 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void memoryUsageString() {
-    // Note: It has been recommended not to base MEMORY USAGE test on exact value, as this may
-    // subject to be 'tuned' especially targetting a major Redis release.
+    // Note: It has been recommended not to base MEMORY USAGE test on exact value, as the response
+    // may subject to be 'tuned' especially targeting a major Redis release.
 
     jedis.set("foo", "bar");
     long usage = jedis.memoryUsage("foo");
@@ -236,8 +236,8 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void memoryUsageBinary() {
-    // Note: It has been recommended not to base MEMORY USAGE test on exact value, as this may
-    // subject to be 'tuned' especially targetting a major Redis release.
+    // Note: It has been recommended not to base MEMORY USAGE test on exact value, as the response
+    // may subject to be 'tuned' especially targeting a major Redis release.
 
     byte[] bfoo = {0x01, 0x02, 0x03, 0x04};
     byte[] bbar = {0x05, 0x06, 0x07, 0x08};

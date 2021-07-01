@@ -2,6 +2,7 @@ package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -201,15 +202,41 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void memoryUsageString() {
-    jedis.set("foo", "ba");
-    Long usage = jedis.memoryUsage("foo");
-    assertEquals(49 + 3, (long) usage);
+    // Note: It has been recommended not to base MEMORY USAGE test on exact value, as the response
+    // may subject to be 'tuned' especially targeting a major Redis release.
 
-    jedis.lpush("loo", "ba", "da", "sha");
-    usage = jedis.memoryUsage("loo", 2);
-    assertEquals(141 + 3, (long) usage);
+    jedis.set("foo", "bar");
+    long usage = jedis.memoryUsage("foo");
+    assertTrue(usage >= 30);
+    assertTrue(usage <= 80);
 
-    usage = jedis.memoryUsage("roo", 2);
-    assertEquals(null, usage);
+    jedis.lpush("foobar", "fo", "ba", "sha");
+    usage = jedis.memoryUsage("foobar", 2);
+    assertTrue(usage >= 110);
+    assertTrue(usage <= 190);
+
+    assertNull(jedis.memoryUsage("roo", 2));
+  }
+
+  @Test
+  public void memoryUsageBinary() {
+    // Note: It has been recommended not to base MEMORY USAGE test on exact value, as the response
+    // may subject to be 'tuned' especially targeting a major Redis release.
+
+    byte[] bfoo = {0x01, 0x02, 0x03, 0x04};
+    byte[] bbar = {0x05, 0x06, 0x07, 0x08};
+    byte[] bfoobar = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+
+    jedis.set(bfoo, bbar);
+    long usage = jedis.memoryUsage(bfoo);
+    assertTrue(usage >= 30);
+    assertTrue(usage <= 80);
+
+    jedis.lpush(bfoobar, new byte[]{0x01, 0x02}, new byte[]{0x05, 0x06}, new byte[]{0x00});
+    usage = jedis.memoryUsage(bfoobar, 2);
+    assertTrue(usage >= 110);
+    assertTrue(usage <= 190);
+
+    assertNull(jedis.memoryUsage("roo", 2));
   }
 }

@@ -218,6 +218,9 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void memoryUsageString() {
+    // Note: It has been recommended not to base MEMORY USAGE test on exact value, as this may
+    // subject to be 'tuned' especially targetting a major Redis release.
+
     jedis.set("foo", "bar");
     long usage = jedis.memoryUsage("foo");
     assertTrue(usage >= 30);
@@ -226,13 +229,16 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     jedis.lpush("foobar", "fo", "ba", "sha");
     usage = jedis.memoryUsage("foobar", 2);
     assertTrue(usage >= 110);
-    assertTrue(usage <= 180);
+    assertTrue(usage <= 190);
 
     assertNull(jedis.memoryUsage("roo", 2));
   }
 
   @Test
   public void memoryUsageBinary() {
+    // Note: It has been recommended not to base MEMORY USAGE test on exact value, as this may
+    // subject to be 'tuned' especially targetting a major Redis release.
+
     byte[] bfoo = {0x01, 0x02, 0x03, 0x04};
     byte[] bbar = {0x05, 0x06, 0x07, 0x08};
     byte[] bfoobar = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
@@ -244,7 +250,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
     jedis.lpush(bfoobar, new byte[]{0x01, 0x02}, new byte[]{0x05, 0x06}, new byte[]{0x00});
     usage = jedis.memoryUsage(bfoobar, 2);
-    assertTrue(usage >= 120);
+    assertTrue(usage >= 110);
     assertTrue(usage <= 190);
 
     assertNull(jedis.memoryUsage("roo", 2));

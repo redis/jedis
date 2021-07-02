@@ -292,7 +292,7 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void getNumActiveIsNegativeWhenPoolIsClosed() {
+  public void getNumActiveWhenPoolIsClosed() {
     JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
         "foobared", 0, "my_shiny_client_name");
 
@@ -301,7 +301,7 @@ public class JedisPoolTest {
     }
 
     pool.close();
-    assertTrue(pool.getNumActive() < 0);
+    assertEquals(0, pool.getNumActive());
   }
 
   @Test

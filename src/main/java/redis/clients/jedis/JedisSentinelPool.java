@@ -203,7 +203,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
         factory.setHostAndPort(currentHostMaster);
         // although we clear the pool, we still have to check the returned object in getResource,
         // this call only clears idle instances, not borrowed instances
-        clearInternalPool();
+        super.clear();
 
         LOG.info("Created JedisSentinelPool to master at {}", master);
       }
@@ -301,7 +301,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     if (resource != null) {
       try {
         resource.resetState();
-        returnResourceObject(resource);
+        super.returnResource(resource);
       } catch (Exception e) {
         returnBrokenResource(resource);
         LOG.debug("Resource is returned to the pool as broken", e);

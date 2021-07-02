@@ -48,7 +48,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
   public void returnResource(final ShardedJedis resource) {
     if (resource != null) {
       resource.resetState();
-      returnResourceObject(resource);
+      super.returnResource(resource);
     }
   }
 

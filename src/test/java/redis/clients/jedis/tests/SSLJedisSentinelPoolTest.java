@@ -1,10 +1,10 @@
 package redis.clients.jedis.tests;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import java.util.HashSet;
-import java.util.Set;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
@@ -38,6 +38,9 @@ public class SSLJedisSentinelPoolTest {
         .hostAndPortMapper(SSL_PORT_MAPPER).build();
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
         .clientName("sentinel-client").ssl(false).build();
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
+      pool.getResource().close();
+    }
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, POOL_CONFIG,
         masterConfig, sentinelConfig)) {
       pool.getResource().close();
@@ -50,6 +53,9 @@ public class SSLJedisSentinelPoolTest {
         .password("foobared").clientName("sentinel-master-client").ssl(false).build();
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
         .clientName("sentinel-client").ssl(true).hostAndPortMapper(SSL_PORT_MAPPER).build();
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
+      pool.getResource().close();
+    }
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, POOL_CONFIG,
         masterConfig, sentinelConfig)) {
       pool.getResource().close();
@@ -63,6 +69,9 @@ public class SSLJedisSentinelPoolTest {
         .hostAndPortMapper(SSL_PORT_MAPPER).build();
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
         .clientName("sentinel-client").ssl(true).hostAndPortMapper(SSL_PORT_MAPPER).build();
+    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig, sentinelConfig)) {
+      pool.getResource().close();
+    }
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, POOL_CONFIG,
         masterConfig, sentinelConfig)) {
       pool.getResource().close();

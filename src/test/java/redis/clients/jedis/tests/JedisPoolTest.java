@@ -15,6 +15,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisFactory;
@@ -39,6 +40,19 @@ public class JedisPoolTest {
     }
     pool.close();
     assertTrue(pool.isClosed());
+  }
+
+  @Test
+  public void checkResourceWithConfig() {
+    try (JedisPool pool = new JedisPool(HostAndPortUtil.getRedisServers().get(7),
+        DefaultJedisClientConfig.builder().socketTimeoutMillis(5000).build())) {
+
+      try (Jedis jedis = pool.getResource()) {
+        assertEquals("PONG", jedis.ping());
+        assertEquals(5000, jedis.getClient().getSoTimeout());
+        jedis.close();
+      }
+    }
   }
 
   @Test

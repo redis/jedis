@@ -1501,8 +1501,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
   @Test
   public void zrandmember() {
     assertNull(jedis.zrandmember("foo"));
-    assertNull(jedis.zrandmember("foo", 1));
-    assertNull(jedis.zrandmemberWithScores("foo", 1));
+    assertEquals(Collections.emptySet(), jedis.zrandmember("foo", 1));
+    assertEquals(Collections.emptySet(), jedis.zrandmemberWithScores("foo", 1));
 
     Map<String, Double> hash = new HashMap<>();
     hash.put("bar1", 1d);
@@ -1520,6 +1520,10 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     assertEquals(hash.get(tuple.getElement()), Double.valueOf(tuple.getScore()));
 
     // Binary
+    assertNull(jedis.zrandmember(bfoo));
+    assertEquals(Collections.emptySet(), jedis.zrandmember(bfoo, 1));
+    assertEquals(Collections.emptySet(), jedis.zrandmemberWithScores(bfoo, 1));
+
     Map<byte[], Double> bhash = new HashMap<>();
     bhash.put(bbar1, 1d);
     bhash.put(bbar2, 10d);

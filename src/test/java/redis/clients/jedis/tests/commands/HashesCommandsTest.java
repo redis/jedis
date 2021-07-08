@@ -13,6 +13,7 @@ import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEqual
 import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -434,6 +435,10 @@ public class HashesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void hrandfield() {
+    assertNull(jedis.hrandfield("foo"));
+    assertEquals(Collections.emptyList(), jedis.hrandfield("foo", 1));
+    assertEquals(Collections.emptyMap(), jedis.hrandfieldWithValues("foo", 1));
+
     Map<String, String> hash = new LinkedHashMap<>();
     hash.put("bar", "bar");
     hash.put("car", "car");
@@ -451,6 +456,10 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     assertEquals(hash.get(entry.getKey()), entry.getValue());
 
     // binary
+    assertNull(jedis.hrandfield(bfoo));
+    assertEquals(Collections.emptyList(), jedis.hrandfield(bfoo, 1));
+    assertEquals(Collections.emptyMap(), jedis.hrandfieldWithValues(bfoo, 1));
+
     Map<byte[], byte[]> bhash = new JedisByteHashMap();
     bhash.put(bbar, bbar);
     bhash.put(bcar, bcar);

@@ -236,7 +236,13 @@
 					<!--Sign the components - this is required by maven central for releases -->
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
+						<version>3.0.1</version>
+						<configuration>
+							<gpgArguments>
+								<arg>--pinentry-mode</arg>
+								<arg>loopback</arg>
+							</gpgArguments>
+						</configuration>
 						<executions>
 							<execution>
 								<id>sign-artifacts</id>

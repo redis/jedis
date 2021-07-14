@@ -99,6 +99,19 @@ appendonly no
 maxmemory-policy allkeys-lfu
 endef
 
+define REDIS9_CONF
+daemonize yes
+protected-mode no
+port 6387
+user default off
+user acljedis on allcommands allkeys >fizzbuzz
+pidfile /tmp/redis9.pid
+logfile /tmp/redis9.log
+save ""
+appendonly no
+client-output-buffer-limit pubsub 256k 128k 5
+endef
+
 # SENTINELS
 define REDIS_SENTINEL1
 port 26379
@@ -150,6 +163,22 @@ sentinel parallel-syncs mymaster 1
 sentinel failover-timeout mymaster 120000
 pidfile /tmp/sentinel4.pid
 logfile /tmp/sentinel4.log
+endef
+
+define REDIS_SENTINEL5
+port 26383
+daemonize yes
+protected-mode no
+user default off
+user sentinel on allcommands allkeys >foobared
+sentinel monitor aclmaster 127.0.0.1 6387 1
+sentinel auth-user aclmaster acljedis
+sentinel auth-pass aclmaster fizzbuzz
+sentinel down-after-milliseconds aclmaster 2000
+sentinel failover-timeout aclmaster 120000
+sentinel parallel-syncs aclmaster 1
+pidfile /tmp/sentinel5.pid
+logfile /tmp/sentinel5.log
 endef
 
 # CLUSTER REDIS NODES
@@ -251,7 +280,7 @@ endef
 define STUNNEL_CONF
 cert = src/test/resources/private.pem
 pid = /tmp/stunnel.pid
-[redis]
+[redis_1]
 accept = 127.0.0.1:6390
 connect = 127.0.0.1:6379
 [redis_3]
@@ -260,6 +289,9 @@ connect = 127.0.0.1:6381
 [redis_4]
 accept = 127.0.0.1:16382
 connect = 127.0.0.1:6382
+[redis_9]
+accept = 127.0.0.1:16387
+connect = 127.0.0.1:6387
 [redis_cluster_1]
 accept = 127.0.0.1:8379
 connect = 127.0.0.1:7379
@@ -275,18 +307,9 @@ connect = 127.0.0.1:7382
 [redis_cluster_5]
 accept = 127.0.0.1:8383
 connect = 127.0.0.1:7383
-[redis_sentinel_1]
-accept = 127.0.0.1:36379
-connect = 127.0.0.1:26379
-[redis_sentinel_2]
-accept = 127.0.0.1:36380
-connect = 127.0.0.1:26380
-[redis_sentinel_3]
-accept = 127.0.0.1:36381
-connect = 127.0.0.1:26381
-[redis_sentinel_4]
-accept = 127.0.0.1:36382
-connect = 127.0.0.1:26382
+[redis_sentinel_5]
+accept = 127.0.0.1:36383
+connect = 127.0.0.1:26383
 endef
 
 export REDIS1_CONF
@@ -297,10 +320,12 @@ export REDIS5_CONF
 export REDIS6_CONF
 export REDIS7_CONF
 export REDIS8_CONF
+export REDIS9_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
 export REDIS_SENTINEL4
+export REDIS_SENTINEL5
 export REDIS_CLUSTER_NODE1_CONF
 export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
@@ -326,6 +351,7 @@ start: stunnel cleanup
 	echo "$$REDIS6_CONF" | redis-server -
 	echo "$$REDIS7_CONF" | redis-server -
 	echo "$$REDIS8_CONF" | redis-server -
+	echo "$$REDIS9_CONF" | redis-server -
 	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
@@ -333,6 +359,9 @@ start: stunnel cleanup
 	echo "$$REDIS_SENTINEL3" > /tmp/sentinel3.conf && redis-server /tmp/sentinel3.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL4" > /tmp/sentinel4.conf && redis-server /tmp/sentinel4.conf --sentinel
+	@sleep 0.5
+	echo "$$REDIS_SENTINEL5" > /tmp/sentinel5.conf && redis-server /tmp/sentinel5.conf --sentinel
+	@sleep 0.5
 	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
@@ -358,10 +387,12 @@ stop:
 	kill `cat /tmp/redis6.pid`
 	kill `cat /tmp/redis7.pid`
 	kill `cat /tmp/redis8.pid`
+	kill `cat /tmp/redis9.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`
 	kill `cat /tmp/sentinel4.pid`
+	kill `cat /tmp/sentinel5.pid`
 	kill `cat /tmp/redis_cluster_node1.pid` || true
 	kill `cat /tmp/redis_cluster_node2.pid` || true
 	kill `cat /tmp/redis_cluster_node3.pid` || true
@@ -373,6 +404,8 @@ stop:
 	rm -f /tmp/sentinel1.conf
 	rm -f /tmp/sentinel2.conf
 	rm -f /tmp/sentinel3.conf
+	rm -f /tmp/sentinel4.conf
+	rm -f /tmp/sentinel5.conf
 	rm -f /tmp/redis_cluster_node1.conf
 	rm -f /tmp/redis_cluster_node2.conf
 	rm -f /tmp/redis_cluster_node3.conf

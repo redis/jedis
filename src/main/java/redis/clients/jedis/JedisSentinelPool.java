@@ -195,6 +195,11 @@ public class JedisSentinelPool extends JedisPoolAbstract {
   }
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
+      final JedisClientConfig masteClientConfig, final JedisClientConfig sentinelClientConfig) {
+    this(masterName, sentinels, new GenericObjectPoolConfig<Jedis>(), masteClientConfig, sentinelClientConfig);
+  }
+
+  public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
       final GenericObjectPoolConfig<Jedis> poolConfig, final JedisClientConfig masteClientConfig,
       final JedisClientConfig sentinelClientConfig) {
     this(masterName, sentinels, poolConfig, new JedisFactory(masteClientConfig), sentinelClientConfig);

@@ -24,11 +24,13 @@ public final class HostAndPortUtil {
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 5));
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 6));
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 7));
+    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 8));
 
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 2));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 3));
+    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 4));
 
     clusterHostAndPortList.add(new HostAndPort("localhost", 7379));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7380));
@@ -36,14 +38,6 @@ public final class HostAndPortUtil {
     clusterHostAndPortList.add(new HostAndPort("localhost", 7382));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7383));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7384));
-
-    String envRedisHosts = System.getProperty("redis-hosts");
-    String envSentinelHosts = System.getProperty("sentinel-hosts");
-    String envClusterHosts = System.getProperty("cluster-hosts");
-
-    redisHostAndPortList = parseHosts(envRedisHosts, redisHostAndPortList);
-    sentinelHostAndPortList = parseHosts(envSentinelHosts, sentinelHostAndPortList);
-    clusterHostAndPortList = parseHosts(envClusterHosts, clusterHostAndPortList);
   }
 
   public static List<HostAndPort> parseHosts(String envHosts,

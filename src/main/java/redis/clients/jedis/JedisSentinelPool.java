@@ -166,7 +166,14 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       final String user, final String password, final int database, final String clientName,
       final int sentinelConnectionTimeout, final int sentinelSoTimeout, final String sentinelUser,
       final String sentinelPassword, final String sentinelClientName) {
-    this(masterName, sentinels, poolConfig, new JedisFactory(connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName));
+    this(masterName, parseHostAndPorts(sentinels), poolConfig,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
+            .user(user).password(password).database(database).clientName(clientName).build(),
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(sentinelConnectionTimeout)
+            .socketTimeoutMillis(sentinelSoTimeout).user(sentinelUser).password(sentinelPassword)
+            .clientName(sentinelClientName).build()
+    );
     this.connectionTimeout = connectionTimeout;
     this.soTimeout = soTimeout;
     this.infiniteSoTimeout = infiniteSoTimeout;

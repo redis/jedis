@@ -299,4 +299,19 @@ public final class Protocol {
       return raw;
     }
   }
+
+  public static enum SentinelKeyword implements Rawable {
+    MYID, MASTERS, MASTER, SENTINELS, SLAVES, REPLICAS;
+
+    private final byte[] raw;
+
+    private SentinelKeyword() {
+      raw = SafeEncoder.encode(name());
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+  }
 }

@@ -1,7 +1,7 @@
 package redis.clients.jedis.util;
 
 /**
- * Holds various methods/utilities to manipualte and parse redis hash-tags. See <a
+ * Holds various methods/utilities to manipulate and parse redis hash-tags. See <a
  * href="http://redis.io/topics/cluster-spec">Cluster-Spec : Keys hash tags</a>
  */
 public final class JedisClusterHashTagUtil {

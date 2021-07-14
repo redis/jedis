@@ -1151,6 +1151,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public redis.clients.jedis.args.StreamEntryID xaddV2(final String key, final Map<String, String> hash, final XAddParams params) {
+    Jedis j = getShard(key);
+    return j.xaddV2(key, hash, params);
+  }
+
+  @Override
   public long xlen(String key) {
     Jedis j = getShard(key);
     return j.xlen(key);

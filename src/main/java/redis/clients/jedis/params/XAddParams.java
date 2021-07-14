@@ -10,23 +10,24 @@ import java.util.Collections;
 import java.util.List;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.args.StreamEntryID;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class XAddParams extends Params {
 
-  private String id;
+  private boolean nomkstream;
 
   private Long maxLen;
 
-  private boolean approximateTrimming;
-
-  private boolean exactTrimming;
-
-  private boolean nomkstream;
-
   private String minId;
 
+  private boolean approximateTrimming;
+  private boolean exactTrimming;
+
   private Long limit;
+
+  private String strId;
+  private StreamEntryID id;
 
   public static XAddParams xAddParams() {
     return new XAddParams();
@@ -37,7 +38,22 @@ public class XAddParams extends Params {
     return this;
   }
 
+  /**
+   * Should be used with {@code xadd}.
+   * @param id
+   * @return 
+   */
   public XAddParams id(String id) {
+    this.strId = id;
+    return this;
+  }
+
+  /**
+   * Should be used with {@code xaddV2}.
+   * @param id
+   * @return 
+   */
+  public XAddParams id(StreamEntryID id) {
     this.id = id;
     return this;
   }
@@ -74,6 +90,7 @@ public class XAddParams extends Params {
     if (nomkstream) {
       byteParams.add(NOMKSTREAM.getRaw());
     }
+
     if (maxLen != null) {
       byteParams.add(MAXLEN.getRaw());
 
@@ -101,8 +118,10 @@ public class XAddParams extends Params {
       byteParams.add(Protocol.toByteArray(limit));
     }
 
-    if (id != null) {
-      byteParams.add(SafeEncoder.encode(id));
+    if (strId != null) {
+      byteParams.add(SafeEncoder.encode(strId));
+    } else if (id != null) {
+      byteParams.add(id.getRaw());
     } else {
       byteParams.add(Protocol.BYTES_ASTERISK);
     }

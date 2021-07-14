@@ -641,6 +641,61 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void xpendingWithParams_v2() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    redis.clients.jedis.args.StreamEntryID id1 = jedis.xaddV2("xpending-stream", map, XAddParams.xAddParams());
+
+    assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
+
+    Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>(
+            "xpending-stream", StreamEntryID.UNRECEIVED_ENTRY);
+
+    // Read the event from Stream put it on pending
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xpending-group",
+            "xpending-consumer", 1, 1L, false, streamQeury1);
+    assertEquals(1, range.size());
+    assertEquals(1, range.get(0).getValue().size());
+    assertEquals(map, range.get(0).getValue().get(0).getFields());
+
+    // Get the pending event
+    List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
+            new XPendingParams().count(3).consumer("xpending-consumer"));
+    assertEquals(1, pendingRange.size());
+    //assertEquals(id1, pendingRange.get(0).getID()); // TODO
+    assertEquals(id1.toString(), pendingRange.get(0).getID().toString());
+    assertEquals(1, pendingRange.get(0).getDeliveredTimes());
+    assertEquals("xpending-consumer", pendingRange.get(0).getConsumerName());
+
+    // Without consumer
+    pendingRange = jedis.xpending("xpending-stream", "xpending-group", new XPendingParams().count(3));
+    assertEquals(1, pendingRange.size());
+    //assertEquals(id1, pendingRange.get(0).getID()); // TODO
+    assertEquals(id1.toString(), pendingRange.get(0).getID().toString());
+    assertEquals(1, pendingRange.get(0).getDeliveredTimes());
+    assertEquals("xpending-consumer", pendingRange.get(0).getConsumerName());
+
+    pendingRange = jedis.xpending("xpending-stream", "xpending-group", new XPendingParams()
+        .count(3).end(RangeEndpoint.of(id1).exclusive()));
+    assertEquals(0, pendingRange.size());
+
+    pendingRange = jedis.xpending("xpending-stream", "xpending-group", new XPendingParams()
+        .count(3).start(RangeEndpoint.of(id1).exclusive()));
+    assertEquals(0, pendingRange.size());
+
+    pendingRange = jedis.xpending("xpending-stream", "xpending-group", new XPendingParams()
+        .count(3).start(RangeEndpoint.of(id1).inclusive()).end(RangeEndpoint.of(id1).inclusive()));
+    assertEquals(1, pendingRange.size());
+    //assertEquals(id1, pendingRange.get(0).getID()); // TODO
+    assertEquals(id1.toString(), pendingRange.get(0).getID().toString());
+
+    // with idle
+    pendingRange = jedis.xpending("xpending-stream", "xpending-group",
+      new XPendingParams().idle(Duration.ofMinutes(1).toMillis()).count(3));
+    assertEquals(0, pendingRange.size());
+  }
+
+  @Test
   public void xclaimWithParams() {
     Map<String, String> map = new HashMap<>();
     map.put("f1", "v1");

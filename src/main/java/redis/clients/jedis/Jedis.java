@@ -4346,6 +4346,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public redis.clients.jedis.args.StreamEntryID xaddV2(final String key, final Map<String, String> hash, final XAddParams params) {
+    checkIsInMultiOrPipeline();
+    client.xadd(key, hash, params);
+    return BuilderFactory.STREAM_ENTRY_ID_V2.build(client.getBinaryBulkReply());
+  }
+
+  @Override
   public long xlen(final String key) {
     checkIsInMultiOrPipeline();
     client.xlen(key);

@@ -56,14 +56,12 @@ public interface RangeEndpoint<T> extends Rawable {
   }
 
   // Just to help out
+  @Deprecated
   public static StreamEntryID convert(redis.clients.jedis.StreamEntryID id) {
     String str = id.toString();
     if (str.length() == 1) {
       return new StreamEntryIdFactory.SpecialStreamEntryID(str);
     }
-//    if (id.getSequence() == 0) {
-//      return new StreamEntryIdFactory.DefaultStreamEntryID(id.getTime());
-//    }
     return new StreamEntryIdFactory.DefaultStreamEntryID(id.getTime(), id.getSequence());
   }
 }

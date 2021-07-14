@@ -9,6 +9,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.args.StreamEntryIdFactory;
 
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisByteHashMap;
@@ -717,6 +718,26 @@ public final class BuilderFactory {
       }
       String id = SafeEncoder.encode((byte[]) data);
       return new StreamEntryID(id);
+    }
+
+    @Override
+    public String toString() {
+      return "StreamEntryID";
+    }
+  };
+
+  public static final Builder<redis.clients.jedis.args.StreamEntryID> STREAM_ENTRY_ID_V2
+      = new Builder<redis.clients.jedis.args.StreamEntryID>() {
+    @Override
+    public redis.clients.jedis.args.StreamEntryID build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      String id = SafeEncoder.encode((byte[]) data);
+      String[] split = id.split("-");
+      long millis = Long.parseLong(split[0]);
+      long sequence = Long.parseLong(split[1]);
+      return new StreamEntryIdFactory.DefaultStreamEntryID(millis, sequence);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.args.*;
+import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.RangeEndpoint;
 import redis.clients.jedis.commands.JedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
@@ -2609,6 +2610,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public StreamEntryID execute(Jedis connection) {
         return connection.xadd(key, hash, params);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public redis.clients.jedis.args.StreamEntryID xaddV2(final String key, final Map<String, String> hash, final XAddParams params) {
+    return new JedisClusterCommand<redis.clients.jedis.args.StreamEntryID>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public redis.clients.jedis.args.StreamEntryID execute(Jedis connection) {
+        return connection.xaddV2(key, hash, params);
       }
     }.run(key);
   }

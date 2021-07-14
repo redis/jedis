@@ -13,13 +13,6 @@ public final class StreamEntryIdFactory {
   }
 
   /**
-   * Should be used only with XADD
-   *
-   * {@code XADD mystream * field1 value1}
-   */
-  public static final StreamEntryID NEW = new SpecialStreamEntryID("*");
-
-  /**
    * Should be used only with XGROUP CREATE
    *
    * {@code XGROUP CREATE mystream consumer-group-name $}
@@ -66,8 +59,12 @@ public final class StreamEntryIdFactory {
 
     @Override
     public byte[] getRaw() {
-      return SafeEncoder.encode(sequence < 0 ? String.format("%d", milliseconds)
-          : String.format("%d-%d", milliseconds, sequence));
+      return SafeEncoder.encode(toString());
+    }
+
+    @Override
+    public String toString() {
+      return sequence < 0 ? String.format("%d", milliseconds) : String.format("%d-%d", milliseconds, sequence);
     }
   }
 

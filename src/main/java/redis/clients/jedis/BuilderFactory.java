@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
+import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
@@ -1094,5 +1096,51 @@ public final class BuilderFactory {
   private BuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");
   }
+
+  public static final Builder<LCSMatchResult> STR_ALGO_LCS_RESULT_BUILDER = new Builder<LCSMatchResult>() {
+    @Override
+    public LCSMatchResult build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      if (data instanceof byte[]) {
+        return new LCSMatchResult(STRING.build(data));
+      } else if (data instanceof Long) {
+        return new LCSMatchResult(LONG.build(data));
+      } else {
+        long len = 0;
+        List<MatchedPosition> matchedPositions = new ArrayList<>();
+
+        List<Object> objectList = (List<Object>) data;
+        if ("matches".equalsIgnoreCase(STRING.build(objectList.get(0)))) {
+          List<Object> matches = (List<Object>)objectList.get(1);
+          for (Object obj : matches) {
+            if (obj instanceof List<?>) {
+              List<Object> positions = (List<Object>) obj;
+              Position a = new Position(
+                  LONG.build(((List<Object>) positions.get(0)).get(0)),
+                  LONG.build(((List<Object>) positions.get(0)).get(1))
+              );
+              Position b = new Position(
+                  LONG.build(((List<Object>) positions.get(1)).get(0)),
+                  LONG.build(((List<Object>) positions.get(1)).get(1))
+              );
+              long matchLen = 0;
+              if (positions.size() >= 3) {
+                matchLen = LONG.build(positions.get(2));
+              }
+              matchedPositions.add(new MatchedPosition(a, b, matchLen));
+            }
+          }
+        }
+
+        if ("len".equalsIgnoreCase(STRING.build(objectList.get(2)))) {
+          len = LONG.build(objectList.get(3));
+        }
+        return new LCSMatchResult(matchedPositions, len);
+      }
+    }
+  };
 
 }

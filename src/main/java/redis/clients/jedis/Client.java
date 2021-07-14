@@ -883,6 +883,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void strAlgoLCSKeys(StrAlgoLCSParams params, String keyA, String keyB) {
+    strAlgoLCSKeys(params, SafeEncoder.encode(keyA), SafeEncoder.encode(keyB));
+  }
+
+  @Override
   public void lpushx(final String key, final String... string) {
     lpushx(SafeEncoder.encode(key), SafeEncoder.encodeMany(string));
   }

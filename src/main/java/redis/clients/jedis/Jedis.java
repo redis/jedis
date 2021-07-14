@@ -3022,6 +3022,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public LCSMatchResult strAlgoLCSKeys(StrAlgoLCSParams params, String keyA, String keyB) {
+    checkIsInMultiOrPipeline();
+    client.strAlgoLCSKeys(params, keyA, keyB);
+    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
+  }
+
+  @Override
   public long lpushx(final String key, final String... string) {
     checkIsInMultiOrPipeline();
     client.lpushx(key, string);

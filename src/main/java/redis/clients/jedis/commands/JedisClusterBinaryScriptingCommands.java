@@ -15,7 +15,6 @@ public interface JedisClusterBinaryScriptingCommands {
    * @param script
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
    *          assigned to
-   * @return
    */
   Object eval(byte[] script, byte[] sampleKey);
 
@@ -23,7 +22,6 @@ public interface JedisClusterBinaryScriptingCommands {
    * @param sha1
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
    *          assigned to
-   * @return
    */
   Object evalsha(byte[] sha1, byte[] sampleKey);
 
@@ -35,7 +33,6 @@ public interface JedisClusterBinaryScriptingCommands {
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
    *          assigned to
    * @param sha1
-   * @return
    */
   List<Long> scriptExists(byte[] sampleKey, byte[]... sha1);
 
@@ -43,14 +40,12 @@ public interface JedisClusterBinaryScriptingCommands {
    * @param script
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
    *          assigned to
-   * @return
    */
   byte[] scriptLoad(byte[] script, byte[] sampleKey);
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
    *          assigned to
-   * @return
    */
   String scriptFlush(byte[] sampleKey);
 
@@ -58,14 +53,12 @@ public interface JedisClusterBinaryScriptingCommands {
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
    *          assigned to
    * @param flushMode
-   * @return
    */
   String scriptFlush(byte[] sampleKey, FlushMode flushMode);
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
    *          assigned to
-   * @return
    */
   String scriptKill(byte[] sampleKey);
 }

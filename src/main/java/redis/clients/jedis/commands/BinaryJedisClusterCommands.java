@@ -10,7 +10,7 @@ import redis.clients.jedis.params.RestoreParams;
 public interface BinaryJedisClusterCommands extends BinaryJedisCommands {
 
   /**
-   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   * @deprecated Use {@link BinaryJedisCommands#restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   @Override
@@ -19,7 +19,7 @@ public interface BinaryJedisClusterCommands extends BinaryJedisCommands {
   }
 
   /**
-   * @deprecated Use {@link #xinfoStreamBinary(byte[])}.
+   * @deprecated Use {@link BinaryJedisCommands#xinfoStreamBinary(byte[])}.
    */
   @Override
   @Deprecated
@@ -28,7 +28,7 @@ public interface BinaryJedisClusterCommands extends BinaryJedisCommands {
   }
 
   /**
-   * @deprecated Use {@link #xinfoGroupBinary(byte[])}.
+   * @deprecated Use {@link BinaryJedisCommands#xinfoGroupBinary(byte[])}.
    */
   @Override
   @Deprecated
@@ -37,7 +37,7 @@ public interface BinaryJedisClusterCommands extends BinaryJedisCommands {
   }
 
   /**
-   * @deprecated Use {@link #xinfoConsumersBinary(byte[], byte[])}.
+   * @deprecated Use {@link BinaryJedisCommands#xinfoConsumersBinary(byte[], byte[])}.
    */
   @Override
   @Deprecated

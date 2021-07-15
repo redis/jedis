@@ -131,7 +131,8 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
   /**
-   * @deprecated Use {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   * @deprecated Use {@link MultiKeyBinaryRedisPipeline#xreadGroup(byte..., byte...,
+   * redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
    */
   @Deprecated
   Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,

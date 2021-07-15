@@ -21,6 +21,7 @@ public final class Protocol {
   private static final String NOSCRIPT_PREFIX = "NOSCRIPT ";
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
+  private static final String NOAUTH_PREFIX = "NOAUTH ";
 
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 6379;
@@ -131,6 +132,8 @@ public final class Protocol {
       throw new JedisAccessControlException(message);
     } else if (message.startsWith(NOPERM_PREFIX)) {
       throw new JedisAccessControlException(message);
+    } else if (message.startsWith(NOAUTH_PREFIX)) {
+      throw new JedisAuthenticationException(message);
     }
     throw new JedisDataException(message);
   }
@@ -264,7 +267,7 @@ public final class Protocol {
     READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO, GEORADIUSBYMEMBER,
     GEORADIUSBYMEMBER_RO, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB, MEMORY, XADD, XLEN, XDEL,
     XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM, XAUTOCLAIM, ACL, XINFO,
-    BITFIELD_RO, LPOS, SMISMEMBER, ZMSCORE, BZPOPMIN, BZPOPMAX, BLMOVE, LMOVE, COPY;
+    BITFIELD_RO, LPOS, SMISMEMBER, ZMSCORE, BZPOPMIN, BZPOPMAX, BLMOVE, LMOVE, COPY, RESET;
 
     private final byte[] raw;
 

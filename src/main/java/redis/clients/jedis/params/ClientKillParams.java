@@ -1,5 +1,7 @@
 package redis.clients.jedis.params;
 
+import redis.clients.jedis.args.ClientType;
+
 public class ClientKillParams extends Params {
 
   private static final String ID = "ID";
@@ -9,6 +11,10 @@ public class ClientKillParams extends Params {
   private static final String USER = "USER";
   private static final String LADDR = "LADDR";
 
+  /**
+   * @deprecated Use {@link ClientType}.
+   */
+  @Deprecated
   public static enum Type {
     NORMAL, MASTER, SLAVE, PUBSUB;
   }
@@ -34,7 +40,16 @@ public class ClientKillParams extends Params {
     return this;
   }
 
+  /**
+   * @deprecated Use {@link #type(redis.clients.jedis.args.ClientType)}.
+   */
+  @Deprecated
   public ClientKillParams type(Type type) {
+    addParam(TYPE, type);
+    return this;
+  }
+
+  public ClientKillParams type(ClientType type) {
     addParam(TYPE, type);
     return this;
   }

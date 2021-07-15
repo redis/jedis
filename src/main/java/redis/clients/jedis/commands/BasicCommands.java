@@ -36,6 +36,28 @@ public interface BasicCommands {
   String flushDB(FlushMode flushMode);
 
   /**
+   * This command performs a full reset of the connection's server-side context, mimicking the
+   * effect of disconnecting and reconnecting again.
+   * <br>
+   * When the command is called from a regular client connection, it does the following:
+   * <ul>
+   * <li>Discards the current MULTI transaction block, if one exists.</li>
+   * <li>Unwatches all keys WATCHed by the connection.</li>
+   * <li>Disables CLIENT TRACKING, if in use.</li>
+   * <li>Sets the connection to READWRITE mode.</li>
+   * <li>Cancels the connection's ASKING mode, if previously set.</li>
+   * <li>Sets CLIENT REPLY to ON.</li>
+   * <li>Sets the protocol version to RESP2.</li>
+   * <li>SELECTs database 0.</li>
+   * <li>Exits MONITOR mode, when applicable.</li>
+   * <li>Aborts Pub/Sub's subscription state (SUBSCRIBE and PSUBSCRIBE), when appropriate.</li>
+   * <li>Deauthenticates the connection, requiring a call AUTH to reauthenticate when authentication is enabled.</li>
+   * </ul>
+   * @return {@code RESET}
+   */
+  String reset();
+
+  /**
    * Return the number of keys in the currently-selected database.
    * @return the number of key in the currently-selected database.
    */

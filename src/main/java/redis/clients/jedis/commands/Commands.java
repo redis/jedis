@@ -11,6 +11,7 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.ZParams;
+import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
@@ -482,6 +483,8 @@ public interface Commands {
   void clientGetname();
 
   void clientList();
+
+  void clientList(ClientType type);
 
   void clientList(long... clientIds);
 

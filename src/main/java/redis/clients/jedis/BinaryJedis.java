@@ -4263,6 +4263,15 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public String reset() {
+    checkIsInMultiOrPipeline();
+    client.reset();
+    String reply = client.getStatusCodeReply();
+    client.setDb(0);
+    return reply;
+  }
+
+  @Override
   public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
     this.client.clientKill(ipPort);
@@ -4294,6 +4303,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public byte[] clientListBinary() {
     checkIsInMultiOrPipeline();
     client.clientList();
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] clientListBinary(ClientType type) {
+    checkIsInMultiOrPipeline();
+    client.clientList(type);
     return client.getBinaryBulkReply();
   }
 

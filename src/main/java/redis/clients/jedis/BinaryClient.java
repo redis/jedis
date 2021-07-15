@@ -9,6 +9,7 @@ import static redis.clients.jedis.Protocol.Command.KEYS;
 import static redis.clients.jedis.Protocol.Command.PING;
 import static redis.clients.jedis.Protocol.Command.PSUBSCRIBE;
 import static redis.clients.jedis.Protocol.Command.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Command.RESET;
 import static redis.clients.jedis.Protocol.Command.SAVE;
 import static redis.clients.jedis.Protocol.Command.SET;
 import static redis.clients.jedis.Protocol.Command.SUBSCRIBE;
@@ -25,6 +26,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.SaveMode;
@@ -1203,7 +1205,7 @@ public class BinaryClient extends Connection {
   }
 
   public void slowlogReset() {
-    sendCommand(SLOWLOG, RESET.getRaw());
+    sendCommand(SLOWLOG, Keyword.RESET.getRaw());
   }
 
   public void slowlogLen() {
@@ -1318,6 +1320,10 @@ public class BinaryClient extends Connection {
     sendCommand(MEMORY, Keyword.USAGE.getRaw(), key, Keyword.SAMPLES.getRaw(), toByteArray(samples));
   }
 
+  public void reset() {
+    sendCommand(RESET);
+  }
+
   public void clientKill(final byte[] ipPort) {
     sendCommand(CLIENT, Keyword.KILL.getRaw(), ipPort);
   }
@@ -1336,6 +1342,10 @@ public class BinaryClient extends Connection {
 
   public void clientList() {
     sendCommand(CLIENT, Keyword.LIST.getRaw());
+  }
+
+  public void clientList(ClientType type) {
+    sendCommand(CLIENT, Keyword.LIST.getRaw(), Keyword.TYPE.getRaw(), type.getRaw());
   }
 
   public void clientList(final long... clientIds) {

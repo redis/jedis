@@ -347,7 +347,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param dstKey the destination key.
    * @param db
    * @param replace
-   * @return
    */
   @Override
   public boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
@@ -362,7 +361,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param replace
-   * @return
    */
   @Override
   public boolean copy(byte[] srcKey, byte[] dstKey, boolean replace) {
@@ -908,7 +906,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Set the the respective keys to the respective values. MSET will replace old values with new
-   * values, while {@link #msetnx(byte[]...) MSETNX} will not perform any operation at all even if
+   * values, while {@link BinaryJedis#msetnx(byte[]...) MSETNX} will not perform any operation at all even if
    * just a single key already exists.
    * <p>
    * Because of this semantic MSETNX can be used in order to set different keys representing
@@ -918,7 +916,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another client talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @see #msetnx(byte[]...)
+   * @see BinaryJedis#msetnx(byte[]...)
    * @param keysvalues
    * @return Status code reply Basically +OK as MSET can't fail
    */
@@ -930,7 +928,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * Set the the respective keys to the respective values. {@link #mset(byte[]...) MSET} will
+   * Set the the respective keys to the respective values. {@link BinaryJedis#mset(byte[]...) MSET} will
    * replace old values with new values, while MSETNX will not perform any operation at all even if
    * just a single key already exists.
    * <p>
@@ -941,7 +939,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another client talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @see #mset(byte[]...)
+   * @see BinaryJedis#mset(byte[]...)
    * @param keysvalues
    * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
    *         least one key already existed)
@@ -1393,7 +1391,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * is not a List an error is returned.
    * <p>
    * Time complexity: O(1)
-   * @see BinaryJedis#rpush(byte[], byte[]...)
    * @param key
    * @param strings
    * @return Integer reply, specifically, the number of elements inside the list after the push
@@ -1412,7 +1409,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * is not a List an error is returned.
    * <p>
    * Time complexity: O(1)
-   * @see BinaryJedis#rpush(byte[], byte[]...)
    * @param key
    * @param strings
    * @return Integer reply, specifically, the number of elements inside the list after the push
@@ -1974,7 +1970,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   /**
-   * This command works exactly like {@link #sdiff(byte[]...) SDIFF} but instead of being returned
+   * This command works exactly like {@link BinaryJedis#sdiff(byte[]...) SDIFF} but instead of being returned
    * the resulting set is stored in dstkey.
    * @param dstkey
    * @param keys
@@ -2460,7 +2456,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param dstKey
    * @param from
    * @param to
-   * @return
    */
   @Override
   public byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
@@ -2476,7 +2471,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param from
    * @param to
    * @param timeout
-   * @return
    */
   @Override
   public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
@@ -2542,7 +2536,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * it like if inside MULTI/EXEC the time will flow at infinite speed :)
    * <p>
    * Time complexity: O(1)
-   * @see #brpop(int, byte[]...)
    * @param timeout
    * @param keys
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
@@ -2614,7 +2607,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * it like if inside MULTI/EXEC the time will flow at infinite speed :)
    * <p>
    * Time complexity: O(1)
-   * @see #blpop(int, byte[]...)
    * @param timeout
    * @param keys
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
@@ -2723,7 +2715,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * See https://redis.io/topics/acl
    * @param user
    * @param password
-   * @return
+   * @return OK
    */
   @Override
   public String auth(final String user, final String password) {
@@ -3114,7 +3106,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param key
    * @param start
    * @param stop
-   * @return
    */
   @Override
   public long zremrangeByRank(final byte[] key, final long start, final long stop) {
@@ -3155,7 +3146,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * resulting sorted set, it is returned to the client.
    * @param params
    * @param keys
-   * @return
    */
   @Override
   public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
@@ -3169,7 +3159,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * resulting sorted set, it is returned to the client.
    * @param params
    * @param keys
-   * @return
    */
   @Override
   public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
@@ -3199,10 +3188,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(byte[], byte[]...)
-   * @see #zunionstore(byte[], ZParams, byte[]...)
-   * @see #zinterstore(byte[], byte[]...)
-   * @see #zinterstore(byte[], ZParams, byte[]...)
    * @param dstkey
    * @param sets
    * @return Integer reply, specifically the number of elements in the sorted set at dstkey
@@ -3235,10 +3220,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(byte[], byte[]...)
-   * @see #zunionstore(byte[], ZParams, byte[]...)
-   * @see #zinterstore(byte[], byte[]...)
-   * @see #zinterstore(byte[], ZParams, byte[]...)
    * @param dstkey
    * @param sets
    * @param params
@@ -3256,7 +3237,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * the resulting sorted set, it is returned to the client.
    * @param params
    * @param keys
-   * @return
    */
   @Override
   public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
@@ -3270,7 +3250,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * the resulting sorted set, it is returned to the client.
    * @param params
    * @param keys
-   * @return
    */
   @Override
   public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
@@ -3300,10 +3279,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(byte[], byte[]...)
-   * @see #zunionstore(byte[], ZParams, byte[]...)
-   * @see #zinterstore(byte[], byte[]...)
-   * @see #zinterstore(byte[], ZParams, byte[]...)
    * @param dstkey
    * @param sets
    * @return Integer reply, specifically the number of elements in the sorted set at dstkey
@@ -3336,10 +3311,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(byte[], byte[]...)
-   * @see #zunionstore(byte[], ZParams, byte[]...)
-   * @see #zinterstore(byte[], byte[]...)
-   * @see #zinterstore(byte[], ZParams, byte[]...)
    * @param dstkey
    * @param sets
    * @param params
@@ -3633,7 +3604,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Reset the stats returned by INFO
-   * @return
    */
   @Override
   public String configResetStat() {
@@ -3796,7 +3766,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param key
    * @param offset
    * @param value
-   * @return
    */
   @Override
   public boolean setbit(final byte[] key, final long offset, final boolean value) {
@@ -3817,7 +3786,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * Returns the bit value at offset in the string value stored at key
    * @param key
    * @param offset
-   * @return
    */
   @Override
   public boolean getbit(final byte[] key, final long offset) {
@@ -4330,7 +4298,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @param clientId
    * @param unblockType could be {@code null} by default the client is unblocked as if the timeout
    *          of the command was reached
-   * @return
    */
   @Override
   public long clientUnblock(final long clientId, final UnblockType unblockType) {

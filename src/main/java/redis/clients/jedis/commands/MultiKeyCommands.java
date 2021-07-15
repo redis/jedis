@@ -157,7 +157,7 @@ public interface MultiKeyCommands {
    * @see #scan(String, ScanParams)
    *
    * @param cursor
-   * @return
+   * @return result
    */
   ScanResult<String> scan(String cursor);
 
@@ -223,7 +223,7 @@ public interface MultiKeyCommands {
    * @param streams
    * @return
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
+   * {@link MultiKeyCommands#xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
    */
   @Deprecated
   List<Map.Entry<String, List<StreamEntry>>> xread(int count, long block,

@@ -19,8 +19,9 @@ public interface MultiKeyBinaryJedisClusterCommands extends MultiKeyBinaryComman
   }
 
   /**
-   * @throws UnsupportedOperationException Use {@link #blpop(double, byte[]...)} or
-   * {@link #blpop(int, byte[]...)}.
+   * @throws UnsupportedOperationException Use
+   * {@link MultiKeyBinaryCommands#blpop(double, byte[]...)} or
+   * {@link MultiKeyBinaryCommands#blpop(int, byte[]...)}.
    */
   @Override
   default List<byte[]> blpop(byte[]... args) {
@@ -28,8 +29,9 @@ public interface MultiKeyBinaryJedisClusterCommands extends MultiKeyBinaryComman
   }
 
   /**
-   * @throws UnsupportedOperationException Use {@link #brpop(double, byte[]...)} or{
-   * {@link #brpop(int, byte[]...)}.
+   * @throws UnsupportedOperationException Use
+   * {@link MultiKeyBinaryCommands#brpop(double, byte[]...)} or
+   * {@link MultiKeyBinaryCommands#brpop(int, byte[]...)}.
    */
   @Override
   default List<byte[]> brpop(byte[]... args) {
@@ -53,8 +55,8 @@ public interface MultiKeyBinaryJedisClusterCommands extends MultiKeyBinaryComman
   }
 
   /**
-   * @throws UnsupportedOperationException use
-   * {@link #scan(byte[], redis.clients.jedis.ScanParams)}.
+   * @throws UnsupportedOperationException Use
+   * {@link MultiKeyBinaryCommands#scan(byte[], redis.clients.jedis.ScanParams)}.
    */
   @Override
   default ScanResult<byte[]> scan(byte[] cursor) {

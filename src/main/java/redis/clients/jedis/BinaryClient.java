@@ -1848,7 +1848,7 @@ public class BinaryClient extends Connection {
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   * {@link BinaryClient#xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
    */
   @Deprecated
   public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,

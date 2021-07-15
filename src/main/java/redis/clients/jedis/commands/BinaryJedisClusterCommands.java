@@ -27,7 +27,7 @@ public interface BinaryJedisClusterCommands {
   byte[] dump(byte[] key);
 
   /**
-   * @deprecated Use {@link #restore(byte[], long, byte[])}.
+   * @deprecated Use {@link BinaryJedisClusterCommands#restore(byte[], long, byte[])}.
    */
   @Deprecated
   default String restore(byte[] key, int ttl, byte[] serializedValue) {
@@ -67,7 +67,7 @@ public interface BinaryJedisClusterCommands {
   Long setnx(byte[] key, byte[] value);
 
   /**
-   * @deprecated Use {@link #setex(byte[], long, byte[])}.
+   * @deprecated Use {@link BinaryJedisClusterCommands#setex(byte[], long, byte[])}.
    */
   @Deprecated
   default String setex(byte[] key, int seconds, byte[] value) {
@@ -357,7 +357,6 @@ public interface BinaryJedisClusterCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
 
@@ -380,7 +379,7 @@ public interface BinaryJedisClusterCommands {
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
 
   /**
-   * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
+   * @deprecated Use {@link BinaryJedisClusterCommands#xrange(byte[], byte[], byte[], int)}.
    */
   @Deprecated
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count);

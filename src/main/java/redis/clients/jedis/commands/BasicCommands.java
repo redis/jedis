@@ -86,7 +86,7 @@ public interface BasicCommands {
    * Redis 6.0 see https://redis.io/topics/acl
    * @param user
    * @param password
-   * @return
+   * @return OK
    */
   String auth(String user, String password);
 
@@ -162,7 +162,7 @@ public interface BasicCommands {
    *          related information, stats: General statistics, replication: Master/slave replication
    *          information, cpu: CPU consumption statistics, commandstats: Redis command statistics,
    *          cluster: Redis Cluster section, keyspace: Database related statistics)
-   * @return
+   * @return info
    */
   String info(String section);
 

@@ -107,6 +107,33 @@ public class ExceptionsTest {
   @Test
   public void busy() {
     try {
+      throw new JedisBusyException(MESSAGE);
+    } catch (Exception e) {
+      assertEquals(JedisBusyException.class, e.getClass());
+      assertEquals(MESSAGE, e.getMessage());
+      assertNull(e.getCause());
+    }
+
+    try {
+      throw new JedisBusyException(CAUSE);
+    } catch (Exception e) {
+      assertEquals(JedisBusyException.class, e.getClass());
+      assertEquals(CAUSE, e.getCause());
+      assertEquals(CAUSE.toString(), e.getMessage());
+    }
+
+    try {
+      throw new JedisBusyException(MESSAGE, CAUSE);
+    } catch (Exception e) {
+      assertEquals(JedisBusyException.class, e.getClass());
+      assertEquals(MESSAGE, e.getMessage());
+      assertEquals(CAUSE, e.getCause());
+    }
+  }
+
+  @Test
+  public void cluster() {
+    try {
       throw new JedisClusterException(MESSAGE);
     } catch (Exception e) {
       assertEquals(JedisClusterException.class, e.getClass());

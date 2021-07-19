@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -120,7 +121,7 @@ public class JedisTest extends JedisCommandTestBase {
         timeoutJedis.blpop(0, "foo");
         fail("SocketTimeoutException should occur");
       } catch (JedisConnectionException jce) {
-        assertEquals(java.net.SocketTimeoutException.class, jce.getCause().getClass());
+        assertSame(java.net.SocketTimeoutException.class, jce.getCause().getClass());
         assertEquals("Read timed out", jce.getCause().getMessage());
         assertTrue(timeoutJedis.isBroken());
       }
@@ -216,7 +217,7 @@ public class JedisTest extends JedisCommandTestBase {
         Jedis jedis = new Jedis(uri, timeoutMillis)) {
       fail("Jedis should fail to connect to a fake port");
     } catch (JedisConnectionException ex) {
-      assertEquals(SocketTimeoutException.class, ex.getCause().getClass());
+      assertSame(SocketTimeoutException.class, ex.getCause().getClass());
       assertEquals(timeoutMillis, Duration.between(start, Instant.now()).toMillis(), deltaMillis);
     }
   }

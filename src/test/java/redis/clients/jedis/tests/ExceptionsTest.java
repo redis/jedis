@@ -2,6 +2,7 @@ package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -25,7 +26,7 @@ public class ExceptionsTest {
     try {
       throw new InvalidURIException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(InvalidURIException.class, e.getClass());
+      assertSame(InvalidURIException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -33,7 +34,7 @@ public class ExceptionsTest {
     try {
       throw new InvalidURIException(CAUSE);
     } catch (Exception e) {
-      assertEquals(InvalidURIException.class, e.getClass());
+      assertSame(InvalidURIException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -41,7 +42,7 @@ public class ExceptionsTest {
     try {
       throw new InvalidURIException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(InvalidURIException.class, e.getClass());
+      assertSame(InvalidURIException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -52,7 +53,7 @@ public class ExceptionsTest {
     try {
       throw new JedisAccessControlException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisAccessControlException.class, e.getClass());
+      assertSame(JedisAccessControlException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -60,7 +61,7 @@ public class ExceptionsTest {
     try {
       throw new JedisAccessControlException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisAccessControlException.class, e.getClass());
+      assertSame(JedisAccessControlException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -68,7 +69,7 @@ public class ExceptionsTest {
     try {
       throw new JedisAccessControlException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisAccessControlException.class, e.getClass());
+      assertSame(JedisAccessControlException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -82,7 +83,7 @@ public class ExceptionsTest {
     try {
       throw new JedisAskDataException(MESSAGE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisAskDataException.class, e.getClass());
+      assertSame(JedisAskDataException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -90,7 +91,7 @@ public class ExceptionsTest {
     try {
       throw new JedisAskDataException(CAUSE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisAskDataException.class, e.getClass());
+      assertSame(JedisAskDataException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -98,7 +99,7 @@ public class ExceptionsTest {
     try {
       throw new JedisAskDataException(MESSAGE, CAUSE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisAskDataException.class, e.getClass());
+      assertSame(JedisAskDataException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -109,7 +110,7 @@ public class ExceptionsTest {
     try {
       throw new JedisBusyException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisBusyException.class, e.getClass());
+      assertSame(JedisBusyException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -117,7 +118,7 @@ public class ExceptionsTest {
     try {
       throw new JedisBusyException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisBusyException.class, e.getClass());
+      assertSame(JedisBusyException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -125,7 +126,7 @@ public class ExceptionsTest {
     try {
       throw new JedisBusyException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisBusyException.class, e.getClass());
+      assertSame(JedisBusyException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -136,7 +137,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisClusterException.class, e.getClass());
+      assertSame(JedisClusterException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -144,7 +145,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisClusterException.class, e.getClass());
+      assertSame(JedisClusterException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -152,7 +153,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisClusterException.class, e.getClass());
+      assertSame(JedisClusterException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -163,7 +164,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterMaxAttemptsException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisClusterMaxAttemptsException.class, e.getClass());
+      assertSame(JedisClusterMaxAttemptsException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -171,7 +172,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterMaxAttemptsException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisClusterMaxAttemptsException.class, e.getClass());
+      assertSame(JedisClusterMaxAttemptsException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -179,7 +180,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterMaxAttemptsException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisClusterMaxAttemptsException.class, e.getClass());
+      assertSame(JedisClusterMaxAttemptsException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -190,7 +191,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterOperationException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisClusterOperationException.class, e.getClass());
+      assertSame(JedisClusterOperationException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -198,7 +199,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterOperationException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisClusterOperationException.class, e.getClass());
+      assertSame(JedisClusterOperationException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -206,7 +207,7 @@ public class ExceptionsTest {
     try {
       throw new JedisClusterOperationException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisClusterOperationException.class, e.getClass());
+      assertSame(JedisClusterOperationException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -217,7 +218,7 @@ public class ExceptionsTest {
     try {
       throw new JedisConnectionException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisConnectionException.class, e.getClass());
+      assertSame(JedisConnectionException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -225,7 +226,7 @@ public class ExceptionsTest {
     try {
       throw new JedisConnectionException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisConnectionException.class, e.getClass());
+      assertSame(JedisConnectionException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -233,7 +234,7 @@ public class ExceptionsTest {
     try {
       throw new JedisConnectionException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisConnectionException.class, e.getClass());
+      assertSame(JedisConnectionException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -244,7 +245,7 @@ public class ExceptionsTest {
     try {
       throw new JedisDataException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisDataException.class, e.getClass());
+      assertSame(JedisDataException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -252,7 +253,7 @@ public class ExceptionsTest {
     try {
       throw new JedisDataException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisDataException.class, e.getClass());
+      assertSame(JedisDataException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -260,7 +261,7 @@ public class ExceptionsTest {
     try {
       throw new JedisDataException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisDataException.class, e.getClass());
+      assertSame(JedisDataException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -271,7 +272,7 @@ public class ExceptionsTest {
     try {
       throw new JedisException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisException.class, e.getClass());
+      assertSame(JedisException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -279,7 +280,7 @@ public class ExceptionsTest {
     try {
       throw new JedisException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisException.class, e.getClass());
+      assertSame(JedisException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -287,7 +288,7 @@ public class ExceptionsTest {
     try {
       throw new JedisException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisException.class, e.getClass());
+      assertSame(JedisException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -298,7 +299,7 @@ public class ExceptionsTest {
     try {
       throw new JedisExhaustedPoolException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisExhaustedPoolException.class, e.getClass());
+      assertSame(JedisExhaustedPoolException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -306,7 +307,7 @@ public class ExceptionsTest {
     try {
       throw new JedisExhaustedPoolException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisExhaustedPoolException.class, e.getClass());
+      assertSame(JedisExhaustedPoolException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -314,7 +315,7 @@ public class ExceptionsTest {
     try {
       throw new JedisExhaustedPoolException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisExhaustedPoolException.class, e.getClass());
+      assertSame(JedisExhaustedPoolException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -328,7 +329,7 @@ public class ExceptionsTest {
     try {
       throw new JedisMovedDataException(MESSAGE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisMovedDataException.class, e.getClass());
+      assertSame(JedisMovedDataException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -336,7 +337,7 @@ public class ExceptionsTest {
     try {
       throw new JedisMovedDataException(CAUSE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisMovedDataException.class, e.getClass());
+      assertSame(JedisMovedDataException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -344,7 +345,7 @@ public class ExceptionsTest {
     try {
       throw new JedisMovedDataException(MESSAGE, CAUSE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisMovedDataException.class, e.getClass());
+      assertSame(JedisMovedDataException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -355,7 +356,7 @@ public class ExceptionsTest {
     try {
       throw new JedisNoReachableClusterNodeException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisNoReachableClusterNodeException.class, e.getClass());
+      assertSame(JedisNoReachableClusterNodeException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -363,7 +364,7 @@ public class ExceptionsTest {
     try {
       throw new JedisNoReachableClusterNodeException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisNoReachableClusterNodeException.class, e.getClass());
+      assertSame(JedisNoReachableClusterNodeException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -371,7 +372,7 @@ public class ExceptionsTest {
     try {
       throw new JedisNoReachableClusterNodeException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisNoReachableClusterNodeException.class, e.getClass());
+      assertSame(JedisNoReachableClusterNodeException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -382,7 +383,7 @@ public class ExceptionsTest {
     try {
       throw new JedisNoScriptException(MESSAGE);
     } catch (Exception e) {
-      assertEquals(JedisNoScriptException.class, e.getClass());
+      assertSame(JedisNoScriptException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -390,7 +391,7 @@ public class ExceptionsTest {
     try {
       throw new JedisNoScriptException(CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisNoScriptException.class, e.getClass());
+      assertSame(JedisNoScriptException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -398,7 +399,7 @@ public class ExceptionsTest {
     try {
       throw new JedisNoScriptException(MESSAGE, CAUSE);
     } catch (Exception e) {
-      assertEquals(JedisNoScriptException.class, e.getClass());
+      assertSame(JedisNoScriptException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }
@@ -412,7 +413,7 @@ public class ExceptionsTest {
     try {
       throw new JedisRedirectionException(MESSAGE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisRedirectionException.class, e.getClass());
+      assertSame(JedisRedirectionException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertNull(e.getCause());
     }
@@ -420,7 +421,7 @@ public class ExceptionsTest {
     try {
       throw new JedisRedirectionException(CAUSE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisRedirectionException.class, e.getClass());
+      assertSame(JedisRedirectionException.class, e.getClass());
       assertEquals(CAUSE, e.getCause());
       assertEquals(CAUSE.toString(), e.getMessage());
     }
@@ -428,7 +429,7 @@ public class ExceptionsTest {
     try {
       throw new JedisRedirectionException(MESSAGE, CAUSE, hap, slot);
     } catch (Exception e) {
-      assertEquals(JedisRedirectionException.class, e.getClass());
+      assertSame(JedisRedirectionException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }

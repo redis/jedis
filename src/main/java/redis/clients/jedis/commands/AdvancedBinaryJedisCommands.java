@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
@@ -55,6 +56,8 @@ public interface AdvancedBinaryJedisCommands {
   byte[] clientGetnameBinary();
 
   byte[] clientListBinary();
+
+  byte[] clientListBinary(ClientType type);
 
   byte[] clientListBinary(long... clientIds);
 

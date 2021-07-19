@@ -26,6 +26,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Protocol.SentinelKeyword;
+import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.SaveMode;
@@ -1347,6 +1348,10 @@ public class BinaryClient extends Connection {
     sendCommand(CLIENT, Keyword.LIST.getRaw());
   }
 
+  public void clientList(ClientType type) {
+    sendCommand(CLIENT, Keyword.LIST.getRaw(), Keyword.TYPE.getRaw(), type.getRaw());
+  }
+
   public void clientList(final long... clientIds) {
     final byte[][] params = new byte[2 + clientIds.length][];
     int index = 0;
@@ -1857,7 +1862,7 @@ public class BinaryClient extends Connection {
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
+   * {@link BinaryClient#xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
    */
   @Deprecated
   public void xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,

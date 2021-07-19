@@ -5,7 +5,7 @@ import redis.clients.jedis.params.RestoreParams;
 public interface JedisClusterCommands extends JedisCommands {
 
   /**
-   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
+   * @deprecated Use {@link JedisCommands#restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
    */
   @Deprecated
   default String restoreReplace(String key, long ttl, byte[] serializedValue) {

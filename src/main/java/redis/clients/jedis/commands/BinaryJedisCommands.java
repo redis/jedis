@@ -393,7 +393,6 @@ public interface BinaryJedisCommands {
    * Executes BITFIELD Redis command
    * @param key
    * @param arguments
-   * @return
    */
   List<Long> bitfield(byte[] key, byte[]... arguments);
 

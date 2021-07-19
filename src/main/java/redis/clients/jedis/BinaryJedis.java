@@ -4266,6 +4266,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public byte[] clientListBinary(ClientType type) {
+    checkIsInMultiOrPipeline();
+    client.clientList(type);
+    return client.getBinaryBulkReply();
+  }
+
+  @Override
   public byte[] clientListBinary(final long... clientIds) {
     checkIsInMultiOrPipeline();
     client.clientList(clientIds);

@@ -25,6 +25,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.SaveMode;
@@ -1336,6 +1337,10 @@ public class BinaryClient extends Connection {
 
   public void clientList() {
     sendCommand(CLIENT, Keyword.LIST.getRaw());
+  }
+
+  public void clientList(ClientType type) {
+    sendCommand(CLIENT, Keyword.LIST.getRaw(), Keyword.TYPE.getRaw(), type.getRaw());
   }
 
   public void clientList(final long... clientIds) {

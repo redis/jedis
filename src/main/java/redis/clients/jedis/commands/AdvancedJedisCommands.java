@@ -4,6 +4,7 @@ import java.util.List;
 
 import redis.clients.jedis.AccessControlLogEntry;
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
@@ -46,6 +47,8 @@ public interface AdvancedJedisCommands {
   String clientGetname();
 
   String clientList();
+
+  String clientList(ClientType type);
 
   String clientList(long... clientIds);
 

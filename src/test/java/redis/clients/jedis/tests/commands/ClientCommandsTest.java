@@ -22,6 +22,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
@@ -77,17 +78,13 @@ public class ClientCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void clientIdmultipleConnection() {
-    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    client2.auth("foobared");
-    client2.clientSetname("fancy_jedis_another_name");
+    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+      client2.auth("foobared");
+      client2.clientSetname("fancy_jedis_another_name");
 
-    long clientId1 = client.clientId();
-    long clientId2 = client2.clientId();
-
-    // client-id is monotonically increasing
-    assertTrue(clientId1 < clientId2);
-
-    client2.close();
+      // client-id is monotonically increasing
+      assertTrue(client.clientId() < client2.clientId());
+    }
   }
 
   @Test
@@ -161,6 +158,15 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
     long clients = jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.NO));
+    assertEquals(1, clients);
+    assertDisconnected(jedis);
+  }
+
+  @Test
+  public void killSkipmeYesNo2() {
+    jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.YES));
+    assertDisconnected(client);
+    long clients = jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO));
     assertEquals(1, clients);
     assertDisconnected(jedis);
   }
@@ -243,6 +249,15 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     String listInfo = jedis.clientList(id);
     assertNotNull(listInfo);
     assertTrue(listInfo.contains(clientName));
+  }
+
+  @Test
+  public void listWithType() {
+    assertTrue(client.clientList(ClientType.NORMAL).split("\\n").length > 1);
+    assertEquals(0, client.clientList(ClientType.MASTER).length());
+    assertEquals(1, client.clientList(ClientType.SLAVE).split("\\n").length);
+    assertEquals(1, client.clientList(ClientType.REPLICA).split("\\n").length);
+    assertEquals(1, client.clientList(ClientType.PUBSUB).split("\\n").length);
   }
 
   private void assertDisconnected(Jedis j) {

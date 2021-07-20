@@ -166,4 +166,9 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     return getResponse(BuilderFactory.STRING);
   }
 
+  public Response<Long> waitReplicas(int replicas, long timeout) {
+    client.waitReplicas(replicas, timeout);
+    return getResponse(BuilderFactory.LONG);
+  }
+
 }

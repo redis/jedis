@@ -1,7 +1,7 @@
 package redis.clients.jedis.tests;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -16,13 +16,13 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class UnavailableConnectionTest {
 
-  private static final HostAndPort unavailableHostAndPort = new HostAndPort("localhost", 6400);
+  private static final HostAndPort unavailableNode = new HostAndPort("localhost", 6400);
 
   @BeforeClass
   public static void setup() {
     setupAvoidQuitInDestroyObject();
 
-    try (Jedis j = new Jedis(unavailableHostAndPort)) {
+    try (Jedis j = new Jedis(unavailableNode)) {
       j.shutdown();
     }
   }
@@ -38,8 +38,8 @@ public class UnavailableConnectionTest {
   public static void setupAvoidQuitInDestroyObject() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
-    poolForBrokenJedis1 = new JedisPool(config, unavailableHostAndPort.getHost(),
-        unavailableHostAndPort.getPort());
+    poolForBrokenJedis1 = new JedisPool(config, unavailableNode.getHost(),
+        unavailableNode.getPort());
     brokenJedis1 = poolForBrokenJedis1.getResource();
     threadForBrokenJedis1 = new Thread(new Runnable() {
       @Override
@@ -61,9 +61,9 @@ public class UnavailableConnectionTest {
       poolForBrokenJedis1.getResource();
       fail("Should not get connection from pool");
     } catch (Exception ex) {
-      assertEquals(JedisConnectionException.class, ex.getClass());
-      assertEquals(JedisConnectionException.class, ex.getCause().getClass());
-      assertEquals(java.net.ConnectException.class, ex.getCause().getCause().getClass());
+      assertSame(JedisConnectionException.class, ex.getClass());
+      assertSame(JedisConnectionException.class, ex.getCause().getClass());
+      assertSame(java.net.ConnectException.class, ex.getCause().getCause().getClass());
     }
   }
 

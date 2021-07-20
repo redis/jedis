@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.Protocol.Command.*;
@@ -231,7 +232,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     Response<Set<String>> error = t.smembers("foo");
     Response<String> r = t.get("foo");
     List<Object> l = t.exec();
-    assertEquals(JedisDataException.class, l.get(1).getClass());
+    assertSame(JedisDataException.class, l.get(1).getClass());
     try {
       error.get();
       fail("We expect exception here!");
@@ -394,7 +395,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     Response<Object> x = t.sendCommand(GET, "x");
     t.sendCommand(INCR, "x");
     List<Object> l = t.exec();
-    assertEquals(JedisDataException.class, l.get(2).getClass());
+    assertSame(JedisDataException.class, l.get(2).getClass());
     try {
       error.get();
       fail("We expect exception here!");

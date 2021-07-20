@@ -21,6 +21,7 @@ public final class Protocol {
   private static final String NOSCRIPT_PREFIX = "NOSCRIPT ";
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
+  private static final String EXECABORT_PREFIX = "EXECABORT ";
 
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_PORT = 6379;
@@ -131,6 +132,8 @@ public final class Protocol {
       throw new JedisAccessControlException(message);
     } else if (message.startsWith(NOPERM_PREFIX)) {
       throw new JedisAccessControlException(message);
+    } else if (message.startsWith(EXECABORT_PREFIX)) {
+      throw new AbortedTransactionException(message);
     }
     throw new JedisDataException(message);
   }

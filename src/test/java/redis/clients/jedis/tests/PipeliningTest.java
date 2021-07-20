@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -22,23 +23,18 @@ import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.junit.After;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.exceptions.AbortedTransactionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class PipeliningTest extends JedisCommandTestBase {
-
-  @After
-  public void tearDown() throws Exception {
-    jedis.close();
-  }
 
   @Test
   public void pipeline() {
@@ -689,6 +685,47 @@ public class PipeliningTest extends JedisCommandTestBase {
     retFuture1.get();
     retFuture2.get();
     jedis2.close();
+  }
+
+  @Test
+  public void execAbort() {
+    final String luaTimeLimitKey = "lua-time-limit";
+    final String luaTimeLimit = jedis.configGet(luaTimeLimitKey).get(1);
+    jedis.configSet(luaTimeLimitKey, "10");
+
+    Thread thread = new Thread(() -> {
+      try (Jedis blocker = createJedis()) {
+        blocker.eval("while true do end");
+      } catch (Exception ex) {
+        // swallow any exception
+      }
+    });
+
+    Pipeline pipe = jedis.pipelined();
+    pipe.incr("foo");
+    pipe.multi();
+    pipe.incr("foo");
+    pipe.sync();
+
+    thread.start();
+    try {
+      Thread.sleep(12); // allow Redis to be busy with the script and 'lua-time-limit' to exceed
+    } catch (InterruptedException ex) { }
+
+    pipe.incr("foo");
+    Response<List<Object>> txResp = pipe.exec();
+    pipe.sync();
+    try {
+      txResp.get();
+    } catch (Exception ex) {
+      assertSame(AbortedTransactionException.class, ex.getClass());
+    } finally {
+      try {
+        jedis.scriptKill();
+      } finally {
+        jedis.configSet(luaTimeLimitKey, luaTimeLimit);
+      }
+    }
   }
 
   private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {

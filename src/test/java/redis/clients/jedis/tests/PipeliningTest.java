@@ -410,6 +410,19 @@ public class PipeliningTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void waitReplicas() {
+    Pipeline p = jedis.pipelined();
+    p.set("wait", "replicas");
+    p.waitReplicas(1, 10);
+    p.sync();
+
+    try (Jedis j = new Jedis(HostAndPortUtil.getRedisServers().get(4))) {
+      j.auth("foobared");
+      assertEquals("replicas", j.get("wait"));
+    }
+  }
+
+  @Test
   public void testEval() {
     String script = "return 'success!'";
 

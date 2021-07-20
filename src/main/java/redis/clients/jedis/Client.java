@@ -10,6 +10,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.Protocol.SentinelKeyword;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.*;
@@ -1037,6 +1038,10 @@ public class Client extends BinaryClient implements Commands {
 
   public void sentinel(final String... args) {
     sentinel(SafeEncoder.encodeMany(args));
+  }
+
+  public void sentinel(SentinelKeyword subcommand, final String... args) {
+    sentinel(subcommand, SafeEncoder.encodeMany(args));
   }
 
   @Override

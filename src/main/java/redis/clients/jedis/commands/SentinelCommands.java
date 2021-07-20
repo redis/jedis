@@ -4,13 +4,22 @@ import java.util.List;
 import java.util.Map;
 
 public interface SentinelCommands {
+
+  String sentinelMyId();
+
   List<Map<String, String>> sentinelMasters();
+
+  Map<String, String> sentinelMaster(String masterName);
+
+  List<Map<String, String>> sentinelSentinels(String masterName);
 
   List<String> sentinelGetMasterAddrByName(String masterName);
 
   Long sentinelReset(String pattern);
 
   List<Map<String, String>> sentinelSlaves(String masterName);
+
+  List<Map<String, String>> sentinelReplicas(String masterName);
 
   String sentinelFailover(String masterName);
 

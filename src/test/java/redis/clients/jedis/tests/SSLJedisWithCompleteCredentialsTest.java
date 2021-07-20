@@ -149,9 +149,9 @@ public class SSLJedisWithCompleteCredentialsTest {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      assertEquals("Unexpected first inner exception.", SSLHandshakeException.class, e.getCause()
+      assertSame("Unexpected first inner exception.", SSLHandshakeException.class, e.getCause()
           .getClass());
-      assertEquals("Unexpected second inner exception.", CertificateException.class, e.getCause()
+      assertSame("Unexpected second inner exception.", CertificateException.class, e.getCause()
           .getCause().getClass());
     }
   }
@@ -241,10 +241,10 @@ public class SSLJedisWithCompleteCredentialsTest {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      assertEquals("Unexpected first inner exception.", SSLException.class, e.getCause().getClass());
-      assertEquals("Unexpected second inner exception.", RuntimeException.class, e.getCause()
+      assertSame("Unexpected first inner exception.", SSLException.class, e.getCause().getClass());
+      assertSame("Unexpected second inner exception.", RuntimeException.class, e.getCause()
           .getCause().getClass());
-      assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class, e
+      assertSame("Unexpected third inner exception.", InvalidAlgorithmParameterException.class, e
           .getCause().getCause().getCause().getClass());
     }
   }

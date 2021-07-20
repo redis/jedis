@@ -1,6 +1,7 @@
 package redis.clients.jedis.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -240,11 +241,11 @@ public class SSLJedisTest {
       assertEquals("PONG", jedis.ping());
       fail("The code did not throw the expected JedisConnectionException.");
     } catch (JedisConnectionException e) {
-      assertEquals("Unexpected first inner exception.", SSLException.class,
+      assertSame("Unexpected first inner exception.", SSLException.class,
           e.getCause().getClass());
-      assertEquals("Unexpected second inner exception.", RuntimeException.class,
+      assertSame("Unexpected second inner exception.", RuntimeException.class,
           e.getCause().getCause().getClass());
-      assertEquals("Unexpected third inner exception.", InvalidAlgorithmParameterException.class,
+      assertSame("Unexpected third inner exception.", InvalidAlgorithmParameterException.class,
           e.getCause().getCause().getCause().getClass());
     }
   }

@@ -26,6 +26,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Protocol.SentinelKeyword;
+import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
@@ -1385,6 +1386,10 @@ public class BinaryClient extends Connection {
     } else {
       sendCommand(CLIENT, Keyword.UNBLOCK.getRaw(), toByteArray(clientId), unblockType.getRaw());
     }
+  }
+
+  public void clientPause(final long timeout, final ClientPauseMode mode) {
+    sendCommand(CLIENT, Keyword.PAUSE.getRaw(), toByteArray(timeout), mode.getRaw());
   }
 
   public void time() {

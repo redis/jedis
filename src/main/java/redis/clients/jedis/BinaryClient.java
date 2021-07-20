@@ -25,6 +25,7 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.Protocol.SentinelKeyword;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.FlushMode;
@@ -1245,6 +1246,14 @@ public class BinaryClient extends Connection {
 
   public void sentinel(final byte[]... args) {
     sendCommand(SENTINEL, args);
+  }
+
+  public void sentinel(SentinelKeyword subcommand, final byte[]... args) {
+    sendCommand(SENTINEL, joinParameters(subcommand.getRaw(), args));
+  }
+
+  public void sentinel(SentinelKeyword subcommand) {
+    sendCommand(SENTINEL, subcommand.getRaw());
   }
 
   public void dump(final byte[] key) {

@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.Protocol.SentinelKeyword;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
@@ -3385,6 +3387,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public String sentinelMyId() {
+    client.sentinel(SentinelKeyword.MYID);
+    return BuilderFactory.STRING.build(client.getBinaryBulkReply());
+  }
+
   /**
    * <pre>
    * redis 127.0.0.1:26381&gt; sentinel masters
@@ -3427,6 +3435,19 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       masters.add(BuilderFactory.STRING_MAP.build(obj));
     }
     return masters;
+  }
+
+  @Override
+  public Map<String, String> sentinelMaster(String masterName) {
+    client.sentinel(SentinelKeyword.MASTER, masterName);
+    return BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
+  }
+
+  @Override
+  public List<Map<String, String>> sentinelSentinels(String masterName) {
+    client.sentinel(SentinelKeyword.SENTINELS, masterName);
+    return client.getObjectMultiBulkReply().stream()
+        .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
   }
 
   /**
@@ -3504,6 +3525,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
       slaves.add(BuilderFactory.STRING_MAP.build(obj));
     }
     return slaves;
+  }
+
+  @Override
+  public List<Map<String, String>> sentinelReplicas(final String masterName) {
+    client.sentinel(SentinelKeyword.REPLICAS, masterName);
+    return client.getObjectMultiBulkReply().stream()
+        .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
   }
 
   @Override

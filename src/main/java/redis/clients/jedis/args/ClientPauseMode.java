@@ -9,7 +9,7 @@ public enum ClientPauseMode implements Rawable {
   private final byte[] raw;
 
   private ClientPauseMode() {
-    raw = SafeEncoder.encode(name().toLowerCase());
+    raw = SafeEncoder.encode(name());
   }
 
   @Override

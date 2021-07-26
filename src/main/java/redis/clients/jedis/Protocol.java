@@ -67,6 +67,7 @@ public final class Protocol {
   public static final String CLUSTER_SLAVES = "slaves";
   public static final String CLUSTER_FAILOVER = "failover";
   public static final String CLUSTER_SLOTS = "slots";
+
   public static final String PUBSUB_CHANNELS = "channels";
   public static final String PUBSUB_NUMSUB = "numsub";
   public static final String PUBSUB_NUM_PAT = "numpat";
@@ -309,6 +310,21 @@ public final class Protocol {
     private final byte[] raw;
 
     private SentinelKeyword() {
+      raw = SafeEncoder.encode(name());
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+  }
+
+  public static enum ClusterKeyword implements Rawable {
+    NODES, MEET, RESET, INFO, FAILOVER, SLOTS, FORCE, TAKEOVER;
+
+    private final byte[] raw;
+
+    private ClusterKeyword() {
       raw = SafeEncoder.encode(name());
     }
 

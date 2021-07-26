@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.AccessControlUser;
+import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
@@ -70,6 +71,10 @@ public interface AdvancedBinaryJedisCommands {
   String clientSetname(byte[] name);
 
   Long clientId();
+
+  String clientPause(long timeout);
+
+  String clientPause(long timeout, ClientPauseMode mode);
 
   byte[] memoryDoctorBinary();
 

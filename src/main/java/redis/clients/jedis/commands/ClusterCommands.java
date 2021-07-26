@@ -63,5 +63,7 @@ public interface ClusterCommands {
    */
   String clusterReset(ClusterResetType resetType);
 
+  String clusterMyId();
+
   String readonly();
 }

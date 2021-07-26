@@ -3926,6 +3926,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getObjectMultiBulkReply();
   }
 
+  @Override
+  public String clusterMyId() {
+    checkIsInMultiOrPipeline();
+    client.clusterMyId();
+    return client.getBulkReply();
+  }
+
   public String asking() {
     checkIsInMultiOrPipeline();
     client.asking();

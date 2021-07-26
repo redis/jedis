@@ -1471,6 +1471,10 @@ public class BinaryClient extends Connection {
     sendCommand(CLUSTER, args);
   }
 
+  public void cluster(Protocol.ClusterKeyword keyword, final byte[]... args) {
+    sendCommand(CLUSTER, joinParameters(keyword.getRaw(), args));
+  }
+
   public void asking() {
     sendCommand(ASKING);
   }

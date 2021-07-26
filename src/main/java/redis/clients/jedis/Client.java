@@ -1203,9 +1203,9 @@ public class Client extends BinaryClient implements Commands {
 
   public void clusterReset(final ClusterResetType resetType) {
     if (resetType == null) {
-      cluster(ClusterKeyword.RESET.getRaw());
+      cluster(ClusterKeyword.RESET);
     } else {
-      cluster(ClusterKeyword.RESET.getRaw(), resetType.getRaw());
+      cluster(ClusterKeyword.RESET, resetType.getRaw());
     }
   }
 
@@ -1294,14 +1294,18 @@ public class Client extends BinaryClient implements Commands {
 
   public void clusterFailover(ClusterFailoverOption failoverOption) {
     if (failoverOption == null) {
-      cluster(ClusterKeyword.FAILOVER.getRaw());
+      cluster(ClusterKeyword.FAILOVER);
     } else {
-      cluster(ClusterKeyword.FAILOVER.getRaw(), failoverOption.getRaw());
+      cluster(ClusterKeyword.FAILOVER, failoverOption.getRaw());
     }
   }
 
   public void clusterSlots() {
     cluster(Protocol.CLUSTER_SLOTS);
+  }
+
+  public void clusterMyId() {
+    cluster(ClusterKeyword.MYID);
   }
 
   public void geoadd(final String key, final double longitude, final double latitude,

@@ -320,7 +320,7 @@ public final class Protocol {
   }
 
   public static enum ClusterKeyword implements Rawable {
-    NODES, MEET, RESET, INFO, FAILOVER, SLOTS, FORCE, TAKEOVER, MYID;
+    MEET, RESET, INFO, FAILOVER, SLOTS, FORCE, TAKEOVER, NODES, REPLICAS, MYID;
 
     private final byte[] raw;
 

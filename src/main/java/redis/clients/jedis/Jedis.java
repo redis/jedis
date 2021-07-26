@@ -3780,6 +3780,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public String clusterReplicas(final String nodeId) {
+    checkIsInMultiOrPipeline();
+    client.clusterReplicas(nodeId);
+    return client.getBulkReply();
+  }
+
+  @Override
   public String readonly() {
     checkIsInMultiOrPipeline();
     client.readonly();

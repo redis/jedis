@@ -10,6 +10,8 @@ public interface ClusterCommands {
 
   String clusterNodes();
 
+  String clusterReplicas(String nodeId);
+
   String clusterMeet(String ip, int port);
 
   String clusterAddSlots(int... slots);
@@ -40,6 +42,11 @@ public interface ClusterCommands {
 
   String clusterReplicate(String nodeId);
 
+  /**
+   * {@code CLUSTER SLAVES} command is deprecated since Redis 5.
+   * @deprecated Use {@link ClusterCommands#clusterReplicas(java.lang.String)}.
+   */
+  @Deprecated
   List<String> clusterSlaves(String nodeId);
 
   default String clusterFailover() {

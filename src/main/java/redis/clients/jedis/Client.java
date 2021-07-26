@@ -1186,7 +1186,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void clusterNodes() {
-    cluster(Protocol.CLUSTER_NODES);
+    cluster(ClusterKeyword.NODES);
+  }
+
+  public void clusterReplicas(final String nodeId) {
+    cluster(ClusterKeyword.REPLICAS, SafeEncoder.encode(nodeId));
   }
 
   public void clusterMeet(final String ip, final int port) {

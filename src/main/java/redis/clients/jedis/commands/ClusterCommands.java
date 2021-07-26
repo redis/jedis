@@ -3,8 +3,10 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.ClusterReset;
+import redis.clients.jedis.args.ClusterResetType;
 
 public interface ClusterCommands {
+
   String clusterNodes();
 
   String clusterMeet(String ip, int port);
@@ -43,7 +45,18 @@ public interface ClusterCommands {
 
   List<Object> clusterSlots();
 
+  /**
+   * @deprecated Use {@link ClusterCommands#clusterReset(redis.clients.jedis.args.ClusterResetType)}.
+   */
+  @Deprecated
   String clusterReset(ClusterReset resetType);
+
+  /**
+   * {@code resetType} can be null for default behavior.
+   * @param resetType
+   * @return OK
+   */
+  String clusterReset(ClusterResetType resetType);
 
   String readonly();
 }

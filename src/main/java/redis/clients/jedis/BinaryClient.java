@@ -1499,6 +1499,10 @@ public class BinaryClient extends Connection {
     sendCommand(READONLY);
   }
 
+  public void readwrite() {
+    sendCommand(READWRITE);
+  }
+
   public void geoadd(final byte[] key, final double longitude, final double latitude,
       final byte[] member) {
     sendCommand(GEOADD, key, toByteArray(longitude), toByteArray(latitude), member);

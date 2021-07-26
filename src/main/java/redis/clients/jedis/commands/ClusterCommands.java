@@ -8,6 +8,10 @@ import redis.clients.jedis.args.ClusterFailoverOption;
 
 public interface ClusterCommands {
 
+  String readonly();
+
+  String readwrite();
+
   String clusterNodes();
 
   String clusterReplicas(String nodeId);
@@ -71,6 +75,4 @@ public interface ClusterCommands {
   String clusterReset(ClusterResetType resetType);
 
   String clusterMyId();
-
-  String readonly();
 }

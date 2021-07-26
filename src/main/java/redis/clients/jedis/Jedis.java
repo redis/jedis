@@ -3773,6 +3773,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public String readonly() {
+    checkIsInMultiOrPipeline();
+    client.readonly();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String readwrite() {
+    checkIsInMultiOrPipeline();
+    client.readwrite();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public String clusterNodes() {
     checkIsInMultiOrPipeline();
     client.clusterNodes();
@@ -3784,13 +3798,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.clusterReplicas(nodeId);
     return client.getBulkReply();
-  }
-
-  @Override
-  public String readonly() {
-    checkIsInMultiOrPipeline();
-    client.readonly();
-    return client.getStatusCodeReply();
   }
 
   @Override

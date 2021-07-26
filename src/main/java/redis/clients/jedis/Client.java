@@ -12,6 +12,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.ClusterKeyword;
 import redis.clients.jedis.Protocol.SentinelKeyword;
+import redis.clients.jedis.args.ClusterFailoverOption;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.Commands;
@@ -1289,6 +1290,14 @@ public class Client extends BinaryClient implements Commands {
 
   public void clusterFailover() {
     cluster(Protocol.CLUSTER_FAILOVER);
+  }
+
+  public void clusterFailover(ClusterFailoverOption failoverOption) {
+    if (failoverOption == null) {
+      cluster(ClusterKeyword.FAILOVER.getRaw());
+    } else {
+      cluster(ClusterKeyword.FAILOVER.getRaw(), failoverOption.getRaw());
+    }
   }
 
   public void clusterSlots() {

@@ -4,6 +4,7 @@ import java.util.List;
 
 import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.args.ClusterResetType;
+import redis.clients.jedis.args.ClusterFailoverOption;
 
 public interface ClusterCommands {
 
@@ -41,7 +42,11 @@ public interface ClusterCommands {
 
   List<String> clusterSlaves(String nodeId);
 
-  String clusterFailover();
+  default String clusterFailover() {
+    return clusterFailover(null);
+  }
+
+  String clusterFailover(ClusterFailoverOption failoverOption);
 
   List<Object> clusterSlots();
 

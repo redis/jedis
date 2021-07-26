@@ -20,6 +20,7 @@ import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -196,6 +197,77 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
       jedisToPause1.close();
       jedisToPause2.close();
+    } finally {
+      executorService.shutdown();
+      if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+        executorService.shutdownNow();
+      }
+    }
+  }
+
+  @Test
+  public void clientPauseAll() throws InterruptedException, ExecutionException {
+    final int pauseMillis = 1250;
+    final int pauseMillisDelta = 100;
+
+    ExecutorService executorService = Executors.newFixedThreadPool(1);
+    try (Jedis jedisPause = createJedis()) {
+
+      jedis.clientPause(pauseMillis, ClientPauseMode.ALL);
+
+      Future<Long> latency = executorService.submit(new Callable<Long>() {
+        @Override
+        public Long call() throws Exception {
+          long startMillis = System.currentTimeMillis();
+          jedisPause.get("key");
+          return System.currentTimeMillis() - startMillis;
+        }
+      });
+
+      long latencyMillis = latency.get();
+      assertTrue(pauseMillis <= latencyMillis && latencyMillis <= pauseMillis + pauseMillisDelta);
+
+    } finally {
+      executorService.shutdown();
+      if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+        executorService.shutdownNow();
+      }
+    }
+  }
+
+  @Test
+  public void clientPauseWrite() throws InterruptedException, ExecutionException {
+    final int pauseMillis = 1250;
+    final int pauseMillisDelta = 100;
+
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
+    try (Jedis jedisRead = createJedis(); Jedis jedisWrite = createJedis();) {
+
+      jedis.clientPause(pauseMillis, ClientPauseMode.WRITE);
+
+      Future<Long> latencyRead = executorService.submit(new Callable<Long>() {
+        @Override
+        public Long call() throws Exception {
+          long startMillis = System.currentTimeMillis();
+          jedisRead.get("key");
+          return System.currentTimeMillis() - startMillis;
+        }
+      });
+      Future<Long> latencyWrite = executorService.submit(new Callable<Long>() {
+        @Override
+        public Long call() throws Exception {
+          long startMillis = System.currentTimeMillis();
+          jedisWrite.set("key", "value");
+          return System.currentTimeMillis() - startMillis;
+        }
+      });
+
+      long latencyReadMillis = latencyRead.get();
+      assertTrue(0 <= latencyReadMillis && latencyReadMillis <= pauseMillisDelta);
+
+      long latencyWriteMillis = latencyWrite.get();
+      assertTrue(pauseMillis <= latencyWriteMillis && latencyWriteMillis <= pauseMillis + pauseMillisDelta);
+
     } finally {
       executorService.shutdown();
       if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {

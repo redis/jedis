@@ -17,11 +17,14 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import redis.clients.jedis.DebugParams;
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.tests.HostAndPortUtil;
+import redis.clients.jedis.tests.utils.AssertUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class ControlCommandsTest extends JedisCommandTestBase {
@@ -85,6 +88,61 @@ public class ControlCommandsTest extends JedisCommandTestBase {
       jedis.readwrite();
     } catch (JedisDataException e) {
       assertTrue("ERR This instance has cluster support disabled".equalsIgnoreCase(e.getMessage()));
+    }
+  }
+
+  @Test
+  public void roleMaster() {
+    try (Jedis master = new Jedis(HostAndPortUtil.getRedisServers().get(0),
+        DefaultJedisClientConfig.builder().password("foobared").build())) {
+
+      List<Object> role = master.role();
+      assertEquals("master", role.get(0));
+      assertTrue(role.get(1) instanceof Long);
+      assertTrue(role.get(2) instanceof List);
+
+      // binary
+      List<Object> brole = master.roleBinary();
+      assertArrayEquals("master".getBytes(), (byte[]) brole.get(0));
+      assertTrue(brole.get(1) instanceof Long);
+      assertTrue(brole.get(2) instanceof List);
+    }
+  }
+
+  @Test
+  public void roleSlave() {
+    try (Jedis slave = new Jedis(HostAndPortUtil.getRedisServers().get(4),
+        DefaultJedisClientConfig.builder().password("foobared").build())) {
+
+      List<Object> role = slave.role();
+      assertEquals("slave", role.get(0));
+      assertEquals((long) HostAndPortUtil.getRedisServers().get(0).getPort(), role.get(2));
+      assertEquals("connected", role.get(3));
+      assertTrue(role.get(4) instanceof Long);
+
+      // binary
+      List<Object> brole = slave.roleBinary();
+      assertArrayEquals("slave".getBytes(), (byte[]) brole.get(0));
+      assertEquals((long) HostAndPortUtil.getRedisServers().get(0).getPort(), brole.get(2));
+      assertArrayEquals("connected".getBytes(), (byte[]) brole.get(3));
+      assertTrue(brole.get(4) instanceof Long);
+    }
+  }
+
+  @Test
+  public void roleSentinel() {
+    try (Jedis sentinel = new Jedis(HostAndPortUtil.getSentinelServers().get(0))) {
+
+      List<Object> role = sentinel.role();
+      assertEquals("sentinel", role.get(0));
+      assertTrue(role.get(1) instanceof List);
+      assertTrue(((List) role.get(1)).contains("mymaster"));
+
+      // binary
+      List<Object> brole = sentinel.roleBinary();
+      assertArrayEquals("sentinel".getBytes(), (byte[]) brole.get(0));
+      assertTrue(brole.get(1) instanceof List);
+      AssertUtil.assertCollectionContains((List) brole.get(1), "mymaster".getBytes());
     }
   }
 

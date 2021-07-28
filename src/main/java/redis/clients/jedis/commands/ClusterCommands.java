@@ -3,9 +3,18 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.ClusterReset;
+import redis.clients.jedis.args.ClusterResetType;
+import redis.clients.jedis.args.ClusterFailoverOption;
 
 public interface ClusterCommands {
+
+  String readonly();
+
+  String readwrite();
+
   String clusterNodes();
+
+  String clusterReplicas(String nodeId);
 
   String clusterMeet(String ip, int port);
 
@@ -37,13 +46,33 @@ public interface ClusterCommands {
 
   String clusterReplicate(String nodeId);
 
+  /**
+   * {@code CLUSTER SLAVES} command is deprecated since Redis 5.
+   * @deprecated Use {@link ClusterCommands#clusterReplicas(java.lang.String)}.
+   */
+  @Deprecated
   List<String> clusterSlaves(String nodeId);
 
-  String clusterFailover();
+  default String clusterFailover() {
+    return clusterFailover(null);
+  }
+
+  String clusterFailover(ClusterFailoverOption failoverOption);
 
   List<Object> clusterSlots();
 
+  /**
+   * @deprecated Use {@link ClusterCommands#clusterReset(redis.clients.jedis.args.ClusterResetType)}.
+   */
+  @Deprecated
   String clusterReset(ClusterReset resetType);
 
-  String readonly();
+  /**
+   * {@code resetType} can be null for default behavior.
+   * @param resetType
+   * @return OK
+   */
+  String clusterReset(ClusterResetType resetType);
+
+  String clusterMyId();
 }

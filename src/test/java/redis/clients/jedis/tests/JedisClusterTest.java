@@ -251,7 +251,7 @@ public class JedisClusterTest {
   }
 
   @Test
-  public void testReadonly() throws Exception {
+  public void testReadonlyAndReadwrite() throws Exception {
     node1.clusterMeet(LOCAL_IP, nodeInfoSlave2.getPort());
     JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, nodeSlave2);
 
@@ -261,6 +261,7 @@ public class JedisClusterTest {
         break;
       }
     }
+
     try {
       nodeSlave2.get("test");
       fail();
@@ -268,6 +269,13 @@ public class JedisClusterTest {
     }
     nodeSlave2.readonly();
     nodeSlave2.get("test");
+
+    nodeSlave2.readwrite();
+    try {
+      nodeSlave2.get("test");
+      fail();
+    } catch (JedisMovedDataException e) {
+    }
 
     nodeSlave2.clusterReset(ClusterReset.SOFT);
     nodeSlave2.flushDB();

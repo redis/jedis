@@ -10,7 +10,10 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import redis.clients.jedis.Protocol.ClusterKeyword;
 import redis.clients.jedis.Protocol.SentinelKeyword;
+import redis.clients.jedis.args.ClusterFailoverOption;
+import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.*;
@@ -1183,15 +1186,31 @@ public class Client extends BinaryClient implements Commands {
   }
 
   public void clusterNodes() {
-    cluster(Protocol.CLUSTER_NODES);
+    cluster(ClusterKeyword.NODES);
+  }
+
+  public void clusterReplicas(final String nodeId) {
+    cluster(ClusterKeyword.REPLICAS, SafeEncoder.encode(nodeId));
   }
 
   public void clusterMeet(final String ip, final int port) {
     cluster(Protocol.CLUSTER_MEET, ip, String.valueOf(port));
   }
 
+  /**
+   * @deprecated Use {@link Client#clusterReset(redis.clients.jedis.args.ClusterResetType)}.
+   */
+  @Deprecated
   public void clusterReset(final ClusterReset resetType) {
     cluster(Protocol.CLUSTER_RESET, resetType.name());
+  }
+
+  public void clusterReset(final ClusterResetType resetType) {
+    if (resetType == null) {
+      cluster(ClusterKeyword.RESET);
+    } else {
+      cluster(ClusterKeyword.RESET, resetType.getRaw());
+    }
   }
 
   public void clusterAddSlots(final int... slots) {
@@ -1277,8 +1296,20 @@ public class Client extends BinaryClient implements Commands {
     cluster(Protocol.CLUSTER_FAILOVER);
   }
 
+  public void clusterFailover(ClusterFailoverOption failoverOption) {
+    if (failoverOption == null) {
+      cluster(ClusterKeyword.FAILOVER);
+    } else {
+      cluster(ClusterKeyword.FAILOVER, failoverOption.getRaw());
+    }
+  }
+
   public void clusterSlots() {
     cluster(Protocol.CLUSTER_SLOTS);
+  }
+
+  public void clusterMyId() {
+    cluster(ClusterKeyword.MYID);
   }
 
   public void geoadd(final String key, final double longitude, final double latitude,

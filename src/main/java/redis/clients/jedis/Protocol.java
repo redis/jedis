@@ -67,6 +67,7 @@ public final class Protocol {
   public static final String CLUSTER_SLAVES = "slaves";
   public static final String CLUSTER_FAILOVER = "failover";
   public static final String CLUSTER_SLOTS = "slots";
+
   public static final String PUBSUB_CHANNELS = "channels";
   public static final String PUBSUB_NUMSUB = "numsub";
   public static final String PUBSUB_NUM_PAT = "numpat";
@@ -264,7 +265,7 @@ public final class Protocol {
     BITPOS, SETRANGE, GETRANGE, EVAL, EVALSHA, SCRIPT, SLOWLOG, OBJECT, BITCOUNT, BITOP, SENTINEL,
     DUMP, RESTORE, PEXPIRE, PEXPIREAT, PTTL, INCRBYFLOAT, PSETEX, CLIENT, TIME, MIGRATE,
     HINCRBYFLOAT, SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, PFADD, PFCOUNT, PFMERGE,
-    READONLY, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO, GEORADIUSBYMEMBER,
+    READONLY, READWRITE, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO, GEORADIUSBYMEMBER,
     GEORADIUSBYMEMBER_RO, MODULE, BITFIELD, HSTRLEN, TOUCH, SWAPDB, MEMORY, XADD, XLEN, XDEL,
     XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM, XAUTOCLAIM, ACL, XINFO,
     BITFIELD_RO, LPOS, SMISMEMBER, ZMSCORE, BZPOPMIN, BZPOPMAX, BLMOVE, LMOVE, COPY;
@@ -309,6 +310,21 @@ public final class Protocol {
     private final byte[] raw;
 
     private SentinelKeyword() {
+      raw = SafeEncoder.encode(name());
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+  }
+
+  public static enum ClusterKeyword implements Rawable {
+    MEET, RESET, INFO, FAILOVER, SLOTS, FORCE, TAKEOVER, NODES, REPLICAS, MYID;
+
+    private final byte[] raw;
+
+    private ClusterKeyword() {
       raw = SafeEncoder.encode(name());
     }
 

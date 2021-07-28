@@ -3817,6 +3817,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public String readonly() {
+    checkIsInMultiOrPipeline();
+    client.readonly();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String readwrite() {
+    checkIsInMultiOrPipeline();
+    client.readwrite();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public String clusterNodes() {
     checkIsInMultiOrPipeline();
     client.clusterNodes();
@@ -3824,10 +3838,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public String readonly() {
+  public String clusterReplicas(final String nodeId) {
     checkIsInMultiOrPipeline();
-    client.readonly();
-    return client.getStatusCodeReply();
+    client.clusterReplicas(nodeId);
+    return client.getBulkReply();
   }
 
   @Override
@@ -3839,6 +3853,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
 
   @Override
   public String clusterReset(final ClusterReset resetType) {
+    checkIsInMultiOrPipeline();
+    client.clusterReset(resetType);
+    return client.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterReset(final ClusterResetType resetType) {
     checkIsInMultiOrPipeline();
     client.clusterReset(resetType);
     return client.getStatusCodeReply();
@@ -3950,9 +3971,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public String clusterFailover() {
+  public String clusterFailover(ClusterFailoverOption failoverOption) {
     checkIsInMultiOrPipeline();
-    client.clusterFailover();
+    client.clusterFailover(failoverOption);
     return client.getStatusCodeReply();
   }
 
@@ -3961,6 +3982,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     checkIsInMultiOrPipeline();
     client.clusterSlots();
     return client.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public String clusterMyId() {
+    checkIsInMultiOrPipeline();
+    client.clusterMyId();
+    return client.getBulkReply();
   }
 
   public String asking() {

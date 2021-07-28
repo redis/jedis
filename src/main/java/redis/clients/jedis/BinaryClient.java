@@ -1479,6 +1479,10 @@ public class BinaryClient extends Connection {
     sendCommand(CLUSTER, args);
   }
 
+  public void cluster(Protocol.ClusterKeyword keyword, final byte[]... args) {
+    sendCommand(CLUSTER, joinParameters(keyword.getRaw(), args));
+  }
+
   public void asking() {
     sendCommand(ASKING);
   }
@@ -1501,6 +1505,10 @@ public class BinaryClient extends Connection {
 
   public void readonly() {
     sendCommand(READONLY);
+  }
+
+  public void readwrite() {
+    sendCommand(READWRITE);
   }
 
   public void geoadd(final byte[] key, final double longitude, final double latitude,

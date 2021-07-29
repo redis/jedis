@@ -4133,6 +4133,30 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public String failover() {
+    return failover(null);
+  }
+
+  @Override
+  public String failover(FailoverParams failoverParams) {
+    checkIsInMultiOrPipeline();
+    client.failover(failoverParams);
+    client.setTimeoutInfinite();
+    try {
+      return client.getStatusCodeReply();
+    } finally {
+      client.rollbackTimeout();
+    }
+  }
+
+  @Override
+  public String failoverAbort() {
+    checkIsInMultiOrPipeline();
+    client.failoverAbort();
+    return client.getStatusCodeReply();
+  }
+
+  @Override
   public byte[] aclWhoAmIBinary() {
     checkIsInMultiOrPipeline();
     client.aclWhoAmI();

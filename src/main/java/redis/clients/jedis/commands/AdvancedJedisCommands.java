@@ -13,6 +13,8 @@ import redis.clients.jedis.util.Slowlog;
 
 public interface AdvancedJedisCommands {
 
+  List<Object> role();
+
   long move(String key, int dbIndex);
 
   List<String> configGet(String pattern);

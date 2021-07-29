@@ -3145,6 +3145,13 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  @Override
+  public List<Object> role() {
+    checkIsInMultiOrPipeline();
+    client.role();
+    return BuilderFactory.ENCODED_OBJECT_LIST.build(client.getOne());
+  }
+
   /**
    * Retrieve the configuration of a running Redis server. Not all the configuration parameters are
    * supported.

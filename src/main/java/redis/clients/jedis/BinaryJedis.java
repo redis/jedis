@@ -3561,6 +3561,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  @Override
+  public List<Object> roleBinary() {
+    checkIsInMultiOrPipeline();
+    client.role();
+    return BuilderFactory.RAW_OBJECT_LIST.build(client.getOne());
+  }
+
   /**
    * Retrieve the configuration of a running Redis server. Not all the configuration parameters are
    * supported.

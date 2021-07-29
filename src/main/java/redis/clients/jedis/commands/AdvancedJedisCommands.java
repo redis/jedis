@@ -9,6 +9,7 @@ import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.params.FailoverParams;
 import redis.clients.jedis.util.Slowlog;
 
 public interface AdvancedJedisCommands {
@@ -75,6 +76,12 @@ public interface AdvancedJedisCommands {
   Long memoryUsage(String key);
 
   Long memoryUsage(String key, int samples);
+
+  String failover();
+
+  String failover(FailoverParams failoverParams);
+
+  String failoverAbort();
 
   String aclWhoAmI();
 

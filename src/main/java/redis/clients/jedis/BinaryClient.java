@@ -1333,6 +1333,18 @@ public class BinaryClient extends Connection {
     sendCommand(MEMORY, Keyword.USAGE.getRaw(), key, Keyword.SAMPLES.getRaw(), toByteArray(samples));
   }
 
+  public void failover(FailoverParams failoverParams) {
+    if (failoverParams == null) {
+      sendCommand(FAILOVER);
+    } else {
+      sendCommand(FAILOVER, failoverParams.getByteParams());
+    }
+  }
+
+  public void failoverAbort() {
+    sendCommand(FAILOVER, ABORT.getRaw());
+  }
+
   public void clientKill(final byte[] ipPort) {
     sendCommand(CLIENT, Keyword.KILL.getRaw(), ipPort);
   }

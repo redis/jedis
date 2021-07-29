@@ -8,6 +8,7 @@ import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.params.FailoverParams;
 
 public interface AdvancedBinaryJedisCommands {
 
@@ -81,6 +82,12 @@ public interface AdvancedBinaryJedisCommands {
   Long memoryUsage(byte[] key);
 
   Long memoryUsage(byte[] key, int samples);
+
+  String failover();
+
+  String failover(FailoverParams failoverParams);
+
+  String failoverAbort();
 
   byte[] aclWhoAmIBinary();
 

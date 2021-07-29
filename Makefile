@@ -112,6 +112,27 @@ appendonly no
 client-output-buffer-limit pubsub 256k 128k 5
 endef
 
+define REDIS10_CONF
+daemonize yes
+protected-mode no
+port 6388
+pidfile /tmp/redis10.pid
+logfile /tmp/redis10.log
+save ""
+appendonly no
+endef
+
+define REDIS11_CONF
+daemonize yes
+protected-mode no
+port 6389
+pidfile /tmp/redis11.pid
+logfile /tmp/redis11.log
+save ""
+appendonly no
+replicaof localhost 6388
+endef
+
 # SENTINELS
 define REDIS_SENTINEL1
 port 26379
@@ -321,6 +342,8 @@ export REDIS6_CONF
 export REDIS7_CONF
 export REDIS8_CONF
 export REDIS9_CONF
+export REDIS10_CONF
+export REDIS11_CONF
 export REDIS_SENTINEL1
 export REDIS_SENTINEL2
 export REDIS_SENTINEL3
@@ -352,6 +375,8 @@ start: stunnel cleanup
 	echo "$$REDIS7_CONF" | redis-server -
 	echo "$$REDIS8_CONF" | redis-server -
 	echo "$$REDIS9_CONF" | redis-server -
+	echo "$$REDIS10_CONF" | redis-server -
+	echo "$$REDIS11_CONF" | redis-server -
 	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
@@ -388,6 +413,8 @@ stop:
 	kill `cat /tmp/redis7.pid`
 	kill `cat /tmp/redis8.pid`
 	kill `cat /tmp/redis9.pid`
+	kill `cat /tmp/redis10.pid`
+	kill `cat /tmp/redis11.pid`
 	kill `cat /tmp/sentinel1.pid`
 	kill `cat /tmp/sentinel2.pid`
 	kill `cat /tmp/sentinel3.pid`

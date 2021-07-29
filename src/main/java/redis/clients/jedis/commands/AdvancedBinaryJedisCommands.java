@@ -11,6 +11,8 @@ import redis.clients.jedis.params.ClientKillParams;
 
 public interface AdvancedBinaryJedisCommands {
 
+  List<Object> roleBinary();
+
   List<byte[]> configGet(byte[] pattern);
 
   /**

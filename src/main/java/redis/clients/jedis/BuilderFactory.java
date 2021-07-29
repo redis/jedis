@@ -68,6 +68,18 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<Object>> ENCODED_OBJECT_LIST = new Builder<List<Object>>() {
+    @Override
+    public List<Object> build(Object data) {
+      return (List<Object>) SafeEncoder.encodeObject(data);
+    }
+
+    @Override
+    public String toString() {
+      return "List<Object>";
+    }
+  };
+
   public static final Builder<Long> LONG = new Builder<Long>() {
     @Override
     public Long build(Object data) {

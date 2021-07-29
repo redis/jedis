@@ -1084,6 +1084,10 @@ public class BinaryClient extends Connection {
     sendCommand(SLAVEOF, NO.getRaw(), ONE.getRaw());
   }
 
+  public void role() {
+    sendCommand(ROLE);
+  }
+
   public void configGet(final byte[] pattern) {
     sendCommand(CONFIG, Keyword.GET.getRaw(), pattern);
   }

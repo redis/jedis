@@ -452,5 +452,5 @@ public interface BinaryRedisPipeline {
 
   Response<Double> hincrByFloat(byte[] key, byte[] field, double increment);
 
-  Response<LCSMatchResult> strAlgoLCSKeys(StrAlgoLCSParams params, String keyA, String keyB);
+  Response<LCSMatchResult> strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params);
 }

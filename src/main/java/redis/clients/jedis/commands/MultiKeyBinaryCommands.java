@@ -162,5 +162,5 @@ public interface MultiKeyBinaryCommands {
   long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
-  LCSMatchResult strAlgoLCSKeys(StrAlgoLCSParams params, byte[] keyA, byte[] keyB);
+  LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params);
 }

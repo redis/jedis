@@ -3697,16 +3697,16 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public LCSMatchResult strAlgoLCS(StrAlgoLCSParams params) {
+  public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
-    client.strAlgoLCS(params);
+    client.strAlgoLCSKeys(keyA, keyB, params);
     return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
   }
 
   @Override
-  public LCSMatchResult strAlgoLCSKeys(StrAlgoLCSParams params, byte[] keyA, byte[] keyB) {
+  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
-    client.strAlgoLCSKeys(params, keyA, keyB);
+    client.strAlgoLCSStrings(strA, strB, params);
     return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
   }
 

@@ -1009,14 +1009,14 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
-  public Response<LCSMatchResult> strAlgoLCSKeys(StrAlgoLCSParams params, String keyA, String keyB) {
-    client.strAlgoLCSKeys(params, keyA, keyB);
+  public Response<LCSMatchResult> strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
+    client.strAlgoLCSKeys(keyA, keyB, params);
     return getResponse(BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 
   @Override
-  public Response<LCSMatchResult> strAlgoLCSKeys(StrAlgoLCSParams params, byte[] keyA, byte[] keyB) {
-    client.strAlgoLCSKeys(params, keyA, keyB);
+  public Response<LCSMatchResult> strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
+    client.strAlgoLCSKeys(keyA, keyB, params);
     return getResponse(BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 }

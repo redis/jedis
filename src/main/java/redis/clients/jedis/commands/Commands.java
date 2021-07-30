@@ -580,5 +580,7 @@ public interface Commands {
 
   void xinfoConsumers (String key, String group);
 
-  void strAlgoLCSKeys(StrAlgoLCSParams params, String keyA, String keyB);
+  void strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params);
+
+  void strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);
 }

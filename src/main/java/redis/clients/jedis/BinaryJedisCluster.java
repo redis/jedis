@@ -929,23 +929,23 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public LCSMatchResult strAlgoLCS(StrAlgoLCSParams params) {
+  public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
     return new JedisClusterCommand<LCSMatchResult>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public LCSMatchResult execute(Jedis connection) {
-        return connection.strAlgoLCS(params);
+        return connection.strAlgoLCSKeys(keyA, keyB, params);
       }
-    }.runWithAnyNode();
+    }.runBinary(2, keyA, keyB);
   }
 
   @Override
-  public LCSMatchResult strAlgoLCSKeys(StrAlgoLCSParams params, byte[] keyA, byte[] keyB) {
+  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     return new JedisClusterCommand<LCSMatchResult>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public LCSMatchResult execute(Jedis connection) {
-        return connection.strAlgoLCSKeys(params, keyA, keyB);
+        return connection.strAlgoLCSStrings(strA, strB, params);
       }
-    }.runBinary(2, keyA, keyB);
+    }.runWithAnyNode();
   }
 
   @Override

@@ -469,5 +469,5 @@ public interface RedisPipeline {
 
   Response<Double> hincrByFloat(String key, String field, double increment);
 
-  Response<LCSMatchResult> strAlgoLCS(StrAlgoLCSParams params);
+  Response<LCSMatchResult> strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);
 }

@@ -4,15 +4,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class StrAlgoLCSParams extends Params {
 
+    private static final String LCS = "lcs";
     private static final String IDX = "idx";
     private static final String LEN = "len";
     private static final String WITHMATCHLEN = "withmatchlen";
     private static final String MINMATCHLEN = "minmatchlen";
-    private static final String STRINGS = "strings";
 
     public StrAlgoLCSParams() {
     }
@@ -59,18 +60,12 @@ public class StrAlgoLCSParams extends Params {
         return this;
     }
 
-    /**
-     * Specify the strings to be passed.
-     * @return StrAlgoParams
-     */
-    public StrAlgoLCSParams strings(String... strings) {
-        addParam(STRINGS, strings);
-        return this;
-    }
-
-    public byte[][] getByteParams(byte[]... args) {
+    public byte[][] getByteParams(Keyword keyword, byte[] argA, byte[] argB) {
         ArrayList<byte[]> byteParams = new ArrayList<>();
-        Collections.addAll(byteParams, args);
+        byteParams.add(SafeEncoder.encode(LCS));
+        byteParams.add(keyword.getRaw());
+        byteParams.add(argA);
+        byteParams.add(argB);
 
         if (contains(IDX)) {
             byteParams.add(SafeEncoder.encode(IDX));
@@ -85,12 +80,6 @@ public class StrAlgoLCSParams extends Params {
         if (contains(MINMATCHLEN)) {
             byteParams.add(SafeEncoder.encode(MINMATCHLEN));
             byteParams.add(Protocol.toByteArray((long) getParam(MINMATCHLEN)));
-        }
-        if (contains(STRINGS)) {
-            byteParams.add(SafeEncoder.encode(STRINGS));
-            for (String str : (String[]) getParam(STRINGS)) {
-                byteParams.add(SafeEncoder.encode(str));
-            }
         }
 
         return byteParams.toArray(new byte[byteParams.size()][]);

@@ -491,5 +491,5 @@ public interface BinaryJedisCommands {
 
   Long memoryUsage(byte[] key, int samples);
 
-  LCSMatchResult strAlgoLCS(StrAlgoLCSParams params);
+  LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params);
 }

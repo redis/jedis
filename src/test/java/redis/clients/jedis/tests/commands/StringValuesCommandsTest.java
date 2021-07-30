@@ -241,22 +241,22 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void strAlgoLcsWithLen() {
-    LCSMatchResult stringMatchResult = jedis.strAlgoLCS(
-        StrAlgoLCSParams.StrAlgoLCSParams().strings("ohmytext", "mynewtext").len());
+    LCSMatchResult stringMatchResult = jedis.strAlgoLCSStrings("ohmytext", "mynewtext",
+        StrAlgoLCSParams.StrAlgoLCSParams().len());
     assertEquals(stringMatchResult.getLen(), 6);
   }
 
   @Test
   public void strAlgoLcs() {
-    LCSMatchResult stringMatchResult = jedis.strAlgoLCS(
-        StrAlgoLCSParams.StrAlgoLCSParams().strings("ohmytext", "mynewtext"));
+    LCSMatchResult stringMatchResult = jedis.strAlgoLCSStrings("ohmytext", "mynewtext",
+        StrAlgoLCSParams.StrAlgoLCSParams());
     assertEquals(stringMatchResult.getMatchString(), "mytext");
   }
 
   @Test
   public void strAlgoLcsWithIdx() {
-    LCSMatchResult stringMatchResult = jedis.strAlgoLCS(
-        StrAlgoLCSParams.StrAlgoLCSParams().strings("ohmytext", "mynewtext").idx().withMatchLen());
+    LCSMatchResult stringMatchResult = jedis.strAlgoLCSStrings("ohmytext", "mynewtext",
+        StrAlgoLCSParams.StrAlgoLCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
     assertEquals(2, stringMatchResult.getMatches().size());
 
@@ -279,8 +279,8 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
   public void strAlgoLcsWithKey() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
-    LCSMatchResult stringMatchResult = jedis.strAlgoLCSKeys(
-        StrAlgoLCSParams.StrAlgoLCSParams(), "key1", "key2");
+    LCSMatchResult stringMatchResult = jedis.strAlgoLCSKeys("key1", "key2",
+        StrAlgoLCSParams.StrAlgoLCSParams());
     assertEquals(stringMatchResult.getMatchString(), "mytext");
   }
 
@@ -288,8 +288,8 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
   public void strAlgoLcsWithKeyAndIdx() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
-    LCSMatchResult stringMatchResult = jedis.strAlgoLCSKeys(
-        StrAlgoLCSParams.StrAlgoLCSParams().idx().withMatchLen(), "key1", "key2");
+    LCSMatchResult stringMatchResult = jedis.strAlgoLCSKeys( "key1", "key2",
+        StrAlgoLCSParams.StrAlgoLCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
     assertEquals(2, stringMatchResult.getMatches().size());
 

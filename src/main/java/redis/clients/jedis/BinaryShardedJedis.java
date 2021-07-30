@@ -1327,8 +1327,8 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public LCSMatchResult strAlgoLCS(StrAlgoLCSParams params) {
+  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     Jedis j = getShard("");
-    return j.strAlgoLCS(params);
+    return j.strAlgoLCSStrings(strA, strB, params);
   }
 }

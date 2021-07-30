@@ -2444,8 +2444,16 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
-  public Response<LCSMatchResult> strAlgoLCS(StrAlgoLCSParams params) {
-    getClient("").strAlgoLCS(params);
+  public Response<LCSMatchResult> strAlgoLCSStrings(final String strA, final String strB,
+      final StrAlgoLCSParams params) {
+    getClient("").strAlgoLCSStrings(strA, strB, params);
+    return getResponse(BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+  }
+
+  @Override
+  public Response<LCSMatchResult> strAlgoLCSStrings(final byte[] strA, final byte[] strB,
+      final StrAlgoLCSParams params) {
+    getClient("").strAlgoLCSStrings(strA, strB, params);
     return getResponse(BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 }

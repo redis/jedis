@@ -259,5 +259,5 @@ public interface MultiKeyCommands {
   long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
-  LCSMatchResult strAlgoLCSKeys(StrAlgoLCSParams params, String keyA, String keyB);
+  LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params);
 }

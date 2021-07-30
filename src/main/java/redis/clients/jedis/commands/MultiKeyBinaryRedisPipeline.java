@@ -142,5 +142,5 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams);
 
-  Response<LCSMatchResult> strAlgoLCSKeys(StrAlgoLCSParams params, byte[] keyA, byte[] keyB);
+  Response<LCSMatchResult> strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params);
 }

@@ -150,5 +150,5 @@ public interface MultiKeyCommandsPipeline {
   Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
-  Response<LCSMatchResult> strAlgoLCSKeys(StrAlgoLCSParams params, String keyA, String keyB);
+  Response<LCSMatchResult> strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params);
 }

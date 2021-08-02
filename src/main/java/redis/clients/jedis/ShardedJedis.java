@@ -7,24 +7,12 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import redis.clients.jedis.args.RangeEndpoint;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.XAddParams;
-import redis.clients.jedis.params.XAutoClaimParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.XPendingParams;
-import redis.clients.jedis.params.XTrimParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.util.Hashing;
-import redis.clients.jedis.args.RangeEndpoint;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
 

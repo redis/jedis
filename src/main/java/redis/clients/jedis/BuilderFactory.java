@@ -9,8 +9,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import redis.clients.jedis.args.StreamEntryIdFactory;
 
+import redis.clients.jedis.args.StreamEntryIdFactory;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;

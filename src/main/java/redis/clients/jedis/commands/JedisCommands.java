@@ -20,21 +20,9 @@ import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.StreamPendingSummary;
 import redis.clients.jedis.Tuple;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.XAddParams;
-import redis.clients.jedis.params.XAutoClaimParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.XPendingParams;
-import redis.clients.jedis.params.XTrimParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
-import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.args.RangeEndpoint;
+import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.KeyedListElement;
 
 /**
  * Common interface for sharded and non-sharded Jedis

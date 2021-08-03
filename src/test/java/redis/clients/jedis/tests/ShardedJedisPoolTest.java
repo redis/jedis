@@ -8,7 +8,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,6 +22,7 @@ import redis.clients.jedis.ShardedJedis;
 import redis.clients.jedis.ShardedJedisPipeline;
 import redis.clients.jedis.ShardedJedisPool;
 import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
+import redis.clients.jedis.util.Hashing;
 
 public class ShardedJedisPoolTest {
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
@@ -260,6 +263,30 @@ public class ShardedJedisPoolTest {
     } finally {
       jedis2.close();
     }
+  }
+
+  @Test
+  public void checkOverrideFactoryValidateMethod() {
+    AtomicInteger counter = new AtomicInteger(0);
+
+    ShardedJedisPool.ShardedJedisFactory overriddenFactory = new ShardedJedisPool.ShardedJedisFactory(
+        shards, Hashing.MURMUR_HASH, null) {
+      @Override public boolean validateObject(PooledObject<ShardedJedis> pooledShardedJedis) {
+        counter.incrementAndGet();
+        return super.validateObject(pooledShardedJedis);
+      }
+    };
+
+    GenericObjectPoolConfig<ShardedJedis> poolConfig = new GenericObjectPoolConfig<>();
+    poolConfig.setTestOnReturn(true);
+    ShardedJedisPool pool = new ShardedJedisPool(poolConfig, overriddenFactory);
+    try (ShardedJedis jedis = pool.getResource();) {
+      jedis.set("foo", "bar");
+      assertEquals(0, counter.get());
+    }
+    assertEquals(1, counter.get());
+
+    pool.destroy();
   }
 
 }

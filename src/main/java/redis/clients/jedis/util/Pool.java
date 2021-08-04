@@ -46,7 +46,7 @@ public class Pool<T> extends GenericObjectPool<T> implements Closeable {
     }
     try {
       super.returnObject(resource);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       throw new JedisException("Could not return the resource to the pool", e);
     }
   }
@@ -65,7 +65,7 @@ public class Pool<T> extends GenericObjectPool<T> implements Closeable {
   public void destroy() {
     try {
       super.close();
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       throw new JedisException("Could not destroy the pool", e);
     }
   }

@@ -34,7 +34,12 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
 
   public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
       List<JedisShardInfo> shards, Hashing algo, Pattern keyTagPattern) {
-    super(poolConfig, new ShardedJedisFactory(shards, algo, keyTagPattern));
+    this(poolConfig, new ShardedJedisFactory(shards, algo, keyTagPattern));
+  }
+
+  public ShardedJedisPool(final GenericObjectPoolConfig<ShardedJedis> poolConfig,
+      PooledObjectFactory<ShardedJedis> shardedJedisPooledObjectFactory) {
+    super(poolConfig, shardedJedisPooledObjectFactory);
   }
 
   @Override
@@ -55,7 +60,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
   /**
    * PoolableObjectFactory custom impl.
    */
-  private static class ShardedJedisFactory implements PooledObjectFactory<ShardedJedis> {
+  public static class ShardedJedisFactory implements PooledObjectFactory<ShardedJedis> {
 
     private final List<JedisShardInfo> shards;
     private final Hashing algo;

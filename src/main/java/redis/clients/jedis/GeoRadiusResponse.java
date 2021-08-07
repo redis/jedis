@@ -6,6 +6,7 @@ public class GeoRadiusResponse {
   private byte[] member;
   private double distance;
   private GeoCoordinate coordinate;
+  private long rawScore;
 
   public GeoRadiusResponse(byte[] member) {
     this.member = member;
@@ -33,5 +34,13 @@ public class GeoRadiusResponse {
 
   public GeoCoordinate getCoordinate() {
     return coordinate;
+  }
+
+  public long getRawScore() {
+    return rawScore;
+  }
+
+  public void setRawScore(long rawScore) {
+    this.rawScore = rawScore;
   }
 }

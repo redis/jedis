@@ -6,12 +6,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,32 +23,21 @@ import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
-import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.exceptions.AbortedTransactionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class PipeliningTest {
-  private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
-
-  private Jedis jedis;
-
-  @Before
-  public void setUp() throws Exception {
-    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 2000);
-    jedis.connect();
-    jedis.auth("foobared");
-    jedis.flushAll();
-  }
+public class PipeliningTest extends JedisCommandTestBase {
 
   @Test
-  public void pipeline() throws UnsupportedEncodingException {
+  public void pipeline() {
     Pipeline p = jedis.pipelined();
     p.set("foo", "bar");
     p.get("foo");
@@ -57,7 +46,6 @@ public class PipeliningTest {
     assertEquals(2, results.size());
     assertEquals("OK", results.get(0));
     assertEquals("bar", results.get(1));
-
   }
 
   @Test
@@ -191,7 +179,7 @@ public class PipeliningTest {
     assertNull(score.get());
   }
 
-  @Test(expected = JedisDataException.class)
+  @Test(expected = IllegalStateException.class)
   public void pipelineResponseWithinPipeline() {
     jedis.set("string", "foo");
 
@@ -308,28 +296,79 @@ public class PipeliningTest {
     assertEquals("world", r3.get());
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineExecShoudThrowJedisDataExceptionWhenNotInMulti() {
+  @Test
+  public void multiWatch() {
+    final String key = "foo";
+    assertEquals(5L, jedis.incrBy(key, 5L));
+
+    List<Object> expect = new ArrayList<>();
+    List<Object> expMulti = null; // MULTI will fail
+
+    Pipeline pipe = jedis.pipelined();
+    pipe.watch(key);        expect.add("OK");
+    pipe.incrBy(key, 3L);   expect.add(8L);
+    pipe.multi();           expect.add("OK");
+    pipe.incrBy(key, 6L);   expect.add("QUEUED");
+    assertEquals(expect, pipe.syncAndReturnAll());      expect.clear();
+
+    try (Jedis tweak = createJedis()) {
+      assertEquals(10L, tweak.incrBy(key, 2L));
+    }
+
+    pipe.incrBy(key, 4L);   expect.add("QUEUED");
+    pipe.exec();            expect.add(expMulti); // failed MULTI
+    pipe.incrBy(key, 7L);   expect.add(17L);
+    assertEquals(expect, pipe.syncAndReturnAll());
+  }
+
+  @Test
+  public void multiUnwatch() {
+    final String key = "foo";
+    assertEquals(5L, jedis.incrBy(key, 5L));
+
+    List<Object> expect = new ArrayList<>();
+    List<Object> expMulti = new ArrayList<>();
+
+    Pipeline pipe = jedis.pipelined();
+    pipe.watch(key);        expect.add("OK");
+    pipe.incrBy(key, 3L);   expect.add(8L);
+    pipe.unwatch();         expect.add("OK");
+    pipe.multi();           expect.add("OK");
+    pipe.incrBy(key, 6L);   expect.add("QUEUED");   expMulti.add(16L);
+    assertEquals(expect, pipe.syncAndReturnAll());  expect.clear();
+
+    try (Jedis tweak = createJedis()) {
+      assertEquals(10L, tweak.incrBy(key, 2L));
+    }
+
+    pipe.incrBy(key, 4L);   expect.add("QUEUED");   expMulti.add(20L);
+    pipe.exec();            expect.add(expMulti); // successful MULTI
+    pipe.incrBy(key, 7L);   expect.add(27L);
+    assertEquals(expect, pipe.syncAndReturnAll());
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void pipelineExecWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.exec();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineDiscardShoudThrowJedisDataExceptionWhenNotInMulti() {
+  @Test(expected = IllegalStateException.class)
+  public void pipelineDiscardWhenNotInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.discard();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void pipelineMultiShoudThrowJedisDataExceptionWhenAlreadyInMulti() {
+  @Test(expected = IllegalStateException.class)
+  public void pipelineMultiWhenAlreadyInMulti() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.multi();
     pipeline.set("foo", "3");
     pipeline.multi();
   }
 
-  @Test(expected = JedisDataException.class)
-  public void testJedisThowExceptionWhenInPipeline() {
+  @Test(expected = IllegalStateException.class)
+  public void testJedisThrowExceptionWhenInPipeline() {
     Pipeline pipeline = jedis.pipelined();
     pipeline.set("foo", "3");
     jedis.get("somekey");
@@ -364,6 +403,19 @@ public class PipeliningTest {
     pipeline.sync();
     discard.get();
     get.get();
+  }
+
+  @Test
+  public void waitReplicas() {
+    Pipeline p = jedis.pipelined();
+    p.set("wait", "replicas");
+    p.waitReplicas(1, 10);
+    p.sync();
+
+    try (Jedis j = new Jedis(HostAndPortUtil.getRedisServers().get(4))) {
+      j.auth("foobared");
+      assertEquals("replicas", j.get("wait"));
+    }
   }
 
   @Test
@@ -614,6 +666,7 @@ public class PipeliningTest {
     // it shouldn't meet any exception
     retFuture1.get();
     retFuture2.get();
+    jedis2.close();
   }
 
   @Test
@@ -636,7 +689,7 @@ public class PipeliningTest {
     try {
       pipeline.exec();
       fail("close should discard transaction");
-    } catch (JedisDataException e) {
+    } catch (IllegalStateException e) {
       assertTrue(e.getMessage().contains("EXEC without MULTI"));
       // pass
     }
@@ -644,6 +697,48 @@ public class PipeliningTest {
     // it shouldn't meet any exception
     retFuture1.get();
     retFuture2.get();
+    jedis2.close();
+  }
+
+  @Test
+  public void execAbort() {
+    final String luaTimeLimitKey = "lua-time-limit";
+    final String luaTimeLimit = jedis.configGet(luaTimeLimitKey).get(1);
+    jedis.configSet(luaTimeLimitKey, "10");
+
+    Thread thread = new Thread(() -> {
+      try (Jedis blocker = createJedis()) {
+        blocker.eval("while true do end");
+      } catch (Exception ex) {
+        // swallow any exception
+      }
+    });
+
+    Pipeline pipe = jedis.pipelined();
+    pipe.incr("foo");
+    pipe.multi();
+    pipe.incr("foo");
+    pipe.sync();
+
+    thread.start();
+    try {
+      Thread.sleep(12); // allow Redis to be busy with the script and 'lua-time-limit' to exceed
+    } catch (InterruptedException ex) { }
+
+    pipe.incr("foo");
+    Response<List<Object>> txResp = pipe.exec();
+    pipe.sync();
+    try {
+      txResp.get();
+    } catch (Exception ex) {
+      assertSame(AbortedTransactionException.class, ex.getClass());
+    } finally {
+      try {
+        jedis.scriptKill();
+      } finally {
+        jedis.configSet(luaTimeLimitKey, luaTimeLimit);
+      }
+    }
   }
 
   private void verifyHasBothValues(String firstKey, String secondKey, String value1, String value2) {

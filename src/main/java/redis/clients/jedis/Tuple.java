@@ -37,9 +37,10 @@ public class Tuple implements Comparable<Tuple> {
 
   @Override
   public boolean equals(Object obj) {
-    if (this == obj) return true;
     if (obj == null) return false;
-    if (getClass() != obj.getClass()) return false;
+    if (obj == this) return true;
+    if (!(obj instanceof Tuple)) return false;
+
     Tuple other = (Tuple) obj;
     if (!Arrays.equals(element, other.element)) return false;
     return Objects.equals(score, other.score);
@@ -52,7 +53,7 @@ public class Tuple implements Comparable<Tuple> {
 
   public static int compare(Tuple t1, Tuple t2) {
     int compScore = Double.compare(t1.score, t2.score);
-    if(compScore != 0) return compScore;
+    if (compScore != 0) return compScore;
 
     return ByteArrayComparator.compare(t1.element, t2.element);
   }

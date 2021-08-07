@@ -2,11 +2,17 @@ package redis.clients.jedis.tests.commands;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.params.ClientKillParams.Type;
 import static redis.clients.jedis.params.ClientKillParams.SkipMe;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +22,8 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.ClientType;
+import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 
@@ -37,7 +45,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
 
   @After
   @Override
-  public void tearDown() {
+  public void tearDown() throws Exception {
     client.close();
     super.tearDown();
   }
@@ -57,14 +65,61 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   }
 
   @Test
+  public void clientId() {
+    long clientId = client.clientId();
+
+    String info = findInClientList();
+    Matcher matcher = Pattern.compile("\\bid=(\\d+)\\b").matcher(info);
+    matcher.find();
+
+    assertEquals(clientId, Long.parseLong(matcher.group(1)));
+  }
+
+  @Test
+  public void clientIdmultipleConnection() {
+    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+      client2.auth("foobared");
+      client2.clientSetname("fancy_jedis_another_name");
+
+      // client-id is monotonically increasing
+      assertTrue(client.clientId() < client2.clientId());
+    }
+  }
+
+  @Test
+  public void clientIdReconnect() {
+    long clientIdInitial = client.clientId();
+    client.disconnect();
+    client.connect();
+    long clientIdAfterReconnect = client.clientId();
+
+    assertTrue(clientIdInitial < clientIdAfterReconnect);
+  }
+
+  @Test
+  public void clientUnblock() throws InterruptedException, TimeoutException {
+    long clientId = client.clientId();
+    assertEquals(0, jedis.clientUnblock(clientId, UnblockType.ERROR));
+    Future<?> future = Executors.newSingleThreadExecutor().submit(() -> client.brpop(100000, "foo"));
+
+    try {
+      // to make true command already executed
+      TimeUnit.MILLISECONDS.sleep(500);
+      assertEquals(1, jedis.clientUnblock(clientId, UnblockType.ERROR));
+      future.get(1, TimeUnit.SECONDS);
+    } catch (ExecutionException e) {
+      assertEquals("redis.clients.jedis.exceptions.JedisDataException: UNBLOCKED client unblocked via CLIENT UNBLOCK", e.getMessage());
+    }
+  }
+
+  @Test
   public void killIdString() {
     String info = findInClientList();
     Matcher matcher = Pattern.compile("\\bid=(\\d+)\\b").matcher(info);
     matcher.find();
     String id = matcher.group(1);
 
-    long clients = jedis.clientKill(new ClientKillParams().id(id));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().id(id)));
 
     assertDisconnected(client);
   }
@@ -76,8 +131,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     matcher.find();
     byte[] id = matcher.group(1).getBytes();
 
-    long clients = jedis.clientKill(new ClientKillParams().id(id));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().id(id)));
 
     assertDisconnected(client);
   }
@@ -100,8 +154,15 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   public void killSkipmeYesNo() {
     jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
-    long clients = jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.NO));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.NO)));
+    assertDisconnected(jedis);
+  }
+
+  @Test
+  public void killSkipmeYesNo2() {
+    jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.YES));
+    assertDisconnected(client);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)));
     assertDisconnected(jedis);
   }
 
@@ -112,8 +173,7 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     matcher.find();
     String addr = matcher.group(1);
 
-    long clients = jedis.clientKill(new ClientKillParams().addr(addr));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().addr(addr)));
 
     assertDisconnected(client);
   }
@@ -125,8 +185,20 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     matcher.find();
     String addr = matcher.group(1);
 
-    long clients = jedis.clientKill(new ClientKillParams().addr(addr));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().addr(addr)));
+
+    assertDisconnected(client);
+  }
+
+  @Test
+  public void killLAddr() {
+    String info = findInClientList();
+    Matcher matcher = Pattern.compile("\\bladdr=(\\S+)\\b").matcher(info);
+    matcher.find();
+    String laddr = matcher.group(1);
+
+    long clients = jedis.clientKill(new ClientKillParams().laddr(laddr));
+    assertTrue(clients >= 1);
 
     assertDisconnected(client);
   }
@@ -139,19 +211,56 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     String addr = matcher.group(1);
     String[] hp = HostAndPort.extractParts(addr);
 
-    long clients = jedis.clientKill(new ClientKillParams().addr(hp[0], Integer.parseInt(hp[1])));
-    assertEquals(1, clients);
+    assertEquals(1, jedis.clientKill(new ClientKillParams().addr(hp[0], Integer.parseInt(hp[1]))));
 
     assertDisconnected(client);
   }
 
-  private void assertDisconnected(Jedis j) {    
+  @Test
+  public void killUser() {
+    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    client.aclSetUser("test_kill", "on", "+acl", ">password1");
+    try {
+      client2.auth("test_kill", "password1");
+      assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
+      assertDisconnected(client2);
+    } finally {
+      jedis.aclDelUser("test_kill");
+    }
+  }
+
+  @Test
+  public void clientInfo() {
+    String info = client.clientInfo();
+    assertNotNull(info);
+    assertEquals(1, info.split("\n").length);
+    assertTrue(info.contains(clientName));
+  }
+
+  @Test
+  public void clientListWithClientId() {
+    long id = client.clientId();
+    String listInfo = jedis.clientList(id);
+    assertNotNull(listInfo);
+    assertTrue(listInfo.contains(clientName));
+  }
+
+  @Test
+  public void listWithType() {
+    assertTrue(client.clientList(ClientType.NORMAL).split("\\n").length > 1);
+    assertEquals(0, client.clientList(ClientType.MASTER).length());
+    assertEquals(1, client.clientList(ClientType.SLAVE).split("\\n").length);
+    assertEquals(1, client.clientList(ClientType.REPLICA).split("\\n").length);
+    assertEquals(1, client.clientList(ClientType.PUBSUB).split("\\n").length);
+  }
+
+  private void assertDisconnected(Jedis j) {
     try {
       j.ping();
       fail("Jedis connection should be disconnected");
-    } catch(JedisConnectionException jce) {
+    } catch (JedisConnectionException jce) {
       // should be here
-    } 
+    }
   }
 
   private String findInClientList() {

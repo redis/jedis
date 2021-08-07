@@ -55,7 +55,8 @@ public class JedisClusterCRC16Test {
 
   @Test
   public void testBinaryHashtagGetSlot() {
-    assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()), JedisClusterCRC16.getSlot("{bar".getBytes()));
+    assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()),
+      JedisClusterCRC16.getSlot("{bar".getBytes()));
     assertEquals(JedisClusterCRC16.getSlot("{user1000}.following".getBytes()),
       JedisClusterCRC16.getSlot("{user1000}.followers".getBytes()));
     assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}".getBytes()),

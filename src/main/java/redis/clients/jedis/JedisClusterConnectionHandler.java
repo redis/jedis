@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,50 +14,62 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
   protected final JedisClusterInfoCache cache;
 
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-                                       final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password) {
+      GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout,
+      String password) {
     this(nodes, poolConfig, connectionTimeout, soTimeout, password, null);
   }
 
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
-          final GenericObjectPoolConfig poolConfig, int connectionTimeout, int soTimeout, String password, String clientName) {
-    this.cache = new JedisClusterInfoCache(poolConfig, connectionTimeout, soTimeout, password, clientName);
-    initializeSlotsCache(nodes, poolConfig, connectionTimeout, soTimeout, password, clientName);
-}
+      GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout,
+      String password, String clientName) {
+    this(nodes, poolConfig, connectionTimeout, soTimeout, null, password, clientName);
+  }
 
-  abstract Jedis getConnection();
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
+      final GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout,
+      String user, String password, String clientName) {
+    this(nodes, poolConfig, connectionTimeout, soTimeout, 0, user, password, clientName);
+  }
 
-  abstract Jedis getConnectionFromSlot(int slot);
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
+      final GenericObjectPoolConfig<Jedis> poolConfig, int connectionTimeout, int soTimeout,
+      int infiniteSoTimeout, String user, String password, String clientName) {
+    this(nodes, poolConfig,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+            .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
+            .user(user).password(password).clientName(clientName).build());
+  }
+
+  public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
+      final GenericObjectPoolConfig<Jedis> poolConfig, final JedisClientConfig clientConfig) {
+    this.cache = new JedisClusterInfoCache(poolConfig, clientConfig);
+    initializeSlotsCache(nodes, clientConfig);
+  }
+
+  protected abstract Jedis getConnection();
+
+  protected abstract Jedis getConnectionFromSlot(int slot);
 
   public Jedis getConnectionFromNode(HostAndPort node) {
     return cache.setupNodeIfNotExist(node).getResource();
   }
-  
+
   public Map<String, JedisPool> getNodes() {
     return cache.getNodes();
   }
 
-  private void initializeSlotsCache(Set<HostAndPort> startNodes, GenericObjectPoolConfig poolConfig,
-                                    int connectionTimeout, int soTimeout, String password, String clientName) {
-    for (HostAndPort hostAndPort : startNodes) {
-      Jedis jedis = null;
-      try {
-        jedis = new Jedis(hostAndPort.getHost(), hostAndPort.getPort(), connectionTimeout, soTimeout);
-        if (password != null) {
-          jedis.auth(password);
-        }
-        if (clientName != null) {
-          jedis.clientSetname(clientName);
-        }
+  private void initializeSlotsCache(Set<HostAndPort> startNodes, JedisClientConfig clientConfig) {
+    ArrayList<HostAndPort> startNodeList = new ArrayList<>(startNodes);
+    Collections.shuffle(startNodeList);
+
+    for (HostAndPort hostAndPort : startNodeList) {
+      try (Jedis jedis = new Jedis(hostAndPort, clientConfig)) {
         cache.discoverClusterNodesAndSlots(jedis);
         if (cache.getSlotSize() == BinaryJedisCluster.HASHSLOTS) {
-          break;
+          return;
         }
       } catch (JedisConnectionException e) {
         // try next nodes
-      } finally {
-        if (jedis != null) {
-          jedis.close();
-        }
       }
     }
   }

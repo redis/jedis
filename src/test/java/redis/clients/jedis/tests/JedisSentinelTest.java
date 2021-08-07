@@ -96,6 +96,7 @@ public class JedisSentinelTest {
       assertNotEquals(newMaster, currentMaster);
     } finally {
       j.close();
+      j2.close();
     }
 
   }

@@ -19,7 +19,8 @@ public class GeoCoordinate {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
+    if (o == null) return false;
+    if (o == this) return true;
     if (!(o instanceof GeoCoordinate)) return false;
 
     GeoCoordinate that = (GeoCoordinate) o;

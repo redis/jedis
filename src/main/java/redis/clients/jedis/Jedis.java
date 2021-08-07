@@ -3021,6 +3021,34 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  /**
+   * Calculate the longest common subsequence of keyA and keyB.
+   * @param keyA keyA
+   * @param keyB keyB
+   * @param params the params
+   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
+   */
+  @Override
+  public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
+    checkIsInMultiOrPipeline();
+    client.strAlgoLCSKeys(keyA, keyB, params);
+    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
+  }
+
+  /**
+   * Calculate the longest common subsequence of strA and strB.
+   * @param strA strA
+   * @param strB strB
+   * @param params the params
+   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
+   */
+  @Override
+  public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
+    checkIsInMultiOrPipeline();
+    client.strAlgoLCSStrings(strA, strB, params);
+    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
+  }
+
   @Override
   public long lpushx(final String key, final String... string) {
     checkIsInMultiOrPipeline();

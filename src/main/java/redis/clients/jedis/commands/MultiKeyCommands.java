@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.JedisPubSub;
@@ -257,4 +258,6 @@ public interface MultiKeyCommands {
 
   long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+
+  LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params);
 }

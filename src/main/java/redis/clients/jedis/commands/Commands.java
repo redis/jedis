@@ -17,6 +17,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -578,4 +579,8 @@ public interface Commands {
   void xinfoGroup (String key);
 
   void xinfoConsumers (String key, String group);
+
+  void strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params);
+
+  void strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);
 }

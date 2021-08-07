@@ -12,6 +12,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -20,6 +21,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.LCSMatchResult;
 
 public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
 
@@ -2439,5 +2441,19 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
       final byte[]... args) {
     getClient(sampleKey).sendCommand(cmd, args);
     return getResponse(BuilderFactory.RAW_OBJECT);
+  }
+
+  @Override
+  public Response<LCSMatchResult> strAlgoLCSStrings(final String strA, final String strB,
+      final StrAlgoLCSParams params) {
+    getClient("").strAlgoLCSStrings(strA, strB, params);
+    return getResponse(BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+  }
+
+  @Override
+  public Response<LCSMatchResult> strAlgoLCSStrings(final byte[] strA, final byte[] strB,
+      final StrAlgoLCSParams params) {
+    getClient("").strAlgoLCSStrings(strA, strB, params);
+    return getResponse(BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 }

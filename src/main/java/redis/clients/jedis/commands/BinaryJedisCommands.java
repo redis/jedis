@@ -6,6 +6,7 @@ import java.util.Set;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.LCSMatchResult;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis
@@ -489,4 +490,6 @@ public interface BinaryJedisCommands {
   Long memoryUsage(byte[] key);
 
   Long memoryUsage(byte[] key, int samples);
+
+  LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params);
 }

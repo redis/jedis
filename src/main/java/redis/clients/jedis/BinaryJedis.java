@@ -33,6 +33,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.JedisURIHelper;
 
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
@@ -3693,6 +3694,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.strlen(key);
     return client.getIntegerReply();
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
+    checkIsInMultiOrPipeline();
+    client.strAlgoLCSKeys(keyA, keyB, params);
+    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
+    checkIsInMultiOrPipeline();
+    client.strAlgoLCSStrings(strA, strB, params);
+    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
   }
 
   @Override

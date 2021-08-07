@@ -4,6 +4,7 @@ import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.SortingParams;
+import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.args.*;
@@ -140,4 +141,6 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams);
+
+  Response<LCSMatchResult> strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params);
 }

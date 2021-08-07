@@ -15,6 +15,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -23,6 +24,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Sharded;
 
@@ -1322,5 +1324,11 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
 
   public Object sendCommand(ProtocolCommand cmd) {
     return sendCommand(cmd, dummyArray);
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
+    Jedis j = getShard("");
+    return j.strAlgoLCSStrings(strA, strB, params);
   }
 }

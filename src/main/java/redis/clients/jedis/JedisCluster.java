@@ -975,6 +975,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
+    return new JedisClusterCommand<LCSMatchResult>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public LCSMatchResult execute(Jedis connection) {
+        return connection.strAlgoLCSKeys(keyA, keyB, params);
+      }
+    }.run(2, keyA, keyB);
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
+    return new JedisClusterCommand<LCSMatchResult>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public LCSMatchResult execute(Jedis connection) {
+        return connection.strAlgoLCSStrings(strA, strB, params);
+      }
+    }.runWithAnyNode();
+  }
+
+  @Override
   public long zadd(final String key, final double score, final String member) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override

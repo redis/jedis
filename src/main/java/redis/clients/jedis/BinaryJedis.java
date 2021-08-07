@@ -30,7 +30,6 @@ import redis.clients.jedis.commands.MultiKeyBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.LCSMatchResult;
@@ -3442,16 +3441,19 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * is switched off without the lost of any data. This is not guaranteed if the client uses simply
    * {@link #save() SAVE} and then {@link #quit() QUIT} because other clients may alter the DB data
    * between the two commands.
-   * @return Status code reply on error. On success nothing is returned since the server quits and
-   *         the connection is closed.
+   * @return {@code null}
+   * @throws JedisException with the status code reply on error. On success nothing is thrown since
+   *         the server quits and the connection is closed.
    */
   @Override
-  public String shutdown() {
+  public String shutdown() throws JedisException {
     client.shutdown();
     String status;
     try {
       status = client.getStatusCodeReply();
-    } catch (JedisException ex) {
+      throw new JedisException(status);
+    } catch (JedisConnectionException jce) {
+      // expected
       status = null;
     }
     return status;
@@ -3461,8 +3463,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public void shutdown(final SaveMode saveMode) throws JedisException {
     client.shutdown(saveMode);
     try {
-      throw new JedisDataException(client.getStatusCodeReply());
-    } catch (JedisConnectionException ex) {
+      throw new JedisException(client.getStatusCodeReply());
+    } catch (JedisConnectionException jce) {
       // expected
     }
   }

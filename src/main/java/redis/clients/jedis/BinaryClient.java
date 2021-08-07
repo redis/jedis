@@ -1100,6 +1100,14 @@ public class BinaryClient extends Connection {
     sendCommand(STRLEN, key);
   }
 
+  public void strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
+    sendCommand(STRALGO, params.getByteParams(Keyword.KEYS, keyA, keyB));
+  }
+
+  public void strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
+    sendCommand(STRALGO, params.getByteParams(Keyword.STRINGS, strA, strB));
+  }
+
   /**
    * @deprecated This will be removed in next major release.
    */

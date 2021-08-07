@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.LCSMatchResult;
 
 import java.util.List;
 import java.util.Map;
@@ -450,4 +451,6 @@ public interface BinaryRedisPipeline {
   Response<String> psetex(byte[] key, long milliseconds, byte[] value);
 
   Response<Double> hincrByFloat(byte[] key, byte[] field, double increment);
+
+  Response<LCSMatchResult> strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params);
 }

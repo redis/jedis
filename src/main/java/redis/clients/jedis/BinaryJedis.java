@@ -21,8 +21,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
 import redis.clients.jedis.commands.BasicCommands;
@@ -3708,6 +3706,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     checkIsInMultiOrPipeline();
     client.strlen(key);
     return client.getIntegerReply();
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
+    checkIsInMultiOrPipeline();
+    client.strAlgoLCSKeys(keyA, keyB, params);
+    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
+    checkIsInMultiOrPipeline();
+    client.strAlgoLCSStrings(strA, strB, params);
+    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
   }
 
   /**

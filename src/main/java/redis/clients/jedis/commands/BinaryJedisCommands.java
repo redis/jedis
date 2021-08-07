@@ -6,6 +6,7 @@ import java.util.Set;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.LCSMatchResult;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis
@@ -482,4 +483,6 @@ public interface BinaryJedisCommands {
   List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group);
 
   List<Object> xinfoConsumersBinary(byte[] key, byte[] group);
+
+  LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params);
 }

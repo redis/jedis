@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.BinaryJedisClusterCommands;
 import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
@@ -987,6 +985,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.strlen(key);
       }
     }.runBinary(key);
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
+    return new JedisClusterCommand<LCSMatchResult>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public LCSMatchResult execute(Jedis connection) {
+        return connection.strAlgoLCSKeys(keyA, keyB, params);
+      }
+    }.runBinary(2, keyA, keyB);
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
+    return new JedisClusterCommand<LCSMatchResult>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public LCSMatchResult execute(Jedis connection) {
+        return connection.strAlgoLCSStrings(strA, strB, params);
+      }
+    }.runWithAnyNode();
   }
 
   @Override

@@ -20,6 +20,7 @@ import redis.clients.jedis.resps.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.params.StrAlgoLCSParams;
 
 public interface MultiKeyJedisClusterCommands {
   Boolean copy(String srcKey, String dstKey, boolean replace);
@@ -163,4 +164,7 @@ public interface MultiKeyJedisClusterCommands {
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
+  LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params);
+
+  LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);
 }

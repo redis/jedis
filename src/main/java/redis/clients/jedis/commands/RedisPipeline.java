@@ -17,6 +17,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -25,6 +26,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.LCSMatchResult;
 
 import java.util.List;
 import java.util.Map;
@@ -466,4 +468,6 @@ public interface RedisPipeline {
   Response<String> psetex(String key, long milliseconds, String value);
 
   Response<Double> hincrByFloat(String key, String field, double increment);
+
+  Response<LCSMatchResult> strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);
 }

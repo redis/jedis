@@ -146,7 +146,7 @@ Thanks for helping!
 
 ## Sponsorship
 
-[![Redis Logo](redis-logo-full-color-rgb.png)](redis.com)
+[![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.com/)
 
 ---
 

@@ -2,8 +2,8 @@ package redis.clients.jedis;
 
 import java.io.Serializable;
 import java.net.InetAddress;
-
 import java.net.UnknownHostException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

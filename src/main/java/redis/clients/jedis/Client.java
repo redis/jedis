@@ -65,6 +65,10 @@ public class Client extends BinaryClient implements Commands {
     super(jedisSocketFactory);
   }
 
+  public Client(final JedisSocketFactory jedisSocketFactory, JedisProtocol protocol) {
+    super(jedisSocketFactory, protocol);
+  }
+
   @Override
   public void copy(String srcKey, String dstKey, int db, boolean replace) {
     copy(SafeEncoder.encode(srcKey), SafeEncoder.encode(dstKey), db, replace);

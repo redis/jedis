@@ -288,7 +288,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   public BinaryJedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    client = new Client(jedisSocketFactory);
+    client = new Client(jedisSocketFactory, clientConfig.getProtocol());
     initializeFromClientConfig(clientConfig);
   }
 

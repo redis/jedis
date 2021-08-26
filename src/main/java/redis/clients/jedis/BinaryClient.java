@@ -94,6 +94,10 @@ public class BinaryClient extends Connection {
     super(jedisSocketFactory);
   }
 
+  public BinaryClient(final JedisSocketFactory jedisSocketFactory, final JedisProtocol protocol) {
+    super(jedisSocketFactory, protocol);
+  }
+
   public boolean isInMulti() {
     return isInMulti;
   }

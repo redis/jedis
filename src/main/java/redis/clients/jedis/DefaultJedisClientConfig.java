@@ -1,9 +1,9 @@
 package redis.clients.jedis;
 
-import java.util.Objects;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
+import java.util.Objects;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
@@ -22,11 +22,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final HostnameVerifier hostnameVerifier;
 
   private final HostAndPortMapper hostAndPortMapper;
+  private final JedisProtocol protocol;
 
   private DefaultJedisClientConfig(int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
+      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper, JedisProtocol protocol) {
     this.connectionTimeoutMillis = connectionTimeoutMillis;
     this.socketTimeoutMillis = soTimeoutMillis;
     this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
@@ -39,6 +40,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
     this.hostAndPortMapper = hostAndPortMapper;
+    this.protocol = protocol;
   }
 
   @Override
@@ -108,6 +110,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return hostAndPortMapper;
   }
 
+  @Override
+  public JedisProtocol getProtocol() {
+    return protocol;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -129,6 +136,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private HostnameVerifier hostnameVerifier = null;
 
     private HostAndPortMapper hostAndPortMapper = null;
+    private JedisProtocol protocol = JedisProtocol.DEFAULT;
 
     private Builder() {
     }
@@ -136,7 +144,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     public DefaultJedisClientConfig build() {
       return new DefaultJedisClientConfig(connectionTimeoutMillis, socketTimeoutMillis,
           blockingSocketTimeoutMillis, user, password, database, clientName, ssl, sslSocketFactory,
-          sslParameters, hostnameVerifier, hostAndPortMapper);
+          sslParameters, hostnameVerifier, hostAndPortMapper, protocol);
     }
 
     public Builder connectionTimeoutMillis(int connectionTimeoutMillis) {
@@ -198,6 +206,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.hostAndPortMapper = hostAndPortMapper;
       return this;
     }
+
+    public Builder protocol(JedisProtocol protocol) {
+      this.protocol = protocol;
+      return this;
+    }
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
@@ -205,6 +218,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         copy.getSocketTimeoutMillis(), copy.getBlockingSocketTimeoutMillis(), copy.getUser(),
         copy.getPassword(), copy.getDatabase(), copy.getClientName(), copy.isSsl(),
         copy.getSslSocketFactory(), copy.getSslParameters(), copy.getHostnameVerifier(),
-        copy.getHostAndPortMapper());
+        copy.getHostAndPortMapper(), copy.getProtocol());
   }
 }

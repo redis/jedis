@@ -73,4 +73,7 @@ public interface JedisClientConfig {
     return null;
   }
 
+  default JedisProtocol getProtocol() {
+    return JedisProtocol.DEFAULT;
+  }
 }

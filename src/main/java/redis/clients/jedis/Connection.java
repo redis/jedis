@@ -31,6 +31,7 @@ public class Connection implements Closeable {
   private int soTimeout = Protocol.DEFAULT_TIMEOUT;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
+  private JedisProtocol protocol;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -77,8 +78,13 @@ public class Connection implements Closeable {
   }
 
   public Connection(final JedisSocketFactory jedisSocketFactory) {
+    this(jedisSocketFactory, JedisProtocol.DEFAULT);
+  }
+
+  public Connection(final JedisSocketFactory jedisSocketFactory, JedisProtocol protocol) {
     this.socketFactory = jedisSocketFactory;
     this.soTimeout = jedisSocketFactory.getSoTimeout();
+    this.protocol = protocol;
   }
 
   @Override
@@ -161,14 +167,14 @@ public class Connection implements Closeable {
   public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
       connect();
-      Protocol.sendCommand(outputStream, cmd, args);
+      protocol.sendCommand(outputStream, cmd, args);
     } catch (JedisConnectionException ex) {
       /*
        * When client send request which formed by invalid protocol, Redis send back error message
        * before close connection. We try to read it to provide reason of failure.
        */
       try {
-        String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
+        String errorMessage = protocol.readErrorLineIfPossible(inputStream);
         if (errorMessage != null && errorMessage.length() > 0) {
           ex = new JedisConnectionException(errorMessage, ex.getCause());
         }
@@ -349,7 +355,7 @@ public class Connection implements Closeable {
     }
 
     try {
-      return Protocol.read(inputStream);
+      return protocol.read(inputStream);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;

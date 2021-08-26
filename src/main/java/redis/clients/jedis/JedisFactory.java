@@ -70,14 +70,22 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   protected JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
+    final int infiniteSoTimeout, final String user, final String password, final int database,
+    final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
+    final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+    this(host, port, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, JedisProtocol.DEFAULT);
+  }
+
+
+  protected JedisFactory(final String host, final int port, final int connectionTimeout, final int soTimeout,
       final int infiniteSoTimeout, final String user, final String password, final int database,
       final String clientName, final boolean ssl, final SSLSocketFactory sslSocketFactory,
-      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
+      final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier, JedisProtocol protocol) {
     this.clientConfig = DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).user(user)
         .password(password).database(database).clientName(clientName)
-        .ssl(ssl).sslSocketFactory(sslSocketFactory)
-        .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build();
+        .ssl(ssl).sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).protocol(protocol).build();
     this.jedisSocketFactory = new DefaultJedisSocketFactory(new HostAndPort(host, port), this.clientConfig);
   }
 

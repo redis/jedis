@@ -1007,4 +1007,16 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     client.xreadGroup(groupname, consumer, xReadGroupParams, streams);
     return getResponse(BuilderFactory.STREAM_READ_RESPONSE);
   }
+
+  @Override
+  public Response<LCSMatchResult> strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
+    client.strAlgoLCSKeys(keyA, keyB, params);
+    return getResponse(BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+  }
+
+  @Override
+  public Response<LCSMatchResult> strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
+    client.strAlgoLCSKeys(keyA, keyB, params);
+    return getResponse(BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+  }
 }

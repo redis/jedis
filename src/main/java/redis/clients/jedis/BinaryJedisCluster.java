@@ -6,6 +6,7 @@ import redis.clients.jedis.commands.JedisClusterBinaryScriptingCommands;
 import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -925,6 +926,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
         return connection.strlen(key);
       }
     }.runBinary(key);
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
+    return new JedisClusterCommand<LCSMatchResult>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public LCSMatchResult execute(Jedis connection) {
+        return connection.strAlgoLCSKeys(keyA, keyB, params);
+      }
+    }.runBinary(2, keyA, keyB);
+  }
+
+  @Override
+  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
+    return new JedisClusterCommand<LCSMatchResult>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public LCSMatchResult execute(Jedis connection) {
+        return connection.strAlgoLCSStrings(strA, strB, params);
+      }
+    }.runWithAnyNode();
   }
 
   @Override

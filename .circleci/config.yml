@@ -48,8 +48,8 @@ jobs:
           key: jedis-{{ checksum "pom.xml" }}
 
       - run: |
-          apt update
-          apt install -y stunnel
+          sudo apt update
+          sudo apt install -y stunnel
 
       - run: make circleci-install
 

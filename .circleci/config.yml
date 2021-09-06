@@ -16,7 +16,7 @@ commands:
 executors:
   linux-8-jdk:
     docker:
-      - image: circleci/openjdk:8-jdk
+      - image: cimg/openjdk:8.0
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
           keys:
             - jedis-{{ checksum "pom.xml" }}
 
-      - run: mvn dependency:go-offline 
+      - run: mvn dependency:go-offline
 
       - save_cache:
           paths:
@@ -57,8 +57,8 @@ jobs:
 
       - early_return_for_forked_pull_requests
 
-      - run: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN} 
-     
+      - run: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}
+
       - run: mvn -s .circleci.settings.xml -DskipTests deploy
 
 workflows:

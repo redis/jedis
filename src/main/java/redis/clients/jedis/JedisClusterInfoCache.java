@@ -35,65 +35,65 @@ public class JedisClusterInfoCache {
 
   private static final int MASTER_NODE_INDEX = 2;
 
-  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig, int timeout,
-      final Set<HostAndPort> startNodes) {
-    this(poolConfig, timeout, timeout, null, null, startNodes);
-  }
-
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final String password,
-      final String clientName, final Set<HostAndPort> startNodes) {
-    this(poolConfig, connectionTimeout, soTimeout, null, password, clientName, startNodes);
+      final String clientName) {
+    this(poolConfig, connectionTimeout, soTimeout, null, password, clientName);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
-      final String password, final String clientName, final Set<HostAndPort> startNodes) {
-    this(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, null, password, clientName, startNodes);
+      final String password, final String clientName) {
+    this(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, null, password, clientName);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final String user, final String password,
-      final String clientName, final Set<HostAndPort> startNodes) {
+      final String clientName) {
     this(poolConfig, connectionTimeout, soTimeout, user, password, clientName, false, null, null,
-        null, (HostAndPortMapper) null, startNodes);
+        null, (HostAndPortMapper) null);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
-      final String user, final String password, final String clientName, final Set<HostAndPort> startNodes) {
+      final String user, final String password, final String clientName) {
     this(poolConfig, connectionTimeout, soTimeout, infiniteSoTimeout, user, password, clientName,
-        false, null, null, null, (HostAndPortMapper) null, startNodes);
+        false, null, null, null, (HostAndPortMapper) null);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final String password,
       final String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
       SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
-      HostAndPortMapper hostAndPortMap, final Set<HostAndPort> startNodes) {
+      HostAndPortMapper hostAndPortMap) {
     this(poolConfig, connectionTimeout, soTimeout, null, password, clientName, ssl,
-        sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap, startNodes);
+        sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final String user, final String password,
       final String clientName, boolean ssl, SSLSocketFactory sslSocketFactory,
       SSLParameters sslParameters, HostnameVerifier hostnameVerifier,
-      HostAndPortMapper hostAndPortMap, final Set<HostAndPort> startNodes) {
+      HostAndPortMapper hostAndPortMap) {
     this(poolConfig, connectionTimeout, soTimeout, 0, user, password, clientName, ssl,
-        sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap, startNodes);
+        sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMap);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
       final String user, final String password, final String clientName, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMap, final Set<HostAndPort> startNodes) {
+      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMap) {
     this(poolConfig, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout).user(user)
         .password(password).clientName(clientName).ssl(ssl).sslSocketFactory(sslSocketFactory)
         .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier)
-        .hostAndPortMapper(hostAndPortMap).build(), startNodes);
+        .hostAndPortMapper(hostAndPortMap).build());
+  }
+
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
+      final JedisClientConfig clientConfig) {
+    this(poolConfig, clientConfig, null);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
@@ -152,14 +152,31 @@ public class JedisClusterInfoCache {
           }
         }
 
-        ArrayList<HostAndPort> startNodeList = new ArrayList<>(startNodes);
-        Collections.shuffle(startNodeList);
-        for (HostAndPort hostAndPort : startNodeList) {
-          try (Jedis j = new Jedis(hostAndPort, clientConfig)) {
+        for (JedisPool jp : getShuffledNodesPool()) {
+          Jedis j = null;
+          try {
+            j = jp.getResource();
             discoverClusterSlots(j);
             return;
           } catch (JedisConnectionException e) {
             // try next nodes
+          } finally {
+            if (j != null) {
+              j.close();
+            }
+          }
+        }
+
+        if (startNodes != null) {
+          ArrayList<HostAndPort> startNodeList = new ArrayList<>(startNodes);
+          Collections.shuffle(startNodeList);
+          for (HostAndPort hostAndPort : startNodeList) {
+            try (Jedis j = new Jedis(hostAndPort, clientConfig)) {
+              discoverClusterSlots(j);
+              return;
+            } catch (JedisConnectionException e) {
+              // try next nodes
+            }
           }
         }
       } finally {

@@ -35,6 +35,10 @@ public class JedisClusterInfoCache {
 
   private static final int MASTER_NODE_INDEX = 2;
 
+  public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig, int timeout) {
+    this(poolConfig, timeout, timeout, null, null);
+  }
+
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
       final int connectionTimeout, final int soTimeout, final String password,
       final String clientName) {

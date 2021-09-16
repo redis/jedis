@@ -26,6 +26,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 import java.util.List;
@@ -228,6 +229,8 @@ public interface RedisPipeline {
   Response<Double> zincrby(String key, double increment, String member, ZIncrByParams params);
 
   Response<Set<String>> zrange(String key, long start, long stop);
+
+  Response<Set<String>> zrange(String key, String start, String stop, ZRangeParams params);
 
   Response<Set<String>> zrangeByScore(String key, double min, double max);
 

@@ -23,6 +23,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.Hashing;
@@ -605,6 +606,12 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public Set<String> zrange(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
     return j.zrange(key, start, stop);
+  }
+
+  @Override
+  public Set<String> zrange(final String key, final String start, final String stop, final ZRangeParams params) {
+    Jedis j = getShard(key);
+    return j.zrange(key, start, stop, params);
   }
 
   @Override

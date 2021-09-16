@@ -207,6 +207,8 @@ public interface BinaryRedisPipeline {
 
   Response<Set<byte[]>> zrange(byte[] key, long start, long stop);
 
+  Response<Set<byte[]>> zrange(byte[] key, byte[] start, byte[] stop, ZRangeParams params);
+
   Response<Set<byte[]>> zrangeByScore(byte[] key, double min, double max);
 
   Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max);

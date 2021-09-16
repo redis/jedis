@@ -28,6 +28,7 @@ import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
+import redis.clients.jedis.params.ZRangeParams;
 
 public interface Commands {
 
@@ -240,6 +241,8 @@ public interface Commands {
   void zdiffStore(String dstkey, String... keys);
 
   void zrange(String key, long start, long stop);
+
+  void zrange(String key, String start, String stop, ZRangeParams params);
 
   void zrem(String key, String... members);
 

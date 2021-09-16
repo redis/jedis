@@ -34,6 +34,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -248,6 +249,8 @@ public interface JedisCommands {
   Double zaddIncr(String key, double score, String member, ZAddParams params);
 
   Set<String> zrange(String key, long start, long stop);
+
+  Set<String> zrange(String key, String start, String stop, ZRangeParams params);
 
   long zrem(String key, String... members);
 

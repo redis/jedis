@@ -1758,6 +1758,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return SetFromList.of(members);
   }
 
+  @Override
+  public Set<String> zrange(final String key, final String start, final String stop, final ZRangeParams params) {
+    checkIsInMultiOrPipeline();
+    client.zrange(key, start, stop, params);
+    final List<String> members = client.getMultiBulkReply();
+    return SetFromList.of(members);
+  }
+
   /**
    * Remove the specified member from the sorted set value stored at key. If member was not a member
    * of the set no operation is performed. If key does not not hold a set value an error is

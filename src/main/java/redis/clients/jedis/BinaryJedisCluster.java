@@ -1041,6 +1041,16 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public Set<byte[]> zrange(final byte[] key, final byte[] start, final byte[] stop, final ZRangeParams params) {
+    return new JedisClusterCommand<Set<byte[]>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Set<byte[]> execute(Jedis connection) {
+        return connection.zrange(key, start, stop, params);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public long zrem(final byte[] key, final byte[]... members) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override

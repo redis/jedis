@@ -1087,6 +1087,16 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public Set<String> zrange(final String key, final String start, final String stop, final ZRangeParams params) {
+    return new JedisClusterCommand<Set<String>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Set<String> execute(Jedis connection) {
+        return connection.zrange(key, start, stop, params);
+      }
+    }.run(key);
+  }
+
+  @Override
   public long zrem(final String key, final String... members) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override

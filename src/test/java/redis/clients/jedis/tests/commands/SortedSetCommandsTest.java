@@ -25,6 +25,7 @@ import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -188,6 +189,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     // exclusive aa ~ inclusive c
     assertEquals(expected, jedis.zrangeByLex("foo", "(aa", "[c"));
+    assertEquals(expected, jedis.zrange("foo", "(aa", "[c", ZRangeParams.ZRangeParams().bylex()));
 
     expected.clear();
     expected.add("bb");
@@ -195,6 +197,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     // with LIMIT
     assertEquals(expected, jedis.zrangeByLex("foo", "-", "+", 1, 2));
+    assertEquals(expected, jedis.zrange("foo", "-", "+", ZRangeParams.ZRangeParams().bylex().limit(1, 2)));
   }
 
   @Test
@@ -208,6 +211,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bExpected.add(bb);
 
     assertByteArraySetEquals(bExpected, jedis.zrangeByLex(bfoo, bInclusiveB, bExclusiveC));
+    assertByteArraySetEquals(bExpected,
+        jedis.zrange(bfoo, bInclusiveB, bExclusiveC, ZRangeParams.ZRangeParams().bylex()));
 
     bExpected.clear();
     bExpected.add(ba);
@@ -215,6 +220,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     // with LIMIT
     assertByteArraySetEquals(bExpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
+    assertByteArraySetEquals(bExpected,
+        jedis.zrange(bfoo, bLexMinusInf, bLexPlusInf, ZRangeParams.ZRangeParams().bylex().limit(0, 2)));
   }
 
   @Test
@@ -230,6 +237,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     // exclusive aa ~ inclusive c
     assertEquals(expected, jedis.zrevrangeByLex("foo", "[c", "(aa"));
+    assertEquals(expected, jedis.zrange("foo", "[c", "(aa", ZRangeParams.ZRangeParams().rev().bylex()));
 
     expected.clear();
     expected.add("c");
@@ -237,6 +245,7 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     // with LIMIT
     assertEquals(expected, jedis.zrevrangeByLex("foo", "+", "-", 1, 2));
+    assertEquals(expected, jedis.zrange("foo", "+", "-", ZRangeParams.ZRangeParams().rev().bylex().limit(1, 2)));
   }
 
   @Test
@@ -250,6 +259,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bExpected.add(bb);
 
     assertByteArraySetEquals(bExpected, jedis.zrevrangeByLex(bfoo, bExclusiveC, bInclusiveB));
+    assertByteArraySetEquals(bExpected,
+        jedis.zrange(bfoo, bExclusiveC, bInclusiveB, ZRangeParams.ZRangeParams().rev().bylex()));
 
     bExpected.clear();
     bExpected.add(bb);
@@ -257,6 +268,8 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     // with LIMIT
     assertByteArraySetEquals(bExpected, jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
+    assertByteArraySetEquals(bExpected,
+        jedis.zrange(bfoo, bLexPlusInf, bLexMinusInf, ZRangeParams.ZRangeParams().rev().bylex().limit(0, 2)));
   }
 
   @Test
@@ -272,10 +285,12 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     Set<String> range = jedis.zrevrange("foo", 0, 1);
     assertEquals(expected, range);
+    assertEquals(expected, jedis.zrange("foo", "0", "1", ZRangeParams.ZRangeParams().rev()));
 
     expected.add("c");
     range = jedis.zrevrange("foo", 0, 100);
     assertEquals(expected, range);
+    assertEquals(expected, jedis.zrange("foo", "0", "100", ZRangeParams.ZRangeParams().rev()));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
@@ -289,10 +304,14 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
     Set<byte[]> brange = jedis.zrevrange(bfoo, 0, 1);
     assertByteArraySetEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected,
+        jedis.zrange(bfoo, "0".getBytes(), "1".getBytes(), ZRangeParams.ZRangeParams().rev()));
 
     bexpected.add(bc);
     brange = jedis.zrevrange(bfoo, 0, 100);
     assertByteArraySetEquals(bexpected, brange);
+    assertByteArraySetEquals(bexpected,
+        jedis.zrange(bfoo, "0".getBytes(), "100".getBytes(), ZRangeParams.ZRangeParams().rev()));
   }
 
   @Test

@@ -21,6 +21,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
@@ -1132,8 +1133,20 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<Set<String>> zrange(final String key, final String start, final String stop, final ZRangeParams params) {
+    getClient(key).zrange(key, start, stop, params);
+    return getResponse(BuilderFactory.STRING_ZSET);
+  }
+
+  @Override
   public Response<Set<byte[]>> zrange(final byte[] key, final long start, final long stop) {
     getClient(key).zrange(key, start, stop);
+    return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
+  }
+
+  @Override
+  public Response<Set<byte[]>> zrange(final byte[] key, final byte[] start, final byte[] stop, final ZRangeParams params) {
+    getClient(key).zrange(key, start, stop, params);
     return getResponse(BuilderFactory.BYTE_ARRAY_ZSET);
   }
 

@@ -517,6 +517,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zrange(final String key, final String start, final String stop, final ZRangeParams params) {
+    zrange(SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(stop), params);
+  }
+
+  @Override
   public void zrem(final String key, final String... members) {
     zrem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }

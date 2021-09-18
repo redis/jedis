@@ -898,4 +898,22 @@ public class JedisClusterTest {
     }
     return false;
   }
+
+  @Test
+  public void testFlushAll() {
+    Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
+    jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));
+
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+            DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+
+      jc.set("Key", "Value");
+
+      assertEquals(jc.exists("Key"), true);
+
+      jc.flushAll();
+
+      assertEquals(jc.exists("Key"), false);
+    }
+  }
 }

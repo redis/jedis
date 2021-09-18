@@ -2966,4 +2966,14 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   private static String[] getKeys(final Map<String, ?> map) {
     return map.keySet().toArray(new String[map.size()]);
   }
+
+  public boolean flushAll() {
+    return new JedisClusterCommand<Boolean>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Boolean execute(Jedis connection) {
+        connection.flushAll();
+        return true;
+      }
+    }.runWithAllNodes((a, b) -> a && b, true);
+  }
 }

@@ -3,6 +3,8 @@ package redis.clients.jedis;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BiFunction;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,6 +98,27 @@ public abstract class JedisClusterCommand<T> {
     } finally {
       releaseConnection(connection);
     }
+  }
+
+  /**
+   * @param multiplex Behaviour we need to apply to the output of the results we are getting from
+   *          each node
+   * @param defaultValue The default value with which all the results need to be multiplexed
+   * @return the result of multiplexing the outputs of the commands from each node. This functions
+   *         never fails.
+   */
+  public T runWithAllNodes(BiFunction<T, T, T> multiplex, T defaultValue) {
+    T result = defaultValue;
+    for (JedisPool jedisPool : connectionHandler.getNodes().values()) {
+      Jedis connection = jedisPool.getResource();
+      try {
+        result = multiplex.apply(result, execute(connection));
+      } catch (Exception exception) {
+      } finally {
+        releaseConnection(connection);
+      }
+    }
+    return result;
   }
 
   private T runWithRetries(final int slot) {

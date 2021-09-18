@@ -368,4 +368,38 @@ public class JedisClusterCommandTest {
     inOrder.verify(connectionHandler).getConnectionFromSlot(anyInt());
     inOrder.verifyNoMoreInteractions();
   }
+
+  @Test
+  public void runWithAllNodes() {
+    JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
+
+    boolean result = new JedisClusterCommand<Boolean>(connectionHandler, 3,
+            Duration.ZERO) {
+      @Override
+      public Boolean execute(Jedis connection) {
+        return true;
+      }
+    }.runWithAllNodes((a,b) -> a && b, true);
+
+    assertTrue(result);
+  }
+
+  @Test
+  public void runWithAllNodesNoFailureThrownOnExceptionFromJedisCluster() {
+    JedisSlotBasedConnectionHandler connectionHandler = mock(JedisSlotBasedConnectionHandler.class);
+
+    JedisClusterCommand<Boolean> testMe = new JedisClusterCommand<Boolean>(connectionHandler, 3,
+            Duration.ZERO) {
+      @Override
+      public Boolean execute(Jedis connection) {
+        throw new JedisConnectionException("Dummy Exception");
+      }
+    };
+
+    try {
+      testMe.runWithAllNodes((a,b) -> a && b, true);
+    } catch (Exception e) {
+      fail("Exception was thrown");
+    }
+  }
 }

@@ -7,8 +7,14 @@ import redis.clients.jedis.resps.LCSMatchResult;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.args.BitPosParams;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.resps.GeoRadiusResponse;
+import redis.clients.jedis.resps.Tuple;
 
 public interface BinaryRedisPipeline {
+
   Response<Long> append(byte[] key, byte[] value);
 
   Response<List<byte[]>> blpop(byte[] arg);
@@ -26,14 +32,6 @@ public interface BinaryRedisPipeline {
   Response<byte[]> echo(byte[] string);
 
   Response<Boolean> exists(byte[] key);
-
-  /**
-   * @deprecated Use {@link #expire(byte[], long)}.
-   */
-  @Deprecated
-  default Response<Long> expire(byte[] key, int seconds) {
-    return expire(key, (long) seconds);
-  }
 
   Response<Long> expire(byte[] key, long seconds);
 
@@ -140,14 +138,6 @@ public interface BinaryRedisPipeline {
   Response<Boolean> setbit(byte[] key, long offset, byte[] value);
 
   Response<Long> setrange(byte[] key, long offset, byte[] value);
-
-  /**
-   * @deprecated Use {@link #setex(byte[], long, byte[])}.
-   */
-  @Deprecated
-  default Response<String> setex(byte[] key, int seconds, byte[] value) {
-    return setex(key, (long) seconds, value);
-  }
 
   Response<String> setex(byte[] key, long seconds, byte[] value);
 
@@ -297,36 +287,13 @@ public interface BinaryRedisPipeline {
 
   Response<byte[]> dump(byte[] key);
 
-  /**
-   * @deprecated Use {@link #restore(byte[], long, byte[])}.
-   */
-  @Deprecated
-  default Response<String> restore(byte[] key, int ttl, byte[] serializedValue) {
-    return restore(key, (long) ttl, serializedValue);
-  }
-
   Response<String> restore(byte[] key, long ttl, byte[] serializedValue);
-
-  /**
-   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
-   */
-  @Deprecated
-  default Response<String> restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
-    return restoreReplace(key, (long) ttl, serializedValue);
-  }
-
-  /**
-   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
-   */
-  @Deprecated
-  Response<String> restoreReplace(byte[] key, long ttl, byte[] serializedValue);
 
   Response<String> restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
 
   Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout);
 
   // Geo Commands
-
   Response<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member);
 
   Response<Long> geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
@@ -387,7 +354,7 @@ public interface BinaryRedisPipeline {
 
   Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
-  Response<Long> xack(byte[] key, byte[] group,  byte[]... ids);
+  Response<Long> xack(byte[] key, byte[] group, byte[]... ids);
 
   Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream);
 
@@ -398,12 +365,6 @@ public interface BinaryRedisPipeline {
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername);
 
   Response<Object> xpending(byte[] key, byte[] groupname);
-
-  /**
-   * @deprecated Use {@link #xpendingBinary(byte[], byte[], byte[], byte[], int, byte[])}.
-   */
-  @Deprecated
-  Response<List<StreamPendingEntry>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   Response<List<Object>> xpendingBinary(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 

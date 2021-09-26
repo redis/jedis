@@ -1,16 +1,7 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.params.RestoreParams;
-
-public interface JedisClusterCommands extends JedisCommands {
-
-  /**
-   * @deprecated Use {@link JedisCommands#restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
-   */
-  @Deprecated
-  default String restoreReplace(String key, long ttl, byte[] serializedValue) {
-    return restore(key, ttl, serializedValue, RestoreParams.restoreParams().replace());
-  }
+//public interface JedisClusterCommands extends JedisCommands {
+public interface JedisClusterCommands {
 
   long waitReplicas(String key, int replicas, long timeout);
 }

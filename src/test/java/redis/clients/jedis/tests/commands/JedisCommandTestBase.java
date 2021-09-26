@@ -3,8 +3,12 @@ package redis.clients.jedis.tests.commands;
 import org.junit.After;
 import org.junit.Before;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisConnection;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.providers.SimpleJedisConnectionProvider;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
 public abstract class JedisCommandTestBase {
@@ -18,10 +22,11 @@ public abstract class JedisCommandTestBase {
 
   @Before
   public void setUp() throws Exception {
-    jedis = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis.connect();
-    jedis.auth("foobared");
-    jedis.flushAll();
+    JedisConnection connection = new JedisConnection(hnp,
+        DefaultJedisClientConfig.builder().connectionTimeoutMillis(500).socketTimeoutMillis(500)
+            .password("foobared").build());
+    connection.executeCommand(Protocol.Command.FLUSHALL);
+    jedis = new Jedis(new SimpleJedisConnectionProvider(connection));
   }
 
   @After
@@ -30,9 +35,6 @@ public abstract class JedisCommandTestBase {
   }
 
   protected Jedis createJedis() {
-    Jedis j = new Jedis(hnp);
-    j.connect();
-    j.auth("foobared");
-    return j;
+    return new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
   }
 }

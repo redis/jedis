@@ -4,31 +4,24 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class Queable {
-  private Queue<Response<?>> pipelinedResponses = new LinkedList<>();
+
+  private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
 
   protected void clean() {
     pipelinedResponses.clear();
   }
 
-  protected Response<?> generateResponse(Object data) {
-    Response<?> response = pipelinedResponses.poll();
-    if (response != null) {
-      response.set(data);
-    }
-    return response;
+  protected final void generateResponse(Object data) {
+    pipelinedResponses.poll().set(data);
   }
 
-  protected <T> Response<T> getResponse(Builder<T> builder) {
+  protected final <T> Response<T> enqueResponse(Builder<T> builder) {
     Response<T> lr = new Response<>(builder);
     pipelinedResponses.add(lr);
     return lr;
   }
 
-  protected boolean hasPipelinedResponse() {
-    return !pipelinedResponses.isEmpty();
-  }
-
-  protected int getPipelinedResponseLength() {
+  protected final int getPipelinedResponseLength() {
     return pipelinedResponses.size();
   }
 }

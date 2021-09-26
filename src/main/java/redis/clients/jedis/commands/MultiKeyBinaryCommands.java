@@ -1,15 +1,5 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.BinaryJedisPubSub;
-import redis.clients.jedis.BitOP;
-import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.Response;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.resps.LCSMatchResult;
-import redis.clients.jedis.ZParams;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -18,10 +8,16 @@ import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.params.SortingParams;
+import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.resps.LCSMatchResult;
+import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.resps.Tuple;
 
+//Legacy
 public interface MultiKeyBinaryCommands {
 
   boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
@@ -116,10 +112,6 @@ public interface MultiKeyBinaryCommands {
 
   Long publish(byte[] channel, byte[] message);
 
-  void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels);
-
-  void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns);
-
   byte[] randomBinaryKey();
 
   long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
@@ -136,22 +128,7 @@ public interface MultiKeyBinaryCommands {
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type);
 
-  /**
-   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
-   */
-  @Deprecated
-  List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams);
-
   List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams);
-
-  /**
-   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link MultiKeyBinaryCommands#xreadGroup(byte..., byte..., redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
-   */
-  @Deprecated
-  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block, boolean noAck,
-      Map<byte[], byte[]> streams);
 
   List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
       Entry<byte[], byte[]>... streams);

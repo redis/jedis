@@ -5,13 +5,10 @@ import static redis.clients.jedis.Protocol.Keyword.FREQ;
 import static redis.clients.jedis.Protocol.Keyword.IDLETIME;
 import static redis.clients.jedis.Protocol.Keyword.REPLACE;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 
-public class RestoreParams extends Params {
+public class RestoreParams implements IParams {
 
   private boolean replace;
 
@@ -45,28 +42,24 @@ public class RestoreParams extends Params {
     return this;
   }
 
-  public byte[][] getByteParams(byte[] key, byte[]... args) {
-    List<byte[]> byteParams = new ArrayList<>();
-    byteParams.add(key);
-    Collections.addAll(byteParams, args);
-
+  @Override
+  public void addParams(CommandArguments args) {
     if (replace) {
-      byteParams.add(REPLACE.getRaw());
+      args.addObject(REPLACE.getRaw());
     }
 
     if (absTtl) {
-      byteParams.add(ABSTTL.getRaw());
+      args.addObject(ABSTTL.getRaw());
     }
 
     if (idleTime != null) {
-      byteParams.add(IDLETIME.getRaw());
-      byteParams.add(Protocol.toByteArray(idleTime));
+      args.addObject(IDLETIME.getRaw());
+      args.addObject(Protocol.toByteArray(idleTime));
     }
 
     if (frequency != null) {
-      byteParams.add(FREQ.getRaw());
-      byteParams.add(Protocol.toByteArray(frequency));
+      args.addObject(FREQ.getRaw());
+      args.addObject(Protocol.toByteArray(frequency));
     }
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 }

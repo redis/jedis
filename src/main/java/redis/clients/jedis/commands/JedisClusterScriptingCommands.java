@@ -2,7 +2,9 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
+//Legacy
 public interface JedisClusterScriptingCommands {
+
   Object eval(String script, int keyCount, String... params);
 
   Object eval(String script, List<String> keys, List<String> args);

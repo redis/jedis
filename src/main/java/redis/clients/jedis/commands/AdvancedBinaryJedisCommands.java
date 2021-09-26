@@ -2,14 +2,15 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.FailoverParams;
+import redis.clients.jedis.resps.AccessControlUser;
 
+//Legacy
 public interface AdvancedBinaryJedisCommands {
 
   List<Object> roleBinary();
@@ -19,14 +20,6 @@ public interface AdvancedBinaryJedisCommands {
   List<byte[]> configGet(byte[] pattern);
 
   String configSet(byte[] parameter, byte[] value);
-
-  /**
-   * @deprecated Use {@link #configSet(byte[], byte[])}.
-   */
-  @Deprecated
-  default String configSetBinary(byte[] parameter, byte[] value) {
-    return configSet(parameter, value);
-  }
 
   String slowlogReset();
 

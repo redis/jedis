@@ -2,7 +2,6 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-import redis.clients.jedis.ClusterReset;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.args.ClusterFailoverOption;
 
@@ -60,12 +59,6 @@ public interface ClusterCommands {
   String clusterFailover(ClusterFailoverOption failoverOption);
 
   List<Object> clusterSlots();
-
-  /**
-   * @deprecated Use {@link ClusterCommands#clusterReset(redis.clients.jedis.args.ClusterResetType)}.
-   */
-  @Deprecated
-  String clusterReset(ClusterReset resetType);
 
   /**
    * {@code resetType} can be null for default behavior.

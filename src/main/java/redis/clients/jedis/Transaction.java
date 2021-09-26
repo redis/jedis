@@ -1,94 +1,29 @@
 package redis.clients.jedis;
 
-import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.List;
+import redis.clients.jedis.commands.PipelineCommands;
 
-import redis.clients.jedis.exceptions.JedisDataException;
+public class Transaction extends PipelinedTransactionBase implements PipelineCommands {
 
-/**
- * Transaction is nearly identical to Pipeline, only differences are the multi/discard behaviors
- */
-public class Transaction extends MultiKeyPipelineBase implements Closeable {
+  private final RedisCommandObjects commandObjects;
 
-  protected boolean inTransaction = true;
-
-  protected Transaction() {
-    // client will be set later in transaction block
-  }
-
-  public Transaction(final Client client) {
-    this.client = client;
+  public Transaction(JedisConnection connection) {
+    super(connection);
+    this.commandObjects = new RedisCommandObjects();
   }
 
   @Override
-  protected Client getClient(String key) {
-    return client;
+  public Response<Long> del(String key) {
+    return appendCommand(commandObjects.del(key));
   }
 
   @Override
-  protected Client getClient(byte[] key) {
-    return client;
-  }
-
-  public void clear() {
-    if (inTransaction) {
-      discard();
-    }
-  }
-
-  public List<Object> exec() {
-    // Discard QUEUED or ERROR
-    client.getMany(getPipelinedResponseLength());
-    client.exec();
-    inTransaction = false;
-
-    List<Object> unformatted = client.getObjectMultiBulkReply();
-    if (unformatted == null) {
-      return null;
-    }
-    List<Object> formatted = new ArrayList<>();
-    for (Object o : unformatted) {
-      try {
-        formatted.add(generateResponse(o).get());
-      } catch (JedisDataException e) {
-        formatted.add(e);
-      }
-    }
-    return formatted;
-  }
-
-  public List<Response<?>> execGetResponse() {
-    // Discard QUEUED or ERROR
-    client.getMany(getPipelinedResponseLength());
-    client.exec();
-    inTransaction = false;
-
-    List<Object> unformatted = client.getObjectMultiBulkReply();
-    if (unformatted == null) {
-      return null;
-    }
-    List<Response<?>> response = new ArrayList<>();
-    for (Object o : unformatted) {
-      response.add(generateResponse(o));
-    }
-    return response;
-  }
-
-  public String discard() {
-    client.getMany(getPipelinedResponseLength());
-    client.discard();
-    inTransaction = false;
-    clean();
-    return client.getStatusCodeReply();
-  }
-
-  public void setClient(Client client) {
-    this.client = client;
+  public Response<String> get(String key) {
+    return appendCommand(commandObjects.get(key));
   }
 
   @Override
-  public void close() {
-    clear();
+  public Response<String> set(String key, String value) {
+    return appendCommand(commandObjects.set(key, value));
   }
+
 }

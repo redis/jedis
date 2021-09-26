@@ -1,15 +1,21 @@
 package redis.clients.jedis.tests.utils;
 
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.JedisConnection;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.tests.HostAndPortUtil;
 
 public class RedisVersionUtil {
 
   public static int getRedisMajorVersionNumber() {
     String completeVersion = null;
 
-    try (Jedis jedis = new Jedis()) {
-      jedis.auth("foobared");
-      String info = jedis.info("server");
+    try (JedisConnection jedis = new JedisConnection(HostAndPortUtil.getRedisServers().get(0),
+        DefaultJedisClientConfig.builder().password("foobared").build())) {
+      String info = jedis.executeCommand(new CommandObject<>(new CommandArguments(Protocol.Command.INFO), BuilderFactory.STRING));
       String[] splitted = info.split("\\s+|:");
       for (int i = 0; i < splitted.length; i++) {
         if (splitted[i].equalsIgnoreCase("redis_version")) {

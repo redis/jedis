@@ -1,17 +1,7 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.BitPosParams;
 import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.GeoRadiusResponse;
-import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.StreamPendingEntry;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamEntry;
-import redis.clients.jedis.StreamPendingSummary;
-import redis.clients.jedis.Tuple;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
@@ -31,8 +21,19 @@ import redis.clients.jedis.resps.LCSMatchResult;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.args.BitPosParams;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.params.SortingParams;
+import redis.clients.jedis.resps.GeoRadiusResponse;
+import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.stream.StreamEntry;
+import redis.clients.jedis.stream.StreamEntryID;
+import redis.clients.jedis.stream.StreamPendingEntry;
+import redis.clients.jedis.stream.StreamPendingSummary;
 
 public interface RedisPipeline {
+
   Response<Long> append(String key, String value);
 
   Response<List<String>> blpop(String arg);
@@ -50,14 +51,6 @@ public interface RedisPipeline {
   Response<String> echo(String string);
 
   Response<Boolean> exists(String key);
-
-  /**
-   * @deprecated Use {@link #expire(java.lang.String, long)}.
-   */
-  @Deprecated
-  default Response<Long> expire(String key, int seconds) {
-    return expire(key, (long) seconds);
-  }
 
   Response<Long> expire(String key, long seconds);
 
@@ -166,14 +159,6 @@ public interface RedisPipeline {
   Response<String> set(String key, String value);
 
   Response<Boolean> setbit(String key, long offset, boolean value);
-
-  /**
-   * @deprecated Use {@link #setex(java.lang.String, long, java.lang.String)}.
-   */
-  @Deprecated
-  default Response<String> setex(String key, int seconds, String value) {
-    return setex(key, (long) seconds, value);
-  }
 
   Response<String> setex(String key, long seconds, String value);
 
@@ -321,36 +306,13 @@ public interface RedisPipeline {
 
   Response<byte[]> dump(String key);
 
-  /**
-   * @deprecated Use {@link #restore(java.lang.String, long, byte[])}.
-   */
-  @Deprecated
-  default Response<String> restore(String key, int ttl, byte[] serializedValue) {
-    return restore(key, (long) ttl, serializedValue);
-  }
-
   Response<String> restore(String key, long ttl, byte[] serializedValue);
-
-  /**
-   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
-   */
-  @Deprecated
-  default Response<String> restoreReplace(String key, int ttl, byte[] serializedValue) {
-    return restoreReplace(key, (long) ttl, serializedValue);
-  }
-
-  /**
-   * @deprecated Use {@link #restore(java.lang.String, long, byte[], redis.clients.jedis.params.RestoreParams)}.
-   */
-  @Deprecated
-  Response<String> restoreReplace(String key, long ttl, byte[] serializedValue);
 
   Response<String> restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
 
   Response<String> migrate(String host, int port, String key, int destinationDB, int timeout);
 
   // Geo Commands
-
   Response<Long> geoadd(String key, double longitude, double latitude, String member);
 
   Response<Long> geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap);
@@ -405,15 +367,15 @@ public interface RedisPipeline {
 
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
-  Response<Long> xack(String key, String group,  StreamEntryID... ids);
+  Response<Long> xack(String key, String group, StreamEntryID... ids);
 
-  Response<String> xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
+  Response<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream);
 
-  Response<String> xgroupSetID( String key, String groupname, StreamEntryID id);
+  Response<String> xgroupSetID(String key, String groupname, StreamEntryID id);
 
-  Response<Long> xgroupDestroy( String key, String groupname);
+  Response<Long> xgroupDestroy(String key, String groupname);
 
-  Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
+  Response<Long> xgroupDelConsumer(String key, String groupname, String consumername);
 
   Response<StreamPendingSummary> xpending(String key, String groupname);
 
@@ -422,13 +384,13 @@ public interface RedisPipeline {
 
   Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params);
 
-  Response<Long> xdel( String key, StreamEntryID... ids);
+  Response<Long> xdel(String key, StreamEntryID... ids);
 
-  Response<Long> xtrim( String key, long maxLen, boolean approximateLength);
+  Response<Long> xtrim(String key, long maxLen, boolean approximateLength);
 
   Response<Long> xtrim(String key, XTrimParams params);
 
-  Response<List<StreamEntry>> xclaim( String key, String group, String consumername, long minIdleTime,
+  Response<List<StreamEntry>> xclaim(String key, String group, String consumername, long minIdleTime,
       long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   Response<List<StreamEntry>> xclaim(String key, String group, String consumername,

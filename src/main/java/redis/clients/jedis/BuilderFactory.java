@@ -1,36 +1,25 @@
 package redis.clients.jedis;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
 
-  /**
-   * @deprecated Use {@link #RAW_OBJECT}.
-   */
-  @Deprecated
-  public static final Builder<Object> OBJECT = new Builder<Object>() {
+  public static final Builder<byte[]> BINARY = new Builder<byte[]>() {
     @Override
-    public Object build(Object data) {
-      return data;
+    public byte[] build(Object data) {
+      return (byte[]) data;
     }
 
     @Override
     public String toString() {
-      return "Object";
+      return "byte[]";
     }
   };
 
@@ -442,40 +431,6 @@ public final class BuilderFactory {
       return "ZSet<Tuple>";
     }
 
-  };
-
-  /**
-   * @deprecated Use {@link #ENCODED_OBJECT}.
-   */
-  @Deprecated
-  public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
-
-    @Override
-    public Object build(Object data) {
-      return SafeEncoder.encodeObject(data);
-    }
-
-    @Override
-    public String toString() {
-      return "Eval<Object>";
-    }
-  };
-
-  /**
-   * @deprecated Use {@link #RAW_OBJECT}.
-   */
-  @Deprecated
-  public static final Builder<Object> EVAL_BINARY_RESULT = new Builder<Object>() {
-
-    @Override
-    public Object build(Object data) {
-      return data;
-    }
-
-    @Override
-    public String toString() {
-      return "Eval<Object>";
-    }
   };
 
   public static final Builder<Map<String, String>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, String>>() {

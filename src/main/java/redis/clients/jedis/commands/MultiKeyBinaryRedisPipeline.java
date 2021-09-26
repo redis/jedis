@@ -1,23 +1,21 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.BitOP;
-import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.resps.LCSMatchResult;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.ZParams;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.resps.Tuple;
 
 /**
  * Multikey related commands (these are split out because they are non-shardable)
  */
+//Legacy
 public interface MultiKeyBinaryRedisPipeline {
+
   Response<Boolean> copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
 
   Response<Boolean> copy(byte[] srcKey, byte[] dstKey, boolean replace);
@@ -123,21 +121,7 @@ public interface MultiKeyBinaryRedisPipeline {
   Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
-  /**
-   * @deprecated Use {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map.Entry...)}.
-   */
-  @Deprecated
-  Response<List<byte[]>> xread(int count, long block, Map<byte[], byte[]> streams);
-
   Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
-
-  /**
-   * @deprecated Use {@link MultiKeyBinaryRedisPipeline#xreadGroup(byte..., byte...,
-   * redis.clients.jedis.params.XReadGroupParams, java.util.Map.Entry...)}.
-   */
-  @Deprecated
-  Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
-      boolean noAck, Map<byte[], byte[]> streams);
 
   Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams);

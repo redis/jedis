@@ -5,6 +5,7 @@ import redis.clients.jedis.args.FlushMode;
 import java.util.List;
 
 public interface JedisClusterBinaryScriptingCommands {
+
   Object eval(byte[] script, byte[] keyCount, byte[]... params);
 
   Object eval(byte[] script, int keyCount, byte[]... params);
@@ -14,14 +15,14 @@ public interface JedisClusterBinaryScriptingCommands {
   /**
    * @param script
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
-   *          assigned to
+   * assigned to
    */
   Object eval(byte[] script, byte[] sampleKey);
 
   /**
    * @param sha1
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
-   *          assigned to
+   * assigned to
    */
   Object evalsha(byte[] sha1, byte[] sampleKey);
 
@@ -31,7 +32,7 @@ public interface JedisClusterBinaryScriptingCommands {
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
-   *          assigned to
+   * assigned to
    * @param sha1
    */
   List<Long> scriptExists(byte[] sampleKey, byte[]... sha1);
@@ -39,26 +40,26 @@ public interface JedisClusterBinaryScriptingCommands {
   /**
    * @param script
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
-   *          assigned to
+   * assigned to
    */
   byte[] scriptLoad(byte[] script, byte[] sampleKey);
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
-   *          assigned to
+   * assigned to
    */
   String scriptFlush(byte[] sampleKey);
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
-   *          assigned to
+   * assigned to
    * @param flushMode
    */
   String scriptFlush(byte[] sampleKey, FlushMode flushMode);
 
   /**
    * @param sampleKey Command will be executed in the node where the hash slot of this key is
-   *          assigned to
+   * assigned to
    */
   String scriptKill(byte[] sampleKey);
 }

@@ -1,15 +1,11 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class StrAlgoLCSParams extends Params {
+public class StrAlgoLCSParams extends Params implements IParams {
 
-    private static final String LCS = "lcs";
     private static final String IDX = "idx";
     private static final String LEN = "len";
     private static final String WITHMATCHLEN = "withmatchlen";
@@ -60,28 +56,21 @@ public class StrAlgoLCSParams extends Params {
         return this;
     }
 
-    public byte[][] getByteParams(Keyword keyword, byte[] argA, byte[] argB) {
-        ArrayList<byte[]> byteParams = new ArrayList<>();
-        byteParams.add(SafeEncoder.encode(LCS));
-        byteParams.add(keyword.getRaw());
-        byteParams.add(argA);
-        byteParams.add(argB);
-
+    @Override
+    public void addParams(CommandArguments args) {
         if (contains(IDX)) {
-            byteParams.add(SafeEncoder.encode(IDX));
+            args.addObject(IDX);
         }
         if (contains(LEN)) {
-            byteParams.add(SafeEncoder.encode(LEN));
+            args.addObject(LEN);
         }
         if (contains(WITHMATCHLEN)) {
-            byteParams.add(SafeEncoder.encode(WITHMATCHLEN));
+            args.addObject(WITHMATCHLEN);
         }
 
         if (contains(MINMATCHLEN)) {
-            byteParams.add(SafeEncoder.encode(MINMATCHLEN));
-            byteParams.add(Protocol.toByteArray((long) getParam(MINMATCHLEN)));
+            args.addObject(MINMATCHLEN);
+            args.addObject(Protocol.toByteArray((long) getParam(MINMATCHLEN)));
         }
-
-        return byteParams.toArray(new byte[byteParams.size()][]);
     }
 }

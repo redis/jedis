@@ -4,8 +4,9 @@ import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import redis.clients.jedis.CommandArguments;
 
-public class ZAddParams extends Params {
+public class ZAddParams extends Params implements IParams {
 
   private static final String XX = "xx";
   private static final String NX = "nx";
@@ -66,29 +67,23 @@ public class ZAddParams extends Params {
     return this;
   }
 
-  public byte[][] getByteParams(byte[] key, byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<>();
-    byteParams.add(key);
-
+  @Override
+  public void addParams(CommandArguments args) {
     if (contains(NX)) {
-      byteParams.add(SafeEncoder.encode(NX));
+      args.addObject(NX);
     }
     if (contains(XX)) {
-      byteParams.add(SafeEncoder.encode(XX));
+      args.addObject(XX);
     }
     if (contains(CH)) {
-      byteParams.add(SafeEncoder.encode(CH));
+      args.addObject(CH);
     }
     if (contains(LT)) {
-      byteParams.add(SafeEncoder.encode(LT));
+      args.addObject(LT);
     }
     if (contains(GT)) {
-      byteParams.add(SafeEncoder.encode(GT));
+      args.addObject(GT);
     }
-
-    Collections.addAll(byteParams, args);
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 
 }

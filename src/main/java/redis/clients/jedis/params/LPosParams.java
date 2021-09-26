@@ -1,12 +1,9 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.util.SafeEncoder;
 
-public class LPosParams extends Params {
+public class LPosParams extends Params implements IParams {
 
   private static final String RANK = "RANK";
   private static final String MAXLEN = "MAXLEN";
@@ -25,21 +22,17 @@ public class LPosParams extends Params {
     return this;
   }
 
-  public byte[][] getByteParams(byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<>();
-    Collections.addAll(byteParams, args);
-
+  @Override
+  public void addParams(CommandArguments args) {
     if (contains(RANK)) {
-      byteParams.add(SafeEncoder.encode(RANK));
-      byteParams.add(Protocol.toByteArray((int) getParam(RANK)));
+      args.addObject(RANK);
+      args.addObject(Protocol.toByteArray((int) getParam(RANK)));
     }
 
     if (contains(MAXLEN)) {
-      byteParams.add(SafeEncoder.encode(MAXLEN));
-      byteParams.add(Protocol.toByteArray((int) getParam(MAXLEN)));
+      args.addObject(MAXLEN);
+      args.addObject(Protocol.toByteArray((int) getParam(MAXLEN)));
     }
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 
 }

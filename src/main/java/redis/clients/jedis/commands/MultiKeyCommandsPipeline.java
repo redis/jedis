@@ -1,13 +1,6 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.BitOP;
-import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamEntry;
-import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.ZParams;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
@@ -15,10 +8,13 @@ import redis.clients.jedis.resps.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.stream.StreamEntry;
+import redis.clients.jedis.stream.StreamEntryID;
 
 /**
  * Multikey related commands (these are split out because they are non-shardable)
  */
+//Legacy
 public interface MultiKeyCommandsPipeline {
   Response<Boolean> copy(String srcKey, String dstKey, int db, boolean replace);
 
@@ -130,22 +126,8 @@ public interface MultiKeyCommandsPipeline {
   Response<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
-  /**
-   * @deprecated Use {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
-   */
-  @Deprecated
-  Response<List<Map.Entry<String, List<StreamEntry>>>> xread(int count, long block,
-      Map.Entry<String, StreamEntryID>... streams);
-
   Response<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
-
-  /**
-   * @deprecated Use {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
-   */
-  @Deprecated
-  Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,
-      int count, long block, boolean noAck, Map.Entry<String, StreamEntryID>... streams);
 
   Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);

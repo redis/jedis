@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.stream.StreamEntryID;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class XPendingParams extends Params {

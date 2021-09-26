@@ -1,12 +1,10 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.Protocol.Keyword;
 
-public class SetParams extends Params {
+public class SetParams extends Params implements IParams {
 
   private static final String XX = "xx";
   private static final String NX = "nx";
@@ -111,42 +109,38 @@ public class SetParams extends Params {
     return this;
   }
 
-  public byte[][] getByteParams(byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<>();
-    Collections.addAll(byteParams, args);
-
+  @Override
+  public void addParams(CommandArguments args) {
     if (contains(NX)) {
-      byteParams.add(SafeEncoder.encode(NX));
+      args.addObject(Keyword.NX);
     }
     if (contains(XX)) {
-      byteParams.add(SafeEncoder.encode(XX));
+      args.addObject(Keyword.XX);
     }
 
     if (contains(EX)) {
-      byteParams.add(SafeEncoder.encode(EX));
-      byteParams.add(Protocol.toByteArray((long) getParam(EX)));
+      args.addObject(Keyword.EX);
+      args.addObject(Protocol.toByteArray((long) getParam(EX)));
     }
     if (contains(PX)) {
-      byteParams.add(SafeEncoder.encode(PX));
-      byteParams.add(Protocol.toByteArray((long) getParam(PX)));
+      args.addObject(Keyword.PX);
+      args.addObject(Protocol.toByteArray((long) getParam(PX)));
     }
     if (contains(EXAT)) {
-      byteParams.add(SafeEncoder.encode(EXAT));
-      byteParams.add(Protocol.toByteArray((long) getParam(EXAT)));
+      args.addObject(Keyword.EXAT);
+      args.addObject(Protocol.toByteArray((long) getParam(EXAT)));
     }
     if (contains(PXAT)) {
-      byteParams.add(SafeEncoder.encode(PXAT));
-      byteParams.add(Protocol.toByteArray((long) getParam(PXAT)));
+      args.addObject(Keyword.PXAT);
+      args.addObject(Protocol.toByteArray((long) getParam(PXAT)));
     }
     if (contains(KEEPTTL)) {
-      byteParams.add(SafeEncoder.encode(KEEPTTL));
+      args.addObject(Keyword.KEEPTTL);
     }
 
     if (contains(GET)) {
-      byteParams.add(SafeEncoder.encode(GET));
+      args.addObject(Keyword.GET);
     }
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 
 }

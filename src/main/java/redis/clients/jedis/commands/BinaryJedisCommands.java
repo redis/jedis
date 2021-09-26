@@ -5,13 +5,20 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.*;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
+import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.resps.Tuple;
 
 /**
  * Common interface for sharded and non-sharded BinaryJedis
  */
+//Legacy
 public interface BinaryJedisCommands {
+
   String set(byte[] key, byte[] value);
 
   String set(byte[] key, byte[] value, SetParams params);
@@ -30,39 +37,9 @@ public interface BinaryJedisCommands {
 
   byte[] dump(byte[] key);
 
-  /**
-   * @deprecated Use {@link #restore(byte[], long, byte[])}.
-   */
-  @Deprecated
-  default String restore(byte[] key, int ttl, byte[] serializedValue) {
-    return restore(key, (long) ttl, serializedValue);
-  }
-
   String restore(byte[] key, long ttl, byte[] serializedValue);
 
-  /**
-   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
-   */
-  @Deprecated
-  default String restoreReplace(byte[] key, int ttl, byte[] serializedValue) {
-    return restoreReplace(key, (long) ttl, serializedValue);
-  }
-
-  /**
-   * @deprecated Use {@link #restore(byte[], long, byte[], redis.clients.jedis.params.RestoreParams)}.
-   */
-  @Deprecated
-  String restoreReplace(byte[] key, long ttl, byte[] serializedValue);
-
   String restore(byte[] key, long ttl, byte[] serializedValue, RestoreParams params);
-
-  /**
-   * @deprecated Use {@link #expire(byte[], long)}.
-   */
-  @Deprecated
-  default Long expire(byte[] key, int seconds) {
-    return expire(key, (long) seconds);
-  }
 
   long expire(byte[] key, long seconds);
 
@@ -80,12 +57,6 @@ public interface BinaryJedisCommands {
 
   boolean setbit(byte[] key, long offset, boolean value);
 
-  /**
-   * @deprecated Use {@link #setbit(byte[], long, boolean)}.
-   */
-  @Deprecated
-  Boolean setbit(byte[] key, long offset, byte[] value);
-
   boolean getbit(byte[] key, long offset);
 
   long setrange(byte[] key, long offset, byte[] value);
@@ -95,14 +66,6 @@ public interface BinaryJedisCommands {
   byte[] getSet(byte[] key, byte[] value);
 
   long setnx(byte[] key, byte[] value);
-
-  /**
-   * @deprecated Use {@link #setex(byte[], long, byte[])}.
-   */
-  @Deprecated
-  default String setex(byte[] key, int seconds, byte[] value) {
-    return setex(key, (long) seconds, value);
-  }
 
   String setex(byte[] key, long seconds, byte[] value);
 
@@ -335,7 +298,6 @@ public interface BinaryJedisCommands {
   long pfcount(byte[] key);
 
   // Geo Commands
-
   long geoadd(byte[] key, double longitude, double latitude, byte[] member);
 
   long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap);
@@ -392,6 +354,7 @@ public interface BinaryJedisCommands {
 
   /**
    * Executes BITFIELD Redis command
+   *
    * @param key
    * @param arguments
    */
@@ -401,6 +364,7 @@ public interface BinaryJedisCommands {
 
   /**
    * Used for HSTRLEN Redis command
+   *
    * @param key
    * @param field
    * @return lenth of the value for key
@@ -414,14 +378,6 @@ public interface BinaryJedisCommands {
   long xlen(byte[] key);
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
-
-  /**
-   * @deprecated Use {@link #xrange(byte[], byte[], byte[], int)}.
-   */
-  @Deprecated
-  default List<byte[]> xrange(byte[] key, byte[] start, byte[] end, long count) {
-    return xrange(key, start, end, (int) Math.min(count, (long) Integer.MAX_VALUE));
-  }
 
   List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
 
@@ -463,27 +419,9 @@ public interface BinaryJedisCommands {
   List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params);
 
-  /**
-   * @deprecated Use {@link #xinfoStreamBinary(byte[])}.
-   */
-  @Deprecated
-  StreamInfo xinfoStream(byte[] key);
-
   Object xinfoStreamBinary(byte[] key);
 
-  /**
-   * @deprecated Use {@link #xinfoGroupBinary(byte[])}.
-   */
-  @Deprecated
-  List<StreamGroupInfo> xinfoGroup(byte[] key);
-
   List<Object> xinfoGroupBinary(byte[] key);
-
-  /**
-   * @deprecated Use {@link #xinfoConsumersBinary(byte[], byte[])}.
-   */
-  @Deprecated
-  List<StreamConsumersInfo> xinfoConsumers(byte[] key, byte[] group);
 
   List<Object> xinfoConsumersBinary(byte[] key, byte[] group);
 

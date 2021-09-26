@@ -9,6 +9,7 @@ import java.util.List;
 /**
  * Pipelined responses for all of the low level, non key related commands
  */
+//Legacy
 public interface BasicRedisPipeline {
 
   Response<String> bgrewriteaof();

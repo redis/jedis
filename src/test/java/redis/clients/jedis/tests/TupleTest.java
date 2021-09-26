@@ -7,7 +7,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashSet;
 import org.junit.Test;
 
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.resps.Tuple;
 
 public class TupleTest {
 

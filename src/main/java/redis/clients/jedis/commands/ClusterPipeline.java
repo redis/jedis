@@ -5,6 +5,7 @@ import redis.clients.jedis.Response;
 import java.util.List;
 
 public interface ClusterPipeline {
+
   Response<String> clusterNodes();
 
   Response<String> clusterMeet(String ip, int port);

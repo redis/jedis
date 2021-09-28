@@ -3,16 +3,12 @@ package redis.clients.jedis.params;
 import static redis.clients.jedis.Protocol.Keyword.COUNT;
 import static redis.clients.jedis.Protocol.Keyword.MATCH;
 
-import redis.clients.jedis.Protocol.Keyword;
-
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Map;
+
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Protocol;
 
 import redis.clients.jedis.util.SafeEncoder;

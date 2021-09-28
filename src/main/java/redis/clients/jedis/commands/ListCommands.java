@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
@@ -50,4 +51,25 @@ public interface ListCommands {
   List<String> brpop(int timeout, String key);
 
   KeyedListElement brpop(double timeout, String key);
+
+  String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
+
+  List<String> blpop(int timeout, String... keys);
+
+  KeyedListElement blpop(double timeout, String... keys);
+
+  List<String> brpop(int timeout, String... keys);
+
+  KeyedListElement brpop(double timeout, String... keys);
+
+  List<String> blpop(String... args);
+
+  List<String> brpop(String... args);
+
+  String rpoplpush(String srckey, String dstkey);
+
+  String brpoplpush(String source, String destination, int timeout);
+
 }

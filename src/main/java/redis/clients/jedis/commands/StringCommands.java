@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+
+import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.args.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
@@ -63,5 +65,14 @@ public interface StringCommands {
 
   List<Long> bitfieldReadonly(String key, String...arguments);
 
-  LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);
+  List<String> mget(String... keys);
+
+  String mset(String... keysvalues);
+
+  long msetnx(String... keysvalues);
+
+  long bitop(BitOP op, String destKey, String... srcKeys);
+
+  LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
+
 }

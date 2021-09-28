@@ -34,4 +34,6 @@ public interface DatabaseCommands {
    */
   String swapDB(int index1, int index2);
 
+  boolean copy(String srcKey, String dstKey, int db, boolean replace);
+
 }

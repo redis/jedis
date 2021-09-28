@@ -17,6 +17,8 @@ public interface ServerCommands {
 
   String echo(String string);
 
+  byte[] echo(byte[] arg);
+
   /**
    * Ask the server to close the connection. The connection is closed as soon as all pending replies
    * have been written to the client.

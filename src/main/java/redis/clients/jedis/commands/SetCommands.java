@@ -32,4 +32,19 @@ public interface SetCommands {
   }
 
   ScanResult<String> sscan(String key, String cursor, ScanParams params);
+
+  Set<String> sdiff(String... keys);
+
+  long sdiffstore(String dstkey, String... keys);
+
+  Set<String> sinter(String... keys);
+
+  long sinterstore(String dstkey, String... keys);
+
+  long smove(String srckey, String dstkey, String member);
+
+  Set<String> sunion(String... keys);
+
+  long sunionstore(String dstkey, String... keys);
+
 }

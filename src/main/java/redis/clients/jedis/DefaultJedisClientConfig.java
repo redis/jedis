@@ -139,6 +139,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
           sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
+    public Builder timeoutMillis(int timeoutMillis) {
+      this.connectionTimeoutMillis = timeoutMillis;
+      this.socketTimeoutMillis = timeoutMillis;
+      return this;
+    }
+
     public Builder connectionTimeoutMillis(int connectionTimeoutMillis) {
       this.connectionTimeoutMillis = connectionTimeoutMillis;
       return this;

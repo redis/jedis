@@ -8,8 +8,10 @@ import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.params.FailoverParams;
+import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.resps.AccessControlLogEntry;
 import redis.clients.jedis.resps.AccessControlUser;
+import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.resps.Slowlog;
 
 //Legacy
@@ -113,4 +115,6 @@ public interface AdvancedJedisCommands {
   String aclLoad();
 
   String aclSave();
+
+  LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);
 }

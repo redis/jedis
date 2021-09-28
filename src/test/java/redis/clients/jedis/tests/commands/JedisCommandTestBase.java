@@ -8,10 +8,10 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisConnection;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.providers.SimpleJedisConnectionProvider;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
 public abstract class JedisCommandTestBase {
+
   protected static final HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
   protected Jedis jedis;
@@ -22,11 +22,10 @@ public abstract class JedisCommandTestBase {
 
   @Before
   public void setUp() throws Exception {
-    JedisConnection connection = new JedisConnection(hnp,
-        DefaultJedisClientConfig.builder().connectionTimeoutMillis(500).socketTimeoutMillis(500)
-            .password("foobared").build());
+    JedisConnection connection = new JedisConnection(hnp, DefaultJedisClientConfig.builder()
+        .timeoutMillis(500).password("foobared").build());
     connection.executeCommand(Protocol.Command.FLUSHALL);
-    jedis = new Jedis(new SimpleJedisConnectionProvider(connection));
+    jedis = new Jedis(connection);
   }
 
   @After

@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.args.BitPosParams;
 import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.commands.AllKeyCommands;
 import redis.clients.jedis.params.*;
@@ -31,6 +33,10 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
 
   public Jedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new SimpleJedisConnectionProvider(hostAndPort, clientConfig));
+  }
+
+  public Jedis(JedisConnection connection) {
+    this(new SimpleJedisConnectionProvider(connection));
   }
 
   public Jedis(JedisConnectionProvider provider) {
@@ -58,6 +64,7 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
     return executor.executeCommand(commandObject);
   }
 
+  // Key commands
   @Override
   public boolean exists(String key) {
     return executeCommand(commandObjects.exists(key));
@@ -153,6 +160,78 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
     return executeCommand(commandObjects.memoryUsage(key, samples));
   }
 
+  @Override
+  public long exists(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long touch(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long sort(String key, String dstkey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long sort(String key, SortingParams sortingParameters, String dstkey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long del(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long unlink(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean copy(String srcKey, String dstKey, boolean replace) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> keys(String pattern) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String rename(String oldkey, String newkey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long renamenx(String oldkey, String newkey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public ScanResult<String> scan(String cursor) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public ScanResult<String> scan(String cursor, ScanParams params) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public ScanResult<String> scan(String cursor, ScanParams params, String type) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String randomKey() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+  // Key commands
+
+  // String commands
   @Override
   public String set(String key, String value) {
     return executeCommand(commandObjects.set(key, value));
@@ -289,10 +368,32 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
   }
 
   @Override
-  public LCSMatchResult strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
-    return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
+  public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
+    return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
+  @Override
+  public List<String> mget(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String mset(String... keysvalues) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long msetnx(String... keysvalues) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long bitop(BitOP op, String destKey, String... srcKeys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+  // String commands
+
+  // List commands
   @Override
   public long rpush(String key, String... string) {
     return executeCommand(commandObjects.rpush(key, string));
@@ -404,6 +505,58 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
   }
 
   @Override
+  public String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<String> blpop(int timeout, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public KeyedListElement blpop(double timeout, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<String> brpop(int timeout, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public KeyedListElement brpop(double timeout, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<String> blpop(String... args) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<String> brpop(String... args) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String rpoplpush(String srckey, String dstkey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String brpoplpush(String source, String destination, int timeout) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+  // List commands
+
+  // Hash commands
+  @Override
   public long hset(String key, String field, String value) {
     return executeCommand(commandObjects.hset(key, field, value));
   }
@@ -497,7 +650,9 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
   public long hstrlen(String key, String field) {
     return executeCommand(commandObjects.hstrlen(key, field));
   }
+  // Hash commands
 
+  // Set commands
   @Override
   public long sadd(String key, String... member) {
     return executeCommand(commandObjects.sadd(key, member));
@@ -553,6 +708,48 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
     return executeCommand(commandObjects.sscan(key, cursor, params));
   }
 
+  @Override
+  public ScanResult<String> sscan(String key, String cursor) {
+    return AllKeyCommands.super.sscan(key, cursor); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> sdiff(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long sdiffstore(String dstkey, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> sinter(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long sinterstore(String dstkey, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long smove(String srckey, String dstkey, String member) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> sunion(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long sunionstore(String dstkey, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+  // Set commands
+
+  // Sorted Set commands
   @Override
   public long zadd(String key, double score, String member) {
     return executeCommand(commandObjects.zadd(key, score, member));
@@ -814,6 +1011,187 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
   }
 
   @Override
+  public ScanResult<Tuple> zscan(String key, String cursor) {
+    return AllKeyCommands.super.zscan(key, cursor); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public KeyedZSetElement bzpopmax(double timeout, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public KeyedZSetElement bzpopmin(double timeout, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> zdiff(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zdiffStore(String dstkey, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zinterstore(String dstkey, String... sets) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zinterstore(String dstkey, ZParams params, String... sets) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> zinter(ZParams params, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zinterWithScores(ZParams params, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> zunion(ZParams params, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zunionstore(String dstkey, String... sets) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zunionstore(String dstkey, ZParams params, String... sets) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+  // Sorted Set commands
+
+  // Geo commands
+  @Override
+  public long geoadd(String key, double longitude, double latitude, String member) {
+    return executeCommand(commandObjects.geoadd(key, longitude, latitude, member));
+  }
+
+  @Override
+  public long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
+    return executeCommand(commandObjects.geoadd(key, memberCoordinateMap));
+  }
+
+  @Override
+  public long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    return executeCommand(commandObjects.geoadd(key, params, memberCoordinateMap));
+  }
+
+  @Override
+  public Double geodist(String key, String member1, String member2) {
+    return executeCommand(commandObjects.geodist(key, member1, member2));
+  }
+
+  @Override
+  public Double geodist(String key, String member1, String member2, GeoUnit unit) {
+    return executeCommand(commandObjects.geodist(key, member1, member2, unit));
+  }
+
+  @Override
+  public List<String> geohash(String key, String... members) {
+    return executeCommand(commandObjects.geohash(key, members));
+  }
+
+  @Override
+  public List<GeoCoordinate> geopos(String key, String... members) {
+    return executeCommand(commandObjects.geopos(key, members));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit) {
+    return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit) {
+    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
+  }
+
+  @Override
+  public long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+  // Geo commands
+
+  // Hyper Log Log commands
+  @Override
+  public long pfadd(String key, String... elements) {
+    return executeCommand(commandObjects.pfadd(key, elements));
+  }
+
+  @Override
+  public String pfmerge(String destkey, String... sourcekeys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long pfcount(String key) {
+    return executeCommand(commandObjects.pfcount(key));
+  }
+
+  @Override
+  public long pfcount(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+  // Hyper Log Log commands
+
+  // Stream commands
+  @Override
   public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash) {
     return executeCommand(commandObjects.xadd(key, id, hash));
   }
@@ -949,88 +1327,18 @@ public class Jedis implements AllKeyCommands, AutoCloseable {
   }
 
   @Override
-  public long geoadd(String key, double longitude, double latitude, String member) {
-    return executeCommand(commandObjects.geoadd(key, longitude, latitude, member));
+  public List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
-  public long geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
-    return executeCommand(commandObjects.geoadd(key, memberCoordinateMap));
+  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
+  // Stream commands
 
-  @Override
-  public long geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
-    return executeCommand(commandObjects.geoadd(key, params, memberCoordinateMap));
-  }
-
-  @Override
-  public Double geodist(String key, String member1, String member2) {
-    return executeCommand(commandObjects.geodist(key, member1, member2));
-  }
-
-  @Override
-  public Double geodist(String key, String member1, String member2, GeoUnit unit) {
-    return executeCommand(commandObjects.geodist(key, member1, member2, unit));
-  }
-
-  @Override
-  public List<String> geohash(String key, String... members) {
-    return executeCommand(commandObjects.geohash(key, members));
-  }
-
-  @Override
-  public List<GeoCoordinate> geopos(String key, String... members) {
-    return executeCommand(commandObjects.geopos(key, members));
-  }
-
-  @Override
-  public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
-  }
-
-  @Override
-  public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
-  }
-
-  @Override
-  public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
-  }
-
-  @Override
-  public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
-  }
-
-  @Override
-  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
-  }
-
-  @Override
-  public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
-  }
-
-  @Override
-  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
-  }
-
-  @Override
-  public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
-  }
-
-  @Override
-  public long pfadd(String key, String... elements) {
-    return executeCommand(commandObjects.pfadd(key, elements));
-  }
-
-  @Override
-  public long pfcount(String key) {
-    return executeCommand(commandObjects.pfcount(key));
+  public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
+    return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
 }

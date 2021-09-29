@@ -2,8 +2,12 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
+import redis.clients.jedis.args.BitOP;
+import redis.clients.jedis.args.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.StrAlgoLCSParams;
+import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringBinaryCommands {
 
@@ -33,15 +37,21 @@ public interface StringBinaryCommands {
 
   String psetex(byte[] key, long milliseconds, byte[] value);
 
-  long decrBy(byte[] key, long decrement);
+  List<byte[]> mget(byte[]... keys);
 
-  long decr(byte[] key);
+  String mset(byte[]... keysvalues);
+
+  long msetnx(byte[]... keysvalues);
+
+  long incr(byte[] key);
 
   long incrBy(byte[] key, long increment);
 
   double incrByFloat(byte[] key, double increment);
 
-  long incr(byte[] key);
+  long decr(byte[] key);
+
+  long decrBy(byte[] key, long decrement);
 
   long append(byte[] key, byte[] value);
 
@@ -53,8 +63,15 @@ public interface StringBinaryCommands {
 
   long bitcount(byte[] key, long start, long end);
 
+  long bitpos(byte[] key, boolean value);
+
+  long bitpos(byte[] key, boolean value, BitPosParams params);
+
   List<Long> bitfield(byte[] key, byte[]... arguments);
 
   List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
 
+  long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
+
+  LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params);
 }

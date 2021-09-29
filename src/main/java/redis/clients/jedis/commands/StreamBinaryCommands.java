@@ -7,6 +7,8 @@ import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
+import redis.clients.jedis.params.XReadGroupParams;
+import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
 
 public interface StreamBinaryCommands {
@@ -59,10 +61,15 @@ public interface StreamBinaryCommands {
   List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params);
 
-  Object xinfoStreamBinary(byte[] key);
+  Object xinfoStream(byte[] key);
 
-  List<Object> xinfoGroupBinary(byte[] key);
+  List<Object> xinfoGroup(byte[] key);
 
-  List<Object> xinfoConsumersBinary(byte[] key, byte[] group);
+  List<Object> xinfoConsumers(byte[] key, byte[] group);
+
+  List<byte[]> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
+
+  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
+      Map.Entry<byte[], byte[]>... streams);
 
 }

@@ -7,6 +7,7 @@ import java.util.Set;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 
@@ -22,8 +23,6 @@ public interface SortedSetBinaryCommands {
 
   Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params);
 
-  Set<byte[]> zrange(byte[] key, long start, long stop);
-
   long zrem(byte[] key, byte[]... members);
 
   double zincrby(byte[] key, double increment, byte[] member);
@@ -33,6 +32,8 @@ public interface SortedSetBinaryCommands {
   Long zrank(byte[] key, byte[] member);
 
   Long zrevrank(byte[] key, byte[] member);
+
+  Set<byte[]> zrange(byte[] key, long start, long stop);
 
   Set<byte[]> zrevrange(byte[] key, long start, long stop);
 
@@ -119,5 +120,31 @@ public interface SortedSetBinaryCommands {
   }
 
   ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params);
+
+  List<byte[]> bzpopmax(double timeout, byte[]... keys);
+
+  List<byte[]> bzpopmin(double timeout, byte[]... keys);
+
+  Set<byte[]> zdiff(byte[]... keys);
+
+  Set<Tuple> zdiffWithScores(byte[]... keys);
+
+  long zdiffStore(byte[] dstkey, byte[]... keys);
+
+  Set<byte[]> zinter(ZParams params, byte[]... keys);
+
+  Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
+
+  long zinterstore(byte[] dstkey, byte[]... sets);
+
+  long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
+
+  Set<byte[]> zunion(ZParams params, byte[]... keys);
+
+  Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
+
+  long zunionstore(byte[] dstkey, byte[]... sets);
+
+  long zunionstore(byte[] dstkey, ZParams params, byte[]... sets);
 
 }

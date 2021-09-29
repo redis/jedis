@@ -6,15 +6,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.List;
 import org.junit.Test;
 
-import redis.clients.jedis.BitOP;
-import redis.clients.jedis.BitPosParams;
+import redis.clients.jedis.args.BitOP;
+import redis.clients.jedis.args.BitPosParams;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
-
-import java.util.List;
 
 public class BitCommandsTest extends JedisCommandTestBase {
 

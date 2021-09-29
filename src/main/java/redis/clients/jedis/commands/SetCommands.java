@@ -41,10 +41,10 @@ public interface SetCommands {
 
   long sinterstore(String dstkey, String... keys);
 
-  long smove(String srckey, String dstkey, String member);
-
   Set<String> sunion(String... keys);
 
   long sunionstore(String dstkey, String... keys);
+
+  long smove(String srckey, String dstkey, String member);
 
 }

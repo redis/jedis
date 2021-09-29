@@ -34,4 +34,18 @@ public interface SetBinaryCommands {
 
   ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params);
 
+  Set<byte[]> sdiff(byte[]... keys);
+
+  long sdiffstore(byte[] dstkey, byte[]... keys);
+
+  Set<byte[]> sinter(byte[]... keys);
+
+  long sinterstore(byte[] dstkey, byte[]... keys);
+
+  Set<byte[]> sunion(byte[]... keys);
+
+  long sunionstore(byte[] dstkey, byte[]... keys);
+
+  long smove(byte[] srckey, byte[] dstkey, byte[] member);
+
 }

@@ -37,15 +37,21 @@ public interface StringCommands {
 
   String psetex(String key, long milliseconds, String value);
 
-  long decrBy(String key, long decrement);
+  List<String> mget(String... keys);
 
-  long decr(String key);
+  String mset(String... keysvalues);
+
+  long msetnx(String... keysvalues);
+
+  long incr(String key);
 
   long incrBy(String key, long increment);
 
   double incrByFloat(String key, double increment);
 
-  long incr(String key);
+  long decr(String key);
+
+  long decrBy(String key, long decrement);
 
   long append(String key, String value);
 
@@ -64,12 +70,6 @@ public interface StringCommands {
   List<Long> bitfield(String key, String...arguments);
 
   List<Long> bitfieldReadonly(String key, String...arguments);
-
-  List<String> mget(String... keys);
-
-  String mset(String... keysvalues);
-
-  long msetnx(String... keysvalues);
 
   long bitop(BitOP op, String destKey, String... srcKeys);
 

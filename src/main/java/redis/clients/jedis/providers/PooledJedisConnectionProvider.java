@@ -3,9 +3,8 @@ package redis.clients.jedis.providers;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.JedisConnection;
 import redis.clients.jedis.util.Pool;
-import java.io.IOException;
 
-public class PooledJedisConnectionProvider<C extends JedisConnection> implements JedisConnectionProvider, AutoCloseable {
+public class PooledJedisConnectionProvider<C extends JedisConnection> implements JedisConnectionProvider {
 
   private final Pool<C> pool;
 
@@ -14,7 +13,7 @@ public class PooledJedisConnectionProvider<C extends JedisConnection> implements
   }
 
   @Override
-  public void close() throws IOException {
+  public void close() {
     pool.close();
   }
 

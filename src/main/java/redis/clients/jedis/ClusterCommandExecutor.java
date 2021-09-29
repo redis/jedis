@@ -24,7 +24,7 @@ public class ClusterCommandExecutor implements JedisCommandExecutor {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
     this.provider.close();
   }
 

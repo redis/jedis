@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.io.Serializable;
 import java.util.*;
 
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
@@ -10,18 +11,6 @@ import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
-
-  public static final Builder<byte[]> BINARY = new Builder<byte[]>() {
-    @Override
-    public byte[] build(Object data) {
-      return (byte[]) data;
-    }
-
-    @Override
-    public String toString() {
-      return "byte[]";
-    }
-  };
 
   public static final Builder<Object> RAW_OBJECT = new Builder<Object>() {
     @Override
@@ -79,7 +68,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "long"; // TODO: Long
+      return "Long";
     }
 
   };
@@ -117,7 +106,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "double"; // TODO: Double
+      return "Double";
     }
   };
 
@@ -150,7 +139,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "boolean"; // Boolean?
+      return "Boolean";
     }
   };
 
@@ -248,6 +237,49 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<byte[]> BINARY = new Builder<byte[]>() {
+    @Override
+    public byte[] build(Object data) {
+      return (byte[]) data;
+    }
+
+    @Override
+    public String toString() {
+      return "byte[]";
+    }
+  };
+
+  public static final Builder<List<byte[]>> BINARY_LIST = new Builder<List<byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<byte[]> build(Object data) {
+      return (List<byte[]>) data;
+    }
+
+    @Override
+    public String toString() {
+      return "List<byte[]>";
+    }
+  };
+
+  public static final Builder<Set<byte[]>> BINARY_SET = new Builder<Set<byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<byte[]> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<byte[]> l = BINARY_LIST.build(data);
+      return SetFromList.of(l);
+    }
+
+    @Override
+    public String toString() {
+      return "Set<byte[]>";
+    }
+
+  };
+
   public static final Builder<String> STRING = new Builder<String>() {
     @Override
     public String build(Object data) {
@@ -256,7 +288,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "string"; // TODO: String
+      return "String";
     }
 
   };
@@ -1048,11 +1080,7 @@ public final class BuilderFactory {
 
   // <-- Stream Builders
 
-  private BuilderFactory() {
-    throw new InstantiationError("Must not instantiate this class");
-  }
-
-  public static final Builder<LCSMatchResult> STR_ALGO_LCS_RESULT_BUILDER = new Builder<LCSMatchResult>() {
+  public static final Builder<LCSMatchResult> STR_ALGO_LCS_RESULT = new Builder<LCSMatchResult>() {
     @Override
     public LCSMatchResult build(Object data) {
       if (data == null) {
@@ -1097,5 +1125,116 @@ public final class BuilderFactory {
       }
     }
   };
+
+  /**
+   * A decorator to implement Set from List. Assume that given List do not contains duplicated
+   * values. The resulting set displays the same ordering, concurrency, and performance
+   * characteristics as the backing list. This class should be used only for Redis commands which
+   * return Set result.
+   * @param <E>
+   */
+  protected static class SetFromList<E> extends AbstractSet<E> implements Serializable {
+    private static final long serialVersionUID = -2850347066962734052L;
+    private final List<E> list;
+
+    private SetFromList(List<E> list) {
+      this.list = list;
+    }
+
+    @Override
+    public void clear() {
+      list.clear();
+    }
+
+    @Override
+    public int size() {
+      return list.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return list.isEmpty();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+      return list.contains(o);
+    }
+
+    @Override
+    public boolean remove(Object o) {
+      return list.remove(o);
+    }
+
+    @Override
+    public boolean add(E e) {
+      return !contains(e) && list.add(e);
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+      return list.iterator();
+    }
+
+    @Override
+    public Object[] toArray() {
+      return list.toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+      return list.toArray(a);
+    }
+
+    @Override
+    public String toString() {
+      return list.toString();
+    }
+
+    @Override
+    public int hashCode() {
+      return list.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == null) return false;
+      if (o == this) return true;
+      if (!(o instanceof Set)) return false;
+
+      Collection<?> c = (Collection<?>) o;
+      if (c.size() != size()) {
+        return false;
+      }
+
+      return containsAll(c);
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+      return list.containsAll(c);
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+      return list.removeAll(c);
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+      return list.retainAll(c);
+    }
+
+    protected static <E> SetFromList<E> of(List<E> list) {
+      if (list == null) {
+        return null;
+      }
+      return new SetFromList<>(list);
+    }
+  }
+
+  private BuilderFactory() {
+    throw new InstantiationError("Must not instantiate this class");
+  }
 
 }

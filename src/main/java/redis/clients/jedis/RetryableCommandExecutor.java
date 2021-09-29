@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.JedisConnectionProvider;
+import redis.clients.jedis.util.IOUtils;
 
 public class RetryableCommandExecutor implements JedisCommandExecutor {
 
@@ -26,8 +27,8 @@ public class RetryableCommandExecutor implements JedisCommandExecutor {
   }
 
   @Override
-  public void close() throws Exception {
-    this.provider.close();
+  public void close() {
+    IOUtils.closeQuietly(this.provider);
   }
 
   @Override

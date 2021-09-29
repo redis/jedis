@@ -24,8 +24,6 @@ public interface SortedSetCommands {
 
   Double zaddIncr(String key, double score, String member, ZAddParams params);
 
-  Set<String> zrange(String key, long start, long stop);
-
   long zrem(String key, String... members);
 
   double zincrby(String key, double increment, String member);
@@ -35,6 +33,8 @@ public interface SortedSetCommands {
   Long zrank(String key, String member);
 
   Long zrevrank(String key, String member);
+
+  Set<String> zrange(String key, long start, long stop);
 
   Set<String> zrevrange(String key, long start, long stop);
 

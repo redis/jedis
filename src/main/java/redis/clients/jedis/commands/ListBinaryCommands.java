@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+
+import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
 
@@ -41,5 +43,21 @@ public interface ListBinaryCommands {
   long lpushx(byte[] key, byte[]... arg);
 
   long rpushx(byte[] key, byte[]... arg);
+
+  List<byte[]> blpop(int timeout, byte[]... keys);
+
+  List<byte[]> blpop(double timeout, byte[]... keys);
+
+  List<byte[]> brpop(int timeout, byte[]... keys);
+
+  List<byte[]> brpop(double timeout, byte[]... keys);
+
+  byte[] rpoplpush(byte[] srckey, byte[] dstkey);
+
+  byte[] brpoplpush(byte[] source, byte[] destination, int timeout);
+
+  byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
+
+  byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
 
 }

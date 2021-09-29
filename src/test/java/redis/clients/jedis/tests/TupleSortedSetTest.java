@@ -8,7 +8,7 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 
 public class TupleSortedSetTest extends JedisCommandTestBase {

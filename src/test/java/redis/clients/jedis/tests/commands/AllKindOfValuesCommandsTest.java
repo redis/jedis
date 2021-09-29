@@ -15,8 +15,8 @@ import static redis.clients.jedis.Protocol.Command.PING;
 import static redis.clients.jedis.Protocol.Command.RPUSH;
 import static redis.clients.jedis.Protocol.Command.SET;
 import static redis.clients.jedis.Protocol.Command.XINFO;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
+import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.SetParams.setParams;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
@@ -35,9 +35,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.stream.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.tests.HostAndPortUtil;
@@ -62,20 +62,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
   private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(7);
-
-  @Test
-  public void ping() {
-    String status = jedis.ping();
-    assertEquals("PONG", status);
-  }
-
-  @Test
-  public void pingWithMessage() {
-    String argument = "message";
-    assertEquals(argument, jedis.ping(argument));
-
-    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
-  }
+//
+//  @Test
+//  public void ping() {
+//    String status = jedis.ping();
+//    assertEquals("PONG", status);
+//  }
+//
+//  @Test
+//  public void pingWithMessage() {
+//    String argument = "message";
+//    assertEquals(argument, jedis.ping(argument));
+//
+//    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
+//  }
 
   @Test
   public void exists() {
@@ -304,18 +304,18 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.renamenx(bfoo, bbar));
 
   }
-
-  @Test
-  public void dbSize() {
-    assertEquals(0, jedis.dbSize());
-
-    jedis.set("foo", "bar");
-    assertEquals(1, jedis.dbSize());
-
-    // Binary
-    jedis.set(bfoo, bbar);
-    assertEquals(2, jedis.dbSize());
-  }
+//
+//  @Test
+//  public void dbSize() {
+//    assertEquals(0, jedis.dbSize());
+//
+//    jedis.set("foo", "bar");
+//    assertEquals(1, jedis.dbSize());
+//
+//    // Binary
+//    jedis.set(bfoo, bbar);
+//    assertEquals(2, jedis.dbSize());
+//  }
 
   @Test
   public void expire() {

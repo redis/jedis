@@ -3,7 +3,6 @@ package redis.clients.jedis.tests.commands;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
 import java.util.HashMap;
@@ -15,8 +14,8 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.GeoRadiusResponse;
-import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;

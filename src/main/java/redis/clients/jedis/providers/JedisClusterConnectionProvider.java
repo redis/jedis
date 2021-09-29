@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-public class JedisClusterConnectionProvider implements JedisConnectionProvider, AutoCloseable {
+public class JedisClusterConnectionProvider implements JedisConnectionProvider {
 
   protected final JedisClusterInfoCache cache;
 

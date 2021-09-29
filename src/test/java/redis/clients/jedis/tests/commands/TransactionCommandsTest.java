@@ -19,6 +19,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol.Keyword;
@@ -42,10 +43,7 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-    nj = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    nj.connect();
-    nj.auth("foobared");
-    nj.flushAll();
+    nj = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
   }
 
   @After

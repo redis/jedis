@@ -12,7 +12,7 @@ public class ManagedJedisConnectionProvider implements JedisConnectionProvider {
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() {
   }
 
   @Override

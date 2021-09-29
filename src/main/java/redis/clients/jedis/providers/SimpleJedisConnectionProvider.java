@@ -1,14 +1,12 @@
 package redis.clients.jedis.providers;
 
-import java.io.Closeable;
-
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisConnection;
 
-public class SimpleJedisConnectionProvider implements JedisConnectionProvider, Closeable {
+public class SimpleJedisConnectionProvider implements JedisConnectionProvider {
 
   private final JedisConnection connection;
 

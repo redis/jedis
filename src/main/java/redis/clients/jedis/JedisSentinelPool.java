@@ -342,7 +342,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
       try {
         resource.resetState();
         returnResourceObject(resource);
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         returnBrokenResource(resource);
         log.debug("Resource is returned to the pool as broken", e);
       }
@@ -452,7 +452,7 @@ public class JedisSentinelPool extends JedisPoolAbstract {
         if (j != null) {
           j.close();
         }
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         log.error("Caught exception while shutting down: ", e);
       }
     }

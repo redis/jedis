@@ -378,7 +378,7 @@ public class JedisPool extends JedisPoolAbstract {
       try {
         resource.resetState();
         returnResourceObject(resource);
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         returnBrokenResource(resource);
         log.warn("Resource is returned to the pool as broken", e);
       }

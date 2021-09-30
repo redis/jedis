@@ -93,7 +93,7 @@ public abstract class Pool<T> implements Closeable {
   protected void returnResourceObject(final T resource) {
     try {
       internalPool.returnObject(resource);
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       throw new JedisException("Could not return the resource to the pool", e);
     }
   }
@@ -134,7 +134,7 @@ public abstract class Pool<T> implements Closeable {
   protected void closeInternalPool() {
     try {
       internalPool.close();
-    } catch (Exception e) {
+    } catch (RuntimeException e) {
       throw new JedisException("Could not destroy the pool", e);
     }
   }

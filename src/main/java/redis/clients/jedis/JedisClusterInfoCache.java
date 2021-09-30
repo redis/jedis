@@ -3,8 +3,12 @@ package redis.clients.jedis;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -173,6 +177,7 @@ public class JedisClusterInfoCache {
     w.lock();
     try {
       this.slots.clear();
+      Set<String> hostAndPortKeys = new HashSet<>();
 
       for (Object slotInfoObj : slots) {
         List<Object> slotInfo = (List<Object>) slotInfoObj;
@@ -183,15 +188,37 @@ public class JedisClusterInfoCache {
 
         List<Integer> slotNums = getAssignedSlotArray(slotInfo);
 
-        // hostInfos
-        List<Object> hostInfos = (List<Object>) slotInfo.get(MASTER_NODE_INDEX);
-        if (hostInfos.isEmpty()) {
-          continue;
-        }
+        int size = slotInfo.size();
+        for (int i = MASTER_NODE_INDEX; i < size; i++) {
+          List<Object> hostInfos = (List<Object>) slotInfo.get(i);
+          if (hostInfos.isEmpty()) {
+            continue;
+          }
 
-        // at this time, we just use master, discard slave information
-        HostAndPort targetNode = generateHostAndPort(hostInfos);
-        assignSlotsToNode(slotNums, targetNode);
+          HostAndPort targetNode = generateHostAndPort(hostInfos);
+          hostAndPortKeys.add(getNodeKey(targetNode));
+          setupNodeIfNotExist(targetNode);
+          if (i == MASTER_NODE_INDEX) {
+            assignSlotsToNode(slotNums, targetNode);
+          }
+        }
+      }
+
+      // Remove dead nodes according to the latest query
+      Iterator<Entry<String, JedisPool>> entryIt = nodes.entrySet().iterator();
+      while (entryIt.hasNext()) {
+        Entry<String, JedisPool> entry = entryIt.next();
+        if (!hostAndPortKeys.contains(entry.getKey())) {
+          JedisPool pool = entry.getValue();
+          try {
+            if (pool != null) {
+              pool.destroy();
+            }
+          } catch (Exception e) {
+            // pass, may be this node dead
+          }
+          entryIt.remove();
+        }
       }
     } finally {
       w.unlock();

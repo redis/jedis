@@ -290,7 +290,7 @@ public class JedisClusterInfoCache {
           if (pool != null) {
             pool.destroy();
           }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
           // pass
         }
       }

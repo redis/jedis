@@ -88,12 +88,12 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
             if (!jedis.isBroken()) {
               jedis.quit();
             }
-          } catch (Exception e) {
+          } catch (RuntimeException e) {
             logger.warn("Error while QUIT", e);
           }
           try {
             jedis.disconnect();
-          } catch (Exception e) {
+          } catch (RuntimeException e) {
             logger.warn("Error while disconnect", e);
           }
         }
@@ -110,7 +110,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
           }
         }
         return true;
-      } catch (Exception ex) {
+      } catch (RuntimeException ex) {
         return false;
       }
     }

@@ -172,9 +172,9 @@ public class Connection implements Closeable {
         if (errorMessage != null && errorMessage.length() > 0) {
           ex = new JedisConnectionException(errorMessage, ex.getCause());
         }
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         /*
-         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
+         * Catch any JedisConnectionException occurred from InputStream#read and just
          * ignore. This approach is safe because reading error message is optional and connection
          * will eventually be closed.
          */
@@ -217,7 +217,7 @@ public class Connection implements Closeable {
     if (socketParamModified) { // this is only for backward compatibility
       try {
         disconnect();
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         // swallow
       }
     }

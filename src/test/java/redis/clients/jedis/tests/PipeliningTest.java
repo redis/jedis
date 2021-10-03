@@ -30,7 +30,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.AbortedTransactionException;
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisBusyException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
@@ -735,8 +735,15 @@ public class PipeliningTest extends JedisCommandTestBase {
       assertSame(AbortedTransactionException.class, ex.getClass());
     } finally {
       try {
-        jedis.scriptKill();
-        scriptKillWait();
+        String status = jedis.scriptKill();
+        // https://github.com/redis/jedis/issues/2656
+        if ("OK".equalsIgnoreCase(status)) {
+          scriptKillWait();
+        } else {
+          // #2656: Checking if this status is actually 'OK' when error occurs in next command.
+          org.apache.logging.log4j.LogManager.getLogger().error(
+              String.format("Status if SCRIPT KILL command is \"%s\"", status));
+        }
       } finally {
         jedis.configSet(luaTimeLimitKey, luaTimeLimit);
       }
@@ -751,15 +758,14 @@ public class PipeliningTest extends JedisCommandTestBase {
           try {
             pingJedis.ping();
             return; // wait is over
-          } catch (JedisDataException jde) {
+          } catch (JedisBusyException busy) {
             --attemptLeft;
-            Thread.sleep(10);
-          } catch (JedisConnectionException jce) {
-            break; // try new connection
+            Thread.sleep(10); // BUSY, waiting for some time
           }
         }
       } catch (Exception any) {
-        // catching everything to try again
+        --attemptLeft;
+        // try new connection
       }
     }
   }

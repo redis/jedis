@@ -30,6 +30,7 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.exceptions.AbortedTransactionException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.tests.commands.JedisCommandTestBase;
 import redis.clients.jedis.util.SafeEncoder;
@@ -735,8 +736,30 @@ public class PipeliningTest extends JedisCommandTestBase {
     } finally {
       try {
         jedis.scriptKill();
+        scriptKillWait();
       } finally {
         jedis.configSet(luaTimeLimitKey, luaTimeLimit);
+      }
+    }
+  }
+
+  private void scriptKillWait() {
+    int attemptLeft = 10;
+    while (attemptLeft > 0) {
+      try (Jedis pingJedis = createJedis()) {
+        while (attemptLeft > 0) {
+          try {
+            pingJedis.ping();
+            return; // wait is over
+          } catch (JedisDataException jde) {
+            --attemptLeft;
+            Thread.sleep(10);
+          } catch (JedisConnectionException jce) {
+            break; // try new connection
+          }
+        }
+      } catch (Exception any) {
+        // catching everything to try again
       }
     }
   }

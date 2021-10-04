@@ -759,8 +759,9 @@ public class PipeliningTest extends JedisCommandTestBase {
             pingJedis.ping();
             return; // wait is over
           } catch (JedisBusyException busy) {
-            --attemptLeft;
             Thread.sleep(10); // BUSY, waiting for some time
+            --attemptLeft; // doing this later; otherwise any exception in Thread.sleep()
+                           // would cause decrement twice for the same turn.
           }
         }
       } catch (Exception any) {

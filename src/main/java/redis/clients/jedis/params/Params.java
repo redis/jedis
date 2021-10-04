@@ -1,5 +1,6 @@
 package redis.clients.jedis.params;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -9,7 +10,12 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.util.SafeEncoder;
 
-public abstract class Params {
+/**
+ * for the jedis param super class and implements with serializable </br>
+ * for use some env need serializable. eg: spark or flink env.
+ * https://github.com/redis/jedis/issues/2659 <br/>
+ */
+public abstract class Params implements Serializable {
 
   private Map<String, Object> params;
 

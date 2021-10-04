@@ -80,19 +80,19 @@ and
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.8.0-SNAPSHOT</version>
+      <version>4.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
 
-for upcoming major release
+or, for upcoming minor release
 
 ```xml
   <dependencies>
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>4.0.0-SNAPSHOT</version>
+      <version>3.8.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```

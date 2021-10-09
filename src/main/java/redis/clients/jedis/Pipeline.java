@@ -9,6 +9,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 public class Pipeline extends MultiKeyPipelineBase implements Closeable {
 
   private MultiResponseBuilder currentMulti;
+  private Jedis jedis;
 
   private class MultiResponseBuilder extends Builder<List<Object>> {
     private List<Response<?>> responses = new ArrayList<>();
@@ -66,6 +67,10 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     this.client = client;
   }
 
+  public void setJedis(Jedis jedis){
+    this.jedis = jedis;
+  }
+
   @Override
   protected Client getClient(byte[] key) {
     return client;
@@ -94,10 +99,17 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
    * commands you execute.
    */
   public void sync() {
-    if (getPipelinedResponseLength() > 0) {
-      List<Object> unformatted = client.getMany(getPipelinedResponseLength());
-      for (Object o : unformatted) {
-        generateResponse(o);
+    try{
+      if (getPipelinedResponseLength() > 0) {
+        List<Object> unformatted = client.getMany(getPipelinedResponseLength());
+        for (Object o : unformatted) {
+          generateResponse(o);
+        }
+      }
+    }finally {
+      if(jedis != null){
+        jedis.pipeline = null;
+        jedis.close();
       }
     }
   }

@@ -4015,12 +4015,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   @Override
   public void close() {
     if (dataSource != null) {
-      Pool<Jedis> pool = this.dataSource;
-      this.dataSource = null;
-      if (isBroken()) {
-        pool.returnBrokenResource(this);
-      } else {
-        pool.returnResource(this);
+      if(pipeline == null){
+        Pool<Jedis> pool = this.dataSource;
+        this.dataSource = null;
+        if (isBroken()) {
+          pool.returnBrokenResource(this);
+        } else {
+          pool.returnResource(this);
+        }
       }
     } else {
       super.close();
@@ -4646,5 +4648,12 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     } finally {
       client.rollbackTimeout();
     }
+  }
+
+  @Override
+  public Pipeline pipelined() {
+    Pipeline pipeline = super.pipelined();
+    pipeline.setJedis(this);
+    return pipeline;
   }
 }

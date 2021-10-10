@@ -1800,231 +1800,315 @@ public class RedisCommandObjects {
 
   // Stream commands
   public final CommandObject<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).addKeyObject(key).addObject(id), hash),
+        BuilderFactory.STREAM_ENTRY_ID);
   }
 
   public final CommandObject<StreamEntryID> xadd(String key, Map<String, String> hash, XAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return xadd(key, params, hash);
+  }
+
+  public final CommandObject<StreamEntryID> xadd(String key, XAddParams params, Map<String, String> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).addKeyObject(key).addParams(params), hash),
+        BuilderFactory.STREAM_ENTRY_ID);
   }
 
   public final CommandObject<Long> xlen(String key) {
     return new CommandObject<>(commandArguments(XLEN).addKeyObject(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> xack(String key, String group, StreamEntryID... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<String> xgroupSetID(String key, String groupname, StreamEntryID id) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> xgroupDestroy(String key, String groupname) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<StreamPendingSummary> xpending(String key, String groupname) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> xdel(String key, StreamEntryID... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> xtrim(String key, long maxLen, boolean approximate) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> xtrim(String key, XTrimParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamEntry>> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamEntry>> xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<StreamInfo> xinfoStream(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamGroupInfo>> xinfoGroup(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<byte[]> xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<byte[]> xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<byte[]> xadd(byte[] key, XAddParams params, Map<byte[], byte[]> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).addKeyObject(key).addParams(params), hash),
+        BuilderFactory.BINARY);
   }
 
   public final CommandObject<Long> xlen(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XLEN).addKeyObject(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end) {
+    return new CommandObject<>(commandArguments(XRANGE).addKeyObject(key).addObject(start).addObject(end),
+        BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  public final CommandObject<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
+    return new CommandObject<>(commandArguments(XRANGE).addKeyObject(key).addObject(start).addObject(end)
+        .addObject(COUNT).addObject(count), BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  public final CommandObject<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
+    return new CommandObject<>(commandArguments(XREVRANGE).addKeyObject(key).addObject(start).addObject(end),
+        BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  public final CommandObject<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
+    return new CommandObject<>(commandArguments(XREVRANGE).addKeyObject(key).addObject(start).addObject(end)
+        .addObject(COUNT).addObject(count), BuilderFactory.STREAM_ENTRY_LIST);
   }
 
   public final CommandObject<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XRANGE).addKeyObject(key).addObject(start).addObject(end),
+        BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XRANGE).addKeyObject(key).addObject(start).addObject(end)
+        .addObject(COUNT).addObject(count), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XREVRANGE).addKeyObject(key).addObject(start).addObject(end),
+        BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XREVRANGE).addKeyObject(key).addObject(start).addObject(end)
+        .addObject(COUNT).addObject(count), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<Long> xack(String key, String group, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XACK).addKeyObject(key).addObject(group).addObjects(ids), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> xack(byte[] key, byte[] group, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XACK).addKeyObject(key).addObject(group).addObjects(ids), BuilderFactory.LONG);
   }
 
-  public final CommandObject<String> xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
+    CommandArguments args = commandArguments(XGROUP).addObject(CREATE).addKeyObject(key)
+        .addObject(groupname).addObject(id);
+    if (makeStream) args.addObject(MKSTREAM);
+    return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> xgroupSetID(byte[] key, byte[] consumer, byte[] id) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<String> xgroupSetID(String key, String groupname, StreamEntryID id) {
+    return new CommandObject<>(commandArguments(XGROUP).addObject(SETID)
+        .addKeyObject(key).addObject(groupname).addObject(id), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Long> xgroupDestroy(byte[] key, byte[] consumer) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Long> xgroupDestroy(String key, String groupname) {
+    return new CommandObject<>(commandArguments(XGROUP).addObject(DESTROY)
+        .addKeyObject(key).addObject(groupname), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
+    return new CommandObject<>(commandArguments(XGROUP).addObject(DELCONSUMER)
+        .addKeyObject(key).addObject(groupname).addObject(consumername), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
+    CommandArguments args = commandArguments(XGROUP).addObject(CREATE).addKeyObject(key)
+        .addObject(groupname).addObject(id);
+    if (makeStream) args.addObject(MKSTREAM);
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
+    return new CommandObject<>(commandArguments(XGROUP).addObject(SETID)
+        .addKeyObject(key).addObject(groupname).addObject(id), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> xgroupDestroy(byte[] key, byte[] groupname) {
+    return new CommandObject<>(commandArguments(XGROUP).addObject(DESTROY)
+        .addKeyObject(key).addObject(groupname), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
+    return new CommandObject<>(commandArguments(XGROUP).addObject(DELCONSUMER)
+        .addKeyObject(key).addObject(groupname).addObject(consumerName), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xdel(String key, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XDEL).addKeyObject(key).addObjects(ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xtrim(String key, long maxLen, boolean approximate) {
+    CommandArguments args = commandArguments(XTRIM).addKeyObject(key).addObject(MAXLEN);
+    if (approximate) args.addObject(Protocol.BYTES_TILDE);
+    args.addObject(maxLen);
+    return new CommandObject<>(args, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xtrim(String key, XTrimParams params) {
+    return new CommandObject<>(commandArguments(XDEL).addKeyObject(key).addParams(params), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> xdel(byte[] key, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XDEL).addKeyObject(key).addObjects(ids), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> xtrim(byte[] key, long maxLen, boolean approximateLength) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    CommandArguments args = commandArguments(XTRIM).addKeyObject(key).addObject(MAXLEN);
+    if (approximateLength) args.addObject(Protocol.BYTES_TILDE);
+    args.addObject(maxLen);
+    return new CommandObject<>(args, BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> xtrim(byte[] key, XTrimParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XDEL).addKeyObject(key).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<StreamPendingSummary> xpending(String key, String groupname) {
+    return new CommandObject<>(commandArguments(XPENDING).addKeyObject(key).addObject(groupname),
+        BuilderFactory.STREAM_PENDING_SUMMARY);
+  }
+
+  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname,
+      StreamEntryID start, StreamEntryID end, int count, String consumername) {
+    CommandArguments args = commandArguments(XPENDING).addKeyObject(key).addObject(groupname)
+        .addObject(start).addObject(end).addObject(count);
+    if (consumername != null) args.addObject(consumername);
+    return new CommandObject<>(args, BuilderFactory.STREAM_PENDING_ENTRY_LIST);
+  }
+
+  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
+    return new CommandObject<>(commandArguments(XPENDING).addKeyObject(key).addObject(groupname)
+        .addParams(params), BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }
 
   public final CommandObject<Object> xpending(byte[] key, byte[] groupname) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XPENDING).addKeyObject(key).addObject(groupname),
+        BuilderFactory.RAW_OBJECT);
   }
 
-  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname,
+      byte[] start, byte[] end, int count, byte[] consumername) {
+    CommandArguments args = commandArguments(XPENDING).addKeyObject(key).addObject(groupname)
+        .addObject(start).addObject(end).addObject(count);
+    if (consumername != null) args.addObject(consumername);
+    return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(XPENDING).addKeyObject(key).addObject(groupname)
+        .addParams(params), BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<StreamEntry>> xclaim(String key, String group,
+      String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XCLAIM).addKeyObject(key).addObject(group)
+        .addObject(consumername).addObject(minIdleTime).addObjects(ids).addParams(params),
+        BuilderFactory.STREAM_ENTRY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<StreamEntryID>> xclaimJustId(String key, String group,
+      String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XCLAIM).addKeyObject(key).addObject(group)
+        .addObject(consumername).addObject(minIdleTime).addObjects(ids).addParams(params)
+        .addObject(JUSTID), BuilderFactory.STREAM_ENTRY_ID_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key,
+      String group, String consumerName, long minIdleTime, StreamEntryID start,
+      XAutoClaimParams params) {
+    return new CommandObject<>(commandArguments(XAUTOCLAIM).addKeyObject(key).addObject(group)
+        .addObject(consumerName).addObject(minIdleTime).addObject(start).addParams(params),
+        BuilderFactory.STREAM_AUTO_CLAIM_RESPONSE);
   }
 
-  public final CommandObject<List<Object>> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(
+      String key, String group, String consumerName, long minIdleTime, StreamEntryID start,
+      XAutoClaimParams params) {
+    return new CommandObject<>(commandArguments(XAUTOCLAIM).addKeyObject(key).addObject(group)
+        .addObject(consumerName).addObject(minIdleTime).addObject(start).addParams(params)
+        .addObject(JUSTID), BuilderFactory.STREAM_AUTO_CLAIM_ID_RESPONSE);
   }
 
-  public final CommandObject<List<Object>> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<byte[]>> xclaim(byte[] key, byte[] group,
+      byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XCLAIM).addKeyObject(key).addObject(group)
+        .addObject(consumername).addObject(minIdleTime).addObjects(ids).addParams(params),
+        BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Object> xinfoStreamBinary(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<byte[]>> xclaimJustId(byte[] key, byte[] group,
+      byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XCLAIM).addKeyObject(key).addObject(group)
+        .addObject(consumername).addObject(minIdleTime).addObjects(ids).addParams(params)
+        .addObject(JUSTID), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<Object>> xinfoGroupBinary(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<Object>> xautoclaim(byte[] key, byte[] groupName,
+      byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
+    return new CommandObject<>(commandArguments(XAUTOCLAIM).addKeyObject(key).addObject(groupName)
+        .addObject(consumerName).addObject(minIdleTime).addObject(start).addParams(params),
+        BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<Object>> xinfoConsumersBinary(byte[] key, byte[] group) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<Object>> xautoclaimJustId(byte[] key, byte[] groupName,
+      byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
+    return new CommandObject<>(commandArguments(XAUTOCLAIM).addKeyObject(key).addObject(groupName)
+        .addObject(consumerName).addObject(minIdleTime).addObject(start).addParams(params)
+        .addObject(JUSTID), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<StreamInfo> xinfoStream(String key) {
+    return new CommandObject<>(commandArguments(XINFO).addObject(STREAM).addKeyObject(key), BuilderFactory.STREAM_INFO);
+  }
+
+  public final CommandObject<List<StreamGroupInfo>> xinfoGroup(String key) {
+    return new CommandObject<>(commandArguments(XINFO).addObject(GROUPS).addKeyObject(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
+  }
+
+  public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
+    return new CommandObject<>(commandArguments(XINFO).addObject(CONSUMERS).addKeyObject(key).addObject(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
+  }
+
+  public final CommandObject<Object> xinfoStream(byte[] key) {
+    return new CommandObject<>(commandArguments(XINFO).addObject(STREAM).addKeyObject(key), BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<List<Object>> xinfoGroup(byte[] key) {
+    return new CommandObject<>(commandArguments(XINFO).addObject(GROUPS).addKeyObject(key), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> xinfoConsumers(byte[] key, byte[] group) {
+    return new CommandObject<>(commandArguments(XINFO).addObject(CONSUMERS).addKeyObject(key).addObject(group), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    CommandArguments args = commandArguments(XREAD).addParams(xReadParams).addObject(STREAMS);
+    Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
+    entrySet.forEach(entry ->  args.addKeyObject(entry.getKey()));
+    entrySet.forEach(entry ->  args.addObject(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE);
+  }
+
+  public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(
+      String groupname, String consumer, XReadGroupParams xReadGroupParams,
+      Map<String, StreamEntryID> streams) {
+    CommandArguments args = commandArguments(XREADGROUP)
+        .addObject(GROUP).addObject(groupname).addObject(consumer)
+        .addParams(xReadGroupParams).addObject(STREAMS);
+    Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
+    entrySet.forEach(entry ->  args.addKeyObject(entry.getKey()));
+    entrySet.forEach(entry ->  args.addObject(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE);
   }
 
   public final CommandObject<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    CommandArguments args = commandArguments(XREAD).addParams(xReadParams).addObject(STREAMS);
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.addKeyObject(entry.getKey());
+    }
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.addObject(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    CommandArguments args = commandArguments(XREADGROUP)
+        .addObject(GROUP).addObject(groupname).addObject(consumer)
+        .addParams(xReadGroupParams).addObject(STREAMS);
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.addKeyObject(entry.getKey());
+    }
+    for (Map.Entry<byte[], byte[]> entry : streams) {
+      args.addObject(entry.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
   // Stream commands
 

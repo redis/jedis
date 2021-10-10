@@ -445,6 +445,31 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public String set(byte[] key, byte[] value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String set(byte[] key, byte[] value, SetParams params) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public byte[] get(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public byte[] getDel(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public byte[] getEx(byte[] key, GetExParams params) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
   public boolean setbit(String key, long offset, boolean value) {
     return executeCommand(commandObjects.setbit(key, offset, value));
   }
@@ -465,6 +490,26 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public boolean setbit(byte[] key, long offset, boolean value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean getbit(byte[] key, long offset) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long setrange(byte[] key, long offset, byte[] value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public byte[] getrange(byte[] key, long startOffset, long endOffset) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
   public String getSet(String key, String value) {
     return executeCommand(commandObjects.getSet(key, value));
   }
@@ -482,6 +527,26 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   @Override
   public String psetex(String key, long milliseconds, String value) {
     return executeCommand(commandObjects.psetex(key, milliseconds, value));
+  }
+
+  @Override
+  public byte[] getSet(byte[] key, byte[] value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long setnx(byte[] key, byte[] value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String setex(byte[] key, long seconds, byte[] value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String psetex(byte[] key, long milliseconds, byte[] value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
@@ -510,17 +575,57 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public List<String> mget(String... keys) {
+  public long incr(byte[] key) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long incrBy(byte[] key, long increment) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public double incrByFloat(byte[] key, double increment) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long decr(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long decrBy(byte[] key, long decrement) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<String> mget(String... keys) {
+    return executeCommand(commandObjects.mget(keys));
   }
 
   @Override
   public String mset(String... keysvalues) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.mset(keysvalues));
   }
 
   @Override
   public long msetnx(String... keysvalues) {
+    return executeCommand(commandObjects.msetnx(keysvalues));
+  }
+
+  @Override
+  public List<byte[]> mget(byte[]... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String mset(byte[]... keysvalues) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long msetnx(byte[]... keysvalues) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
@@ -537,6 +642,21 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   @Override
   public long strlen(String key) {
     return executeCommand(commandObjects.strlen(key));
+  }
+
+  @Override
+  public long append(byte[] key, byte[] value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public byte[] substr(byte[] key, int start, int end) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long strlen(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
@@ -580,136 +700,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public long bitop(BitOP op, String destKey, String... srcKeys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public String set(byte[] key, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public String set(byte[] key, byte[] value, SetParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public byte[] get(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public byte[] getDel(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public byte[] getEx(byte[] key, GetExParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public boolean setbit(byte[] key, long offset, boolean value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public boolean getbit(byte[] key, long offset) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long setrange(byte[] key, long offset, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public byte[] getrange(byte[] key, long startOffset, long endOffset) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public byte[] getSet(byte[] key, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long setnx(byte[] key, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public String setex(byte[] key, long seconds, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public String psetex(byte[] key, long milliseconds, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public List<byte[]> mget(byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public String mset(byte[]... keysvalues) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long msetnx(byte[]... keysvalues) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long incr(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long incrBy(byte[] key, long increment) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public double incrByFloat(byte[] key, double increment) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long decr(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long decrBy(byte[] key, long decrement) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long append(byte[] key, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public byte[] substr(byte[] key, int start, int end) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long strlen(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
   public long bitcount(byte[] key) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
@@ -730,13 +720,23 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public long bitop(BitOP op, String destKey, String... srcKeys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
   public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
   @Override
   public LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
   // String commands
 
@@ -1064,71 +1064,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public long hincrBy(String key, String field, long value) {
-    return executeCommand(commandObjects.hincrBy(key, field, value));
-  }
-
-  @Override
-  public double hincrByFloat(String key, String field, double value) {
-    return executeCommand(commandObjects.hincrByFloat(key, field, value));
-  }
-
-  @Override
-  public boolean hexists(String key, String field) {
-    return executeCommand(commandObjects.hexists(key, field));
-  }
-
-  @Override
-  public long hdel(String key, String... field) {
-    return executeCommand(commandObjects.hdel(key, field));
-  }
-
-  @Override
-  public long hlen(String key) {
-    return executeCommand(commandObjects.hlen(key));
-  }
-
-  @Override
-  public Set<String> hkeys(String key) {
-    return executeCommand(commandObjects.hkeys(key));
-  }
-
-  @Override
-  public List<String> hvals(String key) {
-    return executeCommand(commandObjects.hvals(key));
-  }
-
-  @Override
-  public Map<String, String> hgetAll(String key) {
-    return executeCommand(commandObjects.hgetAll(key));
-  }
-
-  @Override
-  public String hrandfield(String key) {
-    return executeCommand(commandObjects.hrandfield(key));
-  }
-
-  @Override
-  public List<String> hrandfield(String key, long count) {
-    return executeCommand(commandObjects.hrandfield(key, count));
-  }
-
-  @Override
-  public Map<String, String> hrandfieldWithValues(String key, long count) {
-    return executeCommand(commandObjects.hrandfieldWithValues(key, count));
-  }
-
-  @Override
-  public ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params) {
-    return executeCommand(commandObjects.hscan(key, cursor, params));
-  }
-
-  @Override
-  public long hstrlen(String key, String field) {
-    return executeCommand(commandObjects.hstrlen(key, field));
-  }
-
-  @Override
   public long hset(byte[] key, byte[] field, byte[] value) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
@@ -1159,6 +1094,31 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public long hincrBy(String key, String field, long value) {
+    return executeCommand(commandObjects.hincrBy(key, field, value));
+  }
+
+  @Override
+  public double hincrByFloat(String key, String field, double value) {
+    return executeCommand(commandObjects.hincrByFloat(key, field, value));
+  }
+
+  @Override
+  public boolean hexists(String key, String field) {
+    return executeCommand(commandObjects.hexists(key, field));
+  }
+
+  @Override
+  public long hdel(String key, String... field) {
+    return executeCommand(commandObjects.hdel(key, field));
+  }
+
+  @Override
+  public long hlen(String key) {
+    return executeCommand(commandObjects.hlen(key));
+  }
+
+  @Override
   public long hincrBy(byte[] key, byte[] field, long value) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
@@ -1184,6 +1144,21 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public Set<String> hkeys(String key) {
+    return executeCommand(commandObjects.hkeys(key));
+  }
+
+  @Override
+  public List<String> hvals(String key) {
+    return executeCommand(commandObjects.hvals(key));
+  }
+
+  @Override
+  public Map<String, String> hgetAll(String key) {
+    return executeCommand(commandObjects.hgetAll(key));
+  }
+
+  @Override
   public Set<byte[]> hkeys(byte[] key) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
@@ -1199,6 +1174,31 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public String hrandfield(String key) {
+    return executeCommand(commandObjects.hrandfield(key));
+  }
+
+  @Override
+  public List<String> hrandfield(String key, long count) {
+    return executeCommand(commandObjects.hrandfield(key, count));
+  }
+
+  @Override
+  public Map<String, String> hrandfieldWithValues(String key, long count) {
+    return executeCommand(commandObjects.hrandfieldWithValues(key, count));
+  }
+
+  @Override
+  public ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public long hstrlen(String key, String field) {
+    return executeCommand(commandObjects.hstrlen(key, field));
+  }
+
+  @Override
   public byte[] hrandfield(byte[] key) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
@@ -1211,11 +1211,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   @Override
   public Map<byte[], byte[]> hrandfieldWithValues(byte[] key, long count) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
-    return AllKeyBinaryCommands.super.hscan(key, cursor); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
@@ -1271,61 +1266,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public String srandmember(String key) {
-    return executeCommand(commandObjects.srandmember(key));
-  }
-
-  @Override
-  public List<String> srandmember(String key, int count) {
-    return executeCommand(commandObjects.srandmember(key, count));
-  }
-
-  @Override
-  public ScanResult<String> sscan(String key, String cursor, ScanParams params) {
-    return executeCommand(commandObjects.sscan(key, cursor, params));
-  }
-
-  @Override
-  public ScanResult<String> sscan(String key, String cursor) {
-    return AllKeyCommands.super.sscan(key, cursor); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<String> sdiff(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long sdiffstore(String dstkey, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<String> sinter(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long sinterstore(String dstkey, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<String> sunion(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long sunionstore(String dstkey, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long smove(String srckey, String dstkey, String member) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
   public long sadd(byte[] key, byte[]... member) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
@@ -1366,6 +1306,21 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public String srandmember(String key) {
+    return executeCommand(commandObjects.srandmember(key));
+  }
+
+  @Override
+  public List<String> srandmember(String key, int count) {
+    return executeCommand(commandObjects.srandmember(key, count));
+  }
+
+  @Override
+  public ScanResult<String> sscan(String key, String cursor, ScanParams params) {
+    return executeCommand(commandObjects.sscan(key, cursor, params));
+  }
+
+  @Override
   public byte[] srandmember(byte[] key) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
@@ -1376,12 +1331,42 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public ScanResult<byte[]> sscan(byte[] key, byte[] cursor) {
-    return AllKeyBinaryCommands.super.sscan(key, cursor); //To change body of generated methods, choose Tools | Templates.
+  public ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
-  public ScanResult<byte[]> sscan(byte[] key, byte[] cursor, ScanParams params) {
+  public Set<String> sdiff(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long sdiffstore(String dstkey, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> sinter(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long sinterstore(String dstkey, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> sunion(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long sunionstore(String dstkey, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long smove(String srckey, String dstkey, String member) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
@@ -1448,11 +1433,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public Set<String> zrange(String key, long start, long stop) {
-    return executeCommand(commandObjects.zrange(key, start, stop));
-  }
-
-  @Override
   public long zrem(String key, String... members) {
     return executeCommand(commandObjects.zrem(key, members));
   }
@@ -1478,18 +1458,53 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public Set<String> zrevrange(String key, long start, long stop) {
-    return executeCommand(commandObjects.zrevrange(key, start, stop));
+  public long zadd(byte[] key, double score, byte[] member) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(String key, long start, long stop) {
-    return executeCommand(commandObjects.zrangeWithScores(key, start, stop));
+  public long zadd(byte[] key, double score, byte[] member, ZAddParams params) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(String key, long start, long stop) {
-    return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+  public long zadd(byte[] key, Map<byte[], Double> scoreMembers) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zrem(byte[] key, byte[]... members) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public double zincrby(byte[] key, double increment, byte[] member) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Double zincrby(byte[] key, double increment, byte[] member, ZIncrByParams params) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Long zrank(byte[] key, byte[] member) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Long zrevrank(byte[] key, byte[] member) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
@@ -1523,6 +1538,36 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public byte[] zrandmember(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<byte[]> zrandmember(byte[] key, long count) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zrandmemberWithScores(byte[] key, long count) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zcard(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Double zscore(byte[] key, byte[] member) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<Double> zmscore(byte[] key, byte[]... members) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
   public Tuple zpopmax(String key) {
     return executeCommand(commandObjects.zpopmax(key));
   }
@@ -1550,6 +1595,56 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   @Override
   public long zcount(String key, String min, String max) {
     return executeCommand(commandObjects.zcount(key, min, max));
+  }
+
+  @Override
+  public Tuple zpopmax(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zpopmax(byte[] key, int count) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Tuple zpopmin(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zpopmin(byte[] key, int count) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zcount(byte[] key, double min, double max) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zcount(byte[] key, byte[] min, byte[] max) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> zrange(String key, long start, long stop) {
+    return executeCommand(commandObjects.zrange(key, start, stop));
+  }
+
+  @Override
+  public Set<String> zrevrange(String key, long start, long stop) {
+    return executeCommand(commandObjects.zrevrange(key, start, stop));
+  }
+
+  @Override
+  public Set<Tuple> zrangeWithScores(String key, long start, long stop) {
+    return executeCommand(commandObjects.zrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public Set<Tuple> zrevrangeWithScores(String key, long start, long stop) {
+    return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
 
   @Override
@@ -1633,176 +1728,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public long zremrangeByRank(String key, long start, long stop) {
-    return executeCommand(commandObjects.zremrangeByRank(key, start, stop));
-  }
-
-  @Override
-  public long zremrangeByScore(String key, double min, double max) {
-    return executeCommand(commandObjects.zremrangeByScore(key, min, max));
-  }
-
-  @Override
-  public long zremrangeByScore(String key, String min, String max) {
-    return executeCommand(commandObjects.zremrangeByScore(key, min, max));
-  }
-
-  @Override
-  public long zlexcount(String key, String min, String max) {
-    return executeCommand(commandObjects.zlexcount(key, min, max));
-  }
-
-  @Override
-  public Set<String> zrangeByLex(String key, String min, String max) {
-    return executeCommand(commandObjects.zrangeByLex(key, min, max));
-  }
-
-  @Override
-  public Set<String> zrangeByLex(String key, String min, String max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
-  }
-
-  @Override
-  public Set<String> zrevrangeByLex(String key, String max, String min) {
-    return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
-  }
-
-  @Override
-  public Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
-  }
-
-  @Override
-  public long zremrangeByLex(String key, String min, String max) {
-    return executeCommand(commandObjects.zremrangeByLex(key, min, max));
-  }
-
-  @Override
-  public ScanResult<Tuple> zscan(String key, String cursor, ScanParams params) {
-    return executeCommand(commandObjects.zscan(key, cursor, params));
-  }
-
-  @Override
-  public ScanResult<Tuple> zscan(String key, String cursor) {
-    return AllKeyCommands.super.zscan(key, cursor); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public KeyedZSetElement bzpopmax(double timeout, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public KeyedZSetElement bzpopmin(double timeout, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<String> zdiff(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<Tuple> zdiffWithScores(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zdiffStore(String dstkey, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zinterstore(String dstkey, String... sets) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zinterstore(String dstkey, ZParams params, String... sets) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<String> zinter(ZParams params, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<Tuple> zinterWithScores(ZParams params, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<String> zunion(ZParams params, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zunionstore(String dstkey, String... sets) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zunionstore(String dstkey, ZParams params, String... sets) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zadd(byte[] key, double score, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zadd(byte[] key, double score, byte[] member, ZAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zadd(byte[] key, Map<byte[], Double> scoreMembers) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Double zaddIncr(byte[] key, double score, byte[] member, ZAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zrem(byte[] key, byte[]... members) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public double zincrby(byte[] key, double increment, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Double zincrby(byte[] key, double increment, byte[] member, ZIncrByParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Long zrank(byte[] key, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Long zrevrank(byte[] key, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
   public Set<byte[]> zrange(byte[] key, long start, long stop) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
@@ -1819,66 +1744,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
 
   @Override
   public Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public byte[] zrandmember(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<byte[]> zrandmember(byte[] key, long count) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<Tuple> zrandmemberWithScores(byte[] key, long count) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zcard(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Double zscore(byte[] key, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public List<Double> zmscore(byte[] key, byte[]... members) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Tuple zpopmax(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<Tuple> zpopmax(byte[] key, int count) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Tuple zpopmin(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<Tuple> zpopmin(byte[] key, int count) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zcount(byte[] key, double min, double max) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long zcount(byte[] key, byte[] min, byte[] max) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
@@ -1963,57 +1828,167 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public long zremrangeByRank(String key, long start, long stop) {
+    return executeCommand(commandObjects.zremrangeByRank(key, start, stop));
+  }
+
+  @Override
+  public long zremrangeByScore(String key, double min, double max) {
+    return executeCommand(commandObjects.zremrangeByScore(key, min, max));
+  }
+
+  @Override
+  public long zremrangeByScore(String key, String min, String max) {
+    return executeCommand(commandObjects.zremrangeByScore(key, min, max));
+  }
+
+  @Override
   public long zremrangeByRank(byte[] key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zremrangeByRank(key, start, stop));
   }
 
   @Override
   public long zremrangeByScore(byte[] key, double min, double max) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zremrangeByScore(key, min, max));
   }
 
   @Override
   public long zremrangeByScore(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zremrangeByScore(key, min, max));
+  }
+
+  @Override
+  public long zlexcount(String key, String min, String max) {
+    return executeCommand(commandObjects.zlexcount(key, min, max));
+  }
+
+  @Override
+  public Set<String> zrangeByLex(String key, String min, String max) {
+    return executeCommand(commandObjects.zrangeByLex(key, min, max));
+  }
+
+  @Override
+  public Set<String> zrangeByLex(String key, String min, String max, int offset, int count) {
+    return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
+  }
+
+  @Override
+  public Set<String> zrevrangeByLex(String key, String max, String min) {
+    return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
+  }
+
+  @Override
+  public Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
+    return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
+  }
+
+  @Override
+  public long zremrangeByLex(String key, String min, String max) {
+    return executeCommand(commandObjects.zremrangeByLex(key, min, max));
   }
 
   @Override
   public long zlexcount(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zlexcount(key, min, max));
   }
 
   @Override
   public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
   public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
   public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
   public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
   }
 
   @Override
   public long zremrangeByLex(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.zremrangeByLex(key, min, max));
   }
 
   @Override
-  public ScanResult<Tuple> zscan(byte[] key, byte[] cursor) {
-    return AllKeyBinaryCommands.super.zscan(key, cursor); //To change body of generated methods, choose Tools | Templates.
+  public ScanResult<Tuple> zscan(String key, String cursor, ScanParams params) {
+    return executeCommand(commandObjects.zscan(key, cursor, params));
   }
 
   @Override
   public ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params) {
+    return executeCommand(commandObjects.zscan(key, cursor, params));
+  }
+
+  @Override
+  public KeyedZSetElement bzpopmax(double timeout, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public KeyedZSetElement bzpopmin(double timeout, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> zdiff(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zdiffWithScores(String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zdiffStore(String dstkey, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zinterstore(String dstkey, String... sets) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zinterstore(String dstkey, ZParams params, String... sets) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> zinter(ZParams params, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zinterWithScores(ZParams params, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<String> zunion(ZParams params, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zunionstore(String dstkey, String... sets) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long zunionstore(String dstkey, ZParams params, String... sets) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
@@ -2120,6 +2095,41 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public long geoadd(byte[] key, double longitude, double latitude, byte[] member) {
+    return executeCommand(commandObjects.geoadd(key, longitude, latitude, member));
+  }
+
+  @Override
+  public long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    return executeCommand(commandObjects.geoadd(key, memberCoordinateMap));
+  }
+
+  @Override
+  public long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
+    return executeCommand(commandObjects.geoadd(key, params, memberCoordinateMap));
+  }
+
+  @Override
+  public Double geodist(byte[] key, byte[] member1, byte[] member2) {
+    return executeCommand(commandObjects.geodist(key, member1, member2));
+  }
+
+  @Override
+  public Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
+    return executeCommand(commandObjects.geodist(key, member1, member2, unit));
+  }
+
+  @Override
+  public List<byte[]> geohash(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.geohash(key, members));
+  }
+
+  @Override
+  public List<GeoCoordinate> geopos(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.geopos(key, members));
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
   }
@@ -2161,97 +2171,62 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
 
   @Override
   public long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
   @Override
   public long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long geoadd(byte[] key, double longitude, double latitude, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public long geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Double geodist(byte[] key, byte[] member1, byte[] member2) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public List<byte[]> geohash(byte[] key, byte[]... members) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public List<GeoCoordinate> geopos(byte[] key, byte[]... members) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
   @Override
   public long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
   @Override
   public long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
   // Geo commands
 

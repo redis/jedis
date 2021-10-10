@@ -827,27 +827,27 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> hset(byte[] key, byte[] field, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HSET).addKeyObject(key).addObject(field).addObject(value), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> hset(byte[] key, Map<byte[], byte[]> hash) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).addKeyObject(key), hash), BuilderFactory.LONG);
   }
 
   public final CommandObject<byte[]> hget(byte[] key, byte[] field) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HGET).addKeyObject(key).addObject(field), BuilderFactory.BINARY);
   }
 
   public final CommandObject<Long> hsetnx(byte[] key, byte[] field, byte[] value) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HSETNX).addKeyObject(key).addObject(field).addObject(value), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET).addKeyObject(key), hash), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<byte[]>> hmget(byte[] key, byte[]... fields) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HMGET).addKeyObject(key).addObjects(fields), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> hincrBy(String key, String field, long value) {
@@ -870,6 +870,26 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(HLEN).addKeyObject(key), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> hincrBy(byte[] key, byte[] field, long value) {
+    return new CommandObject<>(commandArguments(HINCRBY).addKeyObject(key).addObject(field).addObject(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Double> hincrByFloat(byte[] key, byte[] field, double value) {
+    return new CommandObject<>(commandArguments(HINCRBYFLOAT).addKeyObject(key).addObject(field).addObject(value), BuilderFactory.DOUBLE);
+  }
+
+  public final CommandObject<Boolean> hexists(byte[] key, byte[] field) {
+    return new CommandObject<>(commandArguments(HEXISTS).addKeyObject(key).addObject(field), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> hdel(byte[] key, byte[]... field) {
+    return new CommandObject<>(commandArguments(HDEL).addKeyObject(key).addObjects(field), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> hlen(byte[] key) {
+    return new CommandObject<>(commandArguments(HLEN).addKeyObject(key), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Set<String>> hkeys(String key) {
     return new CommandObject<>(commandArguments(HKEYS).addKeyObject(key), BuilderFactory.STRING_SET);
   }
@@ -878,32 +898,12 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(HVALS).addKeyObject(key), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Long> hincrBy(byte[] key, byte[] field, long value) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Double> hincrByFloat(byte[] key, byte[] field, double value) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Boolean> hexists(byte[] key, byte[] field) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> hdel(byte[] key, byte[]... field) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> hlen(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
   public final CommandObject<Set<byte[]>> hkeys(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HKEYS).addKeyObject(key), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<List<byte[]>> hvals(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HVALS).addKeyObject(key), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Map<String, String>> hgetAll(String key) {
@@ -1125,23 +1125,25 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> zadd(byte[] key, double score, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZADD).addKeyObject(key).addObject(score).addObject(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zadd(byte[] key, double score, byte[] member, ZAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZADD).addKeyObject(key).addParams(params)
+        .addObject(score).addObject(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addFlatMapArgs(commandArguments(ZADD).addKeyObject(key), scoreMembers), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addFlatMapArgs(commandArguments(ZADD).addKeyObject(key).addParams(params), scoreMembers), BuilderFactory.LONG);
   }
 
   public final CommandObject<Double> zaddIncr(byte[] key, double score, byte[] member, ZAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZADD).addKeyObject(key).addObject(Keyword.INCR)
+        .addParams(params).addObject(score).addObject(member), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Double> zincrby(String key, double increment, String member) {
@@ -1153,11 +1155,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Double> zincrby(byte[] key, double increment, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZINCRBY).addKeyObject(key).addObject(increment).addObject(member), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Double> zincrby(byte[] key, double increment, byte[] member, ZIncrByParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZADD).addKeyObject(key).addParams(params).addObject(increment).addObject(member), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Long> zrem(String key, String... members) {
@@ -1165,7 +1167,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> zrem(byte[] key, byte[]... members) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREM).addKeyObject(key).addObjects(members), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zrank(String key, String member) {
@@ -1177,11 +1179,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> zrank(byte[] key, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANK).addKeyObject(key).addObject(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zrevrank(byte[] key, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANK).addKeyObject(key).addObject(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> zrandmember(String key) {
@@ -1197,15 +1199,15 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<byte[]> zrandmember(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANDMEMBER).addKeyObject(key), BuilderFactory.BINARY);
   }
 
   public final CommandObject<Set<byte[]>> zrandmember(byte[] key, long count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANDMEMBER).addKeyObject(key).addObject(count), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Set<Tuple>> zrandmemberWithScores(byte[] key, long count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANDMEMBER).addKeyObject(key).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Long> zcard(String key) {
@@ -1221,15 +1223,15 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> zcard(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZCARD).addKeyObject(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Double> zscore(byte[] key, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZSCORE).addKeyObject(key).addObject(member), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<List<Double>> zmscore(byte[] key, byte[]... members) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZMSCORE).addKeyObject(key).addObjects(members), BuilderFactory.DOUBLE_LIST);
   }
 
   public final CommandObject<Tuple> zpopmax(String key) {
@@ -1249,35 +1251,35 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Tuple> zpopmax(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZPOPMAX).addKeyObject(key), BuilderFactory.TUPLE);
   }
 
   public final CommandObject<Set<Tuple>> zpopmax(byte[] key, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZPOPMAX).addKeyObject(key).addObject(count), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Tuple> zpopmin(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZPOPMIN).addKeyObject(key), BuilderFactory.TUPLE);
   }
 
   public final CommandObject<Set<Tuple>> zpopmin(byte[] key, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZPOPMIN).addKeyObject(key).addObject(count), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(BZPOPMAX).addKeyObjects(keys).addObject(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   public final CommandObject<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(BZPOPMIN).addKeyObjects(keys).addObject(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   public final CommandObject<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(BZPOPMAX).addKeyObjects(keys).addObject(timeout), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(BZPOPMIN).addKeyObjects(keys).addObject(timeout), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> zcount(String key, double min, double max) {
@@ -1289,11 +1291,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> zcount(byte[] key, double min, double max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZCOUNT).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zcount(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZCOUNT).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<String>> zrange(String key, long start, long stop) {
@@ -1389,38 +1391,6 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zlexcount(String key, String min, String max) {
-    return new CommandObject<>(commandArguments(ZLEXCOUNT).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Set<String>> zrangeByLex(String key, String min, String max) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<String>> zrevrangeByLex(String key, String max, String min) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> zremrangeByLex(String key, String min, String max) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYLEX).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<ScanResult<Tuple>> zscan(String key, String cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<ScanResult<Tuple>> zscan(byte[] key, byte[] cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
   public final CommandObject<Set<byte[]>> zrange(byte[] key, long start, long stop) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
@@ -1513,6 +1483,30 @@ public class RedisCommandObjects {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  public final CommandObject<Long> zlexcount(String key, String min, String max) {
+    return new CommandObject<>(commandArguments(ZLEXCOUNT).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Set<String>> zrangeByLex(String key, String min, String max) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  public final CommandObject<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  public final CommandObject<Set<String>> zrevrangeByLex(String key, String max, String min) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  public final CommandObject<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  public final CommandObject<Long> zremrangeByLex(String key, String min, String max) {
+    return new CommandObject<>(commandArguments(ZREMRANGEBYLEX).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> zlexcount(byte[] key, byte[] min, byte[] max) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
@@ -1534,6 +1528,14 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  public final CommandObject<ScanResult<Tuple>> zscan(String key, String cursor, ScanParams params) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  public final CommandObject<ScanResult<Tuple>> zscan(byte[] key, byte[] cursor, ScanParams params) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

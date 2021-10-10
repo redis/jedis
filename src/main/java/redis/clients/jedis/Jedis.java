@@ -2263,7 +2263,7 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
 
   @Override
   public String pfmerge(String destkey, String... sourcekeys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.pfmerge(destkey, sourcekeys));
   }
 
   @Override
@@ -2273,27 +2273,27 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
 
   @Override
   public long pfcount(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.pfcount(keys));
   }
 
   @Override
   public long pfadd(byte[] key, byte[]... elements) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.pfadd(key, elements));
   }
 
   @Override
   public String pfmerge(byte[] destkey, byte[]... sourcekeys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.pfmerge(destkey, sourcekeys));
   }
 
   @Override
   public long pfcount(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.pfcount(key));
   }
 
   @Override
   public long pfcount(byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.pfcount(keys));
   }
   // Hyper Log Log commands
 

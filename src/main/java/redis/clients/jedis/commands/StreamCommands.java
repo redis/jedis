@@ -31,7 +31,7 @@ public interface StreamCommands {
    * @param maxLen
    * @param approximateLength
    */
-  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+//  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
 
   /**
    * XADD key [NOMKSTREAM] [MAXLEN|MINID [=|~] threshold [LIMIT count]] *|ID field value [field value ...]
@@ -41,6 +41,8 @@ public interface StreamCommands {
    * @param params
    */
   StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params);
+//
+//  StreamEntryID xadd(String key, XAddParams params, Map<String, String> hash);
 
   /**
    * XLEN key
@@ -186,14 +188,6 @@ public interface StreamCommands {
    * @param params
    */
   long xtrim(String key, XTrimParams params);
-
-  /**
-   *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> <ID-2>
-   *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
-   *        [FORCE] [JUSTID]
-   */
-  List<StreamEntry> xclaim( String key, String group, String consumername, long minIdleTime,
-      long newIdleTime, int retries, boolean force, StreamEntryID... ids);
 
   /**
    *  XCLAIM <key> <group> <consumer> <min-idle-time> <ID-1> ... <ID-N>

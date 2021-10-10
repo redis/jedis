@@ -2,14 +2,12 @@ package redis.clients.jedis.params;
 
 import static redis.clients.jedis.Protocol.Keyword.IDLE;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.stream.StreamEntryID;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class XPendingParams extends Params {
+public class XPendingParams implements IParams {
 
   private Long idle;
 
@@ -51,33 +49,31 @@ public class XPendingParams extends Params {
   }
 
   @Override
-  public byte[][] getByteParams() {
-    List<byte[]> byteParams = new ArrayList<>();
+  public void addParams(CommandArguments args) {
 
     if (idle != null) {
-      byteParams.add(IDLE.getRaw());
-      byteParams.add(Protocol.toByteArray(idle));
+      args.addObject(IDLE.getRaw());
+      args.addObject(Protocol.toByteArray(idle));
     }
 
     if (start == null) {
-      byteParams.add(SafeEncoder.encode("-"));
+      args.addObject(SafeEncoder.encode("-"));
     } else {
-      byteParams.add(SafeEncoder.encode(start.toString()));
+      args.addObject(SafeEncoder.encode(start.toString()));
     }
 
     if (end == null) {
-      byteParams.add(SafeEncoder.encode("+"));
+      args.addObject(SafeEncoder.encode("+"));
     } else {
-      byteParams.add(SafeEncoder.encode(end.toString()));
+      args.addObject(SafeEncoder.encode(end.toString()));
     }
 
     if (count != null) {
-      byteParams.add(Protocol.toByteArray(count));
+      args.addObject(Protocol.toByteArray(count));
     }
 
     if (consumer != null) {
-      byteParams.add(SafeEncoder.encode(consumer));
+      args.addObject(SafeEncoder.encode(consumer));
     }
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 }

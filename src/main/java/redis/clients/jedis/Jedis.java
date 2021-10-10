@@ -2304,11 +2304,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength) {
-    return executeCommand(commandObjects.xadd(key, id, hash, maxLen, approximateLength));
-  }
-
-  @Override
   public StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params) {
     return executeCommand(commandObjects.xadd(key, hash, params));
   }
@@ -2394,11 +2389,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, long newIdleTime, int retries, boolean force, StreamEntryID... ids) {
-    return executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, newIdleTime, retries, force, ids));
-  }
-
-  @Override
   public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
   }
@@ -2435,7 +2425,7 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
 
   @Override
   public List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
@@ -2454,147 +2444,137 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
 
   @Override
   public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
   }
 
   @Override
   public byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xadd(key, params, hash));
   }
 
   @Override
   public long xlen(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xlen(key));
   }
 
   @Override
   public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xrange(key, start, end));
   }
 
   @Override
   public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
   public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
   public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
   @Override
   public long xack(byte[] key, byte[] group, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xack(key, group, ids));
   }
 
   @Override
-  public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public String xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
+    return executeCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
   }
 
   @Override
-  public String xgroupSetID(byte[] key, byte[] consumer, byte[] id) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public String xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
+    return executeCommand(commandObjects.xgroupSetID(key, groupname, id));
   }
 
   @Override
-  public long xgroupDestroy(byte[] key, byte[] consumer) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public long xgroupDestroy(byte[] key, byte[] groupname) {
+    return executeCommand(commandObjects.xgroupDestroy(key, groupname));
   }
 
   @Override
-  public long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public long xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
+    return executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumerName));
   }
 
   @Override
   public long xdel(byte[] key, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xdel(key, ids));
   }
 
   @Override
   public long xtrim(byte[] key, long maxLen, boolean approximateLength) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xtrim(key, maxLen, approximateLength));
   }
 
   @Override
   public long xtrim(byte[] key, XTrimParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xtrim(key, params));
   }
 
   @Override
   public Object xpending(byte[] key, byte[] groupname) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xpending(key, groupname));
   }
 
   @Override
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
   }
 
   @Override
   public List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xpending(key, groupname, params));
   }
 
   @Override
   public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
   }
 
   @Override
   public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
   }
 
   @Override
   public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params));
   }
 
   @Override
   public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params));
   }
 
   @Override
   public Object xinfoStream(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xinfoStream(key));
   }
 
   @Override
   public List<Object> xinfoGroup(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override
   public List<Object> xinfoConsumers(byte[] key, byte[] group) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 
   @Override
   public List<byte[]> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
   public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
   }
   // Stream commands
 

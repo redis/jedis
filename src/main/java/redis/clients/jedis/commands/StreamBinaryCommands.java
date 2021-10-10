@@ -12,8 +12,8 @@ import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
 
 public interface StreamBinaryCommands {
-
-  byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
+//
+//  byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
 
@@ -29,13 +29,13 @@ public interface StreamBinaryCommands {
 
   long xack(byte[] key, byte[] group, byte[]... ids);
 
-  String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream);
+  String xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream);
 
-  String xgroupSetID(byte[] key, byte[] consumer, byte[] id);
+  String xgroupSetID(byte[] key, byte[] groupname, byte[] id);
 
-  long xgroupDestroy(byte[] key, byte[] consumer);
+  long xgroupDestroy(byte[] key, byte[] groupname);
 
-  long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName);
+  long xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName);
 
   long xdel(byte[] key, byte[]... ids);
 
@@ -48,8 +48,6 @@ public interface StreamBinaryCommands {
   List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params);
-
-  List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime, long newIdleTime, int retries, boolean force, byte[]... ids);
 
   List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
 

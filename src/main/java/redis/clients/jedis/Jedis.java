@@ -34,6 +34,10 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
     this(new SimpleJedisConnectionProvider(hostAndPort, clientConfig));
   }
 
+  public Jedis(JedisSocketFactory socketFactory) {
+    this(new JedisConnection(socketFactory));
+  }
+
   public Jedis(JedisConnection connection) {
     this(new SimpleJedisConnectionProvider(connection));
   }
@@ -61,6 +65,20 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
 
   protected final <T> T executeCommand(CommandObject<T> commandObject) {
     return executor.executeCommand(commandObject);
+  }
+
+  public String ping() {
+    if (!(executor instanceof SimpleJedisExecutor)) {
+      throw new UnsupportedOperationException("PING is supported from simple executor.");
+    }
+    return executor.executeCommand(new CommandObject<>(new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
+  }
+
+  public String flushAll() {
+    if (!(executor instanceof SimpleJedisExecutor)) {
+      throw new UnsupportedOperationException("FLUSHALL is supported from simple executor.");
+    }
+    return executor.executeCommand(new CommandObject<>(new CommandArguments(Protocol.Command.FLUSHALL), BuilderFactory.STRING));
   }
 
   // Key commands

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.Jedis;
 
 import redis.clients.jedis.Protocol.Keyword;
@@ -37,6 +38,7 @@ import redis.clients.jedis.stream.StreamEntry;
 import redis.clients.jedis.stream.StreamEntryID;
 import redis.clients.jedis.stream.StreamGroupInfo;
 import redis.clients.jedis.stream.StreamInfo;
+import redis.clients.jedis.stream.StreamPendingEntry;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class StreamsCommandsTest extends JedisCommandTestBase {

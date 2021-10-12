@@ -4,14 +4,14 @@ import static redis.clients.jedis.Protocol.Keyword.AGGREGATE;
 import static redis.clients.jedis.Protocol.Keyword.WEIGHTS;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class ZParams {
+public class ZParams implements IParams {
+
   public enum Aggregate {
     SUM, MIN, MAX;
 
@@ -46,13 +46,14 @@ public class ZParams {
     return this;
   }
 
-  public Collection<byte[]> getParams() {
-    return Collections.unmodifiableCollection(params);
-  }
-
   public ZParams aggregate(final Aggregate aggregate) {
     params.add(AGGREGATE.getRaw());
     params.add(aggregate.raw);
     return this;
+  }
+
+  @Override
+  public void addParams(CommandArguments args) {
+    params.forEach(param -> args.addObject(param));
   }
 }

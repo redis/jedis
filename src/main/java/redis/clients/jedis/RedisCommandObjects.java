@@ -1295,7 +1295,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Set<String>> zrevrange(String key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGE).addKeyObject(key).addObject(start).addObject(stop), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<Tuple>> zrangeWithScores(String key, long start, long stop) {
@@ -1304,71 +1304,177 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Set<Tuple>> zrevrangeWithScores(String key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGE).addKeyObject(key)
+        .addObject(start).addObject(stop).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Set<String>> zrangeByScore(String key, double min, double max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrangeByScore(String key, String min, String max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrevrangeByScore(String key, double max, double min) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<String>> zrangeByScore(String key, double min, double max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrevrangeByScore(String key, String max, String min) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min), BuilderFactory.STRING_SET);
+  }
+
+  public final CommandObject<Set<String>> zrangeByScore(String key, double min, double max, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrangeByScore(String key, String min, String max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrevrangeByScore(String key, String max, String min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.STRING_SET);
   }
 
+  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
   public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrange(byte[] key, long start, long stop) {
+    return new CommandObject<>(commandArguments(ZRANGE).addKeyObject(key).addObject(start).addObject(stop), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrevrange(byte[] key, long start, long stop) {
+    return new CommandObject<>(commandArguments(ZREVRANGE).addKeyObject(key).addObject(start).addObject(stop), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrangeWithScores(byte[] key, long start, long stop) {
+    return new CommandObject<>(commandArguments(ZRANGE).addKeyObject(key)
+        .addObject(start).addObject(stop).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
+    return new CommandObject<>(commandArguments(ZREVRANGE).addKeyObject(key)
+        .addObject(start).addObject(stop).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, double min, double max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Long> zremrangeByRank(String key, long start, long stop) {
@@ -1383,96 +1489,16 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<byte[]>> zrange(byte[] key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrevrange(byte[] key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrangeWithScores(byte[] key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, double min, double max) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
   public final CommandObject<Long> zremrangeByRank(byte[] key, long start, long stop) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREMRANGEBYRANK).addKeyObject(key).addObject(start).addObject(stop), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zremrangeByScore(byte[] key, double min, double max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zremrangeByScore(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zlexcount(String key, String min, String max) {
@@ -1480,19 +1506,21 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Set<String>> zrangeByLex(String key, String min, String max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYLEX).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYLEX).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrevrangeByLex(String key, String max, String min) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).addKeyObject(key).addObject(max).addObject(min), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Long> zremrangeByLex(String key, String min, String max) {
@@ -1500,27 +1528,29 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> zlexcount(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZLEXCOUNT).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYLEX).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZRANGEBYLEX).addKeyObject(key).addObject(min).addObject(max)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).addKeyObject(key).addObject(max).addObject(min), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).addKeyObject(key).addObject(max).addObject(min)
+        .addObject(LIMIT).addObject(offset).addObject(count), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZREMRANGEBYLEX).addKeyObject(key).addObject(min).addObject(max), BuilderFactory.LONG);
   }
 
   public final CommandObject<ScanResult<Tuple>> zscan(String key, String cursor, ScanParams params) {
@@ -1532,91 +1562,110 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Set<String>> zdiff(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZDIFF).addObject(keys.length).addKeyObjects(keys), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Set<Tuple>> zdiffWithScores(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZDIFF).addObject(keys.length).addKeyObjects(keys)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Long> zdiffStore(String dstkey, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> zinterstore(String dstkey, String... sets) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> zinterstore(String dstkey, ZParams params, String... sets) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<String>> zinter(ZParams params, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<String>> zunion(ZParams params, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> zunionstore(String dstkey, String... sets) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> zunionstore(String dstkey, ZParams params, String... sets) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZDIFFSTORE).addKeyObject(dstkey).addObject(keys.length).addKeyObjects(keys), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<byte[]>> zdiff(byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZDIFF).addObject(keys.length).addKeyObjects(keys), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Set<Tuple>> zdiffWithScores(byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZDIFF).addObject(keys.length).addKeyObjects(keys)
+        .addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Long> zdiffStore(byte[] dstkey, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZDIFFSTORE).addKeyObject(dstkey)
+        .addObject(keys.length).addKeyObjects(keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Long> zinterstore(String dstkey, String... sets) {
+    return new CommandObject<>(commandArguments(ZINTERSTORE).addKeyObject(dstkey)
+        .addObject(sets.length).addKeyObjects(sets), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Long> zinterstore(String dstkey, ZParams params, String... sets) {
+    return new CommandObject<>(commandArguments(ZINTERSTORE).addKeyObject(dstkey)
+        .addObject(sets.length).addKeyObjects(sets).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Set<String>> zinter(ZParams params, String... keys) {
+    return new CommandObject<>(commandArguments(ZINTER).addObject(keys.length).addKeyObjects(keys)
+        .addParams(params), BuilderFactory.STRING_SET);
+  }
+
+  public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
+    return new CommandObject<>(commandArguments(ZINTER).addObject(keys.length).addKeyObjects(keys)
+        .addParams(params).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Long> zinterstore(byte[] dstkey, byte[]... sets) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZINTERSTORE).addKeyObject(dstkey)
+        .addObject(sets.length).addKeyObjects(sets), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZINTERSTORE).addKeyObject(dstkey)
+        .addObject(sets.length).addKeyObjects(sets).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZINTER).addObject(keys.length).addKeyObjects(keys)
+        .addParams(params), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZINTER).addObject(keys.length).addKeyObjects(keys)
+        .addParams(params).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Long> zunionstore(String dstkey, String... sets) {
+    return new CommandObject<>(commandArguments(ZUNIONSTORE).addKeyObject(dstkey)
+        .addObject(sets.length).addKeyObjects(sets), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zunionstore(String dstkey, ZParams params, String... sets) {
+    return new CommandObject<>(commandArguments(ZUNIONSTORE).addKeyObject(dstkey)
+        .addObject(sets.length).addKeyObjects(sets).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Set<String>> zunion(ZParams params, String... keys) {
+    return new CommandObject<>(commandArguments(ZUNION).addObject(keys.length).addKeyObjects(keys)
+        .addParams(params), BuilderFactory.STRING_SET);
+  }
+
+  public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+    return new CommandObject<>(commandArguments(ZUNION).addObject(keys.length).addKeyObjects(keys)
+        .addParams(params).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
   public final CommandObject<Long> zunionstore(byte[] dstkey, byte[]... sets) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZUNIONSTORE).addKeyObject(dstkey)
+        .addObject(sets.length).addKeyObjects(sets), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZUNIONSTORE).addKeyObject(dstkey)
+        .addObject(sets.length).addKeyObjects(sets).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZUNION).addObject(keys.length).addKeyObjects(keys)
+        .addParams(params), BuilderFactory.BINARY_SET);
+  }
+
+  public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZUNION).addObject(keys.length).addKeyObjects(keys)
+        .addParams(params).addObject(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
   // Sorted Set commands
 

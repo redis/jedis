@@ -21,6 +21,7 @@ public final class Protocol {
   public static final int DEFAULT_SENTINEL_PORT = 26379;
   public static final int DEFAULT_TIMEOUT = 2000;
   public static final int DEFAULT_DATABASE = 0;
+  public static final int CLUSTER_HASHSLOTS = 16384;
 
   public static final Charset CHARSET = StandardCharsets.UTF_8;
 

@@ -67,7 +67,7 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     this.client = client;
   }
 
-  public void setJedis(Jedis jedis){
+  protected void setJedis(Jedis jedis){
     this.jedis = jedis;
   }
 

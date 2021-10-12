@@ -15,13 +15,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Test;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisFactory;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisPoolConfig;
-import redis.clients.jedis.Transaction;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -443,5 +437,27 @@ public class JedisPoolTest {
         assertEquals("bar", obj2.get("foo"));
       }
     }
+  }
+
+  @Test
+  public void testPipeline() {
+    JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort());
+    try(Pipeline pip = pool.getPipeline()){
+      pip.set("foo", "bar");
+      pip.set("foo1", "bar1");
+      pip.sync();
+      Response<String> bar = pip.get("foo");
+      Response<String> bar1 = pip.get("foo1");
+      pip.sync();
+      assertEquals("bar", bar.get());
+      assertEquals("bar1", bar1.get());
+
+      pip.set("foo2", "bar2");
+      pip.sync();
+      Response<String> bar2 = pip.get("foo2");
+      pip.sync();
+      assertEquals("bar2", bar2.get());
+    }
+    assertEquals(0, pool.getNumActive());
   }
 }

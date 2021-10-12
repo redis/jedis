@@ -52,10 +52,6 @@ public interface ListCommands {
 
   KeyedListElement brpop(double timeout, String key);
 
-  String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
-
-  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
-
   List<String> blpop(int timeout, String... keys);
 
   KeyedListElement blpop(double timeout, String... keys);
@@ -64,12 +60,12 @@ public interface ListCommands {
 
   KeyedListElement brpop(double timeout, String... keys);
 
-  List<String> blpop(String... args);
-
-  List<String> brpop(String... args);
-
   String rpoplpush(String srckey, String dstkey);
 
   String brpoplpush(String source, String destination, int timeout);
+
+  String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
 
 }

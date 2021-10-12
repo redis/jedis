@@ -216,26 +216,6 @@ public final class BuilderFactory {
       return "ZSet<byte[]>";
     }
   };
-  public static final Builder<Map<byte[], byte[]>> BYTE_ARRAY_MAP = new Builder<Map<byte[], byte[]>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Map<byte[], byte[]> build(Object data) {
-      final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<byte[], byte[]> hash = new JedisByteHashMap();
-      final Iterator<byte[]> iterator = flatHash.iterator();
-      while (iterator.hasNext()) {
-        hash.put(iterator.next(), iterator.next());
-      }
-
-      return hash;
-    }
-
-    @Override
-    public String toString() {
-      return "Map<byte[], byte[]>";
-    }
-
-  };
 
   public static final Builder<byte[]> BINARY = new Builder<byte[]>() {
     @Override
@@ -277,7 +257,26 @@ public final class BuilderFactory {
     public String toString() {
       return "Set<byte[]>";
     }
+  };
 
+  public static final Builder<Map<byte[], byte[]>> BINARY_MAP = new Builder<Map<byte[], byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], byte[]> build(Object data) {
+      final List<byte[]> flatHash = (List<byte[]>) data;
+      final Map<byte[], byte[]> hash = new JedisByteHashMap();
+      final Iterator<byte[]> iterator = flatHash.iterator();
+      while (iterator.hasNext()) {
+        hash.put(iterator.next(), iterator.next());
+      }
+
+      return hash;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<byte[], byte[]>";
+    }
   };
 
   public static final Builder<String> STRING = new Builder<String>() {

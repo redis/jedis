@@ -35,7 +35,11 @@ public class JedisConnection implements Closeable {
   }
 
   public JedisConnection(final String host, final int port) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().build());
+    this(new HostAndPort(host, port));
+  }
+
+  public JedisConnection(final HostAndPort hostAndPort) {
+    this(hostAndPort, DefaultJedisClientConfig.builder().build());
   }
 
   public JedisConnection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
@@ -140,6 +144,11 @@ public class JedisConnection implements Closeable {
       broken = true;
       throw ex;
     }
+  }
+
+  public Object executeCommand(final CommandArguments args) {
+    sendCommand(args);
+    return getOne();
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {

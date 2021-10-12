@@ -58,6 +58,13 @@ public class CommandArguments implements Iterable<Rawable> {
     }
     return this;
   }
+
+  public CommandArguments addObjects(int[] ints) {
+    for (int i : ints) {
+      addObject(i);
+    }
+    return this;
+  }
 //
 //  public boolean addKey(String string) {
 //    return this.add(string);

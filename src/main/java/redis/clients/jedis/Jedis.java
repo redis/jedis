@@ -5,10 +5,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.AllKeyBinaryCommands;
 import redis.clients.jedis.commands.AllKeyCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
 import redis.clients.jedis.providers.JedisConnectionProvider;
@@ -48,9 +50,23 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
         ? new RedisClusterCommandObjects() : new RedisCommandObjects();
   }
 
+  public Jedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
+    this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
+        Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
+  }
+
+  public Jedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+    this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration);
+  }
+
+  public Jedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<JedisConnection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+    this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
+  }
+
   public Jedis(JedisClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     if (provider instanceof JedisClusterConnectionProvider) {
-      this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
+      this.executor = new RetryableClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
       this.commandObjects = new RedisClusterCommandObjects();
     } else {
       this.executor = new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);

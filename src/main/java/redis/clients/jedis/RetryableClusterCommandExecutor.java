@@ -8,15 +8,15 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
 
-public class ClusterCommandExecutor implements JedisCommandExecutor {
+public class RetryableClusterCommandExecutor implements JedisCommandExecutor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ClusterCommandExecutor.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RetryableClusterCommandExecutor.class);
 
   private final JedisClusterConnectionProvider provider;
   private final int maxAttempts;
   private final Duration maxTotalRetriesDuration;
 
-  public ClusterCommandExecutor(JedisClusterConnectionProvider provider, int maxAttempts,
+  public RetryableClusterCommandExecutor(JedisClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     this.provider = provider;
     this.maxAttempts = maxAttempts;

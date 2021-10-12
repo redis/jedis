@@ -55,8 +55,6 @@ public interface KeyBinaryCommands {
 
   Long memoryUsage(byte[] key, int samples);
 
-  boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
-
   boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
 
   String rename(byte[] oldkey, byte[] newkey);
@@ -69,7 +67,9 @@ public interface KeyBinaryCommands {
 
   Set<byte[]> keys(byte[] pattern);
 
-  ScanResult<byte[]> scan(byte[] cursor);
+  default ScanResult<byte[]> scan(byte[] cursor) {
+    return scan(cursor, new ScanParams());
+  }
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 

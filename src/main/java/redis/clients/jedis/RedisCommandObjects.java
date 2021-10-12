@@ -254,24 +254,16 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(Command.KEYS).addKeyObject(pattern), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<ScanResult<String>> scan(String cursor) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
   public final CommandObject<ScanResult<String>> scan(String cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return scan(cursor, params, null);
   }
 
   public final CommandObject<ScanResult<String>> scan(String cursor, ScanParams params, String type) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  public final CommandObject<ScanResult<byte[]>> scan(byte[] cursor) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
   public final CommandObject<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return scan(cursor, params, null);
   }
 
   public final CommandObject<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params, byte[] type) {
@@ -922,6 +914,22 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(HRANDFIELD).addKeyObject(key).addObject(count).addObject(WITHVALUES), BuilderFactory.STRING_MAP);
   }
 
+  public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
+    return new CommandObject<>(commandArguments(HGETALL).addKeyObject(key), BuilderFactory.BINARY_MAP);
+  }
+
+  public final CommandObject<byte[]> hrandfield(byte[] key) {
+    return new CommandObject<>(commandArguments(HRANDFIELD).addKeyObject(key), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<List<byte[]>> hrandfield(byte[] key, long count) {
+    return new CommandObject<>(commandArguments(HRANDFIELD).addKeyObject(key).addObject(count), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count) {
+    return new CommandObject<>(commandArguments(HRANDFIELD).addKeyObject(key).addObject(count).addObject(WITHVALUES), BuilderFactory.BINARY_MAP);
+  }
+
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
@@ -930,28 +938,12 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(HSTRLEN).addKeyObject(key).addObject(field), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<byte[]> hrandfield(byte[] key) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<byte[]>> hrandfield(byte[] key, long count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
   public final CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor, ScanParams params) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
   public final CommandObject<Long> hstrlen(byte[] key, byte[] field) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HSTRLEN).addKeyObject(key).addObject(field), BuilderFactory.LONG);
   }
   // Hash commands
 
@@ -1045,59 +1037,59 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Set<String>> sdiff(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SDIFF).addKeyObjects(keys), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Long> sdiffstore(String dstkey, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SDIFFSTORE).addKeyObject(dstkey).addKeyObjects(keys), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<byte[]>> sdiff(byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SDIFF).addKeyObjects(keys), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Long> sdiffstore(byte[] dstkey, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SDIFFSTORE).addKeyObject(dstkey).addKeyObjects(keys), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<String>> sinter(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SINTER).addKeyObjects(keys), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Long> sinterstore(String dstkey, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SINTERSTORE).addKeyObject(dstkey).addKeyObjects(keys), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<byte[]>> sinter(byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SINTER).addKeyObjects(keys), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Long> sinterstore(byte[] dstkey, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SINTERSTORE).addKeyObject(dstkey).addKeyObjects(keys), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<String>> sunion(String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SUNION).addKeyObjects(keys), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<Long> sunionstore(String dstkey, String... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SUNIONSTORE).addKeyObject(dstkey).addKeyObjects(keys), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<byte[]>> sunion(byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SUNION).addKeyObjects(keys), BuilderFactory.BINARY_SET);
   }
 
   public final CommandObject<Long> sunionstore(byte[] dstkey, byte[]... keys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SUNIONSTORE).addKeyObject(dstkey).addKeyObjects(keys), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> smove(String srckey, String dstkey, String member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SMOVE).addKeyObject(srckey).addKeyObject(dstkey).addObject(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> smove(byte[] srckey, byte[] dstkey, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SMOVE).addKeyObject(srckey).addKeyObject(dstkey).addObject(member), BuilderFactory.LONG);
   }
   // Set commands
 
@@ -2115,10 +2107,6 @@ public class RedisCommandObjects {
   // Stream commands
 
   // Miscellaneous commands
-  public final CommandObject<Boolean> copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
   public final CommandObject<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
     return new CommandObject<>(commandArguments(STRALGO).addObject(LCS).addObject(STRINGS)
         .addObject(strA).addObject(strB).addParams(params),

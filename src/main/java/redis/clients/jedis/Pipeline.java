@@ -99,17 +99,10 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
    * commands you execute.
    */
   public void sync() {
-    try{
-      if (getPipelinedResponseLength() > 0) {
-        List<Object> unformatted = client.getMany(getPipelinedResponseLength());
-        for (Object o : unformatted) {
-          generateResponse(o);
-        }
-      }
-    }finally {
-      if(jedis != null){
-        jedis.pipeline = null;
-        jedis.close();
+    if (getPipelinedResponseLength() > 0) {
+      List<Object> unformatted = client.getMany(getPipelinedResponseLength());
+      for (Object o : unformatted) {
+        generateResponse(o);
       }
     }
   }
@@ -165,7 +158,13 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
 
   @Override
   public void close() {
-    clear();
+    try{
+      clear();
+    }finally {
+      if(jedis != null){
+        jedis.close();
+      }
+    }
   }
 
   public Response<String> watch(String... keys) {

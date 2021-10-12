@@ -378,4 +378,11 @@ public class JedisPool extends Pool<Jedis> {
       }
     }
   }
+
+  public Pipeline getPipeline() {
+    Jedis jedis = this.getResource();
+    Pipeline pipeline = jedis.pipelined();
+    pipeline.setJedis(jedis);
+    return pipeline;
+  }
 }

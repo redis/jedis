@@ -54,6 +54,6 @@ public class ZParams implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
-    params.forEach(param -> args.addObject(param));
+    params.forEach(param -> args.add(param));
   }
 }

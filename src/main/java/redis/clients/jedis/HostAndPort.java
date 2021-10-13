@@ -1,8 +1,6 @@
 package redis.clients.jedis;
 
 import java.io.Serializable;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +10,6 @@ public class HostAndPort implements Serializable {
   private static final long serialVersionUID = -519876229978427751L;
 
   protected static Logger log = LoggerFactory.getLogger(HostAndPort.class);
-
-  private static volatile String localhost;
 
   private final String host;
   private final int port;
@@ -62,38 +58,5 @@ public class HostAndPort implements Serializable {
     String host = string.substring(0, lastColon);
     int port = Integer.parseInt(string.substring(lastColon + 1));
     return new HostAndPort(host, port);
-  }
-
-  public static void setLocalhost(String localhost) {
-    synchronized (HostAndPort.class) {
-      HostAndPort.localhost = localhost;
-    }
-  }
-
-  /**
-   * This method resolves the localhost in a 'lazy manner'.
-   * @return localhost
-   */
-  public static String getLocalhost() {
-    if (localhost == null) {
-      synchronized (HostAndPort.class) {
-        if (localhost == null) {
-          return localhost = getLocalHostQuietly();
-        }
-      }
-    }
-    return localhost;
-  }
-
-  public static String getLocalHostQuietly() {
-    String localAddress;
-    try {
-      localAddress = InetAddress.getLocalHost().getHostAddress();
-    } catch (UnknownHostException | RuntimeException ex) {
-      log.error("{}.getLocalHostQuietly : cant resolve localhost address",
-        HostAndPort.class.getName(), ex);
-      localAddress = "localhost";
-    }
-    return localAddress;
   }
 }

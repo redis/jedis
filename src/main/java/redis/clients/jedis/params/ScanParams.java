@@ -50,8 +50,8 @@ public class ScanParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     for (Map.Entry<Keyword, ByteBuffer> param : params.entrySet()) {
-      args.addObject(param.getKey());
-      args.addObject(param.getValue().array());
+      args.add(param.getKey());
+      args.add(param.getValue().array());
     }
   }
 

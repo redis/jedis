@@ -52,28 +52,28 @@ public class XPendingParams implements IParams {
   public void addParams(CommandArguments args) {
 
     if (idle != null) {
-      args.addObject(IDLE.getRaw());
-      args.addObject(Protocol.toByteArray(idle));
+      args.add(IDLE.getRaw());
+      args.add(Protocol.toByteArray(idle));
     }
 
     if (start == null) {
-      args.addObject(SafeEncoder.encode("-"));
+      args.add(SafeEncoder.encode("-"));
     } else {
-      args.addObject(SafeEncoder.encode(start.toString()));
+      args.add(SafeEncoder.encode(start.toString()));
     }
 
     if (end == null) {
-      args.addObject(SafeEncoder.encode("+"));
+      args.add(SafeEncoder.encode("+"));
     } else {
-      args.addObject(SafeEncoder.encode(end.toString()));
+      args.add(SafeEncoder.encode(end.toString()));
     }
 
     if (count != null) {
-      args.addObject(Protocol.toByteArray(count));
+      args.add(Protocol.toByteArray(count));
     }
 
     if (consumer != null) {
-      args.addObject(SafeEncoder.encode(consumer));
+      args.add(SafeEncoder.encode(consumer));
     }
   }
 }

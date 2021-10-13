@@ -59,18 +59,18 @@ public class StrAlgoLCSParams extends Params implements IParams {
     @Override
     public void addParams(CommandArguments args) {
         if (contains(IDX)) {
-            args.addObject(IDX);
+            args.add(IDX);
         }
         if (contains(LEN)) {
-            args.addObject(LEN);
+            args.add(LEN);
         }
         if (contains(WITHMATCHLEN)) {
-            args.addObject(WITHMATCHLEN);
+            args.add(WITHMATCHLEN);
         }
 
         if (contains(MINMATCHLEN)) {
-            args.addObject(MINMATCHLEN);
-            args.addObject(Protocol.toByteArray((long) getParam(MINMATCHLEN)));
+            args.add(MINMATCHLEN);
+            args.add(Protocol.toByteArray((long) getParam(MINMATCHLEN)));
         }
     }
 }

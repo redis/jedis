@@ -1,7 +1,8 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.util.JedisClusterCRC16;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ClusterCommandArguments extends CommandArguments {
 
@@ -17,7 +18,12 @@ public class ClusterCommandArguments extends CommandArguments {
 
   @Override
   protected void processKey(byte[] key) {
-    super.processKey(key); //To change body of generated methods, choose Tools | Templates.
+    final int hashSlot = JedisClusterCRC16.getSlot(key);
+    if (commandHashSlot < 0) {
+      commandHashSlot = hashSlot;
+    } else if (commandHashSlot != hashSlot) {
+      throw new IllegalArgumentException(SafeEncoder.encode(key));
+    }
   }
 
   @Override

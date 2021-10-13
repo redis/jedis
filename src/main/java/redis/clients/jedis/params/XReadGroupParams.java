@@ -35,16 +35,16 @@ public class XReadGroupParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (count != null) {
-      args.addObject(COUNT);
-      args.addObject(toByteArray(count));
+      args.add(COUNT);
+      args.add(toByteArray(count));
     }
     if (block != null) {
-      args.addObject(BLOCK);
-      args.addObject(toByteArray(block));
+      args.add(BLOCK);
+      args.add(toByteArray(block));
       args.blocking();
     }
     if (noack) {
-      args.addObject(NOACK);
+      args.add(NOACK);
     }
   }
 }

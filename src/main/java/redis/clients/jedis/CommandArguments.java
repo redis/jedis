@@ -25,82 +25,56 @@ public class CommandArguments implements Iterable<Rawable> {
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
   }
-//
-//  public boolean add(String string) {
-//    return args.add(RawableFactory.from(string));
-//  }
-//
-//  public boolean add(byte[] binary) {
-//    return args.add(RawableFactory.from(binary));
-//  }
 
-//  public boolean addObject(Object arg) {
-  public CommandArguments addObject(Object arg) {
+  public CommandArguments add(Object arg) {
     if (arg instanceof Rawable) {
       args.add((Rawable) arg);
     } else if (arg instanceof byte[]) {
-//      this.add((byte[]) arg);
       args.add(RawableFactory.from((byte[]) arg));
     } else if (arg instanceof String) {
-//      this.add((String) arg);
       args.add(RawableFactory.from((String) arg));
     } else {
-//      throw new IllegalArgumentException("\"" + arg.toString() + "\" is not a valid argument.");
       args.add(RawableFactory.from(String.valueOf(arg)));
     }
-//    return true;
     return this;
   }
 
   public CommandArguments addObjects(Object... args) {
     for (Object arg : args) {
-      addObject(arg);
+      add(arg);
     }
     return this;
   }
 
   public CommandArguments addObjects(int[] ints) {
     for (int i : ints) {
-      addObject(i);
+      add(i);
     }
     return this;
   }
-//
-//  public boolean addKey(String string) {
-//    return this.add(string);
-//  }
-//
-//  public boolean addKey(byte[] binary) {
-//    return this.add(binary);
-//  }
 
-//  public boolean addKeyObject(Object arg) {
-  public CommandArguments addKeyObject(Object key) {
+  public CommandArguments key(Object key) {
     if (key instanceof Rawable) {
-//      this.addKey(((Rawable) arg).getRaw());
       Rawable raw = (Rawable) key;
       processKey(raw.getRaw());
       args.add(raw);
     } else if (key instanceof byte[]) {
-//      this.addKey((byte[]) arg);
       byte[] raw = (byte[]) key;
       processKey(raw);
       args.add(RawableFactory.from(raw));
     } else if (key instanceof String) {
-//      this.addKey((String) arg);
       String raw = (String) key;
       processKey(raw);
       args.add(RawableFactory.from(raw));
     } else {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
-//    return true;
     return this;
   }
 
-  public CommandArguments addKeyObjects(Object... args) {
+  public CommandArguments keys(Object... args) {
     for (Object arg : args) {
-      addKeyObject(arg);
+      key(arg);
     }
     return this;
   }
@@ -117,14 +91,6 @@ public class CommandArguments implements Iterable<Rawable> {
   protected void processKey(String key) {
     // do nothing
   }
-//
-//  public static CommandArguments of(ProtocolCommand command, Object... args) {
-//    CommandArguments ca = new CommandArguments(command);
-//    for (Object arg : args) {
-//      ca.addObject(arg);
-//    }
-//    return ca;
-//  }
 
   public int size() {
     return args.size();

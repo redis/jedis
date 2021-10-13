@@ -71,39 +71,39 @@ public class XAddParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (nomkstream) {
-      args.addObject(NOMKSTREAM.getRaw());
+      args.add(NOMKSTREAM.getRaw());
     }
     if (maxLen != null) {
-      args.addObject(MAXLEN.getRaw());
+      args.add(MAXLEN.getRaw());
 
       if (approximateTrimming) {
-        args.addObject(Protocol.BYTES_TILDE);
+        args.add(Protocol.BYTES_TILDE);
       } else if (exactTrimming) {
-        args.addObject(Protocol.BYTES_EQUAL);
+        args.add(Protocol.BYTES_EQUAL);
       }
 
-      args.addObject(Protocol.toByteArray(maxLen));
+      args.add(Protocol.toByteArray(maxLen));
     } else if (minId != null) {
-      args.addObject(MINID.getRaw());
+      args.add(MINID.getRaw());
 
       if (approximateTrimming) {
-        args.addObject(Protocol.BYTES_TILDE);
+        args.add(Protocol.BYTES_TILDE);
       } else if (exactTrimming) {
-        args.addObject(Protocol.BYTES_EQUAL);
+        args.add(Protocol.BYTES_EQUAL);
       }
 
-      args.addObject(SafeEncoder.encode(minId));
+      args.add(SafeEncoder.encode(minId));
     }
 
     if (limit != null) {
-      args.addObject(LIMIT.getRaw());
-      args.addObject(Protocol.toByteArray(limit));
+      args.add(LIMIT.getRaw());
+      args.add(Protocol.toByteArray(limit));
     }
 
     if (id != null) {
-      args.addObject(SafeEncoder.encode(id));
+      args.add(SafeEncoder.encode(id));
     } else {
-      args.addObject(Protocol.BYTES_ASTERISK);
+      args.add(Protocol.BYTES_ASTERISK);
     }
   }
 }

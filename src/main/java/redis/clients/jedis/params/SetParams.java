@@ -112,34 +112,34 @@ public class SetParams extends Params implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (contains(NX)) {
-      args.addObject(Keyword.NX);
+      args.add(Keyword.NX);
     }
     if (contains(XX)) {
-      args.addObject(Keyword.XX);
+      args.add(Keyword.XX);
     }
 
     if (contains(EX)) {
-      args.addObject(Keyword.EX);
-      args.addObject(Protocol.toByteArray((long) getParam(EX)));
+      args.add(Keyword.EX);
+      args.add(Protocol.toByteArray((long) getParam(EX)));
     }
     if (contains(PX)) {
-      args.addObject(Keyword.PX);
-      args.addObject(Protocol.toByteArray((long) getParam(PX)));
+      args.add(Keyword.PX);
+      args.add(Protocol.toByteArray((long) getParam(PX)));
     }
     if (contains(EXAT)) {
-      args.addObject(Keyword.EXAT);
-      args.addObject(Protocol.toByteArray((long) getParam(EXAT)));
+      args.add(Keyword.EXAT);
+      args.add(Protocol.toByteArray((long) getParam(EXAT)));
     }
     if (contains(PXAT)) {
-      args.addObject(Keyword.PXAT);
-      args.addObject(Protocol.toByteArray((long) getParam(PXAT)));
+      args.add(Keyword.PXAT);
+      args.add(Protocol.toByteArray((long) getParam(PXAT)));
     }
     if (contains(KEEPTTL)) {
-      args.addObject(Keyword.KEEPTTL);
+      args.add(Keyword.KEEPTTL);
     }
 
     if (contains(GET)) {
-      args.addObject(Keyword.GET);
+      args.add(Keyword.GET);
     }
   }
 

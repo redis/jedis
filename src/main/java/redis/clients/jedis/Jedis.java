@@ -10,7 +10,6 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.AllKeyBinaryCommands;
 import redis.clients.jedis.commands.AllKeyCommands;
-import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
 import redis.clients.jedis.providers.JedisConnectionProvider;
@@ -81,20 +80,6 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
 
   protected final <T> T executeCommand(CommandObject<T> commandObject) {
     return executor.executeCommand(commandObject);
-  }
-
-  public String ping() {
-    if (!(executor instanceof SimpleJedisExecutor)) {
-      throw new UnsupportedOperationException("PING is supported from simple executor.");
-    }
-    return executor.executeCommand(new CommandObject<>(new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
-  }
-
-  public String flushAll() {
-    if (!(executor instanceof SimpleJedisExecutor)) {
-      throw new UnsupportedOperationException("FLUSHALL is supported from simple executor.");
-    }
-    return executor.executeCommand(new CommandObject<>(new CommandArguments(Protocol.Command.FLUSHALL), BuilderFactory.STRING));
   }
 
   // Key commands

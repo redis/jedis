@@ -45,21 +45,21 @@ public class RestoreParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (replace) {
-      args.addObject(REPLACE.getRaw());
+      args.add(REPLACE.getRaw());
     }
 
     if (absTtl) {
-      args.addObject(ABSTTL.getRaw());
+      args.add(ABSTTL.getRaw());
     }
 
     if (idleTime != null) {
-      args.addObject(IDLETIME.getRaw());
-      args.addObject(Protocol.toByteArray(idleTime));
+      args.add(IDLETIME.getRaw());
+      args.add(Protocol.toByteArray(idleTime));
     }
 
     if (frequency != null) {
-      args.addObject(FREQ.getRaw());
-      args.addObject(Protocol.toByteArray(frequency));
+      args.add(FREQ.getRaw());
+      args.add(Protocol.toByteArray(frequency));
     }
   }
 }

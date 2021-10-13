@@ -281,7 +281,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
     LCSMatchResult stringMatchResult = jedis.strAlgoLCSKeys("key1", "key2",
         StrAlgoLCSParams.StrAlgoLCSParams());
-    assertEquals(stringMatchResult.getMatchString(), "mytext");
+    assertEquals("mytext", stringMatchResult.getMatchString());
   }
 
   @Test

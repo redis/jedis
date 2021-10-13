@@ -62,8 +62,8 @@ public abstract class ClusterJedisCommandsTestBase {
     // add nodes to cluster
 //    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
 //    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
-    node1.executeCommand(new CommandArguments(CLUSTER).add("127.0.0.1").add(nodeInfo2.getPort()));
-    node1.executeCommand(new CommandArguments(CLUSTER).add("127.0.0.1").add(nodeInfo3.getPort()));
+    node1.executeCommand(new CommandArguments(CLUSTER).add("MEET").add("127.0.0.1").add(nodeInfo2.getPort()));
+    node1.executeCommand(new CommandArguments(CLUSTER).add("MEET").add("127.0.0.1").add(nodeInfo3.getPort()));
 
     // split available slots across the three nodes
 //    int slotsPerNode = JedisCluster.HASHSLOTS / 3;
@@ -85,9 +85,9 @@ public abstract class ClusterJedisCommandsTestBase {
 //    node1.clusterAddSlots(node1Slots);
 //    node2.clusterAddSlots(node2Slots);
 //    node3.clusterAddSlots(node3Slots);
-    node1.executeCommand(new CommandArguments(CLUSTER).addObjects(node1Slots));
-    node2.executeCommand(new CommandArguments(CLUSTER).addObjects(node2Slots));
-    node3.executeCommand(new CommandArguments(CLUSTER).addObjects(node3Slots));
+    node1.executeCommand(new CommandArguments(CLUSTER).add("ADDSLOTS").addObjects(node1Slots));
+    node2.executeCommand(new CommandArguments(CLUSTER).add("ADDSLOTS").addObjects(node2Slots));
+    node3.executeCommand(new CommandArguments(CLUSTER).add("ADDSLOTS").addObjects(node3Slots));
 
     waitForClusterReady();
 
@@ -107,8 +107,8 @@ public abstract class ClusterJedisCommandsTestBase {
         BuilderFactory.STRING)));
 //    node2.clusterSetSlotNode(slotTest, node3Id);
 //    node2.clusterSetSlotNode(slot51, node3Id);
-    node2.executeCommand(new CommandArguments(CLUSTER).add("SETSLOT").add(slotTest).add(node3Id));
-    node2.executeCommand(new CommandArguments(CLUSTER).add("SETSLOT").add(slot51).add(node3Id));
+    node2.executeCommand(new CommandArguments(CLUSTER).add("SETSLOT").add(slotTest).add("NODE").add(node3Id));
+    node2.executeCommand(new CommandArguments(CLUSTER).add("SETSLOT").add(slot51).add("NODE").add(node3Id));
 //    node2.clusterDelSlots(slotTest, slot51);
     node2.executeCommand(new CommandArguments(CLUSTER).add("DELSLOTS").add(slotTest).add(slot51));
   }

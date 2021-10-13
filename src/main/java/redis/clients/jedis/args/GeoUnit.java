@@ -1,5 +1,6 @@
 package redis.clients.jedis.args;
 
+import java.util.Locale;
 import redis.clients.jedis.util.SafeEncoder;
 
 public enum GeoUnit implements Rawable {
@@ -9,7 +10,7 @@ public enum GeoUnit implements Rawable {
   private final byte[] raw;
 
   private GeoUnit() {
-    raw = SafeEncoder.encode(name());
+    raw = SafeEncoder.encode(name().toLowerCase(Locale.ENGLISH));
   }
 
   @Override

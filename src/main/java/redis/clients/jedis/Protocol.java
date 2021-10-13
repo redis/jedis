@@ -281,12 +281,12 @@ public final class Protocol {
     IDLE, TIME, RETRYCOUNT, FORCE, USAGE, SAMPLES, STREAM, GROUPS, CONSUMERS, HELP, FREQ, SETUSER,
     GETUSER, DELUSER, WHOAMI, CAT, GENPASS, USERS, LOG, INCR, SAVE, JUSTID, WITHVALUES, UNBLOCK,
     NOMKSTREAM, MINID, DB, ABSTTL, TO, TIMEOUT, ABORT, LCS, STRINGS, NX, XX, EX, PX, EXAT, PXAT,
-    KEEPTTL, CH;
+    KEEPTTL, CH, WITHCOORD, WITHDIST, WITHHASH, STOREDIST;
 
     private final byte[] raw;
 
     private Keyword() {
-      raw = SafeEncoder.encode(name().toLowerCase(Locale.ENGLISH));
+      raw = SafeEncoder.encode(name());
     }
 
     @Override

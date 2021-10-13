@@ -1671,139 +1671,170 @@ public class RedisCommandObjects {
 
   // Geo commands
   public final CommandObject<Long> geoadd(String key, double longitude, double latitude, String member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEOADD).key(key).add(longitude).add(latitude).add(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD), memberCoordinateMap), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).addParams(params), memberCoordinateMap), BuilderFactory.LONG);
   }
 
   public final CommandObject<Double> geodist(String key, String member1, String member2) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Double> geodist(String key, String member1, String member2, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2).add(unit), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<List<String>> geohash(String key, String... members) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEOHASH).key(key).addObjects((Object[]) members), BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<List<GeoCoordinate>> geopos(String key, String... members) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEOPOS).key(key).addObjects((Object[]) members), BuilderFactory.GEO_COORDINATE_LIST);
   }
 
   public final CommandObject<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEOADD).key(key).add(longitude).add(latitude).add(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD), memberCoordinateMap), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).addParams(params), memberCoordinateMap), BuilderFactory.LONG);
   }
 
   public final CommandObject<Double> geodist(byte[] key, byte[] member1, byte[] member2) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Double> geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2).add(unit), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<List<byte[]>> geohash(byte[] key, byte[]... members) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEOHASH).key(key).addObjects((Object[]) members), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<GeoCoordinate>> geopos(byte[] key, byte[]... members) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEOPOS).key(key).addObjects((Object[]) members), BuilderFactory.GEO_COORDINATE_LIST);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> georadius(String key,
+      double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
-  public final CommandObject<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(String key,
+      double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
-  public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Long> georadiusStore(String key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(member)
+        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(String key,
+      String member, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(member)
+        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(member)
+        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
-  public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key,
+      String member, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(member)
+        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
-  public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Long> georadiusByMemberStore(String key, String member,
+      double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(member)
+        .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
-  public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<GeoRadiusResponse>> georadius(byte[] key,
+      double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
-  public final CommandObject<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(byte[] key,
+      double longitude, double latitude, double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
-  public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(byte[] key,
+      double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<Long> georadiusStore(byte[] key, double longitude, double latitude,
+      double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
+        .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(member)
+        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(member)
+        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(member)
+        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(member)
+        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
-  public final CommandObject<Long> georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public final CommandObject<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public final CommandObject<Long> georadiusByMemberStore(byte[] key, byte[] member,
+      double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(member)
+        .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
   }
   // Geo commands
 
@@ -2181,6 +2212,16 @@ public class RedisCommandObjects {
     for (Map.Entry<? extends Object, ? extends Object> entry : map.entrySet()) {
       args.add(entry.getKey());
       args.add(entry.getValue());
+    }
+    return args;
+  }
+
+  private CommandArguments addGeoCoordinateFlatMapArgs(CommandArguments args, Map<?, GeoCoordinate> map) {
+    for (Map.Entry<? extends Object, GeoCoordinate> entry : map.entrySet()) {
+      GeoCoordinate ord = entry.getValue();
+      args.add(ord.getLongitude());
+      args.add(ord.getLatitude());
+      args.add(entry.getKey());
     }
     return args;
   }

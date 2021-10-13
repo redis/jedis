@@ -57,30 +57,30 @@ public class XTrimParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (maxLen != null) {
-      args.addObject(MAXLEN.getRaw());
+      args.add(MAXLEN.getRaw());
 
       if (approximateTrimming) {
-        args.addObject(Protocol.BYTES_TILDE);
+        args.add(Protocol.BYTES_TILDE);
       } else if (exactTrimming) {
-        args.addObject(Protocol.BYTES_EQUAL);
+        args.add(Protocol.BYTES_EQUAL);
       }
 
-      args.addObject(Protocol.toByteArray(maxLen));
+      args.add(Protocol.toByteArray(maxLen));
     } else if (minId != null) {
-      args.addObject(MINID.getRaw());
+      args.add(MINID.getRaw());
 
       if (approximateTrimming) {
-        args.addObject(Protocol.BYTES_TILDE);
+        args.add(Protocol.BYTES_TILDE);
       } else if (exactTrimming) {
-        args.addObject(Protocol.BYTES_EQUAL);
+        args.add(Protocol.BYTES_EQUAL);
       }
 
-      args.addObject(SafeEncoder.encode(minId));
+      args.add(SafeEncoder.encode(minId));
     }
 
     if (limit != null) {
-      args.addObject(LIMIT.getRaw());
-      args.addObject(Protocol.toByteArray(limit));
+      args.add(LIMIT.getRaw());
+      args.add(Protocol.toByteArray(limit));
     }
   }
 }

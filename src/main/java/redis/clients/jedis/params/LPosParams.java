@@ -25,13 +25,13 @@ public class LPosParams extends Params implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (contains(RANK)) {
-      args.addObject(RANK);
-      args.addObject(Protocol.toByteArray((int) getParam(RANK)));
+      args.add(RANK);
+      args.add(Protocol.toByteArray((int) getParam(RANK)));
     }
 
     if (contains(MAXLEN)) {
-      args.addObject(MAXLEN);
-      args.addObject(Protocol.toByteArray((int) getParam(MAXLEN)));
+      args.add(MAXLEN);
+      args.add(Protocol.toByteArray((int) getParam(MAXLEN)));
     }
   }
 

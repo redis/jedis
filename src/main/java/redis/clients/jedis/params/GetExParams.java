@@ -72,19 +72,19 @@ public class GetExParams extends Params implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (contains(EX)) {
-      args.addObject(SafeEncoder.encode(EX));
-      args.addObject(Protocol.toByteArray((long) getParam(EX)));
+      args.add(SafeEncoder.encode(EX));
+      args.add(Protocol.toByteArray((long) getParam(EX)));
     } else if (contains(PX)) {
-      args.addObject(SafeEncoder.encode(PX));
-      args.addObject(Protocol.toByteArray((long) getParam(PX)));
+      args.add(SafeEncoder.encode(PX));
+      args.add(Protocol.toByteArray((long) getParam(PX)));
     } else if (contains(EXAT)) {
-      args.addObject(SafeEncoder.encode(EXAT));
-      args.addObject(Protocol.toByteArray((long) getParam(EXAT)));
+      args.add(SafeEncoder.encode(EXAT));
+      args.add(Protocol.toByteArray((long) getParam(EXAT)));
     } else if (contains(PXAT)) {
-      args.addObject(SafeEncoder.encode(PXAT));
-      args.addObject(Protocol.toByteArray((long) getParam(PXAT)));
+      args.add(SafeEncoder.encode(PXAT));
+      args.add(Protocol.toByteArray((long) getParam(PXAT)));
     } else if (contains(PERSIST)) {
-      args.addObject(SafeEncoder.encode(PERSIST));
+      args.add(SafeEncoder.encode(PERSIST));
     }
   }
 

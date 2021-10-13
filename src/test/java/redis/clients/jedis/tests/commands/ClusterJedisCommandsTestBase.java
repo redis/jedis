@@ -62,8 +62,8 @@ public abstract class ClusterJedisCommandsTestBase {
     // add nodes to cluster
 //    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
 //    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
-    node1.executeCommand(new CommandArguments(CLUSTER).addObject("127.0.0.1").addObject(nodeInfo2.getPort()));
-    node1.executeCommand(new CommandArguments(CLUSTER).addObject("127.0.0.1").addObject(nodeInfo3.getPort()));
+    node1.executeCommand(new CommandArguments(CLUSTER).add("127.0.0.1").add(nodeInfo2.getPort()));
+    node1.executeCommand(new CommandArguments(CLUSTER).add("127.0.0.1").add(nodeInfo3.getPort()));
 
     // split available slots across the three nodes
 //    int slotsPerNode = JedisCluster.HASHSLOTS / 3;
@@ -103,14 +103,14 @@ public abstract class ClusterJedisCommandsTestBase {
     int slot51 = JedisClusterCRC16.getSlot("51");
 //    String node3Id = getNodeId(node3.clusterNodes());
     String node3Id = getNodeId(node3.executeCommand(new CommandObject<>(
-        new CommandArguments(CLUSTER).addObject(Protocol.ClusterKeyword.NODES),
+        new CommandArguments(CLUSTER).add(Protocol.ClusterKeyword.NODES),
         BuilderFactory.STRING)));
 //    node2.clusterSetSlotNode(slotTest, node3Id);
 //    node2.clusterSetSlotNode(slot51, node3Id);
-    node2.executeCommand(new CommandArguments(CLUSTER).addObject("SETSLOT").addObject(slotTest).addObject(node3Id));
-    node2.executeCommand(new CommandArguments(CLUSTER).addObject("SETSLOT").addObject(slot51).addObject(node3Id));
+    node2.executeCommand(new CommandArguments(CLUSTER).add("SETSLOT").add(slotTest).add(node3Id));
+    node2.executeCommand(new CommandArguments(CLUSTER).add("SETSLOT").add(slot51).add(node3Id));
 //    node2.clusterDelSlots(slotTest, slot51);
-    node2.executeCommand(new CommandArguments(CLUSTER).addObject("DELSLOTS").addObject(slotTest).addObject(slot51));
+    node2.executeCommand(new CommandArguments(CLUSTER).add("DELSLOTS").add(slotTest).add(slot51));
   }
 
   @After
@@ -123,9 +123,9 @@ public abstract class ClusterJedisCommandsTestBase {
 //    node1.clusterDelSlots(slotsToDelete);
 //    node2.clusterDelSlots(slotsToDelete);
 //    node3.clusterDelSlots(slotsToDelete);
-    node1.executeCommand(new CommandArguments(CLUSTER).addObject("DELSLOTS").addObjects(slotsToDelete));
-    node2.executeCommand(new CommandArguments(CLUSTER).addObject("DELSLOTS").addObjects(slotsToDelete));
-    node3.executeCommand(new CommandArguments(CLUSTER).addObject("DELSLOTS").addObjects(slotsToDelete));
+    node1.executeCommand(new CommandArguments(CLUSTER).add("DELSLOTS").addObjects(slotsToDelete));
+    node2.executeCommand(new CommandArguments(CLUSTER).add("DELSLOTS").addObjects(slotsToDelete));
+    node3.executeCommand(new CommandArguments(CLUSTER).add("DELSLOTS").addObjects(slotsToDelete));
   }
 
   private static String getNodeId(String infoOutput) {
@@ -143,9 +143,9 @@ public abstract class ClusterJedisCommandsTestBase {
 //      if (node1.clusterInfo().split("\n")[0].contains("ok")
 //          && node2.clusterInfo().split("\n")[0].contains("ok")
 //          && node3.clusterInfo().split("\n")[0].contains("ok")) {
-      if (node1.executeCommand(new CommandObject<>(new CommandArguments(CLUSTER).addObject("INFO"), BuilderFactory.STRING)).split("\n")[0].contains("ok")
-          && node2.executeCommand(new CommandObject<>(new CommandArguments(CLUSTER).addObject("INFO"), BuilderFactory.STRING)).split("\n")[0].contains("ok")
-          && node3.executeCommand(new CommandObject<>(new CommandArguments(CLUSTER).addObject("INFO"), BuilderFactory.STRING)).split("\n")[0].contains("ok")) {
+      if (node1.executeCommand(new CommandObject<>(new CommandArguments(CLUSTER).add("INFO"), BuilderFactory.STRING)).split("\n")[0].contains("ok")
+          && node2.executeCommand(new CommandObject<>(new CommandArguments(CLUSTER).add("INFO"), BuilderFactory.STRING)).split("\n")[0].contains("ok")
+          && node3.executeCommand(new CommandObject<>(new CommandArguments(CLUSTER).add("INFO"), BuilderFactory.STRING)).split("\n")[0].contains("ok")) {
         clusterOk = true;
       }
       Thread.sleep(50);

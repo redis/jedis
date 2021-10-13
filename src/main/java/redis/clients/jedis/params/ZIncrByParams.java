@@ -54,13 +54,13 @@ public class ZIncrByParams extends Params implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (contains(NX)) {
-      args.addObject(NX);
+      args.add(NX);
     }
     if (contains(XX)) {
-      args.addObject(XX);
+      args.add(XX);
     }
 
-    args.addObject(INCR);
+    args.add(INCR);
   }
 
 }

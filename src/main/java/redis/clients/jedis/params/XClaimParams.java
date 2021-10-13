@@ -64,16 +64,16 @@ public class XClaimParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (idleTime != null) {
-      args.addObject(IDLE).addObject(idleTime);
+      args.add(IDLE).add(idleTime);
     }
     if (idleUnixTime != null) {
-      args.addObject(TIME).addObject(idleUnixTime);
+      args.add(TIME).add(idleUnixTime);
     }
     if (retryCount != null) {
-      args.addObject(RETRYCOUNT).addObject(retryCount);
+      args.add(RETRYCOUNT).add(retryCount);
     }
     if (force) {
-      args.addObject(FORCE);
+      args.add(FORCE);
     }
   }
 }

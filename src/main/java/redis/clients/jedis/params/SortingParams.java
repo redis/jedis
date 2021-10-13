@@ -162,7 +162,7 @@ public class SortingParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     for (byte[] param : params) {
-      args.addObject(param);
+      args.add(param);
     }
   }
 }

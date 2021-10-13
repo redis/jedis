@@ -28,7 +28,7 @@ public class XAutoClaimParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (count != null) {
-      args.addObject(COUNT.getRaw()).addObject(count);
+      args.add(COUNT.getRaw()).add(count);
     }
   }
 

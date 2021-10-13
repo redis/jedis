@@ -70,19 +70,19 @@ public class ZAddParams extends Params implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (contains(NX)) {
-      args.addObject(NX);
+      args.add(NX);
     }
     if (contains(XX)) {
-      args.addObject(XX);
+      args.add(XX);
     }
     if (contains(CH)) {
-      args.addObject(CH);
+      args.add(CH);
     }
     if (contains(LT)) {
-      args.addObject(LT);
+      args.add(LT);
     }
     if (contains(GT)) {
-      args.addObject(GT);
+      args.add(GT);
     }
   }
 

@@ -3,6 +3,7 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 
 public enum GeoUnit implements Rawable {
+
   M, KM, MI, FT;
 
   private final byte[] raw;

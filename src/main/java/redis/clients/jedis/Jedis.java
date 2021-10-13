@@ -2382,9 +2382,10 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
       final String consumer, final int count, final long block, final boolean noAck,
       final Entry<String, StreamEntryID>... streams) {
+    if (block > Integer.MAX_VALUE) throw new IllegalArgumentException();
     XReadGroupParams params = XReadGroupParams.xReadGroupParams();
     if (count > 0) params.count(count);
-    if (block > 0) params.block(count);
+    if (block > 0) params.block((int) block);
     if (noAck) params.noAck();
     Map<String, StreamEntryID> streamMap = new java.util.LinkedHashMap<>(streams.length);
     for (Entry<String, StreamEntryID> stream : streams) {
@@ -2394,7 +2395,8 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
-  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
+      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
   }
 
@@ -2528,6 +2530,68 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
     return executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
   }
   // Stream commands
+
+  // Scripting commands
+  @Override
+  public Object eval(String script) {
+    return executeCommand(commandObjects.eval(script));
+  }
+
+  @Override
+  public Object eval(String script, int keyCount, String... params) {
+    return executeCommand(commandObjects.eval(script, keyCount, params));
+  }
+
+  @Override
+  public Object eval(String script, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.eval(script, keys, args));
+  }
+
+  @Override
+  public Object evalsha(String sha1) {
+    return executeCommand(commandObjects.evalsha(sha1));
+  }
+
+  @Override
+  public Object evalsha(String sha1, int keyCount, String... params) {
+    return executeCommand(commandObjects.evalsha(sha1, keyCount, params));
+  }
+
+  @Override
+  public Object evalsha(String sha1, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object eval(byte[] script) {
+    return executeCommand(commandObjects.eval(script));
+  }
+
+  @Override
+  public Object eval(byte[] script, int keyCount, byte[]... params) {
+    return executeCommand(commandObjects.eval(script, keyCount, params));
+  }
+
+  @Override
+  public Object eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.eval(script, keys, args));
+  }
+
+  @Override
+  public Object evalsha(byte[] sha1) {
+    return executeCommand(commandObjects.evalsha(sha1));
+  }
+
+  @Override
+  public Object evalsha(byte[] sha1, int keyCount, byte[]... params) {
+    return executeCommand(commandObjects.evalsha(sha1, keyCount, params));
+  }
+
+  @Override
+  public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+  // Scripting commands
 
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));

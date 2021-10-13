@@ -1,8 +1,8 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.util.JedisClusterCRC16;
-import redis.clients.jedis.util.SafeEncoder;
 
 public class ClusterCommandArguments extends CommandArguments {
 
@@ -22,7 +22,7 @@ public class ClusterCommandArguments extends CommandArguments {
     if (commandHashSlot < 0) {
       commandHashSlot = hashSlot;
     } else if (commandHashSlot != hashSlot) {
-      throw new IllegalArgumentException(SafeEncoder.encode(key));
+      throw new JedisClusterOperationException("Keys must belong to same hashslot.");
     }
   }
 
@@ -32,7 +32,7 @@ public class ClusterCommandArguments extends CommandArguments {
     if (commandHashSlot < 0) {
       commandHashSlot = hashSlot;
     } else if (commandHashSlot != hashSlot) {
-      throw new IllegalArgumentException(key);
+      throw new JedisClusterOperationException("Keys must belong to same hashslot.");
     }
   }
 

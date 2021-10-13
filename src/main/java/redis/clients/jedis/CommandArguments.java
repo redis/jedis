@@ -33,7 +33,12 @@ public class CommandArguments implements Iterable<Rawable> {
       args.add(RawableFactory.from((byte[]) arg));
     } else if (arg instanceof String) {
       args.add(RawableFactory.from((String) arg));
+    } else if (arg instanceof Boolean) {
+      args.add(RawableFactory.from(Integer.toString((Boolean) arg ? 1 : 0)));
     } else {
+      if (arg == null) {
+        throw new IllegalArgumentException("null is not a valid argument.");
+      }
       args.add(RawableFactory.from(String.valueOf(arg)));
     }
     return this;
@@ -72,14 +77,14 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
-  public CommandArguments keys(Object... args) {
-    for (Object arg : args) {
-      key(arg);
+  public final CommandArguments keys(Object... keys) {
+    for (Object key : keys) {
+      key(key);
     }
     return this;
   }
 
-  public CommandArguments addParams(IParams params) {
+  public final CommandArguments addParams(IParams params) {
     params.addParams(this);
     return this;
   }
@@ -88,8 +93,22 @@ public class CommandArguments implements Iterable<Rawable> {
     // do nothing
   }
 
+  protected final CommandArguments processKeys(byte[]... keys) {
+    for (byte[] key : keys) {
+      processKey(key);
+    }
+    return this;
+  }
+
   protected void processKey(String key) {
     // do nothing
+  }
+
+  protected final CommandArguments processKeys(String... keys) {
+    for (String key : keys) {
+      processKey(key);
+    }
+    return this;
   }
 
   public int size() {

@@ -16,7 +16,8 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
-import redis.clients.jedis.Jedis;
+//import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisX;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;

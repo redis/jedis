@@ -5,7 +5,7 @@ import org.junit.Before;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisX;
 import redis.clients.jedis.JedisConnection;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil;
@@ -14,7 +14,7 @@ public abstract class JedisCommandTestBase {
 
   protected static final HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
-  protected Jedis jedis;
+  protected JedisX jedis;
 
   public JedisCommandTestBase() {
     super();
@@ -25,7 +25,7 @@ public abstract class JedisCommandTestBase {
     JedisConnection connection = new JedisConnection(hnp, DefaultJedisClientConfig.builder()
         .timeoutMillis(500).password("foobared").build());
     connection.executeCommand(Protocol.Command.FLUSHALL);
-    jedis = new Jedis(connection);
+    jedis = new JedisX(connection);
   }
 
   @After
@@ -33,7 +33,7 @@ public abstract class JedisCommandTestBase {
     jedis.close();
   }
 
-  protected Jedis createJedis() {
-    return new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
+  protected JedisX createJedis() {
+    return new JedisX(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
   }
 }

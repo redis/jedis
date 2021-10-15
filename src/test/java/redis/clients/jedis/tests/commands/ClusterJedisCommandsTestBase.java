@@ -15,7 +15,8 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
+//import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisX;
 import redis.clients.jedis.JedisConnection;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil;
@@ -35,7 +36,7 @@ public abstract class ClusterJedisCommandsTestBase {
 
   private final Set<HostAndPort> jedisClusterNode = new HashSet<>();
 //  JedisCluster jedisCluster;
-  Jedis jedisCluster;
+  JedisX jedisCluster;
 
   @Before
   public void setUp() throws InterruptedException {
@@ -93,7 +94,7 @@ public abstract class ClusterJedisCommandsTestBase {
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
 //    jedisCluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
-    jedisCluster = new Jedis(jedisClusterNode, DefaultJedisClientConfig.builder().password("cluster").build(), 5);
+    jedisCluster = new JedisX(jedisClusterNode, DefaultJedisClientConfig.builder().password("cluster").build(), 5);
 
   }
 

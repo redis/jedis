@@ -6,7 +6,7 @@ import java.util.Calendar;
 import redis.clients.jedis.DefaultJedisClientConfig;
 
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
+//import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisConnection;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
@@ -23,7 +23,6 @@ public class PipelinedGetSetBenchmark {
 //    jedis.flushAll();
     JedisConnection conn = new JedisConnection(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
     conn.executeCommand(Protocol.Command.FLUSHALL);
-    Jedis jedis = new Jedis(conn);
 
     long begin = Calendar.getInstance().getTimeInMillis();
 

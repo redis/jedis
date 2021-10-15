@@ -18,7 +18,8 @@ import org.apache.logging.log4j.Logger;
 
 import org.junit.Test;
 
-import redis.clients.jedis.Jedis;
+//import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisX;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -507,7 +508,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
       } catch(InterruptedException e) {
         logger.error("", e);
       }
-      try (Jedis j = createJedis()) {
+      try (JedisX j = createJedis()) {
         j.lpush("foo", "bar");
       }
     }).start();
@@ -631,7 +632,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
       } catch(InterruptedException e) {
         logger.error("", e);
       }
-      try (Jedis j = createJedis()) {
+      try (JedisX j = createJedis()) {
         j.lpush("foo", "bar");
       }
     }).start();
@@ -714,7 +715,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
         } catch (InterruptedException e) {
           logger.error("", e);
         }
-        try (Jedis j = createJedis()) {
+        try (JedisX j = createJedis()) {
           j.lpush("foo", "a");
         }
       }
@@ -736,7 +737,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
         } catch (InterruptedException e) {
           logger.error("", e);
         }
-        try (Jedis j = createJedis()) {
+        try (JedisX j = createJedis()) {
           j.lpush(bfoo, bA);
         }
       }
@@ -852,7 +853,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
       } catch (InterruptedException e) {
         logger.error("", e);
       }
-      try (Jedis j = createJedis()) {
+      try (JedisX j = createJedis()) {
         j.rpush("foo", "bar1", "bar2", "bar3");
       }
     }).start();
@@ -868,7 +869,7 @@ public class ListCommandsTest extends JedisCommandTestBase {
       } catch (InterruptedException e) {
         logger.error("", e);
       }
-      try (Jedis j = createJedis()) {
+      try (JedisX j = createJedis()) {
         j.rpush(bfoo, b1, b2, b3);
       }
     }).start();

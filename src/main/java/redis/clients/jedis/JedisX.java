@@ -18,52 +18,52 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.IOUtils;
 
-public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseable {
+public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseable {
 
   protected final JedisCommandExecutor executor;
   private final RedisCommandObjects commandObjects;
 
-  public Jedis() {
+  public JedisX() {
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
   }
 
-  public Jedis(HostAndPort hostAndPort) {
+  public JedisX(HostAndPort hostAndPort) {
     this(new SimpleJedisConnectionProvider(hostAndPort));
   }
 
-  public Jedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+  public JedisX(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new SimpleJedisConnectionProvider(hostAndPort, clientConfig));
   }
 
-  public Jedis(JedisSocketFactory socketFactory) {
+  public JedisX(JedisSocketFactory socketFactory) {
     this(new JedisConnection(socketFactory));
   }
 
-  public Jedis(JedisConnection connection) {
+  public JedisX(JedisConnection connection) {
     this(new SimpleJedisConnectionProvider(connection));
   }
 
-  public Jedis(JedisConnectionProvider provider) {
+  public JedisX(JedisConnectionProvider provider) {
     this.executor = new SimpleJedisExecutor(provider);
     this.commandObjects = (provider instanceof JedisClusterConnectionProvider)
         ? new RedisClusterCommandObjects() : new RedisCommandObjects();
   }
 
-  public Jedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
+  public JedisX(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
     this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
         Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
   }
 
-  public Jedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+  public JedisX(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration);
   }
 
-  public Jedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
+  public JedisX(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<JedisConnection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
   }
 
-  public Jedis(JedisClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
+  public JedisX(JedisClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     if (provider instanceof JedisClusterConnectionProvider) {
       this.executor = new RetryableClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
       this.commandObjects = new RedisClusterCommandObjects();

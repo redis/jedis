@@ -369,6 +369,11 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   }
 
   @Override
+  public ScanResult<String> scan(String cursor) {
+    return executeCommand(commandObjects.scan(cursor));
+  }
+
+  @Override
   public ScanResult<String> scan(String cursor, ScanParams params) {
     return executeCommand(commandObjects.scan(cursor, params));
   }
@@ -381,6 +386,11 @@ public class Jedis implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseabl
   @Override
   public Set<byte[]> keys(byte[] pattern) {
     return executeCommand(commandObjects.keys(pattern));
+  }
+
+  @Override
+  public ScanResult<byte[]> scan(byte[] cursor) {
+    return executeCommand(commandObjects.scan(cursor));
   }
 
   @Override

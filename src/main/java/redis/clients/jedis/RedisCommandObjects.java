@@ -248,32 +248,38 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(RENAMENX).key(oldkey).key(newkey), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<String>> keys(String pattern) {
+  public CommandObject<Set<String>> keys(String pattern) {
     CommandArguments args = commandArguments(Command.KEYS).key(pattern);
-    if (JedisClusterHashTag.isClusterCompliantMatchPattern(pattern)) args.processKey(pattern);
     return new CommandObject<>(args, BuilderFactory.STRING_SET);
   }
 
-  public final CommandObject<Set<byte[]>> keys(byte[] pattern) {
+  public CommandObject<Set<byte[]>> keys(byte[] pattern) {
     CommandArguments args = commandArguments(Command.KEYS).key(pattern);
-    if (JedisClusterHashTag.isClusterCompliantMatchPattern(pattern)) args.processKey(pattern);
     return new CommandObject<>(args, BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<ScanResult<String>> scan(String cursor, ScanParams params) {
-    return scan(cursor, params, null);
+  public CommandObject<ScanResult<String>> scan(String cursor) {
+    return new CommandObject<>(commandArguments(SCAN).add(cursor), BuilderFactory.SCAN_RESPONSE);
   }
 
-  public final CommandObject<ScanResult<String>> scan(String cursor, ScanParams params, String type) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public CommandObject<ScanResult<String>> scan(String cursor, ScanParams params) {
+    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params), BuilderFactory.SCAN_RESPONSE);
   }
 
-  public final CommandObject<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params) {
-    return scan(cursor, params, null);
+  public CommandObject<ScanResult<String>> scan(String cursor, ScanParams params, String type) {
+    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).add(Keyword.TYPE).add(type), BuilderFactory.SCAN_RESPONSE);
   }
 
-  public final CommandObject<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params, byte[] type) {
-    throw new UnsupportedOperationException("Not supported yet.");
+  public CommandObject<ScanResult<byte[]>> scan(byte[] cursor) {
+    return new CommandObject<>(commandArguments(SCAN).add(cursor), BuilderFactory.SCAN_BINARY_RESPONSE);
+  }
+
+  public CommandObject<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params) {
+    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params), BuilderFactory.SCAN_BINARY_RESPONSE);
+  }
+
+  public CommandObject<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params, byte[] type) {
+    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).add(Keyword.TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   public final CommandObject<Long> memoryUsage(String key) {
@@ -937,7 +943,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params), BuilderFactory.HSCAN_RESPONSE);
   }
 
   public final CommandObject<Long> hstrlen(String key, String field) {
@@ -945,7 +951,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params), BuilderFactory.HSCAN_BINARY_RESPONSE);
   }
 
   public final CommandObject<Long> hstrlen(byte[] key, byte[] field) {
@@ -1035,11 +1041,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<ScanResult<String>> sscan(String key, String cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SSCAN).key(key).add(cursor).addParams(params), BuilderFactory.SSCAN_RESPONSE);
   }
 
   public final CommandObject<ScanResult<byte[]>> sscan(byte[] key, byte[] cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(SSCAN).key(key).add(cursor).addParams(params), BuilderFactory.SSCAN_BINARY_RESPONSE);
   }
 
   public final CommandObject<Set<String>> sdiff(String... keys) {
@@ -1560,11 +1566,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<ScanResult<Tuple>> zscan(String key, String cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZSCAN).key(key).add(cursor).addParams(params), BuilderFactory.ZSCAN_RESPONSE);
   }
 
   public final CommandObject<ScanResult<Tuple>> zscan(byte[] key, byte[] cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new CommandObject<>(commandArguments(ZSCAN).key(key).add(cursor).addParams(params), BuilderFactory.ZSCAN_RESPONSE);
   }
 
   public final CommandObject<Set<String>> zdiff(String... keys) {

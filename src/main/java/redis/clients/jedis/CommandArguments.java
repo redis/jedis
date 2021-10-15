@@ -89,8 +89,9 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
-  protected void processKey(byte[] key) {
+  protected CommandArguments processKey(byte[] key) {
     // do nothing
+    return this;
   }
 
   protected final CommandArguments processKeys(byte[]... keys) {
@@ -100,8 +101,9 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
-  protected void processKey(String key) {
+  protected CommandArguments processKey(String key) {
     // do nothing
+    return this;
   }
 
   protected final CommandArguments processKeys(String... keys) {

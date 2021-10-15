@@ -68,9 +68,7 @@ public interface KeyCommands {
 
   long renamenx(String oldkey, String newkey);
 
-  default ScanResult<String> scan(String cursor) {
-    return scan(cursor, new ScanParams());
-  }
+  ScanResult<String> scan(String cursor);
 
   ScanResult<String> scan(String cursor, ScanParams params);
 

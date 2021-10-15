@@ -464,6 +464,102 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<ScanResult<String>> SCAN_RESPONSE = new Builder<ScanResult<String>>() {
+    @Override
+    public ScanResult<String> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String newcursor = new String((byte[]) result.get(0));
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<String> results = new ArrayList<>(rawResults.size());
+      for (byte[] bs : rawResults) {
+        results.add(SafeEncoder.encode(bs));
+      }
+      return new ScanResult<>(newcursor, results);
+    }
+  };
+
+  public static final Builder<ScanResult<Map.Entry<String, String>>> HSCAN_RESPONSE
+      = new Builder<ScanResult<Map.Entry<String, String>>>() {
+    @Override
+    public ScanResult<Map.Entry<String, String>> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String newcursor = new String((byte[]) result.get(0));
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<Map.Entry<String, String>> results = new ArrayList<>(rawResults.size() / 2);
+      Iterator<byte[]> iterator = rawResults.iterator();
+      while (iterator.hasNext()) {
+        results.add(new AbstractMap.SimpleEntry<>(SafeEncoder.encode(iterator.next()),
+            SafeEncoder.encode(iterator.next())));
+      }
+      return new ScanResult<>(newcursor, results);
+    }
+  };
+
+  public static final Builder<ScanResult<String>> SSCAN_RESPONSE = new Builder<ScanResult<String>>() {
+    @Override
+    public ScanResult<String> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String newcursor = new String((byte[]) result.get(0));
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<String> results = new ArrayList<>(rawResults.size());
+      for (byte[] bs : rawResults) {
+        results.add(SafeEncoder.encode(bs));
+      }
+      return new ScanResult<>(newcursor, results);
+    }
+  };
+
+  public static final Builder<ScanResult<Tuple>> ZSCAN_RESPONSE = new Builder<ScanResult<Tuple>>() {
+    @Override
+    public ScanResult<Tuple> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String newcursor = new String((byte[]) result.get(0));
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<Tuple> results = new ArrayList<>(rawResults.size() / 2);
+      Iterator<byte[]> iterator = rawResults.iterator();
+      while (iterator.hasNext()) {
+        results.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
+      }
+      return new ScanResult<>(newcursor, results);
+    }
+  };
+
+  public static final Builder<ScanResult<byte[]>> SCAN_BINARY_RESPONSE = new Builder<ScanResult<byte[]>>() {
+    @Override
+    public ScanResult<byte[]> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      byte[] newcursor = (byte[]) result.get(0);
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      return new ScanResult<>(newcursor, rawResults);
+    }
+  };
+
+  public static final Builder<ScanResult<Map.Entry<byte[], byte[]>>> HSCAN_BINARY_RESPONSE
+      = new Builder<ScanResult<Map.Entry<byte[], byte[]>>>() {
+    @Override
+    public ScanResult<Map.Entry<byte[], byte[]>> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      byte[] newcursor = (byte[]) result.get(0);
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<Map.Entry<byte[], byte[]>> results = new ArrayList<>(rawResults.size() / 2);
+      Iterator<byte[]> iterator = rawResults.iterator();
+      while (iterator.hasNext()) {
+        results.add(new AbstractMap.SimpleEntry<>(iterator.next(), iterator.next()));
+      }
+      return new ScanResult<>(newcursor, results);
+    }
+  };
+
+  public static final Builder<ScanResult<byte[]>> SSCAN_BINARY_RESPONSE = new Builder<ScanResult<byte[]>>() {
+    @Override
+    public ScanResult<byte[]> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      byte[] newcursor = (byte[]) result.get(0);
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      return new ScanResult<>(newcursor, rawResults);
+    }
+  };
+
   public static final Builder<Map<String, String>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, String>>() {
     @Override
     @SuppressWarnings("unchecked")

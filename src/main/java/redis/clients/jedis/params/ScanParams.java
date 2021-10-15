@@ -55,7 +55,7 @@ public class ScanParams implements IParams {
     }
   }
 
-  byte[] binaryMatch() {
+  public byte[] binaryMatch() {
     if (params.containsKey(MATCH)) {
       return params.get(MATCH).array();
     } else {
@@ -63,17 +63,9 @@ public class ScanParams implements IParams {
     }
   }
 
-  String match() {
+  public String match() {
     if (params.containsKey(MATCH)) {
       return new String(params.get(MATCH).array());
-    } else {
-      return null;
-    }
-  }
-
-  Integer count() {
-    if (params.containsKey(COUNT)) {
-      return params.get(COUNT).getInt();
     } else {
       return null;
     }

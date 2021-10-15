@@ -67,9 +67,7 @@ public interface KeyBinaryCommands {
 
   Set<byte[]> keys(byte[] pattern);
 
-  default ScanResult<byte[]> scan(byte[] cursor) {
-    return scan(cursor, new ScanParams());
-  }
+  ScanResult<byte[]> scan(byte[] cursor);
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 

@@ -9,7 +9,7 @@ import redis.clients.jedis.params.IParams;
 public class BitPosParams implements IParams {
   private List<byte[]> params = new ArrayList<>();
 
-  protected BitPosParams() {
+  public BitPosParams() {
   }
 
   public BitPosParams(long start) {

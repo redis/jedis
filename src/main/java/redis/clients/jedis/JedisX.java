@@ -13,7 +13,6 @@ import redis.clients.jedis.commands.AllKeyCommands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
 import redis.clients.jedis.providers.JedisConnectionProvider;
-import redis.clients.jedis.providers.SimpleJedisConnectionProvider;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.IOUtils;
@@ -28,11 +27,11 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   public JedisX(HostAndPort hostAndPort) {
-    this(new SimpleJedisConnectionProvider(hostAndPort));
+    this(new JedisConnection(hostAndPort));
   }
 
   public JedisX(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(new SimpleJedisConnectionProvider(hostAndPort, clientConfig));
+    this(new JedisConnection(hostAndPort, clientConfig));
   }
 
   public JedisX(JedisSocketFactory socketFactory) {
@@ -40,7 +39,8 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   public JedisX(JedisConnection connection) {
-    this(new SimpleJedisConnectionProvider(connection));
+    this.executor = new JedisConnectionExecutor(connection);
+    this.commandObjects = new RedisCommandObjects();
   }
 
   public JedisX(JedisConnectionProvider provider) {

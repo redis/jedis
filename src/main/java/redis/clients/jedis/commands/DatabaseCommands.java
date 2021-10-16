@@ -36,4 +36,5 @@ public interface DatabaseCommands {
 
   boolean copy(String srcKey, String dstKey, int db, boolean replace);
 
+  boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
 }

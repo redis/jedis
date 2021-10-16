@@ -570,20 +570,20 @@ public class RedisCommandObjects {
   // String commands
 
   // List commands
-  public final CommandObject<Long> rpush(String key, String... string) {
-    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) string), BuilderFactory.LONG);
+  public final CommandObject<Long> rpush(String key, String... strings) {
+    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> rpush(byte[] key, byte[]... args) {
-    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
+  public final CommandObject<Long> rpush(byte[] key, byte[]... strings) {
+    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> lpush(String key, String... string) {
-    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) string), BuilderFactory.LONG);
+  public final CommandObject<Long> lpush(String key, String... strings) {
+    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> lpush(byte[] key, byte[]... args) {
-    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
+  public final CommandObject<Long> lpush(byte[] key, byte[]... strings) {
+    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> llen(String key) {
@@ -767,7 +767,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<String> rpoplpush(String srckey, String dstkey) {
-    return new CommandObject<>(commandArguments(RPOPLPUSH).blocking().key(srckey).key(dstkey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(RPOPLPUSH).key(srckey).key(dstkey), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> brpoplpush(String source, String destination, int timeout) {
@@ -960,12 +960,12 @@ public class RedisCommandObjects {
   // Hash commands
 
   // Set commands
-  public final CommandObject<Long> sadd(String key, String... member) {
-    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) member), BuilderFactory.LONG);
+  public final CommandObject<Long> sadd(String key, String... members) {
+    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sadd(byte[] key, byte[]... member) {
-    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) member), BuilderFactory.LONG);
+  public final CommandObject<Long> sadd(byte[] key, byte[]... members) {
+    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<String>> smembers(String key) {
@@ -976,12 +976,12 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(SMEMBERS).key(key), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Long> srem(String key, String... member) {
-    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) member), BuilderFactory.LONG);
+  public final CommandObject<Long> srem(String key, String... members) {
+    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> srem(byte[] key, byte[]... member) {
-    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) member), BuilderFactory.LONG);
+  public final CommandObject<Long> srem(byte[] key, byte[]... members) {
+    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> spop(String key) {
@@ -1271,19 +1271,19 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
-    return new CommandObject<>(commandArguments(BZPOPMAX).keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
+    return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   public final CommandObject<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
-    return new CommandObject<>(commandArguments(BZPOPMIN).keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
+    return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   public final CommandObject<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
-    return new CommandObject<>(commandArguments(BZPOPMAX).keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
+    return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
-    return new CommandObject<>(commandArguments(BZPOPMIN).keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
+    return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> zcount(String key, double min, double max) {

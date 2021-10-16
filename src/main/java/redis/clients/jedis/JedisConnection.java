@@ -152,8 +152,18 @@ public class JedisConnection implements Closeable {
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
-    sendCommand(commandObject.getArguments());
-    return commandObject.getBuilder().build(getOne());
+    final CommandArguments args = commandObject.getArguments();
+    sendCommand(args);
+    if (!args.isBlocking()) {
+      return commandObject.getBuilder().build(getOne());
+    } else {
+      try {
+        setTimeoutInfinite();
+        return commandObject.getBuilder().build(getOne());
+      } finally {
+        rollbackTimeout();
+      }
+    }
   }
 
   public void sendCommand(final CommandArguments args) {

@@ -17,7 +17,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 //import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisX;
-import redis.clients.jedis.JedisConnection;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.JedisClusterCRC16;
@@ -26,9 +26,9 @@ public abstract class ClusterJedisCommandsTestBase {
 //  private Jedis node1;
 //  private static Jedis node2;
 //  private static Jedis node3;
-  private static JedisConnection node1;
-  private static JedisConnection node2;
-  private static JedisConnection node3;
+  private static Connection node1;
+  private static Connection node2;
+  private static Connection node3;
 
   private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
@@ -43,19 +43,19 @@ public abstract class ClusterJedisCommandsTestBase {
 //    node1 = new Jedis(nodeInfo1);
 //    node1.auth("cluster");
 //    node1.flushAll();
-    node1 = new JedisConnection(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
+    node1 = new Connection(nodeInfo1, DefaultJedisClientConfig.builder().password("cluster").build());
     node1.executeCommand(FLUSHALL);
 
 //    node2 = new Jedis(nodeInfo2);
 //    node2.auth("cluster");
 //    node2.flushAll();
-    node2 = new JedisConnection(nodeInfo2, DefaultJedisClientConfig.builder().password("cluster").build());
+    node2 = new Connection(nodeInfo2, DefaultJedisClientConfig.builder().password("cluster").build());
     node2.executeCommand(FLUSHALL);
 
 //    node3 = new Jedis(nodeInfo3);
 //    node3.auth("cluster");
 //    node3.flushAll();
-    node3 = new JedisConnection(nodeInfo3, DefaultJedisClientConfig.builder().password("cluster").build());
+    node3 = new Connection(nodeInfo3, DefaultJedisClientConfig.builder().password("cluster").build());
     node3.executeCommand(FLUSHALL);
 
     // ---- configure cluster

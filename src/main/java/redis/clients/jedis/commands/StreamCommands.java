@@ -12,6 +12,7 @@ import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.stream.*;
 
 public interface StreamCommands {
+
   /**
    * XADD key ID field string [field string ...]
    *
@@ -31,7 +32,7 @@ public interface StreamCommands {
    * @param maxLen
    * @param approximateLength
    */
-//  StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
+//  StreamEntryID xadd_v2(String key, StreamEntryID id, Map<String, String> hash, long maxLen, boolean approximateLength);
 
   /**
    * XADD key [NOMKSTREAM] [MAXLEN|MINID [=|~] threshold [LIMIT count]] *|ID field value [field value ...]
@@ -39,15 +40,19 @@ public interface StreamCommands {
    * @param key
    * @param hash
    * @param params
+   * @return the ID of the added entry
    */
-  StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params);
-//
-//  StreamEntryID xadd(String key, XAddParams params, Map<String, String> hash);
+  default StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params) {
+    return xadd_v2(key, params, hash);
+  }
+
+  StreamEntryID xadd_v2(String key, XAddParams params, Map<String, String> hash);
 
   /**
    * XLEN key
    *
    * @param key
+   * @return length of stream
    */
   long xlen(String key);
 

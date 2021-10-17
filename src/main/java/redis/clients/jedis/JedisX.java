@@ -27,18 +27,18 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   public JedisX(HostAndPort hostAndPort) {
-    this(new JedisConnection(hostAndPort));
+    this(new Connection(hostAndPort));
   }
 
   public JedisX(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(new JedisConnection(hostAndPort, clientConfig));
+    this(new Connection(hostAndPort, clientConfig));
   }
 
   public JedisX(JedisSocketFactory socketFactory) {
-    this(new JedisConnection(socketFactory));
+    this(new Connection(socketFactory));
   }
 
-  public JedisX(JedisConnection connection) {
+  public JedisX(Connection connection) {
     this.executor = new JedisConnectionExecutor(connection);
     this.commandObjects = new RedisCommandObjects();
   }
@@ -59,7 +59,7 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   public JedisX(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<JedisConnection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+      GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
   }
 
@@ -2265,8 +2265,8 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   @Override
-  public StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params) {
-    return executeCommand(commandObjects.xadd(key, hash, params));
+  public StreamEntryID xadd_v2(String key, XAddParams params, Map<String, String> hash) {
+    return executeCommand(commandObjects.xadd(key, params, hash));
   }
 
   @Override
@@ -2411,7 +2411,7 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   @Override
-  public byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params) {
+  public byte[] xadd(byte[] key, XAddParams params, Map<byte[], byte[]> hash) {
     return executeCommand(commandObjects.xadd(key, params, hash));
   }
 
@@ -2605,6 +2605,126 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
 
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
+  }
+
+  @Override
+  public Long objectRefcount(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String objectEncoding(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Long objectIdletime(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Long objectFreq(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long waitReplicas(String sampleKey, int replicas, long timeout) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Object eval(String script, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Object evalsha(String sha1, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Boolean scriptExists(String sha1, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<Boolean> scriptExists(String sampleKey, String... sha1) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String scriptLoad(String script, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String scriptFlush(String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String scriptKill(String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Long objectRefcount(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public byte[] objectEncoding(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Long objectIdletime(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Long objectFreq(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public long waitReplicas(byte[] sampleKey, int replicas, long timeout) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Object eval(byte[] script, byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Object evalsha(byte[] sha1, byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Boolean scriptExists(byte[] sha1, byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<Boolean> scriptExists(byte[] sampleKey, byte[]... sha1) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String scriptLoad(byte[] script, byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String scriptFlush(byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String scriptKill(byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
 }

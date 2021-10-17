@@ -26,14 +26,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.commands.AdvancedBinaryJedisCommands;
-import redis.clients.jedis.commands.AllKeyBinaryCommands;
-import redis.clients.jedis.commands.AllKeyCommands;
-import redis.clients.jedis.commands.BinaryScriptingCommands;
-import redis.clients.jedis.commands.DatabaseCommands;
-import redis.clients.jedis.commands.MultiKeyBinaryCommands;
-import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.commands.ServerCommands;
+import redis.clients.jedis.commands.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -44,11 +37,13 @@ import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class Jedis implements ServerCommands, DatabaseCommands,
+public class Jedis implements ServerCommands, DatabaseCommands, ModuleCommands,
+    ControlCommands, ControlBinaryCommands, MiscellaneousControlCommands,
     AllKeyCommands, AllKeyBinaryCommands,
+    ClusterCommands,
     Closeable {
 
-  protected final JedisConnection client;
+  protected final Connection connection;
   private final RedisCommandObjects commandObjects = new RedisCommandObjects();
   private int db = 0;
   protected Transaction transaction = null;
@@ -56,7 +51,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
 
   public Jedis() {
-    client = new JedisConnection();
+    connection = new Connection();
   }
 
   /**
@@ -70,7 +65,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public Jedis(final String uriString) {
     URI uri = URI.create(uriString);
     if (JedisURIHelper.isValid(uri)) {
-      client = createClientFromURI(uri);
+      connection = createClientFromURI(uri);
       initializeFromURI(uri);
     } else {
       throw new InvalidURIException(uriString);
@@ -82,7 +77,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   }
 
   public Jedis(final String host, final int port) {
-    client = new JedisConnection(host, port);
+    connection = new Connection(host, port);
   }
 
   public Jedis(final String host, final int port, final JedisClientConfig config) {
@@ -90,13 +85,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   }
 
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
-    client = new JedisConnection(hostPort, config);
+    connection = new Connection(hostPort, config);
     initializeFromClientConfig(config);
   }
 
   private void initializeFromClientConfig(JedisClientConfig config) {
     try {
-      connect();
+      connection.connect();
       String password = config.getPassword();
       if (password != null) {
         String user = config.getUser();
@@ -120,7 +115,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
         if (isConnected()) {
           quit();
         }
-        disconnect();
+        connection.disconnect();
       } catch (RuntimeException e) {
         //
       }
@@ -205,7 +200,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
 //  }
 
   public Jedis(URI uri) {
-    client = createClientFromURI(uri);
+    connection = createClientFromURI(uri);
     initializeFromURI(uri);
   }
 
@@ -251,7 +246,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
-    client = new JedisConnection(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
+    connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
         .builder().connectionTimeoutMillis(config.getConnectionTimeoutMillis())
         .socketTimeoutMillis(config.getSocketTimeoutMillis())
         .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
@@ -264,12 +259,12 @@ public class Jedis implements ServerCommands, DatabaseCommands,
     initializeFromURI(uri);
   }
 
-  private static JedisConnection createClientFromURI(URI uri) {
+  private static Connection createClientFromURI(URI uri) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
-    return new JedisConnection(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
+    return new Connection(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
         .builder().ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
   }
 
@@ -289,40 +284,26 @@ public class Jedis implements ServerCommands, DatabaseCommands,
     }
   }
 
-  /**
-   * @deprecated This constructor will be removed in future major release.
-   *
-   * Use {@link BinaryJedis#BinaryJedis(redis.clients.jedis.JedisSocketFactory, redis.clients.jedis.JedisClientConfig)}.
-   */
-  @Deprecated
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
-    client = new JedisConnection(jedisSocketFactory);
+    connection = new Connection(jedisSocketFactory);
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    client = new JedisConnection(jedisSocketFactory);
+    connection = new Connection(jedisSocketFactory);
     initializeFromClientConfig(clientConfig);
   }
 
   @Override
   public String toString() {
-    return "BinaryJedis{" + client + '}';
+    return "BinaryJedis{" + connection + '}';
   }
 
   public boolean isConnected() {
-    return client.isConnected();
+    return connection.isConnected();
   }
 
   public boolean isBroken() {
-    return client.isBroken();
-  }
-
-  public void connect() {
-    return client.executeCommand(commandObjects.connect();
-  }
-
-  public void disconnect() {
-    return client.executeCommand(commandObjects.disconnect();
+    return connection.isBroken();
   }
 
   public void resetState() {
@@ -334,8 +315,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
       if (pipeline != null) {
         pipeline.close();
       }
-
-      return client.executeCommand(commandObjects.resetState();
+//
+//      connection.resetState();
     }
 
     transaction = null;
@@ -344,7 +325,15 @@ public class Jedis implements ServerCommands, DatabaseCommands,
 
   @Override
   public void close() {
-    return client.executeCommand(commandObjects.close();
+    connection.close();
+  }
+
+  public Connection getConnection() {
+    return connection;
+  }
+
+  public Connection getClient() {
+    return getConnection();
   }
 
   public int getDB() {
@@ -362,8 +351,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.copy(srcKey, dstKey, db, replace);
-    return BuilderFactory.BOOLEAN.build(client.getOne());
+    return connection.executeCommand(commandObjects.copy(srcKey, dstKey, db, replace));
   }
 
   /**
@@ -376,8 +364,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean copy(byte[] srcKey, byte[] dstKey, boolean replace) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.copy(srcKey, dstKey, replace);
-    return BuilderFactory.BOOLEAN.build(client.getOne());
+    return connection.executeCommand(commandObjects.copy(srcKey, dstKey, replace));
   }
 
   /**
@@ -386,8 +373,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String ping() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(Command.PING);
-    return client.getStatusCodeReply();
+    connection.sendCommand(Command.PING);
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -397,8 +384,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   public byte[] ping(final byte[] message) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(Command.PING, message);
-    return client.getBinaryBulkReply();
+    connection.sendCommand(Command.PING, message);
+    return connection.getBinaryBulkReply();
   }
 
   /**
@@ -413,7 +400,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String set(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.set(key, value));
+    return connection.executeCommand(commandObjects.set(key, value));
   }
 
   /**
@@ -427,7 +414,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String set(final byte[] key, final byte[] value, final SetParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.set(key, value, params));
+    return connection.executeCommand(commandObjects.set(key, value, params));
   }
 
   /**
@@ -442,7 +429,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] get(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.get(key));
+    return connection.executeCommand(commandObjects.get(key));
   }
 
   /**
@@ -457,13 +444,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] getDel(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getDel(key));
+    return connection.executeCommand(commandObjects.getDel(key));
   }
 
   @Override
   public byte[] getEx(final byte[] key, final GetExParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getEx(key, params));
+    return connection.executeCommand(commandObjects.getEx(key, params));
   }
 
   /**
@@ -472,9 +459,9 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String quit() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(QUIT);
-    String quitReturn = client.getStatusCodeReply();
-    return client.executeCommand(commandObjects.disconnect();
+    connection.sendCommand(QUIT);
+    String quitReturn = connection.getStatusCodeReply();
+    connection.disconnect();
     return quitReturn;
   }
 
@@ -488,7 +475,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long exists(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.exists(keys));
+    return connection.executeCommand(commandObjects.exists(keys));
   }
 
   /**
@@ -501,7 +488,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean exists(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.exists(key));
+    return connection.executeCommand(commandObjects.exists(key));
   }
 
   /**
@@ -514,13 +501,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long del(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.del(keys));
+    return connection.executeCommand(commandObjects.del(keys));
   }
 
   @Override
   public long del(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.del(key));
+    return connection.executeCommand(commandObjects.del(key));
   }
 
   /**
@@ -539,13 +526,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long unlink(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.unlink(keys));
+    return connection.executeCommand(commandObjects.unlink(keys));
   }
 
   @Override
   public long unlink(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.unlink(key));
+    return connection.executeCommand(commandObjects.unlink(key));
   }
 
   /**
@@ -560,7 +547,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String type(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.type(key));
+    return connection.executeCommand(commandObjects.type(key));
   }
 
   /**
@@ -570,8 +557,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String flushDB() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(FLUSHDB);
-    return client.getStatusCodeReply();
+    connection.sendCommand(FLUSHDB);
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -582,8 +569,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String flushDB(FlushMode flushMode) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(FLUSHDB, flushMode.getRaw());
-    return client.getStatusCodeReply();
+    connection.sendCommand(FLUSHDB, flushMode.getRaw());
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -617,7 +604,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<byte[]> keys(final byte[] pattern) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.keys(pattern));
+    return connection.executeCommand(commandObjects.keys(pattern));
   }
 
   /**
@@ -630,7 +617,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] randomBinaryKey() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.randomBinaryKey());
+    return connection.executeCommand(commandObjects.randomBinaryKey());
   }
 
   /**
@@ -645,7 +632,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String rename(final byte[] oldkey, final byte[] newkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rename(oldkey, newkey));
+    return connection.executeCommand(commandObjects.rename(oldkey, newkey));
   }
 
   /**
@@ -659,7 +646,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long renamenx(final byte[] oldkey, final byte[] newkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.renamenx(oldkey, newkey));
+    return connection.executeCommand(commandObjects.renamenx(oldkey, newkey));
   }
 
   /**
@@ -669,8 +656,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long dbSize() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(DBSIZE);
-    return client.getIntegerReply();
+    connection.sendCommand(DBSIZE);
+    return connection.getIntegerReply();
   }
 
   /**
@@ -697,7 +684,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long expire(final byte[] key, final long seconds) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.expire(key, seconds));
+    return connection.executeCommand(commandObjects.expire(key, seconds));
   }
 
   /**
@@ -726,13 +713,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long expireAt(final byte[] key, final long unixTime) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.expireAt(key, unixTime));
+    return connection.executeCommand(commandObjects.expireAt(key, unixTime));
   }
 
   /**
    * The TTL command returns the remaining time to live in seconds of a key that has an
-   * {@link #expire(byte[], int) EXPIRE} set. This introspection capability allows a Redis client to
-   * check how many seconds a given key will continue to be part of the dataset.
+   * {@link #expire(byte[], int) EXPIRE} set. This introspection capability allows a Redis connection to
+ check how many seconds a given key will continue to be part of the dataset.
    * @param key
    * @return Integer reply, returns the remaining time to live in seconds of a key that has an
    *         EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
@@ -741,7 +728,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long ttl(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.ttl(key));
+    return connection.executeCommand(commandObjects.ttl(key));
   }
 
   /**
@@ -753,26 +740,26 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long touch(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.touch(keys));
+    return connection.executeCommand(commandObjects.touch(keys));
   }
 
   @Override
   public long touch(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.touch(key));
+    return connection.executeCommand(commandObjects.touch(key));
   }
 
   /**
-   * Select the DB with having the specified zero-based numeric index. For default every new client
-   * connection is automatically selected to DB 0.
+   * Select the DB with having the specified zero-based numeric index. For default every new connection
+ connection is automatically selected to DB 0.
    * @param index
    * @return Status code reply
    */
   @Override
   public String select(final int index) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(SELECT, toByteArray(index));
-    String statusCodeReply = client.getStatusCodeReply();
+    connection.sendCommand(SELECT, toByteArray(index));
+    String statusCodeReply = connection.getStatusCodeReply();
     this.db = index;
     return statusCodeReply;
   }
@@ -780,8 +767,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String swapDB(final int index1, final int index2) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(SWAPDB, toByteArray(index1), toByteArray(index2));
-    return client.getStatusCodeReply();
+    connection.sendCommand(SWAPDB, toByteArray(index1), toByteArray(index2));
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -797,8 +784,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long move(final byte[] key, final int dbIndex) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.move(key, dbIndex);
-    return client.getIntegerReply();
+    connection.sendCommand(MOVE, key, toByteArray(dbIndex));
+    return connection.getIntegerReply();
   }
 
   /**
@@ -809,8 +796,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String flushAll() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(FLUSHALL);
-    return client.getStatusCodeReply();
+    connection.sendCommand(FLUSHALL);
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -822,8 +809,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String flushAll(FlushMode flushMode) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(FLUSHALL, flushMode.getRaw());
-    return client.getStatusCodeReply();
+    connection.sendCommand(FLUSHALL, flushMode.getRaw());
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -839,7 +826,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] getSet(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getSet(key, value));
+    return connection.executeCommand(commandObjects.getSet(key, value));
   }
 
   /**
@@ -854,7 +841,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<byte[]> mget(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.mget(keys));
+    return connection.executeCommand(commandObjects.mget(keys));
   }
 
   /**
@@ -869,7 +856,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long setnx(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setnx(key, value));
+    return connection.executeCommand(commandObjects.setnx(key, value));
   }
 
   /**
@@ -886,7 +873,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String setex(final byte[] key, final long seconds, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setex(key, seconds, value));
+    return connection.executeCommand(commandObjects.setex(key, seconds, value));
   }
 
   /**
@@ -898,9 +885,9 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * different fields of an unique logic object in a way that ensures that either all the fields or
    * none at all are set.
    * <p>
-   * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
-   * are modified, another client talking to Redis can either see the changes to both A and B at
-   * once, or no modification at all.
+ Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+ are modified, another connection talking to Redis can either see the changes to both A and B at
+ once, or no modification at all.
    * @see Jedis#msetnx(byte[][])
    * @param keysvalues
    * @return Status code reply Basically +OK as MSET can't fail
@@ -908,7 +895,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String mset(final byte[]... keysvalues) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.mset(keysvalues));
+    return connection.executeCommand(commandObjects.mset(keysvalues));
   }
 
   /**
@@ -920,9 +907,9 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * different fields of an unique logic object in a way that ensures that either all the fields or
    * none at all are set.
    * <p>
-   * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
-   * are modified, another client talking to Redis can either see the changes to both A and B at
-   * once, or no modification at all.
+ Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+ are modified, another connection talking to Redis can either see the changes to both A and B at
+ once, or no modification at all.
    * @see Jedis#mset(byte[][])
    * @param keysvalues
    * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
@@ -931,7 +918,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long msetnx(final byte[]... keysvalues) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.msetnx(keysvalues));
+    return connection.executeCommand(commandObjects.msetnx(keysvalues));
   }
 
   /**
@@ -955,7 +942,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long decrBy(final byte[] key, final long decrement) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.decrBy(key, decrement));
+    return connection.executeCommand(commandObjects.decrBy(key, decrement));
   }
 
   /**
@@ -978,7 +965,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long decr(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.decr(key));
+    return connection.executeCommand(commandObjects.decr(key));
   }
 
   /**
@@ -1002,7 +989,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long incrBy(final byte[] key, final long increment) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.incrBy(key, increment));
+    return connection.executeCommand(commandObjects.incrBy(key, increment));
   }
 
   /**
@@ -1027,7 +1014,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public double incrByFloat(final byte[] key, final double increment) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.incrByFloat(key, increment));
+    return connection.executeCommand(commandObjects.incrByFloat(key, increment));
   }
 
   /**
@@ -1050,7 +1037,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long incr(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.incr(key));
+    return connection.executeCommand(commandObjects.incr(key));
   }
 
   /**
@@ -1068,7 +1055,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long append(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.append(key, value));
+    return connection.executeCommand(commandObjects.append(key, value));
   }
 
   /**
@@ -1090,7 +1077,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] substr(final byte[] key, final int start, final int end) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.substr(key, start, end));
+    return connection.executeCommand(commandObjects.substr(key, start, end));
   }
 
   /**
@@ -1108,13 +1095,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hset(final byte[] key, final byte[] field, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hset(key, field, value));
+    return connection.executeCommand(commandObjects.hset(key, field, value));
   }
 
   @Override
   public long hset(final byte[] key, final Map<byte[], byte[]> hash) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hset(key, hash));
+    return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
   /**
@@ -1130,7 +1117,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] hget(final byte[] key, final byte[] field) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hget(key, field));
+    return connection.executeCommand(commandObjects.hget(key, field));
   }
 
   /**
@@ -1145,7 +1132,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hsetnx(final byte[] key, final byte[] field, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hsetnx(key, field, value));
+    return connection.executeCommand(commandObjects.hsetnx(key, field, value));
   }
 
   /**
@@ -1161,7 +1148,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String hmset(final byte[] key, final Map<byte[], byte[]> hash) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hmset(key, hash));
+    return connection.executeCommand(commandObjects.hmset(key, hash));
   }
 
   /**
@@ -1179,7 +1166,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<byte[]> hmget(final byte[] key, final byte[]... fields) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hmget(key, fields));
+    return connection.executeCommand(commandObjects.hmget(key, fields));
   }
 
   /**
@@ -1199,7 +1186,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hincrBy(final byte[] key, final byte[] field, final long value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hincrBy(key, field, value));
+    return connection.executeCommand(commandObjects.hincrBy(key, field, value));
   }
 
   /**
@@ -1221,7 +1208,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public double hincrByFloat(final byte[] key, final byte[] field, final double value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hincrByFloat(key, field, value));
+    return connection.executeCommand(commandObjects.hincrByFloat(key, field, value));
   }
 
   /**
@@ -1234,7 +1221,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean hexists(final byte[] key, final byte[] field) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hexists(key, field));
+    return connection.executeCommand(commandObjects.hexists(key, field));
   }
 
   /**
@@ -1249,7 +1236,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hdel(final byte[] key, final byte[]... fields) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hdel(key, fields));
+    return connection.executeCommand(commandObjects.hdel(key, fields));
   }
 
   /**
@@ -1263,7 +1250,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hlen(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hlen(key));
+    return connection.executeCommand(commandObjects.hlen(key));
   }
 
   /**
@@ -1276,7 +1263,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<byte[]> hkeys(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hkeys(key));
+    return connection.executeCommand(commandObjects.hkeys(key));
   }
 
   /**
@@ -1289,7 +1276,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<byte[]> hvals(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hvals(key));
+    return connection.executeCommand(commandObjects.hvals(key));
   }
 
   /**
@@ -1302,7 +1289,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Map<byte[], byte[]> hgetAll(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hgetAll(key));
+    return connection.executeCommand(commandObjects.hgetAll(key));
   }
 
   /**
@@ -1315,7 +1302,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] hrandfield(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hrandfield(key));
+    return connection.executeCommand(commandObjects.hrandfield(key));
   }
 
   /**
@@ -1328,7 +1315,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<byte[]> hrandfield(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hrandfield(key, count));
+    return connection.executeCommand(commandObjects.hrandfield(key, count));
   }
 
   /**
@@ -1341,7 +1328,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hrandfieldWithValues(key, count));
+    return connection.executeCommand(commandObjects.hrandfieldWithValues(key, count));
   }
 
   /**
@@ -1358,7 +1345,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long rpush(final byte[] key, final byte[]... strings) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpush(key, strings));
+    return connection.executeCommand(commandObjects.rpush(key, strings));
   }
 
   /**
@@ -1375,7 +1362,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long lpush(final byte[] key, final byte[]... strings) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpush(key, strings));
+    return connection.executeCommand(commandObjects.lpush(key, strings));
   }
 
   /**
@@ -1390,7 +1377,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long llen(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.llen(key));
+    return connection.executeCommand(commandObjects.llen(key));
   }
 
   /**
@@ -1428,7 +1415,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<byte[]> lrange(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lrange(key, start, stop));
+    return connection.executeCommand(commandObjects.lrange(key, start, stop));
   }
 
   /**
@@ -1464,7 +1451,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String ltrim(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.ltrim(key, start, stop));
+    return connection.executeCommand(commandObjects.ltrim(key, start, stop));
   }
 
   /**
@@ -1486,7 +1473,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] lindex(final byte[] key, final long index) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lindex(key, index));
+    return connection.executeCommand(commandObjects.lindex(key, index));
   }
 
   /**
@@ -1511,7 +1498,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String lset(final byte[] key, final long index, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lset(key, index, value));
+    return connection.executeCommand(commandObjects.lset(key, index, value));
   }
 
   /**
@@ -1532,7 +1519,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long lrem(final byte[] key, final long count, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lrem(key, count, value));
+    return connection.executeCommand(commandObjects.lrem(key, count, value));
   }
 
   /**
@@ -1548,13 +1535,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] lpop(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpop(key));
+    return connection.executeCommand(commandObjects.lpop(key));
   }
 
   @Override
   public List<byte[]> lpop(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpop(key, count));
+    return connection.executeCommand(commandObjects.lpop(key, count));
   }
 
   /**
@@ -1572,7 +1559,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Long lpos(final byte[] key, final byte[] element) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpos(key, element));
+    return connection.executeCommand(commandObjects.lpos(key, element));
   }
 
   /**
@@ -1595,7 +1582,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Long lpos(final byte[] key, final byte[] element, final LPosParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpos(key, element, params));
+    return connection.executeCommand(commandObjects.lpos(key, element, params));
   }
 
   /**
@@ -1616,7 +1603,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public List<Long> lpos(final byte[] key, final byte[] element, final LPosParams params,
       final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpos(key, element, params, count));
+    return connection.executeCommand(commandObjects.lpos(key, element, params, count));
   }
 
   /**
@@ -1632,13 +1619,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] rpop(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpop(key));
+    return connection.executeCommand(commandObjects.rpop(key));
   }
 
   @Override
   public List<byte[]> rpop(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpop(key, count));
+    return connection.executeCommand(commandObjects.rpop(key, count));
   }
 
   /**
@@ -1659,7 +1646,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] rpoplpush(final byte[] srckey, final byte[] dstkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpoplpush(srckey, dstkey));
+    return connection.executeCommand(commandObjects.rpoplpush(srckey, dstkey));
   }
 
   /**
@@ -1676,7 +1663,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sadd(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sadd(key, members));
+    return connection.executeCommand(commandObjects.sadd(key, members));
   }
 
   /**
@@ -1690,7 +1677,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<byte[]> smembers(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.smembers(key));
+    return connection.executeCommand(commandObjects.smembers(key));
   }
 
   /**
@@ -1706,7 +1693,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long srem(final byte[] key, final byte[]... member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.srem(key, member));
+    return connection.executeCommand(commandObjects.srem(key, member));
   }
 
   /**
@@ -1723,13 +1710,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] spop(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.spop(key));
+    return connection.executeCommand(commandObjects.spop(key));
   }
 
   @Override
   public Set<byte[]> spop(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.spop(key, count));
+    return connection.executeCommand(commandObjects.spop(key, count));
   }
 
   /**
@@ -1754,7 +1741,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long smove(final byte[] srckey, final byte[] dstkey, final byte[] member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.smove(srckey, dstkey, member));
+    return connection.executeCommand(commandObjects.smove(srckey, dstkey, member));
   }
 
   /**
@@ -1767,7 +1754,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long scard(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.scard(key));
+    return connection.executeCommand(commandObjects.scard(key));
   }
 
   /**
@@ -1782,7 +1769,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean sismember(final byte[] key, final byte[] member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sismember(key, member));
+    return connection.executeCommand(commandObjects.sismember(key, member));
   }
 
   /**
@@ -1796,15 +1783,15 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<Boolean> smismember(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.smismember(key, members));
+    return connection.executeCommand(commandObjects.smismember(key, members));
   }
 
   /**
    * Return the members of a set resulting from the intersection of all the sets hold at the
    * specified keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the
-   * client as a multi-bulk reply (see the protocol specification for more information). If just a
-   * single key is specified, then this command produces the same result as
-   * {@link #smembers(byte[]) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
+ connection as a multi-bulk reply (see the protocol specification for more information). If just a
+ single key is specified, then this command produces the same result as
+ {@link #smembers(byte[]) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
    * <p>
    * Non existing keys are considered like empty sets, so if one of the keys is missing an empty set
    * is returned (since the intersection with an empty set always is an empty set).
@@ -1817,7 +1804,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<byte[]> sinter(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sinter(keys));
+    return connection.executeCommand(commandObjects.sinter(keys));
   }
 
   /**
@@ -1833,14 +1820,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sinterstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sinterstore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sinterstore(dstkey, keys));
   }
 
   /**
    * Return the members of a set resulting from the union of all the sets hold at the specified
-   * keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the client as a
-   * multi-bulk reply (see the protocol specification for more information). If just a single key is
-   * specified, then this command produces the same result as {@link #smembers(byte[]) SMEMBERS}.
+   * keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the connection as a
+ multi-bulk reply (see the protocol specification for more information). If just a single key is
+ specified, then this command produces the same result as {@link #smembers(byte[]) SMEMBERS}.
    * <p>
    * Non existing keys are considered like empty sets.
    * <p>
@@ -1851,7 +1838,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<byte[]> sunion(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sunion(keys));
+    return connection.executeCommand(commandObjects.sunion(keys));
   }
 
   /**
@@ -1866,7 +1853,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sunionstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sunionstore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
   /**
@@ -1893,7 +1880,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<byte[]> sdiff(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sdiff(keys));
+    return connection.executeCommand(commandObjects.sdiff(keys));
   }
 
   /**
@@ -1906,7 +1893,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sdiffstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sdiffstore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sdiffstore(dstkey, keys));
   }
 
   /**
@@ -1922,13 +1909,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] srandmember(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.srandmember(key));
+    return connection.executeCommand(commandObjects.srandmember(key));
   }
 
   @Override
   public List<byte[]> srandmember(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.srandmember(key, count));
+    return connection.executeCommand(commandObjects.srandmember(key, count));
   }
 
   /**
@@ -1950,38 +1937,38 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zadd(final byte[] key, final double score, final byte[] member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zadd(key, score, member));
+    return connection.executeCommand(commandObjects.zadd(key, score, member));
   }
 
   @Override
   public long zadd(final byte[] key, final double score, final byte[] member,
       final ZAddParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zadd(key, score, member, params));
+    return connection.executeCommand(commandObjects.zadd(key, score, member, params));
   }
 
   @Override
   public long zadd(final byte[] key, final Map<byte[], Double> scoreMembers) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zadd(key, scoreMembers));
+    return connection.executeCommand(commandObjects.zadd(key, scoreMembers));
   }
 
   @Override
   public long zadd(final byte[] key, final Map<byte[], Double> scoreMembers, final ZAddParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zadd(key, scoreMembers, params));
+    return connection.executeCommand(commandObjects.zadd(key, scoreMembers, params));
   }
 
   @Override
   public Double zaddIncr(final byte[] key, final double score, final byte[] member, final ZAddParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zaddIncr(key, score, member, params));
+    return connection.executeCommand(commandObjects.zaddIncr(key, score, member, params));
   }
 
   @Override
   public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrange(key, start, stop));
+    return connection.executeCommand(commandObjects.zrange(key, start, stop));
   }
 
   /**
@@ -1998,7 +1985,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zrem(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrem(key, members));
+    return connection.executeCommand(commandObjects.zrem(key, members));
   }
 
   /**
@@ -2022,14 +2009,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public double zincrby(final byte[] key, final double increment, final byte[] member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zincrby(key, increment, member));
+    return connection.executeCommand(commandObjects.zincrby(key, increment, member));
   }
 
   @Override
   public Double zincrby(final byte[] key, final double increment, final byte[] member,
       final ZIncrByParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zincrby(key, increment, member, params));
+    return connection.executeCommand(commandObjects.zincrby(key, increment, member, params));
   }
 
   /**
@@ -2051,7 +2038,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Long zrank(final byte[] key, final byte[] member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrank(key, member));
+    return connection.executeCommand(commandObjects.zrank(key, member));
   }
 
   /**
@@ -2073,43 +2060,43 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Long zrevrank(final byte[] key, final byte[] member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrank(key, member));
+    return connection.executeCommand(commandObjects.zrevrank(key, member));
   }
 
   @Override
   public Set<byte[]> zrevrange(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrange(key, start, stop));
+    return connection.executeCommand(commandObjects.zrevrange(key, start, stop));
   }
 
   @Override
   public Set<Tuple> zrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeWithScores(key, start, stop));
+    return connection.executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
   @Override
   public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+    return connection.executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
 
   @Override
   public byte[] zrandmember(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrandmember(key));
+    return connection.executeCommand(commandObjects.zrandmember(key));
   }
 
   @Override
   public Set<byte[]> zrandmember(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrandmember(key, count));
+    return connection.executeCommand(commandObjects.zrandmember(key, count));
   }
 
   @Override
   public Set<Tuple> zrandmemberWithScores(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrandmemberWithScores(key, count));
+    return connection.executeCommand(commandObjects.zrandmemberWithScores(key, count));
   }
 
   /**
@@ -2123,7 +2110,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zcard(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zcard(key));
+    return connection.executeCommand(commandObjects.zcard(key));
   }
 
   /**
@@ -2139,7 +2126,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Double zscore(final byte[] key, final byte[] member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zscore(key, member));
+    return connection.executeCommand(commandObjects.zscore(key, member));
   }
 
   /**
@@ -2154,42 +2141,50 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<Double> zmscore(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zmscore(key, members));
+    return connection.executeCommand(commandObjects.zmscore(key, members));
   }
 
   @Override
   public Tuple zpopmax(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zpopmax(key));
+    return connection.executeCommand(commandObjects.zpopmax(key));
   }
 
   @Override
   public Set<Tuple> zpopmax(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zpopmax(key, count));
+    return connection.executeCommand(commandObjects.zpopmax(key, count));
   }
 
   @Override
   public Tuple zpopmin(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zpopmin(key));
+    return connection.executeCommand(commandObjects.zpopmin(key));
   }
 
   @Override
   public Set<Tuple> zpopmin(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zpopmin(key, count));
+    return connection.executeCommand(commandObjects.zpopmin(key, count));
+  }
+
+  public Pipeline pipelined() {
+//    pipeline = new Pipeline();
+//    pipeline.setClient(connection);
+    pipeline = new Pipeline(connection);
+    return pipeline;
   }
 
   public Transaction multi() {
-    return client.executeCommand(commandObjects.multi();
-    return client.executeCommand(commandObjects.getOne(); // expected OK
-    transaction = new Transaction(client);
+    connection.sendCommand(MULTI);
+    connection.getOne(); // expected OK
+    transaction = new Transaction(connection);
     return transaction;
   }
 
   protected void checkIsInMultiOrPipeline() {
-    if (client.isInMulti()) {
+//    if (connection.isInMulti()) {
+    if (transaction != null) {
       throw new IllegalStateException(
           "Cannot use Jedis when in Multi. Please use Transaction or reset jedis state.");
     } else if (pipeline != null && pipeline.hasPipelinedResponse()) {
@@ -2201,15 +2196,15 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String watch(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.watch(keys);
-    return client.getStatusCodeReply();
+    connection.watch(keys);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String unwatch() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.unwatch();
-    return client.getStatusCodeReply();
+    connection.unwatch();
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -2228,7 +2223,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<byte[]> sort(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sort(key));
+    return connection.executeCommand(commandObjects.sort(key));
   }
 
   /**
@@ -2308,7 +2303,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<byte[]> sort(final byte[] key, final SortingParams sortingParameters) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sort(key, sortingParameters));
+    return connection.executeCommand(commandObjects.sort(key, sortingParameters));
   }
 
   /**
@@ -2324,7 +2319,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+    return connection.executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
   }
 
   /**
@@ -2343,7 +2338,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sort(final byte[] key, final byte[] dstkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sort(key, dstkey));
+    return connection.executeCommand(commandObjects.sort(key, dstkey));
   }
 
   /**
@@ -2356,7 +2351,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lmove(srcKey, dstKey, from, to));
+    return connection.executeCommand(commandObjects.lmove(srcKey, dstKey, from, to));
   }
 
   /**
@@ -2370,13 +2365,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout);
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
-    try {
-      return client.getBinaryBulkReply();
-    } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
-    }
+    return connection.executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
 
   /**
@@ -2402,16 +2391,16 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * <p>
    * <b>Blocking behavior</b>
    * <p>
-   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
-   * client performs a LPUSH or an RPUSH operation against one of the lists.
-   * <p>
-   * Once new data is present on one of the lists, the client finally returns with the name of the
-   * key unblocking it and the popped value.
-   * <p>
-   * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
-   * special value if the specified amount of seconds passed without a push operation against at
-   * least one of the specified keys.
-   * <p>
+ If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+ connection performs a LPUSH or an RPUSH operation against one of the lists.
+ <p>
+ Once new data is present on one of the lists, the connection finally returns with the name of the
+ key unblocking it and the popped value.
+ <p>
+ When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
+ special value if the specified amount of seconds passed without a push operation against at
+ least one of the specified keys.
+ <p>
    * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
    * block forever.
    * <p>
@@ -2436,18 +2425,18 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
    *         unblocking key and the popped value.
    *         <p>
-   *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
-   *         value is a nil multi bulk reply. Most client values will return false or nil
-   *         accordingly to the programming language used.
+         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+         value is a nil multi bulk reply. Most connection values will return false or nil
+         accordingly to the programming language used.
    */
   @Override
   public List<byte[]> blpop(final int timeout, final byte[]... keys) {
-    return client.executeCommand(commandObjects.blpop(timeout, keys));
+    return connection.executeCommand(commandObjects.blpop(timeout, keys));
   }
 
   @Override
   public List<byte[]> blpop(final double timeout, final byte[]... keys) {
-    return client.executeCommand(commandObjects.blpop(timeout, keys));
+    return connection.executeCommand(commandObjects.blpop(timeout, keys));
   }
 
   /**
@@ -2473,16 +2462,16 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * <p>
    * <b>Blocking behavior</b>
    * <p>
-   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
-   * client performs a LPUSH or an RPUSH operation against one of the lists.
-   * <p>
-   * Once new data is present on one of the lists, the client finally returns with the name of the
-   * key unblocking it and the popped value.
-   * <p>
-   * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
-   * special value if the specified amount of seconds passed without a push operation against at
-   * least one of the specified keys.
-   * <p>
+ If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+ connection performs a LPUSH or an RPUSH operation against one of the lists.
+ <p>
+ Once new data is present on one of the lists, the connection finally returns with the name of the
+ key unblocking it and the popped value.
+ <p>
+ When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
+ special value if the specified amount of seconds passed without a push operation against at
+ least one of the specified keys.
+ <p>
    * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
    * block forever.
    * <p>
@@ -2507,47 +2496,47 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
    *         unblocking key and the popped value.
    *         <p>
-   *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
-   *         value is a nil multi bulk reply. Most client values will return false or nil
-   *         accordingly to the programming language used.
+         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+         value is a nil multi bulk reply. Most connection values will return false or nil
+         accordingly to the programming language used.
    */
   @Override
   public List<byte[]> brpop(final int timeout, final byte[]... keys) {
-    return client.executeCommand(commandObjects.brpop(timeout, keys));
+    return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
 
   @Override
   public List<byte[]> brpop(final double timeout, final byte[]... keys) {
-    return client.executeCommand(commandObjects.brpop(timeout, keys));
+    return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
 
   @Override
   public List<byte[]> bzpopmax(final double timeout, final byte[]... keys) {
-    return client.executeCommand(commandObjects.bzpopmax(timeout, keys));
+    return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
   public List<byte[]> bzpopmin(final double timeout, final byte[]... keys) {
-    return client.executeCommand(commandObjects.bzpopmin(timeout, keys));
+    return connection.executeCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
   /**
    * Request for authentication in a password protected Redis server. A Redis server can be
-   * instructed to require a password before to allow clients to issue commands. This is done using
-   * the requirepass directive in the Redis configuration file. If the password given by the client
-   * is correct the server replies with an OK status code reply and starts accepting commands from
-   * the client. Otherwise an error is returned and the clients needs to try a new password. Note
-   * that for the high performance nature of Redis it is possible to try a lot of passwords in
-   * parallel in very short time, so make sure to generate a strong and very long password so that
-   * this attack is infeasible.
+ instructed to require a password before to allow clients to issue commands. This is done using
+ the requirepass directive in the Redis configuration file. If the password given by the connection
+ is correct the server replies with an OK status code reply and starts accepting commands from
+ the connection. Otherwise an error is returned and the clients needs to try a new password. Note
+ that for the high performance nature of Redis it is possible to try a lot of passwords in
+ parallel in very short time, so make sure to generate a strong and very long password so that
+ this attack is infeasible.
    * @param password
    * @return Status code reply
    */
   @Override
   public String auth(final String password) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(AUTH, password);
-    return client.getStatusCodeReply();
+    connection.sendCommand(AUTH, password);
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -2561,44 +2550,38 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String auth(final String user, final String password) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(AUTH, user, password);
-    return client.getStatusCodeReply();
-  }
-
-  public Pipeline pipelined() {
-    pipeline = new Pipeline();
-    pipeline.setClient(client);
-    return pipeline;
+    connection.sendCommand(AUTH, user, password);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public long zcount(final byte[] key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zcount(key, min, max));
+    return connection.executeCommand(commandObjects.zcount(key, min, max));
   }
 
   @Override
   public long zcount(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zcount(key, min, max));
+    return connection.executeCommand(commandObjects.zcount(key, min, max));
   }
 
   @Override
   public Set<byte[]> zdiff(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zdiff(keys));
+    return connection.executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
   public Set<Tuple> zdiffWithScores(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zdiffWithScores(keys));
+    return connection.executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
   @Override
   public long zdiffStore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zdiffStore(dstkey, keys));
+    return connection.executeCommand(commandObjects.zdiffStore(dstkey, keys));
   }
 
   /**
@@ -2651,13 +2634,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<byte[]> zrangeByScore(final byte[] key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScore(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
   public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScore(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   /**
@@ -2713,14 +2696,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public Set<byte[]> zrangeByScore(final byte[] key, final double min, final double max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
   public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   /**
@@ -2773,13 +2756,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   /**
@@ -2835,18 +2818,18 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   protected Set<Tuple> getTupledSet() {
-    List<byte[]> membersWithScores = client.getBinaryMultiBulkReply();
+    List<byte[]> membersWithScores = connection.getBinaryMultiBulkReply();
     // If response from Redis nil, we should return null.
     if (membersWithScores == null) {
       return null;
@@ -2865,53 +2848,53 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<byte[]> zrevrangeByScore(final byte[] key, final double max, final double min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
   public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
   public Set<byte[]> zrevrangeByScore(final byte[] key, final double max, final double min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
   public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max,
       final double min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
       final byte[] min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   /**
@@ -2930,7 +2913,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zremrangeByRank(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zremrangeByRank(key, start, stop));
+    return connection.executeCommand(commandObjects.zremrangeByRank(key, start, stop));
   }
 
   /**
@@ -2949,37 +2932,37 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zremrangeByScore(final byte[] key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zremrangeByScore(key, min, max));
+    return connection.executeCommand(commandObjects.zremrangeByScore(key, min, max));
   }
 
   @Override
   public long zremrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zremrangeByScore(key, min, max));
+    return connection.executeCommand(commandObjects.zremrangeByScore(key, min, max));
   }
 
   /**
    * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
-   * resulting sorted set, it is returned to the client.
+ resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    */
   @Override
   public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zunion(params, keys));
+    return connection.executeCommand(commandObjects.zunion(params, keys));
   }
 
   /**
    * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
-   * resulting sorted set, it is returned to the client.
+ resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    */
   @Override
   public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zunionWithScores(params, keys));
+    return connection.executeCommand(commandObjects.zunionWithScores(params, keys));
   }
 
   /**
@@ -3010,7 +2993,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zunionstore(final byte[] dstkey, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zunionstore(dstkey, sets));
+    return connection.executeCommand(commandObjects.zunionstore(dstkey, sets));
   }
 
   /**
@@ -3042,31 +3025,31 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zunionstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zunionstore(dstkey, params, sets));
+    return connection.executeCommand(commandObjects.zunionstore(dstkey, params, sets));
   }
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
-   * the resulting sorted set, it is returned to the client.
+ the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    */
   @Override
   public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zinter(params, keys));
+    return connection.executeCommand(commandObjects.zinter(params, keys));
   }
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
-   * the resulting sorted set, it is returned to the client.
+ the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    */
   @Override
   public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zinterWithScores(params, keys));
+    return connection.executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
   /**
@@ -3097,7 +3080,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zinterstore(final byte[] dstkey, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zinterstore(dstkey, sets));
+    return connection.executeCommand(commandObjects.zinterstore(dstkey, sets));
   }
 
   /**
@@ -3129,45 +3112,45 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zinterstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zinterstore(dstkey, params, sets));
+    return connection.executeCommand(commandObjects.zinterstore(dstkey, params, sets));
   }
 
   @Override
   public long zlexcount(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zlexcount(key, min, max));
+    return connection.executeCommand(commandObjects.zlexcount(key, min, max));
   }
 
   @Override
   public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByLex(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
   public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
   public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByLex(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
   public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
   }
 
   @Override
   public long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zremrangeByLex(key, min, max));
+    return connection.executeCommand(commandObjects.zremrangeByLex(key, min, max));
   }
 
   /**
@@ -3185,22 +3168,22 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public String save() {
-    client.save();
-    return client.getStatusCodeReply();
+    connection.sendCommand(Command.SAVE);
+    return connection.getStatusCodeReply();
   }
 
   /**
    * Asynchronously save the DB on disk.
    * <p>
-   * Save the DB in background. The OK code is immediately returned. Redis forks, the parent
-   * continues to server the clients, the child saves the DB on disk then exit. A client my be able
-   * to check if the operation succeeded using the LASTSAVE command.
+ Save the DB in background. The OK code is immediately returned. Redis forks, the parent
+ continues to server the clients, the child saves the DB on disk then exit. A connection my be able
+ to check if the operation succeeded using the LASTSAVE command.
    * @return Status code reply
    */
   @Override
   public String bgsave() {
-    client.bgsave();
-    return client.getStatusCodeReply();
+    connection.sendCommand(BGSAVE);
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -3219,30 +3202,30 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public String bgrewriteaof() {
-    client.bgrewriteaof();
-    return client.getStatusCodeReply();
+    connection.sendCommand(BGREWRITEAOF);
+    return connection.getStatusCodeReply();
   }
 
   /**
    * Return the UNIX time stamp of the last successfully saving of the dataset on disk.
    * <p>
-   * Return the UNIX TIME of the last DB save executed with success. A client may check if a
-   * {@link #bgsave() BGSAVE} command succeeded reading the LASTSAVE value, then issuing a BGSAVE
+ Return the UNIX TIME of the last DB save executed with success. A connection may check if a
+ {@link #bgsave() BGSAVE} command succeeded reading the LASTSAVE value, then issuing a BGSAVE
    * command and checking at regular intervals every N seconds if LASTSAVE changed.
    * @return Integer reply, specifically an UNIX time stamp.
    */
   @Override
   public long lastsave() {
-    client.lastsave();
-    return client.getIntegerReply();
+    connection.sendCommand(LASTSAVE);
+    return connection.getIntegerReply();
   }
 
   /**
    * Synchronously save the DB on disk, then shutdown the server.
    * <p>
-   * Stop all the clients, save the DB, then quit the server. This commands makes sure that the DB
-   * is switched off without the lost of any data. This is not guaranteed if the client uses simply
-   * {@link #save() SAVE} and then {@link #quit() QUIT} because other clients may alter the DB data
+ Stop all the clients, save the DB, then quit the server. This commands makes sure that the DB
+ is switched off without the lost of any data. This is not guaranteed if the connection uses simply
+ {@link #save() SAVE} and then {@link #quit() QUIT} because other clients may alter the DB data
    * between the two commands.
    * @return {@code null}
    * @throws JedisException with the status code reply on error. On success nothing is thrown since
@@ -3250,10 +3233,10 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public String shutdown() throws JedisException {
-    client.shutdown();
+    connection.sendCommand(SHUTDOWN);
     String status;
     try {
-      status = client.getStatusCodeReply();
+      status = connection.getStatusCodeReply();
       throw new JedisException(status);
     } catch (JedisConnectionException jce) {
       // expected
@@ -3264,9 +3247,9 @@ public class Jedis implements ServerCommands, DatabaseCommands,
 
   @Override
   public void shutdown(final SaveMode saveMode) throws JedisException {
-    client.shutdown(saveMode);
+    connection.sendCommand(SHUTDOWN, saveMode.getRaw());
     try {
-      throw new JedisException(client.getStatusCodeReply());
+      throw new JedisException(connection.getStatusCodeReply());
     } catch (JedisConnectionException jce) {
       // expected
     }
@@ -3310,14 +3293,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public String info() {
-    client.info();
-    return client.getBulkReply();
+    connection.sendCommand(INFO);
+    return connection.getBulkReply();
   }
 
   @Override
   public String info(final String section) {
-    client.info(section);
-    return client.getBulkReply();
+    connection.sendCommand(INFO, section);
+    return connection.getBulkReply();
   }
 
   /**
@@ -3329,9 +3312,9 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * @param jedisMonitor
    */
   public void monitor(final JedisMonitor jedisMonitor) {
-    client.monitor();
-    client.getStatusCodeReply();
-    jedisMonitor.proceed(client);
+    connection.monitor();
+    connection.getStatusCodeReply();
+    jedisMonitor.proceed(connection);
   }
 
   /**
@@ -3357,21 +3340,21 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public String slaveof(final String host, final int port) {
-    client.slaveof(host, port);
-    return client.getStatusCodeReply();
+    connection.sendCommand(SLAVEOF, SafeEncoder.encode(host), toByteArray(port));
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String slaveofNoOne() {
-    client.slaveofNoOne();
-    return client.getStatusCodeReply();
+    connection.sendCommand(SLAVEOF, NO.getRaw(), ONE.getRaw());
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public List<Object> roleBinary() {
     checkIsInMultiOrPipeline();
-    client.role();
-    return BuilderFactory.RAW_OBJECT_LIST.build(client.getOne());
+    connection.sendCommand(ROLE);
+    return BuilderFactory.RAW_OBJECT_LIST.build(connection.getOne());
   }
 
   /**
@@ -3411,8 +3394,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<byte[]> configGet(final byte[] pattern) {
     checkIsInMultiOrPipeline();
-    client.configGet(pattern);
-    return client.getBinaryMultiBulkReply();
+    connection.configGet(pattern);
+    return connection.getBinaryMultiBulkReply();
   }
 
   /**
@@ -3421,8 +3404,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String configResetStat() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.configResetStat();
-    return client.getStatusCodeReply();
+    connection.configResetStat();
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -3454,8 +3437,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String configRewrite() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.configRewrite();
-    return client.getStatusCodeReply();
+    connection.configRewrite();
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -3490,36 +3473,32 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String configSet(final byte[] parameter, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.configSet(parameter, value);
-    return client.getStatusCodeReply();
+    connection.configSet(parameter, value);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public long strlen(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.strlen(key);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.strlen(key));
   }
 
   @Override
   public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params);
-    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
+    return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
   @Override
   public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params);
-    return BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER.build(client.getOne());
+    return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
   @Override
   public long lpushx(final byte[] key, final byte[]... string) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpushx(key, string);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.lpushx(key, string));
   }
 
   /**
@@ -3533,92 +3512,54 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long persist(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.persist(key);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.persist(key));
   }
 
   @Override
   public long rpushx(final byte[] key, final byte[]... string) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpushx(key, string);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.rpushx(key, string));
   }
 
   @Override
   public byte[] echo(final byte[] string) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.echo(string);
-    return client.getBinaryBulkReply();
+    connection.sendCommand(ECHO, string);
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public long linsert(final byte[] key, final ListPosition where, final byte[] pivot,
       final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.linsert(key, where, pivot, value);
-    return client.getIntegerReply();
-  }
-
-  @Override
-  public String debug(final DebugParams params) {
-    return client.executeCommand(commandObjects.debug(params);
-    return client.getStatusCodeReply();
-  }
-
-  public Client getClient() {
-    return client;
+    return connection.executeCommand(commandObjects.linsert(key, where, pivot, value));
   }
 
   /**
    * Pop a value from a list, push it to another list and return it; or block until one is available
-   * @param source
-   * @param destination
-   * @param timeout
-   * @return the element
    */
   @Override
   public byte[] brpoplpush(final byte[] source, final byte[] destination, final int timeout) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.brpoplpush(source, destination, timeout);
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
-    try {
-      return client.getBinaryBulkReply();
-    } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
-    }
+    return connection.executeCommand(commandObjects.brpoplpush(source, destination, timeout));
   }
 
   /**
    * Sets or clears the bit at offset in the string value stored at key
-   * @param key
-   * @param offset
-   * @param value
    */
   @Override
   public boolean setbit(final byte[] key, final long offset, final boolean value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setbit(key, offset, value);
-    return client.getIntegerReply() == 1;
-  }
-
-  @Override
-  @Deprecated
-  public Boolean setbit(final byte[] key, final long offset, final byte[] value) {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setbit(key, offset, value);
-    return client.getIntegerReply() == 1;
+    return connection.executeCommand(commandObjects.setbit(key, offset, value));
   }
 
   /**
    * Returns the bit value at offset in the string value stored at key
-   * @param key
-   * @param offset
    */
   @Override
   public boolean getbit(final byte[] key, final long offset) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getbit(key, offset);
-    return client.getIntegerReply() == 1;
+    return connection.executeCommand(commandObjects.getbit(key, offset));
   }
 
   @Override
@@ -3629,48 +3570,45 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long bitpos(final byte[] key, final boolean value, final BitPosParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitpos(key, value, params);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.bitpos(key, value, params));
   }
 
   @Override
   public long setrange(final byte[] key, final long offset, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setrange(key, offset, value);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.setrange(key, offset, value));
   }
 
   @Override
   public byte[] getrange(final byte[] key, final long startOffset, final long endOffset) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getrange(key, startOffset, endOffset);
-    return client.getBinaryBulkReply();
+    return connection.executeCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
   @Override
   public Long publish(final byte[] channel, final byte[] message) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.publish(channel, message);
-    return client.getIntegerReply();
+    connection.publish(channel, message);
+    return connection.getIntegerReply();
   }
 
   @Override
   public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
+    connection.setTimeoutInfinite();
     try {
-      jedisPubSub.proceed(client, channels);
+      jedisPubSub.proceed(connection, channels);
     } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
+      connection.rollbackTimeout();
     }
   }
 
   @Override
   public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
+    connection.setTimeoutInfinite();
     try {
-      jedisPubSub.proceedWithPatterns(client, patterns);
+      jedisPubSub.proceedWithPatterns(connection, patterns);
     } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
+      connection.rollbackTimeout();
     }
   }
 
@@ -3684,7 +3622,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public Object eval(final byte[] script, final List<byte[]> keys, final List<byte[]> args) {
-    return eval(script, toByteArray(keys.size()), getParamsWithBinary(keys, args));
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.eval(script, keys, args));
   }
 
   protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
@@ -3702,50 +3641,45 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   }
 
   @Override
-  @Deprecated
-  public Object eval(final byte[] script, final byte[] keyCount, final byte[]... params) {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.eval(script, keyCount, params);
-    return client.getOne();
-  }
-
-  @Override
   public Object eval(final byte[] script, final int keyCount, final byte[]... params) {
-    return eval(script, toByteArray(keyCount), params);
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.eval(script, keyCount, params));
   }
 
   @Override
   public Object eval(final byte[] script) {
-    return eval(script, 0);
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.eval(script));
   }
 
   @Override
   public Object evalsha(final byte[] sha1) {
-    return evalsha(sha1, 0);
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalsha(sha1));
   }
 
   @Override
   public Object evalsha(final byte[] sha1, final List<byte[]> keys, final List<byte[]> args) {
-    return evalsha(sha1, keys.size(), getParamsWithBinary(keys, args));
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalsha(sha1, keys, args));
   }
 
   @Override
   public Object evalsha(final byte[] sha1, final int keyCount, final byte[]... params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.evalsha(sha1, keyCount, params);
-    return client.getOne();
+    return connection.executeCommand(commandObjects.evalsha(sha1, keyCount, params));
   }
 
   @Override
   public String scriptFlush() {
-    return client.executeCommand(commandObjects.scriptFlush();
-    return client.getStatusCodeReply();
+    connection.scriptFlush();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String scriptFlush(final FlushMode flushMode) {
-    return client.executeCommand(commandObjects.scriptFlush(flushMode);
-    return client.getStatusCodeReply();
+    connection.scriptFlush(flushMode);
+    return connection.getStatusCodeReply();
   }
 
   public Long scriptExists(final byte[] sha1) {
@@ -3756,124 +3690,111 @@ public class Jedis implements ServerCommands, DatabaseCommands,
 
   @Override
   public List<Long> scriptExists(final byte[]... sha1) {
-    return client.executeCommand(commandObjects.scriptExists(sha1);
-    return client.getIntegerMultiBulkReply();
+    connection.scriptExists(sha1);
+    return connection.getIntegerMultiBulkReply();
   }
 
   @Override
   public byte[] scriptLoad(final byte[] script) {
-    return client.executeCommand(commandObjects.scriptLoad(script);
-    return client.getBinaryBulkReply();
+    connection.scriptLoad(script);
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public String scriptKill() {
-    return client.executeCommand(commandObjects.scriptKill();
-    return client.getStatusCodeReply();
+    connection.scriptKill();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String slowlogReset() {
-    return client.executeCommand(commandObjects.slowlogReset();
-    return client.getBulkReply();
+    connection.slowlogReset();
+    return connection.getBulkReply();
   }
 
   @Override
   public long slowlogLen() {
-    return client.executeCommand(commandObjects.slowlogLen();
-    return client.getIntegerReply();
+    connection.slowlogLen();
+    return connection.getIntegerReply();
   }
 
   @Override
   public List<Object> slowlogGetBinary() {
-    return client.executeCommand(commandObjects.slowlogGet();
-    return client.getObjectMultiBulkReply();
+    connection.slowlogGet();
+    return connection.getObjectMultiBulkReply();
   }
 
   @Override
   public List<Object> slowlogGetBinary(final long entries) {
-    return client.executeCommand(commandObjects.slowlogGet(entries);
-    return client.getObjectMultiBulkReply();
+    connection.slowlogGet(entries);
+    return connection.getObjectMultiBulkReply();
   }
 
   @Override
   public Long objectRefcount(final byte[] key) {
-    return client.executeCommand(commandObjects.objectRefcount(key);
-    return client.getIntegerReply();
+    connection.objectRefcount(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public byte[] objectEncoding(final byte[] key) {
-    return client.executeCommand(commandObjects.objectEncoding(key);
-    return client.getBinaryBulkReply();
+    connection.objectEncoding(key);
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public Long objectIdletime(final byte[] key) {
-    return client.executeCommand(commandObjects.objectIdletime(key);
-    return client.getIntegerReply();
+    connection.objectIdletime(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public List<byte[]> objectHelpBinary() {
-    return client.executeCommand(commandObjects.objectHelp();
-    return client.getBinaryMultiBulkReply();
+    connection.objectHelp();
+    return connection.getBinaryMultiBulkReply();
   }
 
   @Override
   public Long objectFreq(final byte[] key) {
-    return client.executeCommand(commandObjects.objectFreq(key);
-    return client.getIntegerReply();
+    connection.objectFreq(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public long bitcount(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitcount(key);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.bitcount(key));
   }
 
   @Override
   public long bitcount(final byte[] key, final long start, final long end) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitcount(key, start, end);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.bitcount(key, start, end));
   }
 
   @Override
   public long bitop(final BitOP op, final byte[] destKey, final byte[]... srcKeys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitop(op, destKey, srcKeys);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
   @Override
   public byte[] dump(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.dump(key);
-    return client.getBinaryBulkReply();
+    return connection.executeCommand(commandObjects.dump(key));
   }
 
   @Override
   public String restore(final byte[] key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.restore(key, ttl, serializedValue);
-    return client.getStatusCodeReply();
-  }
-
-  @Override
-  public String restoreReplace(final byte[] key, final long ttl, final byte[] serializedValue) {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.restoreReplace(key, ttl, serializedValue);
-    return client.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.restore(key, ttl, serializedValue));
   }
 
   @Override
   public String restore(final byte[] key, final long ttl, final byte[] serializedValue,
       final RestoreParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.restore(key, ttl, serializedValue, params);
-    return client.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.restore(key, ttl, serializedValue, params));
   }
 
   /**
@@ -3900,22 +3821,19 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long pexpire(final byte[] key, final long milliseconds) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pexpire(key, milliseconds);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
   }
 
   @Override
   public long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
   }
 
   @Override
   public long pttl(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pttl(key);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.pttl(key));
   }
 
   /**
@@ -3929,29 +3847,28 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String psetex(final byte[] key, final long milliseconds, final byte[] value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.psetex(key, milliseconds, value);
-    return client.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.psetex(key, milliseconds, value));
   }
 
   @Override
   public byte[] memoryDoctorBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.memoryDoctor();
-    return client.getBinaryBulkReply();
+    connection.memoryDoctor();
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public Long memoryUsage(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.memoryUsage(key);
-    return client.getIntegerReply();
+    connection.memoryUsage(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public Long memoryUsage(final byte[] key, final int samples) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.memoryUsage(key, samples);
-    return client.getIntegerReply();
+    connection.memoryUsage(key, samples);
+    return connection.getIntegerReply();
   }
 
   @Override
@@ -3962,279 +3879,353 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String failover(FailoverParams failoverParams) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.failover(failoverParams);
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
+    connection.failover(failoverParams);
+    connection.setTimeoutInfinite();
     try {
-      return client.getStatusCodeReply();
+      return connection.getStatusCodeReply();
     } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
+      connection.rollbackTimeout();
     }
   }
 
   @Override
   public String failoverAbort() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.failoverAbort();
-    return client.getStatusCodeReply();
+    connection.failoverAbort();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public byte[] aclWhoAmIBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclWhoAmI();
-    return client.getBinaryBulkReply();
+    connection.aclWhoAmI();
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public byte[] aclGenPassBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclGenPass();
-    return client.getBinaryBulkReply();
+    connection.aclGenPass();
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public List<byte[]> aclListBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclList();
-    return client.getBinaryMultiBulkReply();
+    connection.aclList();
+    return connection.getBinaryMultiBulkReply();
   }
 
   @Override
   public List<byte[]> aclUsersBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclUsers();
-    return client.getBinaryMultiBulkReply();
+    connection.aclUsers();
+    return connection.getBinaryMultiBulkReply();
   }
 
   @Override
   public AccessControlUser aclGetUser(byte[] name) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclGetUser(name);
-    return BuilderFactory.ACCESS_CONTROL_USER.build(client.getObjectMultiBulkReply());
+    connection.aclGetUser(name);
+    return BuilderFactory.ACCESS_CONTROL_USER.build(connection.getObjectMultiBulkReply());
   }
 
   @Override
   public String aclSetUser(byte[] name) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclSetUser(name);
-    return client.getStatusCodeReply();
+    connection.aclSetUser(name);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String aclSetUser(byte[] name, byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclSetUser(name, keys);
-    return client.getStatusCodeReply();
+    connection.aclSetUser(name, keys);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public long aclDelUser(byte[] name) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclDelUser(name);
-    return client.getIntegerReply();
+    connection.aclDelUser(name);
+    return connection.getIntegerReply();
   }
 
   @Override
   public List<byte[]> aclCatBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclCat();
-    return client.getBinaryMultiBulkReply();
+    connection.aclCat();
+    return connection.getBinaryMultiBulkReply();
   }
 
   @Override
   public List<byte[]> aclCat(byte[] category) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclCat(category);
-    return client.getBinaryMultiBulkReply();
+    connection.aclCat(category);
+    return connection.getBinaryMultiBulkReply();
   }
 
   @Override
   public List<byte[]> aclLogBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclLog();
-    return client.getBinaryMultiBulkReply();
+    connection.aclLog();
+    return connection.getBinaryMultiBulkReply();
   }
 
   @Override
   public List<byte[]> aclLogBinary(int limit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclLog(limit);
-    return client.getBinaryMultiBulkReply();
+    connection.aclLog(limit);
+    return connection.getBinaryMultiBulkReply();
   }
 
   @Override
   public byte[] aclLog(byte[] options) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclLog(options);
-    return client.getBinaryBulkReply();
+    connection.aclLog(options);
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public String aclLoad() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclLoad();
-    return client.getStatusCodeReply();
+    connection.aclLoad();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String aclSave() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclSave();
-    return client.getStatusCodeReply();
+    connection.aclSave();
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclSetUser(final String name) {
+    connection.aclSetUser(name);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclSetUser(String name, String... params) {
+    connection.aclSetUser(name, params);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public long aclDelUser(final String name) {
+    connection.aclDelUser(name);
+    return connection.getIntegerReply();
+  }
+
+  @Override
+  public AccessControlUser aclGetUser(final String name) {
+    connection.aclGetUser(name);
+    return BuilderFactory.ACCESS_CONTROL_USER.build(connection.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<String> aclUsers() {
+    connection.aclUsers();
+    return BuilderFactory.STRING_LIST.build(connection.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<String> aclList() {
+    connection.aclList();
+    return connection.getMultiBulkReply();
+  }
+
+  @Override
+  public String aclWhoAmI() {
+    connection.aclWhoAmI();
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public List<String> aclCat() {
+    connection.aclCat();
+    return BuilderFactory.STRING_LIST.build(connection.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<String> aclCat(String category) {
+    connection.aclCat(category);
+    return BuilderFactory.STRING_LIST.build(connection.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<AccessControlLogEntry> aclLog() {
+    connection.aclLog();
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<AccessControlLogEntry> aclLog(int limit) {
+    connection.aclLog(limit);
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public String aclLog(String options) {
+    connection.aclLog(options);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String aclGenPass() {
+    connection.aclGenPass();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clientKill(final byte[] ipPort) {
     checkIsInMultiOrPipeline();
-    this.client.clientKill(ipPort);
-    return this.client.getStatusCodeReply();
+    this.connection.clientKill(ipPort);
+    return this.connection.getStatusCodeReply();
   }
 
   @Override
   public String clientKill(final String ip, final int port) {
     checkIsInMultiOrPipeline();
-    this.client.clientKill(ip, port);
-    return this.client.getStatusCodeReply();
+    this.connection.clientKill(ip, port);
+    return this.connection.getStatusCodeReply();
   }
 
   @Override
   public long clientKill(ClientKillParams params) {
     checkIsInMultiOrPipeline();
-    this.client.clientKill(params);
-    return this.client.getIntegerReply();
+    this.connection.clientKill(params);
+    return this.connection.getIntegerReply();
   }
 
   @Override
   public byte[] clientGetnameBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientGetname();
-    return client.getBinaryBulkReply();
+    connection.clientGetname();
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public byte[] clientListBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientList();
-    return client.getBinaryBulkReply();
+    connection.clientList();
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public byte[] clientListBinary(ClientType type) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientList(type);
-    return client.getBinaryBulkReply();
+    connection.clientList(type);
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public byte[] clientListBinary(final long... clientIds) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientList(clientIds);
-    return client.getBinaryBulkReply();
+    connection.clientList(clientIds);
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public byte[] clientInfoBinary() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientInfo();
-    return client.getBinaryBulkReply();
+    connection.clientInfo();
+    return connection.getBinaryBulkReply();
   }
 
   @Override
   public String clientSetname(final byte[] name) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientSetname(name);
-    return client.getBulkReply();
+    connection.clientSetname(name);
+    return connection.getBulkReply();
   }
 
   @Override
   public long clientId() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientId();
-    return client.getIntegerReply();
+    connection.clientId();
+    return connection.getIntegerReply();
   }
 
   /**
-   * Unblock a client blocked in a blocking command from a different connection.
+   * Unblock a connection blocked in a blocking command from a different connection.
    * @param clientId
-   * @param unblockType could be {@code null} by default the client is unblocked as if the timeout
-   *          of the command was reached
+   * @param unblockType could be {@code null} by default the connection is unblocked as if the timeout
+          of the command was reached
    */
   @Override
   public long clientUnblock(final long clientId, final UnblockType unblockType) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientUnblock(clientId, unblockType);
-    return client.getIntegerReply();
+    connection.clientUnblock(clientId, unblockType);
+    return connection.getIntegerReply();
   }
 
   @Override
   public String clientPause(final long timeout) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientPause(timeout);
-    return client.getBulkReply();
+    connection.clientPause(timeout);
+    return connection.getBulkReply();
   }
 
   @Override
   public String clientPause(final long timeout, final ClientPauseMode mode) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.clientPause(timeout, mode);
-    return client.getBulkReply();
+    connection.clientPause(timeout, mode);
+    return connection.getBulkReply();
   }
 
   public List<String> time() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.time();
-    return client.getMultiBulkReply();
+    connection.time();
+    return connection.getMultiBulkReply();
   }
 
   @Override
   public String migrate(final String host, final int port, final byte[] key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.migrate(host, port, key, destinationDb, timeout);
-    return client.getStatusCodeReply();
+    connection.migrate(host, port, key, destinationDb, timeout);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String migrate(final String host, final int port, final int destinationDB,
       final int timeout, final MigrateParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys);
-    return client.getStatusCodeReply();
+    connection.migrate(host, port, destinationDB, timeout, params, keys);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public long waitReplicas(final int replicas, final long timeout) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.waitReplicas(replicas, timeout);
-    return client.getIntegerReply();
+    connection.sendCommand(WAIT, toByteArray(replicas), toByteArray(timeout));
+    return connection.getIntegerReply();
   }
 
   @Override
   public long pfadd(final byte[] key, final byte[]... elements) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pfadd(key, elements);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.pfadd(key, elements));
   }
 
   @Override
   public long pfcount(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pfcount(key);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.pfcount(key));
   }
 
   @Override
   public String pfmerge(final byte[] destkey, final byte[]... sourcekeys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pfmerge(destkey, sourcekeys);
-    return client.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.pfmerge(destkey, sourcekeys));
   }
 
   @Override
   public long pfcount(final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pfcount(keys);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.pfcount(keys));
   }
 
   @Override
@@ -4250,11 +4241,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params, final byte[] type) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.scan(cursor, params, type);
-    List<Object> result = client.getObjectMultiBulkReply();
-    byte[] newcursor = (byte[]) result.get(0);
-    List<byte[]> rawResults = (List<byte[]>) result.get(1);
-    return new ScanResult<>(newcursor, rawResults);
+    return connection.executeCommand(commandObjects.scan(cursor, params, type));
   }
 
   @Override
@@ -4266,16 +4253,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hscan(key, cursor, params);
-    List<Object> result = client.getObjectMultiBulkReply();
-    byte[] newcursor = (byte[]) result.get(0);
-    List<Map.Entry<byte[], byte[]>> results = new ArrayList<>();
-    List<byte[]> rawResults = (List<byte[]>) result.get(1);
-    Iterator<byte[]> iterator = rawResults.iterator();
-    while (iterator.hasNext()) {
-      results.add(new AbstractMap.SimpleEntry<>(iterator.next(), iterator.next()));
-    }
-    return new ScanResult<>(newcursor, results);
+    return connection.executeCommand(commandObjects.hscan(key, cursor, params));
   }
 
   @Override
@@ -4286,11 +4264,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public ScanResult<byte[]> sscan(final byte[] key, final byte[] cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sscan(key, cursor, params);
-    List<Object> result = client.getObjectMultiBulkReply();
-    byte[] newcursor = (byte[]) result.get(0);
-    List<byte[]> rawResults = (List<byte[]>) result.get(1);
-    return new ScanResult<>(newcursor, rawResults);
+    return connection.executeCommand(commandObjects.sscan(key, cursor, params));
   }
 
   @Override
@@ -4301,91 +4275,72 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public ScanResult<Tuple> zscan(final byte[] key, final byte[] cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zscan(key, cursor, params);
-    List<Object> result = client.getObjectMultiBulkReply();
-    byte[] newcursor = (byte[]) result.get(0);
-    List<Tuple> results = new ArrayList<>();
-    List<byte[]> rawResults = (List<byte[]>) result.get(1);
-    Iterator<byte[]> iterator = rawResults.iterator();
-    while (iterator.hasNext()) {
-      results.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
-    }
-    return new ScanResult<>(newcursor, results);
+    return connection.executeCommand(commandObjects.zscan(key, cursor, params));
   }
 
   @Override
   public long geoadd(final byte[] key, final double longitude, final double latitude,
       final byte[] member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geoadd(key, longitude, latitude, member);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.geoadd(key, longitude, latitude, member));
   }
 
   @Override
   public long geoadd(final byte[] key, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geoadd(key, memberCoordinateMap);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.geoadd(key, memberCoordinateMap));
   }
 
   @Override
   public long geoadd(final byte[] key, final GeoAddParams params, final Map<byte[], GeoCoordinate> memberCoordinateMap) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geoadd(key, params, memberCoordinateMap);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.geoadd(key, params, memberCoordinateMap));
   }
 
   @Override
   public Double geodist(final byte[] key, final byte[] member1, final byte[] member2) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geodist(key, member1, member2);
-    return BuilderFactory.DOUBLE.build(client.getOne());
+    return connection.executeCommand(commandObjects.geodist(key, member1, member2));
   }
 
   @Override
   public Double geodist(final byte[] key, final byte[] member1, final byte[] member2,
       final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geodist(key, member1, member2, unit);
-    return BuilderFactory.DOUBLE.build(client.getOne());
+    return connection.executeCommand(commandObjects.geodist(key, member1, member2, unit));
   }
 
   @Override
   public List<byte[]> geohash(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geohash(key, members);
-    return client.getBinaryMultiBulkReply();
+    return connection.executeCommand(commandObjects.geohash(key, members));
   }
 
   @Override
   public List<GeoCoordinate> geopos(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geopos(key, members);
-    return BuilderFactory.GEO_COORDINATE_LIST.build(client.getObjectMultiBulkReply());
+    return connection.executeCommand(commandObjects.geopos(key, members));
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit);
-    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+    return connection.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit);
-    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+    return connection.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param);
-    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+    return connection.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
@@ -4393,449 +4348,245 @@ public class Jedis implements ServerCommands, DatabaseCommands,
       final double radius, final GeoUnit unit, final GeoRadiusParam param,
       final GeoRadiusStoreParam storeParam) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(final byte[] key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param);
-    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+    return connection.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member,
       final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit);
-    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+    return connection.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member,
       final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit);
-    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+    return connection.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final byte[] key, final byte[] member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param);
-    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+    return connection.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
   }
 
   @Override
   public long georadiusByMemberStore(final byte[] key, final byte[] member, final double radius,
       final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param);
-    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
-  }
-
-  /**
-   * A decorator to implement Set from List. Assume that given List do not contains duplicated
-   * values. The resulting set displays the same ordering, concurrency, and performance
-   * characteristics as the backing list. This class should be used only for Redis commands which
-   * return Set result.
-   * @param <E>
-   */
-  protected static class SetFromList<E> extends AbstractSet<E> implements Serializable {
-    private static final long serialVersionUID = -2850347066962734052L;
-    private final List<E> list;
-
-    private SetFromList(List<E> list) {
-      this.list = list;
-    }
-
-    @Override
-    public void clear() {
-      list.clear();
-    }
-
-    @Override
-    public int size() {
-      return list.size();
-    }
-
-    @Override
-    public boolean isEmpty() {
-      return list.isEmpty();
-    }
-
-    @Override
-    public boolean contains(Object o) {
-      return list.contains(o);
-    }
-
-    @Override
-    public boolean remove(Object o) {
-      return list.remove(o);
-    }
-
-    @Override
-    public boolean add(E e) {
-      return !contains(e) && list.add(e);
-    }
-
-    @Override
-    public Iterator<E> iterator() {
-      return list.iterator();
-    }
-
-    @Override
-    public Object[] toArray() {
-      return list.toArray();
-    }
-
-    @Override
-    public <T> T[] toArray(T[] a) {
-      return list.toArray(a);
-    }
-
-    @Override
-    public String toString() {
-      return list.toString();
-    }
-
-    @Override
-    public int hashCode() {
-      return list.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (o == null) return false;
-      if (o == this) return true;
-      if (!(o instanceof Set)) return false;
-
-      Collection<?> c = (Collection<?>) o;
-      if (c.size() != size()) {
-        return false;
-      }
-
-      return containsAll(c);
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> c) {
-      return list.containsAll(c);
-    }
-
-    @Override
-    public boolean removeAll(Collection<?> c) {
-      return list.removeAll(c);
-    }
-
-    @Override
-    public boolean retainAll(Collection<?> c) {
-      return list.retainAll(c);
-    }
-
-    protected static <E> SetFromList<E> of(List<E> list) {
-      if (list == null) {
-        return null;
-      }
-      return new SetFromList<>(list);
-    }
+    return connection.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
   @Override
   public List<Long> bitfield(final byte[] key, final byte[]... arguments) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitfield(key, arguments);
-    return client.getIntegerMultiBulkReply();
+    return connection.executeCommand(commandObjects.bitfield(key, arguments));
   }
 
   @Override
   public List<Long> bitfieldReadonly(byte[] key, final byte[]... arguments) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitfieldReadonly(key, arguments);
-    return client.getIntegerMultiBulkReply();
+    return connection.executeCommand(commandObjects.bitfieldReadonly(key, arguments));
   }
 
   @Override
   public long hstrlen(final byte[] key, final byte[] field) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hstrlen(key, field);
-    return client.getIntegerReply();
-  }
-
-  @Override
-  public List<byte[]> xread(int count, long block, Map<byte[], byte[]> streams) {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xread(count, block, streams);
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
-    try {
-      return client.getBinaryMultiBulkReply();
-    } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
-    }
+    return connection.executeCommand(commandObjects.hstrlen(key, field));
   }
 
   @Override
   public List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xread(xReadParams, streams);
-
-    if (!xReadParams.hasBlock()) {
-      return client.getBinaryMultiBulkReply();
-    }
-
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
-    try {
-      return client.getBinaryMultiBulkReply();
-    } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
-    }
-  }
-
-  @Override
-  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, int count, long block,
-      boolean noAck, Map<byte[], byte[]> streams) {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xreadGroup(groupname, consumer, count, block, noAck, streams);
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
-    try {
-      return client.getBinaryMultiBulkReply();
-    } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
-    }
+    return connection.executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
   public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer,
       XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams);
-
-    if (!xReadGroupParams.hasBlock()) {
-      return client.getBinaryMultiBulkReply();
-    }
-
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
-    try {
-      return client.getBinaryMultiBulkReply();
-    } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
-    }
+    return connection.executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
   }
 
   @Override
-  public byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen,
-      boolean approximateLength) {
+  public byte[] xadd(final byte[] key, final XAddParams params, final Map<byte[], byte[]> hash) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xadd(key, id, hash, maxLen, approximateLength);
-    return client.getBinaryBulkReply();
-  }
-
-  @Override
-  public byte[] xadd(final byte[] key, final Map<byte[], byte[]> hash, final XAddParams params) {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xadd(key, hash, params);
-    return client.getBinaryBulkReply();
+    return connection.executeCommand(commandObjects.xadd(key, params, hash));
   }
 
   @Override
   public long xlen(byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xlen(key);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.xlen(key));
   }
 
   @Override
   public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xrange(key, start, end);
-    return client.getBinaryMultiBulkReply();
+    return connection.executeCommand(commandObjects.xrange(key, start, end));
   }
 
   @Override
   public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xrange(key, start, end, count);
-    return client.getBinaryMultiBulkReply();
+    return connection.executeCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
   public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xrevrange(key, end, start);
-    return client.getBinaryMultiBulkReply();
+    return connection.executeCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
   public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xrevrange(key, end, start, count);
-    return client.getBinaryMultiBulkReply();
+    return connection.executeCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
   @Override
   public long xack(byte[] key, byte[] group, byte[]... ids) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xack(key, group, ids);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.xack(key, group, ids));
   }
 
   @Override
   public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xgroupCreate(key, consumer, id, makeStream);
-    return client.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.xgroupCreate(key, consumer, id, makeStream));
   }
 
   @Override
   public String xgroupSetID(byte[] key, byte[] consumer, byte[] id) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xgroupSetID(key, consumer, id);
-    return client.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.xgroupSetID(key, consumer, id));
   }
 
   @Override
   public long xgroupDestroy(byte[] key, byte[] consumer) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xgroupDestroy(key, consumer);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.xgroupDestroy(key, consumer));
   }
 
   @Override
   public long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xgroupDelConsumer(key, consumer, consumerName);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.xgroupDelConsumer(key, consumer, consumerName));
   }
 
   @Override
   public long xdel(byte[] key, byte[]... ids) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xdel(key, ids);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.xdel(key, ids));
   }
 
   @Override
   public long xtrim(byte[] key, long maxLen, boolean approximateLength) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xtrim(key, maxLen, approximateLength);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.xtrim(key, maxLen, approximateLength));
   }
 
   @Override
   public long xtrim(byte[] key, XTrimParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xtrim(key, params);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.xtrim(key, params));
   }
 
   @Override
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername);
-    return client.getObjectMultiBulkReply();
+    return connection.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
   }
 
   @Override
   public Object xpending(final byte[] key, final byte[] groupname) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xpending(key, groupname);
-    return client.getOne();
+    return connection.executeCommand(commandObjects.xpending(key, groupname));
   }
 
   @Override
   public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xpending(key, groupname, params);
-    return client.getObjectMultiBulkReply();
-  }
-
-  @Override
-  public List<byte[]> xclaim(byte[] key, byte[] groupname, byte[] consumername, long minIdleTime,
-      long newIdleTime, int retries, boolean force, byte[]... ids) {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xclaim(key, groupname, consumername, minIdleTime, newIdleTime, retries, force, ids);
-    return client.getBinaryMultiBulkReply();
+    return connection.executeCommand(commandObjects.xpending(key, groupname, params));
   }
 
   @Override
   public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids);
-    return client.getBinaryMultiBulkReply();
+    return connection.executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
   }
 
   @Override
   public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids);
-    return client.getBinaryMultiBulkReply();
+    return connection.executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
   }
 
   @Override
   public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
-    return client.getObjectMultiBulkReply();
+    return connection.executeCommand(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params));
   }
 
   @Override
   public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
-    return client.getObjectMultiBulkReply();
+    return connection.executeCommand(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params));
   }
 
   @Override
   public Object xinfoStream(byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xinfoStream(key);
-    return client.getOne();
+    return connection.executeCommand(commandObjects.xinfoStream(key));
   }
 
   @Override
   public List<Object> xinfoGroup(byte[] key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xinfoGroup(key);
-    return client.getObjectMultiBulkReply();
+    return connection.executeCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override
   public List<Object> xinfoConsumers(byte[] key, byte[] group) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xinfoConsumers(key, group);
-    return client.getObjectMultiBulkReply();
+    return connection.executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 
   public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(cmd, args);
-    return client.getOne();
+    connection.sendCommand(cmd, args);
+    return connection.getOne();
   }
 
   public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sendCommand(cmd, args);
-    return client.executeCommand(commandObjects.setTimeoutInfinite();
+    connection.sendCommand(cmd, args);
+    connection.setTimeoutInfinite();
     try {
-      return client.getOne();
+      return connection.getOne();
     } finally {
-      return client.executeCommand(commandObjects.rollbackTimeout();
+      connection.rollbackTimeout();
     }
   }
 
@@ -4857,8 +4608,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean copy(String srcKey, String dstKey, int db, boolean replace) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.copy(srcKey, dstKey, db, replace);
-    return BuilderFactory.BOOLEAN.build(client.getOne());
+    return connection.executeCommand(commandObjects.copy(srcKey, dstKey, db, replace));
   }
 
   /**
@@ -4872,8 +4622,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean copy(String srcKey, String dstKey, boolean replace) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.copy(srcKey, dstKey, replace);
-    return BuilderFactory.BOOLEAN.build(client.getOne());
+    return connection.executeCommand(commandObjects.copy(srcKey, dstKey, replace));
   }
 
   /**
@@ -4884,8 +4633,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String ping(final String message) {
     checkIsInMultiOrPipeline();
-    client.sendCommand(Command.PING, message);
-    return client.getBulkReply();
+    connection.sendCommand(Command.PING, message);
+    return connection.getBulkReply();
   }
 
   /**
@@ -4900,7 +4649,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String set(final String key, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.set(key, value));
+    return connection.executeCommand(commandObjects.set(key, value));
   }
 
   /**
@@ -4915,7 +4664,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String set(final String key, final String value, final SetParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.set(key, value, params));
+    return connection.executeCommand(commandObjects.set(key, value, params));
   }
 
   /**
@@ -4930,7 +4679,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String get(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.get(key));
+    return connection.executeCommand(commandObjects.get(key));
   }
 
   /**
@@ -4945,13 +4694,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String getDel(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getDel(key));
+    return connection.executeCommand(commandObjects.getDel(key));
   }
 
   @Override
   public String getEx(String key, GetExParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getEx(key, params));
+    return connection.executeCommand(commandObjects.getEx(key, params));
   }
 
   /**
@@ -4964,7 +4713,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long exists(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.exists(keys));
+    return connection.executeCommand(commandObjects.exists(keys));
   }
 
   /**
@@ -4977,7 +4726,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean exists(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.exists(key));
+    return connection.executeCommand(commandObjects.exists(key));
   }
 
   /**
@@ -4990,13 +4739,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long del(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.del(keys));
+    return connection.executeCommand(commandObjects.del(keys));
   }
 
   @Override
   public long del(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.del(key));
+    return connection.executeCommand(commandObjects.del(key));
   }
 
   /**
@@ -5015,13 +4764,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long unlink(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.unlink(keys));
+    return connection.executeCommand(commandObjects.unlink(keys));
   }
 
   @Override
   public long unlink(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.unlink(key));
+    return connection.executeCommand(commandObjects.unlink(key));
   }
 
   /**
@@ -5036,13 +4785,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String type(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.type(key));
+    return connection.executeCommand(commandObjects.type(key));
   }
 
   @Override
   public Set<String> keys(final String pattern) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.keys(pattern));
+    return connection.executeCommand(commandObjects.keys(pattern));
   }
 
   /**
@@ -5055,7 +4804,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String randomKey() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.randomKey());
+    return connection.executeCommand(commandObjects.randomKey());
   }
 
   /**
@@ -5070,7 +4819,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String rename(final String oldkey, final String newkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rename(oldkey, newkey));
+    return connection.executeCommand(commandObjects.rename(oldkey, newkey));
   }
 
   /**
@@ -5084,7 +4833,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long renamenx(final String oldkey, final String newkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.renamenx(oldkey, newkey));
+    return connection.executeCommand(commandObjects.renamenx(oldkey, newkey));
   }
 
   /**
@@ -5111,7 +4860,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long expire(final String key, final long seconds) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.expire(key, seconds));
+    return connection.executeCommand(commandObjects.expire(key, seconds));
   }
 
   /**
@@ -5140,13 +4889,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long expireAt(final String key, final long unixTime) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.expireAt(key, unixTime));
+    return connection.executeCommand(commandObjects.expireAt(key, unixTime));
   }
 
   /**
    * The TTL command returns the remaining time to live in seconds of a key that has an
-   * {@link #expire(String, int) EXPIRE} set. This introspection capability allows a Redis client to
-   * check how many seconds a given key will continue to be part of the dataset.
+   * {@link #expire(String, int) EXPIRE} set. This introspection capability allows a Redis connection to
+ check how many seconds a given key will continue to be part of the dataset.
    * @param key
    * @return Integer reply, returns the remaining time to live in seconds of a key that has an
    *         EXPIRE. In Redis 2.6 or older, if the Key does not exists or does not have an
@@ -5156,7 +4905,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long ttl(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.ttl(key));
+    return connection.executeCommand(commandObjects.ttl(key));
   }
 
   /**
@@ -5168,13 +4917,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long touch(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.touch(keys));
+    return connection.executeCommand(commandObjects.touch(keys));
   }
 
   @Override
   public long touch(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.touch(key));
+    return connection.executeCommand(commandObjects.touch(key));
   }
 
   /**
@@ -5190,8 +4939,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long move(final String key, final int dbIndex) {
     checkIsInMultiOrPipeline();
-    client.move(key, dbIndex);
-    return client.getIntegerReply();
+    connection.move(key, dbIndex);
+    return connection.getIntegerReply();
   }
 
   /**
@@ -5207,7 +4956,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String getSet(final String key, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getSet(key, value));
+    return connection.executeCommand(commandObjects.getSet(key, value));
   }
 
   /**
@@ -5222,7 +4971,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> mget(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.mget(keys));
+    return connection.executeCommand(commandObjects.mget(keys));
   }
 
   /**
@@ -5237,7 +4986,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long setnx(final String key, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setnx(key, value));
+    return connection.executeCommand(commandObjects.setnx(key, value));
   }
 
   /**
@@ -5254,7 +5003,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String setex(final String key, final long seconds, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setex(key, seconds, value));
+    return connection.executeCommand(commandObjects.setex(key, seconds, value));
   }
 
   /**
@@ -5266,9 +5015,9 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * different fields of an unique logic object in a way that ensures that either all the fields or
    * none at all are set.
    * <p>
-   * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
-   * are modified, another client talking to Redis can either see the changes to both A and B at
-   * once, or no modification at all.
+ Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+ are modified, another connection talking to Redis can either see the changes to both A and B at
+ once, or no modification at all.
    * @see #msetnx(String...)
    * @param keysvalues
    * @return Status code reply Basically +OK as MSET can't fail
@@ -5276,7 +5025,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String mset(final String... keysvalues) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.mset(keysvalues));
+    return connection.executeCommand(commandObjects.mset(keysvalues));
   }
 
   /**
@@ -5288,9 +5037,9 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * different fields of an unique logic object in a way that ensures that either all the fields or
    * none at all are set.
    * <p>
-   * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
-   * are modified, another client talking to Redis can either see the changes to both A and B at
-   * once, or no modification at all.
+ Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+ are modified, another connection talking to Redis can either see the changes to both A and B at
+ once, or no modification at all.
    * @see #mset(String...)
    * @param keysvalues
    * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
@@ -5299,7 +5048,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long msetnx(final String... keysvalues) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.msetnx(keysvalues));
+    return connection.executeCommand(commandObjects.msetnx(keysvalues));
   }
 
   /**
@@ -5323,7 +5072,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long decrBy(final String key, final long decrement) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.decrBy(key, decrement));
+    return connection.executeCommand(commandObjects.decrBy(key, decrement));
   }
 
   /**
@@ -5346,7 +5095,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long decr(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.decr(key));
+    return connection.executeCommand(commandObjects.decr(key));
   }
 
   /**
@@ -5370,7 +5119,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long incrBy(final String key, final long increment) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.incrBy(key, increment));
+    return connection.executeCommand(commandObjects.incrBy(key, increment));
   }
 
   /**
@@ -5391,7 +5140,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public double incrByFloat(final String key, final double increment) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.incrByFloat(key, increment));
+    return connection.executeCommand(commandObjects.incrByFloat(key, increment));
   }
 
   /**
@@ -5414,7 +5163,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long incr(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.incr(key));
+    return connection.executeCommand(commandObjects.incr(key));
   }
 
   /**
@@ -5432,7 +5181,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long append(final String key, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.append(key, value));
+    return connection.executeCommand(commandObjects.append(key, value));
   }
 
   /**
@@ -5454,7 +5203,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String substr(final String key, final int start, final int end) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.substr(key, start, end));
+    return connection.executeCommand(commandObjects.substr(key, start, end));
   }
 
   /**
@@ -5472,13 +5221,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hset(final String key, final String field, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hset(key, field, value));
+    return connection.executeCommand(commandObjects.hset(key, field, value));
   }
 
   @Override
   public long hset(final String key, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hset(key, hash));
+    return connection.executeCommand(commandObjects.hset(key, hash));
   }
 
   /**
@@ -5494,7 +5243,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String hget(final String key, final String field) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hget(key, field));
+    return connection.executeCommand(commandObjects.hget(key, field));
   }
 
   /**
@@ -5509,7 +5258,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hsetnx(final String key, final String field, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hsetnx(key, field, value));
+    return connection.executeCommand(commandObjects.hsetnx(key, field, value));
   }
 
   /**
@@ -5525,7 +5274,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String hmset(final String key, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hmset(key, hash));
+    return connection.executeCommand(commandObjects.hmset(key, hash));
   }
 
   /**
@@ -5543,7 +5292,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> hmget(final String key, final String... fields) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hmget(key, fields));
+    return connection.executeCommand(commandObjects.hmget(key, fields));
   }
 
   /**
@@ -5563,7 +5312,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hincrBy(final String key, final String field, final long value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hincrBy(key, field, value));
+    return connection.executeCommand(commandObjects.hincrBy(key, field, value));
   }
 
   /**
@@ -5585,7 +5334,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public double hincrByFloat(final String key, final String field, final double value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hincrByFloat(key, field, value));
+    return connection.executeCommand(commandObjects.hincrByFloat(key, field, value));
   }
 
   /**
@@ -5598,7 +5347,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean hexists(final String key, final String field) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hexists(key, field));
+    return connection.executeCommand(commandObjects.hexists(key, field));
   }
 
   /**
@@ -5613,7 +5362,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hdel(final String key, final String... fields) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hdel(key, fields));
+    return connection.executeCommand(commandObjects.hdel(key, fields));
   }
 
   /**
@@ -5627,7 +5376,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long hlen(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hlen(key));
+    return connection.executeCommand(commandObjects.hlen(key));
   }
 
   /**
@@ -5640,7 +5389,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<String> hkeys(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hkeys(key));
+    return connection.executeCommand(commandObjects.hkeys(key));
   }
 
   /**
@@ -5653,7 +5402,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> hvals(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hvals(key));
+    return connection.executeCommand(commandObjects.hvals(key));
   }
 
   /**
@@ -5666,7 +5415,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Map<String, String> hgetAll(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hgetAll(key));
+    return connection.executeCommand(commandObjects.hgetAll(key));
   }
 
   /**
@@ -5679,7 +5428,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String hrandfield(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hrandfield(key));
+    return connection.executeCommand(commandObjects.hrandfield(key));
   }
 
   /**
@@ -5693,7 +5442,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> hrandfield(final String key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hrandfield(key, count));
+    return connection.executeCommand(commandObjects.hrandfield(key, count));
   }
 
   /**
@@ -5707,7 +5456,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Map<String, String> hrandfieldWithValues(final String key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hrandfieldWithValues(key, count));
+    return connection.executeCommand(commandObjects.hrandfieldWithValues(key, count));
   }
 
   /**
@@ -5724,7 +5473,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long rpush(final String key, final String... strings) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpush(key, strings));
+    return connection.executeCommand(commandObjects.rpush(key, strings));
   }
 
   /**
@@ -5741,7 +5490,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long lpush(final String key, final String... strings) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpush(key, strings));
+    return connection.executeCommand(commandObjects.lpush(key, strings));
   }
 
   /**
@@ -5756,7 +5505,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long llen(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.llen(key));
+    return connection.executeCommand(commandObjects.llen(key));
   }
 
   /**
@@ -5794,7 +5543,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> lrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lrange(key, start, stop));
+    return connection.executeCommand(commandObjects.lrange(key, start, stop));
   }
 
   /**
@@ -5830,7 +5579,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String ltrim(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.ltrim(key, start, stop));
+    return connection.executeCommand(commandObjects.ltrim(key, start, stop));
   }
 
   /**
@@ -5852,7 +5601,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String lindex(final String key, final long index) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lindex(key, index));
+    return connection.executeCommand(commandObjects.lindex(key, index));
   }
 
   /**
@@ -5877,7 +5626,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String lset(final String key, final long index, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lset(key, index, value));
+    return connection.executeCommand(commandObjects.lset(key, index, value));
   }
 
   /**
@@ -5898,7 +5647,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long lrem(final String key, final long count, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lrem(key, count, value));
+    return connection.executeCommand(commandObjects.lrem(key, count, value));
   }
 
   /**
@@ -5914,32 +5663,32 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String lpop(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpop(key));
+    return connection.executeCommand(commandObjects.lpop(key));
   }
 
   @Override
   public List<String> lpop(final String key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpop(key, count));
+    return connection.executeCommand(commandObjects.lpop(key, count));
   }
 
   @Override
   public Long lpos(final String key, final String element) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpos(key, element));
+    return connection.executeCommand(commandObjects.lpos(key, element));
   }
 
   @Override
   public Long lpos(final String key, final String element, final LPosParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpos(key, element, params));
+    return connection.executeCommand(commandObjects.lpos(key, element, params));
   }
 
   @Override
   public List<Long> lpos(final String key, final String element, final LPosParams params,
       final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpos(key, element, params, count));
+    return connection.executeCommand(commandObjects.lpos(key, element, params, count));
   }
 
   /**
@@ -5955,13 +5704,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String rpop(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpop(key));
+    return connection.executeCommand(commandObjects.rpop(key));
   }
 
   @Override
   public List<String> rpop(final String key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpop(key, count));
+    return connection.executeCommand(commandObjects.rpop(key, count));
   }
 
   /**
@@ -5982,7 +5731,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String rpoplpush(final String srckey, final String dstkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpoplpush(srckey, dstkey));
+    return connection.executeCommand(commandObjects.rpoplpush(srckey, dstkey));
   }
 
   /**
@@ -5999,7 +5748,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sadd(final String key, final String... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sadd(key, members));
+    return connection.executeCommand(commandObjects.sadd(key, members));
   }
 
   /**
@@ -6013,7 +5762,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<String> smembers(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.smembers(key));
+    return connection.executeCommand(commandObjects.smembers(key));
   }
 
   /**
@@ -6029,7 +5778,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long srem(final String key, final String... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.srem(key, members));
+    return connection.executeCommand(commandObjects.srem(key, members));
   }
 
   /**
@@ -6046,13 +5795,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String spop(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.spop(key));
+    return connection.executeCommand(commandObjects.spop(key));
   }
 
   @Override
   public Set<String> spop(final String key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.spop(key, count));
+    return connection.executeCommand(commandObjects.spop(key, count));
   }
 
   /**
@@ -6077,7 +5826,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long smove(final String srckey, final String dstkey, final String member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.smove(srckey, dstkey, member));
+    return connection.executeCommand(commandObjects.smove(srckey, dstkey, member));
   }
 
   /**
@@ -6090,7 +5839,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long scard(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.scard(key));
+    return connection.executeCommand(commandObjects.scard(key));
   }
 
   /**
@@ -6105,7 +5854,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean sismember(final String key, final String member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sismember(key, member));
+    return connection.executeCommand(commandObjects.sismember(key, member));
   }
 
   /**
@@ -6120,15 +5869,15 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<Boolean> smismember(final String key, final String... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.smismember(key, members));
+    return connection.executeCommand(commandObjects.smismember(key, members));
   }
 
   /**
    * Return the members of a set resulting from the intersection of all the sets hold at the
    * specified keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the
-   * client as a multi-bulk reply (see the protocol specification for more information). If just a
-   * single key is specified, then this command produces the same result as
-   * {@link #smembers(String) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
+ connection as a multi-bulk reply (see the protocol specification for more information). If just a
+ single key is specified, then this command produces the same result as
+ {@link #smembers(String) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
    * <p>
    * Non existing keys are considered like empty sets, so if one of the keys is missing an empty set
    * is returned (since the intersection with an empty set always is an empty set).
@@ -6141,7 +5890,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<String> sinter(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sinter(keys));
+    return connection.executeCommand(commandObjects.sinter(keys));
   }
 
   /**
@@ -6157,14 +5906,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sinterstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sinterstore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sinterstore(dstkey, keys));
   }
 
   /**
    * Return the members of a set resulting from the union of all the sets hold at the specified
-   * keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the client as a
-   * multi-bulk reply (see the protocol specification for more information). If just a single key is
-   * specified, then this command produces the same result as {@link #smembers(String) SMEMBERS}.
+   * keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the connection as a
+ multi-bulk reply (see the protocol specification for more information). If just a single key is
+ specified, then this command produces the same result as {@link #smembers(String) SMEMBERS}.
    * <p>
    * Non existing keys are considered like empty sets.
    * <p>
@@ -6175,7 +5924,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<String> sunion(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sunion(keys));
+    return connection.executeCommand(commandObjects.sunion(keys));
   }
 
   /**
@@ -6190,7 +5939,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sunionstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sunionstore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
   /**
@@ -6217,7 +5966,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<String> sdiff(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sdiff(keys));
+    return connection.executeCommand(commandObjects.sdiff(keys));
   }
 
   /**
@@ -6230,7 +5979,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sdiffstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sdiffstore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sdiffstore(dstkey, keys));
   }
 
   /**
@@ -6246,7 +5995,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String srandmember(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.srandmember(key));
+    return connection.executeCommand(commandObjects.srandmember(key));
   }
 
   /**
@@ -6265,7 +6014,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> srandmember(final String key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.srandmember(key, count));
+    return connection.executeCommand(commandObjects.srandmember(key, count));
   }
 
   /**
@@ -6287,56 +6036,56 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zadd(final String key, final double score, final String member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zadd(key, score, member));
+    return connection.executeCommand(commandObjects.zadd(key, score, member));
   }
 
   @Override
   public long zadd(final String key, final double score, final String member,
       final ZAddParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zadd(key, score, member, params));
+    return connection.executeCommand(commandObjects.zadd(key, score, member, params));
   }
 
   @Override
   public long zadd(final String key, final Map<String, Double> scoreMembers) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zadd(key, scoreMembers));
+    return connection.executeCommand(commandObjects.zadd(key, scoreMembers));
   }
 
   @Override
   public long zadd(final String key, final Map<String, Double> scoreMembers, final ZAddParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zadd(key, scoreMembers, params));
+    return connection.executeCommand(commandObjects.zadd(key, scoreMembers, params));
   }
 
   @Override
   public Double zaddIncr(final String key, final double score, final String member, final ZAddParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zaddIncr(key, score, member, params));
+    return connection.executeCommand(commandObjects.zaddIncr(key, score, member, params));
   }
 
   @Override
   public Set<String> zdiff(String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zdiff(keys));
+    return connection.executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
   public Set<Tuple> zdiffWithScores(String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zdiffWithScores(keys));
+    return connection.executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
   @Override
   public long zdiffStore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zdiffStore(dstkey, keys));
+    return connection.executeCommand(commandObjects.zdiffStore(dstkey, keys));
   }
 
   @Override
   public Set<String> zrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrange(key, start, stop));
+    return connection.executeCommand(commandObjects.zrange(key, start, stop));
   }
 
   /**
@@ -6353,7 +6102,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zrem(final String key, final String... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrem(key, members));
+    return connection.executeCommand(commandObjects.zrem(key, members));
   }
 
   /**
@@ -6377,14 +6126,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public double zincrby(final String key, final double increment, final String member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zincrby(key, increment, member));
+    return connection.executeCommand(commandObjects.zincrby(key, increment, member));
   }
 
   @Override
   public Double zincrby(final String key, final double increment, final String member,
       final ZIncrByParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zincrby(key, increment, member, params));
+    return connection.executeCommand(commandObjects.zincrby(key, increment, member, params));
   }
 
   /**
@@ -6406,7 +6155,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Long zrank(final String key, final String member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrank(key, member));
+    return connection.executeCommand(commandObjects.zrank(key, member));
   }
 
   /**
@@ -6428,43 +6177,43 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Long zrevrank(final String key, final String member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrank(key, member));
+    return connection.executeCommand(commandObjects.zrevrank(key, member));
   }
 
   @Override
   public Set<String> zrevrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrange(key, start, stop));
+    return connection.executeCommand(commandObjects.zrevrange(key, start, stop));
   }
 
   @Override
   public Set<Tuple> zrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeWithScores(key, start, stop));
+    return connection.executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
   @Override
   public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+    return connection.executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
 
   @Override
   public String zrandmember(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrandmember(key));
+    return connection.executeCommand(commandObjects.zrandmember(key));
   }
 
   @Override
   public Set<String> zrandmember(final String key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrandmember(key, count));
+    return connection.executeCommand(commandObjects.zrandmember(key, count));
   }
 
   @Override
   public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrandmemberWithScores(key, count));
+    return connection.executeCommand(commandObjects.zrandmemberWithScores(key, count));
   }
 
   /**
@@ -6478,7 +6227,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zcard(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zcard(key));
+    return connection.executeCommand(commandObjects.zcard(key));
   }
 
   /**
@@ -6494,7 +6243,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Double zscore(final String key, final String member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zscore(key, member));
+    return connection.executeCommand(commandObjects.zscore(key, member));
   }
 
   /**
@@ -6509,38 +6258,38 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<Double> zmscore(final String key, final String... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zmscore(key, members));
+    return connection.executeCommand(commandObjects.zmscore(key, members));
   }
 
   @Override
   public Tuple zpopmax(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zpopmax(key));
+    return connection.executeCommand(commandObjects.zpopmax(key));
   }
 
   @Override
   public Set<Tuple> zpopmax(final String key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zpopmax(key, count));
+    return connection.executeCommand(commandObjects.zpopmax(key, count));
   }
 
   @Override
   public Tuple zpopmin(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zpopmin(key));
+    return connection.executeCommand(commandObjects.zpopmin(key));
   }
 
   @Override
   public Set<Tuple> zpopmin(final String key, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zpopmin(key, count));
+    return connection.executeCommand(commandObjects.zpopmin(key, count));
   }
 
   @Override
   public String watch(final String... keys) {
     checkIsInMultiOrPipeline();
-    client.watch(keys);
-    return client.getStatusCodeReply();
+    connection.watch(keys);
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -6559,7 +6308,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> sort(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sort(key));
+    return connection.executeCommand(commandObjects.sort(key));
   }
 
   /**
@@ -6639,7 +6388,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> sort(final String key, final SortingParams sortingParameters) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sort(key, sortingParameters));
+    return connection.executeCommand(commandObjects.sort(key, sortingParameters));
   }
 
   /**
@@ -6655,7 +6404,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sort(final String key, final SortingParams sortingParameters, final String dstkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+    return connection.executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
   }
 
   /**
@@ -6674,21 +6423,21 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long sort(final String key, final String dstkey) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sort(key, dstkey));
+    return connection.executeCommand(commandObjects.sort(key, dstkey));
   }
 
   @Override
   public String lmove(final String srcKey, final String dstKey, final ListDirection from,
       final ListDirection to) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lmove(srcKey, dstKey, from, to));
+    return connection.executeCommand(commandObjects.lmove(srcKey, dstKey, from, to));
   }
 
   @Override
   public String blmove(final String srcKey, final String dstKey, final ListDirection from,
       final ListDirection to, final double timeout) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+    return connection.executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
 
   /**
@@ -6714,16 +6463,16 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * <p>
    * <b>Blocking behavior</b>
    * <p>
-   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
-   * client performs a LPUSH or an RPUSH operation against one of the lists.
-   * <p>
-   * Once new data is present on one of the lists, the client finally returns with the name of the
-   * key unblocking it and the popped value.
-   * <p>
-   * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
-   * special value if the specified amount of seconds passed without a push operation against at
-   * least one of the specified keys.
-   * <p>
+ If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+ connection performs a LPUSH or an RPUSH operation against one of the lists.
+ <p>
+ Once new data is present on one of the lists, the connection finally returns with the name of the
+ key unblocking it and the popped value.
+ <p>
+ When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
+ special value if the specified amount of seconds passed without a push operation against at
+ least one of the specified keys.
+ <p>
    * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
    * block forever.
    * <p>
@@ -6749,20 +6498,20 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
    *         unblocking key and the popped value.
    *         <p>
-   *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
-   *         value is a nil multi bulk reply. Most client values will return false or nil
-   *         accordingly to the programming language used.
+         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+         value is a nil multi bulk reply. Most connection values will return false or nil
+         accordingly to the programming language used.
    */
   @Override
   public List<String> blpop(final int timeout, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.blpop(timeout, keys));
+    return connection.executeCommand(commandObjects.blpop(timeout, keys));
   }
 
   @Override
   public KeyedListElement blpop(final double timeout, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.blpop(timeout, keys));
+    return connection.executeCommand(commandObjects.blpop(timeout, keys));
   }
 
   /**
@@ -6788,16 +6537,16 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * <p>
    * <b>Blocking behavior</b>
    * <p>
-   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
-   * client performs a LPUSH or an RPUSH operation against one of the lists.
-   * <p>
-   * Once new data is present on one of the lists, the client finally returns with the name of the
-   * key unblocking it and the popped value.
-   * <p>
-   * When blocking, if a non-zero timeout is specified, the client will unblock returning a nil
-   * special value if the specified amount of seconds passed without a push operation against at
-   * least one of the specified keys.
-   * <p>
+ If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+ connection performs a LPUSH or an RPUSH operation against one of the lists.
+ <p>
+ Once new data is present on one of the lists, the connection finally returns with the name of the
+ key unblocking it and the popped value.
+ <p>
+ When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
+ special value if the specified amount of seconds passed without a push operation against at
+ least one of the specified keys.
+ <p>
    * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
    * block forever.
    * <p>
@@ -6823,68 +6572,68 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
    *         unblocking key and the popped value.
    *         <p>
-   *         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
-   *         value is a nil multi bulk reply. Most client values will return false or nil
-   *         accordingly to the programming language used.
+         When a non-zero timeout is specified, and the BLPOP operation timed out, the return
+         value is a nil multi bulk reply. Most connection values will return false or nil
+         accordingly to the programming language used.
    */
   @Override
   public List<String> brpop(final int timeout, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.brpop(timeout, keys));
+    return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
 
   @Override
   public KeyedListElement brpop(final double timeout, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.brpop(timeout, keys));
+    return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
 
   @Override
   public KeyedZSetElement bzpopmax(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bzpopmax(timeout, keys));
+    return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
   public KeyedZSetElement bzpopmin(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bzpopmin(timeout, keys));
+    return connection.executeCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
   @Override
   public List<String> blpop(final int timeout, final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.blpop(timeout, key));
+    return connection.executeCommand(commandObjects.blpop(timeout, key));
   }
 
   @Override
   public KeyedListElement blpop(double timeout, String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.blpop(timeout, key));
+    return connection.executeCommand(commandObjects.blpop(timeout, key));
   }
 
   @Override
   public List<String> brpop(final int timeout, final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.brpop(timeout, key));
+    return connection.executeCommand(commandObjects.brpop(timeout, key));
   }
 
   @Override
   public KeyedListElement brpop(double timeout, String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.brpop(timeout, key));
+    return connection.executeCommand(commandObjects.brpop(timeout, key));
   }
 
   @Override
   public long zcount(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zcount(key, min, max));
+    return connection.executeCommand(commandObjects.zcount(key, min, max));
   }
 
   @Override
   public long zcount(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zcount(key, min, max));
+    return connection.executeCommand(commandObjects.zcount(key, min, max));
   }
 
   /**
@@ -6938,13 +6687,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<String> zrangeByScore(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScore(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
   public Set<String> zrangeByScore(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScore(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   /**
@@ -7000,14 +6749,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public Set<String> zrangeByScore(final String key, final double min, final double max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
   public Set<String> zrangeByScore(final String key, final String min, final String max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   /**
@@ -7060,13 +6809,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
+    return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   /**
@@ -7122,66 +6871,66 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
   public Set<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+    return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
   public Set<String> zrevrangeByScore(final String key, final double max, final double min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
   public Set<String> zrevrangeByScore(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
   public Set<String> zrevrangeByScore(final String key, final double max, final double min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
       final double min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
       final String min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
   public Set<String> zrevrangeByScore(final String key, final String max, final String min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
   public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   /**
@@ -7201,8 +6950,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zremrangeByRank(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zremrangeByRank(key, start, stop);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zremrangeByRank(key, start, stop));
   }
 
   /**
@@ -7221,20 +6969,18 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zremrangeByScore(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zremrangeByScore(key, min, max);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zremrangeByScore(key, min, max));
   }
 
   @Override
   public long zremrangeByScore(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zremrangeByScore(key, min, max);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zremrangeByScore(key, min, max));
   }
 
   /**
    * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
-   * resulting sorted set, it is returned to the client.
+ resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    * @return
@@ -7242,13 +6988,12 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<String> zunion(ZParams params, String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zunion(params, keys);
-    return BuilderFactory.STRING_ZSET.build(client.getBinaryMultiBulkReply());
+    return connection.executeCommand(commandObjects.zunion(params, keys));
   }
 
   /**
    * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
-   * resulting sorted set, it is returned to the client.
+ resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    * @return
@@ -7256,8 +7001,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zunionWithScores(params, keys);
-    return getTupledSet();
+    return connection.executeCommand(commandObjects.zunionWithScores(params, keys));
   }
 
   /**
@@ -7293,8 +7037,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zunionstore(final String dstkey, final String... sets) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zunionstore(dstkey, sets);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zunionstore(dstkey, sets));
   }
 
   /**
@@ -7331,13 +7074,12 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zunionstore(final String dstkey, final ZParams params, final String... sets) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zunionstore(dstkey, params, sets);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zunionstore(dstkey, params, sets));
   }
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
-   * the resulting sorted set, it is returned to the client.
+ the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    * @return
@@ -7345,13 +7087,12 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<String> zinter(final ZParams params, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zinter(params, keys);
-    return BuilderFactory.STRING_ZSET.build(client.getBinaryMultiBulkReply());
+    return connection.executeCommand(commandObjects.zinter(params, keys));
   }
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
-   * the resulting sorted set, it is returned to the client.
+ the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    * @return
@@ -7359,8 +7100,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zinterWithScores(params, keys);
-    return getTupledSet();
+    return connection.executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
   /**
@@ -7396,8 +7136,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zinterstore(final String dstkey, final String... sets) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zinterstore(dstkey, sets);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zinterstore(dstkey, sets));
   }
 
   /**
@@ -7434,63 +7173,51 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long zinterstore(final String dstkey, final ZParams params, final String... sets) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zinterstore(dstkey, params, sets);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zinterstore(dstkey, params, sets));
   }
 
   @Override
   public long zlexcount(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zlexcount(key, min, max);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zlexcount(key, min, max));
   }
 
   @Override
   public Set<String> zrangeByLex(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByLex(key, min, max);
-    final List<String> members = client.getMultiBulkReply();
-    return BinaryJedis.SetFromList.of(members);
+    return connection.executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
   public Set<String> zrangeByLex(final String key, final String min, final String max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count);
-    final List<String> members = client.getMultiBulkReply();
-    return BinaryJedis.SetFromList.of(members);
+    return connection.executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
   public Set<String> zrevrangeByLex(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByLex(key, max, min);
-    final List<String> members = client.getMultiBulkReply();
-    return BinaryJedis.SetFromList.of(members);
+    return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
   public Set<String> zrevrangeByLex(final String key, final String max, final String min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count);
-    final List<String> members = client.getMultiBulkReply();
-    return BinaryJedis.SetFromList.of(members);
+    return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
   }
 
   @Override
   public long zremrangeByLex(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zremrangeByLex(key, min, max);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.zremrangeByLex(key, min, max));
   }
 
   @Override
   public long strlen(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.strlen(key);
-    return client.getIntegerReply();
+    return connection.executeCommand(commandObjects.strlen(key));
   }
 
   /**
@@ -7503,7 +7230,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
+    return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
   /**
@@ -7516,13 +7243,13 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
+    return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
   @Override
   public long lpushx(final String key, final String... string) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.lpushx(key, string));
+    return connection.executeCommand(commandObjects.lpushx(key, string));
   }
 
   /**
@@ -7536,27 +7263,27 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long persist(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.persist(key));
+    return connection.executeCommand(commandObjects.persist(key));
   }
 
   @Override
   public long rpushx(final String key, final String... string) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.rpushx(key, string));
+    return connection.executeCommand(commandObjects.rpushx(key, string));
   }
 
   @Override
   public String echo(final String string) {
     checkIsInMultiOrPipeline();
-    client.echo(string);
-    return client.getBulkReply();
+    connection.echo(string);
+    return connection.getBulkReply();
   }
 
   @Override
   public long linsert(final String key, final ListPosition where, final String pivot,
       final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.linsert(key, where, pivot, value));
+    return connection.executeCommand(commandObjects.linsert(key, where, pivot, value));
   }
 
   /**
@@ -7569,7 +7296,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String brpoplpush(final String source, final String destination, final int timeout) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.brpoplpush(source, destination, timeout));
+    return connection.executeCommand(commandObjects.brpoplpush(source, destination, timeout));
   }
 
   /**
@@ -7582,7 +7309,7 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean setbit(final String key, final long offset, final boolean value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setbit(key, offset, value));
+    return connection.executeCommand(commandObjects.setbit(key, offset, value));
   }
 
   /**
@@ -7594,38 +7321,38 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public boolean getbit(final String key, final long offset) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getbit(key, offset));
+    return connection.executeCommand(commandObjects.getbit(key, offset));
   }
 
   @Override
   public long setrange(final String key, final long offset, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.setrange(key, offset, value));
+    return connection.executeCommand(commandObjects.setrange(key, offset, value));
   }
 
   @Override
   public String getrange(final String key, final long startOffset, final long endOffset) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.getrange(key, startOffset, endOffset));
+    return connection.executeCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
   @Override
   public long bitpos(final String key, final boolean value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitpos(key, value));
+    return connection.executeCommand(commandObjects.bitpos(key, value));
   }
 
   @Override
   public long bitpos(final String key, final boolean value, final BitPosParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitpos(key, value, params));
+    return connection.executeCommand(commandObjects.bitpos(key, value, params));
   }
 
   @Override
   public List<Object> role() {
     checkIsInMultiOrPipeline();
-    client.role();
-    return BuilderFactory.ENCODED_OBJECT_LIST.build(client.getOne());
+    connection.role();
+    return BuilderFactory.ENCODED_OBJECT_LIST.build(connection.getOne());
   }
 
   /**
@@ -7665,8 +7392,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public List<String> configGet(final String pattern) {
     checkIsInMultiOrPipeline();
-    client.configGet(pattern);
-    return client.getMultiBulkReply();
+    connection.configGet(pattern);
+    return connection.getMultiBulkReply();
   }
 
   /**
@@ -7701,72 +7428,72 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String configSet(final String parameter, final String value) {
     checkIsInMultiOrPipeline();
-    client.configSet(parameter, value);
-    return client.getStatusCodeReply();
+    connection.configSet(parameter, value);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    client.setTimeoutInfinite();
+    connection.setTimeoutInfinite();
     try {
-      jedisPubSub.proceed(client, channels);
+      jedisPubSub.proceed(connection, channels);
     } finally {
-      client.rollbackTimeout();
+      connection.rollbackTimeout();
     }
   }
 
   @Override
   public Long publish(final String channel, final String message) {
     checkIsInMultiOrPipeline();
-    client.publish(channel, message);
-    return client.getIntegerReply();
+    connection.publish(channel, message);
+    return connection.getIntegerReply();
   }
 
   @Override
   public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
     checkIsInMultiOrPipeline();
-    client.setTimeoutInfinite();
+    connection.setTimeoutInfinite();
     try {
-      jedisPubSub.proceedWithPatterns(client, patterns);
+      jedisPubSub.proceedWithPatterns(connection, patterns);
     } finally {
-      client.rollbackTimeout();
+      connection.rollbackTimeout();
     }
   }
 
   @Override
   public Object eval(final String script, final int keyCount, final String... params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.eval(script, keyCount, params));
+    return connection.executeCommand(commandObjects.eval(script, keyCount, params));
   }
 
   @Override
   public Object eval(final String script, final List<String> keys, final List<String> args) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.eval(script, keys, args));
+    return connection.executeCommand(commandObjects.eval(script, keys, args));
   }
 
   @Override
   public Object eval(final String script) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.eval(script));
+    return connection.executeCommand(commandObjects.eval(script));
   }
 
   @Override
   public Object evalsha(final String sha1) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.evalsha(sha1));
+    return connection.executeCommand(commandObjects.evalsha(sha1));
   }
 
   @Override
   public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.evalsha(sha1, keys, args));
+    return connection.executeCommand(commandObjects.evalsha(sha1, keys, args));
   }
 
   @Override
   public Object evalsha(final String sha1, final int keyCount, final String... params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.evalsha(sha1, keyCount, params));
+    return connection.executeCommand(commandObjects.evalsha(sha1, keyCount, params));
   }
 
   @Override
@@ -7778,8 +7505,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
 
   @Override
   public List<Boolean> scriptExists(final String... sha1) {
-    client.scriptExists(sha1);
-    List<Long> result = client.getIntegerMultiBulkReply();
+    connection.scriptExists(sha1);
+    List<Long> result = connection.getIntegerMultiBulkReply();
     List<Boolean> exists = new ArrayList<>();
 
     for (Long value : result)
@@ -7790,74 +7517,74 @@ public class Jedis implements ServerCommands, DatabaseCommands,
 
   @Override
   public String scriptLoad(final String script) {
-    client.scriptLoad(script);
-    return client.getBulkReply();
+    connection.scriptLoad(script);
+    return connection.getBulkReply();
   }
 
   @Override
   public List<Slowlog> slowlogGet() {
-    client.slowlogGet();
-    return Slowlog.from(client.getObjectMultiBulkReply());
+    connection.slowlogGet();
+    return Slowlog.from(connection.getObjectMultiBulkReply());
   }
 
   @Override
   public List<Slowlog> slowlogGet(final long entries) {
-    client.slowlogGet(entries);
-    return Slowlog.from(client.getObjectMultiBulkReply());
+    connection.slowlogGet(entries);
+    return Slowlog.from(connection.getObjectMultiBulkReply());
   }
 
   @Override
   public Long objectRefcount(final String key) {
-    client.objectRefcount(key);
-    return client.getIntegerReply();
+    connection.objectRefcount(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public String objectEncoding(final String key) {
-    client.objectEncoding(key);
-    return client.getBulkReply();
+    connection.objectEncoding(key);
+    return connection.getBulkReply();
   }
 
   @Override
   public Long objectIdletime(final String key) {
-    client.objectIdletime(key);
-    return client.getIntegerReply();
+    connection.objectIdletime(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public List<String> objectHelp() {
-    client.objectHelp();
-    return client.getMultiBulkReply();
+    connection.objectHelp();
+    return connection.getMultiBulkReply();
   }
 
   @Override
   public Long objectFreq(final String key) {
-    client.objectFreq(key);
-    return client.getIntegerReply();
+    connection.objectFreq(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public long bitcount(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitcount(key));
+    return connection.executeCommand(commandObjects.bitcount(key));
   }
 
   @Override
   public long bitcount(final String key, final long start, final long end) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitcount(key, start, end));
+    return connection.executeCommand(commandObjects.bitcount(key, start, end));
   }
 
   @Override
   public long bitop(final BitOP op, final String destKey, final String... srcKeys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
+    return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
   @Override
   public String sentinelMyId() {
-    client.sentinel(Protocol.SentinelKeyword.MYID);
-    return BuilderFactory.STRING.build(client.getBinaryBulkReply());
+    connection.sentinel(Protocol.SentinelKeyword.MYID);
+    return BuilderFactory.STRING.build(connection.getBinaryBulkReply());
   }
 
   /**
@@ -7894,8 +7621,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   @SuppressWarnings("rawtypes")
   public List<Map<String, String>> sentinelMasters() {
-    client.sentinel(Protocol.SENTINEL_MASTERS);
-    final List<Object> reply = client.getObjectMultiBulkReply();
+    connection.sentinel(Protocol.SENTINEL_MASTERS);
+    final List<Object> reply = connection.getObjectMultiBulkReply();
 
     final List<Map<String, String>> masters = new ArrayList<>();
     for (Object obj : reply) {
@@ -7906,14 +7633,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
 
   @Override
   public Map<String, String> sentinelMaster(String masterName) {
-    client.sentinel(Protocol.SentinelKeyword.MASTER, masterName);
-    return BuilderFactory.STRING_MAP.build(client.getBinaryMultiBulkReply());
+    connection.sentinel(Protocol.SentinelKeyword.MASTER, masterName);
+    return BuilderFactory.STRING_MAP.build(connection.getBinaryMultiBulkReply());
   }
 
   @Override
   public List<Map<String, String>> sentinelSentinels(String masterName) {
-    client.sentinel(Protocol.SentinelKeyword.SENTINELS, masterName);
-    return client.getObjectMultiBulkReply().stream()
+    connection.sentinel(Protocol.SentinelKeyword.SENTINELS, masterName);
+    return connection.getObjectMultiBulkReply().stream()
         .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
   }
 
@@ -7928,8 +7655,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public List<String> sentinelGetMasterAddrByName(final String masterName) {
-    client.sentinel(Protocol.SENTINEL_GET_MASTER_ADDR_BY_NAME, masterName);
-    final List<Object> reply = client.getObjectMultiBulkReply();
+    connection.sentinel(Protocol.SENTINEL_GET_MASTER_ADDR_BY_NAME, masterName);
+    final List<Object> reply = connection.getObjectMultiBulkReply();
     return BuilderFactory.STRING_LIST.build(reply);
   }
 
@@ -7943,8 +7670,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public Long sentinelReset(final String pattern) {
-    client.sentinel(Protocol.SENTINEL_RESET, pattern);
-    return client.getIntegerReply();
+    connection.sentinel(Protocol.SENTINEL_RESET, pattern);
+    return connection.getIntegerReply();
   }
 
   /**
@@ -7984,8 +7711,8 @@ public class Jedis implements ServerCommands, DatabaseCommands,
    */
   @Override
   public List<Map<String, String>> sentinelSlaves(final String masterName) {
-    client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
-    final List<Object> reply = client.getObjectMultiBulkReply();
+    connection.sentinel(Protocol.SENTINEL_SLAVES, masterName);
+    final List<Object> reply = connection.getObjectMultiBulkReply();
 
     final List<Map<String, String>> slaves = new ArrayList<>();
     for (Object obj : reply) {
@@ -7996,29 +7723,29 @@ public class Jedis implements ServerCommands, DatabaseCommands,
 
   @Override
   public List<Map<String, String>> sentinelReplicas(final String masterName) {
-    client.sentinel(Protocol.SentinelKeyword.REPLICAS, masterName);
-    return client.getObjectMultiBulkReply().stream()
+    connection.sentinel(Protocol.SentinelKeyword.REPLICAS, masterName);
+    return connection.getObjectMultiBulkReply().stream()
         .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
   }
 
   @Override
   public String sentinelFailover(final String masterName) {
-    client.sentinel(Protocol.SENTINEL_FAILOVER, masterName);
-    return client.getStatusCodeReply();
+    connection.sentinel(Protocol.SENTINEL_FAILOVER, masterName);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String sentinelMonitor(final String masterName, final String ip, final int port,
       final int quorum) {
-    client.sentinel(Protocol.SENTINEL_MONITOR, masterName, ip, String.valueOf(port),
+    connection.sentinel(Protocol.SENTINEL_MONITOR, masterName, ip, String.valueOf(port),
       String.valueOf(quorum));
-    return client.getStatusCodeReply();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String sentinelRemove(final String masterName) {
-    client.sentinel(Protocol.SENTINEL_REMOVE, masterName);
-    return client.getStatusCodeReply();
+    connection.sentinel(Protocol.SENTINEL_REMOVE, masterName);
+    return connection.getStatusCodeReply();
   }
 
   @Override
@@ -8034,45 +7761,45 @@ public class Jedis implements ServerCommands, DatabaseCommands,
       params[index++] = entry.getValue();
     }
 
-    client.sentinel(params);
-    return client.getStatusCodeReply();
+    connection.sentinel(params);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public byte[] dump(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.dump(key));
+    return connection.executeCommand(commandObjects.dump(key));
   }
 
   @Override
   public String restore(final String key, final long ttl, final byte[] serializedValue) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.restore(key, ttl, serializedValue));
+    return connection.executeCommand(commandObjects.restore(key, ttl, serializedValue));
   }
 
   @Override
   public String restore(final String key, final long ttl, final byte[] serializedValue,
       final RestoreParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.restore(key, ttl, serializedValue, params));
+    return connection.executeCommand(commandObjects.restore(key, ttl, serializedValue, params));
   }
 
   @Override
   public long pexpire(final String key, final long milliseconds) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pexpire(key, milliseconds));
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
   }
 
   @Override
   public long pexpireAt(final String key, final long millisecondsTimestamp) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
   }
 
   @Override
   public long pttl(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pttl(key));
+    return connection.executeCommand(commandObjects.pttl(key));
   }
 
   /**
@@ -8087,305 +7814,305 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.psetex(key, milliseconds, value));
+    return connection.executeCommand(commandObjects.psetex(key, milliseconds, value));
   }
 
   @Override
   public String clientKill(final String ipPort) {
     checkIsInMultiOrPipeline();
-    client.clientKill(ipPort);
-    return client.getStatusCodeReply();
+    connection.clientKill(ipPort);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clientGetname() {
     checkIsInMultiOrPipeline();
-    client.clientGetname();
-    return client.getBulkReply();
+    connection.clientGetname();
+    return connection.getBulkReply();
   }
 
   @Override
   public String clientList() {
     checkIsInMultiOrPipeline();
-    client.clientList();
-    return client.getBulkReply();
+    connection.clientList();
+    return connection.getBulkReply();
   }
 
   @Override
   public String clientList(ClientType type) {
     checkIsInMultiOrPipeline();
-    client.clientList(type);
-    return client.getBulkReply();
+    connection.clientList(type);
+    return connection.getBulkReply();
   }
 
   @Override
   public String clientList(final long... clientIds) {
     checkIsInMultiOrPipeline();
-    client.clientList(clientIds);
-    return client.getBulkReply();
+    connection.clientList(clientIds);
+    return connection.getBulkReply();
   }
 
   @Override
   public String clientInfo() {
     checkIsInMultiOrPipeline();
-    client.clientInfo();
-    return client.getBulkReply();
+    connection.clientInfo();
+    return connection.getBulkReply();
   }
 
   @Override
   public String clientSetname(final String name) {
     checkIsInMultiOrPipeline();
-    client.clientSetname(name);
-    return client.getStatusCodeReply();
+    connection.clientSetname(name);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String migrate(final String host, final int port, final String key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
-    client.migrate(host, port, key, destinationDb, timeout);
-    return client.getStatusCodeReply();
+    connection.migrate(host, port, key, destinationDb, timeout);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String migrate(final String host, final int port, final int destinationDB,
       final int timeout, final MigrateParams params, final String... keys) {
     checkIsInMultiOrPipeline();
-    client.migrate(host, port, destinationDB, timeout, params, keys);
-    return client.getStatusCodeReply();
+    connection.migrate(host, port, destinationDB, timeout, params, keys);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public ScanResult<String> scan(final String cursor) {
-    return client.executeCommand(commandObjects.scan(cursor));
+    return connection.executeCommand(commandObjects.scan(cursor));
   }
 
   @Override
   public ScanResult<String> scan(final String cursor, final ScanParams params) {
-    return client.executeCommand(commandObjects.scan(cursor, params));
+    return connection.executeCommand(commandObjects.scan(cursor, params));
   }
 
   @Override
   public ScanResult<String> scan(final String cursor, final ScanParams params, final String type) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.scan(cursor, params, type));
+    return connection.executeCommand(commandObjects.scan(cursor, params, type));
   }
 
   @Override
   public ScanResult<Map.Entry<String, String>> hscan(final String key, final String cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hscan(key, cursor, params));
+    return connection.executeCommand(commandObjects.hscan(key, cursor, params));
   }
 
   @Override
   public ScanResult<String> sscan(final String key, final String cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.sscan(key, cursor, params));
+    return connection.executeCommand(commandObjects.sscan(key, cursor, params));
   }
 
   @Override
   public ScanResult<Tuple> zscan(final String key, final String cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.zscan(key, cursor, params));
+    return connection.executeCommand(commandObjects.zscan(key, cursor, params));
   }
 
   @Override
   public String readonly() {
     checkIsInMultiOrPipeline();
-    client.sendCommand(READONLY);
-    return client.getStatusCodeReply();
+    connection.sendCommand(READONLY);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String readwrite() {
     checkIsInMultiOrPipeline();
-    client.sendCommand(READWRITE);
-    return client.getStatusCodeReply();
+    connection.sendCommand(READWRITE);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterNodes() {
     checkIsInMultiOrPipeline();
-    client.clusterNodes();
-    return client.getBulkReply();
+    connection.clusterNodes();
+    return connection.getBulkReply();
   }
 
   @Override
   public String clusterReplicas(final String nodeId) {
     checkIsInMultiOrPipeline();
-    client.clusterReplicas(nodeId);
-    return client.getBulkReply();
+    connection.clusterReplicas(nodeId);
+    return connection.getBulkReply();
   }
 
   @Override
   public String clusterMeet(final String ip, final int port) {
     checkIsInMultiOrPipeline();
-    client.clusterMeet(ip, port);
-    return client.getStatusCodeReply();
+    connection.clusterMeet(ip, port);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterReset(final ClusterResetType resetType) {
     checkIsInMultiOrPipeline();
-    client.clusterReset(resetType);
-    return client.getStatusCodeReply();
+    connection.clusterReset(resetType);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterAddSlots(final int... slots) {
     checkIsInMultiOrPipeline();
-    client.clusterAddSlots(slots);
-    return client.getStatusCodeReply();
+    connection.clusterAddSlots(slots);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterDelSlots(final int... slots) {
     checkIsInMultiOrPipeline();
-    client.clusterDelSlots(slots);
-    return client.getStatusCodeReply();
+    connection.clusterDelSlots(slots);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterInfo() {
     checkIsInMultiOrPipeline();
-    client.clusterInfo();
-    return client.getStatusCodeReply();
+    connection.clusterInfo();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public List<String> clusterGetKeysInSlot(final int slot, final int count) {
     checkIsInMultiOrPipeline();
-    client.clusterGetKeysInSlot(slot, count);
-    return client.getMultiBulkReply();
+    connection.clusterGetKeysInSlot(slot, count);
+    return connection.getMultiBulkReply();
   }
 
   @Override
   public String clusterSetSlotNode(final int slot, final String nodeId) {
     checkIsInMultiOrPipeline();
-    client.clusterSetSlotNode(slot, nodeId);
-    return client.getStatusCodeReply();
+    connection.clusterSetSlotNode(slot, nodeId);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterSetSlotMigrating(final int slot, final String nodeId) {
     checkIsInMultiOrPipeline();
-    client.clusterSetSlotMigrating(slot, nodeId);
-    return client.getStatusCodeReply();
+    connection.clusterSetSlotMigrating(slot, nodeId);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterSetSlotImporting(final int slot, final String nodeId) {
     checkIsInMultiOrPipeline();
-    client.clusterSetSlotImporting(slot, nodeId);
-    return client.getStatusCodeReply();
+    connection.clusterSetSlotImporting(slot, nodeId);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterSetSlotStable(final int slot) {
     checkIsInMultiOrPipeline();
-    client.clusterSetSlotStable(slot);
-    return client.getStatusCodeReply();
+    connection.clusterSetSlotStable(slot);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterForget(final String nodeId) {
     checkIsInMultiOrPipeline();
-    client.clusterForget(nodeId);
-    return client.getStatusCodeReply();
+    connection.clusterForget(nodeId);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterFlushSlots() {
     checkIsInMultiOrPipeline();
-    client.clusterFlushSlots();
-    return client.getStatusCodeReply();
+    connection.clusterFlushSlots();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public long clusterKeySlot(final String key) {
     checkIsInMultiOrPipeline();
-    client.clusterKeySlot(key);
-    return client.getIntegerReply();
+    connection.clusterKeySlot(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public long clusterCountKeysInSlot(final int slot) {
     checkIsInMultiOrPipeline();
-    client.clusterCountKeysInSlot(slot);
-    return client.getIntegerReply();
+    connection.clusterCountKeysInSlot(slot);
+    return connection.getIntegerReply();
   }
 
   @Override
   public String clusterSaveConfig() {
     checkIsInMultiOrPipeline();
-    client.clusterSaveConfig();
-    return client.getStatusCodeReply();
+    connection.clusterSaveConfig();
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String clusterReplicate(final String nodeId) {
     checkIsInMultiOrPipeline();
-    client.clusterReplicate(nodeId);
-    return client.getStatusCodeReply();
+    connection.clusterReplicate(nodeId);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public List<String> clusterSlaves(final String nodeId) {
     checkIsInMultiOrPipeline();
-    client.clusterSlaves(nodeId);
-    return client.getMultiBulkReply();
+    connection.clusterSlaves(nodeId);
+    return connection.getMultiBulkReply();
   }
 
   @Override
   public String clusterFailover(ClusterFailoverOption failoverOption) {
     checkIsInMultiOrPipeline();
-    client.clusterFailover(failoverOption);
-    return client.getStatusCodeReply();
+    connection.clusterFailover(failoverOption);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public List<Object> clusterSlots() {
     checkIsInMultiOrPipeline();
-    client.clusterSlots();
-    return client.getObjectMultiBulkReply();
+    connection.clusterSlots();
+    return connection.getObjectMultiBulkReply();
   }
 
   @Override
   public String clusterMyId() {
     checkIsInMultiOrPipeline();
-    client.clusterMyId();
-    return client.getBulkReply();
+    connection.clusterMyId();
+    return connection.getBulkReply();
   }
 
   public String asking() {
     checkIsInMultiOrPipeline();
-    client.sendCommand(ASKING);
-    return client.getStatusCodeReply();
+    connection.sendCommand(ASKING);
+    return connection.getStatusCodeReply();
   }
 
   public List<String> pubsubChannels() {
     checkIsInMultiOrPipeline();
-    client.pubsubChannels();
-    return client.getMultiBulkReply();
+    connection.pubsubChannels();
+    return connection.getMultiBulkReply();
   }
 
   public List<String> pubsubChannels(final String pattern) {
     checkIsInMultiOrPipeline();
-    client.pubsubChannels(pattern);
-    return client.getMultiBulkReply();
+    connection.pubsubChannels(pattern);
+    return connection.getMultiBulkReply();
   }
 
   public Long pubsubNumPat() {
     checkIsInMultiOrPipeline();
-    client.pubsubNumPat();
-    return client.getIntegerReply();
+    connection.pubsubNumPat();
+    return connection.getIntegerReply();
   }
 
   public Map<String, String> pubsubNumSub(String... channels) {
     checkIsInMultiOrPipeline();
-    client.pubsubNumSub(channels);
-    return BuilderFactory.PUBSUB_NUMSUB_MAP.build(client.getBinaryMultiBulkReply());
+    connection.pubsubNumSub(channels);
+    return BuilderFactory.PUBSUB_NUMSUB_MAP.build(connection.getBinaryMultiBulkReply());
   }
 
   @Override
@@ -8410,315 +8137,223 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   @Override
   public long pfadd(final String key, final String... elements) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pfadd(key, elements));
+    return connection.executeCommand(commandObjects.pfadd(key, elements));
   }
 
   @Override
   public long pfcount(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pfcount(key));
+    return connection.executeCommand(commandObjects.pfcount(key));
   }
 
   @Override
   public long pfcount(final String... keys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pfcount(keys));
+    return connection.executeCommand(commandObjects.pfcount(keys));
   }
 
   @Override
   public String pfmerge(final String destkey, final String... sourcekeys) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.pfmerge(destkey, sourcekeys));
+    return connection.executeCommand(commandObjects.pfmerge(destkey, sourcekeys));
   }
 
   @Override
   public long geoadd(final String key, final double longitude, final double latitude,
       final String member) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geoadd(key, longitude, latitude, member));
+    return connection.executeCommand(commandObjects.geoadd(key, longitude, latitude, member));
   }
 
   @Override
   public long geoadd(final String key, final Map<String, GeoCoordinate> memberCoordinateMap) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geoadd(key, memberCoordinateMap));
+    return connection.executeCommand(commandObjects.geoadd(key, memberCoordinateMap));
   }
 
   @Override
   public long geoadd(final String key, final GeoAddParams params, final Map<String, GeoCoordinate> memberCoordinateMap) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geoadd(key, params, memberCoordinateMap));
+    return connection.executeCommand(commandObjects.geoadd(key, params, memberCoordinateMap));
   }
 
   @Override
   public Double geodist(final String key, final String member1, final String member2) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geodist(key, member1, member2));
+    return connection.executeCommand(commandObjects.geodist(key, member1, member2));
   }
 
   @Override
   public Double geodist(final String key, final String member1, final String member2,
       final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geodist(key, member1, member2, unit));
+    return connection.executeCommand(commandObjects.geodist(key, member1, member2, unit));
   }
 
   @Override
   public List<String> geohash(final String key, String... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geohash(key, members));
+    return connection.executeCommand(commandObjects.geohash(key, members));
   }
 
   @Override
   public List<GeoCoordinate> geopos(final String key, String... members) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.geopos(key, members));
+    return connection.executeCommand(commandObjects.geopos(key, members));
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
+    return connection.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
+    return connection.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadius(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
+    return connection.executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
   public long georadiusStore(final String key, double longitude, double latitude, double radius,
       GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
+    return connection.executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
+    return connection.executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final String key, final String member,
       final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
+    return connection.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final String key, final String member,
       final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
+    return connection.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMember(final String key, final String member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
+    return connection.executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
   }
 
   @Override
   public long georadiusByMemberStore(final String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
+    return connection.executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final String key, final String member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
+    return connection.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
   @Override
   public String moduleLoad(final String path) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.moduleLoad(path);
-    return client.getStatusCodeReply();
+    connection.moduleLoad(path);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public String moduleUnload(final String name) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.moduleUnload(name);
-    return client.getStatusCodeReply();
+    connection.moduleUnload(name);
+    return connection.getStatusCodeReply();
   }
 
   @Override
   public List<Module> moduleList() {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.moduleList();
-    return BuilderFactory.MODULE_LIST.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public String aclSetUser(final String name) {
-    return client.executeCommand(commandObjects.aclSetUser(name);
-    return client.getStatusCodeReply();
-  }
-
-  @Override
-  public String aclSetUser(String name, String... params) {
-    return client.executeCommand(commandObjects.aclSetUser(name, params);
-    return client.getStatusCodeReply();
-  }
-
-  @Override
-  public long aclDelUser(final String name) {
-    return client.executeCommand(commandObjects.aclDelUser(name);
-    return client.getIntegerReply();
-  }
-
-  @Override
-  public AccessControlUser aclGetUser(final String name) {
-    return client.executeCommand(commandObjects.aclGetUser(name);
-    return BuilderFactory.ACCESS_CONTROL_USER.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public List<String> aclUsers() {
-    return client.executeCommand(commandObjects.aclUsers();
-    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public List<String> aclList() {
-    return client.executeCommand(commandObjects.aclList();
-    return client.getMultiBulkReply();
-  }
-
-  @Override
-  public String aclWhoAmI() {
-    return client.executeCommand(commandObjects.aclWhoAmI();
-    return client.getStatusCodeReply();
-  }
-
-  @Override
-  public List<String> aclCat() {
-    return client.executeCommand(commandObjects.aclCat();
-    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public List<String> aclCat(String category) {
-    return client.executeCommand(commandObjects.aclCat(category);
-    return BuilderFactory.STRING_LIST.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public List<AccessControlLogEntry> aclLog() {
-    return client.executeCommand(commandObjects.aclLog();
-    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public List<AccessControlLogEntry> aclLog(int limit) {
-    return client.executeCommand(commandObjects.aclLog(limit);
-    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public String aclLog(String options) {
-    return client.executeCommand(commandObjects.aclLog(options);
-    return client.getStatusCodeReply();
-  }
-
-  @Override
-  public String aclGenPass() {
-    return client.executeCommand(commandObjects.aclGenPass();
-    return client.getStatusCodeReply();
-  }
-
-  @Override
-  public String aclLoad() {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclLoad();
-    return client.getStatusCodeReply();
-  }
-
-  @Override
-  public String aclSave() {
-    checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.aclSave();
-    return client.getStatusCodeReply();
+    connection.moduleList();
+    return BuilderFactory.MODULE_LIST.build(connection.getObjectMultiBulkReply());
   }
 
   @Override
   public List<Long> bitfield(final String key, final String... arguments) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitfield(key, arguments));
+    return connection.executeCommand(commandObjects.bitfield(key, arguments));
   }
 
   @Override
   public List<Long> bitfieldReadonly(final String key, final String... arguments) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.bitfieldReadonly(key, arguments));
+    return connection.executeCommand(commandObjects.bitfieldReadonly(key, arguments));
   }
 
   @Override
   public long hstrlen(final String key, final String field) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.hstrlen(key, field));
+    return connection.executeCommand(commandObjects.hstrlen(key, field));
   }
 
   @Override
   public String memoryDoctor() {
     checkIsInMultiOrPipeline();
-    client.memoryDoctor();
-    return client.getBulkReply();
+    connection.memoryDoctor();
+    return connection.getBulkReply();
   }
 
   @Override
   public Long memoryUsage(final String key) {
     checkIsInMultiOrPipeline();
-    client.memoryUsage(key);
-    return client.getIntegerReply();
+    connection.memoryUsage(key);
+    return connection.getIntegerReply();
   }
 
   @Override
   public Long memoryUsage(final String key, final int samples) {
     checkIsInMultiOrPipeline();
-    client.memoryUsage(key, samples);
-    return client.getIntegerReply();
+    connection.memoryUsage(key, samples);
+    return connection.getIntegerReply();
   }
 
   @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xadd(key, id, hash));
+    return connection.executeCommand(commandObjects.xadd(key, id, hash));
   }
 
   @Override
-  public StreamEntryID xadd(final String key, final Map<String, String> hash, final XAddParams params) {
+  public StreamEntryID xadd_v2(final String key, final XAddParams params, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xadd(key, hash, params));
+    return connection.executeCommand(commandObjects.xadd(key, params, hash));
   }
 
   @Override
   public long xlen(final String key) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xlen(key));
+    return connection.executeCommand(commandObjects.xlen(key));
   }
 
   @Override
   public List<StreamEntry> xrange(final String key, final StreamEntryID start, final StreamEntryID end) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xrange(key, start, end));
+    return connection.executeCommand(commandObjects.xrange(key, start, end));
   }
 
   /**
@@ -8728,14 +8363,14 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public List<StreamEntry> xrange(final String key, final StreamEntryID start,
       final StreamEntryID end, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xrange(key, start, end, count));
+    return connection.executeCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
   public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
       final StreamEntryID start) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xrevrange(key, end, start));
+    return connection.executeCommand(commandObjects.xrevrange(key, end, start));
   }
 
   /**
@@ -8745,62 +8380,62 @@ public class Jedis implements ServerCommands, DatabaseCommands,
   public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
       final StreamEntryID start, final int count) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xrevrange(key, end, start, count));
+    return connection.executeCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
   @Override
   public List<Map.Entry<String, List<StreamEntry>>> xread(final XReadParams xReadParams, final Map<String, StreamEntryID> streams) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xread(xReadParams, streams));
+    return connection.executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
   public long xack(final String key, final String group, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xack(key, group, ids));
+    return connection.executeCommand(commandObjects.xack(key, group, ids));
   }
 
   @Override
   public String xgroupCreate(final String key, final String groupname, final StreamEntryID id,
       final boolean makeStream) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+    return connection.executeCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
   }
 
   @Override
   public String xgroupSetID(final String key, final String groupname, final StreamEntryID id) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xgroupSetID(key, groupname, id));
+    return connection.executeCommand(commandObjects.xgroupSetID(key, groupname, id));
   }
 
   @Override
   public long xgroupDestroy(final String key, final String groupname) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xgroupDestroy(key, groupname));
+    return connection.executeCommand(commandObjects.xgroupDestroy(key, groupname));
   }
 
   @Override
   public long xgroupDelConsumer(final String key, final String groupname, final String consumerName) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumerName));
+    return connection.executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumerName));
   }
 
   @Override
   public long xdel(final String key, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xdel(key, ids));
+    return connection.executeCommand(commandObjects.xdel(key, ids));
   }
 
   @Override
   public long xtrim(final String key, final long maxLen, final boolean approximateLength) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xtrim(key, maxLen, approximateLength));
+    return connection.executeCommand(commandObjects.xtrim(key, maxLen, approximateLength));
   }
 
   @Override
   public long xtrim(final String key, final XTrimParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xtrim(key, params));
+    return connection.executeCommand(commandObjects.xtrim(key, params));
   }
 
   @Override
@@ -8808,87 +8443,87 @@ public class Jedis implements ServerCommands, DatabaseCommands,
       final String consumer, final XReadGroupParams xReadGroupParams,
       final Map<String, StreamEntryID> streams) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+    return connection.executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
   }
 
   @Override
   public StreamPendingSummary xpending(final String key, final String groupname) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xpending(key, groupname));
+    return connection.executeCommand(commandObjects.xpending(key, groupname));
   }
 
   @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+    return connection.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
   }
 
   @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname, final XPendingParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xpending(key, groupname, params));
+    return connection.executeCommand(commandObjects.xpending(key, groupname, params));
   }
 
   @Override
   public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
       XClaimParams params, StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+    return connection.executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
   }
 
   @Override
   public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
       long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+    return connection.executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
   }
 
   @Override
   public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xautoclaim(key, group, consumerName, minIdleTime, start, params));
+    return connection.executeCommand(commandObjects.xautoclaim(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
   public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName,
       long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     checkIsInMultiOrPipeline();
-    return client.executeCommand(commandObjects.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params));
+    return connection.executeCommand(commandObjects.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
   public StreamInfo xinfoStream(String key) {
-    return client.executeCommand(commandObjects.xinfoStream(key));
+    return connection.executeCommand(commandObjects.xinfoStream(key));
 
   }
 
   @Override
   public List<StreamGroupInfo> xinfoGroup(String key) {
-    return client.executeCommand(commandObjects.xinfoGroup(key));
+    return connection.executeCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override
   public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
-    return client.executeCommand(commandObjects.xinfoConsumers(key, group));
+    return connection.executeCommand(commandObjects.xinfoConsumers(key, group));
 
   }
 
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     checkIsInMultiOrPipeline();
-    client.sendCommand(cmd, args);
-    return client.getOne();
+    connection.sendCommand(cmd, args);
+    return connection.getOne();
   }
 
   public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
     checkIsInMultiOrPipeline();
-    client.sendCommand(cmd, args);
-    client.setTimeoutInfinite();
+    connection.sendCommand(cmd, args);
+    connection.setTimeoutInfinite();
     try {
-      return client.getOne();
+      return connection.getOne();
     } finally {
-      client.rollbackTimeout();
+      connection.rollbackTimeout();
     }
   }
 

@@ -4,9 +4,9 @@ import redis.clients.jedis.util.IOUtils;
 
 public class JedisConnectionExecutor implements JedisCommandExecutor {
 
-  private final JedisConnection connection;
+  private final Connection connection;
 
-  public JedisConnectionExecutor(JedisConnection connection) {
+  public JedisConnectionExecutor(Connection connection) {
     this.connection = connection;
   }
 

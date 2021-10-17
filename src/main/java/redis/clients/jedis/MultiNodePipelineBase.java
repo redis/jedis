@@ -10,7 +10,7 @@ import java.util.Queue;
 public abstract class MultiNodePipelineBase implements Closeable {
 
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
-  private final Map<HostAndPort, JedisConnection> connections;
+  private final Map<HostAndPort, Connection> connections;
   private volatile boolean synced;
 
   public MultiNodePipelineBase() {
@@ -19,11 +19,11 @@ public abstract class MultiNodePipelineBase implements Closeable {
     synced = false;
   }
 
-  protected abstract JedisConnection getConnection(HostAndPort nodeKey);
+  protected abstract Connection getConnection(HostAndPort nodeKey);
 
   protected final <T> Response<T> appendCommand(HostAndPort nodeKey, CommandObject<T> commandObject) {
     Queue<Response<?>> queue;
-    JedisConnection connection;
+    Connection connection;
     if (pipelinedResponses.containsKey(nodeKey)) {
       queue = pipelinedResponses.get(nodeKey);
       connection = connections.get(nodeKey);
@@ -43,7 +43,7 @@ public abstract class MultiNodePipelineBase implements Closeable {
   @Override
   public final void close() {
     sync();
-    for (JedisConnection connection : connections.values()) {
+    for (Connection connection : connections.values()) {
       connection.close();
     }
   }

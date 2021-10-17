@@ -7,7 +7,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 
 import redis.clients.jedis.HostAndPort;
 //import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisConnection;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil;
@@ -21,7 +21,7 @@ public class PipelinedGetSetBenchmark {
 //    jedis.connect();
 //    jedis.auth("foobared");
 //    jedis.flushAll();
-    JedisConnection conn = new JedisConnection(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
+    Connection conn = new Connection(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
     conn.executeCommand(Protocol.Command.FLUSHALL);
 
     long begin = Calendar.getInstance().getTimeInMillis();

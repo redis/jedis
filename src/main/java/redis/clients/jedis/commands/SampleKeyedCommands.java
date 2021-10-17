@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface SampleKeyedCommands {
 
-  long waitReplicas(String key, int replicas, long timeout);
+  long waitReplicas(String sampleKey, int replicas, long timeout);
 
   Object eval(String script, String sampleKey);
 

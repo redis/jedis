@@ -18,7 +18,7 @@ public class SimpleJedisExecutor implements JedisCommandExecutor {
 
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
-    try (JedisConnection connection = provider.getConnection(commandObject.getArguments())) {
+    try (Connection connection = provider.getConnection(commandObject.getArguments())) {
       return connection.executeCommand(commandObject);
     }
   }

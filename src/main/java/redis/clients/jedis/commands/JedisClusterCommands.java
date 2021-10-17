@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+//Legacy
 //public interface JedisClusterCommands extends JedisCommands {
 public interface JedisClusterCommands {
 

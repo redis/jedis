@@ -6,7 +6,7 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
 
   private final RedisCommandObjects commandObjects;
 
-  public ReliableTransaction(JedisConnection connection) {
+  public ReliableTransaction(Connection connection) {
     super(connection);
     this.commandObjects = new RedisCommandObjects();
   }

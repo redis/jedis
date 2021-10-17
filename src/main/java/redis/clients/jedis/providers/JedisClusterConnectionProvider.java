@@ -4,7 +4,7 @@ import redis.clients.jedis.ClusterCommandArguments;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisConnection;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -29,7 +29,7 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
   }
 
   public JedisClusterConnectionProvider(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<JedisConnection> poolConfig) {
+      GenericObjectPoolConfig<Connection> poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, poolConfig);
     initializeSlotsCache(jedisClusterNodes, clientConfig);
   }
@@ -39,7 +39,7 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
     Collections.shuffle(startNodeList);
 
     for (HostAndPort hostAndPort : startNodeList) {
-      try (JedisConnection jedis = new JedisConnection(hostAndPort, clientConfig)) {
+      try (Connection jedis = new Connection(hostAndPort, clientConfig)) {
         cache.discoverClusterNodesAndSlots(jedis);
         return;
       } catch (JedisConnectionException e) {
@@ -57,11 +57,11 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
     cache.renewClusterSlots(null);
   }
 
-  public void renewSlotCache(JedisConnection jedis) {
+  public void renewSlotCache(Connection jedis) {
     cache.renewClusterSlots(jedis);
   }
 
-  public Map<String, Pool<JedisConnection>> getNodes() {
+  public Map<String, Pool<Connection>> getNodes() {
     return cache.getNodes();
   }
 
@@ -69,26 +69,26 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
     return cache.getSlotNode(JedisClusterCRC16.getSlot(key));
   }
 
-  public JedisConnection getConnection(HostAndPort node) {
+  public Connection getConnection(HostAndPort node) {
     return cache.setupNodeIfNotExist(node).getResource();
   }
 
   @Override
-  public JedisConnection getConnection(CommandArguments args) {
+  public Connection getConnection(CommandArguments args) {
     final int slot = ((ClusterCommandArguments) args).getCommandHashSlot();
     return slot >= 0 ? getConnectionFromSlot(slot) : getConnection();
   }
 
-  public JedisConnection getConnection() {
+  public Connection getConnection() {
     // In antirez's redis-rb-cluster implementation, getRandomConnection always
     // return valid connection (able to ping-pong) or exception if all
     // connections are invalid
 
-    List<Pool<JedisConnection>> pools = cache.getShuffledNodesPool();
+    List<Pool<Connection>> pools = cache.getShuffledNodesPool();
 
     JedisException suppressed = null;
-    for (Pool<JedisConnection> pool : pools) {
-      JedisConnection jedis = null;
+    for (Pool<Connection> pool : pools) {
+      Connection jedis = null;
       try {
         jedis = pool.getResource();
         if (jedis == null) {
@@ -115,8 +115,8 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
     throw noReachableNode;
   }
 
-  public JedisConnection getConnectionFromSlot(int slot) {
-    Pool<JedisConnection> connectionPool = cache.getSlotPool(slot);
+  public Connection getConnectionFromSlot(int slot) {
+    Pool<Connection> connectionPool = cache.getSlotPool(slot);
     if (connectionPool != null) {
       // It can't guaranteed to get valid connection because of node assignment
       return connectionPool.getResource();

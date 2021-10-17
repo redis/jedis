@@ -56,17 +56,25 @@ public interface KeyCommands {
 
   long unlink(String... keys);
 
-  Long memoryUsage(String key);
-
-  Long memoryUsage(String key, int samples);
-
   boolean copy(String srcKey, String dstKey, boolean replace);
-
-  Set<String> keys(String pattern);
 
   String rename(String oldkey, String newkey);
 
   long renamenx(String oldkey, String newkey);
+
+  Long memoryUsage(String key);
+
+  Long memoryUsage(String key, int samples);
+
+  Long objectRefcount(String key);
+
+  String objectEncoding(String key);
+
+  Long objectIdletime(String key);
+
+  Long objectFreq(String key);
+
+  Set<String> keys(String pattern);
 
   ScanResult<String> scan(String cursor);
 

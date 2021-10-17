@@ -5,13 +5,13 @@ import java.util.List;
 
 public class PipelineBase extends Queable implements Closeable {
 
-  protected final JedisConnection connection;
+  protected final Connection connection;
 //
 //  public PipelineBase(JedisConnectionProvider provider) {
 //    this(provider.getConnection());
 //  }
 
-  public PipelineBase(JedisConnection connection) {
+  public PipelineBase(Connection connection) {
     this.connection = connection;
   }
 
@@ -35,5 +35,10 @@ public class PipelineBase extends Queable implements Closeable {
     for (Object o : unformatted) {
       generateResponse(o);
     }
+  }
+
+  @Deprecated
+  public final boolean hasPipelinedResponse() {
+    return getPipelinedResponseLength() > 0;
   }
 }

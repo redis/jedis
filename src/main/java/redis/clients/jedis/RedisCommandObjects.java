@@ -282,22 +282,6 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).add(Keyword.TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
-  public final CommandObject<Long> memoryUsage(String key) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> memoryUsage(String key, int samples) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(samples), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> memoryUsage(byte[] key) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> memoryUsage(byte[] key, int samples) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(samples), BuilderFactory.LONG);
-  }
-
   public final CommandObject<String> randomKey() {
     return new CommandObject<>(commandArguments(RANDOMKEY), BuilderFactory.STRING);
   }
@@ -1890,10 +1874,6 @@ public class RedisCommandObjects {
         BuilderFactory.STREAM_ENTRY_ID);
   }
 
-  public final CommandObject<StreamEntryID> xadd(String key, Map<String, String> hash, XAddParams params) {
-    return xadd(key, params, hash);
-  }
-
   public final CommandObject<StreamEntryID> xadd(String key, XAddParams params, Map<String, String> hash) {
     return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).key(key).addParams(params), hash),
         BuilderFactory.STREAM_ENTRY_ID);
@@ -2204,6 +2184,10 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(0), BuilderFactory.ENCODED_OBJECT);
   }
 
+  public Object eval(String script, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
   public final CommandObject<Object> eval(String script, int keyCount, String... params) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(keyCount)
         .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
@@ -2218,26 +2202,12 @@ public class RedisCommandObjects {
         BuilderFactory.ENCODED_OBJECT);
   }
 
-  public final CommandObject<Object> evalsha(String sha1) {
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.ENCODED_OBJECT);
-  }
-
-  public final CommandObject<Object> evalsha(String sha1, int keyCount, String... params) {
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keyCount)
-        .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
-        BuilderFactory.ENCODED_OBJECT);
-  }
-
-  public final CommandObject<Object> evalsha(String sha1, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.ENCODED_OBJECT);
-  }
-
   public final CommandObject<Object> eval(byte[] script) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(0), BuilderFactory.RAW_OBJECT);
+  }
+
+  public Object eval(byte[] script, byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   public final CommandObject<Object> eval(byte[] script, int keyCount, byte[]... params) {
@@ -2254,8 +2224,34 @@ public class RedisCommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
+  public final CommandObject<Object> evalsha(String sha1) {
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.ENCODED_OBJECT);
+  }
+
+  public Object evalsha(String sha1, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public final CommandObject<Object> evalsha(String sha1, int keyCount, String... params) {
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keyCount)
+        .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
+  public final CommandObject<Object> evalsha(String sha1, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
   public final CommandObject<Object> evalsha(byte[] sha1) {
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.RAW_OBJECT);
+  }
+
+  public Object evalsha(byte[] sha1, byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   public final CommandObject<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
@@ -2271,6 +2267,46 @@ public class RedisCommandObjects {
         .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
         BuilderFactory.RAW_OBJECT);
   }
+
+  public Boolean scriptExists(String sha1, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public List<Boolean> scriptExists(String sampleKey, String... sha1) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public String scriptLoad(String script, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public String scriptFlush(String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public String scriptKill(String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public Boolean scriptExists(byte[] sha1, byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public List<Boolean> scriptExists(byte[] sampleKey, byte[]... sha1) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public String scriptLoad(byte[] script, byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public String scriptFlush(byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public String scriptKill(byte[] sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
   // Scripting commands
 
   // Miscellaneous commands
@@ -2278,6 +2314,84 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(STRINGS)
         .add(strA).add(strB).addParams(params),
         BuilderFactory.STR_ALGO_LCS_RESULT);
+  }
+
+  public final CommandObject<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
+    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(STRINGS)
+        .add(strA).add(strB).addParams(params),
+        BuilderFactory.STR_ALGO_LCS_RESULT);
+  }
+
+  public final CommandObject<Boolean> copy(String srcKey, String dstKey, int dstDB, boolean replace) {
+    CommandArguments args = commandArguments(COPY).key(srcKey).key(dstKey).add(DB).add(dstDB);
+    if (replace) {
+      args.add(REPLACE);
+    }
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> copy(byte[] srcKey, byte[] dstKey, int dstDB, boolean replace) {
+    CommandArguments args = commandArguments(COPY).key(srcKey).key(dstKey).add(DB).add(dstDB);
+    if (replace) {
+      args.add(REPLACE);
+    }
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> memoryUsage(String key) {
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> memoryUsage(String key, int samples) {
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(samples), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> memoryUsage(byte[] key) {
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> memoryUsage(byte[] key, int samples) {
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(samples), BuilderFactory.LONG);
+  }
+
+  public Long objectRefcount(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public String objectEncoding(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public Long objectIdletime(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public Long objectFreq(String key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public Long objectRefcount(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public byte[] objectEncoding(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public Long objectIdletime(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public Long objectFreq(byte[] key) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public long waitReplicas(String sampleKey, int replicas, long timeout) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  public long waitReplicas(byte[] sampleKey, int replicas, long timeout) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
   // Miscellaneous commands
 

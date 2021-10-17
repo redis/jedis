@@ -51,10 +51,6 @@ public interface KeyBinaryCommands {
 
   long unlink(byte[]... keys);
 
-  Long memoryUsage(byte[] key);
-
-  Long memoryUsage(byte[] key, int samples);
-
   boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
 
   String rename(byte[] oldkey, byte[] newkey);
@@ -64,6 +60,18 @@ public interface KeyBinaryCommands {
   long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
 
   long sort(byte[] key, byte[] dstkey);
+
+  Long memoryUsage(byte[] key);
+
+  Long memoryUsage(byte[] key, int samples);
+
+  Long objectRefcount(byte[] key);
+
+  byte[] objectEncoding(byte[] key);
+
+  Long objectIdletime(byte[] key);
+
+  Long objectFreq(byte[] key);
 
   Set<byte[]> keys(byte[] pattern);
 

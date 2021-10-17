@@ -36,7 +36,7 @@ public class RetryableClusterCommandExecutor implements JedisCommandExecutor {
     int consecutiveConnectionFailures = 0;
     Exception lastException = null;
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
-      JedisConnection connection = null;
+      Connection connection = null;
       try {
         if (redirect != null) {
           connection = provider.getConnection(redirect.getTargetNode());

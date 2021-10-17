@@ -5,12 +5,11 @@ import redis.clients.jedis.args.FlushMode;
 public interface DatabaseCommands {
 
   /**
-   * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
-   * for this operation is O(N), N being the number of keys in the database.
-   * @param flushMode
-   * @return OK
+   * Select the DB with having the specified zero-based numeric index.
+   * @param index the index
+   * @return a simple string reply OK
    */
-  String flushDB(FlushMode flushMode);
+  String select(int index);
 
   /**
    * Return the number of keys in the currently-selected database.
@@ -19,11 +18,12 @@ public interface DatabaseCommands {
   long dbSize();
 
   /**
-   * Select the DB with having the specified zero-based numeric index.
-   * @param index the index
-   * @return a simple string reply OK
+   * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
+   * for this operation is O(N), N being the number of keys in the database.
+   * @param flushMode
+   * @return OK
    */
-  String select(int index);
+  String flushDB(FlushMode flushMode);
 
   /**
    * This command swaps two Redis databases, so that immediately all the clients connected to a
@@ -33,6 +33,10 @@ public interface DatabaseCommands {
    * @return Simple string reply: OK if SWAPDB was executed correctly.
    */
   String swapDB(int index1, int index2);
+
+  long move(String key, int dbIndex);
+
+  long move(byte[] key, int dbIndex);
 
   boolean copy(String srcKey, String dstKey, int db, boolean replace);
 

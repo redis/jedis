@@ -14,7 +14,7 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  protected JedisConnection getConnection(HostAndPort nodeKey) {
+  protected Connection getConnection(HostAndPort nodeKey) {
     return provider.getConnection(nodeKey);
   }
 

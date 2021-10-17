@@ -9,11 +9,11 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
-public class JedisConnectionFactory implements PooledObjectFactory<JedisConnection> {
+public class JedisConnectionFactory implements PooledObjectFactory<Connection> {
 
   private static final Logger logger = LoggerFactory.getLogger(JedisConnectionFactory.class);
 
-  private final Pool<JedisConnection> memberOf;
+  private final Pool<Connection> memberOf;
   private HostAndPort hostAndPort;
   private JedisClientConfig clientConfig;
   private final JedisSocketFactory factory;
@@ -25,7 +25,7 @@ public class JedisConnectionFactory implements PooledObjectFactory<JedisConnecti
   }
 
   public JedisConnectionFactory(HostAndPort hostAndPort, JedisClientConfig clientConfig,
-      Pool<JedisConnection> memberOf) {
+      Pool<Connection> memberOf) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), memberOf);
     this.hostAndPort = hostAndPort;
     this.clientConfig = clientConfig;
@@ -36,7 +36,7 @@ public class JedisConnectionFactory implements PooledObjectFactory<JedisConnecti
     this.memberOf = null;
   }
 
-  public JedisConnectionFactory(JedisSocketFactory factory, Pool<JedisConnection> memberOf) {
+  public JedisConnectionFactory(JedisSocketFactory factory, Pool<Connection> memberOf) {
     this.factory = factory;
     this.memberOf = memberOf;
   }
@@ -53,14 +53,14 @@ public class JedisConnectionFactory implements PooledObjectFactory<JedisConnecti
   }
 
   @Override
-  public void activateObject(PooledObject<JedisConnection> pooledJedis) throws Exception {
-//    final JedisConnection jedis = pooledJedis.getObject();
+  public void activateObject(PooledObject<Connection> pooledJedis) throws Exception {
+//    final Connection jedis = pooledJedis.getObject();
 //    jedis.select(clientConfig.getDatabase());
   }
 
   @Override
-  public void destroyObject(PooledObject<JedisConnection> pooledJedis) throws Exception {
-    final JedisConnection jedis = pooledJedis.getObject();
+  public void destroyObject(PooledObject<Connection> pooledJedis) throws Exception {
+    final Connection jedis = pooledJedis.getObject();
     if (jedis.isConnected()) {
       try {
         // need a proper test, probably with mock
@@ -79,10 +79,10 @@ public class JedisConnectionFactory implements PooledObjectFactory<JedisConnecti
   }
 
   @Override
-  public PooledObject<JedisConnection> makeObject() throws Exception {
-    JedisConnection jedis = null;
+  public PooledObject<Connection> makeObject() throws Exception {
+    Connection jedis = null;
     try {
-      jedis = new JedisConnection(factory, clientConfig, memberOf);
+      jedis = new Connection(factory, clientConfig, memberOf);
       jedis.connect();
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
@@ -103,13 +103,13 @@ public class JedisConnectionFactory implements PooledObjectFactory<JedisConnecti
   }
 
   @Override
-  public void passivateObject(PooledObject<JedisConnection> pooledJedis) throws Exception {
+  public void passivateObject(PooledObject<Connection> pooledJedis) throws Exception {
     // TODO maybe should select db 0? Not sure right now.
   }
 
   @Override
-  public boolean validateObject(PooledObject<JedisConnection> pooledJedis) {
-    final JedisConnection jedis = pooledJedis.getObject();
+  public boolean validateObject(PooledObject<Connection> pooledJedis) {
+    final Connection jedis = pooledJedis.getObject();
     try {
 //      String host = jedisSocketFactory.getHost();
 //      int port = jedisSocketFactory.getPort();

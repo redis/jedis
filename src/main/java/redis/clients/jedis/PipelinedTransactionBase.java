@@ -10,9 +10,9 @@ public class PipelinedTransactionBase extends Queable implements Closeable {
 
   private boolean inTransaction = true;
 
-  protected final JedisConnection connection;
+  protected final Connection connection;
 
-  public PipelinedTransactionBase(JedisConnection connection) {
+  public PipelinedTransactionBase(Connection connection) {
     this.connection = connection;
     this.connection.sendCommand(Protocol.Command.MULTI);
   }

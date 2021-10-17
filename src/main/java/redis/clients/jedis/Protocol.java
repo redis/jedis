@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +31,7 @@ public final class Protocol {
   public static final int DEFAULT_TIMEOUT = 2000;
   public static final int DEFAULT_DATABASE = 0;
 
-  public static final String CHARSET = "UTF-8";
+  public static final Charset CHARSET = StandardCharsets.UTF_8;
 
   public static final byte DOLLAR_BYTE = '$';
   public static final byte ASTERISK_BYTE = '*';

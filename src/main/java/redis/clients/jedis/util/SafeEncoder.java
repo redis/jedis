@@ -25,22 +25,14 @@ public final class SafeEncoder {
   }
 
   public static byte[] encode(final String str) {
-    try {
-      if (str == null) {
-        throw new IllegalArgumentException("null value cannot be sent to redis");
-      }
-      return str.getBytes(Protocol.CHARSET);
-    } catch (UnsupportedEncodingException e) {
-      throw new JedisException(e);
+    if (str == null) {
+      throw new IllegalArgumentException("null value cannot be sent to redis");
     }
+    return str.getBytes(Protocol.CHARSET);
   }
 
   public static String encode(final byte[] data) {
-    try {
-      return new String(data, Protocol.CHARSET);
-    } catch (UnsupportedEncodingException e) {
-      throw new JedisException(e);
-    }
+    return new String(data, Protocol.CHARSET);
   }
 
   /**

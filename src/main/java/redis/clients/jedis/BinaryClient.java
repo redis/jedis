@@ -652,7 +652,7 @@ public class BinaryClient extends Connection {
   }
 
   public void zrevrange(final byte[] key, final long start, final long stop) {
-    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop));
+    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop), REV.getRaw());
   }
 
   public void zrangeWithScores(final byte[] key, final long start, final long stop) {
@@ -660,7 +660,7 @@ public class BinaryClient extends Connection {
   }
 
   public void zrevrangeWithScores(final byte[] key, final long start, final long stop) {
-    sendCommand(ZREVRANGE, key, toByteArray(start), toByteArray(stop), WITHSCORES.getRaw());
+    sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop), REV.getRaw(), WITHSCORES.getRaw());
   }
 
   public void zrandmember(final byte[] key) {
@@ -862,83 +862,85 @@ public class BinaryClient extends Connection {
   }
 
   public void zrangeByScore(final byte[] key, final double min, final double max) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max));
+    sendCommand(ZRANGE, key, toByteArray(min), toByteArray(max), BYSCORE.getRaw());
   }
 
   public void zrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
-    sendCommand(ZRANGEBYSCORE, key, min, max);
+    sendCommand(ZRANGE, key, min, max, BYSCORE.getRaw());
   }
 
   public void zrevrangeByScore(final byte[] key, final double max, final double min) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min));
+    sendCommand(ZRANGE, key, toByteArray(max), toByteArray(min), BYSCORE.getRaw(), REV.getRaw());
   }
 
   public void zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min) {
-    sendCommand(ZREVRANGEBYSCORE, key, max, min);
+    sendCommand(ZRANGE, key, max, min, BYSCORE.getRaw(), REV.getRaw());
   }
 
-  public void zrangeByScore(final byte[] key, final double min, final double max, final int offset,
-      final int count) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.getRaw(),
+  public void zrangeByScore(final byte[] key, final double min, final double max,
+    final int offset, final int count) {
+    sendCommand(ZRANGE, key, toByteArray(min), toByteArray(max), BYSCORE.getRaw(), LIMIT.getRaw(),
       toByteArray(offset), toByteArray(count));
   }
 
   public void zrevrangeByScore(final byte[] key, final double max, final double min,
-      final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.getRaw(),
-      toByteArray(offset), toByteArray(count));
+    final int offset, final int count) {
+    sendCommand(ZRANGE, key, toByteArray(max), toByteArray(min), BYSCORE.getRaw(),
+            REV.getRaw(), LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), WITHSCORES.getRaw());
+    sendCommand(ZRANGE, key, toByteArray(min), toByteArray(max), BYSCORE.getRaw(), WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), WITHSCORES.getRaw());
+    sendCommand(ZRANGE, key, toByteArray(max), toByteArray(min), BYSCORE.getRaw(),
+            REV.getRaw(), WITHSCORES.getRaw());
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final double min, final double max,
       final int offset, final int count) {
-    sendCommand(ZRANGEBYSCORE, key, toByteArray(min), toByteArray(max), LIMIT.getRaw(),
+    sendCommand(ZRANGE, key, toByteArray(min), toByteArray(max), BYSCORE.getRaw(), LIMIT.getRaw(),
       toByteArray(offset), toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final double max, final double min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, toByteArray(max), toByteArray(min), LIMIT.getRaw(),
-      toByteArray(offset), toByteArray(count), WITHSCORES.getRaw());
+    sendCommand(ZRANGE, key, toByteArray(max), toByteArray(min), BYSCORE.getRaw(),
+            REV.getRaw(), LIMIT.getRaw(), toByteArray(offset), toByteArray(count),
+            WITHSCORES.getRaw());
   }
 
   public void zrangeByScore(final byte[] key, final byte[] min, final byte[] max, final int offset,
       final int count) {
-    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.getRaw(), toByteArray(offset),
+    sendCommand(ZRANGE, key, min, max, BYSCORE.getRaw(), LIMIT.getRaw(), toByteArray(offset),
       toByteArray(count));
   }
 
   public void zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.getRaw(), toByteArray(offset),
-      toByteArray(count));
+    sendCommand(ZRANGE, key, max, min, BYSCORE.getRaw(), REV.getRaw(), LIMIT.getRaw(),
+            toByteArray(offset), toByteArray(count));
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
-    sendCommand(ZRANGEBYSCORE, key, min, max, WITHSCORES.getRaw());
+    sendCommand(ZRANGE, key, min, max, BYSCORE.getRaw(), WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
-    sendCommand(ZREVRANGEBYSCORE, key, max, min, WITHSCORES.getRaw());
+    sendCommand(ZRANGE, key, max, min, BYSCORE.getRaw(), REV.getRaw(), WITHSCORES.getRaw());
   }
 
   public void zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
-    sendCommand(ZRANGEBYSCORE, key, min, max, LIMIT.getRaw(), toByteArray(offset),
+    sendCommand(ZRANGE, key, min, max, BYSCORE.getRaw(), LIMIT.getRaw(), toByteArray(offset),
       toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
-    sendCommand(ZREVRANGEBYSCORE, key, max, min, LIMIT.getRaw(), toByteArray(offset),
-      toByteArray(count), WITHSCORES.getRaw());
+    sendCommand(ZRANGE, key, max, min, BYSCORE.getRaw(), REV.getRaw(), LIMIT.getRaw(),
+            toByteArray(offset), toByteArray(count), WITHSCORES.getRaw());
   }
 
   public void zremrangeByRank(final byte[] key, final long start, final long stop) {
@@ -1014,22 +1016,23 @@ public class BinaryClient extends Connection {
   }
 
   public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
-    sendCommand(ZRANGEBYLEX, key, min, max);
+    sendCommand(ZRANGE, key, min, max, BYLEX.getRaw());
   }
 
-  public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max, final int offset,
-      final int count) {
-    sendCommand(ZRANGEBYLEX, key, min, max, LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
+  public void zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+    final int offset, final int count) {
+    sendCommand(ZRANGE, key, min, max, BYLEX.getRaw(),
+            LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
   }
 
   public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
-    sendCommand(ZREVRANGEBYLEX, key, max, min);
+    sendCommand(ZRANGE, key, max, min, BYLEX.getRaw(), REV.getRaw());
   }
 
   public void zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
-      final int offset, final int count) {
-    sendCommand(ZREVRANGEBYLEX, key, max, min, LIMIT.getRaw(), toByteArray(offset),
-      toByteArray(count));
+    final int offset, final int count) {
+    sendCommand(ZRANGE, key, max, min, BYLEX.getRaw(), REV.getRaw(),
+            LIMIT.getRaw(), toByteArray(offset), toByteArray(count));
   }
 
   public void zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {

@@ -164,6 +164,11 @@ public class BinaryClient extends Connection {
     super.close();
   }
 
+  public void closeGracefully() {
+    db = 0;
+    super.disconnectGracefully();
+  }
+
   public void resetState() {
     if (isInWatch()) {
       unwatch();

@@ -260,6 +260,21 @@ public class Connection implements Closeable {
     }
   }
 
+  public void disconnectGracefully() {
+    if (isConnected()) {
+      try {
+        outputStream.flush();
+        socket.setSoLinger(false, 1);
+        socket.close();
+      } catch (IOException ex) {
+        broken = true;
+        throw new JedisConnectionException(ex);
+      } finally {
+        IOUtils.closeQuietly(socket);
+      }
+    }
+  }
+
   public boolean isConnected() {
     return socket != null && socket.isBound() && !socket.isClosed() && socket.isConnected()
         && !socket.isInputShutdown() && !socket.isOutputShutdown();

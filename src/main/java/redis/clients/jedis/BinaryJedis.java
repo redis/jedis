@@ -335,6 +335,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.close();
   }
 
+  public void closeGracefully() {
+    client.closeGracefully();
+  }
+
   @Override
   public int getDB() {
     return client.getDB();

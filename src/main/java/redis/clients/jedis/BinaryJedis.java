@@ -2066,6 +2066,13 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return SetFromList.of(client.getBinaryMultiBulkReply());
   }
 
+  @Override
+  public long zrangestore(final byte[] dest, final byte[] key, final long start, final long stop) {
+    checkIsInMultiOrPipeline();
+    client.zrangestore(dest, key, start, stop);
+    return client.getIntegerReply();
+  }
+
   /**
    * Remove the specified member from the sorted set value stored at key. If member was not a member
    * of the set no operation is performed. If key does not not hold a set value an error is

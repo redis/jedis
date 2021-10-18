@@ -220,6 +220,8 @@ public interface BinaryJedisCommands {
 
   Set<byte[]> zrange(byte[] key, long start, long stop);
 
+  long zrangestore(byte[] dest, byte[] key, long start, long stop);
+
   long zrem(byte[] key, byte[]... members);
 
   double zincrby(byte[] key, double increment, byte[] member);

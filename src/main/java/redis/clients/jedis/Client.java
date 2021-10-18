@@ -517,6 +517,11 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zrangestore(final String dest, final String key, final long start, final long stop) {
+    zrangestore(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop);
+  }
+
+  @Override
   public void zrem(final String key, final String... members) {
     zrem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }

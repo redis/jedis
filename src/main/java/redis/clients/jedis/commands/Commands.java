@@ -241,6 +241,8 @@ public interface Commands {
 
   void zrange(String key, long start, long stop);
 
+  void zrangestore(String dest, String key, long start, long stop);
+
   void zrem(String key, String... members);
 
   void zincrby(String key, double increment, String member);

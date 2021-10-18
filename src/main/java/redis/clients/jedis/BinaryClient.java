@@ -629,6 +629,10 @@ public class BinaryClient extends Connection {
     sendCommand(ZRANGE, key, toByteArray(start), toByteArray(stop));
   }
 
+  public void zrangestore(final byte[] dest, final byte[] key, final long start, final long stop) {
+    sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop));
+  }
+
   public void zrem(final byte[] key, final byte[]... members) {
     sendCommand(ZREM, joinParameters(key, members));
   }

@@ -243,6 +243,16 @@ public interface Commands {
 
   void zrangestore(String dest, String key, long start, long stop);
 
+  void zrangestore(String dest, String key, long start, long stop, boolean rev);
+
+  void zrangestoreByScore(String dest, String key, long start, long stop);
+
+  void zrangestoreByScore(String dest, String key, long start, long stop, boolean rev);
+
+  void zrangestoreByLex(String dest, String key, long start, long stop);
+
+  void zrangestoreByLex(String dest, String key, long start, long stop, boolean rev);
+
   void zrem(String key, String... members);
 
   void zincrby(String key, double increment, String member);

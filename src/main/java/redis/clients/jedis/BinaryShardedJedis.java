@@ -585,6 +585,37 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public long zrangestore(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev){
+    Jedis j = getShard(key);
+    return j.zrangestore(dest, key, start, stop, rev);
+  }
+
+  @Override
+  public long zrangestoreByScore(final byte[] dest, final byte[] key, final long start, final long stop) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByScore(dest, key, start, stop);
+  }
+
+  @Override
+  public long zrangestoreByScore(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByScore(dest, key, start, stop, rev);
+  }
+
+  @Override
+  public long zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByLex(dest, key, start, stop);
+  }
+
+  @Override
+  public long zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByLex(dest, key, start, stop, rev);
+  }
+
+
+  @Override
   public long zrem(final byte[] key, final byte[]... members) {
     Jedis j = getShard(key);
     return j.zrem(key, members);

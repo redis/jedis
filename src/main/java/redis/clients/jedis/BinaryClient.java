@@ -630,7 +630,36 @@ public class BinaryClient extends Connection {
   }
 
   public void zrangestore(final byte[] dest, final byte[] key, final long start, final long stop) {
-    sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop));
+    zrangestore(dest, key, start, stop, false);
+  }
+
+  public void zrangestore(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+    if (rev)
+      sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop), REV.getRaw());
+    else
+      sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop));
+  }
+
+  public void zrangestoreByScore(final byte[] dest, final byte[] key, final long start, final long stop) {
+    zrangestoreByScore(dest, key, start, stop, false);
+  }
+
+  public void zrangestoreByScore(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+    if (rev)
+      sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop), BYSCORE.getRaw(), REV.getRaw());
+    else
+      sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop), BYSCORE.getRaw());
+  }
+
+  public void zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop) {
+    zrangestoreByLex( dest, key, start, stop, false);
+  }
+
+  public void zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+    if (rev)
+      sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop), BYLEX.getRaw(), REV.getRaw());
+    else
+      sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop), BYLEX.getRaw());
   }
 
   public void zrem(final byte[] key, final byte[]... members) {

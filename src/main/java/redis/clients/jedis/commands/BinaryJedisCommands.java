@@ -222,6 +222,16 @@ public interface BinaryJedisCommands {
 
   long zrangestore(byte[] dest, byte[] key, long start, long stop);
 
+  long zrangestore(byte[] dest, byte[] key, long start, long stop, boolean rev);
+
+  long zrangestoreByScore(byte[] dest, byte[] key, long start, long stop);
+
+  long zrangestoreByScore(byte[] dest, byte[] key, long start, long stop, boolean rev);
+
+  long zrangestoreByLex(byte[] dest, byte[] key, long start, long stop);
+
+  long zrangestoreByLex(byte[] dest, byte[] key, long start, long stop, boolean rev);
+
   long zrem(byte[] key, byte[]... members);
 
   double zincrby(byte[] key, double increment, byte[] member);

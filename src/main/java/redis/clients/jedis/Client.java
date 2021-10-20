@@ -522,6 +522,32 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zrangestore(final String dest, final String key, final long start, final long stop, final boolean rev) {
+    zrangestore(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop, rev);
+  }
+
+  @Override
+  public void zrangestoreByScore(final String dest, final String key, final long start, final long stop) {
+    zrangestoreByScore(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop);
+  }
+
+  @Override
+  public void zrangestoreByScore(final String dest, final String key, final long start, final long stop, final boolean rev) {
+    zrangestoreByScore(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop, rev);
+  }
+
+  @Override
+  public void zrangestoreByLex(final String dest, final String key, final long start, final long stop) {
+    zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop);
+  }
+
+  @Override
+  public void zrangestoreByLex(final String dest, final String key, final long start, final long stop, final boolean rev) {
+    zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop, rev);
+  }
+
+
+  @Override
   public void zrem(final String key, final String... members) {
     zrem(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }

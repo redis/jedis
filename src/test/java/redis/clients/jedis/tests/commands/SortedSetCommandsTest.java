@@ -181,14 +181,16 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     jedis.zadd(bfoo, 2d, bb);
     jedis.zadd(bfoo, 3d, bc);
 
-    jedis.zrangestore(bbar, bfoo, 0, 1);
+    long bstored = jedis.zrangestore(bbar, bfoo, 0, 1);
+    assertEquals(bstored, 2);
     Set<byte[]> brange = jedis.zrange(bbar, 0, -1);
     Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(ba);
     bexpected.add(bb);
     assertByteArraySetEquals(bexpected, brange);
 
-    jedis.zrangestore(bbar, bfoo, 1, 2);
+    bstored = jedis.zrangestore(bbar, bfoo, 1, 2);
+    assertEquals(bstored, 2);
     brange = jedis.zrange(bbar, 0, -1);
     bexpected = new LinkedHashSet<byte[]>();
     bexpected.add(bb);

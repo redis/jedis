@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Set;
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
@@ -51,10 +52,6 @@ public interface KeyBinaryCommands {
 
   long unlink(byte[]... keys);
 
-  Long memoryUsage(byte[] key);
-
-  Long memoryUsage(byte[] key, int samples);
-
   boolean copy(byte[] srcKey, byte[] dstKey, boolean replace);
 
   String rename(byte[] oldkey, byte[] newkey);
@@ -64,6 +61,22 @@ public interface KeyBinaryCommands {
   long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
 
   long sort(byte[] key, byte[] dstkey);
+
+  Long memoryUsage(byte[] key);
+
+  Long memoryUsage(byte[] key, int samples);
+
+  Long objectRefcount(byte[] key);
+
+  byte[] objectEncoding(byte[] key);
+
+  Long objectIdletime(byte[] key);
+
+  Long objectFreq(byte[] key);
+
+  String migrate(String host, int port, byte[] key, int timeout);
+
+  String migrate(String host, int port, int timeout, MigrateParams params, byte[]... keys);
 
   Set<byte[]> keys(byte[] pattern);
 

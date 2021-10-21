@@ -15,7 +15,11 @@ public interface StreamBinaryCommands {
 //
 //  byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
-  byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params);
+  default byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params) {
+    return xadd(key, params, hash);
+  }
+
+  byte[] xadd(byte[] key, XAddParams params, Map<byte[], byte[]> hash);
 
   long xlen(byte[] key);
 

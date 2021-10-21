@@ -1,13 +1,13 @@
 package redis.clients.jedis.providers;
 
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.JedisConnection;
+import redis.clients.jedis.Connection;
 
 public class ManagedJedisConnectionProvider implements JedisConnectionProvider {
 
-  private JedisConnection connection;
+  private Connection connection;
 
-  public final void setConnection(JedisConnection connection) {
+  public final void setConnection(Connection connection) {
     this.connection = connection;
   }
 
@@ -16,7 +16,7 @@ public class ManagedJedisConnectionProvider implements JedisConnectionProvider {
   }
 
   @Override
-  public JedisConnection getConnection(CommandArguments args) {
+  public Connection getConnection(CommandArguments args) {
     return connection;
   }
 }

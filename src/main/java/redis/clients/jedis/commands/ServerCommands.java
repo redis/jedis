@@ -3,7 +3,6 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.DebugParams;
 
 public interface ServerCommands {
 
@@ -163,12 +162,6 @@ public interface ServerCommands {
    * @return result of the command
    */
   String slaveofNoOne();
-
-  String debug(DebugParams params);
-
-  String configResetStat();
-
-  String configRewrite();
 
   /**
    * Syncrhonous replication of Redis as described here: http://antirez.com/news/66.

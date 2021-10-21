@@ -39,7 +39,7 @@ public class RetryableCommandExecutor implements JedisCommandExecutor {
     int consecutiveConnectionFailures = 0;
     JedisException lastException = null;
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
-      JedisConnection connection = null;
+      Connection connection = null;
       try {
         connection = provider.getConnection(commandObject.getArguments());
 

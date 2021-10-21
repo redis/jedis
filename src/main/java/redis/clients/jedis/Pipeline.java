@@ -6,7 +6,7 @@ public class Pipeline extends PipelineBase implements PipelineCommands {
 
   private final RedisCommandObjects commandObjects;
 
-  public Pipeline(JedisConnection connection) {
+  public Pipeline(Connection connection) {
     super(connection);
     this.commandObjects = new RedisCommandObjects();
   }

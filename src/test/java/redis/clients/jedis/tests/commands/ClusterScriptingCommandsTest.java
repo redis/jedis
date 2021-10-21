@@ -34,19 +34,19 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     jedisCluster.eval(script, numKeys, args);
     assertEquals("bar", jedisCluster.get("foo"));
   }
-//
-//  @Test
-//  public void testScriptLoadAndScriptExists() {
-//    String sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')", "key1");
-//    assertTrue(jedisCluster.scriptExists(sha1, "key1"));
-//  }
-//
-//  @Test
-//  public void testEvalsha() {
-//    String sha1 = jedisCluster.scriptLoad("return 10", "key1");
-//    Object o = jedisCluster.evalsha(sha1, 1, "key1");
-//    assertEquals("10", o.toString());
-//  }
+
+  @Test
+  public void testScriptLoadAndScriptExists() {
+    String sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')", "key1");
+    assertTrue(jedisCluster.scriptExists(sha1, "key1"));
+  }
+
+  @Test
+  public void testEvalsha() {
+    String sha1 = jedisCluster.scriptLoad("return 10", "key1");
+    Object o = jedisCluster.evalsha(sha1, 1, "key1");
+    assertEquals("10", o.toString());
+  }
 
   @Test(expected = JedisClusterOperationException.class)
   public void testJedisClusterException2() {
@@ -68,29 +68,29 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     jedisCluster.eval(script, 1, args);
     assertEquals("bar", jedisCluster.get("foo"));
   }
-//
-//  @Test
-//  public void testBinaryScriptFlush() {
-//    byte[] byteKey = "key1".getBytes();
-//    jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
-//    assertEquals("OK", jedisCluster.scriptFlush(byteKey));
-//    assertEquals("OK", jedisCluster.scriptFlush(byteKey, FlushMode.SYNC));
-//  }
-//
-//  @Test(expected = JedisDataException.class)
-//  public void testBinaryScriptKill() {
-//    byte[] byteKey = "key1".getBytes();
-//    jedisCluster.scriptKill(byteKey);
-//  }
-//
-//  @Test
-//  public void testBinaryScriptExists() {
-//    byte[] byteKey = "key1".getBytes();
-//    byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
-//    byte[][] arraySha1 = { sha1 };
-//    Long result = 1L;
-//    List<Long> listResult = new ArrayList<>();
-//    listResult.add(result);
-//    assertEquals(listResult, jedisCluster.scriptExists(byteKey, arraySha1));
-//  }
+
+  @Test
+  public void testBinaryScriptFlush() {
+    byte[] byteKey = "key1".getBytes();
+    jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
+    assertEquals("OK", jedisCluster.scriptFlush(byteKey));
+    assertEquals("OK", jedisCluster.scriptFlush(byteKey, FlushMode.SYNC));
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void testBinaryScriptKill() {
+    byte[] byteKey = "key1".getBytes();
+    jedisCluster.scriptKill(byteKey);
+  }
+
+  @Test
+  public void testBinaryScriptExists() {
+    byte[] byteKey = "key1".getBytes();
+    byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
+    byte[][] arraySha1 = { sha1 };
+    Long result = 1L;
+    List<Long> listResult = new ArrayList<>();
+    listResult.add(result);
+    assertEquals(listResult, jedisCluster.scriptExists(byteKey, arraySha1));
+  }
 }

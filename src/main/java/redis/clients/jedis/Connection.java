@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -18,11 +19,11 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class JedisConnection implements Closeable {
+public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private final Pool<JedisConnection> memberOf;
+  private final Pool<Connection> memberOf;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -30,36 +31,36 @@ public class JedisConnection implements Closeable {
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
 
-  public JedisConnection() {
+  public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
-  public JedisConnection(final String host, final int port) {
+  public Connection(final String host, final int port) {
     this(new HostAndPort(host, port));
   }
 
-  public JedisConnection(final HostAndPort hostAndPort) {
+  public Connection(final HostAndPort hostAndPort) {
     this(hostAndPort, DefaultJedisClientConfig.builder().build());
   }
 
-  public JedisConnection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
+  public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     initializeFromClientConfig(clientConfig);
   }
 
-  public JedisConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
+  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this(socketFactory, clientConfig, null);
   }
 
-  public JedisConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Pool<JedisConnection> pool) {
+  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Pool<Connection> pool) {
     this.socketFactory = socketFactory;
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     initializeFromClientConfig(clientConfig);
     this.memberOf = pool;
   }
 
-  public JedisConnection(final JedisSocketFactory socketFactory) {
+  public Connection(final JedisSocketFactory socketFactory) {
     this.socketFactory = socketFactory;
     this.memberOf = null;
   }
@@ -119,6 +120,10 @@ public class JedisConnection implements Closeable {
     sendCommand(cmd, EMPTY_ARGS);
   }
 
+  public void sendCommand(final ProtocolCommand cmd, Rawable keyword) {
+    sendCommand(cmd, keyword.getRaw());
+  }
+
   public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
     try {
       connect();
@@ -152,8 +157,18 @@ public class JedisConnection implements Closeable {
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
-    sendCommand(commandObject.getArguments());
-    return commandObject.getBuilder().build(getOne());
+    final CommandArguments args = commandObject.getArguments();
+    sendCommand(args);
+    if (!args.isBlocking()) {
+      return commandObject.getBuilder().build(getOne());
+    } else {
+      try {
+        setTimeoutInfinite();
+        return commandObject.getBuilder().build(getOne());
+      } finally {
+        rollbackTimeout();
+      }
+    }
   }
 
   public void sendCommand(final CommandArguments args) {
@@ -213,7 +228,7 @@ public class JedisConnection implements Closeable {
         this.memberOf.returnResource(this);
       }
     } else {
-      // disconnect();
+      disconnect();
     }
   }
 

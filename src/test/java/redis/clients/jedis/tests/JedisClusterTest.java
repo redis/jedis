@@ -6,6 +6,8 @@
 //import static org.junit.Assert.assertNull;
 //import static org.junit.Assert.assertTrue;
 //import static org.junit.Assert.fail;
+//
+//import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 //import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 //
 //import java.io.IOException;
@@ -34,19 +36,15 @@
 //import org.slf4j.LoggerFactory;
 //
 //import redis.clients.jedis.GeoCoordinate;
-//import redis.clients.jedis.GeoUnit;
 //import redis.clients.jedis.HostAndPort;
 //import redis.clients.jedis.Jedis;
-//import redis.clients.jedis.JedisCluster;
-//import redis.clients.jedis.ClusterReset;
 //import redis.clients.jedis.DefaultJedisClientConfig;
 //import redis.clients.jedis.JedisClusterInfoCache;
-//import redis.clients.jedis.JedisPool;
-//import redis.clients.jedis.JedisPoolConfig;
+//import redis.clients.jedis.args.ClusterResetType;
+//import redis.clients.jedis.args.GeoUnit;
 //import redis.clients.jedis.exceptions.*;
 //import redis.clients.jedis.params.GeoRadiusParam;
 //import redis.clients.jedis.params.GeoRadiusStoreParam;
-//import redis.clients.jedis.tests.utils.ClientKillerUtil;
 //import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 //import redis.clients.jedis.util.JedisClusterCRC16;
 //
@@ -99,11 +97,11 @@
 //    node1.clusterMeet(LOCAL_IP, nodeInfo3.getPort());
 //
 //    // split available slots across the three nodes
-//    int slotsPerNode = JedisCluster.HASHSLOTS / 3;
+//    int slotsPerNode = CLUSTER_HASHSLOTS / 3;
 //    int[] node1Slots = new int[slotsPerNode];
 //    int[] node2Slots = new int[slotsPerNode + 1];
 //    int[] node3Slots = new int[slotsPerNode];
-//    for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < JedisCluster.HASHSLOTS; i++) {
+//    for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0; i < CLUSTER_HASHSLOTS; i++) {
 //      if (i < slotsPerNode) {
 //        node1Slots[slot1++] = i;
 //      } else if (i > slotsPerNode * 2) {
@@ -126,10 +124,10 @@
 //    node2.flushDB();
 //    node3.flushDB();
 //    node4.flushDB();
-//    node1.clusterReset(ClusterReset.SOFT);
-//    node2.clusterReset(ClusterReset.SOFT);
-//    node3.clusterReset(ClusterReset.SOFT);
-//    node4.clusterReset(ClusterReset.SOFT);
+//    node1.clusterReset(ClusterResetType.SOFT);
+//    node2.clusterReset(ClusterResetType.SOFT);
+//    node3.clusterReset(ClusterResetType.SOFT);
+//    node4.clusterReset(ClusterResetType.SOFT);
 //  }
 //
 //  @After
@@ -278,7 +276,7 @@
 //    } catch (JedisMovedDataException e) {
 //    }
 //
-//    nodeSlave2.clusterReset(ClusterReset.SOFT);
+//    nodeSlave2.clusterReset(ClusterResetType.SOFT);
 //    nodeSlave2.flushDB();
 //  }
 //
@@ -824,12 +822,12 @@
 //      node1.clusterMeet(LOCAL_IP, nodeInfo3.getPort());
 //      node1.clusterMeet(LOCAL_IP, nodeInfo4.getPort());
 //      // split available slots across the three nodes
-//      int slotsPerNode = JedisCluster.HASHSLOTS / 4;
+//      int slotsPerNode = CLUSTER_HASHSLOTS / 4;
 //      int[] node1Slots = new int[slotsPerNode];
 //      int[] node2Slots = new int[slotsPerNode];
 //      int[] node3Slots = new int[slotsPerNode];
 //      int[] node4Slots = new int[slotsPerNode];
-//      for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0, slot4 = 0; i < JedisCluster.HASHSLOTS; i++) {
+//      for (int i = 0, slot1 = 0, slot2 = 0, slot3 = 0, slot4 = 0; i < CLUSTER_HASHSLOTS; i++) {
 //        if (i < slotsPerNode) {
 //          node1Slots[slot1++] = i;
 //        } else if (i >= slotsPerNode && i < slotsPerNode*2) {

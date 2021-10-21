@@ -4,6 +4,7 @@ import redis.clients.jedis.Response;
 
 import java.util.List;
 
+//Legacy
 public interface ClusterPipeline {
 
   Response<String> clusterNodes();

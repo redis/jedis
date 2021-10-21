@@ -8,9 +8,9 @@ public class ReliableTransactionBase extends Queable implements Closeable {
 
   private boolean inTransaction = true;
 
-  protected final JedisConnection connection;
+  protected final Connection connection;
 
-  public ReliableTransactionBase(JedisConnection connection) {
+  public ReliableTransactionBase(Connection connection) {
     this.connection = connection;
     executeMulti();
   }

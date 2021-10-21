@@ -6,7 +6,7 @@ public class Transaction extends PipelinedTransactionBase implements PipelineCom
 
   private final RedisCommandObjects commandObjects;
 
-  public Transaction(JedisConnection connection) {
+  public Transaction(Connection connection) {
     super(connection);
     this.commandObjects = new RedisCommandObjects();
   }

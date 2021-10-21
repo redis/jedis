@@ -18,19 +18,8 @@ public class SimpleJedisExecutor implements JedisCommandExecutor {
 
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
-    final CommandArguments args = commandObject.getArguments();
-    try (JedisConnection connection = provider.getConnection(args)) {
-      connection.sendCommand(args);
-      if (!args.isBlocking()) {
-        return commandObject.getBuilder().build(connection.getOne());
-      } else {
-        try {
-          connection.setTimeoutInfinite();
-          return commandObject.getBuilder().build(connection.getOne());
-        } finally {
-          connection.rollbackTimeout();
-        }
-      }
+    try (Connection connection = provider.getConnection(commandObject.getArguments())) {
+      return connection.executeCommand(commandObject);
     }
   }
 }

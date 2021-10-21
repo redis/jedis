@@ -4,7 +4,7 @@ import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.JedisConnection;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
@@ -13,7 +13,7 @@ public class RedisVersionUtil {
   public static int getRedisMajorVersionNumber() {
     String completeVersion = null;
 
-    try (JedisConnection jedis = new JedisConnection(HostAndPortUtil.getRedisServers().get(0),
+    try (Connection jedis = new Connection(HostAndPortUtil.getRedisServers().get(0),
         DefaultJedisClientConfig.builder().password("foobared").build())) {
       String info = jedis.executeCommand(new CommandObject<>(new CommandArguments(Protocol.Command.INFO), BuilderFactory.STRING));
       String[] splitted = info.split("\\s+|:");

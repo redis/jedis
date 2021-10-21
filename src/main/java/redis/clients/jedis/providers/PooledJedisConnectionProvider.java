@@ -1,10 +1,10 @@
 package redis.clients.jedis.providers;
 
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.JedisConnection;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.util.Pool;
 
-public class PooledJedisConnectionProvider<C extends JedisConnection> implements JedisConnectionProvider {
+public class PooledJedisConnectionProvider<C extends Connection> implements JedisConnectionProvider {
 
   private final Pool<C> pool;
 
@@ -18,7 +18,7 @@ public class PooledJedisConnectionProvider<C extends JedisConnection> implements
   }
 
   @Override
-  public JedisConnection getConnection(CommandArguments args) {
+  public Connection getConnection(CommandArguments args) {
     return pool.getResource();
   }
 }

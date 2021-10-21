@@ -8,17 +8,20 @@ import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.commands.AllKeyBinaryCommands;
-import redis.clients.jedis.commands.AllKeyCommands;
+import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
+import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
 import redis.clients.jedis.providers.JedisConnectionProvider;
-import redis.clients.jedis.providers.SimpleJedisConnectionProvider;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.commands.JedisXCommands;
+import redis.clients.jedis.commands.JedisXBinaryCommands;
 
-public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseable {
+public class JedisX implements JedisXCommands, JedisXBinaryCommands,
+    SampleKeyedCommands, SampleBinaryKeyedCommands,
+    AutoCloseable {
 
   protected final JedisCommandExecutor executor;
   private final RedisCommandObjects commandObjects;
@@ -28,19 +31,20 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   public JedisX(HostAndPort hostAndPort) {
-    this(new SimpleJedisConnectionProvider(hostAndPort));
+    this(new Connection(hostAndPort));
   }
 
   public JedisX(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(new SimpleJedisConnectionProvider(hostAndPort, clientConfig));
+    this(new Connection(hostAndPort, clientConfig));
   }
 
   public JedisX(JedisSocketFactory socketFactory) {
-    this(new JedisConnection(socketFactory));
+    this(new Connection(socketFactory));
   }
 
-  public JedisX(JedisConnection connection) {
-    this(new SimpleJedisConnectionProvider(connection));
+  public JedisX(Connection connection) {
+    this.executor = new JedisConnectionExecutor(connection);
+    this.commandObjects = new RedisCommandObjects();
   }
 
   public JedisX(JedisConnectionProvider provider) {
@@ -59,7 +63,7 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   public JedisX(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<JedisConnection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+      GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
   }
 
@@ -2265,8 +2269,8 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   @Override
-  public StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params) {
-    return executeCommand(commandObjects.xadd(key, hash, params));
+  public StreamEntryID xadd_v2(String key, XAddParams params, Map<String, String> hash) {
+    return executeCommand(commandObjects.xadd(key, params, hash));
   }
 
   @Override
@@ -2411,7 +2415,7 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
 
   @Override
-  public byte[] xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params) {
+  public byte[] xadd(byte[] key, XAddParams params, Map<byte[], byte[]> hash) {
     return executeCommand(commandObjects.xadd(key, params, hash));
   }
 
@@ -2603,8 +2607,179 @@ public class JedisX implements AllKeyCommands, AllKeyBinaryCommands, AutoCloseab
   }
   // Scripting commands
 
+  // Other key commands
+  @Override
+  public Long objectRefcount(String key) {
+    return executeCommand(commandObjects.objectRefcount(key));
+  }
+
+  @Override
+  public String objectEncoding(String key) {
+    return executeCommand(commandObjects.objectEncoding(key));
+  }
+
+  @Override
+  public Long objectIdletime(String key) {
+    return executeCommand(commandObjects.objectIdletime(key));
+  }
+
+  @Override
+  public Long objectFreq(String key) {
+    return executeCommand(commandObjects.objectFreq(key));
+  }
+
+  @Override
+  public Long objectRefcount(byte[] key) {
+    return executeCommand(commandObjects.objectRefcount(key));
+  }
+
+  @Override
+  public byte[] objectEncoding(byte[] key) {
+    return executeCommand(commandObjects.objectEncoding(key));
+  }
+
+  @Override
+  public Long objectIdletime(byte[] key) {
+    return executeCommand(commandObjects.objectIdletime(key));
+  }
+
+  @Override
+  public Long objectFreq(byte[] key) {
+    return executeCommand(commandObjects.objectFreq(key));
+  }
+
+  @Override
+  public String migrate(String host, int port, String key, int timeout) {
+    return executeCommand(commandObjects.migrate(host, port, key, timeout));
+  }
+
+  @Override
+  public String migrate(String host, int port, int timeout, MigrateParams params, String... keys) {
+    return executeCommand(commandObjects.migrate(host, port, timeout, params, keys));
+  }
+
+  @Override
+  public String migrate(String host, int port, byte[] key, int timeout) {
+    return executeCommand(commandObjects.migrate(host, port, key, timeout));
+  }
+
+  @Override
+  public String migrate(String host, int port, int timeout, MigrateParams params, byte[]... keys) {
+    return executeCommand(commandObjects.migrate(host, port, timeout, params, keys));
+  }
+  // Other key commands
+
+  // Sample key commands
+  @Override
+  public long waitReplicas(String sampleKey, int replicas, long timeout) {
+    return executeCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
+  }
+
+  @Override
+  public long waitReplicas(byte[] sampleKey, int replicas, long timeout) {
+    return executeCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
+  }
+
+  @Override
+  public Object eval(String script, String sampleKey) {
+    return executeCommand(commandObjects.eval(script, sampleKey));
+  }
+
+  @Override
+  public Object evalsha(String sha1, String sampleKey) {
+    return executeCommand(commandObjects.evalsha(sha1, sampleKey));
+  }
+
+  @Override
+  public Object eval(byte[] script, byte[] sampleKey) {
+    return executeCommand(commandObjects.eval(script, sampleKey));
+  }
+
+  @Override
+  public Object evalsha(byte[] sha1, byte[] sampleKey) {
+    return executeCommand(commandObjects.evalsha(sha1, sampleKey));
+  }
+
+  @Override
+  public Boolean scriptExists(String sha1, String sampleKey) {
+    return executeCommand(commandObjects.scriptExists(sha1, sampleKey));
+  }
+
+  @Override
+  public List<Boolean> scriptExists(String sampleKey, String... sha1s) {
+    return executeCommand(commandObjects.scriptExists(sampleKey, sha1s));
+  }
+
+  @Override
+  public Boolean scriptExists(byte[] sha1, byte[] sampleKey) {
+    return executeCommand(commandObjects.scriptExists(sha1, sampleKey));
+  }
+
+  @Override
+  public List<Boolean> scriptExists(byte[] sampleKey, byte[]... sha1s) {
+    return executeCommand(commandObjects.scriptExists(sampleKey, sha1s));
+  }
+
+  @Override
+  public String scriptLoad(String script, String sampleKey) {
+    return executeCommand(commandObjects.scriptLoad(script, sampleKey));
+  }
+
+  @Override
+  public String scriptFlush(String sampleKey) {
+    return executeCommand(commandObjects.scriptFlush(sampleKey));
+  }
+
+  @Override
+  public String scriptFlush(String sampleKey, FlushMode flushMode) {
+    return executeCommand(commandObjects.scriptFlush(sampleKey, flushMode));
+  }
+
+  @Override
+  public String scriptKill(String sampleKey) {
+    return executeCommand(commandObjects.scriptKill(sampleKey));
+  }
+
+  @Override
+  public byte[] scriptLoad(byte[] script, byte[] sampleKey) {
+    return executeCommand(commandObjects.scriptLoad(script, sampleKey));
+  }
+
+  @Override
+  public String scriptFlush(byte[] sampleKey) {
+    return executeCommand(commandObjects.scriptFlush(sampleKey));
+  }
+
+  @Override
+  public String scriptFlush(byte[] sampleKey, FlushMode flushMode) {
+    return executeCommand(commandObjects.scriptFlush(sampleKey, flushMode));
+  }
+
+  @Override
+  public String scriptKill(byte[] sampleKey) {
+    return executeCommand(commandObjects.scriptKill(sampleKey));
+  }
+  // Sample key commands
+
+  // Random node commands
+  @Override
+  public long publish(String channel, String message) {
+    return executeCommand(commandObjects.publish(channel, message));
+  }
+
+  @Override
+  public long publish(byte[] channel, byte[] message) {
+    return executeCommand(commandObjects.publish(channel, message));
+  }
+
+  @Override
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
+  @Override
+  public LCSMatchResult strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
+    return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
+  }
+  // Random node commands
 }

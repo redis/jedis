@@ -15,7 +15,6 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.stream.*;
-import redis.clients.jedis.util.JedisClusterHashTag;
 
 public class RedisCommandObjects {
 
@@ -217,7 +216,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Boolean> copy(String srcKey, String dstKey, boolean replace) {
-    CommandArguments args = commandArguments(COPY).key(srcKey).key(dstKey);
+    CommandArguments args = commandArguments(Command.COPY).key(srcKey).key(dstKey);
     if (replace) {
       args.add(REPLACE);
     }
@@ -225,7 +224,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Boolean> copy(byte[] srcKey, byte[] dstKey, boolean replace) {
-    CommandArguments args = commandArguments(COPY).key(srcKey).key(dstKey);
+    CommandArguments args = commandArguments(Command.COPY).key(srcKey).key(dstKey);
     if (replace) {
       args.add(REPLACE);
     }
@@ -280,22 +279,6 @@ public class RedisCommandObjects {
 
   public CommandObject<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params, byte[] type) {
     return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).add(Keyword.TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
-  }
-
-  public final CommandObject<Long> memoryUsage(String key) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> memoryUsage(String key, int samples) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(samples), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> memoryUsage(byte[] key) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> memoryUsage(byte[] key, int samples) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(samples), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> randomKey() {
@@ -570,20 +553,20 @@ public class RedisCommandObjects {
   // String commands
 
   // List commands
-  public final CommandObject<Long> rpush(String key, String... string) {
-    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) string), BuilderFactory.LONG);
+  public final CommandObject<Long> rpush(String key, String... strings) {
+    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> rpush(byte[] key, byte[]... args) {
-    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
+  public final CommandObject<Long> rpush(byte[] key, byte[]... strings) {
+    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> lpush(String key, String... string) {
-    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) string), BuilderFactory.LONG);
+  public final CommandObject<Long> lpush(String key, String... strings) {
+    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> lpush(byte[] key, byte[]... args) {
-    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
+  public final CommandObject<Long> lpush(byte[] key, byte[]... strings) {
+    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> llen(String key) {
@@ -767,7 +750,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<String> rpoplpush(String srckey, String dstkey) {
-    return new CommandObject<>(commandArguments(RPOPLPUSH).blocking().key(srckey).key(dstkey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(RPOPLPUSH).key(srckey).key(dstkey), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> brpoplpush(String source, String destination, int timeout) {
@@ -960,12 +943,12 @@ public class RedisCommandObjects {
   // Hash commands
 
   // Set commands
-  public final CommandObject<Long> sadd(String key, String... member) {
-    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) member), BuilderFactory.LONG);
+  public final CommandObject<Long> sadd(String key, String... members) {
+    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sadd(byte[] key, byte[]... member) {
-    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) member), BuilderFactory.LONG);
+  public final CommandObject<Long> sadd(byte[] key, byte[]... members) {
+    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<String>> smembers(String key) {
@@ -976,12 +959,12 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(SMEMBERS).key(key), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Long> srem(String key, String... member) {
-    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) member), BuilderFactory.LONG);
+  public final CommandObject<Long> srem(String key, String... members) {
+    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> srem(byte[] key, byte[]... member) {
-    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) member), BuilderFactory.LONG);
+  public final CommandObject<Long> srem(byte[] key, byte[]... members) {
+    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> spop(String key) {
@@ -1271,19 +1254,19 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
-    return new CommandObject<>(commandArguments(BZPOPMAX).keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
+    return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   public final CommandObject<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
-    return new CommandObject<>(commandArguments(BZPOPMIN).keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
+    return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
   public final CommandObject<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
-    return new CommandObject<>(commandArguments(BZPOPMAX).keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
+    return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
-    return new CommandObject<>(commandArguments(BZPOPMIN).keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
+    return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> zcount(String key, double min, double max) {
@@ -1890,10 +1873,6 @@ public class RedisCommandObjects {
         BuilderFactory.STREAM_ENTRY_ID);
   }
 
-  public final CommandObject<StreamEntryID> xadd(String key, Map<String, String> hash, XAddParams params) {
-    return xadd(key, params, hash);
-  }
-
   public final CommandObject<StreamEntryID> xadd(String key, XAddParams params, Map<String, String> hash) {
     return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).key(key).addParams(params), hash),
         BuilderFactory.STREAM_ENTRY_ID);
@@ -2204,6 +2183,10 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(0), BuilderFactory.ENCODED_OBJECT);
   }
 
+  public final CommandObject<Object> eval(String script, String sampleKey) {
+    return new CommandObject<>(commandArguments(EVAL).add(script).add(0).processKey(sampleKey), BuilderFactory.ENCODED_OBJECT);
+  }
+
   public final CommandObject<Object> eval(String script, int keyCount, String... params) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(keyCount)
         .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
@@ -2218,26 +2201,12 @@ public class RedisCommandObjects {
         BuilderFactory.ENCODED_OBJECT);
   }
 
-  public final CommandObject<Object> evalsha(String sha1) {
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.ENCODED_OBJECT);
-  }
-
-  public final CommandObject<Object> evalsha(String sha1, int keyCount, String... params) {
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keyCount)
-        .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
-        BuilderFactory.ENCODED_OBJECT);
-  }
-
-  public final CommandObject<Object> evalsha(String sha1, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.ENCODED_OBJECT);
-  }
-
   public final CommandObject<Object> eval(byte[] script) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(0), BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<Object> eval(byte[] script, byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(EVAL).add(script).add(0).processKey(sampleKey), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> eval(byte[] script, int keyCount, byte[]... params) {
@@ -2254,8 +2223,34 @@ public class RedisCommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
+  public final CommandObject<Object> evalsha(String sha1) {
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.ENCODED_OBJECT);
+  }
+
+  public final CommandObject<Object> evalsha(String sha1, String sampleKey) {
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0).processKey(sampleKey), BuilderFactory.ENCODED_OBJECT);
+  }
+
+  public final CommandObject<Object> evalsha(String sha1, int keyCount, String... params) {
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keyCount)
+        .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
+  public final CommandObject<Object> evalsha(String sha1, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
   public final CommandObject<Object> evalsha(byte[] sha1) {
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<Object> evalsha(byte[] sha1, byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0).processKey(sampleKey), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(byte[] sha1, int keyCount, byte[]... params) {
@@ -2271,6 +2266,56 @@ public class RedisCommandObjects {
         .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
         BuilderFactory.RAW_OBJECT);
   }
+
+  public final CommandObject<Boolean> scriptExists(String sha1, String sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).add(sha1).processKey(sampleKey), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
+        .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<String> scriptLoad(String script, String sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptFlush(String sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptFlush(String sampleKey, FlushMode flushMode) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptKill(String sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Boolean> scriptExists(byte[] sha1, byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).add(sha1).processKey(sampleKey), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> scriptExists(byte[] sampleKey, byte[]... sha1s) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
+        .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<byte[]> scriptLoad(byte[] script, byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<String> scriptFlush(byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptFlush(byte[] sampleKey, FlushMode flushMode) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptKill(byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+  }
   // Scripting commands
 
   // Miscellaneous commands
@@ -2278,6 +2323,110 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(STRINGS)
         .add(strA).add(strB).addParams(params),
         BuilderFactory.STR_ALGO_LCS_RESULT);
+  }
+
+  public final CommandObject<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
+    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(STRINGS)
+        .add(strA).add(strB).addParams(params),
+        BuilderFactory.STR_ALGO_LCS_RESULT);
+  }
+
+  public final CommandObject<Boolean> copy(String srcKey, String dstKey, int dstDB, boolean replace) {
+    CommandArguments args = commandArguments(Command.COPY).key(srcKey).key(dstKey).add(DB).add(dstDB);
+    if (replace) {
+      args.add(REPLACE);
+    }
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> copy(byte[] srcKey, byte[] dstKey, int dstDB, boolean replace) {
+    CommandArguments args = commandArguments(Command.COPY).key(srcKey).key(dstKey).add(DB).add(dstDB);
+    if (replace) {
+      args.add(REPLACE);
+    }
+    return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> memoryUsage(String key) {
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> memoryUsage(String key, int samples) {
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(SAMPLES).add(samples), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> memoryUsage(byte[] key) {
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> memoryUsage(byte[] key, int samples) {
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(samples), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> objectRefcount(String key) {
+    return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> objectEncoding(String key) {
+    return new CommandObject<>(commandArguments(OBJECT).add(ENCODING).key(key), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> objectIdletime(String key) {
+    return new CommandObject<>(commandArguments(OBJECT).add(IDLETIME).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> objectFreq(String key) {
+    return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> objectRefcount(byte[] key) {
+    return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<byte[]> objectEncoding(byte[] key) {
+    return new CommandObject<>(commandArguments(OBJECT).add(ENCODING).key(key), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<Long> objectIdletime(byte[] key) {
+    return new CommandObject<>(commandArguments(OBJECT).add(IDLETIME).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> objectFreq(byte[] key) {
+    return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
+    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout) {
+    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, String key, int timeout) {
+    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).key(key).add(0).add(timeout), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, int timeout, MigrateParams params, String... keys) {
+    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(0)
+        .add(timeout).addParams(params).keys((Object[]) keys), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, byte[] key, int timeout) {
+    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).key(key).add(0).add(timeout), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, int timeout, MigrateParams params, byte[]... keys) {
+    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(0)
+        .add(timeout).addParams(params).keys((Object[]) keys), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> publish(String channel, String message) {
+    return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> publish(byte[] channel, byte[] message) {
+    return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
   }
   // Miscellaneous commands
 

@@ -1787,6 +1787,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public long zrangestoreByScore(String dest, String key, long start, long stop, int offset, int count) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByScore(dest, key, start, stop, offset, count);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
+  public long zrangestoreByScore(String dest, String key, long start, long stop, boolean rev, int offset, int count) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByScore(dest, key, start, stop, rev, offset, count);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
   public long zrangestoreByLex(final String dest, final String key, final String start, final String stop) {
     checkIsInMultiOrPipeline();
     client.zrangestoreByLex(dest, key, start, stop);
@@ -1797,6 +1811,20 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   public long zrangestoreByLex(final String dest, final String key, final String start, final String stop, final boolean rev) {
     checkIsInMultiOrPipeline();
     client.zrangestoreByLex(dest, key, start, stop, rev);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
+  public long zrangestoreByLex(String dest, String key, String start, String stop, int offset, int count) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByLex(dest, key, start, stop, offset, count);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
+  public long zrangestoreByLex(String dest, String key, String start, String stop, boolean rev, int offset, int count) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByLex(dest, key, start, stop, rev, offset, count);
     return BuilderFactory.LONG.build(client.getOne());
   }
 

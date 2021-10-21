@@ -2095,6 +2095,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
+  public long zrangestoreByScore(byte[] dest, byte[] key, long start, long stop, int offset, int count) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByScore(dest, key, start, stop, offset, count);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public long zrangestoreByScore(byte[] dest, byte[] key, long start, long stop, boolean rev, int offset, int count) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByScore(dest, key, start, stop, rev, offset, count);
+    return client.getIntegerReply();
+  }
+
+  @Override
   public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop) {
     checkIsInMultiOrPipeline();
     client.zrangestoreByLex(dest, key, start, stop);
@@ -2105,6 +2119,20 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop, final boolean rev) {
     checkIsInMultiOrPipeline();
     client.zrangestoreByLex(dest, key, start, stop, rev);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public long zrangestoreByLex(byte[] dest, byte[] key, byte[] start, byte[] stop, int offset, int count) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByLex(dest, key, start, stop, offset, count);
+    return client.getIntegerReply();
+  }
+
+  @Override
+  public long zrangestoreByLex(byte[] dest, byte[] key, byte[] start, byte[] stop, boolean rev, int offset, int count) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByLex(dest, key, start, stop, rev, offset, count);
     return client.getIntegerReply();
   }
 

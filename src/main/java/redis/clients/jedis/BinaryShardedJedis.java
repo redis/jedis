@@ -603,6 +603,18 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
+  public long zrangestoreByScore(byte[] dest, byte[] key, long start, long stop, int offset, int count) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByScore(dest, key, start, stop, offset, count);
+  }
+
+  @Override
+  public long zrangestoreByScore(byte[] dest, byte[] key, long start, long stop, boolean rev, int offset, int count) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByScore(dest, key, start, stop, rev, offset, count);
+  }
+
+  @Override
   public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop) {
     Jedis j = getShard(key);
     return j.zrangestoreByLex(dest, key, start, stop);
@@ -612,6 +624,18 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop, final boolean rev) {
     Jedis j = getShard(key);
     return j.zrangestoreByLex(dest, key, start, stop, rev);
+  }
+
+  @Override
+  public long zrangestoreByLex(byte[] dest, byte[] key, byte[] start, byte[] stop, int offset, int count) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByLex(dest, key, start, stop, offset, count);
+  }
+
+  @Override
+  public long zrangestoreByLex(byte[] dest, byte[] key, byte[] start, byte[] stop, boolean rev, int offset, int count) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByLex(dest, key, start, stop, rev, offset, count);
   }
 
 

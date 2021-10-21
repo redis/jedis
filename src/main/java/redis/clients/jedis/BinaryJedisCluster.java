@@ -1081,6 +1081,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
+  public long zrangestoreByScore(byte[] dest, byte[] key, long start, long stop, int offset, int count) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestoreByScore(dest, key, start, stop, offset, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public long zrangestoreByScore(byte[] dest, byte[] key, long start, long stop, boolean rev, int offset, int count) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestoreByScore(dest, key, start, stop, rev, offset, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
   public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
@@ -1096,6 +1116,26 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       @Override
       public Long execute(Jedis connection) {
         return connection.zrangestoreByLex(dest, key, start, stop, rev);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public long zrangestoreByLex(byte[] dest, byte[] key, byte[] start, byte[] stop, int offset, int count) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestoreByLex(dest, key, start, stop, offset, count);
+      }
+    }.runBinary(key);
+  }
+
+  @Override
+  public long zrangestoreByLex(byte[] dest, byte[] key, byte[] start, byte[] stop, boolean rev, int offset, int count) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestoreByLex(dest, key, start, stop, rev, offset, count);
       }
     }.runBinary(key);
   }

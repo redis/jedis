@@ -333,9 +333,17 @@ public interface JedisCommands {
 
   long zrangestoreByScore(String dest, String key, long start, long stop, boolean rev);
 
+  long zrangestoreByScore(String dest, String key, long start, long stop, int offset, int count);
+
+  long zrangestoreByScore(String dest, String key, long start, long stop, boolean rev, int offset, int count);
+
   long zrangestoreByLex(String dest, String key, String start, String stop);
 
   long zrangestoreByLex(String dest, String key, String start, String stop, boolean rev);
+
+  long zrangestoreByLex(String dest, String key, String start, String stop, int offset, int count);
+
+  long zrangestoreByLex(String dest, String key, String start, String stop, boolean rev,  int offset, int count);
 
   long zremrangeByRank(String key, long start, long stop);
 

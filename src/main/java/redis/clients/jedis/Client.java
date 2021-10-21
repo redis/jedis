@@ -537,6 +537,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void zrangestoreByScore(String dest, String key, long start, long stop, int offset, int count) {
+    zrangestoreByScore(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop, offset, count);
+  }
+
+  @Override
+  public void zrangestoreByScore(String dest, String key, long start, long stop, boolean rev, int offset, int count) {
+    zrangestoreByScore(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop, rev, offset, count);
+  }
+
+  @Override
   public void zrangestoreByLex(final String dest, final String key, final String start, final String stop) {
     zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(stop));
   }
@@ -544,6 +554,16 @@ public class Client extends BinaryClient implements Commands {
   @Override
   public void zrangestoreByLex(final String dest, final String key, final String start, final String stop, final boolean rev) {
     zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(stop), rev);
+  }
+
+  @Override
+  public void zrangestoreByLex(String dest, String key, String start, String stop, int offset, int count) {
+    zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(stop), offset, count);
+  }
+
+  @Override
+  public void zrangestoreByLex(String dest, String key, String start, String stop, boolean rev, int offset, int count) {
+    zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(stop), rev, offset, count);
   }
 
 

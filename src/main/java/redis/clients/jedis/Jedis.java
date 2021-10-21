@@ -1758,6 +1758,48 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return SetFromList.of(members);
   }
 
+  @Override
+  public long zrangestore(final String dest, final String key, final long start, final long stop) {
+    checkIsInMultiOrPipeline();
+    client.zrangestore(dest, key, start, stop);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
+  public long zrangestore(final String dest, final String key, final long start, final long stop, final boolean rev) {
+    checkIsInMultiOrPipeline();
+    client.zrangestore(dest, key, start, stop, rev);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
+  public long zrangestoreByScore(final String dest, final String key, final long start, final long stop) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByScore(dest, key, start, stop);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
+  public long zrangestoreByScore(final String dest, final String key, final long start, final long stop, final boolean rev) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByScore(dest, key, start, stop, rev);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
+  public long zrangestoreByLex(final String dest, final String key, final String start, final String stop) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByLex(dest, key, start, stop);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
+  @Override
+  public long zrangestoreByLex(final String dest, final String key, final String start, final String stop, final boolean rev) {
+    checkIsInMultiOrPipeline();
+    client.zrangestoreByLex(dest, key, start, stop, rev);
+    return BuilderFactory.LONG.build(client.getOne());
+  }
+
   /**
    * Remove the specified member from the sorted set value stored at key. If member was not a member
    * of the set no operation is performed. If key does not not hold a set value an error is

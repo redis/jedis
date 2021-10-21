@@ -537,13 +537,13 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
-  public void zrangestoreByLex(final String dest, final String key, final long start, final long stop) {
-    zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop);
+  public void zrangestoreByLex(final String dest, final String key, final String start, final String stop) {
+    zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(stop));
   }
 
   @Override
-  public void zrangestoreByLex(final String dest, final String key, final long start, final long stop, final boolean rev) {
-    zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), start, stop, rev);
+  public void zrangestoreByLex(final String dest, final String key, final String start, final String stop, final boolean rev) {
+    zrangestoreByLex(SafeEncoder.encode(dest), SafeEncoder.encode(key), SafeEncoder.encode(start), SafeEncoder.encode(stop), rev);
   }
 
 

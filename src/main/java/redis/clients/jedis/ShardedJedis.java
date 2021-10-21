@@ -845,6 +845,42 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
+  public long zrangestore(String dest, String key, long start, long stop) {
+    Jedis j = getShard(key);
+    return j.zrangestore(dest, key, start, stop);
+  }
+
+  @Override
+  public long zrangestore(String dest, String key, long start, long stop, boolean rev) {
+    Jedis j = getShard(key);
+    return j.zrangestore(dest, key, start, stop, rev);
+  }
+
+  @Override
+  public long zrangestoreByScore(String dest, String key, long start, long stop) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByScore(dest, key, start, stop);
+  }
+
+  @Override
+  public long zrangestoreByScore(String dest, String key, long start, long stop, boolean rev) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByScore(dest, key, start, stop, rev);
+  }
+
+  @Override
+  public long zrangestoreByLex(String dest, String key, String start, String stop) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByLex(dest, key, start, stop);
+  }
+
+  @Override
+  public long zrangestoreByLex(String dest, String key, String start, String stop, boolean rev) {
+    Jedis j = getShard(key);
+    return j.zrangestoreByLex(dest, key, start, stop, rev);
+  }
+
+  @Override
   public long zremrangeByRank(final String key, final long start, final long stop) {
     Jedis j = getShard(key);
     return j.zremrangeByRank(key, start, stop);

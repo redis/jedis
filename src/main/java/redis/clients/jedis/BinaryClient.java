@@ -651,15 +651,15 @@ public class BinaryClient extends Connection {
       sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop), BYSCORE.getRaw());
   }
 
-  public void zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop) {
+  public void zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop) {
     zrangestoreByLex( dest, key, start, stop, false);
   }
 
-  public void zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+  public void zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop, final boolean rev) {
     if (rev)
-      sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop), BYLEX.getRaw(), REV.getRaw());
+      sendCommand(ZRANGESTORE, dest, key, start, stop, BYLEX.getRaw(), REV.getRaw());
     else
-      sendCommand(ZRANGESTORE, dest, key, toByteArray(start), toByteArray(stop), BYLEX.getRaw());
+      sendCommand(ZRANGESTORE, dest, key, start, stop, BYLEX.getRaw());
   }
 
   public void zrem(final byte[] key, final byte[]... members) {

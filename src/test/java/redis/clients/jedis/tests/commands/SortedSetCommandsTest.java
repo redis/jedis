@@ -7,6 +7,7 @@ import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -177,25 +178,48 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void zrangestore() {
-    jedis.zadd(bfoo, 1d, ba);
-    jedis.zadd(bfoo, 2d, bb);
-    jedis.zadd(bfoo, 3d, bc);
+    jedis.zadd("foo", 1, "aa");
+    jedis.zadd("foo", 2, "c");
+    jedis.zadd("foo", 3, "bb");
+    jedis.zadd("foo", 4, "d");
 
-    long bstored = jedis.zrangestore(bbar, bfoo, 0, 1);
-    assertEquals(bstored, 2);
-    Set<byte[]> brange = jedis.zrange(bbar, 0, -1);
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
-    bexpected.add(ba);
-    bexpected.add(bb);
-    assertByteArraySetEquals(bexpected, brange);
+    long bstored = jedis.zrangestore("bar", "foo", 0, 1);
+    assertEquals(2, bstored);
+    Set<byte[]> range = jedis.zrange("bar".getBytes(), 0, -1);
+    Set<byte[]> expected = new LinkedHashSet<byte[]>();
+    expected.add("aa".getBytes());
+    expected.add("c".getBytes());
+    assertByteArraySetEquals(expected, range);
 
-    bstored = jedis.zrangestore(bbar, bfoo, 1, 2);
-    assertEquals(bstored, 2);
-    brange = jedis.zrange(bbar, 0, -1);
-    bexpected = new LinkedHashSet<byte[]>();
-    bexpected.add(bb);
-    bexpected.add(bc);
-    assertByteArraySetEquals(bexpected, brange);
+    // Reversed order
+    bstored = jedis.zrangestore("bar", "foo", 1, 2, true);
+    assertEquals(2, bstored);
+    range = jedis.zrange("bar".getBytes(), 0, -1);
+    expected = new LinkedHashSet<byte[]>();
+    expected.add("c".getBytes());
+    expected.add("bb".getBytes());
+    assertByteArraySetEquals(expected, range);
+
+    // By score
+    bstored = jedis.zrangestoreByScore("bar", "foo", 1, 2);
+    long bstoredRev = jedis.zrangestoreByScore("bar", "foo", 2, 1, true);
+    assertEquals(2, bstored);
+    assertEquals(2, bstoredRev);
+    range = jedis.zrange("bar".getBytes(), 0, -1);
+    expected = new LinkedHashSet<byte[]>();
+    expected.add("aa".getBytes());
+    expected.add("c".getBytes());
+    assertByteArraySetEquals(expected, range);
+
+    // By lex
+    bstoredRev = jedis.zrangestoreByLex("bar", "foo", "[c", "[a", true);
+    bstored = jedis.zrangestoreByLex("bar", "foo", "[aa", "(b");
+    assertEquals(1, bstored);
+    assertEquals(3, bstoredRev);
+    range = jedis.zrange("bar".getBytes(), 0, -1);
+    expected = new LinkedHashSet<byte[]>();
+    expected.add("aa".getBytes());
+    assertByteArraySetEquals(expected, range);
   }
 
   @Test

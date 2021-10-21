@@ -325,6 +325,18 @@ public interface JedisCommands {
 
   Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
+  long zrangestore(String dest, String key, long start, long stop);
+
+  long zrangestore(String dest, String key, long start, long stop, boolean rev);
+
+  long zrangestoreByScore(String dest, String key, long start, long stop);
+
+  long zrangestoreByScore(String dest, String key, long start, long stop, boolean rev);
+
+  long zrangestoreByLex(String dest, String key, String start, String stop);
+
+  long zrangestoreByLex(String dest, String key, String start, String stop, boolean rev);
+
   long zremrangeByRank(String key, long start, long stop);
 
   long zremrangeByScore(String key, double min, double max);

@@ -2095,14 +2095,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public long zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop) {
+  public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop) {
     checkIsInMultiOrPipeline();
     client.zrangestoreByLex(dest, key, start, stop);
     return client.getIntegerReply();
   }
 
   @Override
-  public long zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+  public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop, final boolean rev) {
     checkIsInMultiOrPipeline();
     client.zrangestoreByLex(dest, key, start, stop, rev);
     return client.getIntegerReply();

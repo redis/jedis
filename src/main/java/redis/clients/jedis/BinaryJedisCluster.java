@@ -1081,7 +1081,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public long zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop) {
+  public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -1091,7 +1091,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public long zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+  public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop, final boolean rev) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {

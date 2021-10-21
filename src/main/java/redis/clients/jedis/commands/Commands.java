@@ -249,9 +249,9 @@ public interface Commands {
 
   void zrangestoreByScore(String dest, String key, long start, long stop, boolean rev);
 
-  void zrangestoreByLex(String dest, String key, long start, long stop);
+  void zrangestoreByLex(String dest, String key, String start, String stop);
 
-  void zrangestoreByLex(String dest, String key, long start, long stop, boolean rev);
+  void zrangestoreByLex(String dest, String key, String start, String stop, boolean rev);
 
   void zrem(String key, String... members);
 

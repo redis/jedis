@@ -1476,6 +1476,66 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public long zrangestore(String dest, String key, long start, long stop) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestore(dest, key, start, stop);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public long zrangestore(String dest, String key, long start, long stop, boolean rev) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestore(dest, key, start, stop, rev);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public long zrangestoreByScore(String dest, String key, long start, long stop) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestoreByScore(dest, key, start, stop);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public long zrangestoreByScore(String dest, String key, long start, long stop, boolean rev) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestoreByScore(dest, key, start, stop, rev);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public long zrangestoreByLex(String dest, String key, String start, String stop) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestoreByLex(dest, key, start, stop);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public long zrangestoreByLex(String dest, String key, String start, String stop, boolean rev) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public Long execute(Jedis connection) {
+        return connection.zrangestoreByLex(dest, key, start, stop, rev);
+      }
+    }.run(key);
+  }
+
+  @Override
   public long zremrangeByRank(final String key, final long start, final long stop) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override

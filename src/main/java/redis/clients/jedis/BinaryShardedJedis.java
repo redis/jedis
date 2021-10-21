@@ -603,13 +603,13 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public long zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop) {
+  public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop) {
     Jedis j = getShard(key);
     return j.zrangestoreByLex(dest, key, start, stop);
   }
 
   @Override
-  public long zrangestoreByLex(final byte[] dest, final byte[] key, final long start, final long stop, final boolean rev) {
+  public long zrangestoreByLex(final byte[] dest, final byte[] key, final byte[] start, final byte[] stop, final boolean rev) {
     Jedis j = getShard(key);
     return j.zrangestoreByLex(dest, key, start, stop, rev);
   }

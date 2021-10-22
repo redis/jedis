@@ -14,6 +14,7 @@ public class GeoRadiusParam extends Params {
   private static final String ASC = "asc";
   private static final String DESC = "desc";
   private static final String COUNT = "count";
+  private static final String ANY = "any";
 
   public GeoRadiusParam() {
   }
@@ -54,6 +55,16 @@ public class GeoRadiusParam extends Params {
     return this;
   }
 
+  public GeoRadiusParam count(int count, boolean any) {
+    if (count > 0) {
+      addParam(COUNT, count);
+      if (any) {
+        addParam(ANY);
+      }
+    }
+    return this;
+  }
+
   public byte[][] getByteParams(byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<>();
     Collections.addAll(byteParams, args);
@@ -71,6 +82,9 @@ public class GeoRadiusParam extends Params {
     if (contains(COUNT)) {
       byteParams.add(SafeEncoder.encode(COUNT));
       byteParams.add(Protocol.toByteArray((int) getParam(COUNT)));
+      if (contains(ANY)) {
+        byteParams.add(SafeEncoder.encode(ANY));
+      }
     }
 
     if (contains(ASC)) {

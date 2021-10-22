@@ -6,11 +6,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import org.junit.Test;
 
@@ -20,6 +17,7 @@ import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class GeoCommandsTest extends JedisCommandTestBase {
@@ -466,6 +464,15 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     assertEquals(0, member.getDistance(), EPSILON);
     assertEquals(13.583333, member.getCoordinate().getLongitude(), EPSILON);
     assertEquals(37.316667, member.getCoordinate().getLatitude(), EPSILON);
+  }
+
+  @Test
+  public void geosearch() {
+    GeoSearchParam param = new GeoSearchParam().count(0, true).byRadius(4.65656, GeoUnit.MI).byBox(10d, 14d, GeoUnit.KM).sortAscending().withHash();
+    byte[][] params = param.getByteParams();
+    for (byte[] word: params) {
+      System.out.println(new String(word, StandardCharsets.UTF_8));
+    }
   }
 
   private void prepareGeoData() {

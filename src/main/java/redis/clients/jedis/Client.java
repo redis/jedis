@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -1352,7 +1353,39 @@ public class Client extends BinaryClient implements Commands {
     geopos(SafeEncoder.encode(key), SafeEncoder.encodeMany(members));
   }
 
-  public void georadius(final String key, final double longitude, final double latitude,
+  public void geosearch(final String key, final String member, final double radius, final GeoUnit unit) {
+    geosearch(SafeEncoder.encode(key),SafeEncoder.encode(member), radius, unit);
+  }
+
+  public void geosearch(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+    geosearch(SafeEncoder.encode(key), longitude, latitude, radius, unit);
+  }
+
+  public void geosearch(final String key, final String member, final double width, final double height, final GeoUnit unit) {
+    geosearch(SafeEncoder.encode(key), SafeEncoder.encode(member), width, height, unit);
+  }
+
+  public void geosearch(final String key, final double longitude, final double latitude, final double width, final double height, final GeoUnit unit) {
+    geosearch(SafeEncoder.encode(key), longitude, latitude, width, height, unit);
+  }
+
+  public void geosearch(final String key, final String member, final double radius, final GeoUnit unit, final GeoSearchParam params) {
+    geosearch(SafeEncoder.encode(key), SafeEncoder.encode(member), radius, unit, params);
+  }
+
+  public void geosearch(final String key, final double longitude, final double latitude, final double radius, final GeoUnit unit, final GeoSearchParam params) {
+    geosearch(SafeEncoder.encode(key), longitude, latitude, radius, unit, params);
+  }
+
+  public void geosearch(final String key, final String member, final double width, final double height, final GeoUnit unit, final GeoSearchParam params) {
+    geosearch(SafeEncoder.encode(key), SafeEncoder.encode(member), width, height, unit, params);
+  }
+
+  public void geosearch(final String key, final double longitude, final double latitude, final double width, final double height, final GeoUnit unit, final GeoSearchParam params) {
+    geosearch(SafeEncoder.encode(key), longitude, latitude, width, height, unit, params);
+  }
+
+    public void georadius(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);
   }

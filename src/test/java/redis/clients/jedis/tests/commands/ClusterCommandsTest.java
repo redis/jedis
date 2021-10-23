@@ -52,9 +52,11 @@ public class ClusterCommandsTest {
 //    node1.clusterReset(ClusterResetType.SOFT);
 //    node2.clusterReset(ClusterResetType.SOFT);
     try (Jedis node = new Jedis(nodeInfo1)) {
+      node.auth("cluster");
       node.clusterReset(ClusterResetType.SOFT);
     }
     try (Jedis node = new Jedis(nodeInfo2)) {
+      node.auth("cluster");
       node.clusterReset(ClusterResetType.SOFT);
     }
   }

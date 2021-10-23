@@ -60,13 +60,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, ModuleCommands,
    */
   @Deprecated
   public Jedis(final String uriString) {
-    URI uri = URI.create(uriString);
-    if (JedisURIHelper.isValid(uri)) {
-      connection = createClientFromURI(uri);
-      initializeFromURI(uri);
-    } else {
-      throw new InvalidURIException(uriString);
-    }
+//    URI uri = URI.create(uriString);
+//    if (JedisURIHelper.isValid(uri)) {
+//      connection = createClientFromURI(uri);
+//      initializeFromURI(uri);
+//    } else {
+//      throw new InvalidURIException(uriString);
+//    }
+    this(URI.create(uriString));
   }
 
   public Jedis(final HostAndPort hp) {
@@ -197,8 +198,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, ModuleCommands,
 //  }
 
   public Jedis(URI uri) {
-    connection = createClientFromURI(uri);
-    initializeFromURI(uri);
+    if (!JedisURIHelper.isValid(uri)) {
+      throw new InvalidURIException(String.format(
+        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+    }
+    connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
+        DefaultJedisClientConfig.builder().user(JedisURIHelper.getUser(uri))
+            .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
+            .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
   }
 
   public Jedis(URI uri, final SSLSocketFactory sslSocketFactory,
@@ -243,43 +250,43 @@ public class Jedis implements ServerCommands, DatabaseCommands, ModuleCommands,
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
-    connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
-        .builder().connectionTimeoutMillis(config.getConnectionTimeoutMillis())
-        .socketTimeoutMillis(config.getSocketTimeoutMillis())
-        .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
-        .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
-        .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
-        .ssl(JedisURIHelper.isRedisSSLScheme(uri))
-        .sslSocketFactory(config.getSslSocketFactory())
-        .sslParameters(config.getSslParameters())
-        .hostnameVerifier(config.getHostnameVerifier()).build());
-    initializeFromURI(uri);
+    connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
+        DefaultJedisClientConfig.builder()
+            .connectionTimeoutMillis(config.getConnectionTimeoutMillis())
+            .socketTimeoutMillis(config.getSocketTimeoutMillis())
+            .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
+            .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
+            .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+            .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
+            .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
+            .build());
+//    initializeFromURI(uri);
   }
-
-  private static Connection createClientFromURI(URI uri) {
-    if (!JedisURIHelper.isValid(uri)) {
-      throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
-    }
-    return new Connection(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
-        .builder().ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
-  }
-
-  private void initializeFromURI(URI uri) {
-    String password = JedisURIHelper.getPassword(uri);
-    if (password != null) {
-      String user = JedisURIHelper.getUser(uri);
-      if (user != null) {
-        auth(user, password);
-      } else {
-        auth(password);
-      }
-    }
-    int dbIndex = JedisURIHelper.getDBIndex(uri);
-    if (dbIndex > 0) {
-      select(dbIndex);
-    }
-  }
+//
+//  private static Connection createClientFromURI(URI uri) {
+//    if (!JedisURIHelper.isValid(uri)) {
+//      throw new InvalidURIException(String.format(
+//        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+//    }
+//    return new Connection(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
+//        .builder().ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
+//  }
+//
+//  private void initializeFromURI(URI uri) {
+//    String password = JedisURIHelper.getPassword(uri);
+//    if (password != null) {
+//      String user = JedisURIHelper.getUser(uri);
+//      if (user != null) {
+//        auth(user, password);
+//      } else {
+//        auth(password);
+//      }
+//    }
+//    int dbIndex = JedisURIHelper.getDBIndex(uri);
+//    if (dbIndex > 0) {
+//      select(dbIndex);
+//    }
+//  }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
     connection = new Connection(jedisSocketFactory);
@@ -289,6 +296,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, ModuleCommands,
 //    connection = new Connection(jedisSocketFactory);
 //    initializeFromClientConfig(clientConfig);
     connection = new Connection(jedisSocketFactory, clientConfig);
+  }
+
+  public Jedis(final Connection connection) {
+    this.connection = connection;
   }
 
   @Override
@@ -3691,16 +3702,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, ModuleCommands,
     return connection.getStatusCodeReply();
   }
 
-  public Long scriptExists(final byte[] sha1) {
+  @Override
+  public Boolean scriptExists(final byte[] sha1) {
     byte[][] a = new byte[1][];
     a[0] = sha1;
     return scriptExists(a).get(0);
   }
 
   @Override
-  public List<Long> scriptExists(final byte[]... sha1) {
+  public List<Boolean> scriptExists(final byte[]... sha1) {
     connection.sendCommand(SCRIPT, joinParameters(Keyword.EXISTS.getRaw(), sha1));
-    return connection.getIntegerMultiBulkReply();
+    return BuilderFactory.BOOLEAN_LIST.build(connection.getOne());
   }
 
   @Override

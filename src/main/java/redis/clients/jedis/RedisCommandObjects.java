@@ -2267,10 +2267,6 @@ public class RedisCommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
-  public final CommandObject<Boolean> scriptExists(String sha1, String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).add(sha1).processKey(sampleKey), BuilderFactory.BOOLEAN);
-  }
-
   public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {
     return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
         .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
@@ -2290,10 +2286,6 @@ public class RedisCommandObjects {
 
   public final CommandObject<String> scriptKill(String sampleKey) {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<Boolean> scriptExists(byte[] sha1, byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).add(sha1).processKey(sampleKey), BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<List<Boolean>> scriptExists(byte[] sampleKey, byte[]... sha1s) {

@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.JedisX;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -253,7 +253,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     Thread t = new Thread(new Runnable() {
       @Override
       public void run() {
-        try (JedisX blockJedis = createJedis()) {
+        try (Jedis blockJedis = createJedis()) {
           long startTime = System.currentTimeMillis();
           List<Entry<String, List<StreamEntry>>> read = blockJedis.xread(XReadParams.xReadParams().block(0),
               Collections.singletonMap("block0-stream", new StreamEntryID()));

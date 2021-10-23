@@ -2393,21 +2393,6 @@ public class JedisX implements JedisXCommands, JedisXBinaryCommands,
     return executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
-  public List<Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
-      final String consumer, final int count, final long block, final boolean noAck,
-      final Entry<String, StreamEntryID>... streams) {
-    if (block > Integer.MAX_VALUE) throw new IllegalArgumentException();
-    XReadGroupParams params = XReadGroupParams.xReadGroupParams();
-    if (count > 0) params.count(count);
-    if (block > 0) params.block((int) block);
-    if (noAck) params.noAck();
-    Map<String, StreamEntryID> streamMap = new java.util.LinkedHashMap<>(streams.length);
-    for (Entry<String, StreamEntryID> stream : streams) {
-      streamMap.put(stream.getKey(), stream.getValue());
-    }
-    return xreadGroup(groupname, consumer, params, streamMap);
-  }
-
   @Override
   public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
@@ -2702,7 +2687,7 @@ public class JedisX implements JedisXCommands, JedisXBinaryCommands,
 
   @Override
   public Boolean scriptExists(String sha1, String sampleKey) {
-    return executeCommand(commandObjects.scriptExists(sha1, sampleKey));
+    return scriptExists(sampleKey, new String[]{sha1}).get(0);
   }
 
   @Override
@@ -2712,7 +2697,7 @@ public class JedisX implements JedisXCommands, JedisXBinaryCommands,
 
   @Override
   public Boolean scriptExists(byte[] sha1, byte[] sampleKey) {
-    return executeCommand(commandObjects.scriptExists(sha1, sampleKey));
+    return scriptExists(sampleKey, new byte[][]{sha1}).get(0);
   }
 
   @Override

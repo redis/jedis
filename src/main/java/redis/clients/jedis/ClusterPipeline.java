@@ -1,10 +1,11 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.BitOP;
+import redis.clients.jedis.args.BitPosParams;
 import redis.clients.jedis.commands.PipelineCommands;
-import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.params.SortingParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
+import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.resps.ScanResult;
 
 import java.util.List;
@@ -216,8 +217,158 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
+  public Response<String> getDel(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.getDel(key));
+  }
+
+  @Override
+  public Response<String> getEx(String key, GetExParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.getEx(key, params));
+  }
+
+  @Override
+  public Response<Boolean> setbit(String key, long offset, boolean value) {
+    return appendCommand(provider.getNode(key), commandObjects.setbit(key, offset, value));
+  }
+
+  @Override
+  public Response<Boolean> getbit(String key, long offset) {
+    return appendCommand(provider.getNode(key), commandObjects.getbit(key, offset));
+  }
+
+  @Override
+  public Response<Long> setrange(String key, long offset, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.setrange(key, offset, value));
+  }
+
+  @Override
+  public Response<String> getrange(String key, long startOffset, long endOffset) {
+    return appendCommand(provider.getNode(key), commandObjects.getrange(key, startOffset, endOffset));
+  }
+
+  @Override
+  public Response<String> getSet(String key, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.getSet(key, value));
+  }
+
+  @Override
+  public Response<Long> setnx(String key, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.setnx(key, value));
+  }
+
+  @Override
+  public Response<String> setex(String key, long seconds, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.setex(key, seconds, value));
+  }
+
+  @Override
+  public Response<String> psetex(String key, long milliseconds, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.psetex(key, milliseconds, value));
+  }
+
+  @Override
+  public Response<List<String>> mget(String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.mget(keys));
+  }
+
+  @Override
+  public Response<String> mset(String... keysvalues) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public Response<Long> msetnx(String... keysvalues) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public Response<Long> incr(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.incr(key));
+  }
+
+  @Override
+  public Response<Long> incrBy(String key, long increment) {
+    return appendCommand(provider.getNode(key), commandObjects.incrBy(key, increment));
+  }
+
+  @Override
+  public Response<Double> incrByFloat(String key, double increment) {
+    return appendCommand(provider.getNode(key), commandObjects.incrByFloat(key, increment));
+  }
+
+  @Override
+  public Response<Long> decr(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.decr(key));
+  }
+
+  @Override
+  public Response<Long> decrBy(String key, long decrement) {
+    return appendCommand(provider.getNode(key), commandObjects.decrBy(key, decrement));
+  }
+
+  @Override
+  public Response<Long> append(String key, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.append(key, value));
+  }
+
+  @Override
+  public Response<String> substr(String key, int start, int end) {
+    return appendCommand(provider.getNode(key), commandObjects.substr(key, start, end));
+  }
+
+  @Override
+  public Response<Long> strlen(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.strlen(key));
+  }
+
+  @Override
+  public Response<Long> bitcount(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.bitcount(key));
+  }
+
+  @Override
+  public Response<Long> bitcount(String key, long start, long end) {
+    return appendCommand(provider.getNode(key), commandObjects.bitcount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> bitpos(String key, boolean value) {
+    return appendCommand(provider.getNode(key), commandObjects.bitpos(key, value));
+  }
+
+  @Override
+  public Response<Long> bitpos(String key, boolean value, BitPosParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.bitpos(key, value, params));
+  }
+
+  @Override
+  public Response<List<Long>> bitfield(String key, String... arguments) {
+    return appendCommand(provider.getNode(key), commandObjects.bitfield(key, arguments));
+  }
+
+  @Override
+  public Response<List<Long>> bitfieldReadonly(String key, String... arguments) {
+    return appendCommand(provider.getNode(key), commandObjects.bitfieldReadonly(key, arguments));
+  }
+
+  @Override
+  public Response<Long> bitop(BitOP op, String destKey, String... srcKeys) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public Response<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
+    return appendCommand(provider.getNode(keyA), commandObjects.strAlgoLCSKeys(keyA, keyB, params));
+  }
+
+  @Override
   public Response<String> set(String key, String value) {
     return appendCommand(provider.getNode(key), commandObjects.set(key, value));
+  }
+
+  @Override
+  public Response<String> set(String key, String value, SetParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.set(key, value, params));
   }
 
 }

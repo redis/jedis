@@ -12,6 +12,7 @@ import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.resps.ScanResult;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCommands {
@@ -522,5 +523,100 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   @Override
   public Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
     return appendCommand(provider.getNode(srcKey), commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<Long> hset(String key, String field, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.hset(key, field, value));
+  }
+
+  @Override
+  public Response<Long> hset(String key, Map<String, String> hash) {
+    return appendCommand(provider.getNode(key), commandObjects.hset(key, hash));
+  }
+
+  @Override
+  public Response<String> hget(String key, String field) {
+    return appendCommand(provider.getNode(key), commandObjects.hget(key, field));
+  }
+
+  @Override
+  public Response<Long> hsetnx(String key, String field, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.hsetnx(key, field, value));
+  }
+
+  @Override
+  public Response<String> hmset(String key, Map<String, String> hash) {
+    return appendCommand(provider.getNode(key), commandObjects.hmset(key, hash));
+  }
+
+  @Override
+  public Response<List<String>> hmget(String key, String... fields) {
+    return appendCommand(provider.getNode(key), commandObjects.hmget(key, fields));
+  }
+
+  @Override
+  public Response<Long> hincrBy(String key, String field, long value) {
+    return appendCommand(provider.getNode(key), commandObjects.hincrBy(key, field, value));
+  }
+
+  @Override
+  public Response<Double> hincrByFloat(String key, String field, double value) {
+    return appendCommand(provider.getNode(key), commandObjects.hincrByFloat(key, field, value));
+  }
+
+  @Override
+  public Response<Boolean> hexists(String key, String field) {
+    return appendCommand(provider.getNode(key), commandObjects.hexists(key, field));
+  }
+
+  @Override
+  public Response<Long> hdel(String key, String... field) {
+    return appendCommand(provider.getNode(key), commandObjects.hdel(key, field));
+  }
+
+  @Override
+  public Response<Long> hlen(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.hlen(key));
+  }
+
+  @Override
+  public Response<Set<String>> hkeys(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.hkeys(key));
+  }
+
+  @Override
+  public Response<List<String>> hvals(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.hvals(key));
+  }
+
+  @Override
+  public Response<Map<String, String>> hgetAll(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.hgetAll(key));
+  }
+
+  @Override
+  public Response<String> hrandfield(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.hrandfield(key));
+  }
+
+  @Override
+  public Response<List<String>> hrandfield(String key, long count) {
+    return appendCommand(provider.getNode(key), commandObjects.hrandfield(key, count));
+  }
+
+  @Override
+  public Response<Map<String, String>> hrandfieldWithValues(String key, long count) {
+    return appendCommand(provider.getNode(key), commandObjects.hrandfieldWithValues(key, count));
+  }
+
+  @Override
+  public Response<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public Response<Long> hstrlen(String key, String field) {
+    return appendCommand(provider.getNode(key), commandObjects.hstrlen(key, field));
   }
 }

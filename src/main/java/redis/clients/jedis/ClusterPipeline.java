@@ -2,9 +2,12 @@ package redis.clients.jedis;
 
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.args.BitPosParams;
+import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
+import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -371,4 +374,153 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
     return appendCommand(provider.getNode(key), commandObjects.set(key, value, params));
   }
 
+  @Override
+  public Response<Long> rpush(String key, String... string) {
+    return appendCommand(provider.getNode(key), commandObjects.rpush(key, string));
+  }
+
+  @Override
+  public Response<Long> lpush(String key, String... string) {
+    return appendCommand(provider.getNode(key), commandObjects.lpush(key, string));
+  }
+
+  @Override
+  public Response<Long> llen(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.llen(key));
+  }
+
+  @Override
+  public Response<List<String>> lrange(String key, long start, long stop) {
+    return appendCommand(provider.getNode(key), commandObjects.lrange(key, start, stop));
+  }
+
+  @Override
+  public Response<String> ltrim(String key, long start, long stop) {
+    return appendCommand(provider.getNode(key), commandObjects.ltrim(key, start, stop));
+  }
+
+  @Override
+  public Response<String> lindex(String key, long index) {
+    return appendCommand(provider.getNode(key), commandObjects.lindex(key, index));
+  }
+
+  @Override
+  public Response<String> lset(String key, long index, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.lset(key, index, value));
+  }
+
+  @Override
+  public Response<Long> lrem(String key, long count, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.lrem(key, count, value));
+  }
+
+  @Override
+  public Response<String> lpop(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.lpop(key));
+  }
+
+  @Override
+  public Response<List<String>> lpop(String key, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.lpop(key, count));
+  }
+
+  @Override
+  public Response<Long> lpos(String key, String element) {
+    return appendCommand(provider.getNode(key), commandObjects.lpos(key, element));
+  }
+
+  @Override
+  public Response<Long> lpos(String key, String element, LPosParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.lpos(key, element, params));
+  }
+
+  @Override
+  public Response<List<Long>> lpos(String key, String element, LPosParams params, long count) {
+    return appendCommand(provider.getNode(key), commandObjects.lpos(key, element, params, count));
+  }
+
+  @Override
+  public Response<String> rpop(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.rpop(key));
+  }
+
+  @Override
+  public Response<List<String>> rpop(String key, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.rpop(key, count));
+  }
+
+  @Override
+  public Response<Long> linsert(String key, ListPosition where, String pivot, String value) {
+    return appendCommand(provider.getNode(key), commandObjects.linsert(key, where, pivot, value));
+  }
+
+  @Override
+  public Response<Long> lpushx(String key, String... string) {
+    return appendCommand(provider.getNode(key), commandObjects.lpushx(key, string));
+  }
+
+  @Override
+  public Response<Long> rpushx(String key, String... string) {
+    return appendCommand(provider.getNode(key), commandObjects.rpushx(key, string));
+  }
+
+  @Override
+  public Response<List<String>> blpop(int timeout, String key) {
+    return appendCommand(provider.getNode(key), commandObjects.blpop(timeout, key));
+  }
+
+  @Override
+  public Response<KeyedListElement> blpop(double timeout, String key) {
+    return appendCommand(provider.getNode(key), commandObjects.blpop(timeout, key));
+  }
+
+  @Override
+  public Response<List<String>> brpop(int timeout, String key) {
+    return appendCommand(provider.getNode(key), commandObjects.brpop(timeout, key));
+  }
+
+  @Override
+  public Response<KeyedListElement> brpop(double timeout, String key) {
+    return appendCommand(provider.getNode(key), commandObjects.brpop(timeout, key));
+  }
+
+  @Override
+  public Response<List<String>> blpop(int timeout, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.blpop(timeout, keys));
+  }
+
+  @Override
+  public Response<KeyedListElement> blpop(double timeout, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.blpop(timeout, keys));
+  }
+
+  @Override
+  public Response<List<String>> brpop(int timeout, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.brpop(timeout, keys));
+  }
+
+  @Override
+  public Response<KeyedListElement> brpop(double timeout, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.brpop(timeout, keys));
+  }
+
+  @Override
+  public Response<String> rpoplpush(String srcKey, String dstKey) {
+    return appendCommand(provider.getNode(srcKey), commandObjects.rpoplpush(srcKey, dstKey));
+  }
+
+  @Override
+  public Response<String> brpoplpush(String source, String destination, int timeout) {
+    return appendCommand(provider.getNode(source), commandObjects.brpoplpush(source, destination, timeout));
+  }
+
+  @Override
+  public Response<String> lmove(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    return appendCommand(provider.getNode(srcKey), commandObjects.lmove(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+    return appendCommand(provider.getNode(srcKey), commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
 }

@@ -2,9 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.Response;
 
-public interface PipelineCommands {
-
-  Response<Long> del(String key);
+public interface PipelineCommands extends PipelineKeyCommands{
 
   Response<String> get(String key);
 

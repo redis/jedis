@@ -1034,25 +1034,25 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam params) {
     Jedis j = getShard(key);
     return j.geosearch(key, member, radius, unit, params);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam params) {
     Jedis j = getShard(key);
     return j.geosearch(key, longitude, latitude, radius, unit, params);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit, GeoRadiusParam params) {
     Jedis j = getShard(key);
     return j.geosearch(key, member, width, height, unit, params);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoRadiusParam params) {
     Jedis j = getShard(key);
     return j.geosearch(key, longitude, latitude, width, height, unit, params);
   }

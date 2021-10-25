@@ -2300,7 +2300,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -2310,7 +2310,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -2320,7 +2320,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit, GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -2330,7 +2330,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {

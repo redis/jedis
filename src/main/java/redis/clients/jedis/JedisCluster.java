@@ -2475,7 +2475,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<GeoRadiusResponse> geosearch(final String key, final String member,
-      final double radius, final GeoUnit unit, final GeoSearchParam params) {
+      final double radius, final GeoUnit unit, final GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -2486,7 +2486,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<GeoRadiusResponse> geosearch(final String key, final double longitude,
-      final double latitude, final double radius, final GeoUnit unit, final GeoSearchParam params) {
+      final double latitude, final double radius, final GeoUnit unit, final GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -2497,7 +2497,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
 
   @Override
   public List<GeoRadiusResponse> geosearch(final String key, final String member, final double width,
-      final double height, final GeoUnit unit, final GeoSearchParam params) {
+      final double height, final GeoUnit unit, final GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -2509,7 +2509,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   @Override
   public List<GeoRadiusResponse> geosearch(final String key, final double longitude,
       final double latitude, final double width, final double height, final GeoUnit unit,
-      final GeoSearchParam params) {
+      final GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {

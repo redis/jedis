@@ -4139,28 +4139,28 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit, GeoRadiusParam params) {
     checkIsInMultiOrPipeline();
     client.geosearch(key, member, radius, unit, params);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam params) {
     checkIsInMultiOrPipeline();
     client.geosearch(key, longitude, latitude, radius, unit, params);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit, GeoRadiusParam params) {
     checkIsInMultiOrPipeline();
     client.geosearch(key, member, width, height, unit, params);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoSearchParam params) {
+  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoRadiusParam params) {
     checkIsInMultiOrPipeline();
     client.geosearch(key, longitude, latitude, width, height, unit, params);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());

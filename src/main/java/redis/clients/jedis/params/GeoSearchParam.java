@@ -7,77 +7,15 @@ import redis.clients.jedis.util.SafeEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class GeoSearchParam extends Params {
-    private static final String FROMMEMBER = "frommember";
-    private static final String FROMLONLAT = "fromlonlat";
+public class GeoSearchParam extends GeoRadiusParam {
     private static final String BYRADIUS = "byradius";
     private static final String BYBOX = "bybox";
-
-    private static final String WITHCOORD = "withcoord";
-    private static final String WITHDIST = "withdist";
-    private static final String WITHHASH = "withhash";
-
-    private static final String ASC = "asc";
-    private static final String DESC = "desc";
-    private static final String COUNT = "count";
-    private static final String ANY = "any";
 
     public GeoSearchParam() {
     }
 
     public static GeoSearchParam geoSearchParam() { return new GeoSearchParam(); }
 
-    public GeoSearchParam byRadius(double radius, GeoUnit unit) {
-        addParam(BYRADIUS, radius + " " + unit.toString());
-        return this;
-    }
-
-    public GeoSearchParam byBox(double width, double height, GeoUnit unit) {
-        addParam(BYBOX, width + " " + height + " " + unit.toString());
-        return this;
-    }
-
-    public GeoSearchParam withCoord() {
-        addParam(WITHCOORD);
-        return this;
-    }
-
-    public GeoSearchParam withDist() {
-        addParam(WITHDIST);
-        return this;
-    }
-
-    public GeoSearchParam withHash() {
-        addParam(WITHHASH);
-        return this;
-    }
-
-    public GeoSearchParam sortAscending() {
-        addParam(ASC);
-        return this;
-    }
-
-    public GeoSearchParam sortDescending() {
-        addParam(DESC);
-        return this;
-    }
-
-    public GeoSearchParam count(int count) {
-        if (count > 0) {
-            addParam(COUNT, count);
-        }
-        return this;
-    }
-
-    public GeoSearchParam count(int count, boolean any) {
-        if (count > 0) {
-            addParam(COUNT, count);
-            if (any) {
-                addParam(ANY);
-            }
-        }
-        return this;
-    }
 
     public byte[][] getByteParams(byte[]... args) {
         ArrayList<byte[]> byteParams = new ArrayList<>();

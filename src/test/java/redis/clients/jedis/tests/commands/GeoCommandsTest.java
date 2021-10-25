@@ -517,35 +517,35 @@ public class GeoCommandsTest extends JedisCommandTestBase {
   public void geosearch_negative() {
     // combine byradius and bybox
     try {
-      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+      jedis.geosearch("barcelona", new GeoSearchParam()
               .byradius(3000, GeoUnit.M).bybox(300, 300, GeoUnit.M));
       assertTrue(false);
     } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
 
     // without byradius and without bybox
     try {
-      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+      jedis.geosearch("barcelona", new GeoSearchParam()
               .frommember("foobar"));
       assertTrue(false);
     } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
 
     // combine frommember and fromlonlat
     try {
-      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+      jedis.geosearch("barcelona", new GeoSearchParam()
               .frommember("foobar").fromlonlat(10,10));
       assertTrue(false);
     } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
 
     // without frommember and without fromlonlat
     try {
-      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+      jedis.geosearch("barcelona", new GeoSearchParam()
               .bybox(10, 10, GeoUnit.MI));
       assertTrue(false);
     } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
 
     // without unit
     try {
-      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+      jedis.geosearch("barcelona", new GeoSearchParam()
               .frommember("foobar").byradius(3000));
       assertTrue(false);
     } catch (redis.clients.jedis.exceptions.JedisDataException e) { }

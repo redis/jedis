@@ -1373,6 +1373,30 @@ public class Client extends BinaryClient implements Commands {
     geosearch(SafeEncoder.encode(key), params);
   }
 
+  public void geosearchstore(final String dest, final String src, final String member, final double radius, final GeoUnit unit) {
+    geosearchstore(SafeEncoder.encode(dest), SafeEncoder.encode(src), SafeEncoder.encode(member), radius, unit);
+  }
+
+  public void geosearchstore(final String dest, final String src, final double longitude, final double latitude, final double radius, final GeoUnit unit) {
+    geosearchstore(SafeEncoder.encode(dest), SafeEncoder.encode(src), longitude, latitude, radius, unit);
+  }
+
+  public void geosearchstore(final String dest, final String src, final String member, final double width, final double height, final GeoUnit unit) {
+    geosearchstore(SafeEncoder.encode(dest), SafeEncoder.encode(src), SafeEncoder.encode(member), width, height, unit);
+  }
+
+  public void geosearchstore(final String dest, final String src, final double longitude, final double latitude, final double width, final double height, final GeoUnit unit) {
+    geosearchstore(SafeEncoder.encode(dest), SafeEncoder.encode(src), longitude, latitude, width, height, unit);
+  }
+
+  public void geosearchstore(final String dest, final String src, final GeoRadiusParam params) {
+    geosearchstore(SafeEncoder.encode(dest), SafeEncoder.encode(src), params);
+  }
+
+  public void geosearchstore(final String key, final GeoSearchstoreParam params) {
+    geosearchstore(SafeEncoder.encode(key), params);
+  }
+
   public void georadius(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);

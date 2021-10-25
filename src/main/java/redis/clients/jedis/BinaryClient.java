@@ -1583,6 +1583,31 @@ public class BinaryClient extends Connection {
     sendCommand(GEOSEARCH, params.getByteParams(key));
   }
 
+  public void geosearchstore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit){
+    sendCommand(GEOSEARCHSTORE, dest, src, FROMMEMBER.getRaw(), member, BYRADIUS.getRaw(), toByteArray(radius), unit.raw);
+  }
+
+  public void geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit) {
+    sendCommand(GEOSEARCHSTORE, dest, src, FROMLONLAT.getRaw(), toByteArray(longitude), toByteArray(latitude), BYRADIUS.getRaw(), toByteArray(radius), unit.raw);
+  }
+
+  public void geosearchstore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
+    sendCommand(GEOSEARCHSTORE, dest, src, FROMMEMBER.getRaw(), member, BYBOX.getRaw(), toByteArray(width), toByteArray(height), unit.raw);
+  }
+
+  public void geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit) {
+    sendCommand(GEOSEARCHSTORE, dest, src, FROMLONLAT.getRaw(), toByteArray(longitude), toByteArray(latitude), BYBOX.getRaw(), toByteArray(width), toByteArray(height), unit.raw);
+  }
+
+  public void geosearchstore(byte[] dest, byte[] src, GeoRadiusParam params) {
+    sendCommand(GEOSEARCHSTORE, params.getByteParams(dest, src));
+
+  }
+
+  public void geosearchstore(byte[] key, GeoSearchstoreParam params) {
+    sendCommand(GEOSEARCHSTORE, params.getByteParams(key));
+  }
+
   public void georadius(final byte[] key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit) {
     sendCommand(GEORADIUS, key, toByteArray(longitude), toByteArray(latitude), toByteArray(radius),

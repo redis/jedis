@@ -4146,6 +4146,48 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
+  public List<GeoRadiusResponse> geosearchstore(String dest, String src, String member, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.geosearchstore(dest, src, member, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearchstore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.geosearchstore(dest, src, longitude, latitude, radius, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearchstore(String dest, String src, String member, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.geosearchstore(dest, src, member, width, height, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearchstore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    client.geosearchstore(dest, src, longitude, latitude, width, height, unit);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearchstore(String dest, String src, GeoRadiusParam params) {
+    checkIsInMultiOrPipeline();
+    client.geosearchstore(dest, src, params);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearchstore(String key, GeoSearchstoreParam storeParam) {
+    checkIsInMultiOrPipeline();
+    client.geosearchstore(key, storeParam);
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadius(final String key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
     checkIsInMultiOrPipeline();

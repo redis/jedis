@@ -1,8 +1,6 @@
 package redis.clients.jedis.tests.commands;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
 import java.util.*;
@@ -513,6 +511,44 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     assertEquals("place1", members.get(0).getMemberByString());
     assertEquals(0.0881, members.get(0).getDistance(), 10);
     assertEquals(new GeoCoordinate(2.19093829393386841, 41.43379028184083523), members.get(0).getCoordinate());
+  }
+
+  @Test
+  public void geosearch_negative() {
+    // combine byradius and bybox
+    try {
+      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+              .byradius(3000, GeoUnit.M).bybox(300, 300, GeoUnit.M));
+      assertTrue(false);
+    } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
+
+    // without byradius and without bybox
+    try {
+      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+              .frommember("foobar"));
+      assertTrue(false);
+    } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
+
+    // combine frommember and fromlonlat
+    try {
+      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+              .frommember("foobar").fromlonlat(10,10));
+      assertTrue(false);
+    } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
+
+    // without frommember and without fromlonlat
+    try {
+      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+              .bybox(10, 10, GeoUnit.MI));
+      assertTrue(false);
+    } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
+
+    // without unit
+    try {
+      List<GeoRadiusResponse> members = jedis.geosearch("barcelona", new GeoSearchParam()
+              .frommember("foobar").byradius(3000));
+      assertTrue(false);
+    } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
   }
 
   private void prepareGeoData() {

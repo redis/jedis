@@ -7,9 +7,7 @@ import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
-import redis.clients.jedis.resps.KeyedListElement;
-import redis.clients.jedis.resps.LCSMatchResult;
-import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.resps.*;
 
 import java.util.List;
 import java.util.Map;
@@ -708,5 +706,331 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   @Override
   public Response<Long> smove(String srcKey, String dstKey, String member) {
     return appendCommand(provider.getNode(srcKey), commandObjects.smove(srcKey, dstKey, member));
+  }
+
+  @Override
+  public Response<Long> zadd(String key, double score, String member) {
+    return appendCommand(provider.getNode(key), commandObjects.zadd(key, score, member));
+  }
+
+  @Override
+  public Response<Long> zadd(String key, double score, String member, ZAddParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.zadd(key, score, member, params));
+  }
+
+  @Override
+  public Response<Long> zadd(String key, Map<String, Double> scoreMembers) {
+    return appendCommand(provider.getNode(key), commandObjects.zadd(key, scoreMembers));
+  }
+
+  @Override
+  public Response<Long> zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.zadd(key, scoreMembers, params));
+  }
+
+  @Override
+  public Response<Double> zaddIncr(String key, double score, String member, ZAddParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.zaddIncr(key, score, member, params));
+  }
+
+  @Override
+  public Response<Long> zrem(String key, String... members) {
+    return appendCommand(provider.getNode(key), commandObjects.zrem(key, members));
+  }
+
+  @Override
+  public Response<Double> zincrby(String key, double increment, String member) {
+    return appendCommand(provider.getNode(key), commandObjects.zincrby(key, increment, member));
+  }
+
+  @Override
+  public Response<Double> zincrby(String key, double increment, String member, ZIncrByParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.zincrby(key, increment, member, params));
+  }
+
+  @Override
+  public Response<Long> zrank(String key, String member) {
+    return appendCommand(provider.getNode(key), commandObjects.zrank(key, member));
+  }
+
+  @Override
+  public Response<Long> zrevrank(String key, String member) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrank(key, member));
+  }
+
+  @Override
+  public Response<Set<String>> zrange(String key, long start, long stop) {
+    return appendCommand(provider.getNode(key), commandObjects.zrange(key, start, stop));
+  }
+
+  @Override
+  public Response<Set<String>> zrevrange(String key, long start, long stop) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrange(key, start, stop));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrangeWithScores(String key, long start, long stop) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrevrangeWithScores(String key, long start, long stop) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public Response<String> zrandmember(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.zrandmember(key));
+  }
+
+  @Override
+  public Response<Set<String>> zrandmember(String key, long count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrandmember(key, count));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrandmemberWithScores(String key, long count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrandmemberWithScores(key, count));
+  }
+
+  @Override
+  public Response<Long> zcard(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.zcard(key));
+  }
+
+  @Override
+  public Response<Double> zscore(String key, String member) {
+    return appendCommand(provider.getNode(key), commandObjects.zscore(key, member));
+  }
+
+  @Override
+  public Response<List<Double>> zmscore(String key, String... members) {    
+    return appendCommand(provider.getNode(key), commandObjects.zmscore(key, members));
+  }
+
+  @Override
+  public Response<Tuple> zpopmax(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.zpopmax(key));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zpopmax(String key, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zpopmax(key, count));
+  }
+
+  @Override
+  public Response<Tuple> zpopmin(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.zpopmin(key));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zpopmin(String key, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zpopmin(key, count));
+  }
+
+  @Override
+  public Response<Long> zcount(String key, double min, double max) {
+    return appendCommand(provider.getNode(key), commandObjects.zcount(key, min, max));
+  }
+
+  @Override
+  public Response<Long> zcount(String key, String min, String max) {
+    return appendCommand(provider.getNode(key), commandObjects.zcount(key, min, max));
+  }
+
+  @Override
+  public Response<Set<String>> zrangeByScore(String key, double min, double max) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByScore(key, min, max));
+  }
+
+  @Override
+  public Response<Set<String>> zrangeByScore(String key, String min, String max) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByScore(key, min, max));
+  }
+
+  @Override
+  public Response<Set<String>> zrevrangeByScore(String key, double max, double min) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByScore(key, max, min));
+
+  }
+
+  @Override
+  public Response<Set<String>> zrangeByScore(String key, double min, double max, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByScore(key, min, max, offset, count));
+  }
+
+  @Override
+  public Response<Set<String>> zrevrangeByScore(String key, String max, String min) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByScore(key, max, min));
+  }
+
+  @Override
+  public Response<Set<String>> zrangeByScore(String key, String min, String max, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByScore(key, min, max, offset, count));
+  }
+
+  @Override
+  public Response<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByScore(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByScoreWithScores(key, min, max));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByScoreWithScores(key, max, min));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+  }
+
+  @Override
+  public Response<Set<String>> zrevrangeByScore(String key, String max, String min, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByScore(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByScoreWithScores(key, min, max));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByScoreWithScores(key, max, min));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<Long> zremrangeByRank(String key, long start, long stop) {
+    return appendCommand(provider.getNode(key), commandObjects.zremrangeByRank(key, start, stop));
+  }
+
+  @Override
+  public Response<Long> zremrangeByScore(String key, double min, double max) {
+    return appendCommand(provider.getNode(key), commandObjects.zremrangeByScore(key, min, max));
+  }
+
+  @Override
+  public Response<Long> zremrangeByScore(String key, String min, String max) {
+    return appendCommand(provider.getNode(key), commandObjects.zremrangeByScore(key, min, max));
+  }
+
+  @Override
+  public Response<Long> zlexcount(String key, String min, String max) {
+    return appendCommand(provider.getNode(key), commandObjects.zlexcount(key, min, max));
+  }
+
+  @Override
+  public Response<Set<String>> zrangeByLex(String key, String min, String max) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByLex(key, min, max));
+  }
+
+  @Override
+  public Response<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrangeByLex(key, min, max, offset, count));
+  }
+
+  @Override
+  public Response<Set<String>> zrevrangeByLex(String key, String max, String min) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByLex(key, max, min));
+  }
+
+  @Override
+  public Response<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.zrevrangeByLex(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<Long> zremrangeByLex(String key, String min, String max) {
+    return appendCommand(provider.getNode(key), commandObjects.zremrangeByLex(key, min, max));
+  }
+
+  @Override
+  public Response<ScanResult<Tuple>> zscan(String key, String cursor, ScanParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.zscan(key, cursor, params));
+  }
+
+  @Override
+  public Response<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.bzpopmax(timeout, keys));
+  }
+
+  @Override
+  public Response<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.bzpopmin(timeout, keys));
+  }
+
+  @Override
+  public Response<Set<String>> zdiff(String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.zdiff(keys));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zdiffWithScores(String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.zdiffWithScores(keys));
+  }
+
+  @Override
+  public Response<Long> zdiffStore(String dstKey, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.zdiffStore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Long> zinterstore(String dstKey, String... sets) {
+    return appendCommand(provider.getNode(dstKey), commandObjects.zinterstore(dstKey, sets));
+  }
+
+  @Override
+  public Response<Long> zinterstore(String dstKey, ZParams params, String... sets) {
+    return appendCommand(provider.getNode(dstKey), commandObjects.zinterstore(dstKey, params, sets));
+  }
+
+  @Override
+  public Response<Set<String>> zinter(ZParams params, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.zinter(params, keys));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.zinterWithScores(params, keys));
+  }
+
+  @Override
+  public Response<Set<String>> zunion(ZParams params, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.zunion(params, keys));
+  }
+
+  @Override
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.zunionWithScores(params, keys));
+  }
+
+  @Override
+  public Response<Long> zunionstore(String dstKey, String... sets) {
+    return appendCommand(provider.getNode(dstKey), commandObjects.zunionstore(dstKey, sets));
+  }
+
+  @Override
+  public Response<Long> zunionstore(String dstKey, ZParams params, String... sets) {
+    return appendCommand(provider.getNode(dstKey), commandObjects.zunionstore(dstKey, params, sets));
   }
 }

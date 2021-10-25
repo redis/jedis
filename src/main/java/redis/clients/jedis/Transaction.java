@@ -1295,4 +1295,52 @@ public class Transaction extends PipelinedTransactionBase implements PipelineCom
   public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
     return appendCommand(commandObjects.evalsha(sha1, keys, args));
   }
+
+  @Override
+  public Response<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
+  }
+
+  @Override
+  public Response<Object> eval(String script, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(commandObjects.eval(script, sampleKey));
+  }
+
+  @Override
+  public Response<Object> evalsha(String sha1, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(commandObjects.evalsha(sha1, sampleKey));
+  }
+
+  @Override
+  public Response<Boolean> scriptExists(String sha1, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(commandObjects.scriptExists(sha1, sampleKey));
+  }
+
+  @Override
+  public Response<List<Boolean>> scriptExists(String sampleKey, String... sha1) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(commandObjects.scriptExists(sampleKey, sha1));
+  }
+
+  @Override
+  public Response<String> scriptLoad(String script, String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(commandObjects.scriptLoad(script, sampleKey));
+  }
+
+  @Override
+  public Response<String> scriptFlush(String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(commandObjects.scriptFlush(sampleKey));
+  }
+
+  @Override
+  public Response<String> scriptKill(String sampleKey) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(commandObjects.scriptKill(sampleKey));
+  }
 }

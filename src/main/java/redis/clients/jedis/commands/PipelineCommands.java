@@ -4,6 +4,6 @@ import redis.clients.jedis.Response;
 
 public interface PipelineCommands extends PipelineKeyCommands, PipelineStringCommands, PipelineListCommands,
 PipelineHashCommands, PipelineSetCommands, PipelineSortedSetCommands, PipelineGeoCommands,
-PipelineHyperLogLogCommands, PipelineStreamCommands, PipelineScriptingKeyCommands{
+PipelineHyperLogLogCommands, PipelineStreamCommands, PipelineScriptingKeyCommands, PipelineSampleKeyedCommands{
 
   }

@@ -1,9 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.args.BitPosParams;
-import redis.clients.jedis.args.ListDirection;
-import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
@@ -1026,5 +1023,90 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   @Override
   public Response<Long> zunionstore(String dstKey, ZParams params, String... sets) {
     return appendCommand(commandObjects.zunionstore(dstKey, params, sets));
+  }
+
+  @Override
+  public Response<Long> geoadd(String key, double longitude, double latitude, String member) {
+    return appendCommand(commandObjects.geoadd(key, longitude, latitude, member));
+  }
+
+  @Override
+  public Response<Long> geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
+    return appendCommand(commandObjects.geoadd(key, memberCoordinateMap));
+  }
+
+  @Override
+  public Response<Long> geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
+    return appendCommand(commandObjects.geoadd(key, params, memberCoordinateMap));
+  }
+
+  @Override
+  public Response<Double> geodist(String key, String member1, String member2) {
+    return appendCommand(commandObjects.geodist(key, member1, member2));
+  }
+
+  @Override
+  public Response<Double> geodist(String key, String member1, String member2, GeoUnit unit) {
+    return appendCommand(commandObjects.geodist(key, member1, member2, unit));
+  }
+
+  @Override
+  public Response<List<String>> geohash(String key, String... members) {
+    return appendCommand(commandObjects.geohash(key, members));
+  }
+
+  @Override
+  public Response<List<GeoCoordinate>> geopos(String key, String... members) {
+    return appendCommand(commandObjects.geopos(key, members));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return appendCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return appendCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.georadiusByMember(key, member, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return appendCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
+    return appendCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
+  }
+
+  @Override
+  public Response<Long> georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    return appendCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
+  }
+
+  @Override
+  public Response<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+    return appendCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 }

@@ -2300,41 +2300,11 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, GeoRadiusParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.geosearch(key, member, radius, unit, params);
-      }
-    }.runBinary(key);
-  }
-
-  @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam params) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.geosearch(key, longitude, latitude, radius, unit, params);
-      }
-    }.runBinary(key);
-  }
-
-  @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit, GeoRadiusParam params) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.geosearch(key, member, width, height, unit, params);
-      }
-    }.runBinary(key);
-  }
-
-  @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoRadiusParam params) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
-      @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
-        return connection.geosearch(key, longitude, latitude, width, height, unit, params);
+        return connection.geosearch(key, params);
       }
     }.runBinary(key);
   }

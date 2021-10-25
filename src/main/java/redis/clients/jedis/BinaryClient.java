@@ -1579,20 +1579,8 @@ public class BinaryClient extends Connection {
     sendCommand(GEOSEARCH, key, FROMLONLAT.getRaw(), toByteArray(longitude), toByteArray(latitude), BYBOX.getRaw(), toByteArray(width), toByteArray(height), unit.raw);
   }
 
-  public void geosearch(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam params) {
-    sendCommand(GEOSEARCH, params.getByteParams(key, FROMMEMBER.getRaw(), member, BYRADIUS.getRaw(), toByteArray(radius), unit.raw));
-  }
-
-  public void geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam params) {
-    sendCommand(GEOSEARCH, params.getByteParams(key, FROMLONLAT.getRaw(), toByteArray(longitude), toByteArray(latitude), BYRADIUS.getRaw(), toByteArray(radius), unit.raw));
-  }
-
-  public void geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit, GeoRadiusParam params) {
-    sendCommand(GEOSEARCH, params.getByteParams(key, FROMMEMBER.getRaw(), member, BYBOX.getRaw(), toByteArray(width), toByteArray(height), unit.raw));
-  }
-
-  public void geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoRadiusParam params) {
-    sendCommand(GEOSEARCH, params.getByteParams(key, FROMLONLAT.getRaw(), toByteArray(longitude), toByteArray(latitude), BYBOX.getRaw(), toByteArray(width), toByteArray(height), unit.raw));
+  public void geosearch(byte[] key, GeoRadiusParam params) {
+    sendCommand(GEOSEARCH, params.getByteParams(key));
   }
 
   public void georadius(final byte[] key, final double longitude, final double latitude,

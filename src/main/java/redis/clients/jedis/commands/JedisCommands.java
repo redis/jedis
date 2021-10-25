@@ -404,13 +404,7 @@ public interface JedisCommands {
 
   List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit);
 
-  List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit, GeoRadiusParam params);
-
-  List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam params);
-
-  List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit, GeoRadiusParam params);
-
-  List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoRadiusParam params);
+  List<GeoRadiusResponse> geosearch(String key, GeoRadiusParam params);
 
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit);

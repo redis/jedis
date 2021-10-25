@@ -358,13 +358,7 @@ public interface BinaryJedisCommands {
 
   List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit);
 
-  List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam params);
-
-  List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam params);
-
-  List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit, GeoRadiusParam params);
-
-  List<GeoRadiusResponse> geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoRadiusParam params);
+  List<GeoRadiusResponse> geosearch(byte[] key, GeoRadiusParam params);
 
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit);

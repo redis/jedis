@@ -1052,27 +1052,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit, GeoRadiusParam params) {
+  public List<GeoRadiusResponse> geosearch(String key, GeoRadiusParam params) {
     Jedis j = getShard(key);
-    return j.geosearch(key, member, radius, unit, params);
-  }
-
-  @Override
-  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam params) {
-    Jedis j = getShard(key);
-    return j.geosearch(key, longitude, latitude, radius, unit, params);
-  }
-
-  @Override
-  public List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit, GeoRadiusParam params) {
-    Jedis j = getShard(key);
-    return j.geosearch(key, member, width, height, unit, params);
-  }
-
-  @Override
-  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoRadiusParam params) {
-    Jedis j = getShard(key);
-    return j.geosearch(key, longitude, latitude, width, height, unit, params);
+    return j.geosearch(key, params);
   }
 
   @Override

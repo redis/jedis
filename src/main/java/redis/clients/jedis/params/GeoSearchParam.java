@@ -1,60 +1,49 @@
 package redis.clients.jedis.params;
 
-import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.util.SafeEncoder;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.GeoUnit;
 
 public class GeoSearchParam extends GeoRadiusParam {
-    private static final String BYRADIUS = "byradius";
-    private static final String BYBOX = "bybox";
 
-    public GeoSearchParam() {
-    }
+    public GeoSearchParam() { }
 
     public static GeoSearchParam geoSearchParam() { return new GeoSearchParam(); }
 
+    public GeoSearchParam frommember(String member) {
+        addParam(FROMMEMBER, member);
+        return this;
+    }
 
-    public byte[][] getByteParams(byte[]... args) {
-        ArrayList<byte[]> byteParams = new ArrayList<>();
-        Collections.addAll(byteParams, args);
+    public GeoSearchParam fromlonlat(double longitude, double latitude) {
+        addParam(FROMLONLAT, new GeoCoordinate(longitude, latitude));
+        return this;
+    }
 
-        if (contains(BYRADIUS)) {
-            byteParams.add(SafeEncoder.encode(BYRADIUS));
-            byteParams.add(((String) getParam(BYRADIUS)).getBytes());
-        }
+    public GeoSearchParam byradius(double r){
+        addParam(BYRADIUS, r);
+        return this;
+    }
 
-        if (contains(BYBOX)) {
-            byteParams.add(SafeEncoder.encode(BYBOX));
-            byteParams.add(((String) getParam(BYBOX)).getBytes());
-        }
+    public GeoSearchParam byradius(double r, GeoUnit unit){
+        addParam(BYRADIUS, r);
+        this.unit = unit;
+        return this;
+    }
 
-        if (contains(WITHCOORD)) {
-            byteParams.add(SafeEncoder.encode(WITHCOORD));
-        }
-        if (contains(WITHDIST)) {
-            byteParams.add(SafeEncoder.encode(WITHDIST));
-        }
-        if (contains(WITHHASH)) {
-            byteParams.add(SafeEncoder.encode(WITHHASH));
-        }
+    public GeoSearchParam bybox(double width, double height){
+        addParam(BYBOX, new double[]{width, height});
+        return this;
+    }
 
-        if (contains(COUNT)) {
-            byteParams.add(SafeEncoder.encode(COUNT));
-            byteParams.add(Protocol.toByteArray((int) getParam(COUNT)));
-            if (contains(ANY)) {
-                byteParams.add(SafeEncoder.encode(ANY));
-            }
-        }
+    public GeoSearchParam bybox(double width, double height, GeoUnit unit){
+        addParam(BYBOX, new double[]{width, height});
+        this.unit = unit;
+        return this;
+    }
 
-        if (contains(ASC)) {
-            byteParams.add(SafeEncoder.encode(ASC));
-        } else if (contains(DESC)) {
-            byteParams.add(SafeEncoder.encode(DESC));
-        }
-
-        return byteParams.toArray(new byte[byteParams.size()][]);
+    public GeoSearchParam unit(GeoUnit unit){
+        this.unit = unit;
+        return this;
     }
 }

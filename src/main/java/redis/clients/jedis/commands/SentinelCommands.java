@@ -17,6 +17,10 @@ public interface SentinelCommands {
 
   Long sentinelReset(String pattern);
 
+  /**
+   * @deprecated Use {@link SentinelCommands#sentinelReplicas(java.lang.String)}.
+   */
+  @Deprecated
   List<Map<String, String>> sentinelSlaves(String masterName);
 
   List<Map<String, String>> sentinelReplicas(String masterName);

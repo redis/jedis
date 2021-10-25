@@ -49,17 +49,10 @@ public class SentinelCommandsTest {
   }
 
   @Test
-  public void replicasSlaves() {
-    String runId;
+  public void replicas() {
     try (Jedis sentinel = new Jedis(sentinel2_1)) {
       Map<String, String> details = sentinel.sentinelReplicas("mymaster").get(0);
       assertEquals(Integer.toString(replica2.getPort()), details.get("port"));
-      runId = details.get("runid");
-    }
-
-    try (Jedis sentinel2 = new Jedis(sentinel2_2)) {
-      Map<String, String> details = sentinel2.sentinelSlaves("mymaster").get(0);
-      assertEquals(runId, details.get("runid"));
     }
   }
 }

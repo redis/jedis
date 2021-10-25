@@ -1273,4 +1273,40 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
     throw new UnsupportedOperationException("Not supported yet.");
     //return appendCommand(provider.getNode(key), commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
   }
+
+  @Override
+  public Response<Object> eval(String script) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    // return appendCommand(provider.getNode(key), commandObjects.eval(script));
+  }
+
+  @Override
+  public Response<Object> eval(String script, int keyCount, String... params) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    // return appendCommand(provider.getNode(key), commandObjects.eval(script, keyCount, params));
+  }
+
+  @Override
+  public Response<Object> eval(String script, List<String> keys, List<String> args) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    // return appendCommand(provider.getNode(key), commandObjects.eval(script, keys, args));
+  }
+
+  @Override
+  public Response<Object> evalsha(String sha1) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    // return appendCommand(provider.getNode(key), commandObjects.evalsha(sha1));
+  }
+
+  @Override
+  public Response<Object> evalsha(String sha1, int keyCount, String... params) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    // return appendCommand(provider.getNode(key), commandObjects.evalsha(sha1, keyCount, params));
+  }
+
+  @Override
+  public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    // return appendCommand(provider.getNode(key), commandObjects.evalsha(sha1, keys, args));
+  }
 }

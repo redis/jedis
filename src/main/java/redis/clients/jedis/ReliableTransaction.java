@@ -1265,4 +1265,34 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return appendCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
   }
+
+  @Override
+  public Response<Object> eval(String script) {
+    return appendCommand(commandObjects.eval(script));
+  }
+
+  @Override
+  public Response<Object> eval(String script, int keyCount, String... params) {
+    return appendCommand(commandObjects.eval(script, keyCount, params));
+  }
+
+  @Override
+  public Response<Object> eval(String script, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.eval(script, keys, args));
+  }
+
+  @Override
+  public Response<Object> evalsha(String sha1) {
+    return appendCommand(commandObjects.evalsha(sha1));
+  }
+
+  @Override
+  public Response<Object> evalsha(String sha1, int keyCount, String... params) {
+    return appendCommand(commandObjects.evalsha(sha1, keyCount, params));
+  }
+
+  @Override
+  public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalsha(sha1, keys, args));
+  }
 }

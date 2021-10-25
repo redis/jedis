@@ -2310,57 +2310,57 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public long geosearchstore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
+      public Long execute(Jedis connection) {
         return connection.geosearchstore(dest, src, member, radius, unit);
       }
     }.runBinary(src);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
+      public Long execute(Jedis connection) {
         return connection.geosearchstore(dest, src, longitude, latitude, radius, unit);
       }
     }.runBinary(src);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public long geosearchstore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
+      public Long execute(Jedis connection) {
         return connection.geosearchstore(dest, src, member, width, height, unit);
       }
     }.runBinary(src);}
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
+      public Long execute(Jedis connection) {
         return connection.geosearchstore(dest, src, longitude, latitude, width, height, unit);
       }
     }.runBinary(src);}
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(byte[] dest, byte[] src, GeoRadiusParam params) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public long geosearchstore(byte[] dest, byte[] src, GeoRadiusParam params) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
+      public Long execute(Jedis connection) {
         return connection.geosearchstore(dest, src, params);
       }
     }.runBinary(src);}
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(byte[] key, GeoSearchstoreParam storeParam) {
-    return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+  public long geosearchstore(byte[] key, GeoSearchstoreParam storeParam) {
+    return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
-      public List<GeoRadiusResponse> execute(Jedis connection) {
+      public Long execute(Jedis connection) {
         return connection.geosearchstore(key, storeParam);
       }
     }.runBinary(key);}

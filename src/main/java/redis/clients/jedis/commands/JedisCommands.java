@@ -406,17 +406,17 @@ public interface JedisCommands {
 
   List<GeoRadiusResponse> geosearch(String key, GeoRadiusParam params);
 
-  List<GeoRadiusResponse> geosearchstore(String dest, String src, String member, double radius, GeoUnit unit);
+  long geosearchstore(String dest, String src, String member, double radius, GeoUnit unit);
 
-  List<GeoRadiusResponse> geosearchstore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit);
+  long geosearchstore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit);
 
-  List<GeoRadiusResponse> geosearchstore(String dest, String src, String member, double width, double height, GeoUnit unit);
+  long geosearchstore(String dest, String src, String member, double width, double height, GeoUnit unit);
 
-  List<GeoRadiusResponse> geosearchstore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit);
+  long geosearchstore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit);
 
-  List<GeoRadiusResponse> geosearchstore(String dest, String src, GeoRadiusParam params);
+  long geosearchstore(String dest, String src, GeoRadiusParam params);
 
-  List<GeoRadiusResponse> geosearchstore(String key, GeoSearchstoreParam storeParam);
+  long geosearchstore(String key, GeoSearchstoreParam storeParam);
 
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit);

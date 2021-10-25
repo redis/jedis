@@ -1058,37 +1058,37 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(String dest, String src, String member, double radius, GeoUnit unit) {
+  public long geosearchstore(String dest, String src, String member, double radius, GeoUnit unit) {
     Jedis j = getShard(src);
     return j.geosearchstore(dest, src, member, radius, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit) {
+  public long geosearchstore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit) {
     Jedis j = getShard(src);
     return j.geosearchstore(dest, src, longitude, latitude, radius, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(String dest, String src, String member, double width, double height, GeoUnit unit) {
+  public long geosearchstore(String dest, String src, String member, double width, double height, GeoUnit unit) {
     Jedis j = getShard(src);
     return j.geosearchstore(dest, src, member, width, height, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit) {
+  public long geosearchstore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit) {
     Jedis j = getShard(src);
     return j.geosearchstore(dest, src, longitude, latitude, width, height, unit);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(String dest, String src, GeoRadiusParam params) {
+  public long geosearchstore(String dest, String src, GeoRadiusParam params) {
     Jedis j = getShard(src);
     return j.geosearchstore(dest, src, params);
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearchstore(String key, GeoSearchstoreParam storeParam) {
+  public long geosearchstore(String key, GeoSearchstoreParam storeParam) {
     Jedis j = getShard(key);
     return j.geosearchstore(key, storeParam);
   }

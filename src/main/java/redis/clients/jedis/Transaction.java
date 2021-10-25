@@ -4,6 +4,7 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.stream.*;
 
 import java.util.List;
 import java.util.Map;
@@ -1129,4 +1130,140 @@ public class Transaction extends PipelinedTransactionBase implements PipelineCom
   public Response<Long> pfcount(String... keys) {
     return appendCommand(commandObjects.pfcount(keys));
   }
+
+  @Override
+  public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash) {
+    return appendCommand(commandObjects.xadd(key, id, hash));
+  }
+
+  @Override
+  public Response<StreamEntryID> xadd_v2(String key, XAddParams params, Map<String, String> hash) {
+    return appendCommand(commandObjects.xadd(key, params, hash));
+  }
+
+  @Override
+  public Response<Long> xlen(String key) {
+    return appendCommand(commandObjects.xlen(key));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end) {
+    return appendCommand(commandObjects.xrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
+    return appendCommand(commandObjects.xrange(key, start, end, count));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
+    return appendCommand(commandObjects.xrevrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
+    return appendCommand(commandObjects.xrevrange(key, start, end, count));
+  }
+
+  @Override
+  public Response<Long> xack(String key, String group, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xack(key, group, ids));
+  }
+
+  @Override
+  public Response<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
+    return appendCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  }
+
+  @Override
+  public Response<String> xgroupSetID(String key, String groupname, StreamEntryID id) {
+    return appendCommand(commandObjects.xgroupSetID(key, groupname, id));
+  }
+
+  @Override
+  public Response<Long> xgroupDestroy(String key, String groupname) {
+    return appendCommand(commandObjects.xgroupDestroy(key, groupname));
+  }
+
+  @Override
+  public Response<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
+    return appendCommand(commandObjects.xgroupDelConsumer(key, groupname, consumername));
+  }
+
+  @Override
+  public Response<StreamPendingSummary> xpending(String key, String groupname) {
+    return appendCommand(commandObjects.xpending(key, groupname));
+  }
+
+  @Override
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
+    return appendCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  }
+
+  @Override
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
+    return appendCommand(commandObjects.xpending(key, groupname, params));
+  }
+
+  @Override
+  public Response<Long> xdel(String key, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xdel(key, ids));
+  }
+
+  @Override
+  public Response<Long> xtrim(String key, long maxLen, boolean approximate) {
+    return appendCommand(commandObjects.xtrim(key, maxLen, approximate));
+  }
+
+  @Override
+  public Response<Long> xtrim(String key, XTrimParams params) {
+    return appendCommand(commandObjects.xtrim(key, params));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  }
+
+  @Override
+  public Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  }
+
+  @Override
+  public Response<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumername, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    return appendCommand(commandObjects.xautoclaim(key, group, consumername, minIdleTime, start, params));
+  }
+
+  @Override
+  public Response<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumername, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    return appendCommand(commandObjects.xautoclaimJustId(key, group, consumername, minIdleTime, start, params));
+  }
+
+  @Override
+  public Response<StreamInfo> xinfoStream(String key) {
+    return appendCommand(commandObjects.xinfoStream(key));
+  }
+
+  @Override
+  public Response<List<StreamGroupInfo>> xinfoGroup(String key) {
+    return appendCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public Response<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
+    return appendCommand(commandObjects.xinfoConsumers(key, group));
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xread(xReadParams, streams));
+  }
+
+  @Override
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+  }
+
 }

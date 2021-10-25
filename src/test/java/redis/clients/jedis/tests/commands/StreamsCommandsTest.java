@@ -51,7 +51,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
       jedis.xadd("stream1", null, map1);
       fail();
     } catch (JedisDataException expected) {
-      assertEquals("ERR wrong number of arguments for 'xadd' command", expected.getMessage());
+      assertTrue(expected.getMessage().contains("wrong number of arguments"));
     }
 
     Map<String, String> map1 = new HashMap<>();
@@ -99,7 +99,7 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
       jedis.xadd("stream1", new HashMap<>(), XAddParams.xAddParams());
       fail();
     } catch (JedisDataException expected) {
-      assertEquals("ERR wrong number of arguments for 'xadd' command", expected.getMessage());
+      assertTrue(expected.getMessage().contains("wrong number of arguments"));
     }
 
     StreamEntryID id1 = jedis.xadd("xadd-stream1", null, Collections.singletonMap("f1", "v1"));

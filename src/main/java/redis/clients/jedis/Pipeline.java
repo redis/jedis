@@ -613,4 +613,94 @@ public class Pipeline extends PipelineBase implements PipelineCommands {
   public Response<Long> hstrlen(String key, String field) {
     return appendCommand(commandObjects.hstrlen(key, field));
   }
+
+  @Override
+  public Response<Long> sadd(String key, String... member) {
+    return appendCommand(commandObjects.sadd(key, member));
+  }
+
+  @Override
+  public Response<Set<String>> smembers(String key) {
+    return appendCommand(commandObjects.smembers(key));
+  }
+
+  @Override
+  public Response<Long> srem(String key, String... member) {
+    return appendCommand(commandObjects.srem(key, member));
+  }
+
+  @Override
+  public Response<String> spop(String key) {
+    return appendCommand(commandObjects.spop(key));
+  }
+
+  @Override
+  public Response<Set<String>> spop(String key, long count) {
+    return appendCommand(commandObjects.spop(key, count));
+  }
+
+  @Override
+  public Response<Long> scard(String key) {
+    return appendCommand(commandObjects.scard(key));
+  }
+
+  @Override
+  public Response<Boolean> sismember(String key, String member) {
+    return appendCommand(commandObjects.sismember(key, member));
+  }
+
+  @Override
+  public Response<List<Boolean>> smismember(String key, String... members) {
+    return appendCommand(commandObjects.smismember(key, members));
+  }
+
+  @Override
+  public Response<String> srandmember(String key) {
+    return appendCommand(commandObjects.srandmember(key));
+  }
+
+  @Override
+  public Response<List<String>> srandmember(String key, int count) {
+    return appendCommand(commandObjects.srandmember(key, count));
+  }
+
+  @Override
+  public Response<ScanResult<String>> sscan(String key, String cursor, ScanParams params) {
+    return appendCommand(commandObjects.sscan(key, cursor, params));
+  }
+
+  @Override
+  public Response<Set<String>> sdiff(String... keys) {
+    return appendCommand(commandObjects.sdiff(keys));
+  }
+
+  @Override
+  public Response<Long> sdiffstore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.sdiffstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Set<String>> sinter(String... keys) {
+    return appendCommand(commandObjects.sinter(keys));
+  }
+
+  @Override
+  public Response<Long> sinterstore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.sinterstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Set<String>> sunion(String... keys) {
+    return appendCommand(commandObjects.sunion(keys));
+  }
+
+  @Override
+  public Response<Long> sunionstore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.sunionstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Long> smove(String srcKey, String dstKey, String member) {
+    return appendCommand(commandObjects.smove(srcKey, dstKey, member));
+  }
 }

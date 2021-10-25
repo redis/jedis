@@ -619,4 +619,94 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   public Response<Long> hstrlen(String key, String field) {
     return appendCommand(provider.getNode(key), commandObjects.hstrlen(key, field));
   }
+
+  @Override
+  public Response<Long> sadd(String key, String... member) {
+    return appendCommand(provider.getNode(key), commandObjects.sadd(key, member));
+  }
+
+  @Override
+  public Response<Set<String>> smembers(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.smembers(key));
+  }
+
+  @Override
+  public Response<Long> srem(String key, String... member) {
+    return appendCommand(provider.getNode(key), commandObjects.srem(key, member));
+  }
+
+  @Override
+  public Response<String> spop(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.spop(key));
+  }
+
+  @Override
+  public Response<Set<String>> spop(String key, long count) {
+    return appendCommand(provider.getNode(key), commandObjects.spop(key, count));
+  }
+
+  @Override
+  public Response<Long> scard(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.scard(key));
+  }
+
+  @Override
+  public Response<Boolean> sismember(String key, String member) {
+    return appendCommand(provider.getNode(key), commandObjects.sismember(key, member));
+  }
+
+  @Override
+  public Response<List<Boolean>> smismember(String key, String... members) {
+    return appendCommand(provider.getNode(key), commandObjects.smismember(key, members));
+  }
+
+  @Override
+  public Response<String> srandmember(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.srandmember(key));
+  }
+
+  @Override
+  public Response<List<String>> srandmember(String key, int count) {
+    return appendCommand(provider.getNode(key), commandObjects.srandmember(key, count));
+  }
+
+  @Override
+  public Response<ScanResult<String>> sscan(String key, String cursor, ScanParams params) {
+    return appendCommand(provider.getNode(key), commandObjects.sscan(key, cursor, params));
+  }
+
+  @Override
+  public Response<Set<String>> sdiff(String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.sdiff(keys));
+  }
+
+  @Override
+  public Response<Long> sdiffstore(String dstKey, String... keys) {
+    return appendCommand(provider.getNode(dstKey), commandObjects.sdiffstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Set<String>> sinter(String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.sinter(keys));
+  }
+
+  @Override
+  public Response<Long> sinterstore(String dstKey, String... keys) {
+    return appendCommand(provider.getNode(dstKey), commandObjects.sinterstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Set<String>> sunion(String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.sunion(keys));
+  }
+
+  @Override
+  public Response<Long> sunionstore(String dstKey, String... keys) {
+    return appendCommand(provider.getNode(dstKey), commandObjects.sunionstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Long> smove(String srcKey, String dstKey, String member) {
+    return appendCommand(provider.getNode(srcKey), commandObjects.smove(srcKey, dstKey, member));
+  }
 }

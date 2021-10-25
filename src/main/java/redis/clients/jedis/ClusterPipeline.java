@@ -1115,4 +1115,24 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   public Response<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return appendCommand(provider.getNode(key), commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
+
+  @Override
+  public Response<Long> pfadd(String key, String... elements) {
+    return appendCommand(provider.getNode(key), commandObjects.pfadd(key, elements));
+  }
+
+  @Override
+  public Response<String> pfmerge(String destkey, String... sourcekeys) {
+    return appendCommand(provider.getNode(destkey), commandObjects.pfmerge(destkey, sourcekeys));
+  }
+
+  @Override
+  public Response<Long> pfcount(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.pfcount(key));
+  }
+
+  @Override
+  public Response<Long> pfcount(String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.pfcount(keys));
+  }
 }

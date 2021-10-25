@@ -1109,4 +1109,24 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   public Response<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return appendCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
+
+  @Override
+  public Response<Long> pfadd(String key, String... elements) {
+    return appendCommand(commandObjects.pfadd(key, elements));
+  }
+
+  @Override
+  public Response<String> pfmerge(String destkey, String... sourcekeys) {
+    return appendCommand(commandObjects.pfmerge(destkey, sourcekeys));
+  }
+
+  @Override
+  public Response<Long> pfcount(String key) {
+    return appendCommand(commandObjects.pfcount(key));
+  }
+
+  @Override
+  public Response<Long> pfcount(String... keys) {
+    return appendCommand(commandObjects.pfcount(keys));
+  }
 }

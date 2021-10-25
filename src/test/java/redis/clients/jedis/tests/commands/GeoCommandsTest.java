@@ -468,11 +468,47 @@ public class GeoCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void geosearch() {
-    GeoSearchParam param = new GeoSearchParam().count(0, true).byRadius(4.65656, GeoUnit.MI).byBox(10d, 14d, GeoUnit.KM).sortAscending().withHash();
-    byte[][] params = param.getByteParams();
-    for (byte[] word: params) {
-      System.out.println(new String(word, StandardCharsets.UTF_8));
-    }
+    jedis.geoadd("barcelona", 2.1909389952632d, 41.433791470673d,"place1");
+    jedis.geoadd("barcelona", 2.1873744593677d, 41.406342043777d, "place2");
+    jedis.geoadd("barcelona", 2.583333d, 41.316667d, "place3");
+
+    // FROMLONLAT and BYRADIUS
+    List<GeoRadiusResponse> members = jedis.geosearch("barcelona",2.191d,41.433d, 1000, GeoUnit.M);
+    assertEquals(1, members.size());
+    assertEquals("place1", members.get(0).getMemberByString());
+
+    members = jedis.geosearch("barcelona",2.191d,41.433d, 3000, GeoUnit.M, new GeoSearchParam().sortDescending());
+    assertEquals(2, members.size());
+    assertEquals("place2", members.get(0).getMemberByString());
+
+    // FROMMEMBER and BYRADIUS
+    members = jedis.geosearch("barcelona","place3", 100, GeoUnit.KM);
+    assertEquals(3, members.size());
+
+    members = jedis.geosearch("barcelona","place1", 100, GeoUnit.KM, new GeoSearchParam().withDist().withCoord().withHash().count(2));
+    assertEquals(2, members.size());
+    assertEquals("place1", members.get(0).getMemberByString());
+    GeoRadiusResponse res2 = members.get(1);
+    assertEquals("place2", res2.getMemberByString());
+    assertEquals(3.0674157, res2.getDistance(), 5);
+    assertEquals(new GeoCoordinate(2.187376320362091, 41.40634178640635), res2.getCoordinate());
+
+    // FROMMEMBER and BYBOX
+    members = jedis.geosearch("barcelona","place3", 100, 100, GeoUnit.KM);
+    assertEquals(3, members.size());
+
+    members = jedis.geosearch("barcelona","place3", 100, 100, GeoUnit.KM, new GeoSearchParam().count(1, true));
+    assertEquals(1, members.size());
+
+    // FROMLONLAT and BYBOX
+    members = jedis.geosearch("barcelona",2.191, 41.433, 1, 1, GeoUnit.KM);
+    assertEquals(1, members.size());
+
+    members = jedis.geosearch("barcelona",2.191, 41.433, 1, 1, GeoUnit.KM, new GeoSearchParam().withDist().withCoord());
+    assertEquals(1, members.size());
+    assertEquals("place1", members.get(0).getMemberByString());
+    assertEquals(0.0881, members.get(0).getDistance(), 10);
+    assertEquals(new GeoCoordinate(2.19093829393386841, 41.43379028184083523), members.get(0).getCoordinate());
   }
 
   private void prepareGeoData() {

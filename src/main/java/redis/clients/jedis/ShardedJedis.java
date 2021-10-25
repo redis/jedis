@@ -9,20 +9,7 @@ import java.util.regex.Pattern;
 
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
-import redis.clients.jedis.params.XAddParams;
-import redis.clients.jedis.params.XAutoClaimParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.XPendingParams;
-import redis.clients.jedis.params.XTrimParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.Hashing;
@@ -1038,6 +1025,54 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   public List<GeoCoordinate> geopos(final String key, final String... members) {
     Jedis j = getShard(key);
     return j.geopos(key, members);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.geosearch(key, member, radius, unit);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.geosearch(key, longitude, latitude, radius, unit);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.geosearch(key, member, width, height, unit);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit) {
+    Jedis j = getShard(key);
+    return j.geosearch(key, longitude, latitude, width, height, unit);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit, GeoSearchParam params) {
+    Jedis j = getShard(key);
+    return j.geosearch(key, member, radius, unit, params);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoSearchParam params) {
+    Jedis j = getShard(key);
+    return j.geosearch(key, longitude, latitude, radius, unit, params);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit, GeoSearchParam params) {
+    Jedis j = getShard(key);
+    return j.geosearch(key, member, width, height, unit, params);
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit, GeoSearchParam params) {
+    Jedis j = getShard(key);
+    return j.geosearch(key, longitude, latitude, width, height, unit, params);
   }
 
   @Override

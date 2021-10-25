@@ -1580,7 +1580,7 @@ public class BinaryClient extends Connection {
   }
 
   public void geosearch(byte[] key, byte[] member, double radius, GeoUnit unit, GeoSearchParam params) {
-    sendCommand(GEOSEARCH, params.getByteParams(key, FROMMEMBER.getRaw(), member, BYRADIUS.getRaw(), toByteArray(radius), toByteArray(radius), unit.raw));
+    sendCommand(GEOSEARCH, params.getByteParams(key, FROMMEMBER.getRaw(), member, BYRADIUS.getRaw(), toByteArray(radius), unit.raw));
   }
 
   public void geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoSearchParam params) {

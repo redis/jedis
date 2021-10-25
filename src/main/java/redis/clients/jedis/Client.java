@@ -1373,7 +1373,7 @@ public class Client extends BinaryClient implements Commands {
     geosearch(SafeEncoder.encode(key), params);
   }
 
-    public void georadius(final String key, final double longitude, final double latitude,
+  public void georadius(final String key, final double longitude, final double latitude,
       final double radius, final GeoUnit unit) {
     georadius(SafeEncoder.encode(key), longitude, latitude, radius, unit);
   }

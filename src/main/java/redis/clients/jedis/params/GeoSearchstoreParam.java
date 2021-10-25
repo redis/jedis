@@ -12,11 +12,11 @@ public class GeoSearchstoreParam extends GeoSearchParam {
         return this.destination;
     }
 
-    public GeoSearchstoreParam sortAscending() {
+    public GeoSearchstoreParam storedist() {
         addParam(STOREDIST);
         return this;
     }
 
-    public static GeoSearchstoreParam geoSearchParam(String dest) { return new GeoSearchstoreParam(dest); }
+    public static GeoSearchstoreParam GeoSearchstoreParam(String dest) { return new GeoSearchstoreParam(dest); }
 
 }

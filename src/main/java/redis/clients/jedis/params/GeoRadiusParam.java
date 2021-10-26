@@ -1,7 +1,5 @@
 package redis.clients.jedis.params;
 
-import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -9,12 +7,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class GeoRadiusParam extends Params {
-  protected static final String FROMMEMBER = "frommember";
-  protected static final String FROMLONLAT = "fromlonlat";
-  protected static final String BYRADIUS = "byradius";
-  protected static final String BYBOX = "bybox";
-  protected GeoUnit unit;
-
   protected static final String WITHCOORD = "withcoord";
   protected static final String WITHDIST = "withdist";
   protected static final String WITHHASH = "withhash";

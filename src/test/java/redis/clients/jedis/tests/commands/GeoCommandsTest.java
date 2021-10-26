@@ -537,7 +537,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     // without frommember and without fromlonlat
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .bybox(10, 10, GeoUnit.MI));
+              .bybox(10, 10).unit(GeoUnit.MI));
       assertTrue(false);
     } catch (redis.clients.jedis.exceptions.JedisDataException e) { }
 

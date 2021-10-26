@@ -1,6 +1,5 @@
 package redis.clients.jedis.params;
 
-
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoUnit;
 import redis.clients.jedis.Protocol;
@@ -10,6 +9,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class GeoSearchParam extends GeoRadiusParam {
+    protected static final String FROMMEMBER = "frommember";
+    protected static final String FROMLONLAT = "fromlonlat";
+    protected static final String BYRADIUS = "byradius";
+    protected static final String BYBOX = "bybox";
+    protected GeoUnit unit;
 
     public GeoSearchParam() { }
 

@@ -3516,8 +3516,24 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   /**
+   * @deprecated Use {@link Jedis#sentinelReplicas(java.lang.String)}.
+   */
+  @Override
+  @Deprecated
+  public List<Map<String, String>> sentinelSlaves(final String masterName) {
+    client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
+    final List<Object> reply = client.getObjectMultiBulkReply();
+
+    final List<Map<String, String>> slaves = new ArrayList<>();
+    for (Object obj : reply) {
+      slaves.add(BuilderFactory.STRING_MAP.build(obj));
+    }
+    return slaves;
+  }
+
+  /**
    * <pre>
-   * redis 127.0.0.1:26381&gt; sentinel slaves mymaster
+   * redis 127.0.0.1:26381&gt; sentinel replicas mymaster
    * 1)  1) "name"
    *     2) "127.0.0.1:6380"
    *     3) "ip"
@@ -3550,18 +3566,6 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
    * @param masterName
    * @return
    */
-  @Override
-  public List<Map<String, String>> sentinelSlaves(final String masterName) {
-    client.sentinel(Protocol.SENTINEL_SLAVES, masterName);
-    final List<Object> reply = client.getObjectMultiBulkReply();
-
-    final List<Map<String, String>> slaves = new ArrayList<>();
-    for (Object obj : reply) {
-      slaves.add(BuilderFactory.STRING_MAP.build(obj));
-    }
-    return slaves;
-  }
-
   @Override
   public List<Map<String, String>> sentinelReplicas(final String masterName) {
     client.sentinel(SentinelKeyword.REPLICAS, masterName);

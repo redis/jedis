@@ -8,20 +8,25 @@ import java.util.Set;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchProtocol;
+import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.util.JedisClusterHashTag;
 
 public class RedisClusterCommandObjects extends RedisCommandObjects {
+
+  @Override
+  protected ClusterCommandArguments commandArguments(ProtocolCommand command) {
+    return new ClusterCommandArguments(command);
+  }
 
   private static final String KEYS_PATTERN_MESSAGE = "Cluster mode only supports KEYS command"
       + " with pattern containing hash-tag ( curly-brackets enclosed string )";
 
   private static final String SCAN_PATTERN_MESSAGE = "Cluster mode only supports SCAN command"
       + " with MATCH pattern containing hash-tag ( curly-brackets enclosed string )";
-
-  @Override
-  protected ClusterCommandArguments commandArguments(ProtocolCommand command) {
-    return new ClusterCommandArguments(command);
-  }
 
   @Override
   public final CommandObject<Set<String>> keys(String pattern) {
@@ -83,5 +88,32 @@ public class RedisClusterCommandObjects extends RedisCommandObjects {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
     return new CommandObject<>(commandArguments(SCAN).addParams(params).processKey(match).add(TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
+  }
+
+  boolean searchLite = false;
+
+  private <T> CommandObject<T> processSearchCommand(String indexName, CommandObject<T> command) {
+    if (searchLite) command.getArguments().processKey(indexName);
+    return command;
+  }
+
+  private <T> CommandObject<T> processSearchCommand(byte[] indexName, CommandObject<T> command) {
+    if (searchLite) command.getArguments().processKey(indexName);
+    return command;
+  }
+
+  @Override
+  public CommandObject<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+    return processSearchCommand(indexName, super.ftCreate(indexName, indexOptions, schema));
+  }
+
+  @Override
+  public CommandObject<SearchResult> ftSearch(String indexName, Query query) {
+    return processSearchCommand(indexName, super.ftSearch(indexName, query));
+  }
+
+  @Override
+  public CommandObject<SearchResult> ftSearch(byte[] indexName, Query query) {
+    return processSearchCommand(indexName, super.ftSearch(indexName, query));
   }
 }

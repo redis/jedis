@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
@@ -45,6 +46,13 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public CommandArguments addObjects(Object... args) {
+    for (Object arg : args) {
+      add(arg);
+    }
+    return this;
+  }
+
+  public CommandArguments addObjects(Collection<Object> args) {
     for (Object arg : args) {
       add(arg);
     }

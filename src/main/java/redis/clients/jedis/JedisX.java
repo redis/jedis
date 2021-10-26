@@ -18,9 +18,15 @@ import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.commands.JedisXCommands;
 import redis.clients.jedis.commands.JedisXBinaryCommands;
+import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchResult;
 
 public class JedisX implements JedisXCommands, JedisXBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands,
+    RedisModuleCommands,
     AutoCloseable {
 
   protected final JedisCommandExecutor executor;
@@ -2767,4 +2773,21 @@ public class JedisX implements JedisXCommands, JedisXBinaryCommands,
     return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
   // Random node commands
+
+  // RediSearch commands
+  @Override
+  public String ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+    return executeCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+  }
+
+  @Override
+  public SearchResult ftSearch(String indexName, Query query) {
+    return executeCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public SearchResult ftSearch(byte[] indexName, Query query) {
+    return executeCommand(commandObjects.ftSearch(indexName, query));
+  }
+  // RediSearch commands
 }

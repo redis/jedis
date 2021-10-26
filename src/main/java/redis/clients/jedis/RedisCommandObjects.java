@@ -14,6 +14,13 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchProtocol.SearchCommand;
+import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
+import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.stream.*;
 
 public class RedisCommandObjects {
@@ -2421,6 +2428,25 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
   }
   // Miscellaneous commands
+
+  // RediSearch commands
+  public CommandObject<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+    CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName)
+        .addParams(indexOptions).add(SearchKeyword.SCHEMA);
+    schema.fields.forEach(field -> field.addParams(args));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public CommandObject<SearchResult> ftSearch(String indexName, Query query) {
+    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
+        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));
+  }
+
+  public CommandObject<SearchResult> ftSearch(byte[] indexName, Query query) {
+    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
+        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
+  }
+  // RediSearch commands
 
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, String... keyvalues) {
     for (int i = 0; i < keyvalues.length; i += 2) {

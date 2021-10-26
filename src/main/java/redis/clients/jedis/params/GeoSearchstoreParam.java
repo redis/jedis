@@ -1,6 +1,8 @@
 package redis.clients.jedis.params;
 
 
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
@@ -29,7 +31,8 @@ public class GeoSearchstoreParam extends GeoSearchParam {
         ArrayList<byte[]> byteParams = new ArrayList<>();
         byteParams.add(SafeEncoder.encode(this.destination));
         Collections.addAll(byteParams, args);
-        Collections.addAll(byteParams, super.getByteParams());
+        Collections.addAll(byteParams, getSearchParams());
+        Collections.addAll(byteParams, getLabels());
 
         if (contains(STOREDIST)) {
             byteParams.add(SafeEncoder.encode(STOREDIST));

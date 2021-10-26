@@ -78,32 +78,12 @@ public class GeoRadiusParam extends Params {
   public byte[][] getByteParams(byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<>();
     Collections.addAll(byteParams, args);
+    Collections.addAll(byteParams, getLabels());
+    return byteParams.toArray(new byte[byteParams.size()][]);
+  }
 
-    if (contains(FROMMEMBER)) {
-      byteParams.add(SafeEncoder.encode(FROMMEMBER));
-      byteParams.add(((String) getParam(FROMMEMBER)).getBytes());
-    } else if (contains(FROMLONLAT)) {
-      byteParams.add(SafeEncoder.encode(FROMLONLAT));
-      GeoCoordinate lonlat = getParam(FROMLONLAT);
-      byteParams.add(Protocol.toByteArray(lonlat.getLongitude()));
-      byteParams.add(Protocol.toByteArray(lonlat.getLatitude()));
-    }
-
-    if (contains(BYRADIUS)) {
-      byteParams.add(SafeEncoder.encode(BYRADIUS));
-      byteParams.add(Protocol.toByteArray((double) getParam(BYRADIUS)));
-      if (this.unit != null) {
-        byteParams.add(this.unit.raw);
-      }
-    } else if (contains(BYBOX)) {
-      byteParams.add(SafeEncoder.encode(BYBOX));
-      double[] box = getParam(BYBOX);
-      byteParams.add(Protocol.toByteArray(box[0]));
-      byteParams.add(Protocol.toByteArray(box[1]));
-      if (this.unit != null) {
-        byteParams.add(this.unit.raw);
-      }
-    }
+  protected byte[][] getLabels(){
+    ArrayList<byte[]> byteParams = new ArrayList<>();
 
     if (contains(WITHCOORD)) {
       byteParams.add(SafeEncoder.encode(WITHCOORD));

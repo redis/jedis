@@ -2357,13 +2357,13 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(src);}
 
   @Override
-  public long geosearchstore(byte[] key, GeoSearchstoreParam storeParam) {
+  public long geosearchstoreWithdist(byte[] dest, byte[] src, GeoRadiusParam params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.geosearchstore(key, storeParam);
+        return connection.geosearchstoreWithdist(dest, src, params);
       }
-    }.runBinary(key);}
+    }.runBinary(src);}
 
   @Override
   public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,

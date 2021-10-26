@@ -3,7 +3,6 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -1393,8 +1392,8 @@ public class Client extends BinaryClient implements Commands {
     geosearchstore(SafeEncoder.encode(dest), SafeEncoder.encode(src), params);
   }
 
-  public void geosearchstore(final String key, final GeoSearchstoreParam params) {
-    geosearchstore(SafeEncoder.encode(key), params);
+  public void geosearchstoreWithdist(final String dest, final String src, final GeoRadiusParam params) {
+    geosearchstoreWithdist(SafeEncoder.encode(dest), SafeEncoder.encode(src), params);
   }
 
   public void georadius(final String key, final double longitude, final double latitude,

@@ -1088,9 +1088,9 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
   }
 
   @Override
-  public long geosearchstore(String key, GeoSearchstoreParam storeParam) {
-    Jedis j = getShard(key);
-    return j.geosearchstore(key, storeParam);
+  public long geosearchstoreWithdist(String dest, String src, GeoRadiusParam params) {
+    Jedis j = getShard(src);
+    return j.geosearchstoreWithdist(dest, src, params);
   }
 
   @Override

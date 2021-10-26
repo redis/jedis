@@ -1601,11 +1601,10 @@ public class BinaryClient extends Connection {
 
   public void geosearchstore(byte[] dest, byte[] src, GeoRadiusParam params) {
     sendCommand(GEOSEARCHSTORE, params.getByteParams(dest, src));
-
   }
 
-  public void geosearchstore(byte[] key, GeoSearchstoreParam params) {
-    sendCommand(GEOSEARCHSTORE, params.getByteParams(key));
+  public void geosearchstoreWithdist(byte[] dest, byte[] src, GeoRadiusParam params) {
+    sendCommand(GEOSEARCHSTORE, params.getByteParams(dest, src, STOREDIST.getRaw()));
   }
 
   public void georadius(final byte[] key, final double longitude, final double latitude,

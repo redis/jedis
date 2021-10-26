@@ -4630,9 +4630,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public long geosearchstore(byte[] key, GeoSearchstoreParam params) {
+  public long geosearchstoreWithdist(byte[] dest, byte[] src, GeoRadiusParam params) {
     checkIsInMultiOrPipeline();
-    client.geosearchstore(key, params);
+    client.geosearchstoreWithdist(dest, src, params);
     return client.getIntegerReply();
   }
 

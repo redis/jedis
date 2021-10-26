@@ -2533,13 +2533,13 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public long geosearchstore(String key, GeoSearchstoreParam storeParam) {
+  public long geosearchstoreWithdist(String dest, String src, GeoRadiusParam params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.geosearchstore(key, storeParam);
+        return connection.geosearchstoreWithdist(dest, src, params);
       }
-    }.run(key);
+    }.run(src);
   }
 
   @Override

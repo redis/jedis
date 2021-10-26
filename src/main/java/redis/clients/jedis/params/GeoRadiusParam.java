@@ -15,8 +15,6 @@ public class GeoRadiusParam extends Params {
   protected static final String DESC = "desc";
   protected static final String COUNT = "count";
   protected static final String ANY = "any";
-  protected static final String STOREDIST = "storedist";
-
 
   public GeoRadiusParam() {
   }

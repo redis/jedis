@@ -4185,9 +4185,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long geosearchstore(String key, GeoSearchstoreParam storeParam) {
+  public long geosearchstoreWithdist(String dest, String src, GeoRadiusParam params) {
     checkIsInMultiOrPipeline();
-    client.geosearchstore(key, storeParam);
+    client.geosearchstoreWithdist(dest, src, params);
     return client.getIntegerReply();
   }
 

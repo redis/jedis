@@ -416,7 +416,7 @@ public interface JedisCommands {
 
   long geosearchstore(String dest, String src, GeoRadiusParam params);
 
-  long geosearchstore(String key, GeoSearchstoreParam storeParam);
+  long geosearchstoreWithdist(String dest, String src, GeoRadiusParam params);
 
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
       GeoUnit unit);

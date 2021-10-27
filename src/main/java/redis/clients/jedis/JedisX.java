@@ -19,6 +19,7 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.commands.JedisXCommands;
 import redis.clients.jedis.commands.JedisXBinaryCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Query;
 import redis.clients.jedis.search.Schema;
@@ -2790,4 +2791,36 @@ public class JedisX implements JedisXCommands, JedisXBinaryCommands,
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
   // RediSearch commands
+
+  // RedisJSON commands
+  @Override
+  public String jsonSet(String key, Object object) {
+    return executeCommand(commandObjects.jsonSet(key, object));
+  }
+
+  @Override
+  public String jsonSet(String key, Path path, Object object) {
+    return executeCommand(commandObjects.jsonSet(key, path, object));
+  }
+
+  @Override
+  public <T> T jsonGet(String key, Class<T> clazz) {
+    return executeCommand(commandObjects.jsonGet(key, clazz));
+  }
+
+  @Override
+  public <T> T jsonGet(String key, Class<T> clazz, Path... paths) {
+    return executeCommand(commandObjects.jsonGet(key, clazz, paths));
+  }
+
+  @Override
+  public Long jsonDel(String key) {
+    return executeCommand(commandObjects.jsonDel(key));
+  }
+
+  @Override
+  public Long jsonDel(String key, Path path) {
+    return executeCommand(commandObjects.jsonDel(key, path));
+  }
+  // RedisJSON commands
 }

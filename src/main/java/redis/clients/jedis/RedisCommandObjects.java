@@ -1,9 +1,12 @@
 package redis.clients.jedis;
 
-import java.util.Arrays;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.util.SafeEncoder.encode;
 
+import com.google.gson.Gson;
+
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +15,8 @@ import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.json.JsonProtocol.JsonCommand;
+import redis.clients.jedis.json.Path;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.IndexOptions;
@@ -2447,6 +2452,48 @@ public class RedisCommandObjects {
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
   }
   // RediSearch commands
+
+  // RedisJSON commands
+  public final CommandObject<String> jsonSet(String key, Object object) {
+    return jsonSet(key, Path.ROOT_PATH, object);
+  }
+
+  public final CommandObject<String> jsonSet(String key, Path path, Object object) {
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(object), BuilderFactory.STRING);
+  }
+
+  public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new GsonObjectBuilder<>(clazz));
+  }
+
+  public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz, Path... paths) {
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new GsonObjectBuilder<>(clazz));
+  }
+
+  public final CommandObject<Long> jsonDel(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonDel(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key).add(path), BuilderFactory.LONG);
+  }
+  // RedisJSON commands
+
+  private static final Gson GSON = new Gson();
+
+  private class GsonObjectBuilder<T> extends Builder<T> {
+
+    private final Class<T> clazz;
+
+    public GsonObjectBuilder(Class<T> clazz) {
+      this.clazz = clazz;
+    }
+
+    @Override
+    public T build(Object data) {
+      return GSON.fromJson(BuilderFactory.STRING.build(data), clazz);
+    }
+  };
 
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, String... keyvalues) {
     for (int i = 0; i < keyvalues.length; i += 2) {

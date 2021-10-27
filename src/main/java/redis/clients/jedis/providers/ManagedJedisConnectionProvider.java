@@ -16,7 +16,7 @@ public class ManagedJedisConnectionProvider implements JedisConnectionProvider {
   }
 
   @Override
-  public Connection getConnection(CommandArguments args) {
+  public final Connection getConnection(CommandArguments args) {
     return connection;
   }
 }

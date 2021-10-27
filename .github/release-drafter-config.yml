@@ -1,4 +1,4 @@
-name-template: 'Version $NEXT_PATCH_VERSION'
+name-template: '$NEXT_PATCH_VERSION'
 tag-template: 'v$NEXT_PATCH_VERSION'
 autolabeler:
   - label: 'chore'
@@ -27,6 +27,7 @@ categories:
       - 'fix'
       - 'bugfix'
       - 'bug'
+      - 'BUG'
   - title: '🧰 Maintenance'
     label: 'chore'
 change-template: '- $TITLE (#$NUMBER)'

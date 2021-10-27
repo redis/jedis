@@ -4194,12 +4194,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, ModuleCommands,
 
   @Override
   public ScanResult<byte[]> scan(final byte[] cursor) {
-    return scan(cursor, new ScanParams());
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.scan(cursor));
   }
 
   @Override
   public ScanResult<byte[]> scan(final byte[] cursor, final ScanParams params) {
-    return scan(cursor, params, (byte[]) null);
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.scan(cursor, params));
   }
 
   @Override

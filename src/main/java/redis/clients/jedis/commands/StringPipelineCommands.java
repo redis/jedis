@@ -10,7 +10,7 @@ import redis.clients.jedis.resps.LCSMatchResult;
 
 import java.util.List;
 
-public interface PipelineStringCommands {
+public interface StringPipelineCommands {
 
   Response<String> set(String key, String value);
 

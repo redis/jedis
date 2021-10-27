@@ -11,7 +11,7 @@ import redis.clients.jedis.resps.GeoRadiusResponse;
 import java.util.List;
 import java.util.Map;
 
-public interface PipelineGeoCommands {
+public interface GeoPipelineCommands {
 
   Response<Long> geoadd(String key, double longitude, double latitude, String member);
 

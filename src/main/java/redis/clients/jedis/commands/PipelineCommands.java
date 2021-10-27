@@ -1,9 +1,8 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.Response;
-
-public interface PipelineCommands extends PipelineKeyCommands, PipelineStringCommands, PipelineListCommands,
-PipelineHashCommands, PipelineSetCommands, PipelineSortedSetCommands, PipelineGeoCommands,
-PipelineHyperLogLogCommands, PipelineStreamCommands, PipelineScriptingKeyCommands, PipelineSampleKeyedCommands{
+public interface PipelineCommands extends KeyPipelineCommands, StringPipelineCommands, ListPipelineCommands,
+        HashPipelineCommands, SetPipelineCommands, SortedSetPipelineCommands, GeoPipelineCommands,
+        HyperLogLogPipelineCommands, StreamPipelineCommands, ScriptingKeyPipelineCommands, SampleKeyedPipelineCommands,
+        MiscellaneousPipelineCommands {
 
   }

@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.Response;
 
-public interface PipelineHyperLogLogCommands {
+public interface HyperLogLogPipelineCommands {
 
   Response<Long> pfadd(String key, String... elements);
 

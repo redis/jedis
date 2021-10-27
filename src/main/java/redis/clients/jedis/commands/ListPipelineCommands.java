@@ -8,7 +8,7 @@ import redis.clients.jedis.resps.KeyedListElement;
 
 import java.util.List;
 
-public interface PipelineListCommands {
+public interface ListPipelineCommands {
 
   Response<Long> rpush(String key, String... string);
 

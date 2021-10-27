@@ -7,7 +7,7 @@ import redis.clients.jedis.stream.*;
 import java.util.List;
 import java.util.Map;
 
-public interface PipelineStreamCommands {
+public interface StreamPipelineCommands {
 
   /**
    * XADD key ID field string [field string ...]
@@ -266,6 +266,22 @@ public interface PipelineStreamCommands {
    */
   Response<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
+
+
+  default Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(final String groupname,
+                                                                final String consumer, final int count, final long block, final boolean noAck,
+                                                                final Map.Entry<String, StreamEntryID>... streams) {
+    if (block > Integer.MAX_VALUE) throw new IllegalArgumentException();
+    XReadGroupParams params = XReadGroupParams.xReadGroupParams();
+    if (count > 0) params.count(count);
+    if (block > 0) params.block((int) block);
+    if (noAck) params.noAck();
+    Map<String, StreamEntryID> streamMap = new java.util.LinkedHashMap<>(streams.length);
+    for (Map.Entry<String, StreamEntryID> stream : streams) {
+      streamMap.put(stream.getKey(), stream.getValue());
+    }
+    return xreadGroup(groupname, consumer, params, streamMap);
+  }
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]

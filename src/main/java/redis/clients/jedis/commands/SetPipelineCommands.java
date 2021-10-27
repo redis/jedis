@@ -7,7 +7,7 @@ import redis.clients.jedis.resps.ScanResult;
 import java.util.List;
 import java.util.Set;
 
-public interface PipelineSetCommands {
+public interface SetPipelineCommands {
 
   Response<Long> sadd(String key, String... member);
 

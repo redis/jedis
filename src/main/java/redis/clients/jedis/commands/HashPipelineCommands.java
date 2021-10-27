@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface PipelineHashCommands {
+public interface HashPipelineCommands {
 
   Response<Long> hset(String key, String field, String value);
 

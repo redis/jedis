@@ -161,22 +161,32 @@ public class Pipeline extends PipelineBase implements PipelineCommands {
 
   @Override
   public Response<Long> objectRefcount(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(commandObjects.objectRefcount(key));
   }
 
   @Override
   public Response<String> objectEncoding(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(commandObjects.objectEncoding(key));
   }
 
   @Override
   public Response<Long> objectIdletime(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(commandObjects.objectIdletime(key));
   }
 
   @Override
   public Response<Long> objectFreq(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(commandObjects.objectFreq(key));
+  }
+
+  @Override
+  public Response<String> migrate(String host, int port, String key, int timeout) {
+    return appendCommand(commandObjects.migrate(host, port, key, timeout));
+  }
+
+  @Override
+  public Response<String> migrate(String host, int port, int timeout, MigrateParams params, String... keys) {
+    return appendCommand(commandObjects.migrate(host, port, timeout, params, keys));
   }
 
   @Override
@@ -1298,20 +1308,17 @@ public class Pipeline extends PipelineBase implements PipelineCommands {
 
   @Override
   public Response<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
-    throw new UnsupportedOperationException("Not supported yet.");
-    //return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
+    return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
   }
 
   @Override
   public Response<Object> eval(String script, String sampleKey) {
-    throw new UnsupportedOperationException("Not supported yet.");
-    //return appendCommand(commandObjects.eval(script, sampleKey));
+    return appendCommand(commandObjects.eval(script, sampleKey));
   }
 
   @Override
   public Response<Object> evalsha(String sha1, String sampleKey) {
-    throw new UnsupportedOperationException("Not supported yet.");
-    //return appendCommand(commandObjects.evalsha(sha1, sampleKey));
+    return appendCommand(commandObjects.evalsha(sha1, sampleKey));
   }
 
   @Override
@@ -1322,25 +1329,36 @@ public class Pipeline extends PipelineBase implements PipelineCommands {
 
   @Override
   public Response<List<Boolean>> scriptExists(String sampleKey, String... sha1) {
-    throw new UnsupportedOperationException("Not supported yet.");
-    //return appendCommand(commandObjects.scriptExists(sampleKey, sha1));
+    return appendCommand(commandObjects.scriptExists(sampleKey, sha1));
   }
 
   @Override
   public Response<String> scriptLoad(String script, String sampleKey) {
-    throw new UnsupportedOperationException("Not supported yet.");
-    //return appendCommand(commandObjects.scriptLoad(script, sampleKey));
+    return appendCommand(commandObjects.scriptLoad(script, sampleKey));
   }
 
   @Override
   public Response<String> scriptFlush(String sampleKey) {
-    throw new UnsupportedOperationException("Not supported yet.");
-    //return appendCommand(commandObjects.scriptFlush(sampleKey));
+    return appendCommand(commandObjects.scriptFlush(sampleKey));
+  }
+
+  @Override
+  public Response<String> scriptFlush(String sampleKey, FlushMode flushMode) {
+    return appendCommand(commandObjects.scriptFlush(sampleKey, flushMode));
   }
 
   @Override
   public Response<String> scriptKill(String sampleKey) {
-    throw new UnsupportedOperationException("Not supported yet.");
-    //return appendCommand(commandObjects.scriptKill(sampleKey));
+    return appendCommand(commandObjects.scriptKill(sampleKey));
+  }
+
+  @Override
+  public Response<Long> publish(String channel, String message) {
+    return appendCommand(commandObjects.publish(channel, message));
+  }
+
+  @Override
+  public Response<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
+    return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 }

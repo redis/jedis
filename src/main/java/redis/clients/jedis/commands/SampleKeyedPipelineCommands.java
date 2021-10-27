@@ -1,10 +1,11 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.FlushMode;
 
 import java.util.List;
 
-public interface PipelineSampleKeyedCommands {
+public interface SampleKeyedPipelineCommands {
 
   Response<Long> waitReplicas(String sampleKey, int replicas, long timeout);
 
@@ -19,6 +20,8 @@ public interface PipelineSampleKeyedCommands {
   Response<String> scriptLoad(String script, String sampleKey);
 
   Response<String> scriptFlush(String sampleKey);
+
+  Response<String> scriptFlush(String sampleKey, FlushMode flushMode);
 
   Response<String> scriptKill(String sampleKey);
 }

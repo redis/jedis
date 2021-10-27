@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public interface PipelineSortedSetCommands {
+public interface SortedSetPipelineCommands {
 
   Response<Long> zadd(String key, double score, String member);
 

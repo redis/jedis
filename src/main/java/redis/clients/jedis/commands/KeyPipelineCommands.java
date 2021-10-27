@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
@@ -9,7 +10,7 @@ import redis.clients.jedis.Response;
 import java.util.List;
 import java.util.Set;
 
-public interface PipelineKeyCommands {
+public interface KeyPipelineCommands {
 
   Response<Boolean> exists(String key);
 
@@ -74,6 +75,10 @@ public interface PipelineKeyCommands {
   Response<Long> objectIdletime(String key);
 
   Response<Long> objectFreq(String key);
+
+  Response<String> migrate(String host, int port, String key, int timeout);
+
+  Response<String> migrate(String host, int port, int timeout, MigrateParams params, String... keys);
 
   Response<Set<String>> keys(String pattern);
 

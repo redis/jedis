@@ -168,47 +168,59 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
 
   @Override
   public Response<Long> objectRefcount(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(provider.getNode(key), commandObjects.objectRefcount(key));
   }
 
   @Override
   public Response<String> objectEncoding(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(provider.getNode(key), commandObjects.objectEncoding(key));
   }
 
   @Override
   public Response<Long> objectIdletime(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(provider.getNode(key), commandObjects.objectIdletime(key));
   }
 
   @Override
   public Response<Long> objectFreq(String key) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(provider.getNode(key), commandObjects.objectFreq(key));
+  }
+
+  @Override
+  public Response<String> migrate(String host, int port, String key, int timeout) {
+    return appendCommand(provider.getNode(key), commandObjects.migrate(host, port, key, timeout));
+  }
+
+  @Override
+  public Response<String> migrate(String host, int port, int timeout, MigrateParams params, String... keys) {
+    return appendCommand(provider.getNode(keys[0]), commandObjects.migrate(host, port, timeout, params, keys));
   }
 
   @Override
   public Response<Set<String>> keys(String pattern) {
     throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(provider.getNode(pattern), commandObjects.keys(pattern));
   }
 
   @Override
   public Response<ScanResult<String>> scan(String cursor) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(provider.getNode(cursor), commandObjects.scan(cursor));
   }
 
   @Override
   public Response<ScanResult<String>> scan(String cursor, ScanParams params) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(provider.getNode(cursor), commandObjects.scan(cursor, params));
   }
 
   @Override
   public Response<ScanResult<String>> scan(String cursor, ScanParams params, String type) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(provider.getNode(cursor), commandObjects.scan(cursor, params, type));
   }
 
   @Override
   public Response<String> randomKey() {
     throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(provider.getNode(key), commandObjects.randomKey());
   }
 
   @Override
@@ -353,7 +365,7 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
 
   @Override
   public Response<Long> bitop(BitOP op, String destKey, String... srcKeys) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return appendCommand(provider.getNode(srcKeys[0]), commandObjects.bitop(op, destKey, srcKeys));
   }
 
   @Override
@@ -1353,8 +1365,25 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
+  public Response<String> scriptFlush(String sampleKey, FlushMode flushMode) {
+    return appendCommand(provider.getNode(sampleKey), commandObjects.scriptFlush(sampleKey, flushMode));
+  }
+
+  @Override
   public Response<String> scriptKill(String sampleKey) {
     throw new UnsupportedOperationException("Not supported yet.");
     //return appendCommand(provider.getNode(key), commandObjects.scriptKill(sampleKey));
+  }
+
+  @Override
+  public Response<Long> publish(String channel, String message) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(provider.getNode(key), commandObjects.publish(channel, message));
+  }
+
+  @Override
+  public Response<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(provider.getNode(key), commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 }

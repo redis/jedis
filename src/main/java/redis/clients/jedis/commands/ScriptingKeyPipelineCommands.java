@@ -4,7 +4,7 @@ import redis.clients.jedis.Response;
 
 import java.util.List;
 
-public interface PipelineScriptingKeyCommands {
+public interface ScriptingKeyPipelineCommands {
 
   Response<Object> eval(String script);
 

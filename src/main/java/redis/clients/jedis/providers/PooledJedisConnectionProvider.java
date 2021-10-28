@@ -4,11 +4,11 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.util.Pool;
 
-public class PooledJedisConnectionProvider<C extends Connection> implements JedisConnectionProvider {
+public class PooledJedisConnectionProvider implements JedisConnectionProvider {
 
-  private final Pool<C> pool;
+  private final Pool<Connection> pool;
 
-  public PooledJedisConnectionProvider(Pool<C> pool) {
+  public PooledJedisConnectionProvider(Pool<Connection> pool) {
     this.pool = pool;
   }
 

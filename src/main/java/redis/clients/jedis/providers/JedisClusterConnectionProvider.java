@@ -69,6 +69,10 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
     return cache.getSlotNode(JedisClusterCRC16.getSlot(key));
   }
 
+  public HostAndPort getNode(byte[] key) {
+    return getNode(key.toString());
+  }
+
   public Connection getConnection(HostAndPort node) {
     return cache.setupNodeIfNotExist(node).getResource();
   }

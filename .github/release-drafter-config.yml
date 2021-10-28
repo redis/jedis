@@ -1,5 +1,5 @@
-name-template: '$NEXT_PATCH_VERSION'
-tag-template: 'v$NEXT_PATCH_VERSION'
+name-template: '$NEXT_MAJOR_VERSION'
+tag-template: 'v$NEXT_MAJOR_VERSION'
 autolabeler:
   - label: 'chore'
     files:

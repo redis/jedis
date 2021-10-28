@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-public interface ControlCommands extends ACLCommands, ClientCommands {
+public interface ControlCommands extends AccessControlLogCommands, ClientCommands {
 
   List<Object> role();
 

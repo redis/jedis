@@ -8,7 +8,6 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 
-import javax.print.DocFlavor;
 import java.util.List;
 import java.util.Map;
 

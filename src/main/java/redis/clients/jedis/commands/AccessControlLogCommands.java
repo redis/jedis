@@ -4,7 +4,7 @@ import java.util.List;
 import redis.clients.jedis.resps.AccessControlLogEntry;
 import redis.clients.jedis.resps.AccessControlUser;
 
-public interface ACLCommands {
+public interface AccessControlLogCommands {
 
   String aclWhoAmI();
 

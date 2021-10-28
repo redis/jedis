@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-public interface ControlBinaryCommands extends ACLBinaryCommands, ClientBinaryCommands {
+public interface ControlBinaryCommands extends AccessControlLogBinaryCommands, ClientBinaryCommands {
 
   List<Object> roleBinary();
 

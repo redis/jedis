@@ -9,7 +9,7 @@ import org.newsclub.net.unix.AFUNIXSocketAddress;
 
 //import redis.clients.jedis.HostAndPort;
 //import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisX;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -20,7 +20,7 @@ public class UdsTest {
 
   @Test
   public void testConnectsToUds() {
-    try (JedisX jedis = new JedisX(new UdsJedisSocketFactory())) {
+    try (UnifiedJedis jedis = new UnifiedJedis(new UdsJedisSocketFactory())) {
 //      assertEquals("PONG", jedis.ping());
     }
   }

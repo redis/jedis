@@ -32,11 +32,9 @@ import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
-public class Jedis implements ServerCommands, DatabaseCommands, ModuleCommands,
-    ControlCommands, ControlBinaryCommands, MiscellaneousControlCommands,
-    JedisXCommands, JedisXBinaryCommands,
-    ClusterCommands,
-    Closeable {
+public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
+    ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands,
+    GenericControlCommands, Closeable {
 
   protected final Connection connection;
   private final RedisCommandObjects commandObjects = new RedisCommandObjects();

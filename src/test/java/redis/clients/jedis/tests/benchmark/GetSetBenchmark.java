@@ -7,7 +7,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 
 import redis.clients.jedis.HostAndPort;
 //import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisX;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil;
@@ -23,7 +23,7 @@ public class GetSetBenchmark {
 //    jedis.flushAll();
     Connection conn = new Connection(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
     conn.executeCommand(Protocol.Command.FLUSHALL);
-    JedisX jedis = new JedisX(conn);
+    UnifiedJedis jedis = new UnifiedJedis(conn);
 
     long begin = Calendar.getInstance().getTimeInMillis();
 

@@ -3,7 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import redis.clients.jedis.resps.AccessControlUser;
 
-public interface ACLBinaryCommands {
+public interface AccessControlLogBinaryCommands {
 
   byte[] aclWhoAmIBinary();
 

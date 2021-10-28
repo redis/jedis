@@ -34,7 +34,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 
 //import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisX;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;

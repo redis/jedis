@@ -3,16 +3,23 @@ package redis.clients.jedis;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
+import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.json.Path;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.stream.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands {
+public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
+        RedisModulePipelineCommands {
 
   private final JedisClusterConnectionProvider provider;
   private final RedisCommandObjects commandObjects;
@@ -2712,5 +2719,53 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
     throw new UnsupportedOperationException("Not supported yet.");
     // return appendCommand(provider.getNode(key), commandObjects.strAlgoLCSStrings(keyA, keyB, params));
+  }
+
+  @Override
+  public Response<String> jsonSet(String key, Object object) {
+    return appendCommand(provider.getNode(key), commandObjects.jsonSet(key, object));
+  }
+
+  @Override
+  public Response<String> jsonSet(String key, Path path, Object object) {
+    return appendCommand(provider.getNode(key), commandObjects.jsonSet(key, path, object));
+  }
+
+  @Override
+  public <T> Response<T> jsonGet(String key, Class<T> clazz) {
+    return appendCommand(provider.getNode(key), commandObjects.jsonGet(key, clazz));
+  }
+
+  @Override
+  public <T> Response<T> jsonGet(String key, Class<T> clazz, Path... paths) {
+    return appendCommand(provider.getNode(key), commandObjects.jsonGet(key, clazz, paths));
+  }
+
+  @Override
+  public Response<Long> jsonDel(String key) {
+    return appendCommand(provider.getNode(key), commandObjects.jsonDel(key));
+  }
+
+  @Override
+  public Response<Long> jsonDel(String key, Path path) {
+    return appendCommand(provider.getNode(key), commandObjects.jsonDel(key, path));
+  }
+
+  @Override
+  public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(provider.getNode(key), commandObjects.ftCreate(indexName, indexOptions, schema));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, Query query) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(provider.getNode(key), commandObjects.ftCreate(indexName, query));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return appendCommand(provider.getNode(key), commandObjects.ftCreate(indexName, query));
   }
 }

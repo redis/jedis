@@ -3,15 +3,22 @@ package redis.clients.jedis;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
+import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.json.Path;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.stream.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Pipeline extends PipelineBase implements PipelineCommands, PipelineBinaryCommands {
+public class Pipeline extends PipelineBase implements PipelineCommands, PipelineBinaryCommands,
+        RedisModulePipelineCommands {
 
   private final RedisCommandObjects commandObjects;
 
@@ -2677,5 +2684,50 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
   @Override
   public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
     return appendCommand(commandObjects.strAlgoLCSStrings(keyA, keyB, params));
+  }
+
+  @Override
+  public Response<String> jsonSet(String key, Object object) {
+    return appendCommand(commandObjects.jsonSet(key, object));
+  }
+
+  @Override
+  public Response<String> jsonSet(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonSet(key, path, object));
+  }
+
+  @Override
+  public <T> Response<T> jsonGet(String key, Class<T> clazz) {
+    return appendCommand(commandObjects.jsonGet(key, clazz));
+  }
+
+  @Override
+  public <T> Response<T> jsonGet(String key, Class<T> clazz, Path... paths) {
+    return appendCommand(commandObjects.jsonGet(key, clazz, paths));
+  }
+
+  @Override
+  public Response<Long> jsonDel(String key) {
+    return appendCommand(commandObjects.jsonDel(key));
+  }
+
+  @Override
+  public Response<Long> jsonDel(String key, Path path) {
+    return appendCommand(commandObjects.jsonDel(key, path));
+  }
+
+  @Override
+  public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+    return appendCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, Query query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
   }
 }

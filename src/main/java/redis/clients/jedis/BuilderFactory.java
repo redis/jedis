@@ -60,7 +60,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Class<?>> CLASS_BUILDER = new Builder<Class<?>>() {
+  public static final Builder<Class<?>> CLASS = new Builder<Class<?>>() {
     @Override
     public Class<?> build(Object data) {
       switch ((String) data) {

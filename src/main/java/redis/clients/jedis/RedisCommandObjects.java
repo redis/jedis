@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
-import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import com.google.gson.Gson;
 
@@ -2506,8 +2505,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Class<?>> jsonType(String key, Path path) {
-    throw new UnsupportedOperationException("Not supported yet.");
-    //return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), new GsonObjectBuilder<>(Class<?>));
+    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), BuilderFactory.CLASS_BUILDER);
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Path path, Object... objects) {
@@ -2565,7 +2563,7 @@ public class RedisCommandObjects {
     public T build(Object data) {
       return GSON.fromJson(BuilderFactory.STRING.build(data), clazz);
     }
-  };
+  }
 
   private class GsonObjectListBuilder<T> extends Builder<List<T>> {
 
@@ -2582,7 +2580,7 @@ public class RedisCommandObjects {
       List<String> list = BuilderFactory.STRING_LIST.build(data);
       return list.stream().map(s -> GSON.fromJson(s, clazz)).collect(Collectors.toList());
     }
-  };
+  }
 
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, String... keyvalues) {
     for (int i = 0; i < keyvalues.length; i += 2) {

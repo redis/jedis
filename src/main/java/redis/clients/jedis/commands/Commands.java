@@ -509,6 +509,8 @@ public interface Commands {
 
   void xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
+  void xrange(String key, String start, String end, int count);
+
   /**
    * @deprecated Use {@link #xrange(java.lang.String, redis.clients.jedis.StreamEntryID, redis.clients.jedis.StreamEntryID, int)}.
    */
@@ -518,6 +520,8 @@ public interface Commands {
   void xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
   void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
+
+  void xrevrange(String key, String end, String start, int count);
 
   /**
    * @deprecated This method will be removed due to bug regarding {@code block} param. Use

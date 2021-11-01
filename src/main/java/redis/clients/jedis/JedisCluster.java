@@ -2656,6 +2656,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
+  public List<StreamEntry> xrange(final String key, final String start,
+                                  final String end, final int count) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrange(key, start, end, count);
+      }
+    }.run(key);
+  }
+
+  @Override
   public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
       final StreamEntryID start) {
     return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
@@ -2669,6 +2680,17 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   @Override
   public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
       final StreamEntryID start, final int count) {
+    return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public List<StreamEntry> execute(Jedis connection) {
+        return connection.xrevrange(key, end, start, count);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final String end,
+                                     final String start, final int count) {
     return new JedisClusterCommand<List<StreamEntry>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<StreamEntry> execute(Jedis connection) {

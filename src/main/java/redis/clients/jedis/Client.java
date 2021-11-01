@@ -1508,6 +1508,12 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xrange(String key, String start, String end, int count) {
+    xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start),
+            SafeEncoder.encode(end == null ? "+" : end), count);
+  }
+
+  @Override
   public void xrange(final String key, final StreamEntryID start, final StreamEntryID end,
       final long count) {
     xrange(SafeEncoder.encode(key), SafeEncoder.encode(start == null ? "-" : start.toString()),
@@ -1524,6 +1530,12 @@ public class Client extends BinaryClient implements Commands {
   public void xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
     xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end == null ? "+" : end.toString()),
       SafeEncoder.encode(start == null ? "-" : start.toString()), count);
+  }
+
+  @Override
+  public void xrevrange(String key, String end, String start, int count) {
+    xrevrange(SafeEncoder.encode(key), SafeEncoder.encode(end == null ? "+" : end),
+            SafeEncoder.encode(start == null ? "-" : start), count);
   }
 
   @Override

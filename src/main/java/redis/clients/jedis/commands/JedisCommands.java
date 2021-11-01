@@ -506,6 +506,8 @@ public interface JedisCommands {
    */
   List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
+  List<StreamEntry> xrange(String key, String start, String end, int count);
+
   /**
    * XREVRANGE key end start
    *
@@ -526,6 +528,8 @@ public interface JedisCommands {
    * @return the entries with IDs matching the specified range, from the higher ID to the lower ID matching.
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
+
+  List<StreamEntry> xrevrange(String key, String end, String start, int count);
 
   /**
    * XACK key group ID [ID ...]

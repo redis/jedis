@@ -401,9 +401,13 @@ public interface RedisPipeline {
 
   Response<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end, int count);
 
+  Response<List<StreamEntry>> xrange(String key, String start, String end, int count);
+
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start);
 
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
+
+  Response<List<StreamEntry>> xrevrange(String key, String end, String start, int count);
 
   Response<Long> xack(String key, String group,  StreamEntryID... ids);
 

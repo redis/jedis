@@ -6,11 +6,11 @@ public interface RedisJsonCommands {
 
   String jsonSet(String key, Object object);
 
-  String jsonSet(String key, Object object, ExistenceModifier flag);
+  String jsonSet(String key, Object object, JsonSetParams params);
 
   String jsonSet(String key, Path path, Object object);
 
-  String jsonSet(String key, Object object, ExistenceModifier flag, Path path);
+  String jsonSet(String key, Path path, Object object, JsonSetParams params);
 
   //<T> T jsonGet(String key);
 

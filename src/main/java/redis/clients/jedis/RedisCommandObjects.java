@@ -13,9 +13,9 @@ import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.json.ExistenceModifier;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.json.Path;
+import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.IndexOptions;
@@ -2454,23 +2454,19 @@ public class RedisCommandObjects {
 
   // RedisJSON commands
   public final CommandObject<String> jsonSet(String key, Object object) {
-    return jsonSet(key, Path.ROOT_PATH, object, ExistenceModifier.DEFAULT);
+    return jsonSet(key, Path.ROOT_PATH, object);
   }
 
-  public final CommandObject<String> jsonSet(String key, Object object, ExistenceModifier flag) {
-    return jsonSet(key, Path.ROOT_PATH, object, flag);
+  public final CommandObject<String> jsonSet(String key, Object object, JsonSetParams params) {
+    return jsonSet(key, Path.ROOT_PATH, object, params);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object object) {
-    return jsonSet(key, path, object, ExistenceModifier.DEFAULT);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(object), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> jsonSet(String key, Path path, Object object, ExistenceModifier flag) {
-    CommandArguments args = commandArguments(JsonCommand.SET).key(key).add(path).add(object);
-    if (ExistenceModifier.DEFAULT != flag) {
-      args.add(flag.getRaw());
-    }
-    return new CommandObject<>(args, BuilderFactory.STRING);
+  public final CommandObject<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(object).addParams(params), BuilderFactory.STRING);
   }
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {

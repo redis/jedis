@@ -8,11 +8,11 @@ public interface RedisJsonPipelineCommands {
 
   Response<String> jsonSet(String key, Object object);
 
-  Response<String> jsonSet(String key, Object object, ExistenceModifier flag);
+  Response<String> jsonSet(String key, Object object, JsonSetParams params);
 
   Response<String> jsonSet(String key, Path path, Object object);
 
-  Response<String> jsonSet(String key, Path path, Object object, ExistenceModifier flag);
+  Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params);
 
   //<T> Response<T> jsonGet(String key);
 

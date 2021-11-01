@@ -6,15 +6,14 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import com.google.gson.Gson;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.json.ExistenceModifier;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.params.*;
@@ -2455,11 +2454,23 @@ public class RedisCommandObjects {
 
   // RedisJSON commands
   public final CommandObject<String> jsonSet(String key, Object object) {
-    return jsonSet(key, Path.ROOT_PATH, object);
+    return jsonSet(key, Path.ROOT_PATH, object, ExistenceModifier.DEFAULT);
+  }
+
+  public final CommandObject<String> jsonSet(String key, Object object, ExistenceModifier flag) {
+    return jsonSet(key, Path.ROOT_PATH, object, flag);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object object) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(object), BuilderFactory.STRING);
+    return jsonSet(key, path, object, ExistenceModifier.DEFAULT);
+  }
+
+  public final CommandObject<String> jsonSet(String key, Path path, Object object, ExistenceModifier flag) {
+    CommandArguments args = commandArguments(JsonCommand.SET).key(key).add(path).add(object);
+    if (ExistenceModifier.DEFAULT != flag) {
+      args.add(flag.getRaw());
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {
@@ -2470,12 +2481,77 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new GsonObjectBuilder<>(clazz));
   }
 
+  public final <T> CommandObject<List<T>> jsonMGet(Class<T> clazz, String... keys) {
+    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys(keys), new GsonObjectListBuilder<>(clazz));
+  }
+
+  public final <T> CommandObject<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys) {
+    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys(keys).add(path), new GsonObjectListBuilder<>(clazz));
+  }
+
   public final CommandObject<Long> jsonDel(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> jsonDel(String key, Path path) {
     return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key).add(path), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonClear(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> jsonToggle(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.TOGGLE).key(key).add(path), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Class<?>> jsonType(String key) {
+    return jsonType(key, Path.ROOT_PATH);
+  }
+
+  public final CommandObject<Class<?>> jsonType(String key, Path path) {
+    throw new UnsupportedOperationException("Not supported yet.");
+    //return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), new GsonObjectBuilder<>(Class<?>));
+  }
+
+  public final CommandObject<Long> jsonStrAppend(String key, Path path, Object... objects) {
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(objects), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonStrLen(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonArrAppend(String key, Path path, Object... objects) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRAPPEND).key(key).add(path).add(objects), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonArrIndex(String key, Path path, Object scalar) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(scalar), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonArrInsert(String key, Path path, Long index, Object... objects) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index).add(objects), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonArrLen(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key).add(path), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonArrTrim(String key, Path path, Long start, Long stop) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
+  }
+
+  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, Long index) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(clazz));
+  }
+
+  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path), new GsonObjectBuilder<>(clazz));
+  }
+
+  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz) {
+    return jsonArrPop(key, clazz, Path.ROOT_PATH);
   }
   // RedisJSON commands
 
@@ -2492,6 +2568,23 @@ public class RedisCommandObjects {
     @Override
     public T build(Object data) {
       return GSON.fromJson(BuilderFactory.STRING.build(data), clazz);
+    }
+  };
+
+  private class GsonObjectListBuilder<T> extends Builder<List<T>> {
+
+    private final Class<T> clazz;
+
+    public GsonObjectListBuilder(Class<T> clazz) {
+      this.clazz = clazz;
+    }
+
+    @Override
+    public List<T> build(Object data) {
+      if (data == null)
+        return null;
+      List<String> list = BuilderFactory.STRING_LIST.build(data);
+      return list.stream().map(s -> GSON.fromJson(s, clazz)).collect(Collectors.toList());
     }
   };
 

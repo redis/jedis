@@ -360,18 +360,6 @@ public interface BinaryJedisCommands {
 
   List<GeoRadiusResponse> geosearch(byte[] key, GeoRadiusParam params);
 
-  long geosearchstore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit);
-
-  long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit);
-
-  long geosearchstore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit);
-
-  long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit);
-
-  long geosearchstore(byte[] dest, byte[] src, GeoRadiusParam params);
-
-  long geosearchstoreWithdist(byte[] dest, byte[] src, GeoRadiusParam params);
-
   List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius,
       GeoUnit unit);
 

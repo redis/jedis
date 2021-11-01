@@ -1040,42 +1040,6 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public long geosearchstore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
-    Jedis j = getShard(src);
-    return j.geosearchstore(dest, src, member, radius, unit);
-  }
-
-  @Override
-  public long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit) {
-    Jedis j = getShard(src);
-    return j.geosearchstore(dest, src, longitude, latitude, radius, unit);
-  }
-
-  @Override
-  public long geosearchstore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
-    Jedis j = getShard(src);
-    return j.geosearchstore(dest, src, member, width, height, unit);
-  }
-
-  @Override
-  public long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit) {
-    Jedis j = getShard(src);
-    return j.geosearchstore(dest, src, longitude, latitude, width, height, unit);
-  }
-
-  @Override
-  public long geosearchstore(byte[] dest, byte[] src, GeoRadiusParam params) {
-    Jedis j = getShard(src);
-    return j.geosearchstore(dest, src, params);
-  }
-
-  @Override
-  public long geosearchstoreWithdist(byte[] dest, byte[] src, GeoRadiusParam params) {
-    Jedis j = getShard(src);
-    return j.geosearchstoreWithdist(dest, src, params);
-  }
-
-  @Override
   public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,
       final double latitude, final double radius, final GeoUnit unit) {
     Jedis j = getShard(key);

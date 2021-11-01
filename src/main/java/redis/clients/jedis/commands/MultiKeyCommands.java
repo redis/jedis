@@ -253,6 +253,18 @@ public interface MultiKeyCommands {
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
+  long geosearchstore(String dest, String src, String member, double radius, GeoUnit unit);
+
+  long geosearchstore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit);
+
+  long geosearchstore(String dest, String src, String member, double width, double height, GeoUnit unit);
+
+  long geosearchstore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit);
+
+  long geosearchstore(String dest, String src, GeoRadiusParam params);
+
+  long geosearchstoreWithdist(String dest, String src, GeoRadiusParam params);
+
   long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 

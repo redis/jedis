@@ -1221,6 +1221,35 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Class<?>> REDIS_JSON_TYPE = new Builder<Class<?>>() {
+    @Override
+    public Class<?> build(Object data) {
+      switch ((String) data) {
+        case "null":
+          return null;
+        case "boolean":
+          return boolean.class;
+        case "integer":
+          return int.class;
+        case "number":
+          return float.class;
+        case "string":
+          return String.class;
+        case "object":
+          return Object.class;
+        case "array":
+          return List.class;
+        default:
+          throw new RuntimeException((String) data);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Class<?>";
+    }
+  };
+
   /**
    * A decorator to implement Set from List. Assume that given List do not contains duplicated
    * values. The resulting set displays the same ordering, concurrency, and performance

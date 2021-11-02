@@ -9,6 +9,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
+import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
 import redis.clients.jedis.providers.JedisConnectionProvider;
@@ -2797,8 +2798,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String jsonSet(String key, Object object, JsonSetParams params) {
+    return executeCommand(commandObjects.jsonSet(key, object, params));
+  }
+
+  @Override
   public String jsonSet(String key, Path path, Object object) {
     return executeCommand(commandObjects.jsonSet(key, path, object));
+  }
+
+  @Override
+  public String jsonSet(String key, Path path, Object object, JsonSetParams params) {
+    return executeCommand(commandObjects.jsonSet(key, path, object, params));
   }
 
   @Override
@@ -2812,6 +2823,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public <T> List<T> jsonMGet(Class<T> clazz, String... keys) {
+    return executeCommand(commandObjects.jsonMGet(clazz, keys));
+  }
+
+  @Override
+  public <T> List<T> jsonMGet(Path path, Class<T> clazz, String... keys) {
+    return executeCommand(commandObjects.jsonMGet(path, clazz, keys));
+  }
+
+  @Override
   public Long jsonDel(String key) {
     return executeCommand(commandObjects.jsonDel(key));
   }
@@ -2819,6 +2840,76 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Long jsonDel(String key, Path path) {
     return executeCommand(commandObjects.jsonDel(key, path));
+  }
+
+  @Override
+  public Long jsonClear(String key, Path path) {
+    return executeCommand(commandObjects.jsonClear(key, path));
+  }
+
+  @Override
+  public String jsonToggle(String key, Path path) {
+    return executeCommand(commandObjects.jsonToggle(key, path));
+  }
+
+  @Override
+  public Class<?> jsonType(String key) {
+    return executeCommand(commandObjects.jsonType(key));
+  }
+
+  @Override
+  public Class<?> jsonType(String key, Path path) {
+    return executeCommand(commandObjects.jsonType(key, path));
+  }
+
+  @Override
+  public Long jsonStrAppend(String key, Path path, Object... objects) {
+    return executeCommand(commandObjects.jsonStrAppend(key, path, objects));
+  }
+
+  @Override
+  public Long jsonStrLen(String key, Path path) {
+    return executeCommand(commandObjects.jsonStrLen(key, path));
+  }
+
+  @Override
+  public Long jsonArrAppend(String key, Path path, Object... objects) {
+    return executeCommand(commandObjects.jsonArrAppend(key, path, objects));
+  }
+
+  @Override
+  public Long jsonArrIndex(String key, Path path, Object scalar) {
+    return executeCommand(commandObjects.jsonArrIndex(key, path, scalar));
+  }
+
+  @Override
+  public Long jsonArrInsert(String key, Path path, Long index, Object... objects) {
+    return executeCommand(commandObjects.jsonArrInsert(key, path, index, objects));
+  }
+
+  @Override
+  public Long jsonArrLen(String key, Path path) {
+    return executeCommand(commandObjects.jsonArrLen(key, path));
+  }
+
+  @Override
+  public <T> T jsonArrPop(String key, Class<T> clazz, Path path, Long index) {
+    return executeCommand(commandObjects.jsonArrPop(key, clazz, path, index));
+  }
+
+  @Override
+  public <T> T jsonArrPop(String key, Class<T> clazz, Path path) {
+    return executeCommand(commandObjects.jsonArrPop(key, clazz, path));
+  }
+
+  @Override
+  public <T> T jsonArrPop(String key, Class<T> clazz) {
+    return executeCommand(commandObjects.jsonArrPop(key, clazz));
+  }
+
+  @Override
+  public Long jsonArrTrim(String key, Path path, Long start, Long stop) {
+    return executeCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
   // RedisJSON commands
 }

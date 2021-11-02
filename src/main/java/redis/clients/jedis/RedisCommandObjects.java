@@ -2505,7 +2505,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Class<?>> jsonType(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), BuilderFactory.CLASS);
+    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), BuilderFactory.REDIS_JSON_TYPE);
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Path path, Object... objects) {

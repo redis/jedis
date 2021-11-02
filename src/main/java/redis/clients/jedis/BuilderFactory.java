@@ -60,35 +60,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Class<?>> CLASS = new Builder<Class<?>>() {
-    @Override
-    public Class<?> build(Object data) {
-      switch ((String) data) {
-        case "null":
-          return null;
-        case "boolean":
-          return boolean.class;
-        case "integer":
-          return int.class;
-        case "number":
-          return float.class;
-        case "string":
-          return String.class;
-        case "object":
-          return Object.class;
-        case "array":
-          return List.class;
-        default:
-          throw new RuntimeException((String) data);
-      }
-    }
-
-    @Override
-    public String toString() {
-      return "Class<?>";
-    }
-  };
-
   public static final Builder<Long> LONG = new Builder<Long>() {
     @Override
     public Long build(Object data) {
@@ -1247,6 +1218,35 @@ public final class BuilderFactory {
         }
         return new LCSMatchResult(matchedPositions, len);
       }
+    }
+  };
+
+  public static final Builder<Class<?>> REDIS_JSON_TYPE = new Builder<Class<?>>() {
+    @Override
+    public Class<?> build(Object data) {
+      switch ((String) data) {
+        case "null":
+          return null;
+        case "boolean":
+          return boolean.class;
+        case "integer":
+          return int.class;
+        case "number":
+          return float.class;
+        case "string":
+          return String.class;
+        case "object":
+          return Object.class;
+        case "array":
+          return List.class;
+        default:
+          throw new RuntimeException((String) data);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Class<?>";
     }
   };
 

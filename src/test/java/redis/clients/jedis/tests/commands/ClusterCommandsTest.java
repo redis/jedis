@@ -19,10 +19,10 @@ import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 
 public class ClusterCommandsTest {
-//  private static Jedis node1;
-//  private static Jedis node2;
-  private Jedis node1;
-  private Jedis node2;
+  private static Jedis node1;
+  private static Jedis node2;
+//  private Jedis node1;
+//  private Jedis node2;
 
   private static HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private static HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
@@ -41,10 +41,10 @@ public class ClusterCommandsTest {
 
   @After
   public void tearDown() {
-//    node1.disconnect();
-//    node2.disconnect();
-    node1.close();
-    node2.close();
+    node1.disconnect();
+    node2.disconnect();
+//    node1.close();
+//    node2.close();
   }
 
   @AfterClass

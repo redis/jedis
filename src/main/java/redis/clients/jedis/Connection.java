@@ -28,6 +28,7 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
+  private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
 
@@ -40,7 +41,7 @@ public class Connection implements Closeable {
   }
 
   public Connection(final HostAndPort hostAndPort) {
-    this(hostAndPort, DefaultJedisClientConfig.builder().build());
+    this(new DefaultJedisSocketFactory(hostAndPort));
   }
 
   public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
@@ -55,6 +56,7 @@ public class Connection implements Closeable {
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Pool<Connection> pool) {
     this.socketFactory = socketFactory;
+    this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     initializeFromClientConfig(clientConfig);
     this.memberOf = pool;
@@ -70,8 +72,13 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
+  public int getSoTimeout() {
+    return soTimeout;
+  }
+
   public void setSoTimeout(int soTimeout) {
-    socketFactory.setSocketTimeout(soTimeout);
+//    socketFactory.setSocketTimeout(soTimeout);
+    this.soTimeout = soTimeout;
     if (this.socket != null) {
       try {
         this.socket.setSoTimeout(soTimeout);
@@ -96,7 +103,8 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(socketFactory.getSocketTimeout());
+//      socket.setSoTimeout(socketFactory.getSocketTimeout());
+      socket.setSoTimeout(this.soTimeout);
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);
@@ -202,6 +210,7 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
+        soTimeout = socket.getSoTimeout(); //?
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -315,6 +324,10 @@ public class Connection implements Closeable {
   public Object getOne() {
     flush();
     return readProtocolWithCheckingBroken();
+  }
+
+  public void setBroken() {
+    broken = true;
   }
 
   public boolean isBroken() {

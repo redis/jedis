@@ -1,4 +1,4 @@
-package redis.clients.jedis.args;
+package redis.clients.jedis.params;
 
 import java.util.ArrayList;
 import java.util.List;

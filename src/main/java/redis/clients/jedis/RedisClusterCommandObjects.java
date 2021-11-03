@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.Command.KEYS;
 import static redis.clients.jedis.Protocol.Command.SCAN;
+import static redis.clients.jedis.Protocol.Command.WAIT;
 import static redis.clients.jedis.Protocol.Keyword.TYPE;
 
 import java.util.Set;
@@ -21,6 +22,8 @@ public class RedisClusterCommandObjects extends RedisCommandObjects {
   protected ClusterCommandArguments commandArguments(ProtocolCommand command) {
     return new ClusterCommandArguments(command);
   }
+
+  private static final String CLUSTER_UNSUPPORTED_MESSAGE = "Not supported in cluster mode.";
 
   private static final String KEYS_PATTERN_MESSAGE = "Cluster mode only supports KEYS command"
       + " with pattern containing hash-tag ( curly-brackets enclosed string )";
@@ -88,6 +91,11 @@ public class RedisClusterCommandObjects extends RedisCommandObjects {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
     return new CommandObject<>(commandArguments(SCAN).addParams(params).processKey(match).add(TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
+  }
+
+  @Override
+  public final CommandObject<Long> waitReplicas(int replicas, long timeout) {
+    throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
   }
 
   boolean searchLite = false;

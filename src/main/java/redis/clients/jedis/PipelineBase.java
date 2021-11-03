@@ -30,7 +30,8 @@ public class PipelineBase extends Queable implements Closeable {
    * get return values from pipelined commands, capture the different Response&lt;?&gt; of the
    * commands you execute.
    */
-  public final void sync() {
+  public void sync() {
+    if (!hasPipelinedResponse()) return;
     List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
     for (Object o : unformatted) {
       generateResponse(o);

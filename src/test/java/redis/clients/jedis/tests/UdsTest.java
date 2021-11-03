@@ -85,14 +85,14 @@ public class UdsTest {
 //    @Override
 //    public void setSoTimeout(int soTimeout) {
 //    }
-
-    @Override
-    public void setSocketTimeout(int soTimeout) {
-    }
-
-    @Override
-    public int getSocketTimeout() {
-      return Protocol.DEFAULT_TIMEOUT;
-    }
+//
+//    @Override
+//    public void setSocketTimeout(int soTimeout) {
+//    }
+//
+//    @Override
+//    public int getSocketTimeout() {
+//      return Protocol.DEFAULT_TIMEOUT;
+//    }
   }
 }

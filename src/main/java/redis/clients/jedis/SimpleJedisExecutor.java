@@ -5,7 +5,7 @@ import redis.clients.jedis.util.IOUtils;
 
 public class SimpleJedisExecutor implements JedisCommandExecutor {
 
-  private final JedisConnectionProvider provider;
+  protected final JedisConnectionProvider provider;
 
   public SimpleJedisExecutor(JedisConnectionProvider provider) {
     this.provider = provider;

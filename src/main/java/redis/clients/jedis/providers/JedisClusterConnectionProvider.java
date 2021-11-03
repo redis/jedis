@@ -1,5 +1,12 @@
 package redis.clients.jedis.providers;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 import redis.clients.jedis.ClusterCommandArguments;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.HostAndPort;
@@ -11,13 +18,6 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisClusterConnectionProvider implements JedisConnectionProvider {
 
@@ -70,7 +70,7 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
   }
 
   public HostAndPort getNode(byte[] key) {
-    return getNode(key.toString());
+    return cache.getSlotNode(JedisClusterCRC16.getSlot(key));
   }
 
   public Connection getConnection(HostAndPort node) {

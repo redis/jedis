@@ -315,22 +315,22 @@ public class HashesCommandsTest extends JedisCommandTestBase {
     assertArrayEquals(bcar, bhash.get(bbar));
     assertArrayEquals(bbar, bhash.get(bcar));
   }
-//
-//  @Test
-//  public void hgetAllPipeline() {
-//    Map<byte[], byte[]> bh = new HashMap<byte[], byte[]>();
-//    bh.put(bbar, bcar);
-//    bh.put(bcar, bbar);
-//    jedis.hmset(bfoo, bh);
-//    Pipeline pipeline = jedis.pipelined();
-//    Response<Map<byte[], byte[]>> bhashResponse = pipeline.hgetAll(bfoo);
-//    pipeline.sync();
-//    Map<byte[], byte[]> bhash = bhashResponse.get();
-//
-//    assertEquals(2, bhash.size());
-//    assertArrayEquals(bcar, bhash.get(bbar));
-//    assertArrayEquals(bbar, bhash.get(bcar));
-//  }
+
+  @Test
+  public void hgetAllPipeline() {
+    Map<byte[], byte[]> bh = new HashMap<byte[], byte[]>();
+    bh.put(bbar, bcar);
+    bh.put(bcar, bbar);
+    jedis.hmset(bfoo, bh);
+    Pipeline pipeline = jedis.pipelined();
+    Response<Map<byte[], byte[]>> bhashResponse = pipeline.hgetAll(bfoo);
+    pipeline.sync();
+    Map<byte[], byte[]> bhash = bhashResponse.get();
+
+    assertEquals(2, bhash.size());
+    assertArrayEquals(bcar, bhash.get(bbar));
+    assertArrayEquals(bbar, bhash.get(bcar));
+  }
 
   @Test
   public void hscan() {

@@ -9,4 +9,6 @@ public interface MiscellaneousPipelineCommands {
   Response<Long> publish(final String channel, final String message);
 
   Response<LCSMatchResult> strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);
+
+  Response<Long> waitReplicas(int replicas, long timeout);
 }

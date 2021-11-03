@@ -23,22 +23,14 @@ import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.XAddParams;
-import redis.clients.jedis.params.XAutoClaimParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.XPendingParams;
-import redis.clients.jedis.params.XReadGroupParams;
-import redis.clients.jedis.params.XReadParams;
-import redis.clients.jedis.params.XTrimParams;
-import redis.clients.jedis.stream.StreamConsumersInfo;
-import redis.clients.jedis.stream.StreamEntry;
-import redis.clients.jedis.stream.StreamEntryID;
-import redis.clients.jedis.stream.StreamGroupInfo;
-import redis.clients.jedis.stream.StreamInfo;
-import redis.clients.jedis.stream.StreamPendingEntry;
+import redis.clients.jedis.params.*;
+import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class StreamsCommandsTest extends JedisCommandTestBase {
@@ -739,45 +731,45 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
     }
 
   }
-//
-//  @Test
-//  public void pipeline() {
-//    Map<String, String> map = new HashMap<>();
-//    map.put("a", "b");
-//    Pipeline p = jedis.pipelined();
-//    Response<StreamEntryID> id1 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
-//    Response<StreamEntryID> id2 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
-//    Response<List<StreamEntry>> results = p.xrange("stream1", null, null, 2);
-//    p.sync();
-//
-//    List<StreamEntry> entries = results.get();
-//    assertEquals(2, entries.size());
-//    assertEquals(id1.get(), entries.get(0).getID());
-//    assertEquals(map, entries.get(0).getFields());
-//    assertEquals(id2.get(), entries.get(1).getID());
-//    assertEquals(map, entries.get(1).getFields());
-//
-//    p = jedis.pipelined();
-//    Response<List<StreamEntry>> results2 = p.xrevrange("stream1", null, id1.get(), 2);
-//    p.sync();
-//    assertEquals(2, results2.get().size());
-//  }
-//
-//  @Test
-//  public void transaction() {
-//    Map<String, String> map = new HashMap<>();
-//    map.put("a", "b");
-//    Transaction t = jedis.multi();
-//    Response<StreamEntryID> id1 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
-//    Response<StreamEntryID> id2 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
-//    Response<List<StreamEntry>> results = t.xrange("stream1", null, null, 2);
-//    t.exec();
-//
-//    List<StreamEntry> entries = results.get();
-//    assertEquals(2, entries.size());
-//    assertEquals(id1.get(), entries.get(0).getID());
-//    assertEquals(map, entries.get(0).getFields());
-//    assertEquals(id2.get(), entries.get(1).getID());
-//    assertEquals(map, entries.get(1).getFields());
-//  }
+
+  @Test
+  public void pipeline() {
+    Map<String, String> map = new HashMap<>();
+    map.put("a", "b");
+    Pipeline p = jedis.pipelined();
+    Response<StreamEntryID> id1 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<StreamEntryID> id2 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<List<StreamEntry>> results = p.xrange("stream1", null, null, 2);
+    p.sync();
+
+    List<StreamEntry> entries = results.get();
+    assertEquals(2, entries.size());
+    assertEquals(id1.get(), entries.get(0).getID());
+    assertEquals(map, entries.get(0).getFields());
+    assertEquals(id2.get(), entries.get(1).getID());
+    assertEquals(map, entries.get(1).getFields());
+
+    p = jedis.pipelined();
+    Response<List<StreamEntry>> results2 = p.xrevrange("stream1", null, id1.get(), 2);
+    p.sync();
+    assertEquals(2, results2.get().size());
+  }
+
+  @Test
+  public void transaction() {
+    Map<String, String> map = new HashMap<>();
+    map.put("a", "b");
+    Transaction t = jedis.multi();
+    Response<StreamEntryID> id1 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<StreamEntryID> id2 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<List<StreamEntry>> results = t.xrange("stream1", null, null, 2);
+    t.exec();
+
+    List<StreamEntry> entries = results.get();
+    assertEquals(2, entries.size());
+    assertEquals(id1.get(), entries.get(0).getID());
+    assertEquals(map, entries.get(0).getFields());
+    assertEquals(id2.get(), entries.get(1).getID());
+    assertEquals(map, entries.get(1).getFields());
+  }
 }

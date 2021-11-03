@@ -16,8 +16,8 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public interface JedisSocketFactory {
 
   Socket createSocket() throws JedisConnectionException;
-
-  void setSocketTimeout(int soTimeout);
-
-  int getSocketTimeout();
+//
+//  void setSocketTimeout(int soTimeout);
+//
+//  int getSocketTimeout();
 }

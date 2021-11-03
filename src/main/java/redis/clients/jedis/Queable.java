@@ -11,8 +11,12 @@ public class Queable {
     pipelinedResponses.clear();
   }
 
-  protected final void generateResponse(Object data) {
-    pipelinedResponses.poll().set(data);
+//  protected final void generateResponse(Object data) {
+//    pipelinedResponses.poll().set(data);
+  protected final Response<?> generateResponse(Object data) {
+    Response<?> response = pipelinedResponses.poll();
+    response.set(data);
+    return response;
   }
 
   protected final <T> Response<T> enqueResponse(Builder<T> builder) {

@@ -9,4 +9,6 @@ public interface MiscellaneousPipelineBinaryCommands {
   Response<Long> publish(byte[] channel, byte[] message);
 
   Response<LCSMatchResult> strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params);
+
+  Response<Long> waitReplicas(int replicas, long timeout);
 }

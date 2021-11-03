@@ -7,7 +7,6 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -40,6 +39,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   private final RedisCommandObjects commandObjects = new RedisCommandObjects();
   private int db = 0;
   private Transaction transaction = null;
+  private boolean isInMulti = false;
+  private boolean isInWatch = false;
   private Pipeline pipeline = null;
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
 
@@ -69,7 +70,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public Jedis(final HostAndPort hp) {
-    this(hp, DefaultJedisClientConfig.builder().build());
+    connection = new Connection(hp);
   }
 
   public Jedis(final String host, final int port) {
@@ -302,7 +303,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public String toString() {
-    return "BinaryJedis{" + connection + '}';
+    return "Jedis{" + connection + '}';
+  }
+
+  // Legacy
+  public Connection getClient() {
+    return getConnection();
+  }
+
+  public Connection getConnection() {
+    return connection;
+  }
+
+  // Legacy
+  public void connect() {
+    connection.connect();
+  }
+
+  // Legacy
+  public void disconnect() {
+    connection.disconnect();
   }
 
   public boolean isConnected() {
@@ -324,6 +344,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       }
 //
 //      connection.resetState();
+      if (isInWatch) {
+        connection.sendCommand(UNWATCH);
+        connection.getStatusCodeReply();
+        isInWatch = false;
+      }
     }
 
     transaction = null;
@@ -349,12 +374,33 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     }
   }
 
-  public Connection getConnection() {
-    return connection;
+  // Legacy
+  public Transaction multi() {
+//    client.multi();
+//    client.getOne(); // expected OK
+//    transaction = new Transaction(client);
+    transaction = new Transaction(this);
+    return transaction;
   }
 
-  public Connection getClient() {
-    return getConnection();
+  // Legacy
+  public Pipeline pipelined() {
+//    pipeline = new Pipeline();
+//    pipeline.setClient(connection);
+    pipeline = new Pipeline(this);
+    return pipeline;
+  }
+
+  // Legacy
+  protected void checkIsInMultiOrPipeline() {
+//    if (connection.isInMulti()) {
+    if (transaction != null) {
+      throw new IllegalStateException(
+          "Cannot use Jedis when in Multi. Please use Transaction or reset jedis state.");
+    } else if (pipeline != null && pipeline.hasPipelinedResponse()) {
+      throw new IllegalStateException(
+          "Cannot use Jedis when in Pipeline. Please use Pipeline or reset jedis state.");
+    }
   }
 
   public int getDB() {
@@ -483,6 +529,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection.sendCommand(QUIT);
     String quitReturn = connection.getStatusCodeReply();
     connection.disconnect();
+    connection.setBroken();
     return quitReturn;
   }
 
@@ -2189,35 +2236,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zpopmin(key, count));
   }
 
-  public Pipeline pipelined() {
-//    pipeline = new Pipeline();
-//    pipeline.setClient(connection);
-    pipeline = new Pipeline(connection);
-    return pipeline;
-  }
-
-  public Transaction multi() {
-    connection.sendCommand(MULTI);
-    connection.getOne(); // expected OK
-    transaction = new Transaction(connection);
-    return transaction;
-  }
-
-  protected void checkIsInMultiOrPipeline() {
-//    if (connection.isInMulti()) {
-    if (transaction != null) {
-      throw new IllegalStateException(
-          "Cannot use Jedis when in Multi. Please use Transaction or reset jedis state.");
-    } else if (pipeline != null && pipeline.hasPipelinedResponse()) {
-      throw new IllegalStateException(
-          "Cannot use Jedis when in Pipeline. Please use Pipeline or reset jedis state.");
-    }
-  }
-
   public String watch(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(WATCH, keys);
-    return connection.getStatusCodeReply();
+//    return connection.getStatusCodeReply();
+    String status = connection.getStatusCodeReply();
+    isInWatch = true;
+    return status;
   }
 
   public String unwatch() {
@@ -3260,6 +3285,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     } catch (JedisConnectionException jce) {
       // expected
       status = null;
+      connection.setBroken();
     }
     return status;
   }
@@ -3271,6 +3297,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       throw new JedisException(connection.getStatusCodeReply());
     } catch (JedisConnectionException jce) {
       // expected
+      connection.setBroken();
     }
   }
 
@@ -3751,19 +3778,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public Long objectRefcount(final byte[] key) {
-    connection.sendCommand(OBJECT, REFCOUNT);
+    connection.sendCommand(OBJECT, REFCOUNT.getRaw(), key);
     return connection.getIntegerReply();
   }
 
   @Override
   public byte[] objectEncoding(final byte[] key) {
-    connection.sendCommand(OBJECT, ENCODING);
+    connection.sendCommand(OBJECT, ENCODING.getRaw(), key);
     return connection.getBinaryBulkReply();
   }
 
   @Override
   public Long objectIdletime(final byte[] key) {
-    connection.sendCommand(OBJECT, IDLETIME);
+    connection.sendCommand(OBJECT, IDLETIME.getRaw(), key);
     return connection.getIntegerReply();
   }
 
@@ -3775,7 +3802,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public Long objectFreq(final byte[] key) {
-    connection.sendCommand(OBJECT, FREQ);
+    connection.sendCommand(OBJECT, FREQ.getRaw(), key);
     return connection.getIntegerReply();
   }
 
@@ -3886,13 +3913,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public Long memoryUsage(final byte[] key, final int samples) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MEMORY, USAGE.getRaw(), key, toByteArray(samples));
+    connection.sendCommand(MEMORY, USAGE.getRaw(), key, SAMPLES.getRaw(), toByteArray(samples));
     return connection.getIntegerReply();
   }
 
   @Override
   public String failover() {
-    return failover(null);
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(FAILOVER);
+    connection.setTimeoutInfinite();
+    try {
+      return connection.getStatusCodeReply();
+    } finally {
+      connection.rollbackTimeout();
+    }
   }
 
   @Override
@@ -4142,7 +4176,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final int timeout, final MigrateParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(destinationDB)
-        .add(timeout).addParams(params).keys((Object[]) keys);
+        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys);
     connection.sendCommand(args);
     return connection.getStatusCodeReply();
   }
@@ -6250,7 +6284,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String watch(final String... keys) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(WATCH, keys);
-    return connection.getStatusCodeReply();
+//    return connection.getStatusCodeReply();
+    String status = connection.getStatusCodeReply();
+    isInWatch = true;
+    return status;
   }
 
   /**
@@ -7490,19 +7527,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public Long objectRefcount(final String key) {
-    connection.sendCommand(OBJECT, REFCOUNT);
+    connection.sendCommand(OBJECT, REFCOUNT.name(), key);
     return connection.getIntegerReply();
   }
 
   @Override
   public String objectEncoding(final String key) {
-    connection.sendCommand(OBJECT, ENCODING);
+    connection.sendCommand(OBJECT, ENCODING.name(), key);
     return connection.getBulkReply();
   }
 
   @Override
   public Long objectIdletime(final String key) {
-    connection.sendCommand(OBJECT, IDLETIME);
+    connection.sendCommand(OBJECT, IDLETIME.name(), key);
     return connection.getIntegerReply();
   }
 
@@ -7514,7 +7551,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public Long objectFreq(final String key) {
-    connection.sendCommand(OBJECT, FREQ);
+    connection.sendCommand(OBJECT, FREQ.name(), key);
     return connection.getIntegerReply();
   }
 
@@ -7900,7 +7937,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String clientList(ClientType type) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CLIENT, LIST.getRaw(), type.getRaw());
+    connection.sendCommand(CLIENT, LIST.getRaw(), Keyword.TYPE.getRaw(), type.getRaw());
     return connection.getBulkReply();
   }
 
@@ -7939,7 +7976,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final int timeout, final MigrateParams params, final String... keys) {
     checkIsInMultiOrPipeline();
     CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(destinationDB)
-        .add(timeout).addParams(params).keys((Object[]) keys);
+        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys);
     connection.sendCommand(args);
     return connection.getStatusCodeReply();
   }

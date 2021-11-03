@@ -59,6 +59,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         ? new RedisClusterCommandObjects() : new RedisCommandObjects();
   }
 
+  public UnifiedJedis(Set<HostAndPort> nodes, int timeout, int maxAttempts) {
+    this(nodes, DefaultJedisClientConfig.builder().timeoutMillis(timeout).build(), maxAttempts);
+  }
+
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
     this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
         Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));

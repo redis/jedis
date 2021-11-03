@@ -2859,4 +2859,9 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
     throw new UnsupportedOperationException("Not supported yet.");
     //return appendCommand(provider.getNode(key), commandObjects.ftCreate(indexName, query));
   }
+
+  @Override
+  public Response<Long> waitReplicas(int replicas, long timeout) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 }

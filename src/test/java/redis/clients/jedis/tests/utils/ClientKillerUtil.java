@@ -1,9 +1,11 @@
 package redis.clients.jedis.tests.utils;
 
-import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Connection;
+//import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 
 public class ClientKillerUtil {
+
   public static void killClient(Jedis jedis, String clientName) {
     for (String clientInfo : jedis.clientList().split("\n")) {
       if (clientInfo.contains("name=" + clientName)) {
@@ -17,8 +19,22 @@ public class ClientKillerUtil {
       }
     }
   }
+//
+//  public static void killClient(Connection connection, String clientName) {
+//    Jedis jedis = new Jedis(connection);
+//    for (String clientInfo : jedis.clientList().split("\n")) {
+//      if (clientInfo.contains("name=" + clientName)) {
+//        String hostAndPortString = clientInfo.split(" ")[1].split("=")[1];
+//        jedis.clientKill(hostAndPortString);
+//      }
+//    }
+//  }
 
   public static void tagClient(Jedis j, String name) {
     j.clientSetname(name);
   }
+//
+//  public static void tagClient(Connection c, String name) {
+//    new Jedis(c).clientSetname(name);
+//  }
 }

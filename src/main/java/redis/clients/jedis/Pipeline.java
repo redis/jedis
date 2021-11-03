@@ -21,12 +21,28 @@ import java.util.Set;
 public class Pipeline extends PipelineBase implements PipelineCommands, PipelineBinaryCommands,
         RedisModulePipelineCommands {
 
+  private final Jedis jedis;
   private final RedisCommandObjects commandObjects;
 
   public Pipeline(Connection connection) {
     super(connection);
+    this.jedis = null;
     this.commandObjects = new RedisCommandObjects();
   }
+
+  public Pipeline(Jedis jedis) {
+    super(jedis.getConnection());
+    this.jedis = jedis;
+    this.commandObjects = new RedisCommandObjects();
+  }
+//
+//  @Override
+//  public void sync() {
+//    super.sync();
+//    if (jedis != null) {
+//      jedis.resetState();
+//    }
+//  }
 
   @Override
   public Response<Boolean> exists(String key) {
@@ -1177,12 +1193,12 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
-    return appendCommand(commandObjects.xrevrange(key, start, end));
+    return appendCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
-    return appendCommand(commandObjects.xrevrange(key, start, end, count));
+    return appendCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
   @Override
@@ -2214,7 +2230,7 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
@@ -2224,7 +2240,7 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
@@ -2234,7 +2250,7 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
@@ -2244,7 +2260,7 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
@@ -2254,7 +2270,7 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
@@ -2264,7 +2280,7 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
@@ -2274,12 +2290,12 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
   public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
@@ -2314,12 +2330,12 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByLex(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
   public Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByLex(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
   }
 
   @Override
@@ -2819,5 +2835,10 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
   @Override
   public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<Long> waitReplicas(int replicas, long timeout) {
+    return appendCommand(commandObjects.waitReplicas(replicas, timeout));
   }
 }

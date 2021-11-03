@@ -482,9 +482,4 @@ public class GeoCommandsTest extends JedisCommandTestBase {
 
     assertEquals(3, jedis.geoadd(bfoo, bcoordinateMap));
   }
-
-  private boolean equalsWithinEpsilon(double d1, double d2) {
-    double epsilon = 1E-5;
-    return Math.abs(d1 - d2) < epsilon;
-  }
 }

@@ -1,15 +1,16 @@
-//package redis.clients.jedis.tests;
+package redis.clients.jedis.tests;
+
+import org.junit.Test;
+
+import java.util.Arrays;
+
+import redis.clients.jedis.HostAndPort;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
+public class HostAndPortTest {
 //
-//import org.junit.Test;
-//
-//import java.util.Arrays;
-//
-//import redis.clients.jedis.HostAndPort;
-//
-//import static org.junit.Assert.assertArrayEquals;
-//import static org.junit.Assert.assertEquals;
-//
-//public class HostAndPortTest {
 //  @Test
 //  public void checkExtractParts() throws Exception {
 //    String host = "2a11:1b1:0:111:e111:1f11:1111:1f1e:1999";
@@ -42,16 +43,31 @@
 //    assertEquals(host, hp.getHost());
 //    assertEquals(port, hp.getPort());
 //  }
+
+  @Test
+  public void checkFrom() throws Exception {
+    String host = "2a11:1b1:0:111:e111:1f11:1111:1f1e:1999";
+    int port = 6379;
+    HostAndPort hp = HostAndPort.from(host + ":" + Integer.toString(port));
+    assertEquals(host, hp.getHost());
+    assertEquals(port, hp.getPort());
+  }
 //
 //  @Test(expected = IllegalArgumentException.class)
 //  public void checkParseStringWithoutPort() throws Exception {
 //    String host = "localhost";
 //    HostAndPort.parseString(host + ":");
 //  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void checkFromWithoutPort() throws Exception {
+    String host = "localhost";
+    HostAndPort.from(host + ":");
+  }
 //
 //  @Test
 //  public void checkConvertHost() {
 //    String host = "2a11:1b1:0:111:e111:1f11:1111:1f1e";
 //    assertEquals(host, HostAndPort.convertHost(host));
 //  }
-//}
+}

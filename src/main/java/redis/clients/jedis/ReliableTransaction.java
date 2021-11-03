@@ -2821,4 +2821,9 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
+
+  @Override
+  public Response<Long> waitReplicas(int replicas, long timeout) {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
 }

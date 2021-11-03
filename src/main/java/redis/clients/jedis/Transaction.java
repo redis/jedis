@@ -21,11 +21,45 @@ import java.util.Set;
 public class Transaction extends PipelinedTransactionBase implements PipelineCommands,
         PipelineBinaryCommands, RedisModulePipelineCommands {
 
+  private final Jedis jedis;
   private final RedisCommandObjects commandObjects;
+
+  public Transaction(Jedis jedis) {
+    super(jedis.getConnection());
+    this.jedis = jedis;
+    this.commandObjects = new RedisCommandObjects();
+  }
 
   public Transaction(Connection connection) {
     super(connection);
+    this.jedis = null;
     this.commandObjects = new RedisCommandObjects();
+  }
+
+  @Override
+  public List<Object> exec() {
+    List<Object> ret;
+    try {
+      ret = super.exec();
+    } finally {
+      if (jedis != null) {
+        jedis.resetState();
+      }
+    }
+    return ret;
+  }
+
+  @Override
+  public String discard() {
+    String ret;
+    try {
+      ret = super.discard();
+    } finally {
+      if (jedis != null) {
+        jedis.resetState();
+      }
+    }
+    return ret;
   }
 
   @Override
@@ -2819,5 +2853,10 @@ public class Transaction extends PipelinedTransactionBase implements PipelineCom
   @Override
   public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<Long> waitReplicas(int replicas, long timeout) {
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 }

@@ -4,8 +4,10 @@ import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
 import com.google.gson.Gson;
-
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import redis.clients.jedis.Protocol.Command;
@@ -17,12 +19,9 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.IndexOptions;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.SearchProtocol.SearchCommand;
 import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
-import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.stream.*;
 
@@ -2397,6 +2396,10 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
   }
 
+  public CommandObject<Long> waitReplicas(int replicas, long timeout) {
+    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
     return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
   }
@@ -2411,7 +2414,7 @@ public class RedisCommandObjects {
 
   public final CommandObject<String> migrate(String host, int port, int timeout, MigrateParams params, String... keys) {
     return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(0)
-        .add(timeout).addParams(params).keys((Object[]) keys), BuilderFactory.STRING);
+        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> migrate(String host, int port, byte[] key, int timeout) {
@@ -2420,7 +2423,7 @@ public class RedisCommandObjects {
 
   public final CommandObject<String> migrate(String host, int port, int timeout, MigrateParams params, byte[]... keys) {
     return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(0)
-        .add(timeout).addParams(params).keys((Object[]) keys), BuilderFactory.STRING);
+        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING);
   }
 
   public final CommandObject<Long> publish(String channel, String message) {

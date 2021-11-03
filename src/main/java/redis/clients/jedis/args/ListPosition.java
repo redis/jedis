@@ -3,6 +3,7 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 
 public enum ListPosition implements Rawable {
+
   BEFORE, AFTER;
 
   private final byte[] raw;

@@ -12,9 +12,9 @@ public class RetryableClusterCommandExecutor implements JedisCommandExecutor {
 
   private static final Logger LOG = LoggerFactory.getLogger(RetryableClusterCommandExecutor.class);
 
-  private final JedisClusterConnectionProvider provider;
-  private final int maxAttempts;
-  private final Duration maxTotalRetriesDuration;
+  protected final JedisClusterConnectionProvider provider;
+  protected final int maxAttempts;
+  protected final Duration maxTotalRetriesDuration;
 
   public RetryableClusterCommandExecutor(JedisClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {

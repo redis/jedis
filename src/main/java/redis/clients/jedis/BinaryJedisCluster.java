@@ -2300,7 +2300,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, GeoRadiusParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, GeoSearchParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -2348,7 +2348,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(src);}
 
   @Override
-  public long geosearchStore(byte[] dest, byte[] src, GeoRadiusParam params) {
+  public long geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2357,7 +2357,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     }.runBinary(src);}
 
   @Override
-  public long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoRadiusParam params) {
+  public long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {

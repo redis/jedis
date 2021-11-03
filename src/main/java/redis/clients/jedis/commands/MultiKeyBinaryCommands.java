@@ -8,14 +8,10 @@ import redis.clients.jedis.ScanParams;
 import redis.clients.jedis.ScanResult;
 import redis.clients.jedis.SortingParams;
 import redis.clients.jedis.Tuple;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.XReadGroupParams;
-import redis.clients.jedis.params.XReadParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
 
 import java.util.List;
 import java.util.Map;
@@ -164,15 +160,15 @@ public interface MultiKeyBinaryCommands {
 
   long geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit);
 
-  long geosearchStore(byte[] dest, byte[] src, GeoRadiusParam params);
+  long geosearchStore(byte[] dest, byte[] src, GeoSearchParam params);
 
-  long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoRadiusParam params);
+  long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params);
 
   long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
-      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+                      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
   long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
-      GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+                              GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
   LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params);
 }

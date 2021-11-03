@@ -4143,7 +4143,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(final String key, final GeoRadiusParam params) {
+  public List<GeoRadiusResponse> geosearch(final String key, final GeoSearchParam params) {
     checkIsInMultiOrPipeline();
     client.geosearch(key, params);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
@@ -4178,14 +4178,14 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public long geosearchStore(String dest, String src, GeoRadiusParam params) {
+  public long geosearchStore(String dest, String src, GeoSearchParam params) {
     checkIsInMultiOrPipeline();
     client.geosearchStore(dest, src, params);
     return client.getIntegerReply();
   }
 
   @Override
-  public long geosearchStoreStoreDist(String dest, String src, GeoRadiusParam params) {
+  public long geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
     checkIsInMultiOrPipeline();
     client.geosearchStoreStoreDist(dest, src, params);
     return client.getIntegerReply();

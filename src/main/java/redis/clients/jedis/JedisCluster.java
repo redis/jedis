@@ -2474,7 +2474,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(final String key, final GeoRadiusParam params) {
+  public List<GeoRadiusResponse> geosearch(final String key, final GeoSearchParam params) {
     return new JedisClusterCommand<List<GeoRadiusResponse>>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public List<GeoRadiusResponse> execute(Jedis connection) {
@@ -2523,7 +2523,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
     }.run(src);  }
 
   @Override
-  public long geosearchStore(String dest, String src, GeoRadiusParam params) {
+  public long geosearchStore(String dest, String src, GeoSearchParam params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
@@ -2533,7 +2533,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public long geosearchStoreStoreDist(String dest, String src, GeoRadiusParam params) {
+  public long geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {

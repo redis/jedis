@@ -1579,7 +1579,7 @@ public class BinaryClient extends Connection {
     sendCommand(GEOSEARCH, key, FROMLONLAT.getRaw(), toByteArray(longitude), toByteArray(latitude), BYBOX.getRaw(), toByteArray(width), toByteArray(height), unit.raw);
   }
 
-  public void geosearch(byte[] key, GeoRadiusParam params) {
+  public void geosearch(byte[] key, GeoSearchParam params) {
     sendCommand(GEOSEARCH, params.getByteParams(key));
   }
 
@@ -1599,11 +1599,11 @@ public class BinaryClient extends Connection {
     sendCommand(geosearchStore, dest, src, FROMLONLAT.getRaw(), toByteArray(longitude), toByteArray(latitude), BYBOX.getRaw(), toByteArray(width), toByteArray(height), unit.raw);
   }
 
-  public void geosearchStore(byte[] dest, byte[] src, GeoRadiusParam params) {
+  public void geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
     sendCommand(geosearchStore, params.getByteParams(dest, src));
   }
 
-  public void geosearchStoreStoreDist(byte[] dest, byte[] src, GeoRadiusParam params) {
+  public void geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
     sendCommand(geosearchStore, params.getByteParams(dest, src, STOREDIST.getRaw()));
   }
 

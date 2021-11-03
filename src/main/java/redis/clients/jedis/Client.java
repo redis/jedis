@@ -1368,7 +1368,7 @@ public class Client extends BinaryClient implements Commands {
     geosearch(SafeEncoder.encode(key), longitude, latitude, width, height, unit);
   }
 
-  public void geosearch(final String key, final GeoRadiusParam params) {
+  public void geosearch(final String key, final GeoSearchParam params) {
     geosearch(SafeEncoder.encode(key), params);
   }
 
@@ -1388,11 +1388,11 @@ public class Client extends BinaryClient implements Commands {
     geosearchStore(SafeEncoder.encode(dest), SafeEncoder.encode(src), longitude, latitude, width, height, unit);
   }
 
-  public void geosearchStore(final String dest, final String src, final GeoRadiusParam params) {
+  public void geosearchStore(final String dest, final String src, final GeoSearchParam params) {
     geosearchStore(SafeEncoder.encode(dest), SafeEncoder.encode(src), params);
   }
 
-  public void geosearchStoreStoreDist(final String dest, final String src, final GeoRadiusParam params) {
+  public void geosearchStoreStoreDist(final String dest, final String src, final GeoSearchParam params) {
     geosearchStoreStoreDist(SafeEncoder.encode(dest), SafeEncoder.encode(src), params);
   }
 

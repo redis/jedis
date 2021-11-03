@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.BitOP;
 import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.params.StrAlgoLCSParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.JedisPubSub;
@@ -13,10 +13,6 @@ import redis.clients.jedis.StreamEntry;
 import redis.clients.jedis.Tuple;
 import redis.clients.jedis.ZParams;
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GeoRadiusStoreParam;
-import redis.clients.jedis.params.XReadGroupParams;
-import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.resps.*;
 
 import java.util.List;
@@ -261,9 +257,9 @@ public interface MultiKeyCommands {
 
   long geosearchStore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit);
 
-  long geosearchStore(String dest, String src, GeoRadiusParam params);
+  long geosearchStore(String dest, String src, GeoSearchParam params);
 
-  long geosearchStoreStoreDist(String dest, String src, GeoRadiusParam params);
+  long geosearchStoreStoreDist(String dest, String src, GeoSearchParam params);
 
   long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);

@@ -1034,7 +1034,7 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, GeoRadiusParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, GeoSearchParam params) {
     Jedis j = getShard(key);
     return j.geosearch(key, params);
   }

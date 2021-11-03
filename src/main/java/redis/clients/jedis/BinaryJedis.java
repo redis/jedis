@@ -4588,7 +4588,7 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public List<GeoRadiusResponse> geosearch(byte[] key, GeoRadiusParam params) {
+  public List<GeoRadiusResponse> geosearch(byte[] key, GeoSearchParam params) {
     checkIsInMultiOrPipeline();
     client.geosearch(key, params);
     return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT.build(client.getObjectMultiBulkReply());
@@ -4623,14 +4623,14 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public long geosearchStore(byte[] dest, byte[] src, GeoRadiusParam params) {
+  public long geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
     checkIsInMultiOrPipeline();
     client.geosearchStore(dest, src, params);
     return client.getIntegerReply();
   }
 
   @Override
-  public long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoRadiusParam params) {
+  public long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
     checkIsInMultiOrPipeline();
     client.geosearchStoreStoreDist(dest, src, params);
     return client.getIntegerReply();

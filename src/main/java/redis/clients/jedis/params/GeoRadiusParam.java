@@ -68,12 +68,6 @@ public class GeoRadiusParam extends Params {
   public byte[][] getByteParams(byte[]... args) {
     ArrayList<byte[]> byteParams = new ArrayList<>();
     Collections.addAll(byteParams, args);
-    Collections.addAll(byteParams, getLabels());
-    return byteParams.toArray(new byte[byteParams.size()][]);
-  }
-
-  protected byte[][] getLabels(){
-    ArrayList<byte[]> byteParams = new ArrayList<>();
 
     if (contains(WITHCOORD)) {
       byteParams.add(SafeEncoder.encode(WITHCOORD));

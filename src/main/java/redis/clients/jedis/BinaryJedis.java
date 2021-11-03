@@ -4595,44 +4595,44 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
   }
 
   @Override
-  public long geosearchstore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
+  public long geosearchStore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    client.geosearchstore(dest, src, member, radius, unit);
+    client.geosearchStore(dest, src, member, radius, unit);
     return client.getIntegerReply();
   }
 
   @Override
-  public long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit) {
+  public long geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    client.geosearchstore(dest, src, longitude, latitude, radius, unit);
+    client.geosearchStore(dest, src, longitude, latitude, radius, unit);
     return client.getIntegerReply();
   }
 
   @Override
-  public long geosearchstore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
+  public long geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    client.geosearchstore(dest, src, member, width, height, unit);
+    client.geosearchStore(dest, src, member, width, height, unit);
     return client.getIntegerReply();
   }
 
   @Override
-  public long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit) {
+  public long geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit) {
     checkIsInMultiOrPipeline();
-    client.geosearchstore(dest, src, longitude, latitude, width, height, unit);
+    client.geosearchStore(dest, src, longitude, latitude, width, height, unit);
     return client.getIntegerReply();
   }
 
   @Override
-  public long geosearchstore(byte[] dest, byte[] src, GeoRadiusParam params) {
+  public long geosearchStore(byte[] dest, byte[] src, GeoRadiusParam params) {
     checkIsInMultiOrPipeline();
-    client.geosearchstore(dest, src, params);
+    client.geosearchStore(dest, src, params);
     return client.getIntegerReply();
   }
 
   @Override
-  public long geosearchstoreWithdist(byte[] dest, byte[] src, GeoRadiusParam params) {
+  public long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoRadiusParam params) {
     checkIsInMultiOrPipeline();
-    client.geosearchstoreWithdist(dest, src, params);
+    client.geosearchStoreStoreDist(dest, src, params);
     return client.getIntegerReply();
   }
 

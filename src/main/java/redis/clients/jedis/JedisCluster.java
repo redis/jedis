@@ -2484,60 +2484,60 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
   }
 
   @Override
-  public long geosearchstore(String dest, String src, String member, double radius, GeoUnit unit) {
+  public long geosearchStore(String dest, String src, String member, double radius, GeoUnit unit) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.geosearchstore(dest, src, member, radius, unit);
+        return connection.geosearchStore(dest, src, member, radius, unit);
       }
     }.run(src);
   }
 
   @Override
-  public long geosearchstore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit) {
+  public long geosearchStore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.geosearchstore(dest, src, longitude, latitude, radius, unit);
+        return connection.geosearchStore(dest, src, longitude, latitude, radius, unit);
       }
     }.run(src);
   }
 
   @Override
-  public long geosearchstore(String dest, String src, String member, double width, double height, GeoUnit unit) {
+  public long geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.geosearchstore(dest, src, member, width, height, unit);
+        return connection.geosearchStore(dest, src, member, width, height, unit);
       }
     }.run(src);
   }
 
   @Override
-  public long geosearchstore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit) {
+  public long geosearchStore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.geosearchstore(dest, src, longitude, latitude, width, height, unit);
+        return connection.geosearchStore(dest, src, longitude, latitude, width, height, unit);
       }
     }.run(src);  }
 
   @Override
-  public long geosearchstore(String dest, String src, GeoRadiusParam params) {
+  public long geosearchStore(String dest, String src, GeoRadiusParam params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.geosearchstore(dest, src, params);
+        return connection.geosearchStore(dest, src, params);
       }
     }.run(src);
   }
 
   @Override
-  public long geosearchstoreWithdist(String dest, String src, GeoRadiusParam params) {
+  public long geosearchStoreStoreDist(String dest, String src, GeoRadiusParam params) {
     return new JedisClusterCommand<Long>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
       @Override
       public Long execute(Jedis connection) {
-        return connection.geosearchstoreWithdist(dest, src, params);
+        return connection.geosearchStoreStoreDist(dest, src, params);
       }
     }.run(src);
   }

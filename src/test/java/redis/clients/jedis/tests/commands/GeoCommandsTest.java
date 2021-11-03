@@ -556,27 +556,27 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     jedis.geoadd("barcelona", 2.583333d, 41.316667d, "place3");
 
     // FROMLONLAT and BYRADIUS
-    long members = jedis.geosearchstore("tel-aviv", "barcelona",2.191d,41.433d, 1000, GeoUnit.M);
+    long members = jedis.geosearchStore("tel-aviv", "barcelona",2.191d,41.433d, 1000, GeoUnit.M);
     assertEquals(1, members);
     Set<String> expected = new LinkedHashSet<>();
     expected.add("place1");
     assertEquals(expected, jedis.zrange("tel-aviv", 0, -1));
 
-    members = jedis.geosearchstore("tel-aviv","barcelona", new GeoSearchParam()
+    members = jedis.geosearchStore("tel-aviv","barcelona", new GeoSearchParam()
             .byradius(3000, GeoUnit.M)
             .fromlonlat(2.191d,41.433d));
     assertEquals(2, members);
 
     // FROMMEMBER and BYRADIUS
-    members = jedis.geosearchstore("tel-aviv", "barcelona","place3", 100, GeoUnit.KM);
+    members = jedis.geosearchStore("tel-aviv", "barcelona","place3", 100, GeoUnit.KM);
     assertEquals(3, members);
 
     // FROMMEMBER and BYBOX
-    members = jedis.geosearchstore("tel-aviv","barcelona","place3", 100, 100, GeoUnit.KM);
+    members = jedis.geosearchStore("tel-aviv","barcelona","place3", 100, 100, GeoUnit.KM);
     assertEquals(3, members);
 
     // FROMLONLAT and BYBOX
-    members = jedis.geosearchstore("tel-aviv","barcelona",2.191, 41.433, 1, 1, GeoUnit.KM);
+    members = jedis.geosearchStore("tel-aviv","barcelona",2.191, 41.433, 1, 1, GeoUnit.KM);
     assertEquals(1, members);
   }
 
@@ -585,7 +585,7 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     jedis.geoadd("barcelona", 2.1909389952632d, 41.433791470673d, "place1");
     jedis.geoadd("barcelona", 2.1873744593677d, 41.406342043777d, "place2");
 
-    long members = jedis.geosearchstoreWithdist("tel-aviv","barcelona", new GeoSearchParam().byradius(3000, GeoUnit.M)
+    long members = jedis.geosearchStoreStoreDist("tel-aviv","barcelona", new GeoSearchParam().byradius(3000, GeoUnit.M)
             .fromlonlat(2.191d,41.433d));
 
     assertEquals(2, members);

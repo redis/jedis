@@ -156,17 +156,17 @@ public interface MultiKeyBinaryCommands {
   List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
       Entry<byte[], byte[]>... streams);
 
-  long geosearchstore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit);
+  long geosearchStore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit);
 
-  long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit);
+  long geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit);
 
-  long geosearchstore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit);
+  long geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit);
 
-  long geosearchstore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit);
+  long geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit);
 
-  long geosearchstore(byte[] dest, byte[] src, GeoRadiusParam params);
+  long geosearchStore(byte[] dest, byte[] src, GeoRadiusParam params);
 
-  long geosearchstoreWithdist(byte[] dest, byte[] src, GeoRadiusParam params);
+  long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoRadiusParam params);
 
   long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);

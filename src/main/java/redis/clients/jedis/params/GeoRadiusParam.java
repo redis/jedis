@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class GeoRadiusParam extends Params {
-  protected static final String WITHCOORD = "withcoord";
-  protected static final String WITHDIST = "withdist";
-  protected static final String WITHHASH = "withhash";
+  private static final String WITHCOORD = "withcoord";
+  private static final String WITHDIST = "withdist";
+  private static final String WITHHASH = "withhash";
 
-  protected static final String ASC = "asc";
-  protected static final String DESC = "desc";
-  protected static final String COUNT = "count";
-  protected static final String ANY = "any";
+  private static final String ASC = "asc";
+  private static final String DESC = "desc";
+  private static final String COUNT = "count";
+  private static final String ANY = "any";
 
   public GeoRadiusParam() {
   }

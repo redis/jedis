@@ -130,6 +130,18 @@ public interface MultiKeyCommandsPipeline {
   Response<Long> georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
+  Response<Long> geosearchStore(String dest, String src, String member, double radius, GeoUnit unit);
+
+  Response<Long> geosearchStore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit);
+
+  Response<Long> geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit);
+
+  Response<Long> geosearchStore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit);
+
+  Response<Long> geosearchStore(String dest, String src, GeoSearchParam params);
+
+  Response<Long> geosearchStoreStoreDist(String dest, String src, GeoSearchParam params);
+
   /**
    * @deprecated Use {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
    */

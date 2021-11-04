@@ -7,20 +7,7 @@ import java.util.Set;
 import redis.clients.jedis.commands.BinaryRedisPipeline;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisPipeline;
-import redis.clients.jedis.params.GeoAddParams;
-import redis.clients.jedis.params.GeoRadiusParam;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
-import redis.clients.jedis.params.XAddParams;
-import redis.clients.jedis.params.XAutoClaimParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.XPendingParams;
-import redis.clients.jedis.params.XTrimParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public abstract class PipelineBase extends Queable implements BinaryRedisPipeline, RedisPipeline {
@@ -1969,6 +1956,36 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   public Response<List<GeoCoordinate>> geopos(final String key, final String... members) {
     getClient(key).geopos(key, members);
     return getResponse(BuilderFactory.GEO_COORDINATE_LIST);
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, String member, double radius, GeoUnit unit) {
+    getClient(key).geosearch(key, member, radius, unit);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    getClient(key).geosearch(key, longitude, latitude, radius, unit);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, String member, double width, double height, GeoUnit unit) {
+    getClient(key).geosearch(key, member, width, height, unit);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit) {
+    getClient(key).geosearch(key, longitude, latitude, width, height, unit);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, GeoSearchParam params) {
+    getClient(key).geosearch(key, params);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override

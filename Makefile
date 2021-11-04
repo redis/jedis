@@ -358,7 +358,7 @@ export REDIS_UNAVAILABLE_CONF
 export STUNNEL_CONF
 
 
-STUNNEL_BIN:=$(shell command -v stunnel)
+STUNNEL_BIN:=$(shell whereis stunnel|cut -d ":" -f 2-2)
 ifneq ($(STUNNEL_BIN),)
 SKIP_SSL='!SSL*,'
 endif

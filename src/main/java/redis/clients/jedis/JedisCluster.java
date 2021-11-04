@@ -2490,7 +2490,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, member, radius, unit);
       }
-    }.run(src);
+    }.run(2, dest, src);
   }
 
   @Override
@@ -2500,7 +2500,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, longitude, latitude, radius, unit);
       }
-    }.run(src);
+    }.run(2, dest, src);
   }
 
   @Override
@@ -2510,7 +2510,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, member, width, height, unit);
       }
-    }.run(src);
+    }.run(2, dest, src);
   }
 
   @Override
@@ -2520,7 +2520,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, longitude, latitude, width, height, unit);
       }
-    }.run(src);  }
+    }.run(2, dest, src);  }
 
   @Override
   public long geosearchStore(String dest, String src, GeoSearchParam params) {
@@ -2529,7 +2529,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, params);
       }
-    }.run(src);
+    }.run(2, dest, src);
   }
 
   @Override
@@ -2539,7 +2539,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.geosearchStoreStoreDist(dest, src, params);
       }
-    }.run(src);
+    }.run(2, dest, src);
   }
 
   @Override

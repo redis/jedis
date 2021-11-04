@@ -2316,7 +2316,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, member, radius, unit);
       }
-    }.runBinary(src);
+    }.runBinary(2, dest, src);
   }
 
   @Override
@@ -2326,7 +2326,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, longitude, latitude, radius, unit);
       }
-    }.runBinary(src);
+    }.runBinary(2, dest, src);
   }
 
   @Override
@@ -2336,7 +2336,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, member, width, height, unit);
       }
-    }.runBinary(src);
+    }.runBinary(2, dest, src);
   }
 
   @Override
@@ -2346,7 +2346,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, longitude, latitude, width, height, unit);
       }
-    }.runBinary(src);
+    }.runBinary(2, dest, src);
   }
 
   @Override
@@ -2356,7 +2356,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, params);
       }
-    }.runBinary(src);
+    }.runBinary(2, dest, src);
   }
 
   @Override
@@ -2366,7 +2366,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStoreStoreDist(dest, src, params);
       }
-    }.runBinary(src);
+    }.runBinary(2, dest, src);
   }
 
   @Override

@@ -2520,7 +2520,8 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, longitude, latitude, width, height, unit);
       }
-    }.run(2, dest, src);  }
+    }.run(2, dest, src);
+  }
 
   @Override
   public long geosearchStore(String dest, String src, GeoSearchParam params) {

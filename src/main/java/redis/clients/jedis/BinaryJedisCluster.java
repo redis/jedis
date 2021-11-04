@@ -2336,7 +2336,8 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, member, width, height, unit);
       }
-    }.runBinary(src);}
+    }.runBinary(src);
+  }
 
   @Override
   public long geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit) {
@@ -2345,7 +2346,8 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, longitude, latitude, width, height, unit);
       }
-    }.runBinary(src);}
+    }.runBinary(src);
+  }
 
   @Override
   public long geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
@@ -2354,7 +2356,8 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStore(dest, src, params);
       }
-    }.runBinary(src);}
+    }.runBinary(src);
+  }
 
   @Override
   public long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
@@ -2363,7 +2366,8 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       public Long execute(Jedis connection) {
         return connection.geosearchStoreStoreDist(dest, src, params);
       }
-    }.runBinary(src);}
+    }.runBinary(src);
+  }
 
   @Override
   public List<GeoRadiusResponse> georadius(final byte[] key, final double longitude,

@@ -959,7 +959,19 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
+    client.geosearchStore(dest, src, member, radius, unit);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> geosearchStore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit) {
+    client.geosearchStore(dest, src, longitude, latitude, radius, unit);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit) {
     client.geosearchStore(dest, src, longitude, latitude, radius, unit);
     return getResponse(BuilderFactory.LONG);
   }
@@ -971,7 +983,19 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
+    client.geosearchStore(dest, src, member, width, height, unit);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> geosearchStore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit) {
+    client.geosearchStore(dest, src, longitude, latitude, width, height, unit);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit) {
     client.geosearchStore(dest, src, longitude, latitude, width, height, unit);
     return getResponse(BuilderFactory.LONG);
   }
@@ -983,7 +1007,19 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
   }
 
   @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
+    client.geosearchStore(dest, src, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
   public Response<Long> geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
+    client.geosearchStoreStoreDist(dest, src, params);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
     client.geosearchStoreStoreDist(dest, src, params);
     return getResponse(BuilderFactory.LONG);
   }

@@ -1965,7 +1965,19 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit) {
+    getClient(key).geosearch(key, member, radius, unit);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
   public Response<List<GeoRadiusResponse>> geosearch(String key, double longitude, double latitude, double radius, GeoUnit unit) {
+    getClient(key).geosearch(key, longitude, latitude, radius, unit);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
     getClient(key).geosearch(key, longitude, latitude, radius, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
@@ -1977,13 +1989,31 @@ public abstract class PipelineBase extends Queable implements BinaryRedisPipelin
   }
 
   @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit) {
+    getClient(key).geosearch(key, member, width, height, unit);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
   public Response<List<GeoRadiusResponse>> geosearch(String key, double longitude, double latitude, double width, double height, GeoUnit unit) {
     getClient(key).geosearch(key, longitude, latitude, width, height, unit);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }
 
   @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, double longitude, double latitude, double width, double height, GeoUnit unit) {
+    getClient(key).geosearch(key, longitude, latitude, width, height, unit);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
   public Response<List<GeoRadiusResponse>> geosearch(String key, GeoSearchParam params) {
+    getClient(key).geosearch(key, params);
+    return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, GeoSearchParam params) {
     getClient(key).geosearch(key, params);
     return getResponse(BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
   }

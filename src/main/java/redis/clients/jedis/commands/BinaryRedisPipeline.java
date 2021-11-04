@@ -341,6 +341,19 @@ public interface BinaryRedisPipeline {
 
   Response<List<GeoCoordinate>> geopos(byte[] key, byte[]... members);
 
+  Response<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit);
+
+  Response<List<GeoRadiusResponse>> geosearch(byte[] key, double longitude, double latitude,
+                                              double radius, GeoUnit unit);
+
+  Response<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member, double width,
+                                              double height, GeoUnit unit);
+
+  Response<List<GeoRadiusResponse>> geosearch(byte[] key, double longitude, double latitude,
+                                              double width, double height, GeoUnit unit);
+
+  Response<List<GeoRadiusResponse>> geosearch(byte[] key, GeoSearchParam params);
+
   Response<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit);
 

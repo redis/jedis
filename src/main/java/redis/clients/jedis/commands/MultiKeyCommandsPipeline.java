@@ -132,15 +132,27 @@ public interface MultiKeyCommandsPipeline {
 
   Response<Long> geosearchStore(String dest, String src, String member, double radius, GeoUnit unit);
 
+  Response<Long> geosearchStore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit);
+
   Response<Long> geosearchStore(String dest, String src, double longitude, double latitude, double radius, GeoUnit unit);
+
+  Response<Long> geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double radius, GeoUnit unit);
 
   Response<Long> geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit);
 
+  Response<Long> geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit);
+
   Response<Long> geosearchStore(String dest, String src, double longitude, double latitude, double width, double height, GeoUnit unit);
+
+  Response<Long> geosearchStore(byte[] dest, byte[] src, double longitude, double latitude, double width, double height, GeoUnit unit);
 
   Response<Long> geosearchStore(String dest, String src, GeoSearchParam params);
 
+  Response<Long> geosearchStore(byte[] dest, byte[] src, GeoSearchParam params);
+
   Response<Long> geosearchStoreStoreDist(String dest, String src, GeoSearchParam params);
+
+  Response<Long> geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params);
 
   /**
    * @deprecated Use {@link #xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.

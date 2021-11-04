@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.io.Serializable;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -119,7 +120,7 @@ public class HostAndPort implements Serializable {
       if (inetAddress.isLoopbackAddress() || host.equals("0.0.0.0") || host.startsWith("169.254")) {
         return getLocalhost();
       }
-    } catch (Exception e) {
+    } catch (UnknownHostException | RuntimeException e) {
       // Not a valid IP address
       log.warn("{}.convertHost '{}' is not a valid IP address. ", HostAndPort.class.getName(),
         host, e);
@@ -152,7 +153,7 @@ public class HostAndPort implements Serializable {
     String localAddress;
     try {
       localAddress = InetAddress.getLocalHost().getHostAddress();
-    } catch (Exception ex) {
+    } catch (UnknownHostException | RuntimeException ex) {
       log.error("{}.getLocalHostQuietly : cant resolve localhost address",
         HostAndPort.class.getName(), ex);
       localAddress = "localhost";

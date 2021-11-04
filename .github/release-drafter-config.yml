@@ -1,13 +1,34 @@
 name-template: '$NEXT_MAJOR_VERSION'
-tag-template: 'jedis-$NEXT_MAJOR_VERSION'
+tag-template: 'v$NEXT_MAJOR_VERSION'
+autolabeler:
+  - label: 'chore'
+    files:
+      - '*.md'
+      - '.github/*'
+  - label: 'bug'
+    branch:
+      - '/bug-.+'
+  - label: 'chore'
+    branch:
+      - '/chore-.+'
+  - label: 'feature'
+    branch:
+      - '/feature-.+'
 categories:
-  - title: 'Features'
+  - title: 'Breaking Changes'
     labels:
-      - 'ENHANCEMENT'
-  - title: 'Bug Fixes'
+      - 'breakingchange'
+  - title: '🚀 New Features'
     labels:
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
       - 'BUG'
-  - title: 'Maintenance'
+  - title: '🧰 Maintenance'
     label: 'chore'
 change-template: '- $TITLE (#$NUMBER)'
 exclude-labels:
@@ -19,5 +40,6 @@ template: |
 
   ## Contributors
   We'd like to thank all the contributors who worked on this release!
-  
+
   $CONTRIBUTORS
+

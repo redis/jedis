@@ -1,5 +1,4 @@
 PATH := ./redis-git/src:${PATH}
-STUNNEL_BIN := $(shell which stunnel)
 
 define REDIS1_CONF
 daemonize yes
@@ -357,13 +356,12 @@ export REDIS_CLUSTER_NODE5_CONF
 export REDIS_UDS
 export REDIS_UNAVAILABLE_CONF
 export STUNNEL_CONF
-export STUNNEL_BIN
 
 
+STUNNEL_BIN := $(shell which stunnel)
 ifndef STUNNEL_BIN
-    SKIP_SSL := !SSL*,
+SKIP_SSL='!SSL*,'
 endif
-export SKIP_SSL
 
 start: stunnel cleanup
 	echo "$$REDIS1_CONF" | redis-server -
@@ -472,7 +470,7 @@ travis-install:
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git
-	
+
 circleci-install:
 	sudo apt-get install -y gcc-8 g++-8
 	cd /usr/bin ;\
@@ -480,7 +478,7 @@ circleci-install:
 	sudo ln -sf g++-8 g++
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git	
+	$(MAKE) -C redis-git
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

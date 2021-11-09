@@ -48,6 +48,10 @@ public final class Protocol {
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
 
+  public static final String PUBSUB_CHANNELS = "channels";
+  public static final String PUBSUB_NUMSUB = "numsub";
+  public static final String PUBSUB_NUM_PAT = "numpat";
+
   private Protocol() {
     // this prevent the class from instantiation
   }

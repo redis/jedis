@@ -30,6 +30,7 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands,
@@ -8670,4 +8671,40 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return result;
   }
 
+  public void subscribe(JedisPubSub jedisPubSub, String... channels) {
+    jedisPubSub.subscribe(channels);
+  }
+
+  public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
+    jedisPubSub.subscribe(channels);
+  }
+
+  public void psubscribe(JedisPubSub jedisPubSub, String... channels) {
+    jedisPubSub.psubscribe(channels);
+  }
+
+  public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
+    jedisPubSub.psubscribe(channels);
+  }
+
+  public List<String> pubsubChannels() {
+    checkIsInMultiOrPipeline();
+    pubsub(Protocol.PUBSUB_CHANNELS);
+    return connection.getMultiBulkReply();
+  }
+
+  public List<String> pubsubChannels(final String pattern) {
+    checkIsInMultiOrPipeline();
+    pubsub(Protocol.PUBSUB_CHANNELS, pattern);
+    return connection.getMultiBulkReply();
+  }
+
+  public void pubsub(final String subcommand, final String... args) {
+    final byte[][] arg = new byte[args.length + 1][];
+    for (int i = 1; i < arg.length; i++) {
+      arg[i] = SafeEncoder.encode(args[i - 1]);
+    }
+    arg[0] = SafeEncoder.encode(subcommand);
+    sendCommand(PUBSUB, arg);
+  }
 }

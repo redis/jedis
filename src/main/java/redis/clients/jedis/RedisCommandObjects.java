@@ -2471,6 +2471,10 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GSON.toJson(object)).addParams(params), BuilderFactory.STRING);
   }
 
+  public final CommandObject<Object> jsonGet(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new GsonObjectBuilder<>(Object.class));
+  }
+
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new GsonObjectBuilder<>(clazz));
   }
@@ -2480,7 +2484,7 @@ public class RedisCommandObjects {
   }
 
   public final <T> CommandObject<List<T>> jsonMGet(Class<T> clazz, String... keys) {
-    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys), new GsonObjectListBuilder<>(clazz));
+    return jsonMGet(Path.ROOT_PATH, clazz, keys);
   }
 
   public final <T> CommandObject<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys) {
@@ -2504,7 +2508,7 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Class<?>> jsonType(String key) {
-    return jsonType(key, Path.ROOT_PATH);
+    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key), BuilderFactory.REDIS_JSON_TYPE);
   }
 
   public final CommandObject<Class<?>> jsonType(String key, Path path) {
@@ -2512,7 +2516,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Path path, Object... objects) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(objects), BuilderFactory.LONG);
+    CommandArguments args = commandArguments(JsonCommand.STRAPPEND).key(key).add(path);
+    for (Object object : objects) {
+      args.add(GSON.toJson(object));
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> jsonStrLen(String key, Path path) {
@@ -2520,7 +2528,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> jsonArrAppend(String key, Path path, Object... objects) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRAPPEND).key(key).add(path).add(objects), BuilderFactory.LONG);
+    CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
+    for (Object object : objects) {
+      args.add(GSON.toJson(object));
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> jsonArrIndex(String key, Path path, Object scalar) {
@@ -2543,16 +2555,16 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
 
-  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, Long index) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(clazz));
+  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key), new GsonObjectBuilder<>(clazz));
   }
 
   public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path), new GsonObjectBuilder<>(clazz));
   }
 
-  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz) {
-    return jsonArrPop(key, clazz, Path.ROOT_PATH);
+  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, long index) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(clazz));
   }
   // RedisJSON commands
 

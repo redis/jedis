@@ -24,7 +24,7 @@ import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class ScriptingCommandsTest extends JedisCommandTestBase {
+public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };

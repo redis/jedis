@@ -44,7 +44,7 @@ import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
+public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
   final byte[] bfoo2 = { 0x01, 0x02, 0x03, 0x04, 0x0B };

@@ -27,10 +27,10 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.tests.commands.JedisCommandTestBase;
+import redis.clients.jedis.tests.commands.JedisCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class JedisTest extends JedisCommandTestBase {
+public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void useWithoutConnecting() {

@@ -15,7 +15,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
 
-public class StringValuesCommandsTest extends JedisCommandTestBase {
+public class StringValuesCommandsTest extends JedisCommandsTestBase {
   @Test
   public void setAndGet() {
     String status = jedis.set("foo", "bar");

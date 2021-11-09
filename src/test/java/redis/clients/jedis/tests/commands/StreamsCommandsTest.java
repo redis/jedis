@@ -33,7 +33,7 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class StreamsCommandsTest extends JedisCommandTestBase {
+public class StreamsCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void xadd() {

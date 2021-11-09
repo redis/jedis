@@ -83,6 +83,7 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
     return slot >= 0 ? getConnectionFromSlot(slot) : getConnection();
   }
 
+  @Override
   public Connection getConnection() {
     // In antirez's redis-rb-cluster implementation, getRandomConnection always
     // return valid connection (able to ping-pong) or exception if all

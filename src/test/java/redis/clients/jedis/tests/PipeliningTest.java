@@ -32,10 +32,10 @@ import redis.clients.jedis.exceptions.AbortedTransactionException;
 import redis.clients.jedis.exceptions.JedisBusyException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.Tuple;
-import redis.clients.jedis.tests.commands.JedisCommandTestBase;
+import redis.clients.jedis.tests.commands.JedisCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class PipeliningTest extends JedisCommandTestBase {
+public class PipeliningTest extends JedisCommandsTestBase {
 //
 //  @Test
 //  public void pipeline() {

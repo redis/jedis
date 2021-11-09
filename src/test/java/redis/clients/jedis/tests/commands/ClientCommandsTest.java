@@ -27,7 +27,7 @@ import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 
-public class ClientCommandsTest extends JedisCommandTestBase {
+public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private final String clientName = "fancy_jedis_name";
   private final Pattern pattern = Pattern.compile("\\bname=" + clientName + "\\b");

@@ -2817,6 +2817,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Object jsonGet(String key) {
+    return executeCommand(commandObjects.jsonGet(key));
+  }
+
+  @Override
   public <T> T jsonGet(String key, Class<T> clazz) {
     return executeCommand(commandObjects.jsonGet(key, clazz));
   }
@@ -2847,7 +2852,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Long jsonClear(String key, Path path) {
+  public long jsonClear(String key, Path path) {
     return executeCommand(commandObjects.jsonClear(key, path));
   }
 

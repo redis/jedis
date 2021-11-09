@@ -1224,7 +1224,8 @@ public final class BuilderFactory {
   public static final Builder<Class<?>> REDIS_JSON_TYPE = new Builder<Class<?>>() {
     @Override
     public Class<?> build(Object data) {
-      switch ((String) data) {
+      String str = STRING.build(data);
+      switch ((String) str) {
         case "null":
           return null;
         case "boolean":
@@ -1240,7 +1241,7 @@ public final class BuilderFactory {
         case "array":
           return List.class;
         default:
-          throw new RuntimeException((String) data);
+          throw new RuntimeException(str);
       }
     }
 

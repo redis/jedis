@@ -5,5 +5,7 @@ import redis.clients.jedis.Connection;
 
 public interface JedisConnectionProvider extends AutoCloseable {
 
+  Connection getConnection();
+
   Connection getConnection(CommandArguments args);
 }

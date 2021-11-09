@@ -24,7 +24,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class BinaryValuesCommandsTest extends JedisCommandTestBase {
+public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   byte[] bxx = { 0x78, 0x78 };

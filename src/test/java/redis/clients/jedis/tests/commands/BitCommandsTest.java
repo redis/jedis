@@ -15,7 +15,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class BitCommandsTest extends JedisCommandTestBase {
+public class BitCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void setAndgetbit() {

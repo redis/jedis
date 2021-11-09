@@ -15,7 +15,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.MigrateParams;
 
-public class MigrateTest extends JedisCommandTestBase {
+public class MigrateTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03 };
   private static final byte[] bbar = { 0x04, 0x05, 0x06 };

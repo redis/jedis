@@ -12,6 +12,7 @@ public interface RedisJsonCommands {
 
   String jsonSet(String key, Path path, Object object, JsonSetParams params);
 
+  Object jsonGet(String key);
   //<T> T jsonGet(String key);
 
   //<T> T jsonGet(String key, Path... paths);
@@ -28,7 +29,7 @@ public interface RedisJsonCommands {
 
   Long jsonDel(String key, Path path);
 
-  Long jsonClear(String key, Path path);
+  long jsonClear(String key, Path path);
 
   String jsonToggle(String key, Path path);
 

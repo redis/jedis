@@ -18,7 +18,7 @@ import redis.clients.jedis.util.SafeEncoder;
 /**
  * TODO: properly define and test exceptions
  */
-public class AccessControlListCommandsTest extends JedisCommandTestBase {
+public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   public static String USER_YYY = "yyy";
   public static String USER_ZZZ = "zzz";

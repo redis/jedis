@@ -54,7 +54,7 @@ public class Connection implements Closeable {
     this(socketFactory, clientConfig, null);
   }
 
-  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Pool<Connection> pool) {
+  Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Pool<Connection> pool) {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
@@ -430,12 +430,13 @@ public class Connection implements Closeable {
     return getStatusCodeReply();
   }
 
-  public void ping() {
+  public boolean ping() {
     sendCommand(Protocol.Command.PING);
     String status = getStatusCodeReply();
     if (!"PONG".equals(status)) {
       throw new JedisException(status);
     }
+    return true;
   }
 
 }

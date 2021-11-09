@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.params.SortingParams;
 
-public class SortingCommandsTest extends JedisCommandTestBase {
+public class SortingCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoodest = { 0x01, 0x02, 0x03, 0x04, 0x05 };
   final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, '1' };

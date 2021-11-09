@@ -9,10 +9,10 @@ import org.junit.Test;
 
 import redis.clients.jedis.Module;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.tests.commands.JedisCommandTestBase;
+import redis.clients.jedis.tests.commands.JedisCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class ModuleTest extends JedisCommandTestBase {
+public class ModuleTest extends JedisCommandsTestBase {
 
   static enum ModuleCommand implements ProtocolCommand {
     SIMPLE("testmodule.simple");

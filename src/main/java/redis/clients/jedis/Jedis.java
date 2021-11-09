@@ -8672,39 +8672,63 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public void subscribe(JedisPubSub jedisPubSub, String... channels) {
-    jedisPubSub.subscribe(channels);
+    connection.setTimeoutInfinite();
+    try {
+      jedisPubSub.proceed(connection, channels);
+    } finally {
+      connection.rollbackTimeout();
+    }
+  }
+
+  public void psubscribe(JedisPubSub jedisPubSub, String... patterns) {
+    checkIsInMultiOrPipeline();
+    connection.setTimeoutInfinite();
+    try {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    } finally {
+      connection.rollbackTimeout();
+    }
   }
 
   public void subscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
-    jedisPubSub.subscribe(channels);
+    connection.setTimeoutInfinite();
+    try {
+      jedisPubSub.proceed(connection, channels);
+    } finally {
+      connection.rollbackTimeout();
+    }
   }
 
-  public void psubscribe(JedisPubSub jedisPubSub, String... channels) {
-    jedisPubSub.psubscribe(channels);
-  }
-
-  public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... channels) {
-    jedisPubSub.psubscribe(channels);
+  public void psubscribe(BinaryJedisPubSub jedisPubSub, byte[]... patterns) {
+    connection.setTimeoutInfinite();
+    try {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    } finally {
+      connection.rollbackTimeout();
+    }
   }
 
   public List<String> pubsubChannels() {
     checkIsInMultiOrPipeline();
-    pubsub(Protocol.PUBSUB_CHANNELS);
+    connection.pubsub(Protocol.PUBSUB_CHANNELS);
     return connection.getMultiBulkReply();
   }
 
   public List<String> pubsubChannels(final String pattern) {
     checkIsInMultiOrPipeline();
-    pubsub(Protocol.PUBSUB_CHANNELS, pattern);
+    connection.pubsub(Protocol.PUBSUB_CHANNELS, pattern);
     return connection.getMultiBulkReply();
   }
 
-  public void pubsub(final String subcommand, final String... args) {
-    final byte[][] arg = new byte[args.length + 1][];
-    for (int i = 1; i < arg.length; i++) {
-      arg[i] = SafeEncoder.encode(args[i - 1]);
-    }
-    arg[0] = SafeEncoder.encode(subcommand);
-    sendCommand(PUBSUB, arg);
+  public Map<String, String> pubsubNumSub(String... channels) {
+    checkIsInMultiOrPipeline();
+    connection.pubsub(Protocol.PUBSUB_NUMSUB, channels);
+    return BuilderFactory.PUBSUB_NUMSUB_MAP.build(connection.getBinaryMultiBulkReply());
+  }
+
+  public Long pubsubNumPat() {
+    checkIsInMultiOrPipeline();
+    connection.pubsub(Protocol.PUBSUB_NUM_PAT);
+    return connection.getIntegerReply();
   }
 }

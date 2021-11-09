@@ -438,4 +438,12 @@ public class Connection implements Closeable {
     }
   }
 
+  public void pubsub(final String subcommand, final String... args) {
+    final byte[][] arg = new byte[args.length + 1][];
+    for (int i = 1; i < arg.length; i++) {
+      arg[i] = SafeEncoder.encode(args[i - 1]);
+    }
+    arg[0] = SafeEncoder.encode(subcommand);
+    sendCommand(Protocol.Command.PUBSUB, arg);
+  }
 }

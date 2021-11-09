@@ -174,46 +174,46 @@ public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
     assertEquals(Collections.singletonList("hi!"), pongPatterns);
   }
 
-//  @Test
-//  public void pubSubNumPat() {
-//    jedis.psubscribe(new JedisPubSub() {
-//      private int count = 0;
-//
-//      @Override
-//      public void onPSubscribe(String pattern, int subscribedChannels) {
-//        count++;
-//        if (count == 3) {
-//          Jedis otherJedis = createJedis();
-//          Long numPatterns = otherJedis.pubsubNumPat();
-//          assertEquals(new Long(2l), numPatterns);
-//          punsubscribe();
-//        }
-//      }
-//
-//    }, "test*", "test*", "chan*");
-//  }
-//
-//  @Test
-//  public void pubSubNumSub() {
-//    final Map<String, String> expectedNumSub = new HashMap<String, String>();
-//    expectedNumSub.put("testchannel2", "1");
-//    expectedNumSub.put("testchannel1", "1");
-//    jedis.subscribe(new JedisPubSub() {
-//      private int count = 0;
-//
-//      @Override
-//      public void onSubscribe(String channel, int subscribedChannels) {
-//        count++;
-//        if (count == 2) {
-//          Jedis otherJedis = createJedis();
-//          Map<String, String> numSub = otherJedis.pubsubNumSub("testchannel1", "testchannel2");
-//          assertEquals(expectedNumSub, numSub);
-//          unsubscribe();
-//        }
-//      }
-//    }, "testchannel1", "testchannel2");
-//  }
-//
+  @Test
+  public void pubSubNumPat() {
+    jedis.psubscribe(new JedisPubSub() {
+      private int count = 0;
+
+      @Override
+      public void onPSubscribe(String pattern, int subscribedChannels) {
+        count++;
+        if (count == 3) {
+          Jedis otherJedis = createJedis();
+          Long numPatterns = otherJedis.pubsubNumPat();
+          assertEquals(new Long(2l), numPatterns);
+          punsubscribe();
+        }
+      }
+
+    }, "test*", "test*", "chan*");
+  }
+
+  @Test
+  public void pubSubNumSub() {
+    final Map<String, String> expectedNumSub = new HashMap<String, String>();
+    expectedNumSub.put("testchannel2", "1");
+    expectedNumSub.put("testchannel1", "1");
+    jedis.subscribe(new JedisPubSub() {
+      private int count = 0;
+
+      @Override
+      public void onSubscribe(String channel, int subscribedChannels) {
+        count++;
+        if (count == 2) {
+          Jedis otherJedis = createJedis();
+          Map<String, String> numSub = otherJedis.pubsubNumSub("testchannel1", "testchannel2");
+          assertEquals(expectedNumSub, numSub);
+          unsubscribe();
+        }
+      }
+    }, "testchannel1", "testchannel2");
+  }
+
   @Test
   public void subscribeMany() throws UnknownHostException, IOException, InterruptedException {
     jedis.subscribe(new JedisPubSub() {

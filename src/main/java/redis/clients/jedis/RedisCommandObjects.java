@@ -2464,11 +2464,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object object) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(object), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GSON.toJson(object)), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(object).addParams(params), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GSON.toJson(object)).addParams(params), BuilderFactory.STRING);
   }
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {
@@ -2480,11 +2480,11 @@ public class RedisCommandObjects {
   }
 
   public final <T> CommandObject<List<T>> jsonMGet(Class<T> clazz, String... keys) {
-    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys(keys), new GsonObjectListBuilder<>(clazz));
+    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys), new GsonObjectListBuilder<>(clazz));
   }
 
   public final <T> CommandObject<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys) {
-    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys(keys).add(path), new GsonObjectListBuilder<>(clazz));
+    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), new GsonObjectListBuilder<>(clazz));
   }
 
   public final CommandObject<Long> jsonDel(String key) {
@@ -2524,11 +2524,15 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Long> jsonArrIndex(String key, Path path, Object scalar) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(scalar), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(GSON.toJson(scalar)), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> jsonArrInsert(String key, Path path, Long index, Object... objects) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index).add(objects), BuilderFactory.LONG);
+    CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
+    for (Object object : objects) {
+      args.add(GSON.toJson(object));
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> jsonArrLen(String key, Path path) {

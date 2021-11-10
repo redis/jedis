@@ -1,6 +1,6 @@
 package redis.clients.jedis.search;
 
-import java.util.Collection;
+import java.util.List;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
@@ -8,8 +8,8 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class FieldName implements IParams {
 
-//  private static final String AS_ENCODED = "AS";
-//  private static final byte[] AS_BINARY = SafeEncoder.encode(AS_ENCODED);
+  private static final String AS_ENCODED = "AS";
+  private static final byte[] AS_BINARY = SafeEncoder.encode(AS_ENCODED);
   private static final byte[] AS = SafeEncoder.encode("AS");
 
   private final String name;
@@ -23,28 +23,28 @@ public class FieldName implements IParams {
     this.name = name;
     this.attribute = attribute;
   }
-//
-//  public int addCommandEncodedArguments(Collection<String> args) {
-//    args.add(name);
-//    if (attribute == null) {
-//      return 1;
-//    }
-//
-//    args.add(AS_ENCODED);
-//    args.add(attribute);
-//    return 3;
-//  }
-//
-//  public int addCommandBinaryArguments(Collection<byte[]> args) {
-//    args.add(SafeEncoder.encode(name));
-//    if (attribute == null) {
-//      return 1;
-//    }
-//
-//    args.add(AS_BINARY);
-//    args.add(SafeEncoder.encode(attribute));
-//    return 3;
-//  }
+
+  public int addCommandEncodedArguments(List<String> args) {
+    args.add(name);
+    if (attribute == null) {
+      return 1;
+    }
+
+    args.add(AS_ENCODED);
+    args.add(attribute);
+    return 3;
+  }
+
+  public int addCommandBinaryArguments(List<byte[]> args) {
+    args.add(SafeEncoder.encode(name));
+    if (attribute == null) {
+      return 1;
+    }
+
+    args.add(AS_BINARY);
+    args.add(SafeEncoder.encode(attribute));
+    return 3;
+  }
 
   public int addCommandArguments(CommandArguments args) {
     args.add(SafeEncoder.encode(name));

@@ -24,6 +24,8 @@ import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
+import redis.clients.jedis.search.aggr.AggregationBuilder;
+import redis.clients.jedis.search.aggr.AggregationResult;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -2785,6 +2787,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String ftAlter(String indexName, Schema schema) {
+    return executeCommand(commandObjects.ftAlter(indexName, schema));
+  }
+
+  @Override
   public SearchResult ftSearch(String indexName, Query query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -2793,6 +2800,72 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public SearchResult ftSearch(byte[] indexName, Query query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
+
+  @Override
+  public String ftExplain(String indexName, Query query) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public List<String> ftExplainCLI(String indexName, Query query) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public AggregationResult ftAggregate(String indexName, AggregationBuilder aggr) {
+    return executeCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  public String ftDropIndex(String indexName) {
+    return executeCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public String ftDropIndexDD(String indexName) {
+    return executeCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
+  public String ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+    return executeCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
+  }
+
+  @Override
+  public Map<String, List<Object>> ftSynDump(String indexName) {
+    return executeCommand(commandObjects.ftSynDump(indexName));
+  }
+
+  @Override
+  public Map<String, Object> ftInfo(String indexName) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String ftAliasAdd(String aliasName, String indexName) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String ftAliasUpdate(String aliasName, String indexName) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String ftAliasDel(String aliasName) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Map<String, String> ftConfigGet(String option) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String ftConfigSet(String option, String value) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
   // RediSearch commands
 
   // RedisJSON commands

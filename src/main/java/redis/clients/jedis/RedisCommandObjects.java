@@ -23,6 +23,8 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.SearchProtocol.SearchCommand;
 import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
+import redis.clients.jedis.search.aggr.AggregationBuilder;
+import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.stream.*;
 
 public class RedisCommandObjects {
@@ -2443,6 +2445,13 @@ public class RedisCommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> ftAlter(String indexName, Schema schema) {
+    CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName)
+        .add(SearchKeyword.SCHEMA).add(SearchKeyword.ADD);
+    schema.fields.forEach(field -> field.addParams(args));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
   public CommandObject<SearchResult> ftSearch(String indexName, Query query) {
     return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));
@@ -2452,6 +2461,29 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
   }
+
+  public final CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
+    return new CommandObject<>(commandArguments(SearchCommand.AGGREGATE).add(indexName).addObjects(aggr.getArgs()),
+        !aggr.isWithCursor() ? BuilderFactory.SEARCH_AGGREGATION_RESULT : BuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+  }
+
+  public final CommandObject<String> ftDropIndex(String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> ftDropIndexDD(String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+    return new CommandObject<>(commandArguments(SearchCommand.SYNUPDATE).add(indexName)
+        .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, List<Object>>> ftSynDump(String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.SYNDUMP).add(indexName), BuilderFactory.SEARCH_SYNONYM_GROUPS);
+  }
+
   // RediSearch commands
 
   // RedisJSON commands
@@ -2508,11 +2540,11 @@ public class RedisCommandObjects {
   }
 
   public final CommandObject<Class<?>> jsonType(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key), BuilderFactory.REDIS_JSON_TYPE);
+    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key), BuilderFactory.JSON_TYPE);
   }
 
   public final CommandObject<Class<?>> jsonType(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), BuilderFactory.REDIS_JSON_TYPE);
+    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), BuilderFactory.JSON_TYPE);
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Path path, Object... objects) {

@@ -6,6 +6,7 @@ import java.util.*;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
@@ -1221,7 +1222,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Class<?>> REDIS_JSON_TYPE = new Builder<Class<?>>() {
+  public static final Builder<Class<?>> JSON_TYPE = new Builder<Class<?>>() {
     @Override
     public Class<?> build(Object data) {
       String str = STRING.build(data);
@@ -1248,6 +1249,33 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "Class<?>";
+    }
+  };
+
+  public static final Builder<AggregationResult> SEARCH_AGGREGATION_RESULT = new Builder<AggregationResult>() {
+    @Override
+    public AggregationResult build(Object data) {
+      return new AggregationResult(data);
+    }
+  };
+
+  public static final Builder<AggregationResult> SEARCH_AGGREGATION_RESULT_WITH_CURSOR = new Builder<AggregationResult>() {
+    @Override
+    public AggregationResult build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return new AggregationResult(list.get(0), (long) list.get(1));
+    }
+  };
+
+  public static final Builder<Map<String, List<Object>>> SEARCH_SYNONYM_GROUPS = new Builder<Map<String, List<Object>>>() {
+    @Override
+    public Map<String, List<Object>> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      Map<String, List<Object>> dump = new HashMap<>(list.size() / 2);
+      for (int i = 0; i < list.size(); i += 2) {
+        dump.put(STRING.build(list.get(i)), ENCODED_OBJECT_LIST.build(list.get(i + 1)));
+      }
+      return dump;
     }
   };
 

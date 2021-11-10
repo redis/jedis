@@ -24,6 +24,14 @@ public class Schema {
     this.fields = new ArrayList<>();
   }
 
+  public static Schema from(Field... fields) {
+    Schema schema = new Schema();
+    for (Field field : fields) {
+      schema.addField(field);
+    }
+    return schema;
+  }
+
   /**
    * Add a text field to the schema with a given weight
    *
@@ -130,16 +138,7 @@ public class Schema {
     }
 
     @Override
-    public void addParams(CommandArguments args) {
-      
-    }
-
-    /**
-     * Sub-classes should not override this method.
-     *
-     * @param args
-     */
-    public void serializeRedisArgs(CommandArguments args) {
+    public final void addParams(CommandArguments args) {
       this.fieldName.addParams(args);
       args.add(type.name());
       addTypeArgs(args);

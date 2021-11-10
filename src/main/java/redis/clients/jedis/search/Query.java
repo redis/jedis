@@ -1,10 +1,9 @@
 package redis.clients.jedis.search;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import redis.clients.jedis.CommandArguments;
 
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.params.IParams;
@@ -51,13 +50,6 @@ public class Query implements IParams {
     }
 
     private byte[] formatNum(double num, boolean exclude) {
-      if (num == Double.POSITIVE_INFINITY) {
-        return SearchKeyword.POSITIVE_INFINITY.getRaw();
-      }
-      if (num == Double.NEGATIVE_INFINITY) {
-        return SearchKeyword.NEGATIVE_INFINITY.getRaw();
-      }
-
       return exclude ? SafeEncoder.encode("(" + num) : Protocol.toByteArray(num);
     }
 

@@ -39,13 +39,17 @@ public abstract class BinaryJedisPubSub {
   }
 
   public void unsubscribe() {
-    client.unsubscribe();
-    client.flush();
+    if (client != null) {
+      client.unsubscribe();
+      client.flush();
+    }
   }
 
   public void unsubscribe(byte[]... channels) {
-    client.unsubscribe(channels);
-    client.flush();
+    if (client != null) {
+      client.unsubscribe(channels);
+      client.flush();
+    }
   }
 
   public void subscribe(byte[]... channels) {
@@ -59,13 +63,17 @@ public abstract class BinaryJedisPubSub {
   }
 
   public void punsubscribe() {
-    client.punsubscribe();
-    client.flush();
+    if (client != null) {
+      client.punsubscribe();
+      client.flush();
+    }
   }
 
   public void punsubscribe(byte[]... patterns) {
-    client.punsubscribe(patterns);
-    client.flush();
+    if (client != null) {
+      client.punsubscribe(patterns);
+      client.flush();
+    }
   }
 
   public void ping() {

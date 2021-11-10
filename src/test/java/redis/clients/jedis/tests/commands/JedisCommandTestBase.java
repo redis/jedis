@@ -35,4 +35,8 @@ public abstract class JedisCommandTestBase {
     j.auth("foobared");
     return j;
   }
+
+  protected Jedis createJedisDefaultTimeout() {
+    return new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
+  }
 }

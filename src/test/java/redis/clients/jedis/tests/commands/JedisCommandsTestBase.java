@@ -36,4 +36,8 @@ public abstract class JedisCommandsTestBase {
   protected Jedis createJedis() {
     return new Jedis(hnp, config);
   }
+
+  protected Jedis createJedisDefaultTimeout() {
+    return new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
+  }
 }

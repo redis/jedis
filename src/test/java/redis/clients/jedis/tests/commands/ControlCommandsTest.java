@@ -223,10 +223,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void clientPause() throws InterruptedException, ExecutionException {
     ExecutorService executorService = Executors.newFixedThreadPool(2);
     try {
-      final Jedis jedisToPause1 = createJedis();
-      final Jedis jedisToPause2 = createJedis();
+      final Jedis jedisToPause1 = createJedisDefaultTimeout();
+      final Jedis jedisToPause2 = createJedisDefaultTimeout();
 
-      int pauseMillis = 1250;
+      int pauseMillis = 600;
       jedis.clientPause(pauseMillis);
 
       Future<Long> latency1 = executorService.submit(new Callable<Long>() {
@@ -265,11 +265,11 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientPauseAll() throws InterruptedException, ExecutionException {
-    final int pauseMillis = 1250;
+    final int pauseMillis = 600;
     final int pauseMillisDelta = 100;
 
     ExecutorService executorService = Executors.newFixedThreadPool(1);
-    try (Jedis jedisPause = createJedis()) {
+    try (Jedis jedisPause = createJedisDefaultTimeout();) {
 
       jedis.clientPause(pauseMillis, ClientPauseMode.ALL);
 
@@ -295,11 +295,11 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientPauseWrite() throws InterruptedException, ExecutionException {
-    final int pauseMillis = 1250;
+    final int pauseMillis = 600;
     final int pauseMillisDelta = 100;
 
     ExecutorService executorService = Executors.newFixedThreadPool(2);
-    try (Jedis jedisRead = createJedis(); Jedis jedisWrite = createJedis();) {
+    try (Jedis jedisRead = createJedisDefaultTimeout(); Jedis jedisWrite = createJedisDefaultTimeout();) {
 
       jedis.clientPause(pauseMillis, ClientPauseMode.WRITE);
 

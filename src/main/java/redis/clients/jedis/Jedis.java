@@ -3348,20 +3348,21 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection.sendCommand(Command.INFO, section);
     return connection.getBulkReply();
   }
-//
-//  /**
-//   * Dump all the received requests in real time.
-//   * <p>
-//   * MONITOR is a debugging command that outputs the whole sequence of commands received by the
-//   * Redis server. is very handy in order to understand what is happening into the database. This
-//   * command is used directly via telnet.
-//   * @param jedisMonitor
-//   */
-//  public void monitor(final JedisMonitor jedisMonitor) {
+
+  /**
+   * Dump all the received requests in real time.
+   * <p>
+   * MONITOR is a debugging command that outputs the whole sequence of commands received by the
+   * Redis server. is very handy in order to understand what is happening into the database. This
+   * command is used directly via telnet.
+   * @param jedisMonitor
+   */
+  public void monitor(final JedisMonitor jedisMonitor) {
 //    connection.monitor();
-//    connection.getStatusCodeReply();
-//    jedisMonitor.proceed(connection);
-//  }
+    connection.sendCommand(MONITOR);
+    connection.getStatusCodeReply();
+    jedisMonitor.proceed(connection);
+  }
 
   /**
    * Change the replication settings.

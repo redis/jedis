@@ -19,7 +19,7 @@ import org.junit.Test;
 //import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
-//import redis.clients.jedis.JedisMonitor;
+import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -145,40 +145,40 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
       AssertUtil.assertCollectionContains((List) brole.get(1), "mymaster".getBytes());
     }
   }
-//
-//  @Test
-//  public void monitor() {
-//    new Thread(new Runnable() {
-//      @Override
-//      public void run() {
-//        try {
-//          // sleep 100ms to make sure that monitor thread runs first
-//          Thread.sleep(100);
-//        } catch (InterruptedException e) {
-//        }
-//        Jedis j = new Jedis();
-//        j.auth("foobared");
-//        for (int i = 0; i < 5; i++) {
-//          j.incr("foobared");
-//        }
-//        j.disconnect();
-//      }
-//    }).start();
-//
-//    jedis.monitor(new JedisMonitor() {
-//      private int count = 0;
-//
-//      @Override
-//      public void onCommand(String command) {
-//        if (command.contains("INCR")) {
-//          count++;
-//        }
-//        if (count == 5) {
-//          client.disconnect();
-//        }
-//      }
-//    });
-//  }
+
+  @Test
+  public void monitor() {
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          // sleep 100ms to make sure that monitor thread runs first
+          Thread.sleep(100);
+        } catch (InterruptedException e) {
+        }
+        Jedis j = new Jedis();
+        j.auth("foobared");
+        for (int i = 0; i < 5; i++) {
+          j.incr("foobared");
+        }
+        j.disconnect();
+      }
+    }).start();
+
+    jedis.monitor(new JedisMonitor() {
+      private int count = 0;
+
+      @Override
+      public void onCommand(String command) {
+        if (command.contains("INCR")) {
+          count++;
+        }
+        if (count == 5) {
+          client.disconnect();
+        }
+      }
+    });
+  }
 
   @Test
   public void configGet() {

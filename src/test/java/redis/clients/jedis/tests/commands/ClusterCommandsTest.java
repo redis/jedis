@@ -132,7 +132,7 @@ public class ClusterCommandsTest {
   @Test
   public void clusterGetByteKeysInSlot() {
     node1.clusterAddSlots(500);
-    List<byte[]> keys = node1.clusterGetBytesKeysInSlot(500, 1);
+    List<byte[]> keys = node1.clusterGetKeysInSlotBinary(500, 1);
     assertEquals(0, keys.size());
   }
 

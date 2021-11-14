@@ -3889,7 +3889,7 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public List<byte[]> clusterGetBytesKeysInSlot(final int slot, final int count) {
+  public List<byte[]> clusterGetKeysInSlotBinary(final int slot, final int count) {
     checkIsInMultiOrPipeline();
     client.clusterGetKeysInSlot(slot, count);
     return client.getBinaryMultiBulkReply();

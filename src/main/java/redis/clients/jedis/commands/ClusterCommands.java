@@ -26,7 +26,7 @@ public interface ClusterCommands {
 
   List<String> clusterGetKeysInSlot(int slot, int count);
 
-  List<byte[]> clusterGetBytesKeysInSlot(int slot, int count);
+  List<byte[]> clusterGetKeysInSlotBinary(int slot, int count);
 
   String clusterSetSlotNode(int slot, String nodeId);
 

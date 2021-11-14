@@ -61,6 +61,19 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP_FROM_PLAIN_LIST = new Builder<Map<String, Object>>() {
+    @Override
+    public Map<String, Object> build(Object data) {
+      final List list = (List) data;
+      final Map<String, Object> map = new HashMap<>(list.size() / 2, 1);
+      final Iterator iterator = list.iterator();
+      while (iterator.hasNext()) {
+        map.put(STRING.build(iterator.next()), ENCODED_OBJECT.build(iterator.next()));
+      }
+      return map;
+    }
+  };
+
   public static final Builder<Long> LONG = new Builder<Long>() {
     @Override
     public Long build(Object data) {
@@ -1220,6 +1233,27 @@ public final class BuilderFactory {
         return new LCSMatchResult(matchedPositions, len);
       }
     }
+  };
+
+  public static final Builder<Map<String, String>> STRING_MAP_FROM_PAIR_ARRAY = new Builder<Map<String, String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, String> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      final Map<String, String> map = new HashMap<>(list.size());
+      for (Object object : list) {
+        final List<byte[]> flat = (List<byte[]>) object;
+        map.put(SafeEncoder.encode(flat.get(0)), flat.get(1) != null ? SafeEncoder.encode(flat.get(1)) : null);
+      }
+
+      return map;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, String>";
+    }
+
   };
 
   public static final Builder<Class<?>> JSON_TYPE = new Builder<Class<?>>() {

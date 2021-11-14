@@ -121,40 +121,40 @@ public class Query implements IParams {
   /**
    * The query's filter list. We only support AND operation on all those filters
    */
-  protected final List<Filter> _filters = new LinkedList<>();
+  private final List<Filter> _filters = new LinkedList<>();
 
   /**
    * The textual part of the query
    */
-  protected final String _queryString;
+  private final String _queryString;
 
   /**
    * The sorting parameters
    */
-  protected final Paging _paging = new Paging(0, 10);
+  private final Paging _paging = new Paging(0, 10);
 
-  protected boolean _verbatim = false;
-  protected boolean _noContent = false;
-  protected boolean _noStopwords = false;
-  protected boolean _withScores = false;
-  protected boolean _withPayloads = false;
-  protected String _language = null;
-  protected String[] _fields = null;
-  protected String[] _keys = null;
-  protected String[] _returnFields = null;
+  private boolean _verbatim = false;
+  private boolean _noContent = false;
+  private boolean _noStopwords = false;
+  private boolean _withScores = false;
+  private boolean _withPayloads = false;
+  private String _language = null;
+  private String[] _fields = null;
+  private String[] _keys = null;
+  private String[] _returnFields = null;
   private FieldName[] returnFieldNames = null;
-  protected String[] highlightFields = null;
-  protected String[] summarizeFields = null;
-  protected String[] highlightTags = null;
-  protected String summarizeSeparator = null;
-  protected int summarizeNumFragments = -1;
-  protected int summarizeFragmentLen = -1;
-  protected byte[] _payload = null;
-  protected String _sortBy = null;
-  protected boolean _sortAsc = true;
-  protected boolean wantsHighlight = false;
-  protected boolean wantsSummarize = false;
-  protected String _scorer = null;
+  private String[] highlightFields = null;
+  private String[] summarizeFields = null;
+  private String[] highlightTags = null;
+  private String summarizeSeparator = null;
+  private int summarizeNumFragments = -1;
+  private int summarizeFragmentLen = -1;
+  private byte[] _payload = null;
+  private String _sortBy = null;
+  private boolean _sortAsc = true;
+  private boolean wantsHighlight = false;
+  private boolean wantsSummarize = false;
+  private String _scorer = null;
 
   public Query() {
     this("*");
@@ -280,10 +280,10 @@ public class Query implements IParams {
       }
     } else if (returnFieldNames != null && returnFieldNames.length > 0) {
       args.add(SearchKeyword.RETURN.getRaw());
-      final int returnCountIndex = args.size();
+//      final int returnCountIndex = args.size();
       DelayedRawable returnCountObject = new DelayedRawable();
 //      args.add(null); // holding a place for setting the total count later.
-      args.add(returnCountIndex); // holding a place for setting the total count later.
+      args.add(returnCountObject); // holding a place for setting the total count later.
       int returnCount = 0;
       for (FieldName fn : returnFieldNames) {
         returnCount += fn.addCommandArguments(args);

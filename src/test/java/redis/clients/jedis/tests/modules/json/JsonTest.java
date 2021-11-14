@@ -47,13 +47,13 @@ import com.google.gson.JsonObject;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
-import redis.clients.jedis.tests.modules.ModuleCommandsTestBase;
+import redis.clients.jedis.tests.modules.RedisModuleCommandsTestBase;
 
-public class JsonTest extends ModuleCommandsTestBase {
+public class JsonTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
-  public static void prepare() throws Exception {
-    ModuleCommandsTestBase.prepare();
+  public static void prepare() {
+    RedisModuleCommandsTestBase.prepare();
   }
 
   /* A simple class that represents an object in real life */

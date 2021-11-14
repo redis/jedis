@@ -258,6 +258,10 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(RENAMENX).key(oldkey).key(newkey), BuilderFactory.LONG);
   }
 
+  public CommandObject<Long> dbSize() {
+    return new CommandObject<>(commandArguments(DBSIZE), BuilderFactory.LONG);
+  }
+
   public CommandObject<Set<String>> keys(String pattern) {
     CommandArguments args = commandArguments(Command.KEYS).key(pattern);
     return new CommandObject<>(args, BuilderFactory.STRING_SET);
@@ -2445,7 +2449,7 @@ public class RedisCommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> ftAlter(String indexName, Schema schema) {
+  public CommandObject<String> ftAlter(String indexName, Schema schema) {
     CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName)
         .add(SearchKeyword.SCHEMA).add(SearchKeyword.ADD);
     schema.fields.forEach(field -> field.addParams(args));
@@ -2462,28 +2466,82 @@ public class RedisCommandObjects {
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
   }
 
-  public final CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
+  public CommandObject<String> ftExplain(String indexName, Query query) {
+    return new CommandObject<>(commandArguments(SearchCommand.EXPLAIN).add(indexName).addParams(query), BuilderFactory.STRING);
+  }
+
+  public CommandObject<List<String>> ftExplainCLI(String indexName, Query query) {
+    return new CommandObject<>(commandArguments(SearchCommand.EXPLAINCLI).add(indexName).addParams(query), BuilderFactory.STRING_LIST);
+  }
+
+  public CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return new CommandObject<>(commandArguments(SearchCommand.AGGREGATE).add(indexName).addObjects(aggr.getArgs()),
         !aggr.isWithCursor() ? BuilderFactory.SEARCH_AGGREGATION_RESULT : BuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
-  public final CommandObject<String> ftDropIndex(String indexName) {
+  public CommandObject<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
+    return new CommandObject<>(commandArguments(SearchCommand.CURSOR).add(SearchKeyword.READ)
+        .add(indexName).add(cursorId).add(count), BuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+  }
+
+  public CommandObject<String> ftCursorDel(String indexName, long cursorId) {
+    return new CommandObject<>(commandArguments(SearchCommand.CURSOR).add(SearchKeyword.DEL)
+        .add(indexName).add(cursorId), BuilderFactory.STRING);
+  }
+
+  public CommandObject<String> ftDropIndex(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> ftDropIndexDD(String indexName) {
+  public CommandObject<String> ftDropIndexDD(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+  public CommandObject<String> ftSynUpdate(String indexName, long synonymGroupId, String... terms) {
     return new CommandObject<>(commandArguments(SearchCommand.SYNUPDATE).add(indexName)
         .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Map<String, List<Object>>> ftSynDump(String indexName) {
+  public CommandObject<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+    return new CommandObject<>(commandArguments(SearchCommand.SYNUPDATE).add(indexName)
+        .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);
+  }
+
+  public CommandObject<Map<String, List<Object>>> ftSynDump(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.SYNDUMP).add(indexName), BuilderFactory.SEARCH_SYNONYM_GROUPS);
   }
 
+  public CommandObject<Map<String, Object>> ftInfo(String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.INFO).add(indexName), BuilderFactory.ENCODED_OBJECT_MAP_FROM_PLAIN_LIST);
+  }
+
+  public CommandObject<String> ftAliasAdd(String aliasName, String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.ALIASADD).add(aliasName).add(indexName), BuilderFactory.STRING);
+  }
+
+  public CommandObject<String> ftAliasUpdate(String aliasName, String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.ALIASUPDATE).add(aliasName).add(indexName), BuilderFactory.STRING);
+  }
+
+  public CommandObject<String> ftAliasDel(String aliasName) {
+    return new CommandObject<>(commandArguments(SearchCommand.ALIASDEL).add(aliasName), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, String>> ftConfigGet(String option) {
+    return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.GET).add(option), BuilderFactory.STRING_MAP_FROM_PAIR_ARRAY);
+  }
+
+  public CommandObject<Map<String, String>> ftConfigGet(String indexName, String option) {
+    return ftConfigGet(option);
+  }
+
+  public final CommandObject<String> ftConfigSet(String option, String value) {
+    return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.SET).add(option).add(value), BuilderFactory.STRING);
+  }
+
+  public CommandObject<String> ftConfigSet(String indexName, String option, String value) {
+    return ftConfigSet(option, value);
+  }
   // RediSearch commands
 
   // RedisJSON commands

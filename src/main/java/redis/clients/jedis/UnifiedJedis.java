@@ -94,7 +94,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     IOUtils.closeQuietly(this.executor);
   }
 
-  protected final <T> T executeCommand(CommandObject<T> commandObject) {
+  public final <T> T executeCommand(CommandObject<T> commandObject) {
     return executor.executeCommand(commandObject);
   }
 
@@ -377,6 +377,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long renamenx(byte[] oldkey, byte[] newkey) {
     return executeCommand(commandObjects.renamenx(oldkey, newkey));
+  }
+
+  @Override
+  public long dbSize() {
+    return executeCommand(commandObjects.dbSize());
   }
 
   @Override
@@ -2803,17 +2808,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String ftExplain(String indexName, Query query) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.ftExplain(indexName, query));
   }
 
   @Override
   public List<String> ftExplainCLI(String indexName, Query query) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.ftExplainCLI(indexName, query));
   }
 
   @Override
   public AggregationResult ftAggregate(String indexName, AggregationBuilder aggr) {
     return executeCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  public AggregationResult ftCursorRead(String indexName, long cursorId, int count) {
+    return executeCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
+  }
+
+  @Override
+  public String ftCursorDel(String indexName, long cursorId) {
+    return executeCommand(commandObjects.ftCursorDel(indexName, cursorId));
   }
 
   @Override
@@ -2824,6 +2839,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String ftDropIndexDD(String indexName) {
     return executeCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
+  public String ftSynUpdate(String indexName, long synonymGroupId, String... terms) {
+    return executeCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
   }
 
   @Override
@@ -2838,34 +2858,43 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Map<String, Object> ftInfo(String indexName) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.ftInfo(indexName));
   }
 
   @Override
   public String ftAliasAdd(String aliasName, String indexName) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }
 
   @Override
   public String ftAliasUpdate(String aliasName, String indexName) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
   }
 
   @Override
   public String ftAliasDel(String aliasName) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.ftAliasDel(aliasName));
   }
 
   @Override
   public Map<String, String> ftConfigGet(String option) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.ftConfigGet(option));
+  }
+
+  @Override
+  public Map<String, String> ftConfigGet(String indexName, String option) {
+    return executeCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
   @Override
   public String ftConfigSet(String option, String value) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    return executeCommand(commandObjects.ftConfigSet(option, value));
   }
 
+  @Override
+  public String ftConfigSet(String indexName, String option, String value) {
+    return executeCommand(commandObjects.ftConfigSet(indexName, option, value));
+  }
   // RediSearch commands
 
   // RedisJSON commands

@@ -14,19 +14,18 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.PooledJedisConnectionProvider;
 
-public abstract class ModuleCommandsTestBase {
+public abstract class RedisModuleCommandsTestBase {
 
   protected static final HostAndPort hnp = new HostAndPort(Protocol.DEFAULT_HOST, 6479);
 
   private static final PooledJedisConnectionProvider provider = new PooledJedisConnectionProvider(hnp);
   protected UnifiedJedis client;
 
-  public ModuleCommandsTestBase() {
+  public RedisModuleCommandsTestBase() {
     super();
   }
 
-  @BeforeClass
-  public static void prepare() throws Exception {
+  public static void prepare() {
     try (Connection connection = new Connection(hnp)) {
       assumeTrue("No Redis running on 6479 port. Ignoring modules tests.", connection.ping());
     } catch (JedisConnectionException jce) {
@@ -35,7 +34,7 @@ public abstract class ModuleCommandsTestBase {
   }
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     try (Jedis jedis = createJedis()) {
       jedis.flushAll();
     }
@@ -44,6 +43,10 @@ public abstract class ModuleCommandsTestBase {
 //
 //  @After
 //  public void tearDown() throws Exception {
+//    client.close();
+//  }
+//
+//  public static void tearDown() {
 //    client.close();
 //  }
 

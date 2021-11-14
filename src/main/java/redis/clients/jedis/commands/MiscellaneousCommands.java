@@ -5,6 +5,8 @@ import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface MiscellaneousCommands {
 
+  long dbSize();
+
   long publish(final String channel, final String message);
 
   LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params);

@@ -52,7 +52,7 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
-  public CommandArguments addObjects(Collection<Object> args) {
+  public CommandArguments addObjects(Collection args) {
     for (Object arg : args) {
       add(arg);
     }

@@ -25,9 +25,15 @@ public interface RediSearchCommands {
 
   AggregationResult ftAggregate(String indexName, AggregationBuilder aggr);
 
+  AggregationResult ftCursorRead(String indexName, long cursorId, int count);
+
+  String ftCursorDel(String indexName, long cursorId);
+
   String ftDropIndex(String indexName);
 
   String ftDropIndexDD(String indexName);
+
+  String ftSynUpdate(String indexName, long synonymGroupId, String... terms);
 
   String ftSynUpdate(String indexName, String synonymGroupId, String... terms);
 
@@ -43,5 +49,9 @@ public interface RediSearchCommands {
 
   Map<String, String> ftConfigGet(String option);
 
+  Map<String, String> ftConfigGet(String indexName, String option);
+
   String ftConfigSet(String option, String value);
+
+  String ftConfigSet(String indexName, String option, String value);
 }

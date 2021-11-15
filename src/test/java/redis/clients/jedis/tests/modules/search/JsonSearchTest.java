@@ -2,6 +2,7 @@ package redis.clients.jedis.tests.modules.search;
 
 import static org.junit.Assert.*;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import org.json.JSONObject;
 import org.junit.AfterClass;
@@ -51,6 +52,24 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
     return json;
   }
 
+  private class Student {
+    private String firstName;
+    private String lastName;
+
+    public Student(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    public String getFirstName() {
+      return firstName;
+    }
+
+    public String getLastName() {
+      return lastName;
+    }
+  }
+
   @Test
   public void create() {
     Schema schema = new Schema().addTextField("$.first", 1.0).addTextField("$.last", 1.0)
@@ -97,19 +116,11 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
             IndexOptions.defaultOptions().setDefinition(rule),
             schema));
 
-    JSONObject maya = new org.json.JSONObject();
-    maya.put("firstName", "Maya");
-    maya.put("lastName", "Jayavant");
+    Student maya = new Student("Maya", "Jayavant");
+    client.jsonSet("student:111", maya);
 
-    //client.jsonSet("student:111", maya);
-    setJson("student:111", maya);
-
-    JSONObject oliwia = new org.json.JSONObject();
-    oliwia.put("firstName", "Oliwia");
-    oliwia.put("lastName", "Jagoda");
-
-    setJson("student:222", oliwia);
-    //client.jsonSet("student:222", oliwia);
+    Student oliwia = new Student("Oliwia", "Jagoda");
+    client.jsonSet("student:222", oliwia);
 
     SearchResult noFilters = client.ftSearch("student-index", new Query());
     assertEquals(2, noFilters.getTotalResults());

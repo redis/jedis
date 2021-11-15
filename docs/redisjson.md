@@ -18,25 +18,41 @@ First, let's create a `UnifiedJedis` instance:
   PooledJedisConnectionProvider provider = new PooledJedisConnectionProvider(config);
   UnifiedJedis client = new UnifiedJedis(provider);
 ```
-Now we can start working with JSON. For these examples, we'll be using the `org.json` [JSON-Java](https://docs.oracle.com/javaee/7/api/javax/json/JsonObject.html) library.
+Now we can start working with JSON. For these examples, we'll be using [GSON]
+(https://github.com/google/gson) to handle the serialization of POJOs to JSON.
 
 ## Creating JSON documents
 
-Suppose we're building an online learning platform, and we want to represent students. Here's how we can represent a couple of students using JSON:
+Suppose we're building an online learning platform, and we want to represent 
+students. Let's create a POJO to represent our students:
 
 ```java
-JSONObject maya = new org.json.JSONObject();
-maya.put("firstName", "Maya");
-maya.put("lastName", "Jayavant");
+private class Student {
+    private String firstName;
+    private String lastName;
 
-JSONObject oliwia = new org.json.JSONObject();
-oliwia.put("firstName", "Oliwia");
-oliwia.put("lastName", "Jagoda");
+    public Student(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    public String getFirstName() {
+      return firstName;
+    }
+
+    public String getLastName() {
+      return lastName;
+    }
+}
 ```
-Now we can store this JSON in Redis:
+
+Now we can create some students and store them in Redis as JSON":
 
 ```java
+Student maya = new Student("Maya", "Jayavant");
 client.jsonSet("student:111", maya);
+
+Student oliwia = new Student("Oliwia", "Jagoda");
 client.jsonSet("student:112", oliwia);
 ```
 

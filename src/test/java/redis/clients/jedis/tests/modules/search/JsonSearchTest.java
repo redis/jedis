@@ -2,6 +2,7 @@ package redis.clients.jedis.tests.modules.search;
 
 import static org.junit.Assert.*;
 
+import com.google.gson.JsonObject;
 import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -17,6 +18,8 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.Schema.*;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.tests.modules.RedisModuleCommandsTestBase;
+
+import java.util.List;
 
 public class JsonSearchTest extends RedisModuleCommandsTestBase {
 
@@ -82,6 +85,41 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
 
     SearchResult res2 = client.ftSearch(index, new Query("@\\$\\.first:Pat"));
     assertEquals(1, res2.getTotalResults());
+  }
+
+  @Test
+  public void testCompleteExample() {
+    Schema schema = new Schema().addTextField("$.firstName", 1.0).addTextField("$" +
+            ".lastName", 1.0);
+    IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON)
+        .setPrefixes(new String[]{"student:"});
+    assertEquals("OK", client.ftCreate("student-index",
+            IndexOptions.defaultOptions().setDefinition(rule),
+            schema));
+
+    JSONObject maya = new org.json.JSONObject();
+    maya.put("firstName", "Maya");
+    maya.put("lastName", "Jayavant");
+
+    //client.jsonSet("student:111", maya);
+    setJson("student:111", maya);
+
+    JSONObject oliwia = new org.json.JSONObject();
+    oliwia.put("firstName", "Oliwia");
+    oliwia.put("lastName", "Jagoda");
+
+    setJson("student:222", oliwia);
+    //client.jsonSet("student:222", oliwia);
+
+    SearchResult noFilters = client.ftSearch("student-index", new Query());
+    assertEquals(2, noFilters.getTotalResults());
+    Query q = new Query("@\\$\\" + ".firstName:maya*");
+    SearchResult mayaSearch = client.ftSearch("student-index", q);
+    assertEquals(1, mayaSearch.getTotalResults());
+    List<Document> docs = mayaSearch.getDocuments();
+    for (Document doc : docs) {
+      System.out.println(doc);
+    }
   }
 
   @Test

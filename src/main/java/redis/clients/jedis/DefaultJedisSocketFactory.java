@@ -1,8 +1,14 @@
 package redis.clients.jedis;
 
 import java.io.IOException;
+import java.net.ConnectException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
@@ -64,6 +70,25 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
   }
 
+  private void connectToFirstSuccsefulHost(Socket socket, HostAndPort hostAndPort) throws IOException {
+    List<InetAddress> hosts = Arrays.asList(InetAddress.getAllByName(hostAndPort.getHost()));
+    Collections.shuffle(hosts);
+    List<ConnectException> connectExceptions = new ArrayList<ConnectException>();
+    boolean connected = false;
+    for (InetAddress host : hosts) {
+      try{
+        socket.connect(new InetSocketAddress(host.getHostAddress(), hostAndPort.getPort()), getConnectionTimeout());
+        connected = true;
+        break;
+      } catch (ConnectException e) {
+        connectExceptions.add(e);
+      }
+    }
+    if(connected == false) {
+      throw new ConnectException(connectExceptions.toString());
+    }
+  }
+
   @Override
   public Socket createSocket() throws JedisConnectionException {
     Socket socket = null;
@@ -75,11 +100,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
       socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
       // <-@wjw_add
-
-      HostAndPort hostAndPort = getSocketHostAndPort();
-      socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()), getConnectionTimeout());
       socket.setSoTimeout(getSoTimeout());
-
+      connectToFirstSuccsefulHost(socket, getSocketHostAndPort());
       if (ssl) {
         SSLSocketFactory sslSocketFactory = getSslSocketFactory();
         if (null == sslSocketFactory) {

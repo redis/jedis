@@ -47,9 +47,6 @@ try (Jedis jedis = pool.getResource()) {
 
 Jedis provides support for some of the [Redis modules](https://redis.io/modules), most notably [RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
 
-The latest versions of RedisJSON let you store, manipulate, index, and query JSON.
- To 
-use these features with Jedis, you'll need to use the `UnifiedJedis` interface. 
 See the [RedisJSON Jedis Quick Start](docs/redisjson.md) for details.
 
 ## Connecting to a Redis cluster

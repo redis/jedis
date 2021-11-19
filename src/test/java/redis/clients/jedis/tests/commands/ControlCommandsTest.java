@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-import redis.clients.jedis.DebugParams;
+//import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
@@ -27,7 +27,7 @@ import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.tests.utils.AssertUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class ControlCommandsTest extends JedisCommandTestBase {
+public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void save() {
     try {
@@ -204,24 +204,15 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     assertEquals("OK", jedis.configSet(maxmemory, Protocol.toByteArray(200)));
     assertEquals("OK", jedis.configSet(maxmemory, memory));
   }
-
-  @Test
-  public void configGetSetBinary2() {
-    byte[] maxmemory = SafeEncoder.encode("maxmemory");
-    List<byte[]> info = jedis.configGet(maxmemory);
-    assertArrayEquals(maxmemory, info.get(0));
-    byte[] memory = info.get(1);
-    assertEquals("OK", jedis.configSetBinary(maxmemory, memory));
-  }
-
-  @Test
-  public void debug() {
-    jedis.set("foo", "bar");
-    String resp = jedis.debug(DebugParams.OBJECT("foo"));
-    assertNotNull(resp);
-    resp = jedis.debug(DebugParams.RELOAD());
-    assertNotNull(resp);
-  }
+//
+//  @Test
+//  public void debug() {
+//    jedis.set("foo", "bar");
+//    String resp = jedis.debug(DebugParams.OBJECT("foo"));
+//    assertNotNull(resp);
+//    resp = jedis.debug(DebugParams.RELOAD());
+//    assertNotNull(resp);
+//  }
 
   @Test
   public void waitReplicas() {
@@ -278,7 +269,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
     final int pauseMillisDelta = 100;
 
     ExecutorService executorService = Executors.newFixedThreadPool(1);
-    try (Jedis jedisPause = createJedis()) {
+    try (Jedis jedisPause = createJedis();) {
 
       jedis.clientPause(pauseMillis, ClientPauseMode.ALL);
 
@@ -304,7 +295,7 @@ public class ControlCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void clientPauseWrite() throws InterruptedException, ExecutionException {
-    final int pauseMillis = 1250;
+    final int pauseMillis = 600;
     final int pauseMillisDelta = 100;
 
     ExecutorService executorService = Executors.newFixedThreadPool(2);

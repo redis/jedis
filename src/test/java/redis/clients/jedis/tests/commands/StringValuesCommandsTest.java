@@ -3,6 +3,8 @@ package redis.clients.jedis.tests.commands;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeFalse;
+import static redis.clients.jedis.tests.utils.RedisVersionUtil.checkRedisMajorVersionNumber;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
 
-public class StringValuesCommandsTest extends JedisCommandTestBase {
+public class StringValuesCommandsTest extends JedisCommandsTestBase {
   @Test
   public void setAndGet() {
     String status = jedis.set("foo", "bar");
@@ -241,6 +243,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void strAlgoLcsWithLen() {
+    assumeFalse(checkRedisMajorVersionNumber(7));
     LCSMatchResult stringMatchResult = jedis.strAlgoLCSStrings("ohmytext", "mynewtext",
         StrAlgoLCSParams.StrAlgoLCSParams().len());
     assertEquals(stringMatchResult.getLen(), 6);
@@ -248,6 +251,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void strAlgoLcs() {
+    assumeFalse(checkRedisMajorVersionNumber(7));
     LCSMatchResult stringMatchResult = jedis.strAlgoLCSStrings("ohmytext", "mynewtext",
         StrAlgoLCSParams.StrAlgoLCSParams());
     assertEquals(stringMatchResult.getMatchString(), "mytext");
@@ -255,6 +259,7 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void strAlgoLcsWithIdx() {
+    assumeFalse(checkRedisMajorVersionNumber(7));
     LCSMatchResult stringMatchResult = jedis.strAlgoLCSStrings("ohmytext", "mynewtext",
         StrAlgoLCSParams.StrAlgoLCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
@@ -277,15 +282,17 @@ public class StringValuesCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void strAlgoLcsWithKey() {
+    assumeFalse(checkRedisMajorVersionNumber(7));
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
     LCSMatchResult stringMatchResult = jedis.strAlgoLCSKeys("key1", "key2",
         StrAlgoLCSParams.StrAlgoLCSParams());
-    assertEquals(stringMatchResult.getMatchString(), "mytext");
+    assertEquals("mytext", stringMatchResult.getMatchString());
   }
 
   @Test
   public void strAlgoLcsWithKeyAndIdx() {
+    assumeFalse(checkRedisMajorVersionNumber(7));
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
     LCSMatchResult stringMatchResult = jedis.strAlgoLCSKeys( "key1", "key2",

@@ -1,6 +1,5 @@
 package redis.clients.jedis.resps;
 
-import redis.clients.jedis.Tuple;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**

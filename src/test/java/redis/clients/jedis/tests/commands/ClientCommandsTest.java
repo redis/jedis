@@ -27,7 +27,7 @@ import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 
-public class ClientCommandsTest extends JedisCommandTestBase {
+public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private final String clientName = "fancy_jedis_name";
   private final Pattern pattern = Pattern.compile("\\bname=" + clientName + "\\b");
@@ -90,7 +90,8 @@ public class ClientCommandsTest extends JedisCommandTestBase {
   public void clientIdReconnect() {
     long clientIdInitial = client.clientId();
     client.disconnect();
-    client.connect();
+//    client.connect();
+    client.auth("foobared");
     long clientIdAfterReconnect = client.clientId();
 
     assertTrue(clientIdInitial < clientIdAfterReconnect);
@@ -209,7 +210,9 @@ public class ClientCommandsTest extends JedisCommandTestBase {
     Matcher matcher = Pattern.compile("\\baddr=(\\S+)\\b").matcher(info);
     matcher.find();
     String addr = matcher.group(1);
-    String[] hp = HostAndPort.extractParts(addr);
+//    String[] hp = HostAndPort.extractParts(addr);
+    int lastColon = addr.lastIndexOf(":");
+    String[] hp = new String[]{addr.substring(0, lastColon), addr.substring(lastColon + 1)};
 
     assertEquals(1, jedis.clientKill(new ClientKillParams().addr(hp[0], Integer.parseInt(hp[1]))));
 

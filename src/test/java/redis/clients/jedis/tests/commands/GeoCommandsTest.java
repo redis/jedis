@@ -3,7 +3,6 @@ package redis.clients.jedis.tests.commands;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
 import java.util.HashMap;
@@ -15,14 +14,14 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.GeoRadiusResponse;
-import redis.clients.jedis.GeoUnit;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class GeoCommandsTest extends JedisCommandTestBase {
+public class GeoCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bA = { 0x0A };
   final byte[] bB = { 0x0B };
@@ -482,10 +481,5 @@ public class GeoCommandsTest extends JedisCommandTestBase {
     bcoordinateMap.put(bC, new GeoCoordinate(3.314, 2.3241));
 
     assertEquals(3, jedis.geoadd(bfoo, bcoordinateMap));
-  }
-
-  private boolean equalsWithinEpsilon(double d1, double d2) {
-    double epsilon = 1E-5;
-    return Math.abs(d1 - d2) < epsilon;
   }
 }

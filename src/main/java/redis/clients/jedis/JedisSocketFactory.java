@@ -15,38 +15,9 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  */
 public interface JedisSocketFactory {
 
-  /**
-   * @return Socket
-   * @throws JedisConnectionException
-   */
   Socket createSocket() throws JedisConnectionException;
-
-  void updateHostAndPort(HostAndPort hostAndPort);
-
-  @Deprecated
-  String getDescription();
-
-  @Deprecated
-  String getHost();
-
-  @Deprecated
-  void setHost(String host);
-
-  @Deprecated
-  int getPort();
-
-  @Deprecated
-  void setPort(int port);
-
-  @Deprecated
-  int getConnectionTimeout();
-
-  @Deprecated
-  void setConnectionTimeout(int connectionTimeout);
-
-  @Deprecated
-  int getSoTimeout();
-
-  @Deprecated
-  void setSoTimeout(int soTimeout);
+//
+//  void setSocketTimeout(int soTimeout);
+//
+//  int getSocketTimeout();
 }

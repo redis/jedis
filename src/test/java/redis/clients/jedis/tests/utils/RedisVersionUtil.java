@@ -1,15 +1,16 @@
 package redis.clients.jedis.tests.utils;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.tests.HostAndPortUtil;
 
 public class RedisVersionUtil {
 
-  public static int getRedisMajorVersionNumber() {
+  public static Integer getRedisMajorVersionNumber() {
     String completeVersion = null;
 
-    try (Jedis jedis = new Jedis()) {
+    try (Jedis jedis = new Jedis(HostAndPortUtil.getRedisServers().get(0))) {
       jedis.auth("foobared");
-      String info = jedis.info("server");
+      String info = jedis.info();
       String[] splitted = info.split("\\s+|:");
       for (int i = 0; i < splitted.length; i++) {
         if (splitted[i].equalsIgnoreCase("redis_version")) {
@@ -20,7 +21,7 @@ public class RedisVersionUtil {
     }
 
     if (completeVersion == null) {
-      return 0;
+      return null;
     }
     return Integer.parseInt(completeVersion.substring(0, completeVersion.indexOf(".")));
   }

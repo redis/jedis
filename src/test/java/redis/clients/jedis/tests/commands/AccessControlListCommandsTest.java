@@ -7,18 +7,18 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.AccessControlUser;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.resps.AccessControlUser;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * TODO: properly define and test exceptions
  */
-public class AccessControlListCommandsTest extends JedisCommandTestBase {
+public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   public static String USER_YYY = "yyy";
   public static String USER_ZZZ = "zzz";

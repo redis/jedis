@@ -3,12 +3,13 @@ package redis.clients.jedis.tests.utils;
 import java.util.concurrent.atomic.AtomicReference;
 
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.Sentinel;
 
 public class JedisSentinelTestUtil {
+
   public static HostAndPort waitForNewPromotedMaster(final String masterName,
-      final Jedis sentinelJedis, final Jedis commandJedis) throws InterruptedException {
+      final Sentinel sentinelJedis, final Sentinel commandJedis) throws InterruptedException {
 
     final AtomicReference<String> newmaster = new AtomicReference<String>("");
 

@@ -18,7 +18,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.List;
 
-public class ObjectCommandsTest extends JedisCommandTestBase {
+public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private String key = "mylist";
   private byte[] binaryKey = SafeEncoder.encode(key);

@@ -25,9 +25,10 @@ import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
+//import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class JedisPoolTest {
+
   private static final HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
   @Test
@@ -49,6 +50,7 @@ public class JedisPoolTest {
 
       try (Jedis jedis = pool.getResource()) {
         assertEquals("PONG", jedis.ping());
+//        assertEquals(5000, jedis.getClient().getSoTimeout());
         assertEquals(5000, jedis.getClient().getSoTimeout());
         jedis.close();
       }
@@ -115,7 +117,8 @@ public class JedisPoolTest {
     assertTrue(pool.isClosed());
   }
 
-  @Test(expected = JedisExhaustedPoolException.class)
+//  @Test(expected = JedisExhaustedPoolException.class)
+  @Test(expected = JedisException.class)
   public void checkPoolOverflow() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);

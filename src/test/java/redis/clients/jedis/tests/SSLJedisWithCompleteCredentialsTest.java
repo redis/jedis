@@ -7,7 +7,7 @@ import java.net.URI;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
-import java.security.cert.CertificateException;
+//import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import org.junit.BeforeClass;
@@ -16,8 +16,8 @@ import org.junit.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.exceptions.JedisConnectionException;
+//import redis.clients.jedis.JedisShardInfo;
+//import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 import static org.junit.Assert.*;
@@ -98,156 +98,156 @@ public class SSLJedisWithCompleteCredentialsTest {
       assertEquals("PONG", jedis.ping());
     }
   }
-
-  /**
-   * Tests opening an SSL/TLS connection to redis. NOTE: This test relies on a feature that is only
-   * available as of Java 7 and later. It is commented out but not removed in case support for Java
-   * 6 is dropped or we find a way to have the CI run a specific set of tests on Java 7 and above.
-   */
-  @Test
-  public void connectWithShardInfo() throws Exception {
-    final URI uri = URI.create("rediss://localhost:6390");
-    final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-    // These SSL parameters ensure that we use the same hostname verifier used
-    // for HTTPS.
-    // Note: this options is only available in Java 7.
-    final SSLParameters sslParameters = new SSLParameters();
-    sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
-    shardInfo.setUser("acljedis");
-    shardInfo.setPassword("fizzbuzz");
-
-    try (Jedis jedis = new Jedis(shardInfo)) {
-      assertEquals("PONG", jedis.ping());
-    }
-  }
-
-  /**
-   * Tests opening an SSL/TLS connection to redis using the loopback address of 127.0.0.1. This test
-   * should fail because "127.0.0.1" does not match the certificate subject common name and there
-   * are no subject alternative names in the certificate. NOTE: This test relies on a feature that
-   * is only available as of Java 7 and later. It is commented out but not removed in case support
-   * for Java 6 is dropped or we find a way to have the CI run a specific set of tests on Java 7 and
-   * above.
-   */
-  @Test
-  public void connectWithShardInfoByIpAddress() throws Exception {
-    final URI uri = URI.create("rediss://127.0.0.1:6390");
-    final SSLSocketFactory sslSocketFactory = createTrustStoreSslSocketFactory();
-    // These SSL parameters ensure that we use the same hostname verifier used
-    // for HTTPS.
-    // Note: this options is only available in Java 7.
-    final SSLParameters sslParameters = new SSLParameters();
-    sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
-
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
-    shardInfo.setUser("acljedis");
-    shardInfo.setPassword("fizzbuzz");
-
-    try (Jedis jedis = new Jedis(shardInfo)) {
-      assertEquals("PONG", jedis.ping());
-      fail("The code did not throw the expected JedisConnectionException.");
-    } catch (JedisConnectionException e) {
-      assertSame("Unexpected first inner exception.", SSLHandshakeException.class, e.getCause()
-          .getClass());
-      assertSame("Unexpected second inner exception.", CertificateException.class, e.getCause()
-          .getCause().getClass());
-    }
-  }
-
-  /**
-   * Tests opening an SSL/TLS connection to redis with a custom hostname verifier.
-   */
-  @Test
-  public void connectWithShardInfoAndCustomHostnameVerifier() {
-    final URI uri = URI.create("rediss://localhost:6390");
-    final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-    final SSLParameters sslParameters = new SSLParameters();
-
-    HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
-        hostnameVerifier);
-    shardInfo.setUser("acljedis");
-    shardInfo.setPassword("fizzbuzz");
-
-    try (Jedis jedis = new Jedis(shardInfo)) {
-      assertEquals("PONG", jedis.ping());
-    }
-  }
-
-  /**
-   * Tests opening an SSL/TLS connection to redis with a custom socket factory.
-   */
-  @Test
-  public void connectWithShardInfoAndCustomSocketFactory() throws Exception {
-    final URI uri = URI.create("rediss://localhost:6390");
-    final SSLSocketFactory sslSocketFactory = createTrustStoreSslSocketFactory();
-    final SSLParameters sslParameters = new SSLParameters();
-
-    HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
-        hostnameVerifier);
-    shardInfo.setUser("acljedis");
-    shardInfo.setPassword("fizzbuzz");
-
-    try (Jedis jedis = new Jedis(shardInfo)) {
-      assertEquals("PONG", jedis.ping());
-    }
-  }
-
-  /**
-   * Tests opening an SSL/TLS connection to redis with a custom hostname verifier. This test should
-   * fail because "127.0.0.1" does not match the certificate subject common name and there are no
-   * subject alternative names in the certificate.
-   */
-  @Test
-  public void connectWithShardInfoAndCustomHostnameVerifierByIpAddress() {
-    final URI uri = URI.create("rediss://127.0.0.1:6390");
-    final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-    final SSLParameters sslParameters = new SSLParameters();
-
-    HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
-        hostnameVerifier);
-    shardInfo.setUser("acljedis");
-    shardInfo.setPassword("fizzbuzz");
-
-    try (Jedis jedis = new Jedis(shardInfo)) {
-      assertEquals("PONG", jedis.ping());
-      fail("The code did not throw the expected JedisConnectionException.");
-    } catch (JedisConnectionException e) {
-      assertEquals("The JedisConnectionException does not contain the expected message.",
-        "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
-    }
-  }
-
-  /**
-   * Tests opening an SSL/TLS connection to redis with an empty certificate trust store. This test
-   * should fail because there is no trust anchor for the redis server certificate.
-   * @throws Exception
-   */
-  @Test
-  public void connectWithShardInfoAndEmptyTrustStore() throws Exception {
-
-    final URI uri = URI.create("rediss://localhost:6390");
-    final SSLSocketFactory sslSocketFactory = createTrustNoOneSslSocketFactory();
-
-    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, null, null);
-    shardInfo.setUser("acljedis");
-    shardInfo.setPassword("fizzbuzz");
-
-    try (Jedis jedis = new Jedis(shardInfo)) {
-      assertEquals("PONG", jedis.ping());
-      fail("The code did not throw the expected JedisConnectionException.");
-    } catch (JedisConnectionException e) {
-      assertSame("Unexpected first inner exception.", SSLException.class, e.getCause().getClass());
-      assertSame("Unexpected second inner exception.", RuntimeException.class, e.getCause()
-          .getCause().getClass());
-      assertSame("Unexpected third inner exception.", InvalidAlgorithmParameterException.class, e
-          .getCause().getCause().getCause().getClass());
-    }
-  }
+//
+//  /**
+//   * Tests opening an SSL/TLS connection to redis. NOTE: This test relies on a feature that is only
+//   * available as of Java 7 and later. It is commented out but not removed in case support for Java
+//   * 6 is dropped or we find a way to have the CI run a specific set of tests on Java 7 and above.
+//   */
+//  @Test
+//  public void connectWithShardInfo() throws Exception {
+//    final URI uri = URI.create("rediss://localhost:6390");
+//    final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+//    // These SSL parameters ensure that we use the same hostname verifier used
+//    // for HTTPS.
+//    // Note: this options is only available in Java 7.
+//    final SSLParameters sslParameters = new SSLParameters();
+//    sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+//
+//    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
+//    shardInfo.setUser("acljedis");
+//    shardInfo.setPassword("fizzbuzz");
+//
+//    try (Jedis jedis = new Jedis(shardInfo)) {
+//      assertEquals("PONG", jedis.ping());
+//    }
+//  }
+//
+//  /**
+//   * Tests opening an SSL/TLS connection to redis using the loopback address of 127.0.0.1. This test
+//   * should fail because "127.0.0.1" does not match the certificate subject common name and there
+//   * are no subject alternative names in the certificate. NOTE: This test relies on a feature that
+//   * is only available as of Java 7 and later. It is commented out but not removed in case support
+//   * for Java 6 is dropped or we find a way to have the CI run a specific set of tests on Java 7 and
+//   * above.
+//   */
+//  @Test
+//  public void connectWithShardInfoByIpAddress() throws Exception {
+//    final URI uri = URI.create("rediss://127.0.0.1:6390");
+//    final SSLSocketFactory sslSocketFactory = createTrustStoreSslSocketFactory();
+//    // These SSL parameters ensure that we use the same hostname verifier used
+//    // for HTTPS.
+//    // Note: this options is only available in Java 7.
+//    final SSLParameters sslParameters = new SSLParameters();
+//    sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
+//
+//    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters, null);
+//    shardInfo.setUser("acljedis");
+//    shardInfo.setPassword("fizzbuzz");
+//
+//    try (Jedis jedis = new Jedis(shardInfo)) {
+//      assertEquals("PONG", jedis.ping());
+//      fail("The code did not throw the expected JedisConnectionException.");
+//    } catch (JedisConnectionException e) {
+//      assertSame("Unexpected first inner exception.", SSLHandshakeException.class, e.getCause()
+//          .getClass());
+//      assertSame("Unexpected second inner exception.", CertificateException.class, e.getCause()
+//          .getCause().getClass());
+//    }
+//  }
+//
+//  /**
+//   * Tests opening an SSL/TLS connection to redis with a custom hostname verifier.
+//   */
+//  @Test
+//  public void connectWithShardInfoAndCustomHostnameVerifier() {
+//    final URI uri = URI.create("rediss://localhost:6390");
+//    final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+//    final SSLParameters sslParameters = new SSLParameters();
+//
+//    HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
+//    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
+//        hostnameVerifier);
+//    shardInfo.setUser("acljedis");
+//    shardInfo.setPassword("fizzbuzz");
+//
+//    try (Jedis jedis = new Jedis(shardInfo)) {
+//      assertEquals("PONG", jedis.ping());
+//    }
+//  }
+//
+//  /**
+//   * Tests opening an SSL/TLS connection to redis with a custom socket factory.
+//   */
+//  @Test
+//  public void connectWithShardInfoAndCustomSocketFactory() throws Exception {
+//    final URI uri = URI.create("rediss://localhost:6390");
+//    final SSLSocketFactory sslSocketFactory = createTrustStoreSslSocketFactory();
+//    final SSLParameters sslParameters = new SSLParameters();
+//
+//    HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
+//    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
+//        hostnameVerifier);
+//    shardInfo.setUser("acljedis");
+//    shardInfo.setPassword("fizzbuzz");
+//
+//    try (Jedis jedis = new Jedis(shardInfo)) {
+//      assertEquals("PONG", jedis.ping());
+//    }
+//  }
+//
+//  /**
+//   * Tests opening an SSL/TLS connection to redis with a custom hostname verifier. This test should
+//   * fail because "127.0.0.1" does not match the certificate subject common name and there are no
+//   * subject alternative names in the certificate.
+//   */
+//  @Test
+//  public void connectWithShardInfoAndCustomHostnameVerifierByIpAddress() {
+//    final URI uri = URI.create("rediss://127.0.0.1:6390");
+//    final SSLSocketFactory sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+//    final SSLParameters sslParameters = new SSLParameters();
+//
+//    HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
+//    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, sslParameters,
+//        hostnameVerifier);
+//    shardInfo.setUser("acljedis");
+//    shardInfo.setPassword("fizzbuzz");
+//
+//    try (Jedis jedis = new Jedis(shardInfo)) {
+//      assertEquals("PONG", jedis.ping());
+//      fail("The code did not throw the expected JedisConnectionException.");
+//    } catch (JedisConnectionException e) {
+//      assertEquals("The JedisConnectionException does not contain the expected message.",
+//        "The connection to '127.0.0.1' failed ssl/tls hostname verification.", e.getMessage());
+//    }
+//  }
+//
+//  /**
+//   * Tests opening an SSL/TLS connection to redis with an empty certificate trust store. This test
+//   * should fail because there is no trust anchor for the redis server certificate.
+//   * @throws Exception
+//   */
+//  @Test
+//  public void connectWithShardInfoAndEmptyTrustStore() throws Exception {
+//
+//    final URI uri = URI.create("rediss://localhost:6390");
+//    final SSLSocketFactory sslSocketFactory = createTrustNoOneSslSocketFactory();
+//
+//    JedisShardInfo shardInfo = new JedisShardInfo(uri, sslSocketFactory, null, null);
+//    shardInfo.setUser("acljedis");
+//    shardInfo.setPassword("fizzbuzz");
+//
+//    try (Jedis jedis = new Jedis(shardInfo)) {
+//      assertEquals("PONG", jedis.ping());
+//      fail("The code did not throw the expected JedisConnectionException.");
+//    } catch (JedisConnectionException e) {
+//      assertSame("Unexpected first inner exception.", SSLException.class, e.getCause().getClass());
+//      assertSame("Unexpected second inner exception.", RuntimeException.class, e.getCause()
+//          .getCause().getClass());
+//      assertSame("Unexpected third inner exception.", InvalidAlgorithmParameterException.class, e
+//          .getCause().getCause().getCause().getClass());
+//    }
+//  }
 
   /**
    * Creates an SSLSocketFactory that trusts all certificates in truststore.jceks.

@@ -55,19 +55,7 @@ public final class HostAndPortUtil {
 
         for (String hostDef : hostDefs) {
 
-          String[] hostAndPortParts = HostAndPort.extractParts(hostDef);
-
-          if (null != hostAndPortParts && 2 == hostAndPortParts.length) {
-            String host = hostAndPortParts[0];
-            int port = Protocol.DEFAULT_PORT;
-
-            try {
-              port = Integer.parseInt(hostAndPortParts[1]);
-            } catch (final NumberFormatException nfe) {
-            }
-
-            envHostsAndPorts.add(new HostAndPort(host, port));
-          }
+          envHostsAndPorts.add(HostAndPort.from(hostDef));
         }
 
         return envHostsAndPorts;

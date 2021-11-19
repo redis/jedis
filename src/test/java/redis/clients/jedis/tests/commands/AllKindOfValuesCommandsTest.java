@@ -15,8 +15,8 @@ import static redis.clients.jedis.Protocol.Command.PING;
 import static redis.clients.jedis.Protocol.Command.RPUSH;
 import static redis.clients.jedis.Protocol.Command.SET;
 import static redis.clients.jedis.Protocol.Command.XINFO;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
-import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
+import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.SetParams.setParams;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
@@ -32,19 +32,19 @@ import java.util.Set;
 
 import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
 
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.stream.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
+public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
   final byte[] bfoo2 = { 0x01, 0x02, 0x03, 0x04, 0x0B };
@@ -62,20 +62,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
   private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(7);
-
-  @Test
-  public void ping() {
-    String status = jedis.ping();
-    assertEquals("PONG", status);
-  }
-
-  @Test
-  public void pingWithMessage() {
-    String argument = "message";
-    assertEquals(argument, jedis.ping(argument));
-
-    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
-  }
+//
+//  @Test
+//  public void ping() {
+//    String status = jedis.ping();
+//    assertEquals("PONG", status);
+//  }
+//
+//  @Test
+//  public void pingWithMessage() {
+//    String argument = "message";
+//    assertEquals(argument, jedis.ping(argument));
+//
+//    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
+//  }
 
   @Test
   public void exists() {
@@ -304,18 +304,18 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     assertEquals(0, jedis.renamenx(bfoo, bbar));
 
   }
-
-  @Test
-  public void dbSize() {
-    assertEquals(0, jedis.dbSize());
-
-    jedis.set("foo", "bar");
-    assertEquals(1, jedis.dbSize());
-
-    // Binary
-    jedis.set(bfoo, bbar);
-    assertEquals(2, jedis.dbSize());
-  }
+//
+//  @Test
+//  public void dbSize() {
+//    assertEquals(0, jedis.dbSize());
+//
+//    jedis.set("foo", "bar");
+//    assertEquals(1, jedis.dbSize());
+//
+//    // Binary
+//    jedis.set(bfoo, bbar);
+//    assertEquals(2, jedis.dbSize());
+//  }
 
   @Test
   public void expire() {
@@ -588,36 +588,36 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     jedis.restore(bfoo2, 0, sv);
     assertArrayEquals(bbar, jedis.get(bfoo2));
   }
-
-  @Test
-  public void restoreReplace() {
-    // take a separate instance
-    Jedis jedis2 = new Jedis(hnp.getHost(), 6380, 500);
-    jedis2.auth("foobared");
-    jedis2.flushAll();
-
-    jedis2.set("foo", "bar");
-
-    Map<String, String> map = new HashMap<>();
-    map.put("a", "A");
-    map.put("b", "B");
-
-    jedis.hset("from", map);
-    byte[] serialized = jedis.dump("from");
-
-    try {
-      jedis2.restore("foo", 0, serialized);
-      fail("Simple restore on a existing key should fail");
-    } catch (JedisDataException e) {
-      // should be here
-    }
-    assertEquals("bar", jedis2.get("foo"));
-
-    jedis2.restoreReplace("foo", 0, serialized);
-    assertEquals(map, jedis2.hgetAll("foo"));
-
-    jedis2.close();
-  }
+//
+//  @Test
+//  public void restoreReplace() {
+//    // take a separate instance
+//    Jedis jedis2 = new Jedis(hnp.getHost(), 6380, 500);
+//    jedis2.auth("foobared");
+//    jedis2.flushAll();
+//
+//    jedis2.set("foo", "bar");
+//
+//    Map<String, String> map = new HashMap<>();
+//    map.put("a", "A");
+//    map.put("b", "B");
+//
+//    jedis.hset("from", map);
+//    byte[] serialized = jedis.dump("from");
+//
+//    try {
+//      jedis2.restore("foo", 0, serialized);
+//      fail("Simple restore on a existing key should fail");
+//    } catch (JedisDataException e) {
+//      // should be here
+//    }
+//    assertEquals("bar", jedis2.get("foo"));
+//
+//    jedis2.restoreReplace("foo", 0, serialized);
+//    assertEquals(map, jedis2.hgetAll("foo"));
+//
+//    jedis2.close();
+//  }
 
   @Test
   public void restoreParams() {
@@ -631,7 +631,15 @@ public class AllKindOfValuesCommandsTest extends JedisCommandTestBase {
     byte[] serialized = jedis.dump("from");
 
     try {
-      jedis2.restore("foo", 0, serialized, null);
+//      jedis2.restore("foo", 0, serialized, null);
+      jedis2.restore("foo", 0, serialized);
+      fail("Simple restore on a existing key should fail");
+    } catch (JedisDataException e) {
+      // should be here
+    }
+    try {
+//      jedis2.restore("foo", 0, serialized, null);
+      jedis2.restore("foo", 0, serialized, RestoreParams.restoreParams());
       fail("Simple restore on a existing key should fail");
     } catch (JedisDataException e) {
       // should be here

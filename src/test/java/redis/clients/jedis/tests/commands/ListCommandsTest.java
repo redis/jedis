@@ -19,13 +19,13 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.ListPosition;
+import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
 
-public class ListCommandsTest extends JedisCommandTestBase {
+public class ListCommandsTest extends JedisCommandsTestBase {
 
   private static final Logger logger = LogManager.getLogger();
 

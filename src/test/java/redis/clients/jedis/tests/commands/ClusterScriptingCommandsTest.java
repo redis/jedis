@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 
@@ -88,9 +89,6 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     byte[] byteKey = "key1".getBytes();
     byte[] sha1 = jedisCluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
     byte[][] arraySha1 = { sha1 };
-    Long result = 1L;
-    List<Long> listResult = new ArrayList<>();
-    listResult.add(result);
-    assertEquals(listResult, jedisCluster.scriptExists(byteKey, arraySha1));
+    assertEquals(Collections.singletonList(Boolean.TRUE), jedisCluster.scriptExists(byteKey, arraySha1));
   }
 }

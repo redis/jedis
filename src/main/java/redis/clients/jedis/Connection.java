@@ -6,15 +6,15 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLParameters;
-import javax.net.ssl.SSLSocketFactory;
-
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -23,12 +23,12 @@ public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private boolean socketParamModified = false; // for backward compatibility
-  private JedisSocketFactory socketFactory; // TODO: should be final
+  private final Pool<Connection> memberOf;
+  private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private int soTimeout = Protocol.DEFAULT_TIMEOUT;
+  private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
 
@@ -36,49 +36,35 @@ public class Connection implements Closeable {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
-  /**
-   * @param host
-   * @deprecated This constructor will be removed in future. It can be replaced with
-   * {@link #Connection(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
-   */
-  @Deprecated
-  public Connection(final String host) {
-    this(host, Protocol.DEFAULT_PORT);
-  }
-
   public Connection(final String host, final int port) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().build());
+    this(new HostAndPort(host, port));
   }
 
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public Connection(final String host, final int port, final boolean ssl) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl).build());
-  }
-
-  /**
-   * @deprecated This constructor will be removed in future.
-   */
-  @Deprecated
-  public Connection(final String host, final int port, final boolean ssl,
-      SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier) {
-    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl)
-        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
-        .hostnameVerifier(hostnameVerifier).build());
+  public Connection(final HostAndPort hostAndPort) {
+    this(new DefaultJedisSocketFactory(hostAndPort));
   }
 
   public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
-    this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
+    initializeFromClientConfig(clientConfig);
   }
 
-  public Connection(final JedisSocketFactory jedisSocketFactory) {
-    this.socketFactory = jedisSocketFactory;
-    this.soTimeout = jedisSocketFactory.getSoTimeout();
+  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
+    this(socketFactory, clientConfig, null);
+  }
+
+  Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Pool<Connection> pool) {
+    this.socketFactory = socketFactory;
+    this.soTimeout = clientConfig.getSocketTimeoutMillis();
+    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
+    initializeFromClientConfig(clientConfig);
+    this.memberOf = pool;
+  }
+
+  public Connection(final JedisSocketFactory socketFactory) {
+    this.socketFactory = socketFactory;
+    this.memberOf = null;
   }
 
   @Override
@@ -86,30 +72,16 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
-  public Socket getSocket() {
-    return socket;
-  }
-
-  public int getConnectionTimeout() {
-    return socketFactory.getConnectionTimeout();
+  public HostAndPort getHostAndPort() {
+    return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
   }
 
   public int getSoTimeout() {
     return soTimeout;
   }
 
-  /**
-   * @param connectionTimeout
-   * @deprecated This method is not supported anymore and is kept for backward compatibility. It
-   * will be removed in future.
-   */
-  @Deprecated
-  public void setConnectionTimeout(int connectionTimeout) {
-    socketFactory.setConnectionTimeout(connectionTimeout);
-  }
-
   public void setSoTimeout(int soTimeout) {
-    socketFactory.setSoTimeout(soTimeout);
+//    socketFactory.setSocketTimeout(soTimeout);
     this.soTimeout = soTimeout;
     if (this.socket != null) {
       try {
@@ -119,10 +91,6 @@ public class Connection implements Closeable {
         throw new JedisConnectionException(ex);
       }
     }
-  }
-
-  public void setInfiniteSoTimeout(int infiniteSoTimeout) {
-    this.infiniteSoTimeout = infiniteSoTimeout;
   }
 
   public void setTimeoutInfinite() {
@@ -139,11 +107,17 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-      socket.setSoTimeout(socketFactory.getSoTimeout());
+//      socket.setSoTimeout(socketFactory.getSocketTimeout());
+      socket.setSoTimeout(this.soTimeout);
     } catch (SocketException ex) {
       broken = true;
       throw new JedisConnectionException(ex);
     }
+  }
+
+  public Object executeCommand(final ProtocolCommand cmd) {
+    sendCommand(cmd);
+    return getOne();
   }
 
   public void sendCommand(final ProtocolCommand cmd, final String... args) {
@@ -156,6 +130,10 @@ public class Connection implements Closeable {
 
   public void sendCommand(final ProtocolCommand cmd) {
     sendCommand(cmd, EMPTY_ARGS);
+  }
+
+  public void sendCommand(final ProtocolCommand cmd, Rawable keyword) {
+    sendCommand(cmd, keyword.getRaw());
   }
 
   public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
@@ -185,54 +163,67 @@ public class Connection implements Closeable {
     }
   }
 
-  public String getHost() {
-    return socketFactory.getHost();
+  public Object executeCommand(final CommandArguments args) {
+    sendCommand(args);
+    return getOne();
   }
 
-  /**
-   * @param host
-   * @deprecated This method will be removed in future.
-   */
-  @Deprecated
-  public void setHost(final String host) {
-    socketFactory.setHost(host);
-    socketParamModified = true;
+  public <T> T executeCommand(final CommandObject<T> commandObject) {
+    final CommandArguments args = commandObject.getArguments();
+    sendCommand(args);
+    if (!args.isBlocking()) {
+      return commandObject.getBuilder().build(getOne());
+    } else {
+      try {
+        setTimeoutInfinite();
+        return commandObject.getBuilder().build(getOne());
+      } finally {
+        rollbackTimeout();
+      }
+    }
   }
 
-  public int getPort() {
-    return socketFactory.getPort();
-  }
-
-  /**
-   * @param port
-   * @deprecated This method will be removed in future.
-   */
-  @Deprecated
-  public void setPort(final int port) {
-    socketFactory.setPort(port);
-    socketParamModified = true;
+  public void sendCommand(final CommandArguments args) {
+    try {
+      connect();
+      Protocol.sendCommand(outputStream, args);
+    } catch (JedisConnectionException ex) {
+      /*
+       * When client send request which formed by invalid protocol, Redis send back error message
+       * before close connection. We try to read it to provide reason of failure.
+       */
+      try {
+        String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
+        if (errorMessage != null && errorMessage.length() > 0) {
+          ex = new JedisConnectionException(errorMessage, ex.getCause());
+        }
+      } catch (Exception e) {
+        /*
+         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
+         * ignore. This approach is safe because reading error message is optional and connection
+         * will eventually be closed.
+         */
+      }
+      // Any other exceptions related to connection?
+      broken = true;
+      throw ex;
+    }
   }
 
   public void connect() throws JedisConnectionException {
-    if (socketParamModified) { // this is only for backward compatibility
-      try {
-        disconnect();
-      } catch (RuntimeException e) {
-        // swallow
-      }
-    }
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
+        soTimeout = socket.getSoTimeout(); //?
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
-      } catch (IOException ioe) {
-        broken = true;
-        throw new JedisConnectionException("Failed to create input/output stream", ioe);
       } catch (JedisConnectionException jce) {
         broken = true;
         throw jce;
+      } catch (IOException ioe) {
+        broken = true;
+        throw new JedisConnectionException("Failed to create input/output stream", ioe);
       } finally {
         if (broken) {
           IOUtils.closeQuietly(socket);
@@ -243,7 +234,15 @@ public class Connection implements Closeable {
 
   @Override
   public void close() {
-    disconnect();
+    if (this.memberOf != null) {
+      if (isBroken()) {
+        this.memberOf.returnBrokenResource(this);
+      } else {
+        this.memberOf.returnResource(this);
+      }
+    } else {
+      disconnect();
+    }
   }
 
   public void disconnect() {
@@ -330,6 +329,10 @@ public class Connection implements Closeable {
     return readProtocolWithCheckingBroken();
   }
 
+  public void setBroken() {
+    broken = true;
+  }
+
   public boolean isBroken() {
     return broken;
   }
@@ -368,4 +371,75 @@ public class Connection implements Closeable {
     }
     return responses;
   }
+
+  private void initializeFromClientConfig(JedisClientConfig config) {
+    try {
+      connect();
+      String password = config.getPassword();
+      if (password != null) {
+        String user = config.getUser();
+        if (user != null) {
+          auth(user, password);
+        } else {
+          auth(password);
+        }
+      }
+      int dbIndex = config.getDatabase();
+      if (dbIndex > 0) {
+        select(dbIndex);
+      }
+      String clientName = config.getClientName();
+      if (clientName != null) {
+        // TODO: need to figure out something without encoding
+        clientSetname(clientName);
+      }
+    } catch (JedisException je) {
+      try {
+        if (isConnected()) {
+          quit();
+        }
+        disconnect();
+      } catch (Exception e) {
+        //
+      }
+      throw je;
+    }
+  }
+
+  public String quit() {
+    sendCommand(Protocol.Command.QUIT);
+    String quitReturn = getStatusCodeReply();
+    disconnect();
+    return quitReturn;
+  }
+
+  private String auth(final String password) {
+    sendCommand(Protocol.Command.AUTH, password);
+    return getStatusCodeReply();
+  }
+
+  private String auth(final String user, final String password) {
+    sendCommand(Protocol.Command.AUTH, user, password);
+    return getStatusCodeReply();
+  }
+
+  public String select(final int index) {
+    sendCommand(Protocol.Command.SELECT, Protocol.toByteArray(index));
+    return getStatusCodeReply();
+  }
+
+  private String clientSetname(final String name) {
+    sendCommand(Protocol.Command.CLIENT, Protocol.Keyword.SETNAME.name(), name);
+    return getStatusCodeReply();
+  }
+
+  public boolean ping() {
+    sendCommand(Protocol.Command.PING);
+    String status = getStatusCodeReply();
+    if (!"PONG".equals(status)) {
+      throw new JedisException(status);
+    }
+    return true;
+  }
+
 }

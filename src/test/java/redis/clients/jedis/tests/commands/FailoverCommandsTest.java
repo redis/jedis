@@ -67,7 +67,7 @@ public class FailoverCommandsTest {
     //
     try (Jedis master = new Jedis(masterAddress)) {
       assertEquals("OK", master.failover());
-      Thread.sleep(20); // allow some time to failover;
+      Thread.sleep(120); // allow some time to failover;
       // not too much as everything is happening in same machine
       assertEquals("slave", master.role().get(0));
     }

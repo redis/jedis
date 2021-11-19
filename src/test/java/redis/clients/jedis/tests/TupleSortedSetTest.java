@@ -8,10 +8,10 @@ import java.util.TreeSet;
 
 import org.junit.Test;
 
-import redis.clients.jedis.Tuple;
-import redis.clients.jedis.tests.commands.JedisCommandTestBase;
+import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.tests.commands.JedisCommandsTestBase;
 
-public class TupleSortedSetTest extends JedisCommandTestBase {
+public class TupleSortedSetTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] ba = { 0x0A };
   final byte[] bb = { 0x0B };

@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisPoolConfig extends GenericObjectPoolConfig<Jedis> {
+
   public JedisPoolConfig() {
     // defaults to make your life with connection pool easier :)
     setTestWhileIdle(true);

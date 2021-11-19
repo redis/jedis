@@ -24,7 +24,7 @@ import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class PublishSubscribeCommandsTest extends JedisCommandTestBase {
+public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
   private void publishOne(final String channel, final String message) {
     Thread t = new Thread(new Runnable() {
       public void run() {

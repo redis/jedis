@@ -16,7 +16,6 @@ import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.junit.Test;
 
-import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -25,7 +24,7 @@ import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.jedis.tests.utils.ClientKillerUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class ScriptingCommandsTest extends JedisCommandTestBase {
+public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
@@ -73,19 +72,26 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
     args.add("second".getBytes());
     args.add("third".getBytes());
 
-    BinaryJedis binaryJedis = new BinaryJedis(hnp.getHost(), hnp.getPort(), 500);
-    binaryJedis.connect();
-    binaryJedis.auth("foobared");
-
-    List<byte[]> responses = (List<byte[]>) binaryJedis.eval(script.getBytes(), keys, args);
+//    BinaryJedis binaryJedis = new BinaryJedis(hnp.getHost(), hnp.getPort(), 500);
+//    binaryJedis.connect();
+//    binaryJedis.auth("foobared");
+//
+//    List<byte[]> responses = (List<byte[]>) binaryJedis.eval(script.getBytes(), keys, args);
+//    assertEquals(5, responses.size());
+//    assertEquals("key1", new String(responses.get(0)));
+//    assertEquals("key2", new String(responses.get(1)));
+//    assertEquals("first", new String(responses.get(2)));
+//    assertEquals("second", new String(responses.get(3)));
+//    assertEquals("third", new String(responses.get(4)));
+//
+//    binaryJedis.close();
+    List<byte[]> responses = (List<byte[]>) jedis.eval(script.getBytes(), keys, args);
     assertEquals(5, responses.size());
     assertEquals("key1", new String(responses.get(0)));
     assertEquals("key2", new String(responses.get(1)));
     assertEquals("first", new String(responses.get(2)));
     assertEquals("second", new String(responses.get(3)));
     assertEquals("third", new String(responses.get(4)));
-
-    binaryJedis.close();
   }
 
   @Test
@@ -186,11 +192,11 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   @Test
   public void scriptExistsBinary() {
     jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
-    List<Long> exists = jedis.scriptExists(
+    List<Boolean> exists = jedis.scriptExists(
       SafeEncoder.encode("ffffffffffffffffffffffffffffffffffffffff"),
       SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
-    assertEquals(new Long(0), exists.get(0));
-    assertEquals(new Long(1), exists.get(1));
+    assertFalse(exists.get(0));
+    assertTrue(exists.get(1));
   }
 
   @Test
@@ -202,9 +208,9 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
   @Test
   public void scriptLoadBinary() {
     jedis.scriptLoad(SafeEncoder.encode("return redis.call('get','foo')"));
-    Long exists = jedis
+    Boolean exists = jedis
         .scriptExists(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
-    assertEquals((Long) 1L, exists);
+    assertTrue(exists);
   }
 
   @Test
@@ -269,8 +275,9 @@ public class ScriptingCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void scriptExistsWithBrokenConnection() {
-    Jedis deadClient = new Jedis(jedis.getClient().getHost(), jedis.getClient().getPort());
-    deadClient.auth("foobared");
+//    Jedis deadClient = new Jedis(jedis.getClient().getHost(), jedis.getClient().getPort());
+//    deadClient.auth("foobared");
+    Jedis deadClient = createJedis();
 
     deadClient.clientSetname("DEAD");
 

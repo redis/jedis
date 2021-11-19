@@ -3,10 +3,13 @@ package redis.clients.jedis.tests.benchmark;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Calendar;
+import redis.clients.jedis.DefaultJedisClientConfig;
 
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
+//import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
 public class PipelinedGetSetBenchmark {
@@ -14,14 +17,17 @@ public class PipelinedGetSetBenchmark {
   private static final int TOTAL_OPERATIONS = 200000;
 
   public static void main(String[] args) throws UnknownHostException, IOException {
-    Jedis jedis = new Jedis(hnp);
-    jedis.connect();
-    jedis.auth("foobared");
-    jedis.flushAll();
+//    Jedis jedis = new Jedis(hnp);
+//    jedis.connect();
+//    jedis.auth("foobared");
+//    jedis.flushAll();
+    Connection conn = new Connection(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
+    conn.executeCommand(Protocol.Command.FLUSHALL);
 
     long begin = Calendar.getInstance().getTimeInMillis();
 
-    Pipeline p = jedis.pipelined();
+//    Pipeline p = jedis.pipelined();
+    Pipeline p = new Pipeline(conn);
     for (int n = 0; n <= TOTAL_OPERATIONS; n++) {
       String key = "foo" + n;
       p.set(key, "bar" + n);
@@ -31,7 +37,8 @@ public class PipelinedGetSetBenchmark {
 
     long elapsed = Calendar.getInstance().getTimeInMillis() - begin;
 
-    jedis.disconnect();
+//    jedis.disconnect();
+    conn.close();
 
     System.out.println(((1000 * 2 * TOTAL_OPERATIONS) / elapsed) + " ops");
   }

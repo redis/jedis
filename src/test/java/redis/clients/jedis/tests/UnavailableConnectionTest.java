@@ -62,8 +62,9 @@ public class UnavailableConnectionTest {
       fail("Should not get connection from pool");
     } catch (Exception ex) {
       assertSame(JedisConnectionException.class, ex.getClass());
-      assertSame(JedisConnectionException.class, ex.getCause().getClass());
-      assertSame(java.net.ConnectException.class, ex.getCause().getCause().getClass());
+//      assertSame(JedisConnectionException.class, ex.getCause().getClass());
+//      assertSame(java.net.ConnectException.class, ex.getCause().getCause().getClass());
+      assertSame(java.net.ConnectException.class, ex.getCause().getClass());
     }
   }
 

@@ -11,10 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.resps.Slowlog;
 import redis.clients.jedis.util.SafeEncoder;
-import redis.clients.jedis.util.Slowlog;
 
-public class SlowlogCommandsTest extends JedisCommandTestBase {
+public class SlowlogCommandsTest extends JedisCommandsTestBase {
 
   private static final String SLOWLOG_TIME_PARAM = "slowlog-log-slower-than";
   private static final String ZERO = "0";

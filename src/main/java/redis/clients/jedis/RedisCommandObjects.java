@@ -2710,7 +2710,7 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(GSON.toJson(scalar)), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<Long>> jsonArrInsert(String key, Path2 path, long index, Object... objects) {
+  public final CommandObject<List<Long>> jsonArrInsert(String key, Path2 path, int index, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index).addObjects(objects);
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }

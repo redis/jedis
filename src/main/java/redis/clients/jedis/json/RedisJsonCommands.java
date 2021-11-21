@@ -70,11 +70,11 @@ public interface RedisJsonCommands {
 
   long jsonDel(String key, Path path);
 
-  boolean jsonClear(String key);
+  long jsonClear(String key);
 
-  boolean jsonClear(String key, Path2 path);
+  long jsonClear(String key, Path2 path);
 
-  boolean jsonClear(String key, Path path);
+  long jsonClear(String key, Path path);
 
   List<Boolean> jsonToggle(String key, Path2 path);
 

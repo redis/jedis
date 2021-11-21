@@ -2613,16 +2613,16 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Boolean> jsonClear(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key), BuilderFactory.BOOLEAN);
+  public final CommandObject<Long> jsonClear(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Boolean> jsonClear(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.BOOLEAN);
+  public final CommandObject<Long> jsonClear(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Boolean> jsonClear(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.BOOLEAN);
+  public final CommandObject<Long> jsonClear(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Boolean>> jsonToggle(String key, Path2 path) {
@@ -2710,12 +2710,12 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(GSON.toJson(scalar)), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<Long>> jsonArrInsert(String key, Path2 path, int index, Object... objects) {
+  public final CommandObject<List<Long>> jsonArrInsert(String key, Path2 path, long index, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index).addObjects(objects);
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<List<Long>> jsonArrInsertWithEscape(String key, Path2 path, int index, Object... objects) {
+  public final CommandObject<List<Long>> jsonArrInsertWithEscape(String key, Path2 path, long index, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
     for (Object object : objects) {
       args.add(GSON.toJson(object));
@@ -2723,7 +2723,7 @@ public class RedisCommandObjects {
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<Long> jsonArrInsert(String key, Path path, int index, Object... pojos) {
+  public final CommandObject<Long> jsonArrInsert(String key, Path path, long index, Object... pojos) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
     for (Object pojo : pojos) {
       args.add(GSON.toJson(pojo));
@@ -2755,11 +2755,11 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectListBuilder<>(Object.class));
   }
 
-  public final CommandObject<Object> jsonArrPop(String key, Path path, int index) {
+  public final CommandObject<Object> jsonArrPop(String key, Path path, long index) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(Object.class));
   }
 
-  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, int index) {
+  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, long index) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(clazz));
   }
 
@@ -2775,11 +2775,11 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<Long>> jsonArrTrim(String key, Path2 path, int start, int stop) {
+  public final CommandObject<List<Long>> jsonArrTrim(String key, Path2 path, long start, long stop) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<Long> jsonArrTrim(String key, Path path, int start, int stop) {
+  public final CommandObject<Long> jsonArrTrim(String key, Path path, long start, long stop) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
   // RedisJSON commands

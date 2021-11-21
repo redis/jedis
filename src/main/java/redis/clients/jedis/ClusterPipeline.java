@@ -5,6 +5,7 @@ import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
 import redis.clients.jedis.json.JsonSetParams;
+import redis.clients.jedis.json.Path;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.JedisClusterConnectionProvider;
 import redis.clients.jedis.resps.*;
@@ -2684,126 +2685,126 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
     return appendCommand(commandObjects.strAlgoLCSStrings(keyA, keyB, params));
   }
-//
-//  @Override
-//  public Response<String> jsonSet(String key, Object object) {
-//    return appendCommand(commandObjects.jsonSet(key, object));
-//  }
-//
-//  @Override
-//  public Response<String> jsonSet(String key, Object object, JsonSetParams params) {
-//    return appendCommand(commandObjects.jsonSet(key, object, params));
-//  }
-//
-//  @Override
-//  public Response<String> jsonSet(String key, Path path, Object object) {
-//    return appendCommand(commandObjects.jsonSet(key, path, object));
-//  }
-//
-//  @Override
-//  public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
-//    return appendCommand(commandObjects.jsonSet(key, path, object, params));
-//  }
-//
-//  @Override
-//  public <T> Response<T> jsonGet(String key, Class<T> clazz) {
-//    return appendCommand(commandObjects.jsonGet(key, clazz));
-//  }
-//
-//  @Override
-//  public <T> Response<T> jsonGet(String key, Class<T> clazz, Path... paths) {
-//    return appendCommand(commandObjects.jsonGet(key, clazz, paths));
-//  }
-//
-//  @Override
-//  public <T> Response<List<T>> jsonMGet(Class<T> clazz, String... keys) {
-//    return appendCommand(commandObjects.jsonMGet(clazz, keys));
-//  }
-//
-//  @Override
-//  public <T> Response<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys) {
-//    return appendCommand(commandObjects.jsonMGet(path, clazz, keys));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonDel(String key) {
-//    return appendCommand(commandObjects.jsonDel(key));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonDel(String key, Path path) {
-//    return appendCommand(commandObjects.jsonDel(key, path));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonClear(String key, Path path) {
-//    return appendCommand(commandObjects.jsonClear(key, path));
-//  }
-//
-//  @Override
-//  public Response<String> jsonToggle(String key, Path path) {
-//    return appendCommand(commandObjects.jsonToggle(key, path));
-//  }
-//
-//  @Override
-//  public Response<Class<?>> jsonType(String key) {
-//    return appendCommand(commandObjects.jsonType(key));
-//  }
-//
-//  @Override
-//  public Response<Class<?>> jsonType(String key, Path path) {
-//    return appendCommand(commandObjects.jsonType(key, path));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonStrAppend(String key, Path path, Object... objects) {
-//    return appendCommand(commandObjects.jsonStrAppend(key, path, objects));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonStrLen(String key, Path path) {
-//    return appendCommand(commandObjects.jsonStrLen(key, path));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonArrAppend(String key, Path path, Object... objects) {
-//    return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonArrIndex(String key, Path path, Object scalar) {
-//    return appendCommand(commandObjects.jsonArrIndex(key, path, scalar));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonArrInsert(String key, Path path, Long index, Object... objects) {
-//    return appendCommand(commandObjects.jsonArrInsert(key, path, index, objects));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonArrLen(String key, Path path) {
-//    return appendCommand(commandObjects.jsonArrLen(key, path));
-//  }
-//
-//  @Override
-//  public <T> Response<T> jsonArrPop(String key, Class<T> clazz, Path path, Long index) {
-//    return appendCommand(commandObjects.jsonArrPop(key, clazz, path, index));
-//  }
-//
-//  @Override
-//  public <T> Response<T> jsonArrPop(String key, Class<T> clazz, Path path) {
-//    return appendCommand(commandObjects.jsonArrPop(key, clazz, path));
-//  }
-//
-//  @Override
-//  public <T> Response<T> jsonArrPop(String key, Class<T> clazz) {
-//    return appendCommand(commandObjects.jsonArrPop(key, clazz));
-//  }
-//
-//  @Override
-//  public Response<Long> jsonArrTrim(String key, Path path, Long start, Long stop) {
-//    return appendCommand(commandObjects.jsonArrTrim(key, path, start, stop));
-//  }
+
+  @Override
+  public Response<String> jsonSet(String key, Object object) {
+    return appendCommand(commandObjects.jsonSet(key, new Path(""), object));
+  }
+
+  @Override
+  public Response<String> jsonSet(String key, Object object, JsonSetParams params) {
+    return appendCommand(commandObjects.jsonSet(key, new Path(""), object, params));
+  }
+
+  @Override
+  public Response<String> jsonSet(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonSet(key, path, object));
+  }
+
+  @Override
+  public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
+    return appendCommand(commandObjects.jsonSet(key, path, object, params));
+  }
+
+  @Override
+  public <T> Response<T> jsonGet(String key, Class<T> clazz) {
+    return appendCommand(commandObjects.jsonGet(key, clazz));
+  }
+
+  @Override
+  public <T> Response<T> jsonGet(String key, Class<T> clazz, Path... paths) {
+    return appendCommand(commandObjects.jsonGet(key, clazz, paths));
+  }
+
+  @Override
+  public <T> Response<List<T>> jsonMGet(Class<T> clazz, String... keys) {
+    return appendCommand(commandObjects.jsonMGet(new Path(""), clazz, keys));
+  }
+
+  @Override
+  public <T> Response<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys) {
+    return appendCommand(commandObjects.jsonMGet(path, clazz, keys));
+  }
+
+  @Override
+  public Response<Long> jsonDel(String key) {
+    return appendCommand(commandObjects.jsonDel(key));
+  }
+
+  @Override
+  public Response<Long> jsonDel(String key, Path path) {
+    return appendCommand(commandObjects.jsonDel(key, path));
+  }
+
+  @Override
+  public Response<Long> jsonClear(String key, Path path) {
+    return appendCommand(commandObjects.jsonClear(key, path));
+  }
+
+  @Override
+  public Response<String> jsonToggle(String key, Path path) {
+    return appendCommand(commandObjects.jsonToggle(key, path));
+  }
+
+  @Override
+  public Response<Class<?>> jsonType(String key) {
+    return appendCommand(commandObjects.jsonType(key));
+  }
+
+  @Override
+  public Response<Class<?>> jsonType(String key, Path path) {
+    return appendCommand(commandObjects.jsonType(key, path));
+  }
+
+  @Override
+  public Response<Long> jsonStrAppend(String key, Path path, Object... objects) {
+    return appendCommand(commandObjects.jsonStrAppend(key, path, objects));
+  }
+
+  @Override
+  public Response<Long> jsonStrLen(String key, Path path) {
+    return appendCommand(commandObjects.jsonStrLen(key, path));
+  }
+
+  @Override
+  public Response<Long> jsonArrAppend(String key, Path path, Object... objects) {
+    return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
+  }
+
+  @Override
+  public Response<Long> jsonArrIndex(String key, Path path, Object scalar) {
+    return appendCommand(commandObjects.jsonArrIndex(key, path, scalar));
+  }
+
+  @Override
+  public Response<Long> jsonArrInsert(String key, Path path, Long index, Object... objects) {
+    return appendCommand(commandObjects.jsonArrInsert(key, path, index, objects));
+  }
+
+  @Override
+  public Response<Long> jsonArrLen(String key, Path path) {
+    return appendCommand(commandObjects.jsonArrLen(key, path));
+  }
+
+  @Override
+  public <T> Response<T> jsonArrPop(String key, Class<T> clazz, Path path, Long index) {
+    return appendCommand(commandObjects.jsonArrPop(key, clazz, path, index));
+  }
+
+  @Override
+  public <T> Response<T> jsonArrPop(String key, Class<T> clazz, Path path) {
+    return appendCommand(commandObjects.jsonArrPop(key, clazz, path));
+  }
+
+  @Override
+  public <T> Response<T> jsonArrPop(String key, Class<T> clazz) {
+    return appendCommand(commandObjects.jsonArrPop(key, clazz));
+  }
+
+  @Override
+  public Response<Long> jsonArrTrim(String key, Path path, Long start, Long stop) {
+    return appendCommand(commandObjects.jsonArrTrim(key, path, start, stop));
+  }
 
   @Override
   public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {

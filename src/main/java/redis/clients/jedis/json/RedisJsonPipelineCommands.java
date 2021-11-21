@@ -7,6 +7,30 @@ import java.util.List;
 
 public interface RedisJsonPipelineCommands {
 
+  default Response<String> jsonSet(String key, Object json) {
+    return RedisJsonPipelineCommands.this.jsonSet(key, Path2.ROOT_PATH, json);
+  }
+
+  default Response<String> jsonSetWithEscape(String key, Object json) {
+    return jsonSetWithEscape(key, Path2.ROOT_PATH, json);
+  }
+
+  default Response<String> jsonSetLegacy(String key, Object pojo) {
+    return jsonSet(key, Path.ROOT_PATH, pojo);
+  }
+
+  default Response<String> jsonSet(String key, Object object, JsonSetParams params) {
+    return jsonSet(key, Path2.ROOT_PATH, object, params);
+  }
+
+  default Response<String> jsonSetWithEscape(String key, Object object, JsonSetParams params) {
+    return jsonSetWithEscape(key, Path2.ROOT_PATH, object, params);
+  }
+
+  default Response<String> jsonSetLegacy(String key, Object pojo, JsonSetParams params) {
+    return jsonSet(key, Path.ROOT_PATH, pojo, params);
+  }
+
   //<T> Response<T> jsonGet(String key);
 
   //<T> Response<T> jsonGet(String key, Path... paths);

@@ -1,11 +1,13 @@
 package redis.clients.jedis;
 
+import org.json.JSONArray;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
+import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.IndexOptions;
@@ -2676,28 +2678,53 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   }
 
   @Override
-  public Response<String> jsonSet(String key, Object object) {
-    return appendCommand(commandObjects.jsonSet(key, new Path(""), object));
+  public Response<String> jsonSet(String key, Path2 path, Object json) {
+    return appendCommand(commandObjects.jsonSet(key, path, json));
   }
 
   @Override
-  public Response<String> jsonSet(String key, Object object, JsonSetParams params) {
-    return appendCommand(commandObjects.jsonSet(key, new Path(""), object, params));
+  public Response<String> jsonSetWithEscape(String key, Path2 path, Object json) {
+    return appendCommand(commandObjects.jsonSetWithEscape(key, path, json));
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path path, Object object) {
-    return appendCommand(commandObjects.jsonSet(key, path, object));
+  public Response<String> jsonSet(String key, Path path, Object json) {
+    return appendCommand(commandObjects.jsonSet(key, path, json));
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
-    return appendCommand(commandObjects.jsonSet(key, path, object, params));
+  public Response<String> jsonSet(String key, Path2 path, Object json, JsonSetParams params) {
+    return appendCommand(commandObjects.jsonSet(key, path, json, params));
+  }
+
+  @Override
+  public Response<String> jsonSetWithEscape(String key, Path2 path, Object json, JsonSetParams params) {
+    return appendCommand(commandObjects.jsonSetWithEscape(key, path, json, params));
+  }
+
+  @Override
+  public Response<String> jsonSet(String key, Path path, Object json, JsonSetParams params) {
+    return appendCommand(commandObjects.jsonSet(key, path, json, params));
+  }
+
+  @Override
+  public Response<Object> jsonGet(String key) {
+    return appendCommand(commandObjects.jsonGet(key));
   }
 
   @Override
   public <T> Response<T> jsonGet(String key, Class<T> clazz) {
     return appendCommand(commandObjects.jsonGet(key, clazz));
+  }
+
+  @Override
+  public Response<Object> jsonGet(String key, Path2... paths) {
+    return appendCommand(commandObjects.jsonGet(key, paths));
+  }
+
+  @Override
+  public Response<Object> jsonGet(String key, Path... paths) {
+    return appendCommand(commandObjects.jsonGet(key, paths));
   }
 
   @Override
@@ -2707,7 +2734,12 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
 
   @Override
   public <T> Response<List<T>> jsonMGet(Class<T> clazz, String... keys) {
-    return appendCommand(commandObjects.jsonMGet(new Path(""), clazz, keys));
+    return appendCommand(commandObjects.jsonMGet(clazz, keys));
+  }
+
+  @Override
+  public Response<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
+    return appendCommand(commandObjects.jsonMGet(path, keys));
   }
 
   @Override
@@ -2721,13 +2753,33 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   }
 
   @Override
+  public Response<Long> jsonDel(String key, Path2 path) {
+    return appendCommand(commandObjects.jsonDel(key, path));
+  }
+
+  @Override
   public Response<Long> jsonDel(String key, Path path) {
     return appendCommand(commandObjects.jsonDel(key, path));
   }
 
   @Override
+  public Response<Long> jsonClear(String key) {
+    return appendCommand(commandObjects.jsonClear(key));
+  }
+
+  @Override
+  public Response<Long> jsonClear(String key, Path2 path) {
+    return appendCommand(commandObjects.jsonClear(key, path));
+  }
+
+  @Override
   public Response<Long> jsonClear(String key, Path path) {
     return appendCommand(commandObjects.jsonClear(key, path));
+  }
+
+  @Override
+  public Response<List<Boolean>> jsonToggle(String key, Path2 path) {
+    return appendCommand(commandObjects.jsonToggle(key, path));
   }
 
   @Override
@@ -2741,13 +2793,38 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   }
 
   @Override
+  public Response<List<Class<?>>> jsonType(String key, Path2 path) {
+    return appendCommand(commandObjects.jsonType(key, path));
+  }
+
+  @Override
   public Response<Class<?>> jsonType(String key, Path path) {
     return appendCommand(commandObjects.jsonType(key, path));
   }
 
   @Override
-  public Response<Long> jsonStrAppend(String key, Path path, Object... objects) {
-    return appendCommand(commandObjects.jsonStrAppend(key, path, objects));
+  public Response<Long> jsonStrAppend(String key, Object string) {
+    return appendCommand(commandObjects.jsonStrAppend(key, string));
+  }
+
+  @Override
+  public Response<List<Long>> jsonStrAppend(String key, Path2 path, Object string) {
+    return appendCommand(commandObjects.jsonStrAppend(key, path, string));
+  }
+
+  @Override
+  public Response<Long> jsonStrAppend(String key, Path path, Object string) {
+    return appendCommand(commandObjects.jsonStrAppend(key, path, string));
+  }
+
+  @Override
+  public Response<Long> jsonStrLen(String key) {
+    return appendCommand(commandObjects.jsonStrLen(key));
+  }
+
+  @Override
+  public Response<List<Long>> jsonStrLen(String key, Path2 path) {
+    return appendCommand(commandObjects.jsonStrLen(key, path));
   }
 
   @Override
@@ -2756,8 +2833,28 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   }
 
   @Override
+  public Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) {
+    return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
+  }
+
+  @Override
+  public Response<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects) {
+    return appendCommand(commandObjects.jsonArrAppendWithEscape(key, path, objects));
+  }
+
+  @Override
   public Response<Long> jsonArrAppend(String key, Path path, Object... objects) {
     return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
+  }
+
+  @Override
+  public Response<List<Long>> jsonArrIndex(String key, Path2 path, Object scalar) {
+    return appendCommand(commandObjects.jsonArrIndex(key, path, scalar));
+  }
+
+  @Override
+  public Response<List<Long>> jsonArrIndexWithEscape(String key, Path2 path, Object scalar) {
+    return appendCommand(commandObjects.jsonArrIndexWithEscape(key, path, scalar));
   }
 
   @Override
@@ -2766,8 +2863,23 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   }
 
   @Override
-  public Response<Long> jsonArrInsert(String key, Path path, Long index, Object... objects) {
+  public Response<List<Long>> jsonArrInsert(String key, Path2 path, int index, Object... objects) {
     return appendCommand(commandObjects.jsonArrInsert(key, path, index, objects));
+  }
+
+  @Override
+  public Response<List<Long>> jsonArrInsertWithEscape(String key, Path2 path, int index, Object... objects) {
+    return appendCommand(commandObjects.jsonArrInsertWithEscape(key, path, index, objects));
+  }
+
+  @Override
+  public Response<Long> jsonArrInsert(String key, Path path, int index, Object... pojos) {
+    return appendCommand(commandObjects.jsonArrInsert(key, path, index, pojos));
+  }
+
+  @Override
+  public Response<Object> jsonArrPop(String key) {
+    return appendCommand(commandObjects.jsonArrPop(key));
   }
 
   @Override
@@ -2776,8 +2888,13 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   }
 
   @Override
-  public <T> Response<T> jsonArrPop(String key, Class<T> clazz, Path path, Long index) {
-    return appendCommand(commandObjects.jsonArrPop(key, clazz, path, index));
+  public Response<List<Long>> jsonArrTrim(String key, Path2 path, int start, int stop) {
+    return appendCommand(commandObjects.jsonArrTrim(key, path, start, stop));
+  }
+
+  @Override
+  public Response<Long> jsonArrTrim(String key, Path path, int start, int stop) {
+    return appendCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
 
   @Override
@@ -2786,13 +2903,43 @@ public class ReliableTransaction extends ReliableTransactionBase implements Pipe
   }
 
   @Override
+  public Response<List<Object>> jsonArrPop(String key, Path2 path, int index) {
+    return appendCommand(commandObjects.jsonArrPop(key, path, index));
+  }
+
+  @Override
+  public Response<Object> jsonArrPop(String key, Path path, int index) {
+    return appendCommand(commandObjects.jsonArrPop(key, path, index));
+  }
+
+  @Override
+  public <T> Response<T> jsonArrPop(String key, Class<T> clazz, Path path, int index) {
+    return appendCommand(commandObjects.jsonArrPop(key, clazz, path, index));
+  }
+
+  @Override
+  public Response<Long> jsonArrLen(String key) {
+    return appendCommand(commandObjects.jsonArrLen(key));
+  }
+
+  @Override
+  public Response<List<Long>> jsonArrLen(String key, Path2 path) {
+    return appendCommand(commandObjects.jsonArrLen(key, path));
+  }
+
+  @Override
   public <T> Response<T> jsonArrPop(String key, Class<T> clazz) {
     return appendCommand(commandObjects.jsonArrPop(key, clazz));
   }
 
   @Override
-  public Response<Long> jsonArrTrim(String key, Path path, Long start, Long stop) {
-    return appendCommand(commandObjects.jsonArrTrim(key, path, start, stop));
+  public Response<List<Object>> jsonArrPop(String key, Path2 path) {
+    return appendCommand(commandObjects.jsonArrPop(key, path));
+  }
+
+  @Override
+  public Response<Object> jsonArrPop(String key, Path path) {
+    return appendCommand(commandObjects.jsonArrPop(key, path));
   }
 
   @Override

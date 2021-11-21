@@ -2597,6 +2597,10 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), BuilderFactory.JSON_ARRAY_LIST);
   }
 
+  public final <T> CommandObject<List<T>> jsonMGet(Class<T> clazz, String... keys) {
+    return this.jsonMGet(Path.ROOT_PATH, clazz, keys);
+  }
+
   public final <T> CommandObject<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys) {
     return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), new GsonObjectListBuilder<>(clazz));
   }

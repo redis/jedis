@@ -22,8 +22,8 @@ public interface RedisJsonCommands {
     return jsonSet(key, Path2.ROOT_PATH, json, params);
   }
 
-  default String jsonSetWithEscape(String key, Object json, JsonSetParams params) {
-    return jsonSetWithEscape(key, Path2.ROOT_PATH, json, params);
+  default String jsonSetWithEscape(String key, Object object, JsonSetParams params) {
+    return jsonSetWithEscape(key, Path2.ROOT_PATH, object, params);
   }
 
   default String jsonSetLegacy(String key, Object pojo, JsonSetParams params) {

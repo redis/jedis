@@ -38,7 +38,7 @@ public interface RedisJsonCommands {
 
   String jsonSet(String key, Path2 path, Object json, JsonSetParams params);
 
-  String jsonSetWithEscape(String key, Path2 path, Object json, JsonSetParams params);
+  String jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params);
 
   String jsonSet(String key, Path path, Object pojo, JsonSetParams params);
 

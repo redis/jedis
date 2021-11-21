@@ -2759,7 +2759,7 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(Object.class));
   }
 
-  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, long index) {
+  public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, int index) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(clazz));
   }
 

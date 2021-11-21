@@ -126,16 +126,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
     return hap;
   }
-//
-//  @Override
-//  public void setSocketTimeout(int socketTimeout) {
-//    this.socketTimeout = socketTimeout;
-//  }
-//
-//  @Override
-//  public int getSocketTimeout() {
-//    return socketTimeout;
-//  }
 
   @Override
   public String toString() {

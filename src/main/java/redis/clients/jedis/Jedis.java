@@ -51,21 +51,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * @deprecated This constructor will not support a host string in future. It will accept only a
-   * uri string. {@link JedisURIHelper#isValid(java.net.URI)} can used before this. If this
-   * constructor was being used with a host, it can be replaced with
-   * {@link #BinaryJedis(java.lang.String, int)} with the host and {@link Protocol#DEFAULT_PORT}.
+   * This constructor only accepts a URI string. {@link JedisURIHelper#isValid(java.net.URI)} can be
+   * used before this.
    * @param uriString
    */
-  @Deprecated
   public Jedis(final String uriString) {
-//    URI uri = URI.create(uriString);
-//    if (JedisURIHelper.isValid(uri)) {
-//      connection = createClientFromURI(uri);
-//      initializeFromURI(uri);
-//    } else {
-//      throw new InvalidURIException(uriString);
-//    }
     this(URI.create(uriString));
   }
 
@@ -83,42 +73,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
     connection = new Connection(hostPort, config);
-//    initializeFromClientConfig(config);
   }
-//
-//  private void initializeFromClientConfig(JedisClientConfig config) {
-//    try {
-//      connection.connect();
-//      String password = config.getPassword();
-//      if (password != null) {
-//        String user = config.getUser();
-//        if (user != null) {
-//          auth(user, password);
-//        } else {
-//          auth(password);
-//        }
-//      }
-//      int dbIndex = config.getDatabase();
-//      if (dbIndex > 0) {
-//        select(dbIndex);
-//      }
-//      String clientName = config.getClientName();
-//      if (clientName != null) {
-//        // TODO: need to figure out something without encoding
-//        clientSetname(encode(clientName));
-//      }
-//    } catch (JedisException je) {
-//      try {
-//        if (isConnected()) {
-//          quit();
-//        }
-//        connection.disconnect();
-//      } catch (RuntimeException e) {
-//        //
-//      }
-//      throw je;
-//    }
-//  }
 
   public Jedis(final String host, final int port, final boolean ssl) {
     this(host, port, DefaultJedisClientConfig.builder().ssl(ssl).build());
@@ -185,16 +140,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
         .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
         .hostnameVerifier(hostnameVerifier).build());
   }
-//
-//  public Jedis(final JedisShardInfo shardInfo) {
-//    this(shardInfo.getHost(), shardInfo.getPort(), DefaultJedisClientConfig.builder()
-//        .connectionTimeoutMillis(shardInfo.getConnectionTimeout())
-//        .socketTimeoutMillis(shardInfo.getSoTimeout()).user(shardInfo.getUser())
-//        .password(shardInfo.getPassword()).database(shardInfo.getDb())
-//        .ssl(shardInfo.getSsl()).sslSocketFactory(shardInfo.getSslSocketFactory())
-//        .sslParameters(shardInfo.getSslParameters())
-//        .hostnameVerifier(shardInfo.getHostnameVerifier()).build());
-//  }
 
   public Jedis(URI uri) {
     if (!JedisURIHelper.isValid(uri)) {
@@ -259,41 +204,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
             .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
             .build());
-//    initializeFromURI(uri);
   }
-//
-//  private static Connection createClientFromURI(URI uri) {
-//    if (!JedisURIHelper.isValid(uri)) {
-//      throw new InvalidURIException(String.format(
-//        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
-//    }
-//    return new Connection(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig
-//        .builder().ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
-//  }
-//
-//  private void initializeFromURI(URI uri) {
-//    String password = JedisURIHelper.getPassword(uri);
-//    if (password != null) {
-//      String user = JedisURIHelper.getUser(uri);
-//      if (user != null) {
-//        auth(user, password);
-//      } else {
-//        auth(password);
-//      }
-//    }
-//    int dbIndex = JedisURIHelper.getDBIndex(uri);
-//    if (dbIndex > 0) {
-//      select(dbIndex);
-//    }
-//  }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
     connection = new Connection(jedisSocketFactory);
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-//    connection = new Connection(jedisSocketFactory);
-//    initializeFromClientConfig(clientConfig);
     connection = new Connection(jedisSocketFactory, clientConfig);
   }
 
@@ -342,7 +259,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       if (pipeline != null) {
         pipeline.close();
       }
-//
+
 //      connection.resetState();
       if (isInWatch) {
         connection.sendCommand(UNWATCH);
@@ -376,17 +293,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   // Legacy
   public Transaction multi() {
-//    client.multi();
-//    client.getOne(); // expected OK
-//    transaction = new Transaction(client);
     transaction = new Transaction(this);
     return transaction;
   }
 
   // Legacy
   public Pipeline pipelined() {
-//    pipeline = new Pipeline();
-//    pipeline.setClient(connection);
     pipeline = new Pipeline(this);
     return pipeline;
   }
@@ -7473,7 +7385,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getIntegerReply();
   }
 
-  public Map<String, String> pubsubNumSub(String... channels) {
+  public Map<String, Long> pubsubNumSub(String... channels) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(PUBSUB, joinParameters(NUMSUB.name(), channels));
     return BuilderFactory.PUBSUB_NUMSUB_MAP.build(connection.getOne());
@@ -7593,190 +7505,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
-//
-//  @Override
-//  public String sentinelMyId() {
-//    connection.sentinel(Protocol.SentinelKeyword.MYID);
-//    return BuilderFactory.STRING.build(connection.getBinaryBulkReply());
-//  }
-//
-//  /**
-//   * <pre>
-//   * redis 127.0.0.1:26381&gt; sentinel masters
-//   * 1)  1) "name"
-//   *     2) "mymaster"
-//   *     3) "ip"
-//   *     4) "127.0.0.1"
-//   *     5) "port"
-//   *     6) "6379"
-//   *     7) "runid"
-//   *     8) "93d4d4e6e9c06d0eea36e27f31924ac26576081d"
-//   *     9) "flags"
-//   *    10) "master"
-//   *    11) "pending-commands"
-//   *    12) "0"
-//   *    13) "last-ok-ping-reply"
-//   *    14) "423"
-//   *    15) "last-ping-reply"
-//   *    16) "423"
-//   *    17) "info-refresh"
-//   *    18) "6107"
-//   *    19) "num-slaves"
-//   *    20) "1"
-//   *    21) "num-other-sentinels"
-//   *    22) "2"
-//   *    23) "quorum"
-//   *    24) "2"
-//   *
-//   * </pre>
-//   * @return
-//   */
-//  @Override
-//  @SuppressWarnings("rawtypes")
-//  public List<Map<String, String>> sentinelMasters() {
-//    connection.sentinel(Protocol.SENTINEL_MASTERS);
-//    final List<Object> reply = connection.getObjectMultiBulkReply();
-//
-//    final List<Map<String, String>> masters = new ArrayList<>();
-//    for (Object obj : reply) {
-//      masters.add(BuilderFactory.STRING_MAP.build(obj));
-//    }
-//    return masters;
-//  }
-//
-//  @Override
-//  public Map<String, String> sentinelMaster(String masterName) {
-//    connection.sentinel(Protocol.SentinelKeyword.MASTER, masterName);
-//    return BuilderFactory.STRING_MAP.build(connection.getBinaryMultiBulkReply());
-//  }
-//
-//  @Override
-//  public List<Map<String, String>> sentinelSentinels(String masterName) {
-//    connection.sentinel(Protocol.SentinelKeyword.SENTINELS, masterName);
-//    return connection.getObjectMultiBulkReply().stream()
-//        .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
-//  }
-//
-//  /**
-//   * <pre>
-//   * redis 127.0.0.1:26381&gt; sentinel get-master-addr-by-name mymaster
-//   * 1) "127.0.0.1"
-//   * 2) "6379"
-//   * </pre>
-//   * @param masterName
-//   * @return two elements list of strings : host and port.
-//   */
-//  @Override
-//  public List<String> sentinelGetMasterAddrByName(final String masterName) {
-//    connection.sentinel(Protocol.SENTINEL_GET_MASTER_ADDR_BY_NAME, masterName);
-//    final List<Object> reply = connection.getObjectMultiBulkReply();
-//    return BuilderFactory.STRING_LIST.build(reply);
-//  }
-//
-//  /**
-//   * <pre>
-//   * redis 127.0.0.1:26381&gt; sentinel reset mymaster
-//   * (integer) 1
-//   * </pre>
-//   * @param pattern
-//   * @return
-//   */
-//  @Override
-//  public Long sentinelReset(final String pattern) {
-//    connection.sentinel(Protocol.SENTINEL_RESET, pattern);
-//    return connection.getIntegerReply();
-//  }
-//
-//  /**
-//   * <pre>
-//   * redis 127.0.0.1:26381&gt; sentinel slaves mymaster
-//   * 1)  1) "name"
-//   *     2) "127.0.0.1:6380"
-//   *     3) "ip"
-//   *     4) "127.0.0.1"
-//   *     5) "port"
-//   *     6) "6380"
-//   *     7) "runid"
-//   *     8) "d7f6c0ca7572df9d2f33713df0dbf8c72da7c039"
-//   *     9) "flags"
-//   *    10) "slave"
-//   *    11) "pending-commands"
-//   *    12) "0"
-//   *    13) "last-ok-ping-reply"
-//   *    14) "47"
-//   *    15) "last-ping-reply"
-//   *    16) "47"
-//   *    17) "info-refresh"
-//   *    18) "657"
-//   *    19) "master-link-down-time"
-//   *    20) "0"
-//   *    21) "master-link-status"
-//   *    22) "ok"
-//   *    23) "master-host"
-//   *    24) "localhost"
-//   *    25) "master-port"
-//   *    26) "6379"
-//   *    27) "slave-priority"
-//   *    28) "100"
-//   * </pre>
-//   * @param masterName
-//   * @return
-//   */
-//  @Override
-//  public List<Map<String, String>> sentinelSlaves(final String masterName) {
-//    connection.sentinel(Protocol.SENTINEL_SLAVES, masterName);
-//    final List<Object> reply = connection.getObjectMultiBulkReply();
-//
-//    final List<Map<String, String>> slaves = new ArrayList<>();
-//    for (Object obj : reply) {
-//      slaves.add(BuilderFactory.STRING_MAP.build(obj));
-//    }
-//    return slaves;
-//  }
-//
-//  @Override
-//  public List<Map<String, String>> sentinelReplicas(final String masterName) {
-//    connection.sentinel(Protocol.SentinelKeyword.REPLICAS, masterName);
-//    return connection.getObjectMultiBulkReply().stream()
-//        .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
-//  }
-//
-//  @Override
-//  public String sentinelFailover(final String masterName) {
-//    connection.sentinel(Protocol.SENTINEL_FAILOVER, masterName);
-//    return connection.getStatusCodeReply();
-//  }
-//
-//  @Override
-//  public String sentinelMonitor(final String masterName, final String ip, final int port,
-//      final int quorum) {
-//    connection.sentinel(Protocol.SENTINEL_MONITOR, masterName, ip, String.valueOf(port),
-//      String.valueOf(quorum));
-//    return connection.getStatusCodeReply();
-//  }
-//
-//  @Override
-//  public String sentinelRemove(final String masterName) {
-//    connection.sentinel(Protocol.SENTINEL_REMOVE, masterName);
-//    return connection.getStatusCodeReply();
-//  }
-//
-//  @Override
-//  public String sentinelSet(final String masterName, final Map<String, String> parameterMap) {
-//    int index = 0;
-//    int paramsLength = parameterMap.size() * 2 + 2;
-//    String[] params = new String[paramsLength];
-//
-//    params[index++] = Protocol.SENTINEL_SET;
-//    params[index++] = masterName;
-//    for (Entry<String, String> entry : parameterMap.entrySet()) {
-//      params[index++] = entry.getKey();
-//      params[index++] = entry.getValue();
-//    }
-//
-//    connection.sentinel(params);
-//    return connection.getStatusCodeReply();
-//  }
 
   @Override
   public byte[] dump(final String key) {
@@ -8237,30 +7965,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection.sendCommand(ASKING);
     return connection.getStatusCodeReply();
   }
-//
-//  public List<String> pubsubChannels() {
-//    checkIsInMultiOrPipeline();
-//    connection.pubsubChannels();
-//    return connection.getMultiBulkReply();
-//  }
-//
-//  public List<String> pubsubChannels(final String pattern) {
-//    checkIsInMultiOrPipeline();
-//    connection.pubsubChannels(pattern);
-//    return connection.getMultiBulkReply();
-//  }
-//
-//  public Long pubsubNumPat() {
-//    checkIsInMultiOrPipeline();
-//    connection.pubsubNumPat();
-//    return connection.getIntegerReply();
-//  }
-//
-//  public Map<String, String> pubsubNumSub(String... channels) {
-//    checkIsInMultiOrPipeline();
-//    connection.pubsubNumSub(channels);
-//    return BuilderFactory.PUBSUB_NUMSUB_MAP.build(connection.getBinaryMultiBulkReply());
-//  }
 
   @Override
   public long pfadd(final String key, final String... elements) {

@@ -3,7 +3,7 @@ package redis.clients.jedis.providers;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 
-public class ManagedJedisConnectionProvider implements JedisConnectionProvider {
+public class ManagedConnectionProvider implements ConnectionProvider {
 
   private Connection connection;
 

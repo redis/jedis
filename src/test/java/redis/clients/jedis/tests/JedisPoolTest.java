@@ -25,7 +25,6 @@ import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-//import redis.clients.jedis.exceptions.JedisExhaustedPoolException;
 
 public class JedisPoolTest {
 
@@ -117,7 +116,6 @@ public class JedisPoolTest {
     assertTrue(pool.isClosed());
   }
 
-//  @Test(expected = JedisExhaustedPoolException.class)
   @Test(expected = JedisException.class)
   public void checkPoolOverflow() {
     GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();

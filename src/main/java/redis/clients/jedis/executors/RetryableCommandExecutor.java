@@ -1,25 +1,27 @@
-package redis.clients.jedis;
+package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.Connection;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.providers.JedisConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.providers.ConnectionProvider;
 
-public class RetryableCommandExecutor implements JedisCommandExecutor {
+public class RetryableCommandExecutor implements CommandExecutor {
 
   private static final Logger LOG = LoggerFactory.getLogger(RetryableCommandExecutor.class);
 
-  protected final JedisConnectionProvider provider;
+  protected final ConnectionProvider provider;
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
 
-  public RetryableCommandExecutor(JedisConnectionProvider provider, int maxAttempts,
+  public RetryableCommandExecutor(ConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     this.provider = provider;
     this.maxAttempts = maxAttempts;

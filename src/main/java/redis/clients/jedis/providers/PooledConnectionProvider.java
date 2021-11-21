@@ -9,32 +9,27 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.util.Pool;
 
-public class PooledJedisConnectionProvider implements JedisConnectionProvider {
+public class PooledConnectionProvider implements ConnectionProvider {
 
   private final Pool<Connection> pool;
 
-  public PooledJedisConnectionProvider(HostAndPort hostAndPort) {
+  public PooledConnectionProvider(HostAndPort hostAndPort) {
     this(new ConnectionFactory(hostAndPort));
   }
 
-  public PooledJedisConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig));
   }
 
-  public PooledJedisConnectionProvider(ConnectionFactory factory) {
-    this(factory, new GenericObjectPoolConfig<>());
-    factory.setPool(pool);
-  }
-
-  public PooledJedisConnectionProvider(PooledObjectFactory<Connection> factory) {
+  public PooledConnectionProvider(PooledObjectFactory<Connection> factory) {
     this(factory, new GenericObjectPoolConfig<>());
   }
 
-  public PooledJedisConnectionProvider(PooledObjectFactory<Connection> factory, GenericObjectPoolConfig<Connection> poolConfig) {
+  public PooledConnectionProvider(PooledObjectFactory<Connection> factory, GenericObjectPoolConfig<Connection> poolConfig) {
     this(new Pool<>(factory, poolConfig));
   }
 
-  public PooledJedisConnectionProvider(Pool<Connection> pool) {
+  public PooledConnectionProvider(Pool<Connection> pool) {
     this.pool = pool;
   }
 

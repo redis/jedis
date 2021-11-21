@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -23,7 +22,7 @@ public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private final Pool<Connection> memberOf;
+  private Pool<Connection> memberOf;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -51,20 +50,14 @@ public class Connection implements Closeable {
   }
 
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
-    this(socketFactory, clientConfig, null);
-  }
-
-  Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Pool<Connection> pool) {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     initializeFromClientConfig(clientConfig);
-    this.memberOf = pool;
   }
 
   public Connection(final JedisSocketFactory socketFactory) {
     this.socketFactory = socketFactory;
-    this.memberOf = null;
   }
 
   @Override
@@ -72,7 +65,11 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
-  public HostAndPort getHostAndPort() {
+  final void setHandlingPool(final Pool<Connection> pool) {
+    this.memberOf = pool;
+  }
+
+  final HostAndPort getHostAndPort() {
     return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
   }
 
@@ -81,7 +78,6 @@ public class Connection implements Closeable {
   }
 
   public void setSoTimeout(int soTimeout) {
-//    socketFactory.setSocketTimeout(soTimeout);
     this.soTimeout = soTimeout;
     if (this.socket != null) {
       try {
@@ -107,7 +103,6 @@ public class Connection implements Closeable {
 
   public void rollbackTimeout() {
     try {
-//      socket.setSoTimeout(socketFactory.getSocketTimeout());
       socket.setSoTimeout(this.soTimeout);
     } catch (SocketException ex) {
       broken = true;
@@ -235,10 +230,12 @@ public class Connection implements Closeable {
   @Override
   public void close() {
     if (this.memberOf != null) {
+      Pool<Connection> pool = this.memberOf;
+      this.memberOf = null;
       if (isBroken()) {
-        this.memberOf.returnBrokenResource(this);
+        pool.returnBrokenResource(this);
       } else {
-        this.memberOf.returnResource(this);
+        pool.returnResource(this);
       }
     } else {
       disconnect();

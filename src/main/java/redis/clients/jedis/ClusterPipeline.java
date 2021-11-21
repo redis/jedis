@@ -6,7 +6,7 @@ import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.providers.JedisClusterConnectionProvider;
+import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Query;
@@ -21,10 +21,10 @@ import java.util.Set;
 public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
         RedisModulePipelineCommands {
 
-  private final JedisClusterConnectionProvider provider;
+  private final ClusterConnectionProvider provider;
   private final RedisClusterCommandObjects commandObjects;
 
-  public ClusterPipeline(JedisClusterConnectionProvider provider) {
+  public ClusterPipeline(ClusterConnectionProvider provider) {
     this.provider = provider;
     this.commandObjects = new RedisClusterCommandObjects();
   }

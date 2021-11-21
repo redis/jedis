@@ -185,7 +185,6 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   private static Set<HostAndPort> parseHostAndPorts(Set<String> strings) {
-//    return strings.stream().map(HostAndPort::parseString).collect(Collectors.toSet());
     return strings.stream().map(HostAndPort::from).collect(Collectors.toSet());
   }
 

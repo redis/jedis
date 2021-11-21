@@ -1,5 +1,10 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.executors.CommandExecutor;
+import redis.clients.jedis.executors.RetryableCommandExecutor;
+import redis.clients.jedis.executors.ClusterCommandExecutor;
+import redis.clients.jedis.executors.DefaultCommandExecutor;
+import redis.clients.jedis.executors.SimpleCommandExecutor;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +24,7 @@ import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.providers.JedisClusterConnectionProvider;
-import redis.clients.jedis.providers.JedisConnectionProvider;
+import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.search.IndexOptions;
@@ -30,12 +34,13 @@ import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.providers.ConnectionProvider;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
 
-  protected final JedisCommandExecutor executor;
+  protected final CommandExecutor executor;
   private final RedisCommandObjects commandObjects;
 
   public UnifiedJedis() {
@@ -55,13 +60,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public UnifiedJedis(Connection connection) {
-    this.executor = new JedisConnectionExecutor(connection);
+    this.executor = new SimpleCommandExecutor(connection);
     this.commandObjects = new RedisCommandObjects();
   }
 
-  public UnifiedJedis(JedisConnectionProvider provider) {
-    this.executor = new SimpleJedisExecutor(provider);
-    this.commandObjects = (provider instanceof JedisClusterConnectionProvider)
+  public UnifiedJedis(ConnectionProvider provider) {
+    this.executor = new DefaultCommandExecutor(provider);
+    this.commandObjects = (provider instanceof ClusterConnectionProvider)
         ? new RedisClusterCommandObjects() : new RedisCommandObjects();
   }
 
@@ -70,22 +75,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
-    this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
+    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
         Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration);
+    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration);
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new JedisClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
+    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
   }
 
-  public UnifiedJedis(JedisClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    if (provider instanceof JedisClusterConnectionProvider) {
-      this.executor = new RetryableClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
+  public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
+    if (provider instanceof ClusterConnectionProvider) {
+      this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
       this.commandObjects = new RedisClusterCommandObjects();
     } else {
       this.executor = new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
@@ -2856,7 +2861,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Map<String, List<Object>> ftSynDump(String indexName) {
+  public Map<String, List<String>> ftSynDump(String indexName) {
     return executeCommand(commandObjects.ftSynDump(indexName));
   }
 

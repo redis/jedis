@@ -181,7 +181,7 @@ public class JedisClusterInfoCache {
       Pool<Connection> existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      Pool<Connection> nodePool = new JedisConnectionPool(poolConfig, node, clientConfig);
+      Pool<Connection> nodePool = new ConnectionPool(poolConfig, node, clientConfig);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {

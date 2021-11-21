@@ -2511,7 +2511,7 @@ public class RedisCommandObjects {
         .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);
   }
 
-  public CommandObject<Map<String, List<Object>>> ftSynDump(String indexName) {
+  public CommandObject<Map<String, List<String>>> ftSynDump(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.SYNDUMP).add(indexName), BuilderFactory.SEARCH_SYNONYM_GROUPS);
   }
 

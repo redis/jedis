@@ -10,8 +10,6 @@ import org.junit.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
-//import redis.clients.jedis.JedisShardInfo;
-//import redis.clients.jedis.Protocol;
 import redis.clients.jedis.tests.commands.JedisCommandsTestBase;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
@@ -39,16 +37,6 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandsTestBase {
       j.dbSize();
     }
   }
-//
-//  @Test
-//  public void connectWithShardInfo() {
-//    JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
-//    shardInfo.setUser("acljedis");
-//    shardInfo.setPassword("fizzbuzz");
-//    try (Jedis jedis = new Jedis(shardInfo)) {
-//      jedis.get("foo");
-//    }
-//  }
 
   @Test
   public void connectWithConfig() {
@@ -124,22 +112,22 @@ public class JedisWithCompleteCredentialsTest extends JedisCommandsTestBase {
       assertEquals("bar", j2.get("foo"));
     }
   }
-//
-//  @Test
-//  public void allowUrlWithNoDBAndNoPassword() {
-//    try (Jedis j1 = new Jedis("redis://localhost:6379")) {
-//      assertEquals("OK", j1.auth("acljedis", "fizzbuzz"));
+
+  @Test
+  public void allowUrlWithNoDBAndNoPassword() {
+    try (Jedis j1 = new Jedis("redis://localhost:6379")) {
+      assertEquals("OK", j1.auth("acljedis", "fizzbuzz"));
 //      assertEquals("localhost", j1.getClient().getHost());
 //      assertEquals(6379, j1.getClient().getPort());
-//      assertEquals(0, j1.getDB());
-//    }
-//
-//    try (Jedis j2 = new Jedis("redis://localhost:6379/")) {
-//      assertEquals("OK", j2.auth("acljedis", "fizzbuzz"));
+      assertEquals(0, j1.getDB());
+    }
+
+    try (Jedis j2 = new Jedis("redis://localhost:6379/")) {
+      assertEquals("OK", j2.auth("acljedis", "fizzbuzz"));
 //      assertEquals("localhost", j2.getClient().getHost());
 //      assertEquals(6379, j2.getClient().getPort());
-//      assertEquals(0, j2.getDB());
-//    }
-//  }
+      assertEquals(0, j2.getDB());
+    }
+  }
 
 }

@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,15 +69,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
       return;
     }
 
-//    try (Jedis jedis = client.connection()) {
-//      jedis.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
-//      jedis.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
-//      jedis.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
-//      jedis.hset("student:3333", toMap("first", "El", "last", "Mark", "age", "17"));
-//      jedis.hset("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", "21"));
-//      jedis.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
-//      jedis.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
-//    }
     client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
     client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
     client.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
@@ -103,12 +95,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Schema sc = new Schema().addTextField("first", 1.0).addTextField("last", 1.0).addNumericField("age");
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
-//    try (Jedis jedis = client.connection()) {
-//      jedis.hset("student:1111", toStringMap(toMap("first", "Joe", "last", "Dod", "age", 18)));
-//      jedis.hset("student:3333", toStringMap(toMap("first", "El", "last", "Mark", "age", 17)));
-//      jedis.hset("pupil:4444", toStringMap(toMap("first", "Pat", "last", "Shu", "age", 21)));
-//      jedis.hset("student:5555", toStringMap(toMap("first", "Joen", "last", "Ko", "age", 20)));
-//    }
     addDocument("student:1111", toMap("first", "Joe", "last", "Dod", "age", 18));
     addDocument("student:3333", toMap("first", "El", "last", "Mark", "age", 17));
     addDocument("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", 21));
@@ -137,15 +123,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), sc));
 
-//    try (Jedis jedis = client.connection()) {
-//      jedis.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
-//      jedis.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
-//      jedis.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
-//      jedis.hset("student:3333", toMap("first", "El", "last", "Mark", "age", "17"));
-//      jedis.hset("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", "21"));
-//      jedis.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
-//      jedis.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
-//    }
     client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
     client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
     client.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
@@ -556,27 +533,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     res = client.ftSearch(index, new Query("title"));
     assertEquals(1, res.getTotalResults());
   }
-//
-//  @Test
-//  public void testDrop() throws Exception {
-//    Schema sc = new Schema().addTextField("title", 1.0);
-//
-//    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-//    Map<String, Object> fields = new HashMap<>();
-//    fields.put("title", "hello world");
-//    for (int i = 0; i < 100; i++) {
-////      assertTrue(client.addDocument(String.format("doc%d", i), fields));
-//      addDocument(String.format("doc%d", i), fields);
-//    }
-//
-//    SearchResult res = client.ftSearch(index, new Query("hello world"));
-//    assertEquals(100, res.getTotalResults());
-//
-//    assertEquals("OK", client.ftDropIndex(index));
-//
-//    Set<String> keys = client.keys("*");
-//    assertTrue(keys.isEmpty());
-//  }
 
   @Test
   public void dropIndex() throws Exception {
@@ -625,7 +581,16 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testAlterAdd() throws Exception {
+  public void testDropMissing() throws Exception {
+    try {
+      client.ftDropIndex(index);
+      fail();
+    } catch (JedisDataException ex) {
+    }
+  }
+
+  @Test
+  public void alterAdd() throws Exception {
     Schema sc = new Schema().addTextField("title", 1.0);
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -656,7 +621,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testNoStem() throws Exception {
+  public void noStem() throws Exception {
     Schema sc = new Schema().addTextField("stemmed", 1.0).addField(new Schema.TextField("notStemmed", 1.0, false, true));
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -676,7 +641,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testPhoneticMatch() throws Exception {
+  public void phoneticMatch() throws Exception {
     Schema sc = new Schema()
         .addTextField("noPhonetic", 1.0)
         .addField(new Schema.TextField("withPhonetic", 1.0, false, false, false, "dm:en"));
@@ -706,7 +671,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testInfo() throws Exception {
+  public void info() throws Exception {
     String MOVIE_ID = "movie_id";
     String TITLE = "title";
     String GENRE = "genre";
@@ -735,7 +700,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testNoIndex() throws Exception {
+  public void noIndex() throws Exception {
     Schema sc = new Schema()
         .addField(new Schema.TextField("f1", 1.0, true, false, true))
         .addField(new Schema.TextField("f2", 1.0));
@@ -904,15 +869,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 //    }
 //    assertTrue(caught);
 //  }
-
-  @Test
-  public void testDropMissing() throws Exception {
-    try {
-      client.ftDropIndex(index);
-      fail();
-    } catch (JedisDataException ex) {
-    }
-  }
 //
 //  @Test
 //  public void testGet() throws Exception {
@@ -951,31 +907,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 //    docs = client.getDocuments(false, "doc2");
 //    assertEquals(1, docs.size());
 //    assertTrue(Arrays.equals(SafeEncoder.encode("Hello World!2"), (byte[]) docs.get(0).get("txt1")));
-//  }
-//
-//  @Test
-//  public void testDropDD() {
-//    client.ftCreate(index, IndexOptions.defaultOptions(), new Schema().addTextField("txt1", 1.0));
-//    client.addDocument(new Document("doc1").set("txt1", "Hello World!1"), new AddOptions());
-//    client.addDocument(new Document("doc2").set("txt1", "Hello World!2"), new AddOptions());
-//    client.addDocument(new Document("doc3").set("txt1", "Hello World!3"), new AddOptions());
-//
-//    client.dropIndexDD();
-//    try {
-//      client.getDocument("doc1");
-//    } catch (JedisDataException jde) {
-//      assertUnknownIndex(jde);
-//    }
-//    try {
-//      client.getDocuments("doc2", "doc3");
-//    } catch (JedisDataException jde) {
-//      assertUnknownIndex(jde);
-//    }
-//    try {
-//      client.dropIndexDD();
-//    } catch (JedisDataException jde) {
-//      assertUnknownIndex(jde);
-//    }
 //  }
 //
 //  private static void assertUnknownIndex(JedisDataException jde) {
@@ -1104,7 +1035,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 //  }
 
   @Test
-  public void testGetTagField() {
+  public void getTagField() {
     Schema sc = new Schema()
         .addTextField("title", 1.0)
         .addTagField("category");
@@ -1245,7 +1176,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testInKeys() throws Exception {
+  public void inKeys() throws Exception {
     Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -1268,7 +1199,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testBlobField() throws Exception {
+  public void blobField() throws Exception {
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -1292,30 +1223,27 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-//  public void testConfig() throws Exception {
-//    boolean result = client.setConfig(ConfigOption.TIMEOUT, "100");
-//    assertTrue(result);
-//    Map<String, String> configMap = client.getAllConfig();
-//    assertEquals("100", configMap.get(ConfigOption.TIMEOUT.name()));
-//    assertEquals("100", client.getConfig(ConfigOption.TIMEOUT));
-//
-//    client.setConfig(ConfigOption.ON_TIMEOUT, "fail");
-//    assertEquals("fail", client.getConfig(ConfigOption.ON_TIMEOUT));
-//
-//    try {
-//      assertFalse(client.setConfig(ConfigOption.ON_TIMEOUT, "null"));
-//    } catch (JedisDataException e) {
-//      // Should throw an exception after RediSearch 2.2
-//    }
-//  }
-  public void testConfig() throws Exception {
+  public void config() throws Exception {
     assertEquals("OK", client.ftConfigSet("timeout", "100"));
     Map<String, String> configMap = client.ftConfigGet("*");
     assertEquals("100", configMap.get("TIMEOUT"));
   }
 
   @Test
-  public void testAlias() throws Exception {
+  public void configOnTimeout() throws Exception {
+    assertEquals("OK", client.ftConfigSet("ON_TIMEOUT", "fail"));
+    assertEquals(Collections.singletonMap("ON_TIMEOUT", "fail"), client.ftConfigGet("ON_TIMEOUT"));
+
+    try {
+      client.ftConfigSet("ON_TIMEOUT", "null");
+      fail("null is not valid value for ON_TIMEOUT");
+    } catch (JedisDataException e) {
+      // Should throw an exception after RediSearch 2.2
+    }
+  }
+
+  @Test
+  public void alias() throws Exception {
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
     Map<String, Object> doc = new HashMap<>();
@@ -1349,33 +1277,22 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testSyn() throws Exception {
+  public void syn() throws Exception {
     Schema sc = new Schema().addTextField("name", 1.0).addTextField("addr", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
-    long group1, group2;
-
-    group1 = 345L;
-    group2 = 789L;
+    long group1 = 345L;
+    long group2 = 789L;
     assertEquals("OK", client.ftSynUpdate(index, group1, "girl", "baby"));
     assertEquals("OK", client.ftSynUpdate(index, group1, "child"));
     assertEquals("OK", client.ftSynUpdate(index, group2, "child"));
 
-//    Map<String, List<String>> dump = client.dumpSynonym();
-//
-//    Map<String, List<String>> expected = new HashMap<>();
-//    expected.put("girl", Arrays.asList(String.valueOf(group1)));
-//    expected.put("baby", Arrays.asList(String.valueOf(group1)));
-//    expected.put("child", Arrays.asList(String.valueOf(group1), String.valueOf(group2)));
-//    assertEquals(expected, dump);
-//
-    Map<String, List<Object>> dump = client.ftSynDump(index);
-    assertEquals(3, dump.size());
-//    assertEquals(dump.get("girl"), Arrays.asList(group1));
-//    assertEquals(dump.get("baby"), Arrays.asList(group1));
-//    assertEquals(dump.get("child"), Arrays.asList(group1, group2));
-    assertEquals(1, dump.get("girl").size());
-    assertEquals(1, dump.get("baby").size());
-    assertEquals(2, dump.get("child").size());
+    Map<String, List<String>> dump = client.ftSynDump(index);
+
+    Map<String, List<String>> expected = new HashMap<>();
+    expected.put("girl", Arrays.asList(String.valueOf(group1)));
+    expected.put("baby", Arrays.asList(String.valueOf(group1)));
+    expected.put("child", Arrays.asList(String.valueOf(group1), String.valueOf(group2)));
+    assertEquals(expected, dump);
   }
 }

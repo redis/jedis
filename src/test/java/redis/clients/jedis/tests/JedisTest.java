@@ -18,12 +18,9 @@ import java.util.Map;
 
 import org.junit.Test;
 
-//import redis.clients.jedis.BinaryJedis;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
-//import redis.clients.jedis.JedisShardInfo;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -52,15 +49,6 @@ public class JedisTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.hmset("foo", hash));
     assertEquals(hash, jedis.hgetAll("foo"));
   }
-//
-//  @Test
-//  public void connectWithShardInfo() {
-//    JedisShardInfo shardInfo = new JedisShardInfo("localhost", Protocol.DEFAULT_PORT);
-//    shardInfo.setPassword("foobared");
-//    try (Jedis jedis = new Jedis(shardInfo)) {
-//      jedis.get("foo");
-//    }
-//  }
 
   @Test
   public void connectWithConfig() {
@@ -187,23 +175,23 @@ public class JedisTest extends JedisCommandsTestBase {
       assertEquals(currentDb, jedis.getDB());
     }
   }
-//
-//  @Test
-//  public void allowUrlWithNoDBAndNoPassword() {
-//    try (Jedis j1 = new Jedis("redis://localhost:6380")) {
-//      j1.auth("foobared");
+
+  @Test
+  public void allowUrlWithNoDBAndNoPassword() {
+    try (Jedis j1 = new Jedis("redis://localhost:6380")) {
+      j1.auth("foobared");
 //      assertEquals("localhost", j1.getClient().getHost());
 //      assertEquals(6380, j1.getClient().getPort());
-//      assertEquals(0, j1.getDB());
-//    }
-//
-//    try (Jedis j2 = new Jedis("redis://localhost:6380/")) {
-//      j2.auth("foobared");
+      assertEquals(0, j1.getDB());
+    }
+
+    try (Jedis j2 = new Jedis("redis://localhost:6380/")) {
+      j2.auth("foobared");
 //      assertEquals("localhost", j2.getClient().getHost());
 //      assertEquals(6380, j2.getClient().getPort());
-//      assertEquals(0, j2.getDB());
-//    }
-//  }
+      assertEquals(0, j2.getDB());
+    }
+  }
 
   @Test
   public void uriWithDBindexShouldUseTimeout() throws URISyntaxException, IOException {
@@ -224,14 +212,12 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void checkCloseable() {
-//    BinaryJedis bj = new BinaryJedis();
     Jedis bj = new Jedis();
     bj.close();
   }
 
   @Test
   public void checkCloseableAfterConnect() {
-//    BinaryJedis bj = new BinaryJedis();
     Jedis bj = new Jedis();
     bj.connect();
     bj.close();
@@ -239,7 +225,6 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void checkCloseableAfterCommand() {
-//    BinaryJedis bj = new BinaryJedis();
     Jedis bj = new Jedis();
     bj.auth("foobared");
     bj.close();

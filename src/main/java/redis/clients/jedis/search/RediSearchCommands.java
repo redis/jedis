@@ -37,7 +37,7 @@ public interface RediSearchCommands {
 
   String ftSynUpdate(String indexName, String synonymGroupId, String... terms);
 
-  Map<String, List<Object>> ftSynDump(String indexName);
+  Map<String, List<String>> ftSynDump(String indexName);
 
   Map<String, Object> ftInfo(String indexName);
 

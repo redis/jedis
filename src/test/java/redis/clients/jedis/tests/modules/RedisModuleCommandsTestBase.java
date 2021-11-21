@@ -12,13 +12,13 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.providers.PooledJedisConnectionProvider;
+import redis.clients.jedis.providers.PooledConnectionProvider;
 
 public abstract class RedisModuleCommandsTestBase {
 
   protected static final HostAndPort hnp = new HostAndPort(Protocol.DEFAULT_HOST, 6479);
 
-  private static final PooledJedisConnectionProvider provider = new PooledJedisConnectionProvider(hnp);
+  private static final PooledConnectionProvider provider = new PooledConnectionProvider(hnp);
   protected UnifiedJedis client;
 
   public RedisModuleCommandsTestBase() {

@@ -6,20 +6,20 @@ import org.json.JSONObject;
 
 public interface RedisJsonCommands {
 
-  default String jsonSet(String key, Object json) {
-    return RedisJsonCommands.this.jsonSet(key, Path2.ROOT_PATH, json);
+  default String jsonSet(String key, Object object) {
+    return RedisJsonCommands.this.jsonSet(key, Path2.ROOT_PATH, object);
   }
 
-  default String jsonSetWithEscape(String key, Object json) {
-    return jsonSetWithEscape(key, Path2.ROOT_PATH, json);
+  default String jsonSetWithEscape(String key, Object object) {
+    return jsonSetWithEscape(key, Path2.ROOT_PATH, object);
   }
 
   default String jsonSetLegacy(String key, Object pojo) {
     return jsonSet(key, Path.ROOT_PATH, pojo);
   }
 
-  default String jsonSet(String key, Object json, JsonSetParams params) {
-    return jsonSet(key, Path2.ROOT_PATH, json, params);
+  default String jsonSet(String key, Object object, JsonSetParams params) {
+    return jsonSet(key, Path2.ROOT_PATH, object, params);
   }
 
   default String jsonSetWithEscape(String key, Object object, JsonSetParams params) {
@@ -30,13 +30,13 @@ public interface RedisJsonCommands {
     return jsonSet(key, Path.ROOT_PATH, pojo, params);
   }
 
-  String jsonSet(String key, Path2 path, Object json);
+  String jsonSet(String key, Path2 path, Object object);
 
   String jsonSetWithEscape(String key, Path2 path, Object object);
 
   String jsonSet(String key, Path path, Object pojo);
 
-  String jsonSet(String key, Path2 path, Object json, JsonSetParams params);
+  String jsonSet(String key, Path2 path, Object object, JsonSetParams params);
 
   String jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params);
 

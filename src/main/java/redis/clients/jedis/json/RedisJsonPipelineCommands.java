@@ -7,12 +7,12 @@ import java.util.List;
 
 public interface RedisJsonPipelineCommands {
 
-  default Response<String> jsonSet(String key, Object json) {
-    return RedisJsonPipelineCommands.this.jsonSet(key, Path2.ROOT_PATH, json);
+  default Response<String> jsonSet(String key, Object object) {
+    return RedisJsonPipelineCommands.this.jsonSet(key, Path2.ROOT_PATH, object);
   }
 
-  default Response<String> jsonSetWithEscape(String key, Object json) {
-    return jsonSetWithEscape(key, Path2.ROOT_PATH, json);
+  default Response<String> jsonSetWithEscape(String key, Object object) {
+    return jsonSetWithEscape(key, Path2.ROOT_PATH, object);
   }
 
   default Response<String> jsonSetLegacy(String key, Object pojo) {
@@ -35,15 +35,15 @@ public interface RedisJsonPipelineCommands {
 
   //<T> Response<T> jsonGet(String key, Path... paths);
 
-  Response<String> jsonSet(String key, Path2 path, Object json);
+  Response<String> jsonSet(String key, Path2 path, Object object);
 
-  Response<String> jsonSetWithEscape(String key, Path2 path, Object json);
+  Response<String> jsonSetWithEscape(String key, Path2 path, Object object);
 
   Response<String> jsonSet(String key, Path path, Object pojo);
 
-  Response<String> jsonSet(String key, Path2 path, Object json, JsonSetParams params);
+  Response<String> jsonSet(String key, Path2 path, Object object, JsonSetParams params);
 
-  Response<String> jsonSetWithEscape(String key, Path2 path, Object json, JsonSetParams params);
+  Response<String> jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params);
 
   Response<String> jsonSet(String key, Path path, Object pojo, JsonSetParams params);
 

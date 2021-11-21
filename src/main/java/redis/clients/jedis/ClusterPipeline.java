@@ -2689,33 +2689,33 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path2 path, Object json) {
-    return appendCommand(commandObjects.jsonSet(key, path, json));
+  public Response<String> jsonSet(String key, Path2 path, Object object) {
+    return appendCommand(commandObjects.jsonSet(key, path, object));
   }
 
   @Override
-  public Response<String> jsonSetWithEscape(String key, Path2 path, Object json) {
-    return appendCommand(commandObjects.jsonSetWithEscape(key, path, json));
+  public Response<String> jsonSetWithEscape(String key, Path2 path, Object object) {
+    return appendCommand(commandObjects.jsonSetWithEscape(key, path, object));
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path path, Object json) {
-    return appendCommand(commandObjects.jsonSet(key, path, json));
+  public Response<String> jsonSet(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonSet(key, path, object));
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path2 path, Object json, JsonSetParams params) {
-    return appendCommand(commandObjects.jsonSet(key, path, json, params));
+  public Response<String> jsonSet(String key, Path2 path, Object object, JsonSetParams params) {
+    return appendCommand(commandObjects.jsonSet(key, path, object, params));
   }
 
   @Override
-  public Response<String> jsonSetWithEscape(String key, Path2 path, Object json, JsonSetParams params) {
-    return appendCommand(commandObjects.jsonSetWithEscape(key, path, json, params));
+  public Response<String> jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params) {
+    return appendCommand(commandObjects.jsonSetWithEscape(key, path, object, params));
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path path, Object json, JsonSetParams params) {
-    return appendCommand(commandObjects.jsonSet(key, path, json, params));
+  public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
+    return appendCommand(commandObjects.jsonSet(key, path, object, params));
   }
 
   @Override
@@ -2741,11 +2741,6 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   @Override
   public <T> Response<T> jsonGet(String key, Class<T> clazz, Path... paths) {
     return appendCommand(commandObjects.jsonGet(key, clazz, paths));
-  }
-
-  @Override
-  public <T> Response<List<T>> jsonMGet(Class<T> clazz, String... keys) {
-    return appendCommand(commandObjects.jsonMGet(clazz, keys));
   }
 
   @Override

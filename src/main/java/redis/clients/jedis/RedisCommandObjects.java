@@ -2779,7 +2779,7 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<Long> jsonArrTrim(String key, Path path, long start, long stop) {
+  public final CommandObject<Long> jsonArrTrim(String key, Path path, int start, int stop) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
   // RedisJSON commands

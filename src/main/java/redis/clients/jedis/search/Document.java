@@ -3,6 +3,7 @@ package redis.clients.jedis.search;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,5 +124,12 @@ public class Document implements Serializable {
 
   public boolean hasProperty(String key) {
     return properties.containsKey(key);
+  }
+
+  @Override
+  public String toString() {
+    return "id:" + this.getId() + ", score: " + this.getScore() +
+            ", payload:" + Arrays.toString(this.getPayload()) +
+            ", properties:" + this.getProperties();
   }
 }

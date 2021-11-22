@@ -124,4 +124,11 @@ public class Document implements Serializable {
   public boolean hasProperty(String key) {
     return properties.containsKey(key);
   }
+
+  @Override
+  public String toString() {
+    return "id:" + this.getId() + ", score: " + this.getScore() +
+            ", payload:" + SafeEncoder.encode(this.getPayload()) +
+            ", properties:" + this.getProperties();
+  }
 }

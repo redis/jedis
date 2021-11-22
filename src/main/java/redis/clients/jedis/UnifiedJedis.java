@@ -2851,11 +2851,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String ftSynUpdate(String indexName, long synonymGroupId, String... terms) {
-    return executeCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
-  }
-
-  @Override
   public String ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
     return executeCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
   }

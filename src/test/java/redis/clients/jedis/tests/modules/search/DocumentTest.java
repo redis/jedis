@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.Test;
 import redis.clients.jedis.search.Document;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class DocumentTest {
 
@@ -39,6 +40,9 @@ public class DocumentTest {
     assertEquals(id, read.getId());
     assertEquals(score, read.getScore(), 0d);
     assertArrayEquals(payload, read.getPayload());
+    String exp = String.format("id:%s, score: %.1f, payload:%s, properties:%s",
+            id, score, SafeEncoder.encode(payload), "[string=c, float=12.0]") ;
+    assertEquals(exp, read.toString());
     assertEquals("c", read.getString("string"));
     assertEquals(Double.valueOf(12d), read.get("float"));
   }

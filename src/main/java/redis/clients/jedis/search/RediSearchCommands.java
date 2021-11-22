@@ -33,8 +33,6 @@ public interface RediSearchCommands {
 
   String ftDropIndexDD(String indexName);
 
-  String ftSynUpdate(String indexName, long synonymGroupId, String... terms);
-
   String ftSynUpdate(String indexName, String synonymGroupId, String... terms);
 
   Map<String, List<String>> ftSynDump(String indexName);

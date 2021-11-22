@@ -2501,11 +2501,6 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD), BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftSynUpdate(String indexName, long synonymGroupId, String... terms) {
-    return new CommandObject<>(commandArguments(SearchCommand.SYNUPDATE).add(indexName)
-        .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);
-  }
-
   public CommandObject<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
     return new CommandObject<>(commandArguments(SearchCommand.SYNUPDATE).add(indexName)
         .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);

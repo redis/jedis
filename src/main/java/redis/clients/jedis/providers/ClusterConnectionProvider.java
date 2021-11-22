@@ -18,16 +18,16 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
-public class JedisClusterConnectionProvider implements JedisConnectionProvider {
+public class ClusterConnectionProvider implements ConnectionProvider {
 
   protected final JedisClusterInfoCache cache;
 
-  public JedisClusterConnectionProvider(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig) {
+  public ClusterConnectionProvider(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig);
     initializeSlotsCache(jedisClusterNodes, clientConfig);
   }
 
-  public JedisClusterConnectionProvider(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
+  public ClusterConnectionProvider(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, poolConfig);
     initializeSlotsCache(jedisClusterNodes, clientConfig);
@@ -67,14 +67,6 @@ public class JedisClusterConnectionProvider implements JedisConnectionProvider {
   public HostAndPort getNode(int slot) {
     return cache.getSlotNode(slot);
   }
-//
-//  public HostAndPort getNode(String key) {
-//    return cache.getSlotNode(JedisClusterCRC16.getSlot(key));
-//  }
-//
-//  public HostAndPort getNode(byte[] key) {
-//    return cache.getSlotNode(JedisClusterCRC16.getSlot(key));
-//  }
 
   public Connection getConnection(HostAndPort node) {
     return cache.setupNodeIfNotExist(node).getResource();

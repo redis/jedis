@@ -7,9 +7,6 @@
 //import org.junit.Test;
 //import redis.clients.jedis.search.Query;
 //
-///**
-// * Created by dvirsky on 19/02/17.
-// */
 //public class QueryTest {
 //
 //  Query query;

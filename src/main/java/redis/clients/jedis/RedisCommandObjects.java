@@ -2511,7 +2511,7 @@ public class RedisCommandObjects {
         .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);
   }
 
-  public CommandObject<Map<String, List<Object>>> ftSynDump(String indexName) {
+  public CommandObject<Map<String, List<String>>> ftSynDump(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.SYNDUMP).add(indexName), BuilderFactory.SEARCH_SYNONYM_GROUPS);
   }
 
@@ -2613,16 +2613,16 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Boolean> jsonClear(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key), BuilderFactory.BOOLEAN);
+  public final CommandObject<Long> jsonClear(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Boolean> jsonClear(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.BOOLEAN);
+  public final CommandObject<Long> jsonClear(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Boolean> jsonClear(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.BOOLEAN);
+  public final CommandObject<Long> jsonClear(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Boolean>> jsonToggle(String key, Path2 path) {

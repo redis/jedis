@@ -340,12 +340,12 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     Path arrPath = Path.of(".fooArr");
     assertEquals(Long.valueOf(3), client.jsonArrLen("foobar", arrPath));
 
-    assertTrue(client.jsonClear("foobar", arrPath));
+    assertEquals(1L, client.jsonClear("foobar", arrPath));
     assertEquals(Long.valueOf(0), client.jsonArrLen("foobar", arrPath));
 
     // ignore non-array
     Path strPath = Path.of("foo");
-    assertFalse(client.jsonClear("foobar", strPath));
+    assertEquals(0L, client.jsonClear("foobar", strPath));
     assertEquals("bar", client.jsonGet("foobar", String.class, strPath));
   }
 
@@ -358,7 +358,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     Path objPath = Path.of("baz");
     assertEquals(baz, client.jsonGet("qux", Baz.class, objPath));
 
-    assertTrue(client.jsonClear("qux", objPath));
+    assertEquals(1L, client.jsonClear("qux", objPath));
     assertEquals(new Baz(null, null, null), client.jsonGet("qux", Baz.class, objPath));
   }
 

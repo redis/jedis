@@ -16,7 +16,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.Test;
 
-//import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
@@ -204,15 +203,6 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.configSet(maxmemory, Protocol.toByteArray(200)));
     assertEquals("OK", jedis.configSet(maxmemory, memory));
   }
-//
-//  @Test
-//  public void debug() {
-//    jedis.set("foo", "bar");
-//    String resp = jedis.debug(DebugParams.OBJECT("foo"));
-//    assertNotNull(resp);
-//    resp = jedis.debug(DebugParams.RELOAD());
-//    assertNotNull(resp);
-//  }
 
   @Test
   public void waitReplicas() {

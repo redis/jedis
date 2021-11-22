@@ -72,19 +72,6 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     args.add("second".getBytes());
     args.add("third".getBytes());
 
-//    BinaryJedis binaryJedis = new BinaryJedis(hnp.getHost(), hnp.getPort(), 500);
-//    binaryJedis.connect();
-//    binaryJedis.auth("foobared");
-//
-//    List<byte[]> responses = (List<byte[]>) binaryJedis.eval(script.getBytes(), keys, args);
-//    assertEquals(5, responses.size());
-//    assertEquals("key1", new String(responses.get(0)));
-//    assertEquals("key2", new String(responses.get(1)));
-//    assertEquals("first", new String(responses.get(2)));
-//    assertEquals("second", new String(responses.get(3)));
-//    assertEquals("third", new String(responses.get(4)));
-//
-//    binaryJedis.close();
     List<byte[]> responses = (List<byte[]>) jedis.eval(script.getBytes(), keys, args);
     assertEquals(5, responses.size());
     assertEquals("key1", new String(responses.get(0)));
@@ -275,8 +262,6 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void scriptExistsWithBrokenConnection() {
-//    Jedis deadClient = new Jedis(jedis.getClient().getHost(), jedis.getClient().getPort());
-//    deadClient.auth("foobared");
     Jedis deadClient = createJedis();
 
     deadClient.clientSetname("DEAD");

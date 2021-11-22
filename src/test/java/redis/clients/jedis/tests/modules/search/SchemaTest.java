@@ -5,9 +5,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import redis.clients.jedis.search.Schema;
 
-/**
- * Created by tgrall on 17/06/2020.
- */
 public class SchemaTest {
 
   private final static String TITLE = "title";

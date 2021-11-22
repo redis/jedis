@@ -6,10 +6,6 @@ import java.util.List;
 public class PipelineBase extends Queable implements Closeable {
 
   protected final Connection connection;
-//
-//  public PipelineBase(JedisConnectionProvider provider) {
-//    this(provider.getConnection());
-//  }
 
   public PipelineBase(Connection connection) {
     this.connection = connection;

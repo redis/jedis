@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.Pool;
 
 /**
  * PoolableObjectFactory custom impl.
@@ -20,8 +19,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final JedisSocketFactory jedisSocketFactory;
 
   private final JedisClientConfig clientConfig;
-
-  private volatile Pool<Connection> pool;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this.clientConfig = DefaultJedisClientConfig.builder().build();
@@ -38,20 +35,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     this.jedisSocketFactory = jedisSocketFactory;
   }
 
-  public void setPool(Pool<Connection> pool) {
-    this.pool = pool;
-  }
-
   public void setPassword(final String password) {
     this.clientConfig.updatePassword(password);
   }
 
   @Override
   public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
-//    final Connection jedis = pooledConnection.getObject();
-//    if (jedis.getDB() != clientConfig.getDatabase()) {
-//      jedis.select(clientConfig.getDatabase());
-//    }
+    // what to do ??
   }
 
   @Override
@@ -76,12 +66,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   @Override
   public PooledObject<Connection> makeObject() throws Exception {
-    if (pool == null) {
-      throw new IllegalStateException("Pool is not set.");
-    }
     Connection jedis = null;
     try {
-      jedis = new Connection(jedisSocketFactory, clientConfig, pool);
+      jedis = new Connection(jedisSocketFactory, clientConfig);
       jedis.connect();
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
@@ -110,16 +97,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public boolean validateObject(PooledObject<Connection> pooledConnection) {
     final Connection jedis = pooledConnection.getObject();
     try {
-//      String host = jedisSocketFactory.getHost();
-//      int port = jedisSocketFactory.getPort();
-//      
-//
-//      String connectionHost = jedis.getClient().getHost();
-//      int connectionPort = jedis.getClient().getPort();
-//
-//      return host.equals(connectionHost)
-//          && port == connectionPort && jedis.isConnected()
-//          && jedis.ping().equals("PONG");
+      // check HostAndPort ??
       return jedis.isConnected() && jedis.ping();
     } catch (final Exception e) {
       logger.error("Error while validating pooled Connection object.", e);

@@ -15,16 +15,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.*;
-//import redis.clients.jedis.exceptions.JedisClusterMaxAttemptsException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
-//import redis.clients.jedis.exceptions.JedisNoReachableClusterNodeException;
 import redis.clients.jedis.tests.SSLJedisTest.BasicHostnameVerifier;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
-  private static final JedisPoolConfig DEFAULT_POOL_CONFIG = new JedisPoolConfig();
+  private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
 
   private final HostAndPortMapper hostAndPortMap = (HostAndPort hostAndPort) -> {
     String host = hostAndPort.getHost();

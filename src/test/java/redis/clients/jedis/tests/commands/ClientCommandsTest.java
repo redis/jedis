@@ -90,7 +90,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void clientIdReconnect() {
     long clientIdInitial = client.clientId();
     client.disconnect();
-//    client.connect();
+    client.connect();
     client.auth("foobared");
     long clientIdAfterReconnect = client.clientId();
 
@@ -210,7 +210,6 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     Matcher matcher = Pattern.compile("\\baddr=(\\S+)\\b").matcher(info);
     matcher.find();
     String addr = matcher.group(1);
-//    String[] hp = HostAndPort.extractParts(addr);
     int lastColon = addr.lastIndexOf(":");
     String[] hp = new String[]{addr.substring(0, lastColon), addr.substring(lastColon + 1)};
 

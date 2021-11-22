@@ -176,7 +176,7 @@ public class RedisClusterCommandObjects extends RedisCommandObjects {
   }
 
   @Override
-  public CommandObject<Map<String, List<Object>>> ftSynDump(String indexName) {
+  public CommandObject<Map<String, List<String>>> ftSynDump(String indexName) {
     return processSearchCommand(indexName, super.ftSynDump(indexName));
   }
 

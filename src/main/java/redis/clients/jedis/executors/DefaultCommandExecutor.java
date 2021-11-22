@@ -1,13 +1,15 @@
-package redis.clients.jedis;
+package redis.clients.jedis.executors;
 
-import redis.clients.jedis.providers.JedisConnectionProvider;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.providers.ConnectionProvider;
 
-public class SimpleJedisExecutor implements JedisCommandExecutor {
+public class DefaultCommandExecutor implements CommandExecutor {
 
-  protected final JedisConnectionProvider provider;
+  protected final ConnectionProvider provider;
 
-  public SimpleJedisExecutor(JedisConnectionProvider provider) {
+  public DefaultCommandExecutor(ConnectionProvider provider) {
     this.provider = provider;
   }
 

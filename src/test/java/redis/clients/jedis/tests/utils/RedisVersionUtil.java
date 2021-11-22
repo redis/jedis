@@ -10,7 +10,7 @@ public class RedisVersionUtil {
 
     try (Jedis jedis = new Jedis(HostAndPortUtil.getRedisServers().get(0))) {
       jedis.auth("foobared");
-      String info = jedis.info();
+      String info = jedis.info("server");
       String[] splitted = info.split("\\s+|:");
       for (int i = 0; i < splitted.length; i++) {
         if (splitted[i].equalsIgnoreCase("redis_version")) {

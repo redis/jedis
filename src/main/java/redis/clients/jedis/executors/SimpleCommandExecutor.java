@@ -1,12 +1,14 @@
-package redis.clients.jedis;
+package redis.clients.jedis.executors;
 
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.util.IOUtils;
 
-public class JedisConnectionExecutor implements JedisCommandExecutor {
+public class SimpleCommandExecutor implements CommandExecutor {
 
   protected final Connection connection;
 
-  public JedisConnectionExecutor(Connection connection) {
+  public SimpleCommandExecutor(Connection connection) {
     this.connection = connection;
   }
 

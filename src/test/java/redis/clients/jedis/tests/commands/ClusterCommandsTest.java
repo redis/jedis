@@ -21,8 +21,6 @@ import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 public class ClusterCommandsTest {
   private static Jedis node1;
   private static Jedis node2;
-//  private Jedis node1;
-//  private Jedis node2;
 
   private static HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
   private static HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
@@ -43,14 +41,10 @@ public class ClusterCommandsTest {
   public void tearDown() {
     node1.disconnect();
     node2.disconnect();
-//    node1.close();
-//    node2.close();
   }
 
   @AfterClass
   public static void removeSlots() throws InterruptedException {
-//    node1.clusterReset(ClusterResetType.SOFT);
-//    node2.clusterReset(ClusterResetType.SOFT);
     try (Jedis node = new Jedis(nodeInfo1)) {
       node.auth("cluster");
       node.clusterReset(ClusterResetType.SOFT);
@@ -160,8 +154,7 @@ public class ClusterCommandsTest {
   @Test
   public void clusterSlots() {
     // please see cluster slot output format from below commit
-    // @see:
-    // https://github.com/antirez/redis/commit/e14829de3025ffb0d3294e5e5a1553afd9f10b60
+    // @see: https://github.com/antirez/redis/commit/e14829de3025ffb0d3294e5e5a1553afd9f10b60
     String status = node1.clusterAddSlots(3000, 3001, 3002);
     assertEquals("OK", status);
     status = node2.clusterAddSlots(4000, 4001, 4002);

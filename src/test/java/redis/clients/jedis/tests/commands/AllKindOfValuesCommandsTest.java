@@ -62,20 +62,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
   private static final HostAndPort lfuHnp = HostAndPortUtil.getRedisServers().get(7);
-//
-//  @Test
-//  public void ping() {
-//    String status = jedis.ping();
-//    assertEquals("PONG", status);
-//  }
-//
-//  @Test
-//  public void pingWithMessage() {
-//    String argument = "message";
-//    assertEquals(argument, jedis.ping(argument));
-//
-//    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
-//  }
+
+  @Test
+  public void ping() {
+    String status = jedis.ping();
+    assertEquals("PONG", status);
+  }
+
+  @Test
+  public void pingWithMessage() {
+    String argument = "message";
+    assertEquals(argument, jedis.ping(argument));
+
+    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
+  }
 
   @Test
   public void exists() {
@@ -304,18 +304,18 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, jedis.renamenx(bfoo, bbar));
 
   }
-//
-//  @Test
-//  public void dbSize() {
-//    assertEquals(0, jedis.dbSize());
-//
-//    jedis.set("foo", "bar");
-//    assertEquals(1, jedis.dbSize());
-//
-//    // Binary
-//    jedis.set(bfoo, bbar);
-//    assertEquals(2, jedis.dbSize());
-//  }
+
+  @Test
+  public void dbSize() {
+    assertEquals(0, jedis.dbSize());
+
+    jedis.set("foo", "bar");
+    assertEquals(1, jedis.dbSize());
+
+    // Binary
+    jedis.set(bfoo, bbar);
+    assertEquals(2, jedis.dbSize());
+  }
 
   @Test
   public void expire() {
@@ -588,36 +588,6 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     jedis.restore(bfoo2, 0, sv);
     assertArrayEquals(bbar, jedis.get(bfoo2));
   }
-//
-//  @Test
-//  public void restoreReplace() {
-//    // take a separate instance
-//    Jedis jedis2 = new Jedis(hnp.getHost(), 6380, 500);
-//    jedis2.auth("foobared");
-//    jedis2.flushAll();
-//
-//    jedis2.set("foo", "bar");
-//
-//    Map<String, String> map = new HashMap<>();
-//    map.put("a", "A");
-//    map.put("b", "B");
-//
-//    jedis.hset("from", map);
-//    byte[] serialized = jedis.dump("from");
-//
-//    try {
-//      jedis2.restore("foo", 0, serialized);
-//      fail("Simple restore on a existing key should fail");
-//    } catch (JedisDataException e) {
-//      // should be here
-//    }
-//    assertEquals("bar", jedis2.get("foo"));
-//
-//    jedis2.restoreReplace("foo", 0, serialized);
-//    assertEquals(map, jedis2.hgetAll("foo"));
-//
-//    jedis2.close();
-//  }
 
   @Test
   public void restoreParams() {
@@ -631,14 +601,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     byte[] serialized = jedis.dump("from");
 
     try {
-//      jedis2.restore("foo", 0, serialized, null);
       jedis2.restore("foo", 0, serialized);
       fail("Simple restore on a existing key should fail");
     } catch (JedisDataException e) {
       // should be here
     }
     try {
-//      jedis2.restore("foo", 0, serialized, null);
       jedis2.restore("foo", 0, serialized, RestoreParams.restoreParams());
       fail("Simple restore on a existing key should fail");
     } catch (JedisDataException e) {

@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static redis.clients.jedis.Protocol.Command.*;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -91,10 +90,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     jedis.watch("mykey", "somekey");
     Transaction t = jedis.multi();
 
-//    nj.connect();
-//    nj.auth("foobared");
-//    nj.set("mykey", "bar");
-//    nj.disconnect();
     nj.set("mykey", "bar");
 
     t.set("mykey", "foo");
@@ -106,10 +101,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     jedis.watch(bmykey, "foobar".getBytes());
     t = jedis.multi();
 
-//    nj.connect();
-//    nj.auth("foobared");
-//    nj.set(bmykey, bbar);
-//    nj.disconnect();
     nj.set(bmykey, bbar);
 
     t.set(bmykey, bfoo);
@@ -127,10 +118,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", status);
     Transaction t = jedis.multi();
 
-//    nj.connect();
-//    nj.auth("foobared");
-//    nj.set("mykey", "bar");
-//    nj.disconnect();
     nj.set("mykey", "bar");
 
     t.set("mykey", val);
@@ -146,10 +133,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     assertEquals(Keyword.OK.name(), status);
     t = jedis.multi();
 
-//    nj.connect();
-//    nj.auth("foobared");
-//    nj.set(bmykey, bbar);
-//    nj.disconnect();
     nj.set(bmykey, bbar);
 
     t.set(bmykey, bval);
@@ -311,10 +294,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
 
     Transaction t = jedis.multi();
 
-//    nj.connect();
-//    nj.auth("foobared");
-//    nj.set("mykey", "bar");
-//    nj.disconnect();
     nj.set("mykey", "bar");
 
     t.set("mykey", "foo");
@@ -326,7 +305,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void testResetStateWithFullyExecutedTransaction() {
-//    Jedis jedis2 = new Jedis(jedis.getClient().getHost(), jedis.getClient().getPort());
     Jedis jedis2 = createJedis();
     jedis2.auth("foobared");
 
@@ -357,7 +335,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     try {
       transaction.exec();
       fail("close should discard transaction");
-//    } catch (JedisDataException e) {
     } catch (IllegalStateException e) {
       assertTrue(e.getMessage().contains("EXEC without MULTI"));
       // pass

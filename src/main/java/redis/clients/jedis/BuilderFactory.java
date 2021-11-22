@@ -579,18 +579,16 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, String>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, String>>() {
+  public static final Builder<Map<String, Long>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, Long>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, String> build(Object data) {
+    public Map<String, Long> build(Object data) {
       final List<Object> flatHash = (List<Object>) data;
-      final Map<String, String> hash = new HashMap<>(flatHash.size() / 2, 1);
+      final Map<String, Long> hash = new HashMap<>(flatHash.size() / 2, 1);
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
-        hash.put(SafeEncoder.encode((byte[]) iterator.next()),
-          String.valueOf((Long) iterator.next()));
+        hash.put(SafeEncoder.encode((byte[]) iterator.next()), (Long) iterator.next());
       }
-
       return hash;
     }
 
@@ -1352,13 +1350,13 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, List<Object>>> SEARCH_SYNONYM_GROUPS = new Builder<Map<String, List<Object>>>() {
+  public static final Builder<Map<String, List<String>>> SEARCH_SYNONYM_GROUPS = new Builder<Map<String, List<String>>>() {
     @Override
-    public Map<String, List<Object>> build(Object data) {
+    public Map<String, List<String>> build(Object data) {
       List<Object> list = (List<Object>) data;
-      Map<String, List<Object>> dump = new HashMap<>(list.size() / 2);
+      Map<String, List<String>> dump = new HashMap<>(list.size() / 2);
       for (int i = 0; i < list.size(); i += 2) {
-        dump.put(STRING.build(list.get(i)), ENCODED_OBJECT_LIST.build(list.get(i + 1)));
+        dump.put(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
       }
       return dump;
     }

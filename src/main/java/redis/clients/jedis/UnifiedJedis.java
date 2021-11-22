@@ -2988,17 +2988,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public boolean jsonClear(String key) {
+  public long jsonClear(String key) {
     return executeCommand(commandObjects.jsonClear(key));
   }
 
   @Override
-  public boolean jsonClear(String key, Path2 path) {
+  public long jsonClear(String key, Path2 path) {
     return executeCommand(commandObjects.jsonClear(key, path));
   }
 
   @Override
-  public boolean jsonClear(String key, Path path) {
+  public long jsonClear(String key, Path path) {
     return executeCommand(commandObjects.jsonClear(key, path));
   }
 

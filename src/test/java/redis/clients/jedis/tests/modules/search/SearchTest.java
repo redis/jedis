@@ -1283,16 +1283,18 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
     long group1 = 345L;
     long group2 = 789L;
-    assertEquals("OK", client.ftSynUpdate(index, group1, "girl", "baby"));
-    assertEquals("OK", client.ftSynUpdate(index, group1, "child"));
-    assertEquals("OK", client.ftSynUpdate(index, group2, "child"));
+    String group1_str = Long.toString(group1);
+    String group2_str = Long.toString(group2);
+    assertEquals("OK", client.ftSynUpdate(index, group1_str, "girl", "baby"));
+    assertEquals("OK", client.ftSynUpdate(index, group1_str, "child"));
+    assertEquals("OK", client.ftSynUpdate(index, group2_str, "child"));
 
     Map<String, List<String>> dump = client.ftSynDump(index);
 
     Map<String, List<String>> expected = new HashMap<>();
-    expected.put("girl", Arrays.asList(String.valueOf(group1)));
-    expected.put("baby", Arrays.asList(String.valueOf(group1)));
-    expected.put("child", Arrays.asList(String.valueOf(group1), String.valueOf(group2)));
+    expected.put("girl", Arrays.asList(group1_str));
+    expected.put("baby", Arrays.asList(group1_str));
+    expected.put("child", Arrays.asList(group1_str, group2_str));
     assertEquals(expected, dump);
   }
 }

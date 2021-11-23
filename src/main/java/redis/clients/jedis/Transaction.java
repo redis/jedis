@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
+import java.util.ArrayList;
 import org.json.JSONArray;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
@@ -19,30 +21,88 @@ import redis.clients.jedis.stream.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.exceptions.JedisDataException;
 
-public class Transaction extends PipelinedTransactionBase implements PipelineCommands,
-        PipelineBinaryCommands, RedisModulePipelineCommands {
+public class Transaction extends Queable implements PipelineCommands, PipelineBinaryCommands,
+    RedisModulePipelineCommands, Closeable {
 
+  protected final Connection connection;
   private final Jedis jedis;
   private final RedisCommandObjects commandObjects;
 
+  private boolean inTransaction = true;
+
   public Transaction(Jedis jedis) {
-    super(jedis.getConnection());
+//    super(jedis.getConnection());
+    this.connection = jedis.getConnection();
+    this.connection.sendCommand(Protocol.Command.MULTI);
     this.jedis = jedis;
     this.commandObjects = new RedisCommandObjects();
   }
 
   public Transaction(Connection connection) {
-    super(connection);
+//    super(connection);
+    this.connection = connection;
+    this.connection.sendCommand(Protocol.Command.MULTI);
     this.jedis = null;
     this.commandObjects = new RedisCommandObjects();
   }
 
+  protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
+    connection.sendCommand(commandObject.getArguments());
+    return enqueResponse(commandObject.getBuilder());
+  }
+
   @Override
+  public void close() {
+    clear();
+  }
+
+  public void clear() {
+    if (inTransaction) {
+      discard();
+    }
+  }
+
+  public Response<String> unwatch() {
+    return appendCommand(new CommandObject<>(new CommandArguments(Protocol.Command.UNWATCH), BuilderFactory.STRING));
+  }
+
+  private List<Object> execImpl() {
+    if (!inTransaction) throw new IllegalStateException("EXEC without MULTI");
+    // ignore QUEUED or ERROR
+    connection.getMany(1 + getPipelinedResponseLength());
+    connection.sendCommand(Protocol.Command.EXEC);
+    inTransaction = false;
+
+    List<Object> unformatted = connection.getObjectMultiBulkReply();
+    if (unformatted == null) return null;
+    List<Object> formatted = new ArrayList<>(unformatted.size());
+    for (Object o : unformatted) {
+      try {
+        formatted.add(generateResponse(o).get());
+      } catch (JedisDataException e) {
+        formatted.add(e);
+      }
+    }
+    return formatted;
+  }
+
+  private String discardImpl() {
+    if (!inTransaction) throw new IllegalStateException("DISCARD without MULTI");
+    // ignore QUEUED or ERROR
+    connection.getMany(1 + getPipelinedResponseLength());
+    connection.sendCommand(Protocol.Command.DISCARD);
+    String status = connection.getStatusCodeReply(); // OK
+    inTransaction = false;
+    clean();
+    return status;
+  }
+
   public List<Object> exec() {
     List<Object> ret;
     try {
-      ret = super.exec();
+      ret = execImpl();
     } finally {
       if (jedis != null) {
         jedis.resetState();
@@ -51,11 +111,10 @@ public class Transaction extends PipelinedTransactionBase implements PipelineCom
     return ret;
   }
 
-  @Override
   public String discard() {
     String ret;
     try {
-      ret = super.discard();
+      ret = discardImpl();
     } finally {
       if (jedis != null) {
         jedis.resetState();

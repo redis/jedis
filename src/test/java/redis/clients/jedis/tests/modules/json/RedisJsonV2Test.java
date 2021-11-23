@@ -7,7 +7,6 @@ import static redis.clients.jedis.json.Path2.ROOT_PATH;
 
 import com.google.gson.Gson;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import org.json.JSONArray;
@@ -202,6 +201,18 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     JSONObject result = (JSONObject) client.jsonGet("obj", Path2.of("bool"), Path2.of("str"));
     assertJsonArrayEquals(singletonJSONArray(true), result.get("$.bool"));
     assertJsonArrayEquals(singletonJSONArray("string"), result.get("$.str"));
+  }
+
+  @Test
+  public void getMultiLevels() {
+    JSONObject obj = new JSONObject();
+    obj.put("foo", "John");
+    JSONObject inner = new JSONObject();
+    inner.put("foo", "Jane");
+    obj.put("bar", inner);
+    client.jsonSet("multi", obj);
+    assertJsonArrayEquals(new JSONArray(new String[]{"John", "Jane"}),
+        client.jsonGet("multi", new Path2("..foo")));
   }
 
   @Test

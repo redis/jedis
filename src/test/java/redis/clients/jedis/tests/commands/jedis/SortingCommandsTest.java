@@ -1,4 +1,4 @@
-package redis.clients.jedis.tests.commands;
+package redis.clients.jedis.tests.commands.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;

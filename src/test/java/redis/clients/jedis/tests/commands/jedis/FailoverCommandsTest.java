@@ -1,4 +1,4 @@
-package redis.clients.jedis.tests.commands;
+package redis.clients.jedis.tests.commands.jedis;
 
 import org.junit.After;
 import org.junit.Before;

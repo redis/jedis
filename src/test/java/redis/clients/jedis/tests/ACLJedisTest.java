@@ -10,7 +10,7 @@ import org.junit.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.tests.commands.JedisCommandsTestBase;
+import redis.clients.jedis.tests.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
 /**

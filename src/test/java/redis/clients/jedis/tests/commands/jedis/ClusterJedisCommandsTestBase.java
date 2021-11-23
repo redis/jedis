@@ -1,4 +1,4 @@
-package redis.clients.jedis.tests.commands;
+package redis.clients.jedis.tests.commands.jedis;
 
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 

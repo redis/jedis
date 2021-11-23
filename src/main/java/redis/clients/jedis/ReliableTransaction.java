@@ -1,6 +1,9 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
@@ -18,10 +21,6 @@ import redis.clients.jedis.search.Query;
 import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.stream.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class ReliableTransaction extends Queable implements PipelineCommands,
     PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {

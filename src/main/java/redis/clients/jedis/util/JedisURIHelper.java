@@ -1,6 +1,7 @@
 package redis.clients.jedis.util;
 
 import java.net.URI;
+import redis.clients.jedis.HostAndPort;
 
 public final class JedisURIHelper {
 
@@ -11,6 +12,10 @@ public final class JedisURIHelper {
 
   private JedisURIHelper() {
     throw new InstantiationError("Must not instantiate this class");
+  }
+
+  public static HostAndPort getHostAndPort(URI uri) {
+    return new HostAndPort(uri.getHost(), uri.getPort());
   }
 
   public static String getUser(URI uri) {

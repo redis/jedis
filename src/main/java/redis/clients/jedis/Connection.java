@@ -65,7 +65,7 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
-  final void setHandlingPool(final Pool<Connection> pool) {
+  public final void setHandlingPool(final Pool<Connection> pool) {
     this.memberOf = pool;
   }
 

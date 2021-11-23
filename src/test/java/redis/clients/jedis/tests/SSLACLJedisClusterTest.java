@@ -19,7 +19,7 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.tests.SSLJedisTest.BasicHostnameVerifier;
 import redis.clients.jedis.tests.utils.RedisVersionUtil;
 
-public class SSLJedisClusterWithCompleteCredentialsTest extends JedisClusterTest {
+public class SSLACLJedisClusterTest extends JedisClusterTest {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();

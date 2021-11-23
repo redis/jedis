@@ -18,7 +18,7 @@ import redis.clients.jedis.tests.utils.RedisVersionUtil;
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
-public class JedisWithCompleteCredentialsTest extends JedisCommandsTestBase {
+public class ACLJedisTest extends JedisCommandsTestBase {
 
   /**
    * Use to check if the ACL test should be ran. ACL are available only in 6.0 and later

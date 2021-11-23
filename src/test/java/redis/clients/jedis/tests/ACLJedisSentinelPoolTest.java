@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
  * <p>
  * This tests are only executed when the server/cluster is Redis 6 or more.
  */
-public class JedisSentinelPoolWithCompleteCredentialsTest {
+public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";
 

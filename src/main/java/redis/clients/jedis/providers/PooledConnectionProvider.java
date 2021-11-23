@@ -26,16 +26,20 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new Pool<>(factory, poolConfig));
+    this(new ConnectionPool(factory, poolConfig));
   }
 
-  public PooledConnectionProvider(Pool<Connection> pool) {
+  private PooledConnectionProvider(Pool<Connection> pool) {
     this.pool = pool;
   }
 
   @Override
   public void close() {
     pool.close();
+  }
+
+  public final Pool<Connection> getPool() {
+    return pool;
   }
 
   @Override
@@ -46,5 +50,19 @@ public class PooledConnectionProvider implements ConnectionProvider {
   @Override
   public Connection getConnection(CommandArguments args) {
     return pool.getResource();
+  }
+
+  private static class ConnectionPool extends Pool<Connection> {
+
+    public ConnectionPool(PooledObjectFactory<Connection> factory, GenericObjectPoolConfig<Connection> poolConfig) {
+      super(factory, poolConfig);
+    }
+
+    @Override
+    public Connection getResource() {
+      Connection c = super.getResource();
+      c.setHandlingPool(this);
+      return c;
+    }
   }
 }

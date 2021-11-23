@@ -24,7 +24,7 @@ import static org.junit.Assert.*;
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
-public class SSLJedisWithCompleteCredentialsTest {
+public class SSLACLJedisTest {
 
   @BeforeClass
   public static void prepare() {

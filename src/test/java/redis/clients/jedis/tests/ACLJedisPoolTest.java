@@ -28,7 +28,7 @@ import redis.clients.jedis.tests.utils.RedisVersionUtil;
  * <p>
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
-public class JedisPoolWithCompleteCredentialsTest {
+public class ACLJedisPoolTest {
   private static final HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
   @BeforeClass

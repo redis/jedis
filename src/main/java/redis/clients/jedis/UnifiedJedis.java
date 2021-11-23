@@ -1,17 +1,12 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.executors.CommandExecutor;
-import redis.clients.jedis.executors.RetryableCommandExecutor;
-import redis.clients.jedis.executors.ClusterCommandExecutor;
-import redis.clients.jedis.executors.DefaultCommandExecutor;
-import redis.clients.jedis.executors.SimpleCommandExecutor;
+import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -19,12 +14,14 @@ import redis.clients.jedis.commands.JedisBinaryCommands;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
-import redis.clients.jedis.json.JsonProtocol;
+import redis.clients.jedis.executors.*;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.providers.ConnectionProvider;
+import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.search.IndexOptions;
@@ -34,12 +31,13 @@ import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.util.IOUtils;
-import redis.clients.jedis.providers.ConnectionProvider;
+import redis.clients.jedis.util.JedisURIHelper;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
 
+  protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   private final RedisCommandObjects commandObjects;
 
@@ -48,11 +46,42 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public UnifiedJedis(HostAndPort hostAndPort) {
-    this(new Connection(hostAndPort));
+//    this(new Connection(hostAndPort));
+    this(new PooledConnectionProvider(hostAndPort));
+  }
+
+  public UnifiedJedis(final String url) {
+    this(URI.create(url));
+  }
+
+  public UnifiedJedis(final URI uri) {
+    this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
+        .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
+        .database(JedisURIHelper.getDBIndex(uri)).ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
+  }
+
+  public UnifiedJedis(final URI uri, JedisClientConfig config) {
+    this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
+        .connectionTimeoutMillis(config.getConnectionTimeoutMillis())
+        .socketTimeoutMillis(config.getSocketTimeoutMillis())
+        .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
+        .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
+        .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+        .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
+        .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
+        .build());
   }
 
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(new Connection(hostAndPort, clientConfig));
+//    this(new Connection(hostAndPort, clientConfig));
+    this(new PooledConnectionProvider(hostAndPort, clientConfig));
+  }
+
+  public UnifiedJedis(ConnectionProvider provider) {
+    this.provider = provider;
+    this.executor = new DefaultCommandExecutor(provider);
+    this.commandObjects = (provider instanceof ClusterConnectionProvider)
+        ? new RedisClusterCommandObjects() : new RedisCommandObjects();
   }
 
   public UnifiedJedis(JedisSocketFactory socketFactory) {
@@ -60,14 +89,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public UnifiedJedis(Connection connection) {
+    this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
     this.commandObjects = new RedisCommandObjects();
-  }
-
-  public UnifiedJedis(ConnectionProvider provider) {
-    this.executor = new DefaultCommandExecutor(provider);
-    this.commandObjects = (provider instanceof ClusterConnectionProvider)
-        ? new RedisClusterCommandObjects() : new RedisCommandObjects();
   }
 
   public UnifiedJedis(Set<HostAndPort> nodes, int timeout, int maxAttempts) {
@@ -89,6 +113,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
+    this.provider = provider;
     if (provider instanceof ClusterConnectionProvider) {
       this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
       this.commandObjects = new RedisClusterCommandObjects();

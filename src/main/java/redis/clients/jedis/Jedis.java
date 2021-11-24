@@ -3961,7 +3961,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String aclLogReset() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, LOG.getRaw(), "OPTIONS".getBytes());
+    connection.sendCommand(ACL, LOG.getRaw(), RESET.getRaw());
     return connection.getStatusCodeReply();
   }
 

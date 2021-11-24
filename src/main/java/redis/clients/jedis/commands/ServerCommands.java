@@ -80,9 +80,20 @@ public interface ServerCommands {
    * Save the DB in background. The OK code is immediately returned. Redis forks, the parent
    * continues to serve the clients, the child saves the DB on disk then exits. A client may be able
    * to check if the operation succeeded using the LASTSAVE command.
+   *
+   * @see <a href="https://redis.io/commands/bgsave">BGSAVE</a>
    * @return ok
    */
   String bgsave();
+
+  /**
+   * Save the DB in background. The OK code is immediately returned when an AOF rewrite is in progress.
+   * The save is then scheduled in the background.
+   *
+   * @see <a href="https://redis.io/commands/bgsave">BGSAVE</a>
+   * @return ok
+   */
+  String bgsave_schedule();
 
   /**
    * Instruct Redis to start an Append Only File rewrite process. The rewrite will create a small

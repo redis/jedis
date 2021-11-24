@@ -3141,6 +3141,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection.sendCommand(BGSAVE);
     return connection.getStatusCodeReply();
   }
+  /**
+   * Save the DB in background. The OK code is immediately returned when an AOF rewrite is in progress.
+   * The save is then scheduled in the background.
+   *
+   * @return Status code reply
+  */
+   @Override
+  public String bgsave_schedule() {
+    connection.sendCommand(BGSAVE, "SCHEDULE");
+    return connection.getStatusCodeReply();
+  }
 
   /**
    * Rewrite the append only file in background when it gets too big. Please for detailed

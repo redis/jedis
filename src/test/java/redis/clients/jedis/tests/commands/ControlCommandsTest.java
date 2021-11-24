@@ -48,6 +48,17 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void bgsave_schedule() {
+    try {
+      String status = jedis.bgsave_schedule();
+      assertEquals("OK", status);
+    } catch (JedisDataException e) {
+      assertTrue("ERR Background save already in progress".equalsIgnoreCase(e.getMessage()));
+    }
+  }
+
+
+  @Test
   public void bgrewriteaof() {
     String scheduled = "Background append only file rewriting scheduled";
     String started = "Background append only file rewriting started";

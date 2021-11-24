@@ -5,6 +5,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionFactory;
+import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.util.Pool;
@@ -50,19 +51,5 @@ public class PooledConnectionProvider implements ConnectionProvider {
   @Override
   public Connection getConnection(CommandArguments args) {
     return pool.getResource();
-  }
-
-  private static class ConnectionPool extends Pool<Connection> {
-
-    public ConnectionPool(PooledObjectFactory<Connection> factory, GenericObjectPoolConfig<Connection> poolConfig) {
-      super(factory, poolConfig);
-    }
-
-    @Override
-    public Connection getResource() {
-      Connection c = super.getResource();
-      c.setHandlingPool(this);
-      return c;
-    }
   }
 }

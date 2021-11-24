@@ -9,6 +9,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.tests.HostAndPortUtil;
 
 public class ConnectionHandlingCommandsTest {
+
   private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
 
   @Test

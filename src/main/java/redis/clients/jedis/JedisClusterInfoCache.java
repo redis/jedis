@@ -16,13 +16,12 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
 
-  private final Map<String, Pool<Connection>> nodes = new HashMap<>();
-  private final Map<Integer, Pool<Connection>> slots = new HashMap<>();
+  private final Map<String, ConnectionPool> nodes = new HashMap<>();
+  private final Map<Integer, ConnectionPool> slots = new HashMap<>();
   private final Map<Integer, HostAndPort> slotNodes = new HashMap<>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
@@ -94,7 +93,7 @@ public class JedisClusterInfoCache {
           }
         }
 
-        for (Pool<Connection> jp : getShuffledNodesPool()) {
+        for (ConnectionPool jp : getShuffledNodesPool()) {
           Connection j = null;
           try {
             j = jp.getResource();
@@ -148,11 +147,11 @@ public class JedisClusterInfoCache {
       }
 
       // Remove dead nodes according to the latest query
-      Iterator<Entry<String, Pool<Connection>>> entryIt = nodes.entrySet().iterator();
+      Iterator<Entry<String, ConnectionPool>> entryIt = nodes.entrySet().iterator();
       while (entryIt.hasNext()) {
-        Entry<String, Pool<Connection>> entry = entryIt.next();
+        Entry<String, ConnectionPool> entry = entryIt.next();
         if (!hostAndPortKeys.contains(entry.getKey())) {
-          Pool<Connection> pool = entry.getValue();
+          ConnectionPool pool = entry.getValue();
           try {
             if (pool != null) {
               pool.destroy();
@@ -174,14 +173,14 @@ public class JedisClusterInfoCache {
     return new HostAndPort(host, port);
   }
 
-  public Pool<Connection> setupNodeIfNotExist(final HostAndPort node) {
+  public ConnectionPool setupNodeIfNotExist(final HostAndPort node) {
     w.lock();
     try {
       String nodeKey = getNodeKey(node);
-      Pool<Connection> existingPool = nodes.get(nodeKey);
+      ConnectionPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      Pool<Connection> nodePool = new ConnectionPool(poolConfig, node, clientConfig);
+      ConnectionPool nodePool = new ConnectionPool(node, clientConfig, poolConfig);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {
@@ -192,7 +191,7 @@ public class JedisClusterInfoCache {
   public void assignSlotToNode(int slot, HostAndPort targetNode) {
     w.lock();
     try {
-      Pool<Connection> targetPool = setupNodeIfNotExist(targetNode);
+      ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
       slots.put(slot, targetPool);
       slotNodes.put(slot, targetNode);
     } finally {
@@ -203,7 +202,7 @@ public class JedisClusterInfoCache {
   public void assignSlotsToNode(List<Integer> targetSlots, HostAndPort targetNode) {
     w.lock();
     try {
-      Pool<Connection> targetPool = setupNodeIfNotExist(targetNode);
+      ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
       for (Integer slot : targetSlots) {
         slots.put(slot, targetPool);
         slotNodes.put(slot, targetNode);
@@ -213,7 +212,7 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public Pool<Connection> getNode(String nodeKey) {
+  public ConnectionPool getNode(String nodeKey) {
     r.lock();
     try {
       return nodes.get(nodeKey);
@@ -222,11 +221,11 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public Pool<Connection> getNode(HostAndPort node) {
+  public ConnectionPool getNode(HostAndPort node) {
     return getNode(getNodeKey(node));
   }
 
-  public Pool<Connection> getSlotPool(int slot) {
+  public ConnectionPool getSlotPool(int slot) {
     r.lock();
     try {
       return slots.get(slot);
@@ -244,7 +243,7 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public Map<String, Pool<Connection>> getNodes() {
+  public Map<String, ConnectionPool> getNodes() {
     r.lock();
     try {
       return new HashMap<>(nodes);
@@ -253,10 +252,10 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public List<Pool<Connection>> getShuffledNodesPool() {
+  public List<ConnectionPool> getShuffledNodesPool() {
     r.lock();
     try {
-      List<Pool<Connection>> pools = new ArrayList<>(nodes.values());
+      List<ConnectionPool> pools = new ArrayList<>(nodes.values());
       Collections.shuffle(pools);
       return pools;
     } finally {
@@ -270,7 +269,7 @@ public class JedisClusterInfoCache {
   public void reset() {
     w.lock();
     try {
-      for (Pool<Connection> pool : nodes.values()) {
+      for (ConnectionPool pool : nodes.values()) {
         try {
           if (pool != null) {
             pool.destroy();

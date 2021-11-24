@@ -94,10 +94,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects = new RedisCommandObjects();
   }
 
-  public UnifiedJedis(Set<HostAndPort> nodes, int timeout, int maxAttempts) {
-    this(nodes, DefaultJedisClientConfig.builder().timeoutMillis(timeout).build(), maxAttempts);
-  }
-
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
         Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
@@ -114,13 +110,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this.provider = provider;
-    if (provider instanceof ClusterConnectionProvider) {
-      this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
-      this.commandObjects = new RedisClusterCommandObjects();
-    } else {
-      this.executor = new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
-      this.commandObjects = new RedisCommandObjects();
-    }
+    this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
+    this.commandObjects = new RedisClusterCommandObjects();
+  }
+
+  public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
+    this.provider = provider;
+    this.executor = new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
+    this.commandObjects = new RedisCommandObjects();
   }
 
   @Override

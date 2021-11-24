@@ -12,11 +12,11 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.Pool;
 
 public class ClusterConnectionProvider implements ConnectionProvider {
 
@@ -60,7 +60,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     cache.renewClusterSlots(jedis);
   }
 
-  public Map<String, Pool<Connection>> getNodes() {
+  public Map<String, ConnectionPool> getNodes() {
     return cache.getNodes();
   }
 
@@ -84,10 +84,10 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     // return valid connection (able to ping-pong) or exception if all
     // connections are invalid
 
-    List<Pool<Connection>> pools = cache.getShuffledNodesPool();
+    List<ConnectionPool> pools = cache.getShuffledNodesPool();
 
     JedisException suppressed = null;
-    for (Pool<Connection> pool : pools) {
+    for (ConnectionPool pool : pools) {
       Connection jedis = null;
       try {
         jedis = pool.getResource();
@@ -116,7 +116,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   public Connection getConnectionFromSlot(int slot) {
-    Pool<Connection> connectionPool = cache.getSlotPool(slot);
+    ConnectionPool connectionPool = cache.getSlotPool(slot);
     if (connectionPool != null) {
       // It can't guaranteed to get valid connection because of node assignment
       return connectionPool.getResource();

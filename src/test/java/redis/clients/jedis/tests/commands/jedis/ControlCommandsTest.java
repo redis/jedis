@@ -27,6 +27,7 @@ import redis.clients.jedis.tests.utils.AssertUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class ControlCommandsTest extends JedisCommandsTestBase {
+
   @Test
   public void save() {
     try {

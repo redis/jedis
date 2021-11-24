@@ -13,7 +13,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
-import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -22,7 +21,7 @@ public class Connection implements Closeable {
 
   private static final byte[][] EMPTY_ARGS = new byte[0][];
 
-  private Pool<Connection> memberOf;
+  private ConnectionPool memberOf;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -65,7 +64,7 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
-  public final void setHandlingPool(final Pool<Connection> pool) {
+  public final void setHandlingPool(final ConnectionPool pool) {
     this.memberOf = pool;
   }
 
@@ -230,7 +229,7 @@ public class Connection implements Closeable {
   @Override
   public void close() {
     if (this.memberOf != null) {
-      Pool<Connection> pool = this.memberOf;
+      ConnectionPool pool = this.memberOf;
       this.memberOf = null;
       if (isBroken()) {
         pool.returnBrokenResource(this);

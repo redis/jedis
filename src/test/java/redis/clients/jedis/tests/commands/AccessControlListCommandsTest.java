@@ -320,7 +320,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void aclLogTest() {
-    jedis.aclLog("RESET");
+    jedis.aclLogReset();
     assertTrue(jedis.aclLog().isEmpty());
 
     // create new user and cconnect
@@ -346,7 +346,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertEquals("get", jedis.aclLog().get(0).getObject());
 
     // Capture similar event
-    jedis.aclLog("RESET");
+    jedis.aclLogReset();
     assertTrue(jedis.aclLog().isEmpty());
 
     jedis.auth("antirez", "foo");
@@ -381,7 +381,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertEquals("somekeynotallowed", jedis.aclLog().get(0).getObject());
     assertEquals("key", jedis.aclLog().get(0).getReason());
 
-    jedis.aclLog("RESET");
+    jedis.aclLogReset();
     assertTrue(jedis.aclLog().isEmpty());
 
     jedis.auth("antirez", "foo");
@@ -422,9 +422,10 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     // Binary tests
     assertEquals("Number of log messages ", 3, jedis.aclLogBinary().size());
     assertEquals("Number of log messages ", 2, jedis.aclLogBinary(2).size());
-    byte[] status = jedis.aclLog("RESET".getBytes());
-    assertNotNull(status);
-    assertTrue(jedis.aclLog().isEmpty());
+
+    // RESET
+    String status = jedis.aclLogReset();
+    assertEquals(status, "OK");
 
     jedis.aclDelUser("antirez");
   }
@@ -432,11 +433,19 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   @Test
   public void aclGenPass() {
     assertNotNull(jedis.aclGenPass());
+
+    // bit length case
+    assertNotNull(jedis.aclGenPassBinary(16));
+    assertNotNull(jedis.aclGenPassBinary(32));
   }
 
   @Test
   public void aclGenPassBinary() {
     assertNotNull(jedis.aclGenPassBinary());
+
+    // bit length case
+    assertNotNull(jedis.aclGenPassBinary(16));
+    assertNotNull(jedis.aclGenPassBinary(32));
   }
 
   @Test
@@ -456,6 +465,14 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertThat(userInfo.getCommands(), containsString("+debug|digest"));
 
     jedis.aclDelUser(USER_ZZZ.getBytes());
+
+    jedis.aclSetUser("TEST_USER".getBytes());
+    jedis.aclSetUser("ANOTHER_TEST_USER".getBytes());
+    jedis.aclSetUser("MORE_TEST_USERS".getBytes());
+    assertEquals(3L, jedis.aclDelUser(
+            "TEST_USER".getBytes(),
+            "ANOTHER_TEST_USER".getBytes(),
+            "MORE_TEST_USERS".getBytes()));
   }
 
   @Test

@@ -3875,6 +3875,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public byte[] aclGenPassBinary(int bits) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(ACL, GENPASS.getRaw(), toByteArray(bits));
+    return connection.getBinaryBulkReply();
+  }
+
+  @Override
   public List<byte[]> aclListBinary() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LIST);
@@ -3917,6 +3924,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long aclDelUser(byte[] name, byte[]... names) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(ACL, joinParameters(DELUSER.getRaw(), name, names));
+    return connection.getIntegerReply();
+  }
+
+  @Override
   public List<byte[]> aclCatBinary() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, CAT);
@@ -3945,10 +3959,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public byte[] aclLog(byte[] options) {
+  public String aclLogReset() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, LOG.getRaw(), options);
-    return connection.getBinaryBulkReply();
+    connection.sendCommand(ACL, LOG.getRaw(), RESET.getRaw());
+    return connection.getStatusCodeReply();
   }
 
   @Override
@@ -7580,6 +7594,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long aclDelUser(final String name, String... names) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(ACL, joinParameters(DELUSER.name(), name, names));
+    return connection.getIntegerReply();
+  }
+
+  @Override
   public AccessControlUser aclGetUser(final String name) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, GETUSER.name(), name);
@@ -7636,13 +7657,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String aclLog(String options) {
-    checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, LOG.name(), options);
-    return connection.getStatusCodeReply();
-  }
-
-  @Override
   public String aclLoad() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LOAD);
@@ -7659,8 +7673,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String aclGenPass() {
     connection.sendCommand(ACL, GENPASS);
-    return connection.getStatusCodeReply();
+    return connection.getBulkReply();
   }
+
+  @Override
+  public String aclGenPass(int bits) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(ACL, GENPASS.getRaw(), toByteArray(bits));
+    return connection.getBulkReply();
+  }
+
 
   @Override
   public String clientKill(final String ipPort) {

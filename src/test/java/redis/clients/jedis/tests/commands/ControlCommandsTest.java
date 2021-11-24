@@ -51,7 +51,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void bgsave_schedule() {
     try {
       String status = jedis.bgsave_schedule();
-      assertEquals("OK", status);
+      assertEquals("Background saving started", status);
     } catch (JedisDataException e) {
       assertTrue("ERR Background save already in progress".equalsIgnoreCase(e.getMessage()));
     }

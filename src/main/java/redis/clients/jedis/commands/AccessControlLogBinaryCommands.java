@@ -130,11 +130,10 @@ public interface AccessControlLogBinaryCommands {
   /**
    * Reset the script event log
    *
-   * @param options A logging option
    * @see <a href="https://redis.io/commands/acl-log">ACL LOG</a>
    * @return The OK string
    */
-   String aclLog(byte[] options);
+  String aclLogReset();
 
   /**
    * This function tells Redis to reload its external ACL rules,

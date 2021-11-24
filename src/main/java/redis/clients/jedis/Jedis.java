@@ -3959,9 +3959,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String aclLog(byte[] options) {
+  public String aclLogReset() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, LOG.getRaw(), options);
+    connection.sendCommand(ACL, LOG.getRaw(), "OPTIONS".getBytes());
     return connection.getStatusCodeReply();
   }
 
@@ -7654,13 +7654,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LOG.getRaw(), toByteArray(limit));
     return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getObjectMultiBulkReply());
-  }
-
-  @Override
-  public String aclLog(String options) {
-    checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, LOG.name(), options);
-    return connection.getStatusCodeReply();
   }
 
   @Override

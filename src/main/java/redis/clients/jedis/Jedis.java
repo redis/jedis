@@ -7680,14 +7680,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String aclGenPass() {
     connection.sendCommand(ACL, GENPASS);
-    return connection.getStatusCodeReply();
+    return connection.getBulkReply();
   }
 
   @Override
   public String aclGenPass(int bits) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, GENPASS.getRaw(), toByteArray(bits));
-    return connection.getStatusCodeReply();
+    return connection.getBulkReply();
   }
 
 

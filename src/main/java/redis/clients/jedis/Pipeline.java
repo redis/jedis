@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,6 +11,7 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -62,6 +64,29 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
     List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
     for (Object o : unformatted) {
       generateResponse(o);
+    }
+  }
+
+  /**
+   * Synchronize pipeline by reading all responses. This operation close the pipeline. Whenever
+   * possible try to avoid using this version and use Pipeline.sync() as it won't go through all the
+   * responses and generate the right response type (usually it is a waste of time).
+   * @return A list of all the responses in the order you executed them.
+   */
+  public List<Object> syncAndReturnAll() {
+    if (hasPipelinedResponse()) {
+      List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
+      List<Object> formatted = new ArrayList<>();
+      for (Object o : unformatted) {
+        try {
+          formatted.add(generateResponse(o).get());
+        } catch (JedisDataException e) {
+          formatted.add(e);
+        }
+      }
+      return formatted;
+    } else {
+      return java.util.Collections.<Object> emptyList();
     }
   }
 

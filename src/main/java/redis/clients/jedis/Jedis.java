@@ -3875,6 +3875,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public byte[] aclGenPassBinary(int bits) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(ACL, GENPASS.getRaw(), toByteArray(bits));
+    return connection.getBinaryBulkReply();
+  }
+
+  @Override
   public List<byte[]> aclListBinary() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LIST);
@@ -3917,6 +3924,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long aclDelUser(byte[] name, byte[]... names) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(ACL, joinParameters(DELUSER.getRaw(), name, names));
+    return connection.getIntegerReply();
+  }
+
+  @Override
   public List<byte[]> aclCatBinary() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, CAT);
@@ -3945,10 +3959,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public byte[] aclLog(byte[] options) {
+  public String aclLog(byte[] options) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LOG.getRaw(), options);
-    return connection.getBinaryBulkReply();
+    return connection.getStatusCodeReply();
   }
 
   @Override
@@ -7580,6 +7594,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long aclDelUser(final String name, String... names) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(ACL, joinParameters(DELUSER.name(), name, names));
+    return connection.getIntegerReply();
+  }
+
+  @Override
   public AccessControlUser aclGetUser(final String name) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, GETUSER.name(), name);
@@ -7661,6 +7682,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection.sendCommand(ACL, GENPASS);
     return connection.getStatusCodeReply();
   }
+
+  @Override
+  public String aclGenPass(int bits) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(ACL, GENPASS.getRaw(), toByteArray(bits));
+    return connection.getStatusCodeReply();
+  }
+
 
   @Override
   public String clientKill(final String ipPort) {

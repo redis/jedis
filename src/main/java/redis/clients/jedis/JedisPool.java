@@ -356,7 +356,7 @@ public class JedisPool extends Pool<Jedis> {
         sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
-  public JedisPool(GenericObjectPoolConfig poolConfig, PooledObjectFactory<Jedis> factory) {
+  public JedisPool(GenericObjectPoolConfig<Jedis> poolConfig, PooledObjectFactory<Jedis> factory) {
     super(poolConfig, factory);
   }
 

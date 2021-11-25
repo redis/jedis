@@ -89,11 +89,15 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout) {
-    this(nodes, timeout, DEFAULT_MAX_ATTEMPTS);
+    this(nodes, DefaultJedisClientConfig.builder().timeoutMillis(timeout).build());
   }
 
   public JedisCluster(Set<HostAndPort> nodes, int timeout, int maxAttempts) {
-    super(nodes, timeout, maxAttempts);
+    this(nodes, DefaultJedisClientConfig.builder().timeoutMillis(timeout).build(), maxAttempts);
+  }
+
+  public JedisCluster(Set<HostAndPort> nodes, String user, String password) {
+    this(nodes, DefaultJedisClientConfig.builder().user(user).password(password).build());
   }
 
   public JedisCluster(Set<HostAndPort> nodes, final GenericObjectPoolConfig<Connection> poolConfig) {
@@ -169,6 +173,10 @@ public class JedisCluster extends UnifiedJedis {
     super(jedisClusterNode, clientConfig, poolConfig, maxAttempts, maxTotalRetriesDuration);
   }
 
+  public JedisCluster(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig) {
+    this(jedisClusterNodes, clientConfig, DEFAULT_MAX_ATTEMPTS);
+  }
+
   public JedisCluster(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
     super(jedisClusterNodes, clientConfig, maxAttempts);
   }
@@ -177,7 +185,7 @@ public class JedisCluster extends UnifiedJedis {
     super(jedisClusterNodes, clientConfig, maxAttempts, maxTotalRetriesDuration);
   }
 
-  public Map<String, Pool<Connection>> getClusterNodes() {
+  public Map<String, ConnectionPool> getClusterNodes() {
     return ((ClusterCommandExecutor) executor).provider.getNodes();
   }
 }

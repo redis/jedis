@@ -9,7 +9,7 @@ import java.util.TreeSet;
 import org.junit.Test;
 
 import redis.clients.jedis.resps.Tuple;
-import redis.clients.jedis.tests.commands.JedisCommandsTestBase;
+import redis.clients.jedis.tests.commands.jedis.JedisCommandsTestBase;
 
 public class TupleSortedSetTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };

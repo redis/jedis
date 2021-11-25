@@ -6,9 +6,9 @@ import redis.clients.jedis.util.Pool;
 
 public class ConnectionPool extends Pool<Connection> {
 
-  public ConnectionPool(GenericObjectPoolConfig<Connection> poolConfig,
-      HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(poolConfig, new ConnectionFactory(hostAndPort, clientConfig));
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
   }
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
@@ -16,17 +16,17 @@ public class ConnectionPool extends Pool<Connection> {
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
-    super(new GenericObjectPoolConfig<Connection>(), factory);
+    this(factory, new GenericObjectPoolConfig<Connection>());
   }
 
-  public ConnectionPool(GenericObjectPoolConfig<Connection> poolConfig, PooledObjectFactory<Connection> factory) {
-    super(poolConfig, factory);
+  public ConnectionPool(PooledObjectFactory<Connection> factory, GenericObjectPoolConfig<Connection> poolConfig) {
+    super(factory, poolConfig);
   }
 
   @Override
   public Connection getResource() {
-    Connection resource = super.getResource();
-    resource.setHandlingPool(this);
-    return resource;
+    Connection conn = super.getResource();
+    conn.setHandlingPool(this);
+    return conn;
   }
 }

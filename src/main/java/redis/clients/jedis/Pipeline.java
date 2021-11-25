@@ -1,10 +1,17 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
+
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -16,35 +23,77 @@ import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.stream.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+public class Pipeline extends Queable  implements PipelineCommands, PipelineBinaryCommands,
+    RedisModulePipelineCommands, Closeable {
 
-public class Pipeline extends PipelineBase implements PipelineCommands, PipelineBinaryCommands,
-        RedisModulePipelineCommands {
-
-  private final Jedis jedis;
+  protected final Connection connection;
+//  private final Jedis jedis;
   private final RedisCommandObjects commandObjects;
 
   public Pipeline(Connection connection) {
-    super(connection);
-    this.jedis = null;
+//    super(connection);
+    this.connection = connection;
+//    this.jedis = null;
     this.commandObjects = new RedisCommandObjects();
   }
 
   public Pipeline(Jedis jedis) {
-    super(jedis.getConnection());
-    this.jedis = jedis;
+//    super(jedis.getConnection());
+    this.connection = jedis.getConnection();
+//    this.jedis = jedis;
     this.commandObjects = new RedisCommandObjects();
   }
-//
-//  @Override
-//  public void sync() {
-//    super.sync();
-//    if (jedis != null) {
-//      jedis.resetState();
-//    }
-//  }
+
+  public final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
+    connection.sendCommand(commandObject.getArguments());
+    return enqueResponse(commandObject.getBuilder());
+  }
+
+  @Override
+  public void close() {
+    sync();
+  }
+
+  /**
+   * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to
+   * get return values from pipelined commands, capture the different Response&lt;?&gt; of the
+   * commands you execute.
+   */
+  public void sync() {
+    if (!hasPipelinedResponse()) return;
+    List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
+    for (Object o : unformatted) {
+      generateResponse(o);
+    }
+  }
+
+  /**
+   * Synchronize pipeline by reading all responses. This operation close the pipeline. Whenever
+   * possible try to avoid using this version and use Pipeline.sync() as it won't go through all the
+   * responses and generate the right response type (usually it is a waste of time).
+   * @return A list of all the responses in the order you executed them.
+   */
+  public List<Object> syncAndReturnAll() {
+    if (hasPipelinedResponse()) {
+      List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
+      List<Object> formatted = new ArrayList<>();
+      for (Object o : unformatted) {
+        try {
+          formatted.add(generateResponse(o).get());
+        } catch (JedisDataException e) {
+          formatted.add(e);
+        }
+      }
+      return formatted;
+    } else {
+      return java.util.Collections.<Object> emptyList();
+    }
+  }
+
+  @Deprecated
+  public final boolean hasPipelinedResponse() {
+    return getPipelinedResponseLength() > 0;
+  }
 
   @Override
   public Response<Boolean> exists(String key) {

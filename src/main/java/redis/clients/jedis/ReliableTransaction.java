@@ -1,10 +1,16 @@
 package redis.clients.jedis;
 
+import java.io.Closeable;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
+
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -16,20 +22,66 @@ import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.stream.*;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+public class ReliableTransaction extends Queable implements PipelineCommands,
+    PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
 
-public class ReliableTransaction extends ReliableTransactionBase implements PipelineCommands,
-        PipelineBinaryCommands, RedisModulePipelineCommands {
-
+  protected final Connection connection;
   private final RedisCommandObjects commandObjects;
 
+  private boolean inTransaction = true;
+
   public ReliableTransaction(Connection connection) {
-    super(connection);
+//    super(connection);
+    this.connection = connection;
+    executeMulti();
     this.commandObjects = new RedisCommandObjects();
   }
 
+  private void executeMulti() {
+    connection.sendCommand(Protocol.Command.MULTI);
+    String status = connection.getStatusCodeReply();
+    if (!"OK".equals(status)) {
+      throw new JedisException("MULTI command failed. Received response: " + status);
+    }
+  }
+
+  protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
+    connection.sendCommand(commandObject.getArguments());
+    String status = connection.getStatusCodeReply();
+    if (!"QUEUED".equals(status)) {
+      throw new JedisException(status);
+    }
+    return enqueResponse(commandObject.getBuilder());
+  }
+
+  @Override
+  public void close() {
+    clear();
+  }
+
+  public void clear() {
+    if (inTransaction) {
+      discard();
+    }
+  }
+
+  public final void exec() {
+    connection.sendCommand(Protocol.Command.EXEC);
+    inTransaction = false;
+
+    List<Object> unformatted = connection.getObjectMultiBulkReply();
+    unformatted.stream().forEachOrdered(u -> generateResponse(u));
+  }
+
+  public final void discard() {
+    connection.sendCommand(Protocol.Command.DISCARD);
+    String status = connection.getStatusCodeReply();
+    inTransaction = false;
+    clean();
+    if (!"OK".equals(status)) {
+      throw new JedisException("DISCARD command failed. Received response: " + status);
+    }
+  }
   @Override
   public Response<Boolean> exists(String key) {
     return appendCommand(commandObjects.exists(key));

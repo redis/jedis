@@ -187,33 +187,6 @@ public class ExceptionsTest {
   }
 
   @Test
-  public void maxAttempts() {
-    try {
-      throw new JedisClusterMaxAttemptsException(MESSAGE);
-    } catch (Exception e) {
-      assertSame(JedisClusterMaxAttemptsException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertNull(e.getCause());
-    }
-
-    try {
-      throw new JedisClusterMaxAttemptsException(CAUSE);
-    } catch (Exception e) {
-      assertSame(JedisClusterMaxAttemptsException.class, e.getClass());
-      assertEquals(CAUSE, e.getCause());
-      assertEquals(CAUSE.toString(), e.getMessage());
-    }
-
-    try {
-      throw new JedisClusterMaxAttemptsException(MESSAGE, CAUSE);
-    } catch (Exception e) {
-      assertSame(JedisClusterMaxAttemptsException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertEquals(CAUSE, e.getCause());
-    }
-  }
-
-  @Test
   public void clusterOperation() {
     try {
       throw new JedisClusterOperationException(MESSAGE);
@@ -322,33 +295,6 @@ public class ExceptionsTest {
   }
 
   @Test
-  public void exhaustedPool() {
-    try {
-      throw new JedisExhaustedPoolException(MESSAGE);
-    } catch (Exception e) {
-      assertSame(JedisExhaustedPoolException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertNull(e.getCause());
-    }
-
-    try {
-      throw new JedisExhaustedPoolException(CAUSE);
-    } catch (Exception e) {
-      assertSame(JedisExhaustedPoolException.class, e.getClass());
-      assertEquals(CAUSE, e.getCause());
-      assertEquals(CAUSE.toString(), e.getMessage());
-    }
-
-    try {
-      throw new JedisExhaustedPoolException(MESSAGE, CAUSE);
-    } catch (Exception e) {
-      assertSame(JedisExhaustedPoolException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertEquals(CAUSE, e.getCause());
-    }
-  }
-
-  @Test
   public void movedData() {
     HostAndPort hap = new HostAndPort("", 0);
     int slot = -1;
@@ -373,33 +319,6 @@ public class ExceptionsTest {
       throw new JedisMovedDataException(MESSAGE, CAUSE, hap, slot);
     } catch (Exception e) {
       assertSame(JedisMovedDataException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertEquals(CAUSE, e.getCause());
-    }
-  }
-
-  @Test
-  public void noReachableNode() {
-    try {
-      throw new JedisNoReachableClusterNodeException(MESSAGE);
-    } catch (Exception e) {
-      assertSame(JedisNoReachableClusterNodeException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertNull(e.getCause());
-    }
-
-    try {
-      throw new JedisNoReachableClusterNodeException(CAUSE);
-    } catch (Exception e) {
-      assertSame(JedisNoReachableClusterNodeException.class, e.getClass());
-      assertEquals(CAUSE, e.getCause());
-      assertEquals(CAUSE.toString(), e.getMessage());
-    }
-
-    try {
-      throw new JedisNoReachableClusterNodeException(MESSAGE, CAUSE);
-    } catch (Exception e) {
-      assertSame(JedisNoReachableClusterNodeException.class, e.getClass());
       assertEquals(MESSAGE, e.getMessage());
       assertEquals(CAUSE, e.getCause());
     }

@@ -6,12 +6,6 @@ import java.util.List;
 
 public interface BinaryScriptingCommandsPipeline {
 
-  /**
-   * @deprecated Use {@link #eval(byte..., int, byte[]...)}.
-   */
-  @Deprecated
-  Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params);
-
   Response<Object> eval(byte[] script, int keyCount, byte[]... params);
 
   Response<Object> eval(byte[] script, List<byte[]> keys, List<byte[]> args);

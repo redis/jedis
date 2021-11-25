@@ -7,11 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.After;
 import org.junit.Before;
@@ -22,12 +18,14 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisFactory;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
+import redis.clients.jedis.Sentinel;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.tests.utils.JedisSentinelTestUtil;
 
 public class JedisSentinelPoolTest {
+
   private static final String MASTER_NAME = "mymaster";
 
   protected static HostAndPort master = HostAndPortUtil.getRedisServers().get(2);
@@ -36,8 +34,8 @@ public class JedisSentinelPoolTest {
   protected static HostAndPort sentinel1 = HostAndPortUtil.getSentinelServers().get(1);
   protected static HostAndPort sentinel2 = HostAndPortUtil.getSentinelServers().get(3);
 
-  protected static Jedis sentinelJedis1;
-  protected static Jedis sentinelJedis2;
+  protected static Sentinel sentinelJedis1;
+  protected static Sentinel sentinelJedis2;
 
   protected Set<String> sentinels = new HashSet<String>();
 
@@ -46,8 +44,8 @@ public class JedisSentinelPoolTest {
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
 
-    sentinelJedis1 = new Jedis(sentinel1);
-    sentinelJedis2 = new Jedis(sentinel2);
+    sentinelJedis1 = new Sentinel(sentinel1);
+    sentinelJedis2 = new Sentinel(sentinel2);
   }
 
   @After

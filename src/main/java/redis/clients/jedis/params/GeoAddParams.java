@@ -1,16 +1,16 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import static redis.clients.jedis.Protocol.Keyword.CH;
+import static redis.clients.jedis.Protocol.Keyword.NX;
+import static redis.clients.jedis.Protocol.Keyword.XX;
 
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.CommandArguments;
 
-public class GeoAddParams extends Params {
+public class GeoAddParams implements IParams {
 
-  private static final String NX = "nx";
-  private static final String XX = "xx";
-  private static final String CH = "ch";
+  private boolean nx = false;
+  private boolean xx = false;
+  private boolean ch = false;
 
   public GeoAddParams() {
   }
@@ -24,7 +24,7 @@ public class GeoAddParams extends Params {
    * @return GetExParams
    */
   public GeoAddParams nx() {
-    addParam(NX);
+    this.nx = true;
     return this;
   }
 
@@ -33,7 +33,7 @@ public class GeoAddParams extends Params {
    * @return GetExParams
    */
   public GeoAddParams xx() {
-    addParam(XX);
+    this.xx = true;
     return this;
   }
 
@@ -43,27 +43,21 @@ public class GeoAddParams extends Params {
    * @return GetExParams
    */
   public GeoAddParams ch() {
-    addParam(CH);
+    this.ch = true;
     return this;
   }
 
-  public byte[][] getByteParams(byte[] key, byte[]... args) {
-    List<byte[]> byteParams = new ArrayList<>();
-    byteParams.add(key);
-
-    if (contains(NX)) {
-      byteParams.add(SafeEncoder.encode(NX));
-    } else if (contains(XX)) {
-      byteParams.add(SafeEncoder.encode(XX));
+  @Override
+  public void addParams(CommandArguments args) {
+    if (nx) {
+      args.add(NX);
+    } else if (xx) {
+      args.add(XX);
     }
 
-    if (contains(CH)) {
-      byteParams.add(SafeEncoder.encode(CH));
+    if (ch) {
+      args.add(CH);
     }
-
-    Collections.addAll(byteParams, args);
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 
 }

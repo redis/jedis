@@ -36,18 +36,18 @@ import redis.clients.jedis.tests.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class PipeliningTest extends JedisCommandsTestBase {
-//
-//  @Test
-//  public void pipeline() {
-//    Pipeline p = jedis.pipelined();
-//    p.set("foo", "bar");
-//    p.get("foo");
-//    List<Object> results = p.syncAndReturnAll();
-//
-//    assertEquals(2, results.size());
-//    assertEquals("OK", results.get(0));
-//    assertEquals("bar", results.get(1));
-//  }
+
+  @Test
+  public void pipeline() {
+    Pipeline p = jedis.pipelined();
+    p.set("foo", "bar");
+    p.get("foo");
+    List<Object> results = p.syncAndReturnAll();
+
+    assertEquals(2, results.size());
+    assertEquals("OK", results.get(0));
+    assertEquals("bar", results.get(1));
+  }
 
   @Test
   public void pipelineResponse() {
@@ -632,25 +632,25 @@ public class PipeliningTest extends JedisCommandsTestBase {
 //
 //    assertTrue(result.get(3) instanceof JedisDataException);
 //  }
-//
-//  @Test
-//  public void testSyncWithNoCommandQueued() {
-//    // we need to test with fresh instance of Jedis
-//    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-//
-//    Pipeline pipeline = jedis2.pipelined();
-//    pipeline.sync();
-//
-//    jedis2.close();
-//
-//    jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-//
-//    pipeline = jedis2.pipelined();
-//    List<Object> resp = pipeline.syncAndReturnAll();
-//    assertTrue(resp.isEmpty());
-//
-//    jedis2.close();
-//  }
+
+  @Test
+  public void testSyncWithNoCommandQueued() {
+    // we need to test with fresh instance of Jedis
+    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+
+    Pipeline pipeline = jedis2.pipelined();
+    pipeline.sync();
+
+    jedis2.close();
+
+    jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+
+    pipeline = jedis2.pipelined();
+    List<Object> resp = pipeline.syncAndReturnAll();
+    assertTrue(resp.isEmpty());
+
+    jedis2.close();
+  }
 
   @Test
   public void testCloseable() throws IOException {

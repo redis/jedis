@@ -1309,10 +1309,20 @@ public final class BuilderFactory {
   public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {
+      if (data == null) return null;
+
+      if (!(data instanceof byte[])) return data;
+
       String str = STRING.build(data);
-      if (str == null) return null;
-      if (str.charAt(0) == '{') return new JSONObject(str);
-      if (str.charAt(0) == '[') return new JSONArray(str);
+      if (str.charAt(0) == '{') {
+        try {
+          return new JSONObject(str);
+        } catch (Exception ex) { }
+      } else if (str.charAt(0) == '[') {
+        try {
+          return new JSONArray(str);
+        } catch (Exception ex) { }
+      }
       return str;
     }
   };
@@ -1320,17 +1330,16 @@ public final class BuilderFactory {
   public static final Builder<JSONArray> JSON_ARRAY = new Builder<JSONArray>() {
     @Override
     public JSONArray build(Object data) {
-      String str = STRING.build(data);
-      if (str == null) return null;
-      return new JSONArray(str);
+      if (data == null) return null;
+      return new JSONArray(STRING.build(data));
     }
   };
 
   public static final Builder<List<JSONArray>> JSON_ARRAY_LIST = new Builder<List<JSONArray>>() {
     @Override
     public List<JSONArray> build(Object data) {
+      if (data == null) return null;
       List<Object> list = (List<Object>) data;
-      if (list == null) return null;
       return list.stream().map(o -> JSON_ARRAY.build(o)).collect(Collectors.toList());
     }
   };

@@ -120,7 +120,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     }
   }
 
-  private final Gson g = new Gson();
+  private final Gson gson = new Gson();
 
   @Test
   public void basicSetGetShouldSucceed() {
@@ -137,7 +137,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     // a slightly more complex object
     IRLObject obj = new IRLObject();
     client.jsonSet("obj", ROOT_PATH, obj);
-    Object expected = g.fromJson(g.toJson(obj), Object.class);
+    Object expected = gson.fromJson(gson.toJson(obj), Object.class);
     assertTrue(expected.equals(client.jsonGet("obj")));
 
     // check an update
@@ -194,8 +194,8 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   public void getMultiplePathsShouldSucceed() {
     // check multiple paths
     IRLObject obj = new IRLObject();
-    client.jsonSet("obj", g.toJson(obj));
-    Object expected = g.fromJson(g.toJson(obj), Object.class);
+    client.jsonSet("obj", gson.toJson(obj));
+    Object expected = gson.fromJson(gson.toJson(obj), Object.class);
     assertTrue(expected.equals(client.jsonGet("obj", Object.class, Path.of("bool"), Path.of("str"))));
   }
 
@@ -204,7 +204,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     // check multiple paths
     IRLObject obj = new IRLObject();
     client.jsonSetLegacy("obj", obj);
-    Object expected = g.fromJson(g.toJson(obj), Object.class);
+    Object expected = gson.fromJson(gson.toJson(obj), Object.class);
     assertTrue(expected.equals(client.jsonGet("obj", Object.class, Path.of("bool"), Path.of("str"))));
   }
 
@@ -309,8 +309,8 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     Qux qux1 = new Qux("quux1", "corge1", "garply1", baz1);
     Qux qux2 = new Qux("quux2", "corge2", "garply2", baz2);
 
-    client.jsonSet("qux1", g.toJson(qux1));
-    client.jsonSet("qux2", g.toJson(qux2));
+    client.jsonSet("qux1", gson.toJson(qux1));
+    client.jsonSet("qux2", gson.toJson(qux2));
 
     List<Qux> allQux = client.jsonMGet(Qux.class, "qux1", "qux2", "qux3");
 
@@ -354,7 +354,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     Baz baz = new Baz("quuz", "grault", "waldo");
     Qux qux = new Qux("quux", "corge", "garply", baz);
 
-    client.jsonSet("qux", g.toJson(qux));
+    client.jsonSet("qux", gson.toJson(qux));
     Path objPath = Path.of("baz");
     assertEquals(baz, client.jsonGet("qux", Baz.class, objPath));
 
@@ -422,9 +422,13 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     client.jsonArrAppend("test_arrappend", Path.of(".a"), 1);
   }
 
+  @Test(expected = JedisDataException.class)
+  public void arrIndexAbsentKey() {
+    client.jsonArrIndex("quxquux", ROOT_PATH, gson.toJson(new Object()));
+  }
+
   @Test
   public void arrIndexWithInts() {
-    assertEquals(-1L, client.jsonArrIndex("quxquux", ROOT_PATH, 7));
     client.jsonSet("quxquux", ROOT_PATH, new int[]{8, 6, 7, 5, 3, 0, 9});
     assertEquals(2L, client.jsonArrIndex("quxquux", ROOT_PATH, 7));
     assertEquals(-1L, client.jsonArrIndex("quxquux", ROOT_PATH, "7"));

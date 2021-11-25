@@ -398,9 +398,13 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals(singletonList(null), client.jsonArrAppendWithEscape("test_arrappend", Path2.of(".a"), 1));
   }
 
+  @Test(expected = JedisDataException.class)
+  public void arrIndexAbsentKey() {
+    client.jsonArrIndexWithEscape("quxquux", ROOT_PATH, new JSONObject());
+  }
+
   @Test
   public void arrIndexWithInts() {
-//    assertEquals(singletonList(-1L), client.jsonArrIndexWithEscape("quxquux", ROOT_PATH, 7)); // TODO
     client.jsonSetWithEscape("quxquux", ROOT_PATH, new int[]{8, 6, 7, 5, 3, 0, 9});
     assertEquals(singletonList(2L), client.jsonArrIndexWithEscape("quxquux", ROOT_PATH, 7));
     assertEquals(singletonList(-1L), client.jsonArrIndexWithEscape("quxquux", ROOT_PATH, "7"));

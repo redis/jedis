@@ -2779,6 +2779,18 @@ public class RedisCommandObjects {
   }
   // RedisJSON commands
 
+  public final CommandObject<List<String>> command() {
+    return new CommandObject<>(commandArguments(COMMAND), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<Long> commandCount() {
+    return new CommandObject<>(commandArguments(COMMAND).add(COUNT), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<String>> commandGetKeys(String[] command) {
+    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYS).addObjects(command), BuilderFactory.STRING_LIST);
+  }
+
   private static final Gson GSON = new Gson();
 
   private class GsonObjectBuilder<T> extends Builder<T> {

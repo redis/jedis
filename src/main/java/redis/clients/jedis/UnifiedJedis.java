@@ -3184,4 +3184,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
   // RedisJSON commands
+
+  @Override
+  public List<String> command() {
+    return executeCommand(commandObjects.command());
+  }
+
+  @Override
+  public Long commandCount() {
+    return executeCommand(commandObjects.commandCount());
+  }
+
+  @Override
+  public List<String> commandGetKeys(String... command) {
+    return executeCommand(commandObjects.commandGetKeys(command));
+  }
 }

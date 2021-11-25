@@ -8362,6 +8362,21 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 
+  @Override
+  public List<String> command() {
+    return connection.executeCommand(commandObjects.command());
+  }
+
+  @Override
+  public Long commandCount() {
+    return connection.executeCommand(commandObjects.commandCount());
+  }
+
+  @Override
+  public List<String> commandGetKeys(String... command) {
+    return connection.executeCommand(commandObjects.commandGetKeys(command));
+  }
+
   public Object sendCommand(ProtocolCommand cmd, String... args) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(cmd, args);
@@ -8416,5 +8431,4 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     System.arraycopy(rest, 0, result, 2, rest.length);
     return result;
   }
-
 }

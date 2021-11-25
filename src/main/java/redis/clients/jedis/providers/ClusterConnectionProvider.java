@@ -65,11 +65,11 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   public HostAndPort getNode(int slot) {
-    return cache.getSlotNode(slot);
+    return slot >= 0 ? cache.getSlotNode(slot) : null;
   }
 
   public Connection getConnection(HostAndPort node) {
-    return cache.setupNodeIfNotExist(node).getResource();
+    return node != null ? cache.setupNodeIfNotExist(node).getResource() : getConnection();
   }
 
   @Override

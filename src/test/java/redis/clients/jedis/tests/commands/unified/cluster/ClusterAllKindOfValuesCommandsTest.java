@@ -207,7 +207,7 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     }
 
     ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
-    assertEquals(2, result.getResult().size());
+    assertTrue(result.getResult().size() >= 2);
   }
 
   @Test

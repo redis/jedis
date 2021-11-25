@@ -65,9 +65,15 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   }
 
   public StreamEntryID(String id) {
-    String[] split = id.split("-");
-    this.time = Long.parseLong(split[0]);
-    this.sequence = Long.parseLong(split[1]);
+    if (id.contains("-")) {
+      String[] split = id.split("-");
+      try {
+        this.time = Long.parseLong(split[0]);
+        this.sequence = Long.parseLong(split[1]);
+      } catch (NumberFormatException e){
+        // pass
+      }
+    }
   }
 
   public StreamEntryID(long time, long sequence) {

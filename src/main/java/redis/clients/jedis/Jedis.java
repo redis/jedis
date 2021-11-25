@@ -3179,27 +3179,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   /**
    * Synchronously save the DB on disk, then shutdown the server.
    * <p>
- Stop all the clients, save the DB, then quit the server. This commands makes sure that the DB
- is switched off without the lost of any data. This is not guaranteed if the connection uses simply
- {@link #save() SAVE} and then {@link #quit() QUIT} because other clients may alter the DB data
-   * between the two commands.
-   * @return {@code null}
+   * Stop all the clients, save the DB, then quit the server. This commands makes sure that the DB
+   * is switched off without the lost of any data. This is not guaranteed if the connection uses
+   * simply {@link #save() SAVE} and then {@link #quit() QUIT} because other clients may alter the
+   * DB data between the two commands.
    * @throws JedisException with the status code reply on error. On success nothing is thrown since
    *         the server quits and the connection is closed.
    */
   @Override
-  public String shutdown() throws JedisException {
+  public void shutdown() throws JedisException {
     connection.sendCommand(SHUTDOWN);
-    String status;
     try {
-      status = connection.getStatusCodeReply();
-      throw new JedisException(status);
+      throw new JedisException(connection.getStatusCodeReply());
     } catch (JedisConnectionException jce) {
       // expected
-      status = null;
       connection.setBroken();
     }
-    return status;
   }
 
   @Override

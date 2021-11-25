@@ -109,10 +109,9 @@ public interface ServerCommands {
   /**
    * Stop all the client. Perform a SAVE (if one save point is configured). Flush the append only
    * file if AOF is enabled quit the server
-   * @return {@code null}
    * @throws JedisException only in case of error.
    */
-  String shutdown() throws JedisException;
+  void shutdown() throws JedisException;
 
   /**
    * @see SaveMode

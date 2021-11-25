@@ -10,6 +10,12 @@ public class Path2 {
   private final String str;
 
   public Path2(final String str) {
+    if (str == null) {
+      throw new NullPointerException("Path cannot be null.");
+    }
+    if (str.isEmpty()) {
+      throw new IllegalArgumentException("Path cannot be empty.");
+    }
     if (str.charAt(0) == '$') {
       this.str = str;
     } else if (str.charAt(0) == '.') {

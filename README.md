@@ -112,7 +112,7 @@ Please check the [wiki](http://github.com/redis/jedis/wiki "wiki"). There are lo
 
 Latest release javadocs can be found here: https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html
 
-And you are done!
+And you are done!jk
 
 ## Jedis Cluster
 

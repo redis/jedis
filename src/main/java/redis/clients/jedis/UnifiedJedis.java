@@ -11,6 +11,7 @@ import org.json.JSONArray;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
@@ -3184,4 +3185,44 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
   // RedisJSON commands
+
+  public Object sendCommand(ProtocolCommand cmd) {
+    return executeCommand(commandObjects.commandArguments(cmd));
+  }
+
+  public Object sendCommand(ProtocolCommand cmd, byte[]... args) {
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, byte[]... args) {
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
+  }
+
+  public Object sendCommand(ProtocolCommand cmd, String... args) {
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args));
+  }
+
+  public Object sendBlockingCommand(ProtocolCommand cmd, String... args) {
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking());
+  }
+
+  public Object sendCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).processKey(sampleKey));
+  }
+
+  public Object sendBlockingCommand(byte[] sampleKey, ProtocolCommand cmd, byte[]... args) {
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().processKey(sampleKey));
+  }
+
+  public Object sendCommand(String sampleKey, ProtocolCommand cmd, String... args) {
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).processKey(sampleKey));
+  }
+
+  public Object sendBlockingCommand(String sampleKey, ProtocolCommand cmd, String... args) {
+    return executeCommand(commandObjects.commandArguments(cmd).addObjects((Object[]) args).blocking().processKey(sampleKey));
+  }
+
+  public Object executeCommand(CommandArguments args) {
+    return executeCommand(new CommandObject<>(args, BuilderFactory.RAW_OBJECT));
+  }
 }

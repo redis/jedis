@@ -24,7 +24,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
+public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
   protected byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   protected byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   protected byte[] bxx = { 0x78, 0x78 };
@@ -328,41 +328,41 @@ public class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
     jedis.set(bfoo, binaryValue);
     assertEquals(binaryValue.length, jedis.strlen(bfoo));
   }
-//
-//  @Test
-//  public void sendCommandTest() {
-//    Object obj = jedis.sendCommand(SET, "x".getBytes(), "1".getBytes());
-//    String returnValue = SafeEncoder.encode((byte[]) obj);
-//    assertEquals("OK", returnValue);
-//    obj = jedis.sendCommand(GET, "x".getBytes());
-//    returnValue = SafeEncoder.encode((byte[]) obj);
-//    assertEquals("1", returnValue);
-//
-//    jedis.sendCommand(RPUSH, "foo".getBytes(), "a".getBytes());
-//    jedis.sendCommand(RPUSH, "foo".getBytes(), "b".getBytes());
-//    jedis.sendCommand(RPUSH, "foo".getBytes(), "c".getBytes());
-//
-//    obj = jedis.sendCommand(LRANGE, "foo".getBytes(), "0".getBytes(), "2".getBytes());
-//    List<byte[]> list = (List<byte[]>) obj;
-//    List<byte[]> expected = new ArrayList<>(3);
-//    expected.add("a".getBytes());
-//    expected.add("b".getBytes());
-//    expected.add("c".getBytes());
-//    for (int i = 0; i < 3; i++)
-//      assertArrayEquals(expected.get(i), list.get(i));
-//  }
-//
-//  @Test
-//  public void sendBlockingCommandTest() {
-//    assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
-//
-//    jedis.sendCommand(RPUSH, bfoo, bbar);
-//    List<byte[]> blpop = (List<byte[]>) jedis.sendBlockingCommand(BLPOP, bfoo,
-//      Protocol.toByteArray(1L));
-//    assertEquals(2, blpop.size());
-//    assertArrayEquals(bfoo, blpop.get(0));
-//    assertArrayEquals(bbar, blpop.get(1));
-//
-//    assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
-//  }
+
+  @Test
+  public void sendCommandTest() {
+    Object obj = jedis.sendCommand(SET, "x".getBytes(), "1".getBytes());
+    String returnValue = SafeEncoder.encode((byte[]) obj);
+    assertEquals("OK", returnValue);
+    obj = jedis.sendCommand(GET, "x".getBytes());
+    returnValue = SafeEncoder.encode((byte[]) obj);
+    assertEquals("1", returnValue);
+
+    jedis.sendCommand(RPUSH, "foo".getBytes(), "a".getBytes());
+    jedis.sendCommand(RPUSH, "foo".getBytes(), "b".getBytes());
+    jedis.sendCommand(RPUSH, "foo".getBytes(), "c".getBytes());
+
+    obj = jedis.sendCommand(LRANGE, "foo".getBytes(), "0".getBytes(), "2".getBytes());
+    List<byte[]> list = (List<byte[]>) obj;
+    List<byte[]> expected = new ArrayList<>(3);
+    expected.add("a".getBytes());
+    expected.add("b".getBytes());
+    expected.add("c".getBytes());
+    for (int i = 0; i < 3; i++)
+      assertArrayEquals(expected.get(i), list.get(i));
+  }
+
+  @Test
+  public void sendBlockingCommandTest() {
+    assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
+
+    jedis.sendCommand(RPUSH, bfoo, bbar);
+    List<byte[]> blpop = (List<byte[]>) jedis.sendBlockingCommand(BLPOP, bfoo,
+      Protocol.toByteArray(1L));
+    assertEquals(2, blpop.size());
+    assertArrayEquals(bfoo, blpop.get(0));
+    assertArrayEquals(bbar, blpop.get(1));
+
+    assertNull(jedis.sendBlockingCommand(BLPOP, bfoo, Protocol.toByteArray(1L)));
+  }
 }

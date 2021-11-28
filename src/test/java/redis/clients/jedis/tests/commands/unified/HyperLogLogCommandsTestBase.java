@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.util.SafeEncoder;
 
-public class HyperLogLogCommandsTestBase extends UnifiedJedisCommandsTestBase {
+public abstract class HyperLogLogCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   @Test
   public void pfadd() {

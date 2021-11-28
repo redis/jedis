@@ -2,11 +2,17 @@ package redis.clients.jedis;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
+
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -17,11 +23,6 @@ import redis.clients.jedis.search.Query;
 import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.stream.*;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Transaction extends Queable implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
@@ -3048,5 +3049,21 @@ public class Transaction extends Queable implements PipelineCommands, PipelineBi
   @Override
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
+  }
+
+  public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
+    return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
+  }
+
+  public Response<Object> sendCommand(ProtocolCommand cmd, byte[]... args) {
+    return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
+  }
+
+  public Response<Object> sendCommand(CommandArguments args) {
+    return executeCommand(new CommandObject<>(args, BuilderFactory.RAW_OBJECT));
+  }
+
+  public <T> Response<T> executeCommand(CommandObject<T> command) {
+    return appendCommand(command);
   }
 }

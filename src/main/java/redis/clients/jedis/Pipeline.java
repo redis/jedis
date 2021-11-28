@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
+import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
@@ -3020,5 +3021,21 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
+  }
+
+  public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
+    return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
+  }
+
+  public Response<Object> sendCommand(ProtocolCommand cmd, byte[]... args) {
+    return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
+  }
+
+  public Response<Object> sendCommand(CommandArguments args) {
+    return executeCommand(new CommandObject<>(args, BuilderFactory.RAW_OBJECT));
+  }
+
+  public <T> Response<T> executeCommand(CommandObject<T> command) {
+    return appendCommand(command);
   }
 }

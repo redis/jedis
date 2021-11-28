@@ -24,7 +24,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
 
-public class ListCommandsTestBase extends UnifiedJedisCommandsTestBase {
+public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   private static final Logger logger = LogManager.getLogger();
 

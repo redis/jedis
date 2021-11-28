@@ -19,8 +19,6 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class Connection implements Closeable {
 
-  private static final byte[][] EMPTY_ARGS = new byte[0][];
-
   private ConnectionPool memberOf;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
@@ -110,51 +108,7 @@ public class Connection implements Closeable {
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
-    sendCommand(cmd);
-    return getOne();
-  }
-
-  public void sendCommand(final ProtocolCommand cmd, final String... args) {
-    final byte[][] bargs = new byte[args.length][];
-    for (int i = 0; i < args.length; i++) {
-      bargs[i] = SafeEncoder.encode(args[i]);
-    }
-    sendCommand(cmd, bargs);
-  }
-
-  public void sendCommand(final ProtocolCommand cmd) {
-    sendCommand(cmd, EMPTY_ARGS);
-  }
-
-  public void sendCommand(final ProtocolCommand cmd, Rawable keyword) {
-    sendCommand(cmd, keyword.getRaw());
-  }
-
-  public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
-    try {
-      connect();
-      Protocol.sendCommand(outputStream, cmd, args);
-    } catch (JedisConnectionException ex) {
-      /*
-       * When client send request which formed by invalid protocol, Redis send back error message
-       * before close connection. We try to read it to provide reason of failure.
-       */
-      try {
-        String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
-        if (errorMessage != null && errorMessage.length() > 0) {
-          ex = new JedisConnectionException(errorMessage, ex.getCause());
-        }
-      } catch (RuntimeException e) {
-        /*
-         * Catch any JedisConnectionException occurred from InputStream#read and just
-         * ignore. This approach is safe because reading error message is optional and connection
-         * will eventually be closed.
-         */
-      }
-      // Any other exceptions related to connection?
-      broken = true;
-      throw ex;
-    }
+    return executeCommand(new CommandArguments(cmd));
   }
 
   public Object executeCommand(final CommandArguments args) {
@@ -175,6 +129,22 @@ public class Connection implements Closeable {
         rollbackTimeout();
       }
     }
+  }
+
+  public void sendCommand(final ProtocolCommand cmd) {
+    sendCommand(new CommandArguments(cmd));
+  }
+
+  public void sendCommand(final ProtocolCommand cmd, Rawable keyword) {
+    sendCommand(new CommandArguments(cmd).add(keyword));
+  }
+
+  public void sendCommand(final ProtocolCommand cmd, final String... args) {
+    sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
+  }
+
+  public void sendCommand(final ProtocolCommand cmd, final byte[]... args) {
+    sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
   }
 
   public void sendCommand(final CommandArguments args) {
@@ -260,6 +230,14 @@ public class Connection implements Closeable {
         && !socket.isInputShutdown() && !socket.isOutputShutdown();
   }
 
+  public boolean isBroken() {
+    return broken;
+  }
+
+  public void setBroken() {
+    broken = true;
+  }
+
   public String getStatusCodeReply() {
     flush();
     final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
@@ -323,14 +301,6 @@ public class Connection implements Closeable {
   public Object getOne() {
     flush();
     return readProtocolWithCheckingBroken();
-  }
-
-  public void setBroken() {
-    broken = true;
-  }
-
-  public boolean isBroken() {
-    return broken;
   }
 
   protected void flush() {
@@ -402,13 +372,6 @@ public class Connection implements Closeable {
     }
   }
 
-  public String quit() {
-    sendCommand(Protocol.Command.QUIT);
-    String quitReturn = getStatusCodeReply();
-    disconnect();
-    return quitReturn;
-  }
-
   private String auth(final String password) {
     sendCommand(Protocol.Command.AUTH, password);
     return getStatusCodeReply();
@@ -429,6 +392,14 @@ public class Connection implements Closeable {
     return getStatusCodeReply();
   }
 
+  public String quit() {
+    sendCommand(Protocol.Command.QUIT);
+    String quitReturn = getStatusCodeReply();
+    disconnect();
+    setBroken();
+    return quitReturn;
+  }
+
   public boolean ping() {
     sendCommand(Protocol.Command.PING);
     String status = getStatusCodeReply();
@@ -437,5 +408,4 @@ public class Connection implements Closeable {
     }
     return true;
   }
-
 }

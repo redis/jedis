@@ -438,11 +438,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String quit() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(QUIT);
-    String quitReturn = connection.getStatusCodeReply();
-    connection.disconnect();
-    connection.setBroken();
-    return quitReturn;
+    return connection.quit();
   }
 
   /**

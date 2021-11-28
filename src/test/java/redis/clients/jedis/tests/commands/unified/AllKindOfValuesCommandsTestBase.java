@@ -8,14 +8,28 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import static redis.clients.jedis.Protocol.Command.BLPOP;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.HGETALL;
+import static redis.clients.jedis.Protocol.Command.LRANGE;
+import static redis.clients.jedis.Protocol.Command.PING;
+import static redis.clients.jedis.Protocol.Command.RPUSH;
+import static redis.clients.jedis.Protocol.Command.SET;
+import static redis.clients.jedis.Protocol.Command.XINFO;
+import static redis.clients.jedis.util.SafeEncoder.encode;
+import static redis.clients.jedis.util.SafeEncoder.encodeObject;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.params.SetParams.setParams;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertCollectionContains;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.Test;
 
@@ -24,8 +38,9 @@ import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.stream.StreamEntryID;
 
-public class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
+public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   protected final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   protected final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
@@ -699,73 +714,73 @@ public class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBas
     String nullValue = jedis.set("key", "value", setParams().get());
     assertNull(nullValue);
   }
-//
-//  @Test
-//  public void sendCommandTest() {
-//    Object obj = jedis.sendCommand(SET, "x", "1");
-//    String returnValue = SafeEncoder.encode((byte[]) obj);
-//    assertEquals("OK", returnValue);
-//    obj = jedis.sendCommand(GET, "x");
-//    returnValue = SafeEncoder.encode((byte[]) obj);
-//    assertEquals("1", returnValue);
-//
-//    jedis.sendCommand(RPUSH, "foo", "a");
-//    jedis.sendCommand(RPUSH, "foo", "b");
-//    jedis.sendCommand(RPUSH, "foo", "c");
-//
-//    obj = jedis.sendCommand(LRANGE, "foo", "0", "2");
-//    List<byte[]> list = (List<byte[]>) obj;
-//    List<byte[]> expected = new ArrayList<>(3);
-//    expected.add("a".getBytes());
-//    expected.add("b".getBytes());
-//    expected.add("c".getBytes());
-//    for (int i = 0; i < 3; i++)
-//      assertArrayEquals(expected.get(i), list.get(i));
-//
-//    assertEquals("PONG", SafeEncoder.encode((byte[]) jedis.sendCommand(PING)));
-//  }
-//
-//  @Test
-//  public void sendBlockingCommandTest() {
-//    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
-//
-//    jedis.sendCommand(RPUSH, "foo", "bar");
-//    assertEquals(Arrays.asList("foo", "bar"),
-//      SafeEncoder.encodeObject(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L))));
-//
-//    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
-//  }
-//
-//  @Test
-//  public void encodeCompleteResponse() {
-//    HashMap<String, String> entry = new HashMap<>();
-//    entry.put("foo", "bar");
-//    jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
-//    String status = jedis.xgroupCreate("mystream", "mygroup", null, false);
-//
-//    Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
-//    List encodeObj = (List) SafeEncoder.encodeObject(obj);
-//
-//    assertEquals(14, encodeObj.size());
-//    assertEquals("length", encodeObj.get(0));
-//    assertEquals(1L, encodeObj.get(1));
-//
-//    List<String> entryAsList = new ArrayList<>(2);
-//    entryAsList.add("foo");
-//    entryAsList.add("bar");
-//
-//    assertEquals(entryAsList, ((List) encodeObj.get(11)).get(1));
-//
-//    assertEquals("PONG", SafeEncoder.encodeObject(jedis.sendCommand(PING)));
-//
-//    entry.put("foo2", "bar2");
-//    jedis.hset("hash:test:encode", entry);
-//    encodeObj = (List) SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
-//
-//    assertEquals(4, encodeObj.size());
-//    assertTrue(encodeObj.contains("foo"));
-//    assertTrue(encodeObj.contains("foo2"));
-//  }
+
+  @Test
+  public void sendCommandTest() {
+    Object obj = jedis.sendCommand(SET, "x", "1");
+    String returnValue = encode((byte[]) obj);
+    assertEquals("OK", returnValue);
+    obj = jedis.sendCommand(GET, "x");
+    returnValue = encode((byte[]) obj);
+    assertEquals("1", returnValue);
+
+    jedis.sendCommand(RPUSH, "foo", "a");
+    jedis.sendCommand(RPUSH, "foo", "b");
+    jedis.sendCommand(RPUSH, "foo", "c");
+
+    obj = jedis.sendCommand(LRANGE, "foo", "0", "2");
+    List<byte[]> list = (List<byte[]>) obj;
+    List<byte[]> expected = new ArrayList<>(3);
+    expected.add("a".getBytes());
+    expected.add("b".getBytes());
+    expected.add("c".getBytes());
+    for (int i = 0; i < 3; i++)
+      assertArrayEquals(expected.get(i), list.get(i));
+
+    assertEquals("PONG", encode((byte[]) jedis.sendCommand(PING)));
+  }
+
+  @Test
+  public void sendBlockingCommandTest() {
+    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
+
+    jedis.sendCommand(RPUSH, "foo", "bar");
+    assertEquals(Arrays.asList("foo", "bar"),
+      encodeObject(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L))));
+
+    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
+  }
+
+  @Test
+  public void encodeCompleteResponse() {
+    HashMap<String, String> entry = new HashMap<>();
+    entry.put("foo", "bar");
+    jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
+    String status = jedis.xgroupCreate("mystream", "mygroup", null, false);
+
+    Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
+    List encodeObj = (List) encodeObject(obj);
+
+    assertEquals(14, encodeObj.size());
+    assertEquals("length", encodeObj.get(0));
+    assertEquals(1L, encodeObj.get(1));
+
+    List<String> entryAsList = new ArrayList<>(2);
+    entryAsList.add("foo");
+    entryAsList.add("bar");
+
+    assertEquals(entryAsList, ((List) encodeObj.get(11)).get(1));
+
+    assertEquals("PONG", encodeObject(jedis.sendCommand(PING)));
+
+    entry.put("foo2", "bar2");
+    jedis.hset("hash:test:encode", entry);
+    encodeObj = (List) encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
+
+    assertEquals(4, encodeObj.size());
+    assertTrue(encodeObj.contains("foo"));
+    assertTrue(encodeObj.contains("foo2"));
+  }
 
   @Test
   public void copy() {

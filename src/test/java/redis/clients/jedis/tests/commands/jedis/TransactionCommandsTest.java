@@ -8,19 +8,21 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import static redis.clients.jedis.Protocol.Command.INCR;
+import static redis.clients.jedis.Protocol.Command.GET;
+import static redis.clients.jedis.Protocol.Command.SET;
+
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.junit.After;
-
 import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
@@ -340,53 +342,53 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
       // pass
     }
   }
-//
-//  @Test
-//  public void testTransactionWithGeneralCommand() {
-//    Transaction t = jedis.multi();
-//    t.set("string", "foo");
-//    t.lpush("list", "foo");
-//    t.hset("hash", "foo", "bar");
-//    t.zadd("zset", 1, "foo");
-//    t.sendCommand(SET, "x", "1");
-//    t.sadd("set", "foo");
-//    t.sendCommand(INCR, "x");
-//    Response<String> string = t.get("string");
-//    Response<String> list = t.lpop("list");
-//    Response<String> hash = t.hget("hash", "foo");
-//    Response<Set<String>> zset = t.zrange("zset", 0, -1);
-//    Response<String> set = t.spop("set");
-//    Response<Object> x = t.sendCommand(GET, "x");
-//    t.exec();
-//
-//    assertEquals("foo", string.get());
-//    assertEquals("foo", list.get());
-//    assertEquals("bar", hash.get());
-//    assertEquals("foo", zset.get().iterator().next());
-//    assertEquals("foo", set.get());
-//    assertEquals("2", SafeEncoder.encode((byte[]) x.get()));
-//  }
-//
-//  @Test
-//  public void transactionResponseWithErrorWithGeneralCommand() {
-//    Transaction t = jedis.multi();
-//    t.set("foo", "bar");
-//    t.sendCommand(SET, "x", "1");
-//    Response<Set<String>> error = t.smembers("foo");
-//    Response<String> r = t.get("foo");
-//    Response<Object> x = t.sendCommand(GET, "x");
-//    t.sendCommand(INCR, "x");
-//    List<Object> l = t.exec();
-//    assertSame(JedisDataException.class, l.get(2).getClass());
-//    try {
-//      error.get();
-//      fail("We expect exception here!");
-//    } catch (JedisDataException e) {
-//      // that is fine we should be here
-//    }
-//    assertEquals("bar", r.get());
-//    assertEquals("1", SafeEncoder.encode((byte[]) x.get()));
-//  }
+
+  @Test
+  public void testTransactionWithGeneralCommand() {
+    Transaction t = jedis.multi();
+    t.set("string", "foo");
+    t.lpush("list", "foo");
+    t.hset("hash", "foo", "bar");
+    t.zadd("zset", 1, "foo");
+    t.sendCommand(SET, "x", "1");
+    t.sadd("set", "foo");
+    t.sendCommand(INCR, "x");
+    Response<String> string = t.get("string");
+    Response<String> list = t.lpop("list");
+    Response<String> hash = t.hget("hash", "foo");
+    Response<Set<String>> zset = t.zrange("zset", 0, -1);
+    Response<String> set = t.spop("set");
+    Response<Object> x = t.sendCommand(GET, "x");
+    t.exec();
+
+    assertEquals("foo", string.get());
+    assertEquals("foo", list.get());
+    assertEquals("bar", hash.get());
+    assertEquals("foo", zset.get().iterator().next());
+    assertEquals("foo", set.get());
+    assertEquals("2", SafeEncoder.encode((byte[]) x.get()));
+  }
+
+  @Test
+  public void transactionResponseWithErrorWithGeneralCommand() {
+    Transaction t = jedis.multi();
+    t.set("foo", "bar");
+    t.sendCommand(SET, "x", "1");
+    Response<Set<String>> error = t.smembers("foo");
+    Response<String> r = t.get("foo");
+    Response<Object> x = t.sendCommand(GET, "x");
+    t.sendCommand(INCR, "x");
+    List<Object> l = t.exec();
+    assertSame(JedisDataException.class, l.get(2).getClass());
+    try {
+      error.get();
+      fail("We expect exception here!");
+    } catch (JedisDataException e) {
+      // that is fine we should be here
+    }
+    assertEquals("bar", r.get());
+    assertEquals("1", SafeEncoder.encode((byte[]) x.get()));
+  }
 
   @Test
   public void unwatchWithinMulti() {

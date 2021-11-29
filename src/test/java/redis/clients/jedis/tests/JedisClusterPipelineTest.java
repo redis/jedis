@@ -1,5 +1,6 @@
 package redis.clients.jedis.tests;
 
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.hamcrest.CoreMatchers;
@@ -12,13 +13,13 @@ import org.junit.Test;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.args.ClusterResetType;
+import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.params.LPosParams;
-import redis.clients.jedis.params.SortingParams;
-import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -170,40 +171,40 @@ public class JedisClusterPipelineTest {
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
 
-    Response<Long> r1 = p.lpush("mylist{|}", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
-    Response<Long> r2 = p.lpos("mylist{|}", "foo");
-    Response<Long> r3 = p.lpos("mylist{|}", "foo", new LPosParams().maxlen(1));
-    Response<List<Long>> r4 = p.lpos("mylist{|}", "foo", new LPosParams().maxlen(1), 2);
-    Response<String> r5 = p.ltrim("mylist{|}", 2, 3); // ["hello", "hello"]
-    Response<Long> r6 = p.llen("mylist{|}");
-    Response<String> r7 = p.lindex("mylist{|}", -1);
-    Response<String> r8 = p.lset("mylist{|}", 1, "foobar"); // ["hello", "foobar"]
-    Response<Long> r9 = p.lrem("mylist{|}", 1, "hello"); // ["foobar"]
-    Response<List<String>> r10 = p.lrange("mylist{|}",0,10);
-    Response<List<String>> r11 = p.lpop("mylist{|}", 1); // ["foobar"]
-    Response<Long> r12 = p.rpush("mylist{|}", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
-    Response<String> r13 = p.rpop("mylist{|}"); // ["hello", "hello", "foo"]
-    Response<List<String>> r14 = p.rpop("mylist{|}", 2); // ["hello"]
-    Response<Long> r15 = p.linsert("mylist{|}", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
-    Response<Long> r16 = p.lpushx("myotherlist{|}", "foo", "bar");
-    Response<Long> r17 = p.rpushx("myotherlist{|}", "foo", "bar");
-    Response<String> r18 = p.rpoplpush("mylist{|}", "myotherlist{|}");
-    Response<String> r19 = p.lmove("mylist{|}", "myotherlist{|}", ListDirection.LEFT, ListDirection.RIGHT);
+    Response<Long> r1 = p.lpush("mylist", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
+    Response<Long> r2 = p.rpush("mynewlist{$}", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
+    Response<Long> r3 = p.lpos("mylist", "foo");
+    Response<Long> r4 = p.lpos("mylist", "foo", new LPosParams().maxlen(1));
+    Response<List<Long>> r5 = p.lpos("mylist", "foo", new LPosParams().maxlen(1), 2);
+    Response<String> r6 = p.ltrim("mylist", 2, 3); // ["hello", "hello"]
+    Response<Long> r7 = p.llen("mylist");
+    Response<String> r8 = p.lindex("mylist", -1);
+    Response<String> r9 = p.lset("mylist", 1, "foobar"); // ["hello", "foobar"]
+    Response<Long> r10 = p.lrem("mylist", 1, "hello"); // ["foobar"]
+    Response<List<String>> r11 = p.lrange("mylist",0,10);
+    Response<String> r12 = p.rpop("mynewlist{$}"); // ["hello", "hello", "foo"]
+    Response<List<String>> r13 = p.lpop("mylist", 1); // ["foobar"]
+    Response<List<String>> r14 = p.rpop("mynewlist{$}", 2); // ["hello"]
+    Response<Long> r15 = p.linsert("mynewlist{$}", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
+    Response<Long> r16 = p.lpushx("myotherlist{$}", "foo", "bar");
+    Response<Long> r17 = p.rpushx("myotherlist{$}", "foo", "bar");
+    Response<String> r18 = p.rpoplpush("mynewlist{$}", "myotherlist{$}");
+    Response<String> r19 = p.lmove("mynewlist{$}", "myotherlist{$}", ListDirection.LEFT, ListDirection.RIGHT);
 
     p.sync();
     Assert.assertEquals(Long.valueOf(4), r1.get());
-    Assert.assertEquals(Long.valueOf(0), r2.get());
+    Assert.assertEquals(Long.valueOf(4), r2.get());
     Assert.assertEquals(Long.valueOf(0), r3.get());
-    Assert.assertEquals(1, r4.get().size());
-    Assert.assertEquals("OK", r5.get());
-    Assert.assertEquals(Long.valueOf(2), r6.get());
-    Assert.assertEquals("hello", r7.get());
-    Assert.assertEquals("OK", r8.get());
-    Assert.assertEquals(Long.valueOf(1), r9.get());
-    Assert.assertEquals(vals, r10.get());
+    Assert.assertEquals(Long.valueOf(0), r4.get());
+    Assert.assertEquals(1, r5.get().size());
+    Assert.assertEquals("OK", r6.get());
+    Assert.assertEquals(Long.valueOf(2), r7.get());
+    Assert.assertEquals("hello", r8.get());
+    Assert.assertEquals("OK", r9.get());
+    Assert.assertEquals(Long.valueOf(1), r10.get());
     Assert.assertEquals(vals, r11.get());
-    Assert.assertEquals(Long.valueOf(4), r12.get());
-    Assert.assertEquals("foo", r13.get());
+    Assert.assertEquals("foo", r12.get());
+    Assert.assertEquals(vals, r13.get());
     Assert.assertEquals(2, r14.get().size());
     Assert.assertEquals(Long.valueOf(2), r15.get());
     Assert.assertEquals(Long.valueOf(0), r16.get());
@@ -249,7 +250,7 @@ public class JedisClusterPipelineTest {
     Response<Long> r15 = p.scard("myset{|}");
     Response<String> r16 = p.srandmember("myset{|}");
     Response<List<String>> r17 = p.srandmember("myset{|}", 2);
-    Response<Long> r18 = p.smove("myset{|}", "mynewset{|}", "bar");
+    Response<Long> r18 = p.smove("myset{|}", "mynewset{|}", "hello");
 
     p.sync();
     Assert.assertEquals(Long.valueOf(4), r1.get());
@@ -287,27 +288,27 @@ public class JedisClusterPipelineTest {
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
 
-    Response<Long> r1 = p.zadd("myset{|}", hm);
-    Response<Long> r2 = p.zrank("myset{|}", "a3");
-    Response<Long> r3 = p.zrevrank("myset{|}", "a3");
-    Response<Long> r4 = p.zrem("myset{|}", "a1");
-    Response<Long> r5 = p.zadd("myset{|}", 1d,"a1");
-    Response<Long> r6 = p.zadd("myset{|}", 2d,"a1", new ZAddParams().nx()); // Should not update
-    Response<Double> r7 = p.zaddIncr("myset{|}", 3d, "a4", new ZAddParams().xx()); // Should not update
-    Response<Set<String>> r8 = p.zrevrange("myset{|}", 0, 0);
-    Response<Set<Tuple>> r9 = p.zrevrangeWithScores("myset{|}", 0, 0);
-    Response<String> r10 = p.zrandmember("myset{|}");
-    Response<Set<String>> r11 = p.zrandmember("myset{|}",2);
-    Response<Set<Tuple>> r12 = p.zrandmemberWithScores("myset{|}",1);
-    Response<Double> r13 = p.zscore("myset{|}", "a1");
-    Response<List<Double>> r14 = p.zmscore("myset{|}", "a1", "a2");
-    Response<Tuple> r15 = p.zpopmax("myset{|}");
-    Response<Tuple> r16 = p.zpopmin("myset{|}");
-    Response<Long> r17 = p.zcount("myset{|}", 2,5);
-    Response<Long> r18 = p.zcount("myset{|}", "(2","5");
-    p.zadd("myset{|}", hm, new ZAddParams().nx()); // return the elements that were popped
-    Response<Set<Tuple>> r19 = p.zpopmax("myset{|}", 2);
-    Response<Set<Tuple>> r20 = p.zpopmin("myset{|}", 1);
+    Response<Long> r1 = p.zadd("myset", hm);
+    Response<Long> r2 = p.zrank("myset", "a3");
+    Response<Long> r3 = p.zrevrank("myset", "a3");
+    Response<Long> r4 = p.zrem("myset", "a1");
+    Response<Long> r5 = p.zadd("myset", 1d,"a1");
+    Response<Long> r6 = p.zadd("myotherset", 2d,"a1", new ZAddParams().nx());
+    Response<Double> r7 = p.zaddIncr("myset", 3d, "a4", new ZAddParams().xx()); // Should not update
+    Response<Set<String>> r8 = p.zrevrange("myset", 0, 0);
+    Response<Set<Tuple>> r9 = p.zrevrangeWithScores("myset", 0, 0);
+    Response<String> r10 = p.zrandmember("myset");
+    Response<Set<String>> r11 = p.zrandmember("myset",2);
+    Response<Set<Tuple>> r12 = p.zrandmemberWithScores("myset",1);
+    Response<Double> r13 = p.zscore("myset", "a1");
+    Response<List<Double>> r14 = p.zmscore("myset", "a1", "a2");
+    Response<Tuple> r15 = p.zpopmax("myset");
+    Response<Tuple> r16 = p.zpopmin("myset");
+    Response<Long> r17 = p.zcount("myotherset", 2,5);
+    Response<Long> r18 = p.zcount("myotherset", "(2","5");
+    p.zadd("myset", hm, new ZAddParams().nx()); // return the elements that were popped
+    Response<Set<Tuple>> r19 = p.zpopmax("myset", 2);
+    Response<Set<Tuple>> r20 = p.zpopmin("myset", 1);
 
     p.sync();
     Assert.assertEquals(Long.valueOf(3), r1.get());
@@ -315,7 +316,7 @@ public class JedisClusterPipelineTest {
     Assert.assertEquals(Long.valueOf(0), r3.get());
     Assert.assertEquals(Long.valueOf(1), r4.get());
     Assert.assertEquals(Long.valueOf(1), r5.get());
-    Assert.assertEquals(Long.valueOf(0), r6.get());
+    Assert.assertEquals(Long.valueOf(1), r6.get());
     Assert.assertNull(r7.get());
     Assert.assertTrue(r8.get().size() == 1 && r8.get().contains("a3"));
     Assert.assertTrue(r9.get().size() == 1 && r9.get().contains(max));
@@ -334,17 +335,19 @@ public class JedisClusterPipelineTest {
 
   @Test
   public void clusterPipelineHash() {
-    Map <String, String> hm = new HashMap<>();
+    Map<String, String> hm = new HashMap<>();
     hm.put("field2", "2");
     hm.put("field3", "5");
 
     Set<String> keys = new HashSet<>();
-    keys.add("field1");
     keys.add("field2");
 
     List<String> vals = new ArrayList<>();
-    vals.add("hello");
     vals.add("3.5");
+
+    List<String> vals2 = new ArrayList<>();
+    vals2.add("hello");
+    vals2.add(null);
 
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
@@ -352,19 +355,19 @@ public class JedisClusterPipelineTest {
     Response<Long> r1 = p.hset("myhash", "field1","hello");
     Response<Long> r2 = p.hsetnx("myhash", "field1","hello");
     Response<String> r3 = p.hget("myhash", "field1");
-    Response<Long> r4 = p.hset("myhash", hm);
-    Response<String> r5 = p.hmset("mymhash", hm);
-    p.hincrBy("myhash", "field2", 1);
-    Response<Double> r6 = p.hincrByFloat("myhash", "field2", 0.5);
+    Response<Long> r4 = p.hset("myotherhash", hm);
+    Response<String> r5 = p.hmset("mynewhash", hm);
+    p.hincrBy("mynewhash", "field2", 1);
+    Response<Double> r6 = p.hincrByFloat("mynewhash", "field2", 0.5);
     Response<Long> r7 = p.hlen("myhash");
-    Response<Long> r8 = p.hdel("myhash", "field3");
-    Response<Boolean> r9 = p.hexists("myhash", "field3");
-    Response<Set<String>> r10 = p.hkeys("myhash");
-    Response<List<String>> r11 = p.hvals("myhash");
+    Response<Long> r8 = p.hdel("mynewhash", "field3");
+    Response<Boolean> r9 = p.hexists("mynewhash", "field3");
+    Response<Set<String>> r10 = p.hkeys("mynewhash");
+    Response<List<String>> r11 = p.hvals("mynewhash");
     Response<List<String>> r12 = p.hmget("myhash", "field1", "field2");
-    Response<String> r13 = p.hrandfield("myhash");
-    Response<List<String>> r14 = p.hrandfield("myhash", 2);
-    Response<Map<String, String>> r15 = p.hrandfieldWithValues("myhash", 2);
+    Response<String> r13 = p.hrandfield("myotherhash");
+    Response<List<String>> r14 = p.hrandfield("myotherhash", 2);
+    Response<Map<String, String>> r15 = p.hrandfieldWithValues("myotherhash", 2);
     Response<Long> r16 = p.hstrlen("myhash", "field1");
 
     p.sync();
@@ -374,16 +377,81 @@ public class JedisClusterPipelineTest {
     Assert.assertEquals(Long.valueOf(2), r4.get());
     Assert.assertEquals("OK", r5.get());
     Assert.assertEquals(Double.valueOf(3.5), r6.get());
-    Assert.assertEquals(Long.valueOf(3), r7.get());
+    Assert.assertEquals(Long.valueOf(1), r7.get());
     Assert.assertEquals(Long.valueOf(1), r8.get());
     Assert.assertFalse(r9.get());
     Assert.assertEquals(keys, r10.get());
     Assert.assertEquals(vals, r11.get());
-    Assert.assertEquals(vals, r12.get());
-    Assert.assertTrue(keys.contains(r13.get()));
+    Assert.assertEquals(vals2, r12.get());
+    Assert.assertTrue(hm.keySet().contains(r13.get()));
     Assert.assertEquals(2, r14.get().size());
-    Assert.assertTrue(r15.get().containsKey("field1") && r15.get().containsValue("hello"));
+    Assert.assertTrue(r15.get().containsKey("field3") && r15.get().containsValue("5"));
     Assert.assertEquals(Long.valueOf(5), r16.get());
+  }
+
+  @Test
+  public void clusterPipelineGeo() {
+    Map<String, GeoCoordinate> hm = new HashMap<>();
+    hm.put("place1", new GeoCoordinate(2.1909389952632, 41.433791470673));
+    hm.put("place2", new GeoCoordinate(2.1873744593677, 41.406342043777));
+
+    List<GeoCoordinate> values = new ArrayList<>();
+    values.add(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
+    values.add(new GeoCoordinate(2.18737632036209106, 41.40634178640635099));
+
+    List<String> hashValue = new ArrayList<>();
+    hashValue.add("sp3e9yg3kd0");
+    hashValue.add("sp3e9cbc3t0");
+    hashValue.add(null);
+
+    GeoRadiusParam params = new GeoRadiusParam().withCoord().withHash().withDist();
+    GeoRadiusParam byMemebrParams = new GeoRadiusParam().count(1, true);
+    GeoRadiusStoreParam storeParams = new GeoRadiusStoreParam().store("radius{#}");
+    GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
+    expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
+    expectedResponse.setDistance(0.0881);
+    expectedResponse.setRawScore(3471609698139488L);
+
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
+    ClusterPipeline p = new ClusterPipeline(provider);
+
+    Response<Long> r1 = p.geoadd("barcelona", hm);
+    p.geoadd("barcelona{#}", hm);
+    Response<Double> r2 = p.geodist("barcelona", "place1", "place2");
+    Response<Double> r3 = p.geodist("barcelona", "place1", "place2", GeoUnit.KM);
+    Response<List<String>> r4 = p.geohash("barcelona", "place1", "place2", "place3");
+    Response<List<GeoCoordinate>> r5 = p.geopos("barcelona", "place1", "place2");
+    Response<List<GeoRadiusResponse>> r6 = p.georadius("barcelona",  2.191, 41.433, 1000, GeoUnit.M);
+    Response<List<GeoRadiusResponse>> r7 = p.georadiusReadonly("barcelona",  2.191, 41.433, 1000, GeoUnit.M);
+    Response<List<GeoRadiusResponse>> r8 = p.georadius("barcelona",  2.191, 41.433, 1, GeoUnit.KM, params);
+    Response<List<GeoRadiusResponse>> r9 = p.georadiusReadonly("barcelona",  2.191, 41.433, 1, GeoUnit.KM, params);
+    Response<Long> r10 = p.georadiusStore("barcelona{#}", 2.191, 41.433, 1000, GeoUnit.M, byMemebrParams, storeParams);
+    Response<Set<String>> r11 = p.zrange("radius{#}", 0, -1);
+    Response<List<GeoRadiusResponse>> r12 = p.georadiusByMember("barcelona", "place1", 4, GeoUnit.KM);
+    Response<List<GeoRadiusResponse>> r13 = p.georadiusByMemberReadonly("barcelona", "place1", 4, GeoUnit.KM);
+    Response<List<GeoRadiusResponse>> r14 = p.georadiusByMember("barcelona", "place1", 4, GeoUnit.KM, byMemebrParams);
+    Response<List<GeoRadiusResponse>> r15 = p.georadiusByMemberReadonly("barcelona", "place1", 4, GeoUnit.KM, byMemebrParams);
+    Response<Long> r16 = p.georadiusByMemberStore("barcelona{#}", "place1", 4, GeoUnit.KM, byMemebrParams, storeParams);
+    Response<Set<String>> r17 = p.zrange("radius{#}", 0, -1);
+
+    p.sync();
+    Assert.assertEquals(Long.valueOf(2), r1.get());
+    Assert.assertEquals(Double.valueOf(3067.4157), r2.get());
+    Assert.assertEquals(Double.valueOf(3.0674), r3.get());
+    Assert.assertEquals(hashValue, r4.get());
+    Assert.assertEquals(values, r5.get());
+    Assert.assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
+    Assert.assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
+    Assert.assertEquals(expectedResponse, r8.get().get(0));
+    Assert.assertEquals(expectedResponse, r9.get().get(0));
+    Assert.assertEquals(Long.valueOf(1), r10.get());
+    Assert.assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));
+    Assert.assertTrue(r12.get().size() == 2 && r12.get().get(0).getMemberByString().equals("place2"));
+    Assert.assertTrue(r13.get().size() == 2 && r13.get().get(0).getMemberByString().equals("place2"));
+    Assert.assertTrue(r14.get().size() == 1 && r14.get().get(0).getMemberByString().equals("place2"));
+    Assert.assertTrue(r15.get().size() == 1 && r15.get().get(0).getMemberByString().equals("place2"));
+    Assert.assertEquals(Long.valueOf(1), r16.get());
+    Assert.assertTrue(r17.get().size() == 1 && r17.get().contains("place2"));
   }
 
   @Test

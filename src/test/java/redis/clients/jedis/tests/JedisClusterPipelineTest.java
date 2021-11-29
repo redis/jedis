@@ -1,12 +1,6 @@
 package redis.clients.jedis.tests;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -19,6 +13,7 @@ import org.junit.Test;
 import redis.clients.jedis.*;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
@@ -130,6 +125,89 @@ public class JedisClusterPipelineTest {
     Assert.assertEquals("value1", r4.get());
     Assert.assertEquals("value2", r5.get());
     Assert.assertEquals("value3", r6.get());
+  }
+
+  @Test
+  public void clusterPipelineSort() {
+    List<String> sorted = new ArrayList<>();
+    sorted.add("1");
+    sorted.add("2");
+    sorted.add("3");
+    sorted.add("4");
+    sorted.add("5");
+
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
+    ClusterPipeline p = new ClusterPipeline(provider);
+
+    Response<Long> r1 = p.rpush("key1", "2","3","5","1","4");
+    Response<List<String>> r2 = p.sort("key1");
+    Response<Long> r3 = p.sort("key1", "key1");
+    Response<List<String>> r4 = p.lrange("key1", 0, 4);
+    Response<List<String>> r5 = p.sort("key1", new SortingParams().limit(0, 2));
+    Response<Long> r6 = p.sort("key1", new SortingParams().desc(), "key1");
+    Response<List<String>> r7 = p.lrange("key1", 0, 4);
+
+    p.sync();
+    Assert.assertEquals(Long.valueOf(5), r1.get());
+    Assert.assertEquals(sorted, r2.get());
+    Assert.assertEquals(Long.valueOf(5), r3.get());
+    Assert.assertEquals(sorted, r4.get());
+    Assert.assertEquals(2, r5.get().size());
+    Assert.assertEquals(Long.valueOf(5), r6.get());
+    Collections.reverse(sorted);
+    Assert.assertEquals(sorted, r7.get());
+  }
+
+  @Test
+  public void clusterPipelineHash() {
+    Map <String, String> hm = new HashMap<>();
+    hm.put("field2", "2");
+    hm.put("field3", "5");
+
+    Set<String> keys = new HashSet<>();
+    keys.add("field1");
+    keys.add("field2");
+
+    List<String> vals = new ArrayList<>();
+    vals.add("hello");
+    vals.add("3.5");
+
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
+    ClusterPipeline p = new ClusterPipeline(provider);
+
+    Response<Long> r1 = p.hset("myhash", "field1","hello");
+    Response<Long> r2 = p.hsetnx("myhash", "field1","hello");
+    Response<String> r3 = p.hget("myhash", "field1");
+    Response<Long> r4 = p.hset("myhash", hm);
+    Response<String> r5 = p.hmset("mymhash", hm);
+    p.hincrBy("myhash", "field2", 1);
+    Response<Double> r6 = p.hincrByFloat("myhash", "field2", 0.5);
+    Response<Long> r7 = p.hlen("myhash");
+    Response<Long> r8 = p.hdel("myhash", "field3");
+    Response<Boolean> r9 = p.hexists("myhash", "field3");
+    Response<Set<String>> r10 = p.hkeys("myhash");
+    Response<List<String>> r11 = p.hvals("myhash");
+    Response<String> r12 = p.hrandfield("myhash");
+    Response<List<String>> r13 = p.hrandfield("myhash", 2);
+    Response<Map<String, String>> r14 = p.hrandfieldWithValues("myhash", 2);
+    Response<Long> r15 = p.hstrlen("myhash", "field1");
+
+    p.sync();
+    Assert.assertEquals(Long.valueOf(1), r1.get());
+    Assert.assertEquals(Long.valueOf(0), r2.get());
+    Assert.assertEquals("hello", r3.get());
+    Assert.assertEquals(Long.valueOf(2), r4.get());
+    Assert.assertEquals("OK", r5.get());
+    Assert.assertEquals(Double.valueOf(3.5), r6.get());
+    Assert.assertEquals(Long.valueOf(3), r7.get());
+    Assert.assertEquals(Long.valueOf(1), r8.get());
+    Assert.assertFalse(r9.get());
+    Assert.assertEquals(keys, r10.get());
+    Assert.assertEquals(vals, r11.get());
+    Assert.assertTrue(keys.contains(r12.get()));
+    Assert.assertEquals(2, r13.get().size());
+    Assert.assertTrue(r14.get().containsKey("field1") && r14.get().containsValue("hello"));
+    Assert.assertEquals(Long.valueOf(5), r15.get());
   }
 
   @Test

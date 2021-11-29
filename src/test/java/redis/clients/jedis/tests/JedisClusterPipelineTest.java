@@ -12,7 +12,9 @@ import org.junit.Test;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.args.ClusterResetType;
+import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.Tuple;
@@ -157,6 +159,55 @@ public class JedisClusterPipelineTest {
     Collections.reverse(sorted);
     Assert.assertEquals(sorted, r7.get());
   }
+
+  @Test
+  public void clusterPipelineList() {
+    List<String> vals = new ArrayList<>();
+    vals.add("foobar");
+
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
+    ClusterPipeline p = new ClusterPipeline(provider);
+
+    Response<Long> r1 = p.lpush("mylist", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
+    Response<Long> r2 = p.lpos("mylist", "foo");
+    Response<Long> r3 = p.lpos("mylist", "foo", new LPosParams().maxlen(1));
+    Response<List<Long>> r4 = p.lpos("mylist", "foo", new LPosParams().maxlen(1), 2);
+    Response<String> r5 = p.ltrim("mylist", 2, 3); // ["hello", "hello"]
+    Response<Long> r6 = p.llen("mylist");
+    Response<String> r7 = p.lindex("mylist", -1);
+    Response<String> r8 = p.lset("mylist", 1, "foobar"); // ["hello", "foobar"]
+    Response<Long> r9 = p.lrem("mylist", 1, "hello"); // ["foobar"]
+    Response<List<String>> r10 = p.lrange("mylist",0,10);
+    Response<List<String>> r11 = p.lpop("mylist", 1); // ["foobar"]
+    Response<Long> r12 = p.rpush("mylist", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
+    Response<String> r13 = p.rpop("mylist"); // ["hello", "hello", "foo"]
+    Response<List<String>> r14 = p.rpop("mylist", 2); // ["hello"]
+    Response<Long> r15 = p.linsert("mylist", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
+    Response<Long> r16 = p.lpushx("myotherlist", "foo", "bar");
+    Response<Long> r17 = p.rpushx("myotherlist", "foo", "bar");
+    //Response<String> r18 = p.rpoplpush("mylist", "myotherlist");
+
+    p.sync();
+    Assert.assertEquals(Long.valueOf(4), r1.get());
+    Assert.assertEquals(Long.valueOf(0), r2.get());
+    Assert.assertEquals(Long.valueOf(0), r3.get());
+    Assert.assertEquals(1, r4.get().size());
+    Assert.assertEquals("OK", r5.get());
+    Assert.assertEquals(Long.valueOf(2), r6.get());
+    Assert.assertEquals("hello", r7.get());
+    Assert.assertEquals("OK", r8.get());
+    Assert.assertEquals(Long.valueOf(1), r9.get());
+    Assert.assertEquals(vals, r10.get());
+    Assert.assertEquals(vals, r11.get());
+    Assert.assertEquals(Long.valueOf(4), r12.get());
+    Assert.assertEquals("foo", r13.get());
+    Assert.assertEquals(2, r14.get().size());
+    Assert.assertEquals(Long.valueOf(2), r15.get());
+    Assert.assertEquals(Long.valueOf(0), r16.get());
+    Assert.assertEquals(Long.valueOf(0), r17.get());
+    //Assert.assertEquals("hello", r18.get());
+  }
+
 
   @Test
   public void clusterPipelineHash() {

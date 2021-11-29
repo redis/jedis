@@ -1,6 +1,5 @@
 package redis.clients.jedis.tests;
 
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.hamcrest.CoreMatchers;
@@ -399,14 +398,15 @@ public class JedisClusterPipelineTest {
     values.add(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
     values.add(new GeoCoordinate(2.18737632036209106, 41.40634178640635099));
 
-    List<String> hashValue = new ArrayList<>();
-    hashValue.add("sp3e9yg3kd0");
-    hashValue.add("sp3e9cbc3t0");
-    hashValue.add(null);
+    List<String> hashValues = new ArrayList<>();
+    hashValues.add("sp3e9yg3kd0");
+    hashValues.add("sp3e9cbc3t0");
+    hashValues.add(null);
 
     GeoRadiusParam params = new GeoRadiusParam().withCoord().withHash().withDist();
-    GeoRadiusParam byMemebrParams = new GeoRadiusParam().count(1, true);
+    GeoRadiusParam params2 = new GeoRadiusParam().count(1, true);
     GeoRadiusStoreParam storeParams = new GeoRadiusStoreParam().store("radius{#}");
+
     GeoRadiusResponse expectedResponse = new GeoRadiusResponse("place1".getBytes());
     expectedResponse.setCoordinate(new GeoCoordinate(2.19093829393386841, 41.43379028184083523));
     expectedResponse.setDistance(0.0881);
@@ -425,20 +425,20 @@ public class JedisClusterPipelineTest {
     Response<List<GeoRadiusResponse>> r7 = p.georadiusReadonly("barcelona",  2.191, 41.433, 1000, GeoUnit.M);
     Response<List<GeoRadiusResponse>> r8 = p.georadius("barcelona",  2.191, 41.433, 1, GeoUnit.KM, params);
     Response<List<GeoRadiusResponse>> r9 = p.georadiusReadonly("barcelona",  2.191, 41.433, 1, GeoUnit.KM, params);
-    Response<Long> r10 = p.georadiusStore("barcelona{#}", 2.191, 41.433, 1000, GeoUnit.M, byMemebrParams, storeParams);
+    Response<Long> r10 = p.georadiusStore("barcelona{#}", 2.191, 41.433, 1000, GeoUnit.M, params2, storeParams);
     Response<Set<String>> r11 = p.zrange("radius{#}", 0, -1);
     Response<List<GeoRadiusResponse>> r12 = p.georadiusByMember("barcelona", "place1", 4, GeoUnit.KM);
     Response<List<GeoRadiusResponse>> r13 = p.georadiusByMemberReadonly("barcelona", "place1", 4, GeoUnit.KM);
-    Response<List<GeoRadiusResponse>> r14 = p.georadiusByMember("barcelona", "place1", 4, GeoUnit.KM, byMemebrParams);
-    Response<List<GeoRadiusResponse>> r15 = p.georadiusByMemberReadonly("barcelona", "place1", 4, GeoUnit.KM, byMemebrParams);
-    Response<Long> r16 = p.georadiusByMemberStore("barcelona{#}", "place1", 4, GeoUnit.KM, byMemebrParams, storeParams);
+    Response<List<GeoRadiusResponse>> r14 = p.georadiusByMember("barcelona", "place1", 4, GeoUnit.KM, params2);
+    Response<List<GeoRadiusResponse>> r15 = p.georadiusByMemberReadonly("barcelona", "place1", 4, GeoUnit.KM, params2);
+    Response<Long> r16 = p.georadiusByMemberStore("barcelona{#}", "place1", 4, GeoUnit.KM, params2, storeParams);
     Response<Set<String>> r17 = p.zrange("radius{#}", 0, -1);
 
     p.sync();
     Assert.assertEquals(Long.valueOf(2), r1.get());
     Assert.assertEquals(Double.valueOf(3067.4157), r2.get());
     Assert.assertEquals(Double.valueOf(3.0674), r3.get());
-    Assert.assertEquals(hashValue, r4.get());
+    Assert.assertEquals(hashValues, r4.get());
     Assert.assertEquals(values, r5.get());
     Assert.assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
     Assert.assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
@@ -452,6 +452,25 @@ public class JedisClusterPipelineTest {
     Assert.assertTrue(r15.get().size() == 1 && r15.get().get(0).getMemberByString().equals("place2"));
     Assert.assertEquals(Long.valueOf(1), r16.get());
     Assert.assertTrue(r17.get().size() == 1 && r17.get().contains("place2"));
+  }
+
+  @Test
+  public void clusterPipelineHyperLogLog() {
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
+    ClusterPipeline p = new ClusterPipeline(provider);
+
+    Response<Long> r1 = p.pfadd("{hll}_1", "foo", "bar", "zap", "a");
+    Response<Long> r2 = p.pfadd("{hll}_2", "foo", "bar", "zap");
+    Response<Long> r3 = p.pfcount("{hll}_1", "{hll}_2");
+    Response<String> r4 = p.pfmerge("{hll}3","{hll}_1", "{hll}_2");
+    Response<Long> r5 = p.pfcount("{hll}3");
+
+    p.sync();
+    Assert.assertEquals(Long.valueOf(1), r1.get());
+    Assert.assertEquals(Long.valueOf(1), r2.get());
+    Assert.assertEquals(Long.valueOf(4), r3.get());
+    Assert.assertEquals("OK", r4.get());
+    Assert.assertEquals(Long.valueOf(4), r5.get());
   }
 
   @Test

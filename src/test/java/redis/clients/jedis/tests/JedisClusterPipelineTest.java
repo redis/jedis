@@ -169,25 +169,25 @@ public class JedisClusterPipelineTest {
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
 
-    Response<Long> r1 = p.lpush("mylist", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
-    Response<Long> r2 = p.lpos("mylist", "foo");
-    Response<Long> r3 = p.lpos("mylist", "foo", new LPosParams().maxlen(1));
-    Response<List<Long>> r4 = p.lpos("mylist", "foo", new LPosParams().maxlen(1), 2);
-    Response<String> r5 = p.ltrim("mylist", 2, 3); // ["hello", "hello"]
-    Response<Long> r6 = p.llen("mylist");
-    Response<String> r7 = p.lindex("mylist", -1);
-    Response<String> r8 = p.lset("mylist", 1, "foobar"); // ["hello", "foobar"]
-    Response<Long> r9 = p.lrem("mylist", 1, "hello"); // ["foobar"]
-    Response<List<String>> r10 = p.lrange("mylist",0,10);
-    Response<List<String>> r11 = p.lpop("mylist", 1); // ["foobar"]
-    Response<Long> r12 = p.rpush("mylist", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
-    Response<String> r13 = p.rpop("mylist"); // ["hello", "hello", "foo"]
-    Response<List<String>> r14 = p.rpop("mylist", 2); // ["hello"]
-    Response<Long> r15 = p.linsert("mylist", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
-    Response<Long> r16 = p.lpushx("myotherlist", "foo", "bar");
-    Response<Long> r17 = p.rpushx("myotherlist", "foo", "bar");
-    //Response<String> r18 = p.rpoplpush("mylist", "myotherlist");
-    //Response<String> r19 = p.lmove("mylist", "myotherlist", ListDirection.LEFT, ListDirection.RIGHT);
+    Response<Long> r1 = p.lpush("mylist{|}", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
+    Response<Long> r2 = p.lpos("mylist{|}", "foo");
+    Response<Long> r3 = p.lpos("mylist{|}", "foo", new LPosParams().maxlen(1));
+    Response<List<Long>> r4 = p.lpos("mylist{|}", "foo", new LPosParams().maxlen(1), 2);
+    Response<String> r5 = p.ltrim("mylist{|}", 2, 3); // ["hello", "hello"]
+    Response<Long> r6 = p.llen("mylist{|}");
+    Response<String> r7 = p.lindex("mylist{|}", -1);
+    Response<String> r8 = p.lset("mylist{|}", 1, "foobar"); // ["hello", "foobar"]
+    Response<Long> r9 = p.lrem("mylist{|}", 1, "hello"); // ["foobar"]
+    Response<List<String>> r10 = p.lrange("mylist{|}",0,10);
+    Response<List<String>> r11 = p.lpop("mylist{|}", 1); // ["foobar"]
+    Response<Long> r12 = p.rpush("mylist{|}", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
+    Response<String> r13 = p.rpop("mylist{|}"); // ["hello", "hello", "foo"]
+    Response<List<String>> r14 = p.rpop("mylist{|}", 2); // ["hello"]
+    Response<Long> r15 = p.linsert("mylist{|}", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
+    Response<Long> r16 = p.lpushx("myotherlist{|}", "foo", "bar");
+    Response<Long> r17 = p.rpushx("myotherlist{|}", "foo", "bar");
+    Response<String> r18 = p.rpoplpush("mylist{|}", "myotherlist{|}");
+    Response<String> r19 = p.lmove("mylist{|}", "myotherlist{|}", ListDirection.LEFT, ListDirection.RIGHT);
 
     p.sync();
     Assert.assertEquals(Long.valueOf(4), r1.get());
@@ -207,10 +207,70 @@ public class JedisClusterPipelineTest {
     Assert.assertEquals(Long.valueOf(2), r15.get());
     Assert.assertEquals(Long.valueOf(0), r16.get());
     Assert.assertEquals(Long.valueOf(0), r17.get());
-    //Assert.assertEquals("hello", r18.get());
-    //Assert.assertEquals("world", r19.get());
+    Assert.assertEquals("world", r18.get());
+    Assert.assertEquals("hello", r19.get());
   }
 
+  @Test
+  public void clusterPipelineSet() {
+    Set<String> diff = new HashSet<>();
+    diff.add("bar");
+    diff.add("foo");
+
+    Set<String> union = new HashSet<>();
+    union.add("hello");
+    union.add("world");
+    union.add("bar");
+    union.add("foo");
+
+    Set<String> inter = new HashSet<>();
+    inter.add("world");
+    inter.add("hello");
+
+
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
+    ClusterPipeline p = new ClusterPipeline(provider);
+
+    Response<Long> r1 = p.sadd("myset{|}", "hello", "hello", "world", "foo", "bar");
+    p.sadd("mynewset{|}", "hello", "hello", "world");
+    Response<Set<String>> r2 = p.sdiff("myset{|}", "mynewset{|}");
+    Response<Long> r3 = p.sdiffstore("diffset{|}","myset{|}", "mynewset{|}");
+    Response<Set<String>> r4 = p.smembers("diffset{|}");
+    Response<Set<String>> r5 = p.sinter("myset{|}", "mynewset{|}");
+    Response<Long> r6 = p.sinterstore("interset{|}","myset{|}", "mynewset{|}");
+    Response<Set<String>> r7 = p.smembers("interset{|}");
+    Response<Set<String>> r8 = p.sunion("myset{|}", "mynewset{|}");
+    Response<Long> r9 = p.sunionstore("unionset{|}","myset{|}", "mynewset{|}");
+    Response<Set<String>> r10 = p.smembers("unionset{|}");
+    Response<Boolean> r11 = p.sismember("myset{|}", "foo");
+    Response<List<Boolean>> r12 = p.smismember("myset{|}", "foo", "foobar");
+    Response<Long> r13 = p.srem("myset{|}", "foo");
+    Response<Set<String>> r14 = p.spop("myset{|}", 1);
+    Response<Long> r15 = p.scard("myset{|}");
+    Response<String> r16 = p.srandmember("myset{|}");
+    Response<List<String>> r17 = p.srandmember("myset{|}", 2);
+    Response<Long> r18 = p.smove("myset{|}", "mynewset{|}", "bar");
+
+    p.sync();
+    Assert.assertEquals(Long.valueOf(4), r1.get());
+    Assert.assertEquals(diff, r2.get());
+    Assert.assertEquals(Long.valueOf(diff.size()), r3.get());
+    Assert.assertEquals(diff, r4.get());
+    Assert.assertEquals(inter, r5.get());
+    Assert.assertEquals(Long.valueOf(inter.size()), r6.get());
+    Assert.assertEquals(inter, r7.get());
+    Assert.assertEquals(union, r8.get());
+    Assert.assertEquals(Long.valueOf(union.size()), r9.get());
+    Assert.assertEquals(union, r10.get());
+    Assert.assertTrue(r11.get());
+    Assert.assertTrue(r12.get().get(0) && !r12.get().get(1));
+    Assert.assertEquals(Long.valueOf(1), r13.get());
+    Assert.assertTrue(union.containsAll(r14.get()));
+    Assert.assertEquals(Long.valueOf(2), r15.get());
+    Assert.assertTrue(union.contains(r16.get()));
+    Assert.assertTrue(union.containsAll(r17.get()));
+    Assert.assertEquals(Long.valueOf(1), r18.get());
+  }
 
   @Test
   public void clusterPipelineHash() {

@@ -17,6 +17,7 @@ import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.params.SortingParams;
+import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.tests.utils.JedisClusterTestUtil;
@@ -227,7 +228,6 @@ public class JedisClusterPipelineTest {
     inter.add("world");
     inter.add("hello");
 
-
     ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
     ClusterPipeline p = new ClusterPipeline(provider);
 
@@ -273,6 +273,66 @@ public class JedisClusterPipelineTest {
   }
 
   @Test
+  public void clusterPipelineSortedSet() {
+    Map<String, Double> hm = new HashMap<>();
+    hm.put("a1", 1d);
+    hm.put("a2", 2d);
+    hm.put("a3", 3d);
+
+    Set<String> members = new HashSet<>(hm.keySet());
+
+    Tuple max = new Tuple("a3", 3d);
+    Tuple min = new Tuple("a1", 1d);
+
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
+    ClusterPipeline p = new ClusterPipeline(provider);
+
+    Response<Long> r1 = p.zadd("myset{|}", hm);
+    Response<Long> r2 = p.zrank("myset{|}", "a3");
+    Response<Long> r3 = p.zrevrank("myset{|}", "a3");
+    Response<Long> r4 = p.zrem("myset{|}", "a1");
+    Response<Long> r5 = p.zadd("myset{|}", 1d,"a1");
+    Response<Long> r6 = p.zadd("myset{|}", 2d,"a1", new ZAddParams().nx()); // Should not update
+    Response<Double> r7 = p.zaddIncr("myset{|}", 3d, "a4", new ZAddParams().xx()); // Should not update
+    Response<Set<String>> r8 = p.zrevrange("myset{|}", 0, 0);
+    Response<Set<Tuple>> r9 = p.zrevrangeWithScores("myset{|}", 0, 0);
+    Response<String> r10 = p.zrandmember("myset{|}");
+    Response<Set<String>> r11 = p.zrandmember("myset{|}",2);
+    Response<Set<Tuple>> r12 = p.zrandmemberWithScores("myset{|}",1);
+    Response<Double> r13 = p.zscore("myset{|}", "a1");
+    Response<List<Double>> r14 = p.zmscore("myset{|}", "a1", "a2");
+    Response<Tuple> r15 = p.zpopmax("myset{|}");
+    Response<Tuple> r16 = p.zpopmin("myset{|}");
+    Response<Long> r17 = p.zcount("myset{|}", 2,5);
+    Response<Long> r18 = p.zcount("myset{|}", "(2","5");
+    p.zadd("myset{|}", hm, new ZAddParams().nx()); // return the elements that were popped
+    Response<Set<Tuple>> r19 = p.zpopmax("myset{|}", 2);
+    Response<Set<Tuple>> r20 = p.zpopmin("myset{|}", 1);
+
+    p.sync();
+    Assert.assertEquals(Long.valueOf(3), r1.get());
+    Assert.assertEquals(Long.valueOf(2), r2.get());
+    Assert.assertEquals(Long.valueOf(0), r3.get());
+    Assert.assertEquals(Long.valueOf(1), r4.get());
+    Assert.assertEquals(Long.valueOf(1), r5.get());
+    Assert.assertEquals(Long.valueOf(0), r6.get());
+    Assert.assertNull(r7.get());
+    Assert.assertTrue(r8.get().size() == 1 && r8.get().contains("a3"));
+    Assert.assertTrue(r9.get().size() == 1 && r9.get().contains(max));
+    Assert.assertTrue(members.contains(r10.get()));
+    Assert.assertTrue(members.containsAll(r11.get()));
+    assertEquals(1, r12.get().size());
+    Assert.assertEquals(Double.valueOf(1), r13.get());
+    Assert.assertTrue(hm.values().containsAll(r14.get()));
+    Assert.assertEquals(max, r15.get());
+    Assert.assertEquals(min, r16.get());
+    Assert.assertEquals(Long.valueOf(1), r17.get());
+    Assert.assertEquals(Long.valueOf(0), r18.get());
+    Assert.assertTrue(r19.get().size() == 2 && r19.get().contains(max));
+    Assert.assertTrue(r20.get().size() == 1 && r20.get().contains(min));
+  }
+
+  @Test
   public void clusterPipelineHash() {
     Map <String, String> hm = new HashMap<>();
     hm.put("field2", "2");
@@ -301,10 +361,11 @@ public class JedisClusterPipelineTest {
     Response<Boolean> r9 = p.hexists("myhash", "field3");
     Response<Set<String>> r10 = p.hkeys("myhash");
     Response<List<String>> r11 = p.hvals("myhash");
-    Response<String> r12 = p.hrandfield("myhash");
-    Response<List<String>> r13 = p.hrandfield("myhash", 2);
-    Response<Map<String, String>> r14 = p.hrandfieldWithValues("myhash", 2);
-    Response<Long> r15 = p.hstrlen("myhash", "field1");
+    Response<List<String>> r12 = p.hmget("myhash", "field1", "field2");
+    Response<String> r13 = p.hrandfield("myhash");
+    Response<List<String>> r14 = p.hrandfield("myhash", 2);
+    Response<Map<String, String>> r15 = p.hrandfieldWithValues("myhash", 2);
+    Response<Long> r16 = p.hstrlen("myhash", "field1");
 
     p.sync();
     Assert.assertEquals(Long.valueOf(1), r1.get());
@@ -318,10 +379,11 @@ public class JedisClusterPipelineTest {
     Assert.assertFalse(r9.get());
     Assert.assertEquals(keys, r10.get());
     Assert.assertEquals(vals, r11.get());
-    Assert.assertTrue(keys.contains(r12.get()));
-    Assert.assertEquals(2, r13.get().size());
-    Assert.assertTrue(r14.get().containsKey("field1") && r14.get().containsValue("hello"));
-    Assert.assertEquals(Long.valueOf(5), r15.get());
+    Assert.assertEquals(vals, r12.get());
+    Assert.assertTrue(keys.contains(r13.get()));
+    Assert.assertEquals(2, r14.get().size());
+    Assert.assertTrue(r15.get().containsKey("field1") && r15.get().containsValue("hello"));
+    Assert.assertEquals(Long.valueOf(5), r16.get());
   }
 
   @Test

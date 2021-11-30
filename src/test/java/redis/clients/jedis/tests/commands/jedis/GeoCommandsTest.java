@@ -1,9 +1,10 @@
 package redis.clients.jedis.tests.commands.jedis;
 
+import java.util.ArrayList;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -207,7 +208,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
       GeoRadiusParam.geoRadiusParam(),
       GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<>();
+    List<String> expected = new ArrayList<>();
     expected.add("Palermo");
     expected.add("Catania");
     assertEquals(expected, jedis.zrange("SicilyStore", 0, -1));
@@ -291,10 +292,10 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
       GeoRadiusParam.geoRadiusParam(),
       GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<byte[]> bexpected = new LinkedHashSet<>();
+    List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
-    assertByteArraySetEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
+    assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
   }
 
   @Test
@@ -367,7 +368,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
       GeoRadiusParam.geoRadiusParam(),
       GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<>();
+    List<String> expected = new ArrayList<>();
     expected.add("Agrigento");
     expected.add("Palermo");
     assertEquals(expected, jedis.zrange("SicilyStore", 0, -1));
@@ -435,10 +436,10 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, jedis.georadiusByMemberStore(bfoo, bA, 100, GeoUnit.KM,
         GeoRadiusParam.geoRadiusParam(),
         GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore")));
-    Set<byte[]> bexpected = new LinkedHashSet<>();
+    List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
-    assertByteArraySetEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
+    assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
   }
 
   @Test

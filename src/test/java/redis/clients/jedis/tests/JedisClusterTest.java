@@ -8,11 +8,10 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
-import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArrayListEquals;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -920,7 +919,7 @@ public class JedisClusterTest {
         GeoRadiusParam.geoRadiusParam(),
         GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
       assertEquals(2, size);
-      Set<String> expected = new LinkedHashSet<String>();
+      List<String> expected = new ArrayList<String>();
       expected.add("Palermo");
       expected.add("Catania");
       assertEquals(expected, cluster.zrange("{Sicily}Store", 0, -1));
@@ -947,10 +946,10 @@ public class JedisClusterTest {
         GeoRadiusParam.geoRadiusParam(),
         GeoRadiusStoreParam.geoRadiusStoreParam().store("{Sicily}Store"));
       assertEquals(2, size);
-      Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+      List<byte[]> bexpected = new ArrayList<byte[]>();
       bexpected.add("Palermo".getBytes());
-      bexpected.add("Palermo".getBytes());
-      assertByteArraySetEquals(bexpected, cluster.zrange("{Sicily}Store".getBytes(), 0, -1));
+      bexpected.add("Catania".getBytes());
+      assertByteArrayListEquals(bexpected, cluster.zrange("{Sicily}Store".getBytes(), 0, -1));
     }
   }
 

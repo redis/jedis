@@ -64,7 +64,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     Response<String> string = p.get("string");
     Response<String> list = p.lpop("list");
     Response<String> hash = p.hget("hash", "foo");
-    Response<Set<String>> zset = p.zrange("zset", 0, -1);
+    Response<List<String>> zset = p.zrange("zset", 0, -1);
     Response<String> set = p.spop("set");
     Response<Boolean> blist = p.exists("list");
     Response<Double> zincrby = p.zincrby("zset", 1, "foo");
@@ -74,7 +74,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     Response<Map<String, String>> hgetAll = p.hgetAll("hash");
     p.sadd("set", "foo");
     Response<Set<String>> smembers = p.smembers("set");
-    Response<Set<Tuple>> zrangeWithScores = p.zrangeWithScores("zset", 0, -1);
+    Response<List<Tuple>> zrangeWithScores = p.zrangeWithScores("zset", 0, -1);
     Response<String> getrange = p.getrange("setrange", 1, 3);
     Response<byte[]> getrangeBytes = p.getrange("setrangebytes".getBytes(), 6, 8);
     p.sync();

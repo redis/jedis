@@ -1195,24 +1195,24 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Set<String>> zrandmember(String key, long count) {
-    return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key).add(count), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrandmember(String key, long count) {
+    return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrandmemberWithScores(String key, long count) {
-    return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  public final CommandObject<List<Tuple>> zrandmemberWithScores(String key, long count) {
+    return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<byte[]> zrandmember(byte[] key) {
     return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key), BuilderFactory.BINARY);
   }
 
-  public final CommandObject<Set<byte[]>> zrandmember(byte[] key, long count) {
-    return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key).add(count), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrandmember(byte[] key, long count) {
+    return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrandmemberWithScores(byte[] key, long count) {
-    return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  public final CommandObject<List<Tuple>> zrandmemberWithScores(byte[] key, long count) {
+    return new CommandObject<>(commandArguments(ZRANDMEMBER).key(key).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<Long> zcard(String key) {
@@ -1243,32 +1243,32 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(ZPOPMAX).key(key), BuilderFactory.TUPLE);
   }
 
-  public final CommandObject<Set<Tuple>> zpopmax(String key, int count) {
-    return new CommandObject<>(commandArguments(ZPOPMAX).key(key).add(count), BuilderFactory.TUPLE_ZSET);
+  public final CommandObject<List<Tuple>> zpopmax(String key, int count) {
+    return new CommandObject<>(commandArguments(ZPOPMAX).key(key).add(count), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<Tuple> zpopmin(String key) {
     return new CommandObject<>(commandArguments(ZPOPMIN).key(key), BuilderFactory.TUPLE);
   }
 
-  public final CommandObject<Set<Tuple>> zpopmin(String key, int count) {
-    return new CommandObject<>(commandArguments(ZPOPMIN).key(key).add(count), BuilderFactory.TUPLE_ZSET);
+  public final CommandObject<List<Tuple>> zpopmin(String key, int count) {
+    return new CommandObject<>(commandArguments(ZPOPMIN).key(key).add(count), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<Tuple> zpopmax(byte[] key) {
     return new CommandObject<>(commandArguments(ZPOPMAX).key(key), BuilderFactory.TUPLE);
   }
 
-  public final CommandObject<Set<Tuple>> zpopmax(byte[] key, int count) {
-    return new CommandObject<>(commandArguments(ZPOPMAX).key(key).add(count), BuilderFactory.TUPLE_ZSET);
+  public final CommandObject<List<Tuple>> zpopmax(byte[] key, int count) {
+    return new CommandObject<>(commandArguments(ZPOPMAX).key(key).add(count), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<Tuple> zpopmin(byte[] key) {
     return new CommandObject<>(commandArguments(ZPOPMIN).key(key), BuilderFactory.TUPLE);
   }
 
-  public final CommandObject<Set<Tuple>> zpopmin(byte[] key, int count) {
-    return new CommandObject<>(commandArguments(ZPOPMIN).key(key).add(count), BuilderFactory.TUPLE_ZSET);
+  public final CommandObject<List<Tuple>> zpopmin(byte[] key, int count) {
+    return new CommandObject<>(commandArguments(ZPOPMIN).key(key).add(count), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
@@ -1303,192 +1303,192 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<String>> zrange(String key, long start, long stop) {
-    return new CommandObject<>(commandArguments(ZRANGE).key(key).add(start).add(stop), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrange(String key, long start, long stop) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).add(start).add(stop), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrevrange(String key, long start, long stop) {
-    return new CommandObject<>(commandArguments(ZREVRANGE).key(key).add(start).add(stop), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrevrange(String key, long start, long stop) {
+    return new CommandObject<>(commandArguments(ZREVRANGE).key(key).add(start).add(stop), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeWithScores(String key, long start, long stop) {
+  public final CommandObject<List<Tuple>> zrangeWithScores(String key, long start, long stop) {
     return new CommandObject<>(commandArguments(ZRANGE).key(key)
-        .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeWithScores(String key, long start, long stop) {
+  public final CommandObject<List<Tuple>> zrevrangeWithScores(String key, long start, long stop) {
     return new CommandObject<>(commandArguments(ZREVRANGE).key(key)
-        .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<String>> zrangeByScore(String key, double min, double max) {
-    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrangeByScore(String key, double min, double max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrangeByScore(String key, String min, String max) {
-    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrangeByScore(String key, String min, String max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrevrangeByScore(String key, double max, double min) {
-    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrevrangeByScore(String key, double max, double min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrevrangeByScore(String key, String max, String min) {
-    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrevrangeByScore(String key, String max, String min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrangeByScore(String key, double min, double max, int offset, int count) {
+  public final CommandObject<List<String>> zrangeByScore(String key, double min, double max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrangeByScore(String key, String min, String max, int offset, int count) {
+  public final CommandObject<List<String>> zrangeByScore(String key, String min, String max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count) {
+  public final CommandObject<List<String>> zrevrangeByScore(String key, double max, double min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrevrangeByScore(String key, String max, String min, int offset, int count) {
+  public final CommandObject<List<String>> zrevrangeByScore(String key, String max, String min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {
+  public final CommandObject<List<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max) {
+  public final CommandObject<List<Tuple>> zrangeByScoreWithScores(String key, String min, String max) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
+  public final CommandObject<List<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min) {
+  public final CommandObject<List<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
+  public final CommandObject<List<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
+  public final CommandObject<List<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
+  public final CommandObject<List<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
+  public final CommandObject<List<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrange(byte[] key, long start, long stop) {
-    return new CommandObject<>(commandArguments(ZRANGE).key(key).add(start).add(stop), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrange(byte[] key, long start, long stop) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).add(start).add(stop), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrevrange(byte[] key, long start, long stop) {
-    return new CommandObject<>(commandArguments(ZREVRANGE).key(key).add(start).add(stop), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrevrange(byte[] key, long start, long stop) {
+    return new CommandObject<>(commandArguments(ZREVRANGE).key(key).add(start).add(stop), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeWithScores(byte[] key, long start, long stop) {
+  public final CommandObject<List<Tuple>> zrangeWithScores(byte[] key, long start, long stop) {
     return new CommandObject<>(commandArguments(ZRANGE).key(key)
-        .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
+  public final CommandObject<List<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
     return new CommandObject<>(commandArguments(ZREVRANGE).key(key)
-        .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, double min, double max) {
-    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrangeByScore(byte[] key, double min, double max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
-    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
-    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
-    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
+  public final CommandObject<List<byte[]>> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public final CommandObject<List<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
+  public final CommandObject<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public final CommandObject<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max) {
+  public final CommandObject<List<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
+  public final CommandObject<List<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
+  public final CommandObject<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
+  public final CommandObject<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
+  public final CommandObject<List<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public final CommandObject<List<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
+  public final CommandObject<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
-  public final CommandObject<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public final CommandObject<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+        .add(LIMIT).add(offset).add(count).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<Long> zremrangeByRank(String key, long start, long stop) {
@@ -1519,22 +1519,22 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(ZLEXCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<String>> zrangeByLex(String key, String min, String max) {
-    return new CommandObject<>(commandArguments(ZRANGEBYLEX).key(key).add(min).add(max), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrangeByLex(String key, String min, String max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYLEX).key(key).add(min).add(max), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count) {
+  public final CommandObject<List<String>> zrangeByLex(String key, String min, String max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYLEX).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrevrangeByLex(String key, String max, String min) {
-    return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).key(key).add(max).add(min), BuilderFactory.STRING_SET);
+  public final CommandObject<List<String>> zrevrangeByLex(String key, String max, String min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).key(key).add(max).add(min), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count) {
+  public final CommandObject<List<String>> zrevrangeByLex(String key, String max, String min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<Long> zremrangeByLex(String key, String min, String max) {
@@ -1545,22 +1545,22 @@ public class RedisCommandObjects {
     return new CommandObject<>(commandArguments(ZLEXCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max) {
-    return new CommandObject<>(commandArguments(ZRANGEBYLEX).key(key).add(min).add(max), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max) {
+    return new CommandObject<>(commandArguments(ZRANGEBYLEX).key(key).add(min).add(max), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public final CommandObject<List<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return new CommandObject<>(commandArguments(ZRANGEBYLEX).key(key).add(min).add(max)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-    return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).key(key).add(max).add(min), BuilderFactory.BINARY_SET);
+  public final CommandObject<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
+    return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).key(key).add(max).add(min), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public final CommandObject<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return new CommandObject<>(commandArguments(ZREVRANGEBYLEX).key(key).add(max).add(min)
-        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_SET);
+        .add(LIMIT).add(offset).add(count), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max) {

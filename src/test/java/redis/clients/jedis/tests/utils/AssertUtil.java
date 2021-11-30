@@ -36,7 +36,7 @@ public class AssertUtil {
     while (e.hasNext()) {
       byte[] next = e.next();
       boolean contained = false;
-      for (byte[] element : expected) {
+      for (byte[] element : actual) {
         if (Arrays.equals(next, element)) {
           contained = true;
           break;

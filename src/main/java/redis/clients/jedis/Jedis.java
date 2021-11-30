@@ -7,9 +7,6 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.net.URI;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1942,7 +1939,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<byte[]> zrange(final byte[] key, final long start, final long stop) {
+  public List<byte[]> zrange(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrange(key, start, stop));
   }
@@ -2040,19 +2037,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<byte[]> zrevrange(final byte[] key, final long start, final long stop) {
+  public List<byte[]> zrevrange(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrange(key, start, stop));
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(final byte[] key, final long start, final long stop) {
+  public List<Tuple> zrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
+  public List<Tuple> zrevrangeWithScores(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
@@ -2064,13 +2061,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<byte[]> zrandmember(final byte[] key, final long count) {
+  public List<byte[]> zrandmember(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrandmember(key, count));
   }
 
   @Override
-  public Set<Tuple> zrandmemberWithScores(final byte[] key, final long count) {
+  public List<Tuple> zrandmemberWithScores(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrandmemberWithScores(key, count));
   }
@@ -2127,7 +2124,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<Tuple> zpopmax(final byte[] key, final int count) {
+  public List<Tuple> zpopmax(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zpopmax(key, count));
   }
@@ -2139,7 +2136,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<Tuple> zpopmin(final byte[] key, final int count) {
+  public List<Tuple> zpopmin(final byte[] key, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zpopmin(key, count));
   }
@@ -2584,13 +2581,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
-  public Set<byte[]> zrangeByScore(final byte[] key, final double min, final double max) {
+  public List<byte[]> zrangeByScore(final byte[] key, final double min, final double max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
+  public List<byte[]> zrangeByScore(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
@@ -2645,14 +2642,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
-  public Set<byte[]> zrangeByScore(final byte[] key, final double min, final double max,
+  public List<byte[]> zrangeByScore(final byte[] key, final double min, final double max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Set<byte[]> zrangeByScore(final byte[] key, final byte[] min, final byte[] max,
+  public List<byte[]> zrangeByScore(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
@@ -2706,13 +2703,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
+  public List<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
+  public List<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
@@ -2767,83 +2764,66 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max,
+  public List<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max,
+  public List<Tuple> zrangeByScoreWithScores(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
-  protected Set<Tuple> getTupledSet() {
-    List<byte[]> membersWithScores = connection.getBinaryMultiBulkReply();
-    // If response from Redis nil, we should return null.
-    if (membersWithScores == null) {
-      return null;
-    }
-    if (membersWithScores.isEmpty()) {
-      return Collections.emptySet();
-    }
-    Set<Tuple> set = new LinkedHashSet<>(membersWithScores.size() / 2, 1.0f);
-    Iterator<byte[]> iterator = membersWithScores.iterator();
-    while (iterator.hasNext()) {
-      set.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
-    }
-    return set;
-  }
-
   @Override
-  public Set<byte[]> zrevrangeByScore(final byte[] key, final double max, final double min) {
+  public List<byte[]> zrevrangeByScore(final byte[] key, final double max, final double min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min) {
+  public List<byte[]> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(final byte[] key, final double max, final double min,
+  public List<byte[]> zrevrangeByScore(final byte[] key, final double max, final double min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min,
+  public List<byte[]> zrevrangeByScore(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
+  public List<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max, final double min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max,
+  public List<Tuple> zrevrangeByScoreWithScores(final byte[] key, final double max,
       final double min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
+  public List<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
+  public List<Tuple> zrevrangeByScoreWithScores(final byte[] key, final byte[] max,
       final byte[] min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
@@ -3074,26 +3054,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
+  public List<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
-  public Set<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
+  public List<byte[]> zrangeByLex(final byte[] key, final byte[] min, final byte[] max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
+  public List<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
+  public List<byte[]> zrevrangeByLex(final byte[] key, final byte[] max, final byte[] min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
@@ -5995,7 +5975,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<String> zrange(final String key, final long start, final long stop) {
+  public List<String> zrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrange(key, start, stop));
   }
@@ -6093,19 +6073,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<String> zrevrange(final String key, final long start, final long stop) {
+  public List<String> zrevrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrange(key, start, stop));
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(final String key, final long start, final long stop) {
+  public List<Tuple> zrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
+  public List<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
@@ -6117,13 +6097,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<String> zrandmember(final String key, final long count) {
+  public List<String> zrandmember(final String key, final long count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrandmember(key, count));
   }
 
   @Override
-  public Set<Tuple> zrandmemberWithScores(final String key, final long count) {
+  public List<Tuple> zrandmemberWithScores(final String key, final long count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrandmemberWithScores(key, count));
   }
@@ -6180,7 +6160,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<Tuple> zpopmax(final String key, final int count) {
+  public List<Tuple> zpopmax(final String key, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zpopmax(key, count));
   }
@@ -6192,7 +6172,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<Tuple> zpopmin(final String key, final int count) {
+  public List<Tuple> zpopmin(final String key, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zpopmin(key, count));
   }
@@ -6599,13 +6579,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
-  public Set<String> zrangeByScore(final String key, final double min, final double max) {
+  public List<String> zrangeByScore(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Set<String> zrangeByScore(final String key, final String min, final String max) {
+  public List<String> zrangeByScore(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
@@ -6660,14 +6640,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
-  public Set<String> zrangeByScore(final String key, final double min, final double max,
+  public List<String> zrangeByScore(final String key, final double min, final double max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Set<String> zrangeByScore(final String key, final String min, final String max,
+  public List<String> zrangeByScore(final String key, final String min, final String max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
@@ -6721,13 +6701,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
+  public List<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max) {
+  public List<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
@@ -6782,67 +6762,67 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Multi bulk reply specifically a list of elements in the specified score range.
    */
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max,
+  public List<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max,
+  public List<Tuple> zrangeByScoreWithScores(final String key, final String min, final String max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Set<String> zrevrangeByScore(final String key, final double max, final double min) {
+  public List<String> zrevrangeByScore(final String key, final double max, final double min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Set<String> zrevrangeByScore(final String key, final String max, final String min) {
+  public List<String> zrevrangeByScore(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Set<String> zrevrangeByScore(final String key, final double max, final double min,
+  public List<String> zrevrangeByScore(final String key, final double max, final double min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
+  public List<Tuple> zrevrangeByScoreWithScores(final String key, final double max, final double min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
+  public List<Tuple> zrevrangeByScoreWithScores(final String key, final double max,
       final double min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
+  public List<Tuple> zrevrangeByScoreWithScores(final String key, final String max,
       final String min, final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
-  public Set<String> zrevrangeByScore(final String key, final String max, final String min,
+  public List<String> zrevrangeByScore(final String key, final String max, final String min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
+  public List<Tuple> zrevrangeByScoreWithScores(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
@@ -7097,26 +7077,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<String> zrangeByLex(final String key, final String min, final String max) {
+  public List<String> zrangeByLex(final String key, final String min, final String max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
-  public Set<String> zrangeByLex(final String key, final String min, final String max,
+  public List<String> zrangeByLex(final String key, final String min, final String max,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
-  public Set<String> zrevrangeByLex(final String key, final String max, final String min) {
+  public List<String> zrevrangeByLex(final String key, final String max, final String min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
-  public Set<String> zrevrangeByLex(final String key, final String max, final String min,
+  public List<String> zrevrangeByLex(final String key, final String max, final String min,
       final int offset, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));

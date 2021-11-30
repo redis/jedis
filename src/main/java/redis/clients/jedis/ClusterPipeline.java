@@ -783,22 +783,22 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<String>> zrange(String key, long start, long stop) {
+  public Response<List<String>> zrange(String key, long start, long stop) {
     return appendCommand(commandObjects.zrange(key, start, stop));
   }
 
   @Override
-  public Response<Set<String>> zrevrange(String key, long start, long stop) {
+  public Response<List<String>> zrevrange(String key, long start, long stop) {
     return appendCommand(commandObjects.zrevrange(key, start, stop));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeWithScores(String key, long start, long stop) {
+  public Response<List<Tuple>> zrangeWithScores(String key, long start, long stop) {
     return appendCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeWithScores(String key, long start, long stop) {
+  public Response<List<Tuple>> zrevrangeWithScores(String key, long start, long stop) {
     return appendCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
 
@@ -808,12 +808,12 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<String>> zrandmember(String key, long count) {
+  public Response<List<String>> zrandmember(String key, long count) {
     return appendCommand(commandObjects.zrandmember(key, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrandmemberWithScores(String key, long count) {
+  public Response<List<Tuple>> zrandmemberWithScores(String key, long count) {
     return appendCommand(commandObjects.zrandmemberWithScores(key, count));
   }
 
@@ -838,7 +838,7 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<Tuple>> zpopmax(String key, int count) {
+  public Response<List<Tuple>> zpopmax(String key, int count) {
     return appendCommand(commandObjects.zpopmax(key, count));
   }
 
@@ -848,7 +848,7 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<Tuple>> zpopmin(String key, int count) {
+  public Response<List<Tuple>> zpopmin(String key, int count) {
     return appendCommand(commandObjects.zpopmin(key, count));
   }
 
@@ -863,83 +863,83 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<String>> zrangeByScore(String key, double min, double max) {
+  public Response<List<String>> zrangeByScore(String key, double min, double max) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Response<Set<String>> zrangeByScore(String key, String min, String max) {
+  public Response<List<String>> zrangeByScore(String key, String min, String max) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByScore(String key, double max, double min) {
+  public Response<List<String>> zrevrangeByScore(String key, double max, double min) {
     return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
 
   }
 
   @Override
-  public Response<Set<String>> zrangeByScore(String key, double min, double max, int offset, int count) {
+  public Response<List<String>> zrangeByScore(String key, double min, double max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByScore(String key, String max, String min) {
+  public Response<List<String>> zrevrangeByScore(String key, String max, String min) {
     return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Response<Set<String>> zrangeByScore(String key, String min, String max, int offset, int count) {
+  public Response<List<String>> zrangeByScore(String key, String min, String max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count) {
+  public Response<List<String>> zrevrangeByScore(String key, double max, double min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {
+  public Response<List<Tuple>> zrangeByScoreWithScores(String key, double min, double max) {
     return appendCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
+  public Response<List<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
+  public Response<List<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByScore(String key, String max, String min, int offset, int count) {
+  public Response<List<String>> zrevrangeByScore(String key, String max, String min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max) {
+  public Response<List<Tuple>> zrangeByScoreWithScores(String key, String min, String max) {
     return appendCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min) {
+  public Response<List<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
+  public Response<List<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
+  public Response<List<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
+  public Response<List<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
@@ -964,22 +964,22 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<String>> zrangeByLex(String key, String min, String max) {
+  public Response<List<String>> zrangeByLex(String key, String min, String max) {
     return appendCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
-  public Response<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count) {
+  public Response<List<String>> zrangeByLex(String key, String min, String max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByLex(String key, String max, String min) {
+  public Response<List<String>> zrevrangeByLex(String key, String max, String min) {
     return appendCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
-  public Response<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count) {
+  public Response<List<String>> zrevrangeByLex(String key, String max, String min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
   }
 
@@ -2124,22 +2124,22 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<byte[]>> zrange(byte[] key, long start, long stop) {
+  public Response<List<byte[]>> zrange(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrange(key, start, stop));
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrange(byte[] key, long start, long stop) {
+  public Response<List<byte[]>> zrevrange(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrevrange(key, start, stop));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeWithScores(byte[] key, long start, long stop) {
+  public Response<List<Tuple>> zrangeWithScores(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
+  public Response<List<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
 
@@ -2149,12 +2149,12 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<byte[]>> zrandmember(byte[] key, long count) {
+  public Response<List<byte[]>> zrandmember(byte[] key, long count) {
     return appendCommand(commandObjects.zrandmember(key, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrandmemberWithScores(byte[] key, long count) {
+  public Response<List<Tuple>> zrandmemberWithScores(byte[] key, long count) {
     return appendCommand(commandObjects.zrandmemberWithScores(key, count));
   }
 
@@ -2179,7 +2179,7 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<Tuple>> zpopmax(byte[] key, int count) {
+  public Response<List<Tuple>> zpopmax(byte[] key, int count) {
     return appendCommand(commandObjects.zpopmax(key, count));
   }
 
@@ -2189,7 +2189,7 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<Tuple>> zpopmin(byte[] key, int count) {
+  public Response<List<Tuple>> zpopmin(byte[] key, int count) {
     return appendCommand(commandObjects.zpopmin(key, count));
   }
 
@@ -2204,82 +2204,82 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<byte[]>> zrangeByScore(byte[] key, double min, double max) {
+  public Response<List<byte[]>> zrangeByScore(byte[] key, double min, double max) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
+  public Response<List<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
+  public Response<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
     return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
   }
 
   @Override
-  public Response<Set<byte[]>> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
+  public Response<List<byte[]>> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+  public Response<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
     return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
   }
 
   @Override
-  public Response<Set<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public Response<List<byte[]>> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
+  public Response<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max) {
+  public Response<List<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max) {
     return appendCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
+  public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
+  public Response<List<Tuple>> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public Response<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
+  public Response<List<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
     return appendCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
+  public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Response<Set<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public Response<List<Tuple>> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
+  public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
   }
 
@@ -2304,22 +2304,22 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
   }
 
   @Override
-  public Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max) {
+  public Response<List<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max) {
     return appendCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
-  public Response<Set<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public Response<List<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return appendCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
+  public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
     return appendCommand(commandObjects.zrevrangeByLex(key, min, max));
   }
 
   @Override
-  public Response<Set<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByLex(key, min, max, offset, count));
   }
 

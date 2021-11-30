@@ -1,9 +1,11 @@
 package redis.clients.jedis.tests.commands.unified.cluster;
 
+import java.util.ArrayList;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -70,10 +72,9 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
     assertEquals(2, jedis.zunionstore("{:}dst", "{:}foo", "{:}bar"));
 
-    Set<Tuple> expected = new LinkedHashSet<>();
-    expected.add(new Tuple("b", new Double(4)));
+    List<Tuple> expected = new ArrayList<>();
     expected.add(new Tuple("a", new Double(3)));
-
+    expected.add(new Tuple("b", new Double(4)));
     assertEquals(expected, jedis.zrangeWithScores("{:}dst", 0, 100));
   }
 
@@ -91,10 +92,9 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
     assertEquals(2, jedis.zunionstore("{:}dst", params, "{:}foo", "{:}bar"));
 
-    Set<Tuple> expected = new LinkedHashSet<>();
-    expected.add(new Tuple("b", new Double(9)));
+    List<Tuple> expected = new ArrayList<>();
     expected.add(new Tuple("a", new Double(7)));
-
+    expected.add(new Tuple("b", new Double(9)));
     assertEquals(expected, jedis.zrangeWithScores("{:}dst", 0, 100));
   }
 
@@ -123,10 +123,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
     assertEquals(1, jedis.zinterstore("dst{:}", "foo{:}", "bar{:}"));
 
-    Set<Tuple> expected = new LinkedHashSet<>();
-    expected.add(new Tuple("a", new Double(3)));
-
-    assertEquals(expected, jedis.zrangeWithScores("dst{:}", 0, 100));
+    assertEquals(Collections.singletonList(new Tuple("a", new Double(3))),
+        jedis.zrangeWithScores("dst{:}", 0, 100));
   }
 
   @Test
@@ -142,10 +140,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
     assertEquals(1, jedis.zinterstore("dst{:}", params, "foo{:}", "bar{:}"));
 
-    Set<Tuple> expected = new LinkedHashSet<>();
-    expected.add(new Tuple("a", new Double(7)));
-
-    assertEquals(expected, jedis.zrangeWithScores("dst{:}", 0, 100));
+    assertEquals(Collections.singletonList(new Tuple("a", new Double(7))),
+        jedis.zrangeWithScores("dst{:}", 0, 100));
   }
 
   @Test
@@ -187,7 +183,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
     assertEquals(0, jedis.zdiffStore("{bar}3", "{bar}1", "{bar}2"));
     assertEquals(1, jedis.zdiffStore("bar{:}3", "foo{:}", "bar{:}"));
-    assertEquals(Collections.singleton("b"), jedis.zrange("bar{:}3", 0, -1));
+    assertEquals(Collections.singletonList("b"), jedis.zrange("bar{:}3", 0, -1));
   }
 
 }

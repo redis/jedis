@@ -30,7 +30,7 @@ import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.stream.*;
 
-public class RedisCommandObjects {
+public class CommandObjects {
 
   protected CommandArguments commandArguments(ProtocolCommand command) {
     return new CommandArguments(command);

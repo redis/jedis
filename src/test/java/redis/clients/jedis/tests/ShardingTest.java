@@ -155,7 +155,7 @@ public class ShardingTest {
     shards.add(redis2);
 
     try (JedisSharding jedis = new JedisSharding(shards, clientConfig)) {
-      jedis.sendCommand(SET, "command", "general");
+      jedis.sendCommand("command", SET, "command", "general");
       assertEquals("general", jedis.get("command"));
     }
   }

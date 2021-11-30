@@ -25,11 +25,11 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
         RedisModulePipelineCommands {
 
   private final ClusterConnectionProvider provider;
-  private final RedisClusterCommandObjects commandObjects;
+  private final ClusterCommandObjects commandObjects;
 
   public ClusterPipeline(ClusterConnectionProvider provider) {
     this.provider = provider;
-    this.commandObjects = new RedisClusterCommandObjects();
+    this.commandObjects = new ClusterCommandObjects();
   }
 
   @Override

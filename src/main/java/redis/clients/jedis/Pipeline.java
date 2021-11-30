@@ -29,20 +29,20 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   protected final Connection connection;
 //  private final Jedis jedis;
-  private final RedisCommandObjects commandObjects;
+  private final CommandObjects commandObjects;
 
   public Pipeline(Connection connection) {
 //    super(connection);
     this.connection = connection;
 //    this.jedis = null;
-    this.commandObjects = new RedisCommandObjects();
+    this.commandObjects = new CommandObjects();
   }
 
   public Pipeline(Jedis jedis) {
 //    super(jedis.getConnection());
     this.connection = jedis.getConnection();
 //    this.jedis = jedis;
-    this.commandObjects = new RedisCommandObjects();
+    this.commandObjects = new CommandObjects();
   }
 
   public final <T> Response<T> appendCommand(CommandObject<T> commandObject) {

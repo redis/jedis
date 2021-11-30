@@ -36,7 +36,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     GenericControlCommands, Closeable {
 
   protected final Connection connection;
-  private final RedisCommandObjects commandObjects = new RedisCommandObjects();
+  private final CommandObjects commandObjects = new CommandObjects();
   private int db = 0;
   private Transaction transaction = null;
   private boolean isInMulti = false;

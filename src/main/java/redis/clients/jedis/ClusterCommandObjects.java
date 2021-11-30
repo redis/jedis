@@ -19,7 +19,7 @@ import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.util.JedisClusterHashTag;
 
-public class RedisClusterCommandObjects extends RedisCommandObjects {
+public class ClusterCommandObjects extends CommandObjects {
 
   @Override
   protected ClusterCommandArguments commandArguments(ProtocolCommand command) {

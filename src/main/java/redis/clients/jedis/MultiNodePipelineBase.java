@@ -32,9 +32,9 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   private final Map<HostAndPort, Connection> connections;
   private volatile boolean synced;
 
-  private final RedisCommandObjects commandObjects;
+  private final CommandObjects commandObjects;
 
-  public MultiNodePipelineBase(RedisCommandObjects commandObjects) {
+  public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
     synced = false;

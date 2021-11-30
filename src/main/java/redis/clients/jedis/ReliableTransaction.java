@@ -27,7 +27,7 @@ public class ReliableTransaction extends Queable implements PipelineCommands,
     PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
 
   protected final Connection connection;
-  private final RedisCommandObjects commandObjects;
+  private final CommandObjects commandObjects;
 
   private boolean inTransaction = true;
 
@@ -35,7 +35,7 @@ public class ReliableTransaction extends Queable implements PipelineCommands,
 //    super(connection);
     this.connection = connection;
     executeMulti();
-    this.commandObjects = new RedisCommandObjects();
+    this.commandObjects = new CommandObjects();
   }
 
   private void executeMulti() {

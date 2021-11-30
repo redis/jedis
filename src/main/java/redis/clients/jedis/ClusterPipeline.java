@@ -7,7 +7,7 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   private final ClusterConnectionProvider provider;
 
   public ClusterPipeline(ClusterConnectionProvider provider) {
-    super(new RedisClusterCommandObjects());
+    super(new ClusterCommandObjects());
     this.provider = provider;
   }
 

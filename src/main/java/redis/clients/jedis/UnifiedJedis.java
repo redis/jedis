@@ -42,7 +42,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
-  private final RedisCommandObjects commandObjects;
+  private final CommandObjects commandObjects;
 
   public UnifiedJedis() {
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
@@ -83,7 +83,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(ConnectionProvider provider) {
     this.provider = provider;
     this.executor = new DefaultCommandExecutor(provider);
-    this.commandObjects = new RedisCommandObjects();
+    this.commandObjects = new CommandObjects();
   }
 
   public UnifiedJedis(JedisSocketFactory socketFactory) {
@@ -93,7 +93,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
-    this.commandObjects = new RedisCommandObjects();
+    this.commandObjects = new CommandObjects();
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
@@ -113,7 +113,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this.provider = provider;
     this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
-    this.commandObjects = new RedisClusterCommandObjects();
+    this.commandObjects = new ClusterCommandObjects();
   }
 
   public UnifiedJedis(ShardedConnectionProvider provider) {
@@ -131,7 +131,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this.provider = provider;
     this.executor = new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
-    this.commandObjects = new RedisCommandObjects();
+    this.commandObjects = new CommandObjects();
   }
 
   @Override

@@ -13,7 +13,7 @@ import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.JedisClusterHashTag;
 
-public class ShardedCommandObjects extends RedisCommandObjects {
+public class ShardedCommandObjects extends CommandObjects {
 
   private final Hashing algo;
   private final Pattern tagPattern;

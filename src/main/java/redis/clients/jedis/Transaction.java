@@ -29,7 +29,7 @@ public class Transaction extends Queable implements PipelineCommands, PipelineBi
 
   protected final Connection connection;
   private final Jedis jedis;
-  private final RedisCommandObjects commandObjects;
+  private final CommandObjects commandObjects;
 
   private boolean inTransaction = true;
 
@@ -38,7 +38,7 @@ public class Transaction extends Queable implements PipelineCommands, PipelineBi
     this.connection = jedis.getConnection();
     this.connection.sendCommand(Protocol.Command.MULTI);
     this.jedis = jedis;
-    this.commandObjects = new RedisCommandObjects();
+    this.commandObjects = new CommandObjects();
   }
 
   public Transaction(Connection connection) {
@@ -46,7 +46,7 @@ public class Transaction extends Queable implements PipelineCommands, PipelineBi
     this.connection = connection;
     this.connection.sendCommand(Protocol.Command.MULTI);
     this.jedis = null;
-    this.commandObjects = new RedisCommandObjects();
+    this.commandObjects = new CommandObjects();
   }
 
   protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {

@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
@@ -23,6 +24,7 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
+import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.stream.*;
 import redis.clients.jedis.search.IndexOptions;
@@ -81,8 +83,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(ConnectionProvider provider) {
     this.provider = provider;
     this.executor = new DefaultCommandExecutor(provider);
-    this.commandObjects = (provider instanceof ClusterConnectionProvider)
-        ? new RedisClusterCommandObjects() : new RedisCommandObjects();
+    this.commandObjects = new RedisCommandObjects();
   }
 
   public UnifiedJedis(JedisSocketFactory socketFactory) {
@@ -113,6 +114,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.provider = provider;
     this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
     this.commandObjects = new RedisClusterCommandObjects();
+  }
+
+  public UnifiedJedis(ShardedConnectionProvider provider) {
+    this.provider = provider;
+    this.executor = new DefaultCommandExecutor(provider);
+    this.commandObjects = new ShardedCommandObjects(provider.getHashingAlgo());
+  }
+
+  public UnifiedJedis(ShardedConnectionProvider provider, Pattern tagPattern) {
+    this.provider = provider;
+    this.executor = new DefaultCommandExecutor(provider);
+    this.commandObjects = new ShardedCommandObjects(provider.getHashingAlgo(), tagPattern);
   }
 
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {

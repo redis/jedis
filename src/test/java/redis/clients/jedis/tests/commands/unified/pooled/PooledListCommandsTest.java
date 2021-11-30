@@ -1,7 +1,5 @@
 package redis.clients.jedis.tests.commands.unified.pooled;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;

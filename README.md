@@ -31,9 +31,11 @@ Experience the best Redis. For a limited time, sign up to Redis Enterprise Cloud
 
 [Sign Up Now!](https://redis.com/try-free/?utm_source=jedis&utm_medium=referral&utm_campaign=2021-11-reinvent+try_free)
 
----
+<br clear="both"/>
 
-![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
+### YourKit: Java and .NET profilers
+
+<img align="right" width="320" src="https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png" alt="YourKit">
 
 YourKit supports open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 

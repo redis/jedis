@@ -49,7 +49,6 @@ public class JedisPoolTest {
 
       try (Jedis jedis = pool.getResource()) {
         assertEquals("PONG", jedis.ping());
-//        assertEquals(5000, jedis.getClient().getSoTimeout());
         assertEquals(5000, jedis.getClient().getSoTimeout());
         jedis.close();
       }

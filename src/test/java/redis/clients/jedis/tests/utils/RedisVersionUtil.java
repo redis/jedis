@@ -1,14 +1,13 @@
 package redis.clients.jedis.tests.utils;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.tests.HostAndPortUtil;
 
 public class RedisVersionUtil {
 
   public static Integer getRedisMajorVersionNumber() {
     String completeVersion = null;
 
-    try (Jedis jedis = new Jedis(HostAndPortUtil.getRedisServers().get(0))) {
+    try (Jedis jedis = new Jedis()) {
       jedis.auth("foobared");
       String info = jedis.info("server");
       String[] splitted = info.split("\\s+|:");

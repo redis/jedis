@@ -260,7 +260,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     final int pauseMillisDelta = 100;
 
     ExecutorService executorService = Executors.newFixedThreadPool(1);
-    try (Jedis jedisPause = createJedis();) {
+    try (Jedis jedisPause = createJedis()) {
 
       jedis.clientPause(pauseMillis, ClientPauseMode.ALL);
 
@@ -286,7 +286,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientPauseWrite() throws InterruptedException, ExecutionException {
-    final int pauseMillis = 600;
+    final int pauseMillis = 1250;
     final int pauseMillisDelta = 100;
 
     ExecutorService executorService = Executors.newFixedThreadPool(2);

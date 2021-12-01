@@ -186,6 +186,6 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   public Map<String, ConnectionPool> getClusterNodes() {
-    return ((ClusterCommandExecutor) executor).provider.getNodes();
+    return ((ClusterCommandExecutor) executor).getNodes();
   }
 }

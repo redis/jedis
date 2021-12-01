@@ -1,11 +1,11 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
+
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
-
-import java.util.List;
 
 public interface ListPipelineBinaryCommands {
 

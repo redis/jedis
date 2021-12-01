@@ -1,5 +1,8 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
+import java.util.Map;
+
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.GeoUnit;
@@ -7,9 +10,6 @@ import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
-
-import java.util.List;
-import java.util.Map;
 
 public interface GeoPipelineBinaryCommands {
 

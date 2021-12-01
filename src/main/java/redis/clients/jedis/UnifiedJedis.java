@@ -424,7 +424,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.renamenx(oldkey, newkey));
   }
 
-  @Override
   public long dbSize() {
     return executeCommand(commandObjects.dbSize());
   }
@@ -2809,22 +2808,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // Sample key commands
 
   // Random node commands
-  @Override
   public long publish(String channel, String message) {
     return executeCommand(commandObjects.publish(channel, message));
   }
 
-  @Override
   public long publish(byte[] channel, byte[] message) {
     return executeCommand(commandObjects.publish(channel, message));
   }
 
-  @Override
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
-  @Override
   public LCSMatchResult strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }

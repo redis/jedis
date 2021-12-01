@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Map;
+
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoAddParams;

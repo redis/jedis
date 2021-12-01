@@ -2,13 +2,8 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Map;
-import redis.clients.jedis.params.XAddParams;
-import redis.clients.jedis.params.XAutoClaimParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.XPendingParams;
-import redis.clients.jedis.params.XReadGroupParams;
-import redis.clients.jedis.params.XReadParams;
-import redis.clients.jedis.params.XTrimParams;
+
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.stream.*;
 
 public interface StreamCommands {
@@ -253,14 +248,15 @@ public interface StreamCommands {
    *
    * @param xReadParams
    * @param streams
-   * @return
-   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link MultiKeyCommands#xread(redis.clients.jedis.params.XReadParams, java.util.Map)}.
    */
   List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
 
-  
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link StreamCommands#xreadGroup(java.lang.String, java.lang.String,
+   * redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
+   */
   default List<Map.Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
       final String consumer, final int count, final long block, final boolean noAck,
       final Map.Entry<String, StreamEntryID>... streams) {
@@ -283,9 +279,6 @@ public interface StreamCommands {
    * @param consumer
    * @param xReadGroupParams
    * @param streams
-   * @return
-   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xreadGroup(java.lang.String, java.lang.String, redis.clients.jedis.params.XReadGroupParams, java.util.Map)}.
    */
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);

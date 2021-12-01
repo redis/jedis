@@ -2,20 +2,22 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 
 public class ClusterCommandExecutor implements CommandExecutor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(ClusterCommandExecutor.class);
+  private final Logger log = LoggerFactory.getLogger(ClusterCommandExecutor.class);
 
-  public final ClusterConnectionProvider provider;
+  protected final ClusterConnectionProvider provider;
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
 
@@ -29,6 +31,10 @@ public class ClusterCommandExecutor implements CommandExecutor {
   @Override
   public void close() {
     this.provider.close();
+  }
+
+  public Map<String, ConnectionPool> getNodes() {
+    return provider.getNodes();
   }
 
   @Override
@@ -58,7 +64,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
       } catch (JedisConnectionException jce) {
         lastException = jce;
         ++consecutiveConnectionFailures;
-        LOG.debug("Failed connecting to Redis: {}", connection, jce);
+        log.debug("Failed connecting to Redis: {}", connection, jce);
         // "- 1" because we just did one, but the attemptsLeft counter hasn't been decremented yet
         boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
         if (reset) {
@@ -70,7 +76,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
         if (lastException == null || lastException instanceof JedisRedirectionException) {
           lastException = jre;
         }
-        LOG.debug("Redirected by server to {}", jre.getTargetNode());
+        log.debug("Redirected by server to {}", jre.getTargetNode());
         consecutiveConnectionFailures = 0;
         redirect = jre;
         // if MOVED redirection occurred,

@@ -7,6 +7,10 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class Pool<T> extends GenericObjectPool<T> {
 
+  /**
+   * @deprecated Use {@link Pool#Pool(org.apache.commons.pool2.PooledObjectFactory,
+   * org.apache.commons.pool2.impl.GenericObjectPoolConfig)}.
+   */
   @Deprecated
   public Pool(GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
     this(factory, poolConfig);
@@ -19,6 +23,14 @@ public class Pool<T> extends GenericObjectPool<T> {
   @Override
   public void close() {
     destroy();
+  }
+
+  public void destroy() {
+    try {
+      super.close();
+    } catch (RuntimeException e) {
+      throw new JedisException("Could not destroy the pool", e);
+    }
   }
 
   public T getResource() {
@@ -50,14 +62,6 @@ public class Pool<T> extends GenericObjectPool<T> {
       super.invalidateObject(resource);
     } catch (Exception e) {
       throw new JedisException("Could not return the broken resource to the pool", e);
-    }
-  }
-
-  public void destroy() {
-    try {
-      super.close();
-    } catch (RuntimeException e) {
-      throw new JedisException("Could not destroy the pool", e);
     }
   }
 

@@ -2,6 +2,7 @@ package redis.clients.jedis.providers;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionFactory;

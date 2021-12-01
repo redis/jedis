@@ -15,7 +15,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
 
 public class RetryableCommandExecutor implements CommandExecutor {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RetryableCommandExecutor.class);
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   protected final ConnectionProvider provider;
   protected final int maxAttempts;
@@ -50,7 +50,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
       } catch (JedisConnectionException jce) {
         lastException = jce;
         ++consecutiveConnectionFailures;
-        LOG.debug("Failed connecting to Redis: {}", connection, jce);
+        log.debug("Failed connecting to Redis: {}", connection, jce);
         // "- 1" because we just did one, but the attemptsLeft counter hasn't been decremented yet
         boolean reset = handleConnectionProblem(attemptsLeft - 1, consecutiveConnectionFailures, deadline);
         if (reset) {

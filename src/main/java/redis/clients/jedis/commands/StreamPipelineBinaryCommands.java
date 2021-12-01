@@ -1,10 +1,10 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.Response;
-import redis.clients.jedis.params.*;
-
 import java.util.List;
 import java.util.Map;
+
+import redis.clients.jedis.Response;
+import redis.clients.jedis.params.*;
 
 public interface StreamPipelineBinaryCommands {
 //

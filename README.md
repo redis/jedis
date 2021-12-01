@@ -21,6 +21,25 @@ Meet us on IRC: ##jedis on freenode.net
 
 Join the mailing-list at [http://groups.google.com/group/jedis_redis](http://groups.google.com/group/jedis_redis)
 
+## Sponsorship
+
+### Redis Cloud: From the creators of Redis
+
+<a href="https://redis.com/try-free/?utm_source=jedis&utm_medium=referral&utm_campaign=2021-11-reinvent+try_free"><img align="right" width="320" src="resources/redis-tryfree.png" alt="redis-tryfree"></a>
+
+Experience the best Redis. For a limited time, sign up to Redis Enterprise Cloud and use **MATRIX200** to get $200 credits, and a chance to win a Tesla!
+
+[Sign Up Now!](https://redis.com/try-free/?utm_source=jedis&utm_medium=referral&utm_campaign=2021-11-reinvent+try_free)
+
+---
+
+![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
+
+YourKit supports open source projects with its full-featured Java Profiler.
+YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 
+and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp),
+innovative and intelligent tools for profiling Java and .NET applications.
+
 ## So what can I do with Jedis?
 All of the following redis features are supported:
 
@@ -143,19 +162,6 @@ That is great!
 Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) on project's root directory for follow up how to contribute to Jedis project.
 
 Thanks for helping!
-
-## Sponsorship
-
-[![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.com/)
-
----
-
-![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
-
-YourKit supports open source projects with its full-featured Java Profiler.
-YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 
-and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp),
-innovative and intelligent tools for profiling Java and .NET applications.
 
 ## License
 

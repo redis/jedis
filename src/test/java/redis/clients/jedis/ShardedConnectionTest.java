@@ -12,7 +12,7 @@ import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-public class ShardingConnectionTest {
+public class ShardedConnectionTest {
 
   private static final HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
   private static final HostAndPort redis2 = HostAndPortUtil.getRedisServers().get(1);

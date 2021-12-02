@@ -11,7 +11,7 @@
 //import redis.clients.jedis.Jedis;
 //import redis.clients.jedis.JedisShardInfo;
 //import redis.clients.jedis.ShardedJedis;
-//import redis.clients.jedis.tests.HostAndPortUtil;
+//import redis.clients.jedis.HostAndPortUtil;
 //
 //public class HashingBenchmark {
 //  private static HostAndPort hnp1 = HostAndPortUtil.getRedisServers().get(0);

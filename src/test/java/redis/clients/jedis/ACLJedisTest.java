@@ -7,7 +7,7 @@ import java.net.URISyntaxException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.tests.commands.jedis.JedisCommandsTestBase;
+import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.util.RedisVersionUtil;
 
 /**

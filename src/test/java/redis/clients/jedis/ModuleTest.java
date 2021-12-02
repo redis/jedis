@@ -7,7 +7,7 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.tests.commands.jedis.JedisCommandsTestBase;
+import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class ModuleTest extends JedisCommandsTestBase {

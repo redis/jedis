@@ -7,7 +7,7 @@ public class Queable {
 
   private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
 
-  protected void clean() {
+  protected final void clean() {
     pipelinedResponses.clear();
   }
 

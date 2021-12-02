@@ -1,7 +1,6 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
-
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.args.ClusterFailoverOption;
 

@@ -1,5 +1,9 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -7,10 +11,6 @@ import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public interface SortedSetPipelineBinaryCommands {
 

@@ -3,13 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 
-import redis.clients.jedis.params.XAddParams;
-import redis.clients.jedis.params.XAutoClaimParams;
-import redis.clients.jedis.params.XClaimParams;
-import redis.clients.jedis.params.XPendingParams;
-import redis.clients.jedis.params.XReadGroupParams;
-import redis.clients.jedis.params.XReadParams;
-import redis.clients.jedis.params.XTrimParams;
+import redis.clients.jedis.params.*;
 
 public interface StreamBinaryCommands {
 

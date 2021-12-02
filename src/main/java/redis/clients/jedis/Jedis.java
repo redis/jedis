@@ -3419,7 +3419,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
-  @Override
   public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
@@ -3515,7 +3514,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
-  @Override
   public long publish(final byte[] channel, final byte[] message) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.publish(channel, message));
@@ -7134,7 +7132,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param params the params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
-  @Override
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
@@ -7326,7 +7323,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
-  @Override
   public long publish(final String channel, final String message) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(PUBLISH, channel, message);

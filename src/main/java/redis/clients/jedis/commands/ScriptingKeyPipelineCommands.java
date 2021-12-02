@@ -1,8 +1,7 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.Response;
-
 import java.util.List;
+import redis.clients.jedis.Response;
 
 public interface ScriptingKeyPipelineCommands {
 

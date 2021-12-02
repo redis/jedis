@@ -1,6 +1,7 @@
 package redis.clients.jedis.exceptions;
 
 public class JedisNoScriptException extends JedisDataException {
+
   private static final long serialVersionUID = 4674378093072060731L;
 
   public JedisNoScriptException(final String message) {

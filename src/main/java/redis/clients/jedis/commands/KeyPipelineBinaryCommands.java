@@ -1,14 +1,14 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
+import java.util.Set;
+
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
-
-import java.util.List;
-import java.util.Set;
 
 public interface KeyPipelineBinaryCommands {
 

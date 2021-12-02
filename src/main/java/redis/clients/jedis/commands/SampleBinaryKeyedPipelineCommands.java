@@ -1,9 +1,8 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.FlushMode;
-
-import java.util.List;
 
 public interface SampleBinaryKeyedPipelineCommands {
 

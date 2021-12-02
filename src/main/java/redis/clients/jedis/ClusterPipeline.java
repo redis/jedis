@@ -21,8 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
-        RedisModulePipelineCommands {
+public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCommands,
+    PipelineBinaryCommands, RedisModulePipelineCommands {
 
   private final ClusterConnectionProvider provider;
   private final ClusterCommandObjects commandObjects;
@@ -1368,12 +1368,10 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
     return appendCommand(commandObjects.scriptKill(sampleKey));
   }
 
-  @Override
   public Response<Long> publish(String channel, String message) {
     return appendCommand(commandObjects.publish(channel, message));
   }
 
-  @Override
   public Response<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
     return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
@@ -1903,12 +1901,10 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
     return appendCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
 
-  @Override
   public Response<Long> publish(byte[] channel, byte[] message) {
     return appendCommand(commandObjects.publish(channel, message));
   }
 
-  @Override
   public Response<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
     return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
@@ -2963,7 +2959,6 @@ public class ClusterPipeline extends MultiNodePipelineBase implements PipelineCo
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
 
-  @Override
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
   }

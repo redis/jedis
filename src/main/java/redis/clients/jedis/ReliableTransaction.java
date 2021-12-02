@@ -1410,12 +1410,10 @@ public class ReliableTransaction extends Queable implements PipelineCommands,
     return appendCommand(commandObjects.scriptKill(sampleKey));
   }
 
-  @Override
   public Response<Long> publish(String channel, String message) {
     return appendCommand(commandObjects.publish(channel, message));
   }
 
-  @Override
   public Response<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
     return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
@@ -1945,12 +1943,10 @@ public class ReliableTransaction extends Queable implements PipelineCommands,
     return appendCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
 
-  @Override
   public Response<Long> publish(byte[] channel, byte[] message) {
     return appendCommand(commandObjects.publish(channel, message));
   }
 
-  @Override
   public Response<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
     return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
@@ -3005,7 +3001,6 @@ public class ReliableTransaction extends Queable implements PipelineCommands,
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
 
-  @Override
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
   }

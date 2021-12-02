@@ -1,11 +1,11 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
+import java.util.Map;
+
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.stream.*;
-
-import java.util.List;
-import java.util.Map;
 
 public interface StreamPipelineCommands {
 
@@ -249,17 +249,18 @@ public interface StreamPipelineCommands {
    *
    * @param xReadParams
    * @param streams
-   * @return
-   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link MultiKeyCommands#xread(XReadParams, Map)}.
    */
   Response<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
 
-
+  /**
+   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
+   * {@link StreamPipelineCommands#xreadGroup(String, String, XReadGroupParams, Map)}.
+   */
+  @Deprecated
   default Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(final String groupname,
-                                                                final String consumer, final int count, final long block, final boolean noAck,
-                                                                final Map.Entry<String, StreamEntryID>... streams) {
+      final String consumer, final int count, final long block, final boolean noAck,
+      final Map.Entry<String, StreamEntryID>... streams) {
     if (block > Integer.MAX_VALUE) throw new IllegalArgumentException();
     XReadGroupParams params = XReadGroupParams.xReadGroupParams();
     if (count > 0) params.count(count);
@@ -279,9 +280,6 @@ public interface StreamPipelineCommands {
    * @param consumer
    * @param xReadGroupParams
    * @param streams
-   * @return
-   * @deprecated This method will be removed due to bug regarding {@code block} param. Use
-   * {@link #xreadGroup(String, String, XReadGroupParams, Map)}.
    */
   Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);

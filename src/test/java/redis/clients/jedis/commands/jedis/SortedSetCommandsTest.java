@@ -1,13 +1,14 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertNotNull;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
+import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.util.AssertUtil.assertByteArraySetEquals;
 import static redis.clients.jedis.util.AssertUtil.assertCollectionContains;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -146,11 +147,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("c");
     expected.add("a");
 
-    Set<String> range = jedis.zrange("foo", 0, 1);
+    List<String> range = jedis.zrange("foo", 0, 1);
     assertEquals(expected, range);
 
     expected.add("b");
@@ -163,16 +164,16 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(bc);
     bexpected.add(ba);
 
-    Set<byte[]> brange = jedis.zrange(bfoo, 0, 1);
-    assertByteArraySetEquals(bexpected, brange);
+    List<byte[]> brange = jedis.zrange(bfoo, 0, 1);
+    assertByteArrayListEquals(bexpected, brange);
 
     bexpected.add(bb);
     brange = jedis.zrange(bfoo, 0, 100);
-    assertByteArraySetEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
   }
 
   @Test
@@ -182,7 +183,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 1, "bb");
     jedis.zadd("foo", 1, "d");
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("bb");
     expected.add("c");
 
@@ -204,17 +205,17 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 1, bc);
     jedis.zadd(bfoo, 1, bb);
 
-    Set<byte[]> bExpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bExpected = new ArrayList<byte[]>();
     bExpected.add(bb);
 
-    assertByteArraySetEquals(bExpected, jedis.zrangeByLex(bfoo, bInclusiveB, bExclusiveC));
+    assertByteArrayListEquals(bExpected, jedis.zrangeByLex(bfoo, bInclusiveB, bExclusiveC));
 
     bExpected.clear();
     bExpected.add(ba);
     bExpected.add(bb);
 
     // with LIMIT
-    assertByteArraySetEquals(bExpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
+    assertByteArrayListEquals(bExpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf, 0, 2));
   }
 
   @Test
@@ -224,7 +225,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 1, "bb");
     jedis.zadd("foo", 1, "d");
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("c");
     expected.add("bb");
 
@@ -246,17 +247,17 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 1, bc);
     jedis.zadd(bfoo, 1, bb);
 
-    Set<byte[]> bExpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bExpected = new ArrayList<byte[]>();
     bExpected.add(bb);
 
-    assertByteArraySetEquals(bExpected, jedis.zrevrangeByLex(bfoo, bExclusiveC, bInclusiveB));
+    assertByteArrayListEquals(bExpected, jedis.zrevrangeByLex(bfoo, bExclusiveC, bInclusiveB));
 
     bExpected.clear();
+    bExpected.add(bc);
     bExpected.add(bb);
-    bExpected.add(ba);
 
     // with LIMIT
-    assertByteArraySetEquals(bExpected, jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
+    assertByteArrayListEquals(bExpected, jedis.zrevrangeByLex(bfoo, bLexPlusInf, bLexMinusInf, 0, 2));
   }
 
   @Test
@@ -266,11 +267,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("b");
     expected.add("a");
 
-    Set<String> range = jedis.zrevrange("foo", 0, 1);
+    List<String> range = jedis.zrevrange("foo", 0, 1);
     assertEquals(expected, range);
 
     expected.add("c");
@@ -283,16 +284,16 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(bb);
     bexpected.add(ba);
 
-    Set<byte[]> brange = jedis.zrevrange(bfoo, 0, 1);
-    assertByteArraySetEquals(bexpected, brange);
+    List<byte[]> brange = jedis.zrevrange(bfoo, 0, 1);
+    assertByteArrayListEquals(bexpected, brange);
 
     bexpected.add(bc);
     brange = jedis.zrevrange(bfoo, 0, 100);
-    assertByteArraySetEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
   }
 
   @Test
@@ -302,7 +303,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zrem("foo", "a"));
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("b");
 
     assertEquals(expected, jedis.zrange("foo", 0, 100));
@@ -315,10 +316,10 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zrem(bfoo, ba));
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(bb);
 
-    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArrayListEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
     assertEquals(0, jedis.zrem(bfoo, bbar));
   }
@@ -330,9 +331,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(3d, jedis.zincrby("foo", 2d, "a"), 0);
 
-    Set<String> expected = new LinkedHashSet<String>();
-    expected.add("a");
+    List<String> expected = new ArrayList<String>();
     expected.add("b");
+    expected.add("a");
 
     assertEquals(expected, jedis.zrange("foo", 0, 100));
 
@@ -342,11 +343,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(3d, jedis.zincrby(bfoo, 2d, ba), 0);
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(bb);
     bexpected.add(ba);
 
-    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArrayListEquals(bexpected, jedis.zrange(bfoo, 0, 100));
   }
 
   @Test
@@ -431,11 +432,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("c", 0.1d));
     expected.add(new Tuple("a", 2d));
 
-    Set<Tuple> range = jedis.zrangeWithScores("foo", 0, 1);
+    List<Tuple> range = jedis.zrangeWithScores("foo", 0, 1);
     assertEquals(expected, range);
 
     expected.add(new Tuple("b", 10d));
@@ -448,11 +449,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(bc, 0.1d));
     bexpected.add(new Tuple(ba, 2d));
 
-    Set<Tuple> brange = jedis.zrangeWithScores(bfoo, 0, 1);
+    List<Tuple> brange = jedis.zrangeWithScores(bfoo, 0, 1);
     assertEquals(bexpected, brange);
 
     bexpected.add(new Tuple(bb, 10d));
@@ -468,11 +469,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("b", 10d));
     expected.add(new Tuple("a", 2d));
 
-    Set<Tuple> range = jedis.zrevrangeWithScores("foo", 0, 1);
+    List<Tuple> range = jedis.zrevrangeWithScores("foo", 0, 1);
     assertEquals(expected, range);
 
     expected.add(new Tuple("c", 0.1d));
@@ -485,11 +486,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(bb, 10d));
     bexpected.add(new Tuple(ba, 2d));
 
-    Set<Tuple> brange = jedis.zrevrangeWithScores(bfoo, 0, 1);
+    List<Tuple> brange = jedis.zrevrangeWithScores(bfoo, 0, 1);
     assertEquals(bexpected, brange);
 
     bexpected.add(new Tuple(bc, 0.1d));
@@ -622,10 +623,10 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 2d, "d");
     jedis.zadd("foo", 0.03, "e");
 
-    Set<Tuple> actual = jedis.zpopmax("foo", 2);
+    List<Tuple> actual = jedis.zpopmax("foo", 2);
     assertEquals(2, actual.size());
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("b", 10d));
     expected.add(new Tuple("d", 2d));
     assertEquals(expected, actual);
@@ -682,9 +683,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    Set<Tuple> range = jedis.zpopmin("foo", 2);
+    List<Tuple> range = jedis.zpopmin("foo", 2);
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("c", 0.1d));
     expected.add(new Tuple("a", 1d));
 
@@ -699,9 +700,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<Tuple> brange = jedis.zpopmin(bfoo, 2);
+    List<Tuple> brange = jedis.zpopmin(bfoo, 2);
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(bc, 0.1d));
     bexpected.add(new Tuple(ba, 2d));
 
@@ -767,9 +768,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    Set<String> range = jedis.zrangeByScore("foo", 0d, 2d);
+    List<String> range = jedis.zrangeByScore("foo", 0d, 2d);
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("c");
     expected.add("a");
 
@@ -777,16 +778,16 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     range = jedis.zrangeByScore("foo", 0d, 2d, 0, 1);
 
-    expected = new LinkedHashSet<String>();
+    expected = new ArrayList<String>();
     expected.add("c");
 
     assertEquals(expected, range);
 
     range = jedis.zrangeByScore("foo", 0d, 2d, 1, 1);
-    Set<String> range2 = jedis.zrangeByScore("foo", "-inf", "(2");
+    List<String> range2 = jedis.zrangeByScore("foo", "-inf", "(2");
     assertEquals(expected, range2);
 
-    expected = new LinkedHashSet<String>();
+    expected = new ArrayList<String>();
     expected.add("a");
 
     assertEquals(expected, range);
@@ -797,30 +798,30 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<byte[]> brange = jedis.zrangeByScore(bfoo, 0d, 2d);
+    List<byte[]> brange = jedis.zrangeByScore(bfoo, 0d, 2d);
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(bc);
     bexpected.add(ba);
 
-    assertByteArraySetEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
     brange = jedis.zrangeByScore(bfoo, 0d, 2d, 0, 1);
 
-    bexpected = new LinkedHashSet<byte[]>();
+    bexpected = new ArrayList<byte[]>();
     bexpected.add(bc);
 
-    assertByteArraySetEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
     brange = jedis.zrangeByScore(bfoo, 0d, 2d, 1, 1);
-    Set<byte[]> brange2 = jedis.zrangeByScore(bfoo, SafeEncoder.encode("-inf"),
+    List<byte[]> brange2 = jedis.zrangeByScore(bfoo, SafeEncoder.encode("-inf"),
       SafeEncoder.encode("(2"));
-    assertByteArraySetEquals(bexpected, brange2);
+    assertByteArrayListEquals(bexpected, brange2);
 
-    bexpected = new LinkedHashSet<byte[]>();
+    bexpected = new ArrayList<byte[]>();
     bexpected.add(ba);
 
-    assertByteArraySetEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
   }
 
@@ -832,27 +833,27 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 4.0d, "d");
     jedis.zadd("foo", 5.0d, "e");
 
-    Set<String> range = jedis.zrevrangeByScore("foo", 3d, Double.NEGATIVE_INFINITY, 0, 1);
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> range = jedis.zrevrangeByScore("foo", 3d, Double.NEGATIVE_INFINITY, 0, 1);
+    List<String> expected = new ArrayList<String>();
     expected.add("c");
 
     assertEquals(expected, range);
 
     range = jedis.zrevrangeByScore("foo", 3.5d, Double.NEGATIVE_INFINITY, 0, 2);
-    expected = new LinkedHashSet<String>();
+    expected = new ArrayList<String>();
     expected.add("c");
     expected.add("b");
 
     assertEquals(expected, range);
 
     range = jedis.zrevrangeByScore("foo", 3.5d, Double.NEGATIVE_INFINITY, 1, 1);
-    expected = new LinkedHashSet<String>();
+    expected = new ArrayList<String>();
     expected.add("b");
 
     assertEquals(expected, range);
 
     range = jedis.zrevrangeByScore("foo", 4d, 2d);
-    expected = new LinkedHashSet<String>();
+    expected = new ArrayList<String>();
     expected.add("d");
     expected.add("c");
     expected.add("b");
@@ -860,7 +861,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     assertEquals(expected, range);
 
     range = jedis.zrevrangeByScore("foo", "+inf", "(4");
-    expected = new LinkedHashSet<String>();
+    expected = new ArrayList<String>();
     expected.add("e");
 
     assertEquals(expected, range);
@@ -871,34 +872,34 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<byte[]> brange = jedis.zrevrangeByScore(bfoo, 2d, 0d);
+    List<byte[]> brange = jedis.zrevrangeByScore(bfoo, 2d, 0d);
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
-    bexpected.add(bc);
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(ba);
+    bexpected.add(bc);
 
-    assertByteArraySetEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
     brange = jedis.zrevrangeByScore(bfoo, 2d, 0d, 0, 1);
 
-    bexpected = new LinkedHashSet<byte[]>();
+    bexpected = new ArrayList<byte[]>();
     bexpected.add(ba);
 
-    assertByteArraySetEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
 
-    Set<byte[]> brange2 = jedis.zrevrangeByScore(bfoo, SafeEncoder.encode("+inf"),
+    List<byte[]> brange2 = jedis.zrevrangeByScore(bfoo, SafeEncoder.encode("+inf"),
       SafeEncoder.encode("(2"));
 
-    bexpected = new LinkedHashSet<byte[]>();
+    bexpected = new ArrayList<byte[]>();
     bexpected.add(bb);
 
-    assertByteArraySetEquals(bexpected, brange2);
+    assertByteArrayListEquals(bexpected, brange2);
 
     brange = jedis.zrevrangeByScore(bfoo, 2d, 0d, 1, 1);
-    bexpected = new LinkedHashSet<byte[]>();
+    bexpected = new ArrayList<byte[]>();
     bexpected.add(bc);
 
-    assertByteArraySetEquals(bexpected, brange);
+    assertByteArrayListEquals(bexpected, brange);
   }
 
   @Test
@@ -908,9 +909,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c");
     jedis.zadd("foo", 2d, "a");
 
-    Set<Tuple> range = jedis.zrangeByScoreWithScores("foo", 0d, 2d);
+    List<Tuple> range = jedis.zrangeByScoreWithScores("foo", 0d, 2d);
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("c", 0.1d));
     expected.add(new Tuple("a", 2d));
 
@@ -918,14 +919,14 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     range = jedis.zrangeByScoreWithScores("foo", 0d, 2d, 0, 1);
 
-    expected = new LinkedHashSet<Tuple>();
+    expected = new ArrayList<Tuple>();
     expected.add(new Tuple("c", 0.1d));
 
     assertEquals(expected, range);
 
     range = jedis.zrangeByScoreWithScores("foo", 0d, 2d, 1, 1);
 
-    expected = new LinkedHashSet<Tuple>();
+    expected = new ArrayList<Tuple>();
     expected.add(new Tuple("a", 2d));
 
     assertEquals(expected, range);
@@ -937,9 +938,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<Tuple> brange = jedis.zrangeByScoreWithScores(bfoo, 0d, 2d);
+    List<Tuple> brange = jedis.zrangeByScoreWithScores(bfoo, 0d, 2d);
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(bc, 0.1d));
     bexpected.add(new Tuple(ba, 2d));
 
@@ -947,14 +948,14 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     brange = jedis.zrangeByScoreWithScores(bfoo, 0d, 2d, 0, 1);
 
-    bexpected = new LinkedHashSet<Tuple>();
+    bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(bc, 0.1d));
 
     assertEquals(bexpected, brange);
 
     brange = jedis.zrangeByScoreWithScores(bfoo, 0d, 2d, 1, 1);
 
-    bexpected = new LinkedHashSet<Tuple>();
+    bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, 2d));
 
     assertEquals(bexpected, brange);
@@ -969,27 +970,27 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 4.0d, "d");
     jedis.zadd("foo", 5.0d, "e");
 
-    Set<Tuple> range = jedis.zrevrangeByScoreWithScores("foo", 3d, Double.NEGATIVE_INFINITY, 0, 1);
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    List<Tuple> range = jedis.zrevrangeByScoreWithScores("foo", 3d, Double.NEGATIVE_INFINITY, 0, 1);
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("c", 3.0d));
 
     assertEquals(expected, range);
 
     range = jedis.zrevrangeByScoreWithScores("foo", 3.5d, Double.NEGATIVE_INFINITY, 0, 2);
-    expected = new LinkedHashSet<Tuple>();
+    expected = new ArrayList<Tuple>();
     expected.add(new Tuple("c", 3.0d));
     expected.add(new Tuple("b", 2.0d));
 
     assertEquals(expected, range);
 
     range = jedis.zrevrangeByScoreWithScores("foo", 3.5d, Double.NEGATIVE_INFINITY, 1, 1);
-    expected = new LinkedHashSet<Tuple>();
+    expected = new ArrayList<Tuple>();
     expected.add(new Tuple("b", 2.0d));
 
     assertEquals(expected, range);
 
     range = jedis.zrevrangeByScoreWithScores("foo", 4d, 2d);
-    expected = new LinkedHashSet<Tuple>();
+    expected = new ArrayList<Tuple>();
     expected.add(new Tuple("d", 4.0d));
     expected.add(new Tuple("c", 3.0d));
     expected.add(new Tuple("b", 2.0d));
@@ -1002,24 +1003,24 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Set<Tuple> brange = jedis.zrevrangeByScoreWithScores(bfoo, 2d, 0d);
+    List<Tuple> brange = jedis.zrevrangeByScoreWithScores(bfoo, 2d, 0d);
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
-    bexpected.add(new Tuple(bc, 0.1d));
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, 2d));
+    bexpected.add(new Tuple(bc, 0.1d));
 
     assertEquals(bexpected, brange);
 
     brange = jedis.zrevrangeByScoreWithScores(bfoo, 2d, 0d, 0, 1);
 
-    bexpected = new LinkedHashSet<Tuple>();
+    bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, 2d));
 
     assertEquals(bexpected, brange);
 
     brange = jedis.zrevrangeByScoreWithScores(bfoo, 2d, 0d, 1, 1);
 
-    bexpected = new LinkedHashSet<Tuple>();
+    bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(bc, 0.1d));
 
     assertEquals(bexpected, brange);
@@ -1034,7 +1035,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zremrangeByRank("foo", 0, 0));
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("a");
     expected.add("b");
 
@@ -1048,11 +1049,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zremrangeByRank(bfoo, 0, 0));
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(ba);
     bexpected.add(bb);
 
-    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArrayListEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
   }
 
@@ -1065,7 +1066,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(2, jedis.zremrangeByScore("foo", 0, 2));
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("b");
 
     assertEquals(expected, jedis.zrange("foo", 0, 100));
@@ -1078,10 +1079,10 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(2, jedis.zremrangeByScore(bfoo, 0, 2));
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(bb);
 
-    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArrayListEquals(bexpected, jedis.zrange(bfoo, 0, 100));
   }
 
   @Test
@@ -1109,7 +1110,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(2, jedis.zremrangeByLex("foo", "[aa", "(c"));
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("a");
     expected.add("c");
 
@@ -1124,11 +1125,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zremrangeByLex(bfoo, bInclusiveB, bExclusiveC));
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
+    List<byte[]> bexpected = new ArrayList<byte[]>();
     bexpected.add(ba);
     bexpected.add(bc);
 
-    assertByteArraySetEquals(bexpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf));
+    assertByteArrayListEquals(bexpected, jedis.zrangeByLex(bfoo, bLexMinusInf, bLexPlusInf));
   }
 
   @Test
@@ -1180,9 +1181,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(2, jedis.zunionstore("dst", "foo", "bar"));
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
-    expected.add(new Tuple("b", new Double(4)));
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("a", new Double(3)));
+    expected.add(new Tuple("b", new Double(4)));
 
     assertEquals(expected, jedis.zrangeWithScores("dst", 0, 100));
 
@@ -1194,9 +1195,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(2, jedis.zunionstore(SafeEncoder.encode("dst"), bfoo, bbar));
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
-    bexpected.add(new Tuple(bb, new Double(4)));
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, new Double(3)));
+    bexpected.add(new Tuple(bb, new Double(4)));
 
     assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder.encode("dst"), 0, 100));
   }
@@ -1214,9 +1215,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(2, jedis.zunionstore("dst", params, "foo", "bar"));
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
-    expected.add(new Tuple("b", new Double(9)));
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("a", new Double(7)));
+    expected.add(new Tuple("b", new Double(9)));
 
     assertEquals(expected, jedis.zrangeWithScores("dst", 0, 100));
 
@@ -1232,9 +1233,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(2, jedis.zunionstore(SafeEncoder.encode("dst"), bparams, bfoo, bbar));
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
-    bexpected.add(new Tuple(bb, new Double(9)));
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, new Double(7)));
+    bexpected.add(new Tuple(bb, new Double(9)));
 
     assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder.encode("dst"), 0, 100));
   }
@@ -1275,7 +1276,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zinterstore("dst", "foo", "bar"));
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("a", new Double(3)));
 
     assertEquals(expected, jedis.zrangeWithScores("dst", 0, 100));
@@ -1287,7 +1288,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zinterstore(SafeEncoder.encode("dst"), bfoo, bbar));
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, new Double(3)));
 
     assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder.encode("dst"), 0, 100));
@@ -1305,7 +1306,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zinterstore("dst", params, "foo", "bar"));
 
-    Set<Tuple> expected = new LinkedHashSet<Tuple>();
+    List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("a", new Double(7)));
 
     assertEquals(expected, jedis.zrangeWithScores("dst", 0, 100));
@@ -1321,7 +1322,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1, jedis.zinterstore(SafeEncoder.encode("dst"), bparams, bfoo, bbar));
 
-    Set<Tuple> bexpected = new LinkedHashSet<Tuple>();
+    List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, new Double(7)));
 
     assertEquals(bexpected, jedis.zrangeWithScores(SafeEncoder.encode("dst"), 0, 100));
@@ -1410,7 +1411,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     assertEquals(Double.NEGATIVE_INFINITY, jedis.zscore("key", "neg"), 0d);
     jedis.zadd("key", 0d, "zero");
 
-    Set<Tuple> set = jedis.zrangeWithScores("key", 0, -1);
+    List<Tuple> set = jedis.zrangeWithScores("key", 0, -1);
     Iterator<Tuple> itr = set.iterator();
     assertEquals(Double.NEGATIVE_INFINITY, itr.next().getScore(), 0d);
     assertEquals(0d, itr.next().getScore(), 0d);
@@ -1484,7 +1485,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(0, jedis.zdiffStore("bar3", "bar1", "bar2"));
     assertEquals(1, jedis.zdiffStore("bar3", "foo", "bar"));
-    assertEquals(Collections.singleton("b"), jedis.zrange("bar3", 0, -1));
+    assertEquals(Collections.singletonList("b"), jedis.zrange("bar3", 0, -1));
 
     // binary
 
@@ -1494,15 +1495,15 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(0, jedis.zdiffStore(bbar3, bbar1, bbar2));
     assertEquals(1, jedis.zdiffStore(bbar3, bfoo, bbar));
-    Set<byte[]> bactual = jedis.zrange(bbar3, 0, -1);
+    List<byte[]> bactual = jedis.zrange(bbar3, 0, -1);
     assertArrayEquals(bb, bactual.iterator().next());
   }
 
   @Test
   public void zrandmember() {
     assertNull(jedis.zrandmember("foo"));
-    assertEquals(Collections.emptySet(), jedis.zrandmember("foo", 1));
-    assertEquals(Collections.emptySet(), jedis.zrandmemberWithScores("foo", 1));
+    assertEquals(Collections.emptyList(), jedis.zrandmember("foo", 1));
+    assertEquals(Collections.emptyList(), jedis.zrandmemberWithScores("foo", 1));
 
     Map<String, Double> hash = new HashMap<>();
     hash.put("bar1", 1d);
@@ -1513,7 +1514,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     assertTrue(hash.containsKey(jedis.zrandmember("foo")));
     assertEquals(2, jedis.zrandmember("foo", 2).size());
 
-    Set<Tuple> actual = jedis.zrandmemberWithScores("foo", 2);
+    List<Tuple> actual = jedis.zrandmemberWithScores("foo", 2);
     assertNotNull(actual);
     assertEquals(2, actual.size());
     Tuple tuple = actual.iterator().next();
@@ -1521,8 +1522,8 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     // Binary
     assertNull(jedis.zrandmember(bfoo));
-    assertEquals(Collections.emptySet(), jedis.zrandmember(bfoo, 1));
-    assertEquals(Collections.emptySet(), jedis.zrandmemberWithScores(bfoo, 1));
+    assertEquals(Collections.emptyList(), jedis.zrandmember(bfoo, 1));
+    assertEquals(Collections.emptyList(), jedis.zrandmemberWithScores(bfoo, 1));
 
     Map<byte[], Double> bhash = new HashMap<>();
     bhash.put(bbar1, 1d);
@@ -1533,9 +1534,9 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     assertCollectionContains(bhash.keySet(), jedis.zrandmember(bfoo));
     assertEquals(2, jedis.zrandmember(bfoo, 2).size());
 
-    Set<Tuple> bactual = jedis.zrandmemberWithScores(bfoo, 2);
-    assertNotNull(actual);
-    assertEquals(2, actual.size());
+    List<Tuple> bactual = jedis.zrandmemberWithScores(bfoo, 2);
+    assertNotNull(bactual);
+    assertEquals(2, bactual.size());
     tuple = bactual.iterator().next();
     assertEquals(getScoreFromByteMap(bhash, tuple.getBinaryElement()), Double.valueOf(tuple.getScore()));
   }

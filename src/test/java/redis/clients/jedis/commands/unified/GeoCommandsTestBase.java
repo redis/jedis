@@ -3,14 +3,12 @@ package redis.clients.jedis.commands.unified;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static redis.clients.jedis.util.AssertUtil.assertByteArraySetEquals;
+import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.junit.Test;
 
 import redis.clients.jedis.GeoCoordinate;
@@ -207,7 +205,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
       GeoRadiusParam.geoRadiusParam(),
       GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<>();
+    List<String> expected = new ArrayList<>();
     expected.add("Palermo");
     expected.add("Catania");
     assertEquals(expected, jedis.zrange("SicilyStore", 0, -1));
@@ -291,10 +289,10 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
       GeoRadiusParam.geoRadiusParam(),
       GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<byte[]> bexpected = new LinkedHashSet<>();
+    List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
-    assertByteArraySetEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
+    assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
   }
 
   @Test
@@ -367,7 +365,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
       GeoRadiusParam.geoRadiusParam(),
       GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<>();
+    List<String> expected = new ArrayList<>();
     expected.add("Agrigento");
     expected.add("Palermo");
     assertEquals(expected, jedis.zrange("SicilyStore", 0, -1));
@@ -435,10 +433,10 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(2, jedis.georadiusByMemberStore(bfoo, bA, 100, GeoUnit.KM,
         GeoRadiusParam.geoRadiusParam(),
         GeoRadiusStoreParam.geoRadiusStoreParam().store("SicilyStore")));
-    Set<byte[]> bexpected = new LinkedHashSet<>();
+    List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bA);
     bexpected.add(bB);
-    assertByteArraySetEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
+    assertByteArrayListEquals(bexpected, jedis.zrange("SicilyStore".getBytes(), 0, -1));
   }
 
   @Test

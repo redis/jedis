@@ -3,15 +3,11 @@ package redis.clients.jedis.commands.jedis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
-import static redis.clients.jedis.util.AssertUtil.assertByteArraySetEquals;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 import org.junit.Test;
 
 public class VariadicCommandsTest extends JedisCommandsTestBase {
@@ -160,7 +156,7 @@ public class VariadicCommandsTest extends JedisCommandsTestBase {
 
     long status = jedis.zrem("foo", "bar", "car");
 
-    Set<String> expected = new LinkedHashSet<String>();
+    List<String> expected = new ArrayList<String>();
     expected.add("foo1");
 
     assertEquals(2, status);
@@ -179,11 +175,11 @@ public class VariadicCommandsTest extends JedisCommandsTestBase {
 
     status = jedis.zrem(bfoo, bbar, bcar);
 
-    Set<byte[]> bexpected = new LinkedHashSet<byte[]>();
-    bexpected.add(bfoo);
+    List<byte[]> bexpected = new ArrayList<byte[]>();
+    bexpected.add(bfoo1);
 
     assertEquals(2, status);
-    assertByteArraySetEquals(bexpected, jedis.zrange(bfoo, 0, 100));
+    assertByteArrayListEquals(bexpected, jedis.zrange(bfoo, 0, 100));
 
     status = jedis.zrem(bfoo, bbar, bcar);
     assertEquals(0, status);

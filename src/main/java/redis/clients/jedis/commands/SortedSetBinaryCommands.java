@@ -33,19 +33,19 @@ public interface SortedSetBinaryCommands {
 
   Long zrevrank(byte[] key, byte[] member);
 
-  Set<byte[]> zrange(byte[] key, long start, long stop);
+  List<byte[]> zrange(byte[] key, long start, long stop);
 
-  Set<byte[]> zrevrange(byte[] key, long start, long stop);
+  List<byte[]> zrevrange(byte[] key, long start, long stop);
 
-  Set<Tuple> zrangeWithScores(byte[] key, long start, long stop);
+  List<Tuple> zrangeWithScores(byte[] key, long start, long stop);
 
-  Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
+  List<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
 
   byte[] zrandmember(byte[] key);
 
-  Set<byte[]> zrandmember(byte[] key, long count);
+  List<byte[]> zrandmember(byte[] key, long count);
 
-  Set<Tuple> zrandmemberWithScores(byte[] key, long count);
+  List<Tuple> zrandmemberWithScores(byte[] key, long count);
 
   long zcard(byte[] key);
 
@@ -55,47 +55,47 @@ public interface SortedSetBinaryCommands {
 
   Tuple zpopmax(byte[] key);
 
-  Set<Tuple> zpopmax(byte[] key, int count);
+  List<Tuple> zpopmax(byte[] key, int count);
 
   Tuple zpopmin(byte[] key);
 
-  Set<Tuple> zpopmin(byte[] key, int count);
+  List<Tuple> zpopmin(byte[] key, int count);
 
   long zcount(byte[] key, double min, double max);
 
   long zcount(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByScore(byte[] key, double min, double max);
+  List<byte[]> zrangeByScore(byte[] key, double min, double max);
 
-  Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max);
+  List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrevrangeByScore(byte[] key, double max, double min);
+  List<byte[]> zrevrangeByScore(byte[] key, double max, double min);
 
-  Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count);
+  List<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count);
 
-  Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min);
+  List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min);
 
-  Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count);
+  List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count);
 
-  Set<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count);
+  List<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count);
 
-  Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
+  List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max);
 
-  Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min);
+  List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min);
 
-  Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count);
+  List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count);
 
-  Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count);
+  List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-  Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
+  List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max);
 
-  Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
+  List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min);
 
-  Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count);
+  List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count);
 
-  Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count);
+  List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count);
 
-  Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
+  List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   long zremrangeByRank(byte[] key, long start, long stop);
 
@@ -105,13 +105,13 @@ public interface SortedSetBinaryCommands {
 
   long zlexcount(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
+  List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max);
 
-  Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
+  List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count);
 
-  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
+  List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
-  Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
+  List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
   long zremrangeByLex(byte[] key, byte[] min, byte[] max);
 

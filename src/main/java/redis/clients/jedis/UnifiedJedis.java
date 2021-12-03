@@ -1551,12 +1551,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<String> zrandmember(String key, long count) {
+  public List<String> zrandmember(String key, long count) {
     return executeCommand(commandObjects.zrandmember(key, count));
   }
 
   @Override
-  public Set<Tuple> zrandmemberWithScores(String key, long count) {
+  public List<Tuple> zrandmemberWithScores(String key, long count) {
     return executeCommand(commandObjects.zrandmemberWithScores(key, count));
   }
 
@@ -1581,12 +1581,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zrandmember(byte[] key, long count) {
+  public List<byte[]> zrandmember(byte[] key, long count) {
     return executeCommand(commandObjects.zrandmember(key, count));
   }
 
   @Override
-  public Set<Tuple> zrandmemberWithScores(byte[] key, long count) {
+  public List<Tuple> zrandmemberWithScores(byte[] key, long count) {
     return executeCommand(commandObjects.zrandmemberWithScores(key, count));
   }
 
@@ -1611,7 +1611,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<Tuple> zpopmax(String key, int count) {
+  public List<Tuple> zpopmax(String key, int count) {
     return executeCommand(commandObjects.zpopmax(key, count));
   }
 
@@ -1621,7 +1621,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<Tuple> zpopmin(String key, int count) {
+  public List<Tuple> zpopmin(String key, int count) {
     return executeCommand(commandObjects.zpopmin(key, count));
   }
 
@@ -1641,7 +1641,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<Tuple> zpopmax(byte[] key, int count) {
+  public List<Tuple> zpopmax(byte[] key, int count) {
     return executeCommand(commandObjects.zpopmax(key, count));
   }
 
@@ -1651,7 +1651,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<Tuple> zpopmin(byte[] key, int count) {
+  public List<Tuple> zpopmin(byte[] key, int count) {
     return executeCommand(commandObjects.zpopmin(key, count));
   }
 
@@ -1666,202 +1666,202 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<String> zrange(String key, long start, long stop) {
+  public List<String> zrange(String key, long start, long stop) {
     return executeCommand(commandObjects.zrange(key, start, stop));
   }
 
   @Override
-  public Set<String> zrevrange(String key, long start, long stop) {
+  public List<String> zrevrange(String key, long start, long stop) {
     return executeCommand(commandObjects.zrevrange(key, start, stop));
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(String key, long start, long stop) {
+  public List<Tuple> zrangeWithScores(String key, long start, long stop) {
     return executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(String key, long start, long stop) {
+  public List<Tuple> zrevrangeWithScores(String key, long start, long stop) {
     return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
 
   @Override
-  public Set<String> zrangeByScore(String key, double min, double max) {
+  public List<String> zrangeByScore(String key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Set<String> zrangeByScore(String key, String min, String max) {
+  public List<String> zrangeByScore(String key, String min, String max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Set<String> zrevrangeByScore(String key, double max, double min) {
+  public List<String> zrevrangeByScore(String key, double max, double min) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
+  public List<String> zrangeByScore(String key, double min, double max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Set<String> zrevrangeByScore(String key, String max, String min) {
+  public List<String> zrevrangeByScore(String key, String max, String min) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Set<String> zrangeByScore(String key, String min, String max, int offset, int count) {
+  public List<String> zrangeByScore(String key, String min, String max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Set<String> zrevrangeByScore(String key, double max, double min, int offset, int count) {
+  public List<String> zrevrangeByScore(String key, double max, double min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
+  public List<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
+  public List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
+  public List<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
+  public List<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
+  public List<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
+  public List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
+  public List<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
+  public List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
+  public List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
-  public Set<byte[]> zrange(byte[] key, long start, long stop) {
+  public List<byte[]> zrange(byte[] key, long start, long stop) {
     return executeCommand(commandObjects.zrange(key, start, stop));
   }
 
   @Override
-  public Set<byte[]> zrevrange(byte[] key, long start, long stop) {
+  public List<byte[]> zrevrange(byte[] key, long start, long stop) {
     return executeCommand(commandObjects.zrevrange(key, start, stop));
   }
 
   @Override
-  public Set<Tuple> zrangeWithScores(byte[] key, long start, long stop) {
+  public List<Tuple> zrangeWithScores(byte[] key, long start, long stop) {
     return executeCommand(commandObjects.zrangeWithScores(key, start, stop));
   }
 
   @Override
-  public Set<Tuple> zrevrangeWithScores(byte[] key, long start, long stop) {
+  public List<Tuple> zrevrangeWithScores(byte[] key, long start, long stop) {
     return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
   }
 
   @Override
-  public Set<byte[]> zrangeByScore(byte[] key, double min, double max) {
+  public List<byte[]> zrangeByScore(byte[] key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
+  public List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min) {
+  public List<byte[]> zrevrangeByScore(byte[] key, double max, double min) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Set<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
+  public List<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
+  public List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
-  public Set<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
+  public List<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
+  public List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
+  public List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
+  public List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
+  public List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
+  public List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
-  public Set<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
+  public List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
-  public Set<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
@@ -1901,22 +1901,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<String> zrangeByLex(String key, String min, String max) {
+  public List<String> zrangeByLex(String key, String min, String max) {
     return executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
-  public Set<String> zrangeByLex(String key, String min, String max, int offset, int count) {
+  public List<String> zrangeByLex(String key, String min, String max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
-  public Set<String> zrevrangeByLex(String key, String max, String min) {
+  public List<String> zrevrangeByLex(String key, String max, String min) {
     return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
-  public Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
+  public List<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
   }
 
@@ -1931,22 +1931,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max) {
+  public List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max) {
     return executeCommand(commandObjects.zrangeByLex(key, min, max));
   }
 
   @Override
-  public Set<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
+  public List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
     return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
+  public List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
     return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
-  public Set<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
+  public List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
   }
 

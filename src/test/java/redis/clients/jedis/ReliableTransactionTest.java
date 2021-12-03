@@ -148,7 +148,7 @@ public class ReliableTransactionTest {
     Response<String> string = t.get("string");
     Response<String> list = t.lpop("list");
     Response<String> hash = t.hget("hash", "foo");
-    Response<Set<String>> zset = t.zrange("zset", 0, -1);
+    Response<List<String>> zset = t.zrange("zset", 0, -1);
     Response<String> set = t.spop("set");
     t.exec();
 
@@ -171,7 +171,7 @@ public class ReliableTransactionTest {
     Response<byte[]> string = t.get("string".getBytes());
     Response<byte[]> list = t.lpop("list".getBytes());
     Response<byte[]> hash = t.hget("hash".getBytes(), "foo".getBytes());
-    Response<Set<byte[]>> zset = t.zrange("zset".getBytes(), 0, -1);
+    Response<List<byte[]>> zset = t.zrange("zset".getBytes(), 0, -1);
     Response<byte[]> set = t.spop("set".getBytes());
     t.exec();
 
@@ -243,7 +243,7 @@ public class ReliableTransactionTest {
     Response<String> string = t.get("string");
     Response<String> list = t.lpop("list");
     Response<String> hash = t.hget("hash", "foo");
-    Response<Set<String>> zset = t.zrange("zset", 0, -1);
+    Response<List<String>> zset = t.zrange("zset", 0, -1);
     Response<String> set = t.spop("set");
     Response<Object> x = t.sendCommand(GET, "x");
     t.exec();

@@ -2,12 +2,10 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import org.junit.Test;
-
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 
@@ -22,59 +20,65 @@ public class TupleSortedSetTest extends JedisCommandsTestBase {
 
   @Test
   public void testBinary() {
-    SortedSet<Tuple> sortedSet = new TreeSet<Tuple>();
+    List<Tuple> array = new ArrayList<Tuple>();
 
     jedis.zadd(bfoo, 0d, ba);
-    sortedSet.add(new Tuple(ba, 0d));
+    array.add(new Tuple(ba, 0d));
 
     jedis.zadd(bfoo, 1d, bb);
-    sortedSet.add(new Tuple(bb, 1d));
+    array.add(new Tuple(bb, 1d));
 
-    Set<Tuple> zrange = jedis.zrangeWithScores(bfoo, 0, -1);
-    assertEquals(sortedSet, zrange);
+    List<Tuple> zrange = jedis.zrangeWithScores(bfoo, 0, -1);
+    assertEquals(zrange, sorted(array));
 
     jedis.zadd(bfoo, -0.3, bc);
-    sortedSet.add(new Tuple(bc, -0.3));
+    array.add(new Tuple(bc, -0.3));
 
     jedis.zadd(bfoo, 0.3, bf);
-    sortedSet.add(new Tuple(bf, 0.3));
+    array.add(new Tuple(bf, 0.3));
 
     jedis.zadd(bfoo, 0.3, be);
-    sortedSet.add(new Tuple(be, 0.3));
+    array.add(new Tuple(be, 0.3));
 
     jedis.zadd(bfoo, 0.3, bd);
-    sortedSet.add(new Tuple(bd, 0.3));
+    array.add(new Tuple(bd, 0.3));
 
     zrange = jedis.zrangeWithScores(bfoo, 0, -1);
-    assertEquals(sortedSet, zrange);
+    assertEquals(zrange, sorted(array));
   }
 
   @Test
   public void testString() {
-    SortedSet<Tuple> sortedSet = new TreeSet<Tuple>();
+    List<Tuple> array = new ArrayList<Tuple>();
 
     jedis.zadd("foo", 0d, "a");
-    sortedSet.add(new Tuple("a", 0d));
+    array.add(new Tuple("a", 0d));
 
     jedis.zadd("foo", 1d, "b");
-    sortedSet.add(new Tuple("b", 1d));
+    array.add(new Tuple("b", 1d));
 
-    Set<Tuple> range = jedis.zrangeWithScores("foo", 0, -1);
-    assertEquals(sortedSet, range);
+    List<Tuple> range = jedis.zrangeWithScores("foo", 0, -1);
+    assertEquals(range, sorted(array));
 
     jedis.zadd("foo", -0.3, "c");
-    sortedSet.add(new Tuple("c", -0.3));
+    array.add(new Tuple("c", -0.3));
 
     jedis.zadd("foo", 0.3, "f");
-    sortedSet.add(new Tuple("f", 0.3));
+    array.add(new Tuple("f", 0.3));
 
     jedis.zadd("foo", 0.3, "e");
-    sortedSet.add(new Tuple("e", 0.3));
+    array.add(new Tuple("e", 0.3));
 
     jedis.zadd("foo", 0.3, "d");
-    sortedSet.add(new Tuple("d", 0.3));
+    array.add(new Tuple("d", 0.3));
 
     range = jedis.zrangeWithScores("foo", 0, -1);
-    assertEquals(sortedSet, range);
+    assertEquals(range, sorted(array));
+  }
+
+  private List<Tuple> sorted(List<Tuple> list) {
+    List<Tuple> sort = new ArrayList<>(list);
+    Collections.sort(sort);
+    return sort;
   }
 }

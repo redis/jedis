@@ -2,10 +2,10 @@ package redis.clients.jedis.commands.unified.cluster;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,7 +54,7 @@ public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
       GeoRadiusParam.geoRadiusParam(),
       GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<>();
+    List<String> expected = new ArrayList<>();
     expected.add("Palermo");
     expected.add("Catania");
     assertEquals(expected, jedis.zrange("{ITA} SicilyStore", 0, -1));
@@ -76,7 +76,7 @@ public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
       GeoRadiusParam.geoRadiusParam(),
       GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
     assertEquals(2, size);
-    Set<String> expected = new LinkedHashSet<>();
+    List<String> expected = new ArrayList<>();
     expected.add("Agrigento");
     expected.add("Palermo");
     assertEquals(expected, jedis.zrange("{ITA} SicilyStore", 0, -1));

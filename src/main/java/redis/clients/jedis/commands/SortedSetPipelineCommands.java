@@ -35,19 +35,19 @@ public interface SortedSetPipelineCommands {
 
   Response<Long> zrevrank(String key, String member);
 
-  Response<Set<String>> zrange(String key, long start, long stop);
+  Response<List<String>> zrange(String key, long start, long stop);
 
-  Response<Set<String>> zrevrange(String key, long start, long stop);
+  Response<List<String>> zrevrange(String key, long start, long stop);
 
-  Response<Set<Tuple>> zrangeWithScores(String key, long start, long stop);
+  Response<List<Tuple>> zrangeWithScores(String key, long start, long stop);
 
-  Response<Set<Tuple>> zrevrangeWithScores(String key, long start, long stop);
+  Response<List<Tuple>> zrevrangeWithScores(String key, long start, long stop);
 
   Response<String> zrandmember(String key);
 
-  Response<Set<String>> zrandmember(String key, long count);
+  Response<List<String>> zrandmember(String key, long count);
 
-  Response<Set<Tuple>> zrandmemberWithScores(String key, long count);
+  Response<List<Tuple>> zrandmemberWithScores(String key, long count);
 
   Response<Long> zcard(String key);
 
@@ -57,47 +57,47 @@ public interface SortedSetPipelineCommands {
 
   Response<Tuple> zpopmax(String key);
 
-  Response<Set<Tuple>> zpopmax(String key, int count);
+  Response<List<Tuple>> zpopmax(String key, int count);
 
   Response<Tuple> zpopmin(String key);
 
-  Response<Set<Tuple>> zpopmin(String key, int count);
+  Response<List<Tuple>> zpopmin(String key, int count);
 
   Response<Long> zcount(String key, double min, double max);
 
   Response<Long> zcount(String key, String min, String max);
 
-  Response<Set<String>> zrangeByScore(String key, double min, double max);
+  Response<List<String>> zrangeByScore(String key, double min, double max);
 
-  Response<Set<String>> zrangeByScore(String key, String min, String max);
+  Response<List<String>> zrangeByScore(String key, String min, String max);
 
-  Response<Set<String>> zrevrangeByScore(String key, double max, double min);
+  Response<List<String>> zrevrangeByScore(String key, double max, double min);
 
-  Response<Set<String>> zrangeByScore(String key, double min, double max, int offset, int count);
+  Response<List<String>> zrangeByScore(String key, double min, double max, int offset, int count);
 
-  Response<Set<String>> zrevrangeByScore(String key, String max, String min);
+  Response<List<String>> zrevrangeByScore(String key, String max, String min);
 
-  Response<Set<String>> zrangeByScore(String key, String min, String max, int offset, int count);
+  Response<List<String>> zrangeByScore(String key, String min, String max, int offset, int count);
 
-  Response<Set<String>> zrevrangeByScore(String key, double max, double min, int offset, int count);
+  Response<List<String>> zrevrangeByScore(String key, double max, double min, int offset, int count);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max);
+  Response<List<Tuple>> zrangeByScoreWithScores(String key, double min, double max);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min);
+  Response<List<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
+  Response<List<Tuple>> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
 
-  Response<Set<String>> zrevrangeByScore(String key, String max, String min, int offset, int count);
+  Response<List<String>> zrevrangeByScore(String key, String max, String min, int offset, int count);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max);
+  Response<List<Tuple>> zrangeByScoreWithScores(String key, String min, String max);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min);
+  Response<List<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min);
 
-  Response<Set<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
+  Response<List<Tuple>> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
+  Response<List<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
 
-  Response<Set<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
+  Response<List<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
   Response<Long> zremrangeByRank(String key, long start, long stop);
 
@@ -107,13 +107,13 @@ public interface SortedSetPipelineCommands {
 
   Response<Long> zlexcount(String key, String min, String max);
 
-  Response<Set<String>> zrangeByLex(String key, String min, String max);
+  Response<List<String>> zrangeByLex(String key, String min, String max);
 
-  Response<Set<String>> zrangeByLex(String key, String min, String max, int offset, int count);
+  Response<List<String>> zrangeByLex(String key, String min, String max, int offset, int count);
 
-  Response<Set<String>> zrevrangeByLex(String key, String max, String min);
+  Response<List<String>> zrevrangeByLex(String key, String max, String min);
 
-  Response<Set<String>> zrevrangeByLex(String key, String max, String min, int offset, int count);
+  Response<List<String>> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
   Response<Long> zremrangeByLex(String key, String min, String max);
 

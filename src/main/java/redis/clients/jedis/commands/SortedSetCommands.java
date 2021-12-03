@@ -34,19 +34,19 @@ public interface SortedSetCommands {
 
   Long zrevrank(String key, String member);
 
-  Set<String> zrange(String key, long start, long stop);
+  List<String> zrange(String key, long start, long stop);
 
-  Set<String> zrevrange(String key, long start, long stop);
+  List<String> zrevrange(String key, long start, long stop);
 
-  Set<Tuple> zrangeWithScores(String key, long start, long stop);
+  List<Tuple> zrangeWithScores(String key, long start, long stop);
 
-  Set<Tuple> zrevrangeWithScores(String key, long start, long stop);
+  List<Tuple> zrevrangeWithScores(String key, long start, long stop);
 
   String zrandmember(String key);
 
-  Set<String> zrandmember(String key, long count);
+  List<String> zrandmember(String key, long count);
 
-  Set<Tuple> zrandmemberWithScores(String key, long count);
+  List<Tuple> zrandmemberWithScores(String key, long count);
 
   long zcard(String key);
 
@@ -56,47 +56,47 @@ public interface SortedSetCommands {
 
   Tuple zpopmax(String key);
 
-  Set<Tuple> zpopmax(String key, int count);
+  List<Tuple> zpopmax(String key, int count);
 
   Tuple zpopmin(String key);
 
-  Set<Tuple> zpopmin(String key, int count);
+  List<Tuple> zpopmin(String key, int count);
 
   long zcount(String key, double min, double max);
 
   long zcount(String key, String min, String max);
 
-  Set<String> zrangeByScore(String key, double min, double max);
+  List<String> zrangeByScore(String key, double min, double max);
 
-  Set<String> zrangeByScore(String key, String min, String max);
+  List<String> zrangeByScore(String key, String min, String max);
 
-  Set<String> zrevrangeByScore(String key, double max, double min);
+  List<String> zrevrangeByScore(String key, double max, double min);
 
-  Set<String> zrangeByScore(String key, double min, double max, int offset, int count);
+  List<String> zrangeByScore(String key, double min, double max, int offset, int count);
 
-  Set<String> zrevrangeByScore(String key, String max, String min);
+  List<String> zrevrangeByScore(String key, String max, String min);
 
-  Set<String> zrangeByScore(String key, String min, String max, int offset, int count);
+  List<String> zrangeByScore(String key, String min, String max, int offset, int count);
 
-  Set<String> zrevrangeByScore(String key, double max, double min, int offset, int count);
+  List<String> zrevrangeByScore(String key, double max, double min, int offset, int count);
 
-  Set<Tuple> zrangeByScoreWithScores(String key, double min, double max);
+  List<Tuple> zrangeByScoreWithScores(String key, double min, double max);
 
-  Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
+  List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
 
-  Set<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
+  List<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
 
-  Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count);
+  List<String> zrevrangeByScore(String key, String max, String min, int offset, int count);
 
-  Set<Tuple> zrangeByScoreWithScores(String key, String min, String max);
+  List<Tuple> zrangeByScoreWithScores(String key, String min, String max);
 
-  Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min);
+  List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min);
 
-  Set<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
+  List<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
 
-  Set<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
+  List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
 
-  Set<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
+  List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
 
   long zremrangeByRank(String key, long start, long stop);
 
@@ -106,13 +106,13 @@ public interface SortedSetCommands {
 
   long zlexcount(String key, String min, String max);
 
-  Set<String> zrangeByLex(String key, String min, String max);
+  List<String> zrangeByLex(String key, String min, String max);
 
-  Set<String> zrangeByLex(String key, String min, String max, int offset, int count);
+  List<String> zrangeByLex(String key, String min, String max, int offset, int count);
 
-  Set<String> zrevrangeByLex(String key, String max, String min);
+  List<String> zrevrangeByLex(String key, String max, String min);
 
-  Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count);
+  List<String> zrevrangeByLex(String key, String max, String min, int offset, int count);
 
   long zremrangeByLex(String key, String min, String max);
 

@@ -1,5 +1,11 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Command.DISCARD;
+import static redis.clients.jedis.Protocol.Command.EXEC;
+import static redis.clients.jedis.Protocol.Command.MULTI;
+import static redis.clients.jedis.Protocol.Command.UNWATCH;
+import static redis.clients.jedis.Protocol.Command.WATCH;
+
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,82 +24,119 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.IndexOptions;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.Schema;
-import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.stream.*;
 
-public class Pipeline extends Queable  implements PipelineCommands, PipelineBinaryCommands,
-    RedisModulePipelineCommands, Closeable {
+public abstract class TransactionBase extends Queable implements PipelineCommands,
+    PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
 
   protected final Connection connection;
-//  private final Jedis jedis;
   private final CommandObjects commandObjects;
 
-  public Pipeline(Connection connection) {
-//    super(connection);
+  private boolean inWatch = false;
+  private boolean inMulti = false;
+
+  public TransactionBase(Connection connection) {
+    this(connection, true);
+  }
+
+  /**
+   * If you want to WATCH/UNWATCH keys before MULTI command you should do {@code doMulti = true}.
+   */
+  public TransactionBase(Connection connection, boolean doMulti) {
     this.connection = connection;
-//    this.jedis = null;
     this.commandObjects = new CommandObjects();
+    if (doMulti) multi();
   }
 
-  public Pipeline(Jedis jedis) {
-//    super(jedis.getConnection());
-    this.connection = jedis.getConnection();
-//    this.jedis = jedis;
-    this.commandObjects = new CommandObjects();
+  public final void multi() {
+    connection.sendCommand(MULTI);
+    processMultiResponse();
+    inMulti = true;
   }
 
-  public final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
+  public String watch(final String... keys) {
+    connection.sendCommand(WATCH, keys);
+    String status = connection.getStatusCodeReply();
+    inWatch = true;
+    return status;
+  }
+
+  public String watch(final byte[]... keys) {
+    connection.sendCommand(WATCH, keys);
+    String status = connection.getStatusCodeReply();
+    inWatch = true;
+    return status;
+  }
+
+  public String unwatch() {
+    connection.sendCommand(UNWATCH);
+    String status = connection.getStatusCodeReply();
+    inWatch = false;
+    return status;
+  }
+
+  protected abstract void processMultiResponse();
+
+  protected abstract void processAppendStatus();
+
+  protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     connection.sendCommand(commandObject.getArguments());
+    processAppendStatus();
     return enqueResponse(commandObject.getBuilder());
   }
 
   @Override
-  public void close() {
-    sync();
+  public final void close() {
+    clear();
   }
 
-  /**
-   * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to
-   * get return values from pipelined commands, capture the different Response&lt;?&gt; of the
-   * commands you execute.
-   */
-  public void sync() {
-    if (!hasPipelinedResponse()) return;
-    List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
+  public final void clear() {
+    if (inMulti) {
+      discard();
+    } else if (inWatch) {
+      unwatch();
+    }
+  }
+
+  protected abstract void processPipelinedResponses();
+
+  public List<Object> exec() {
+    if (!inMulti) throw new IllegalStateException("EXEC without MULTI");
+    // ignore QUEUED or ERROR
+//    connection.getMany(1 + getPipelinedResponseLength());
+    processPipelinedResponses();
+    connection.sendCommand(EXEC);
+    inMulti = false;
+    inWatch = false;
+
+    List<Object> unformatted = connection.getObjectMultiBulkReply();
+    if (unformatted == null) {
+      clean();
+      return null;
+    }
+    List<Object> formatted = new ArrayList<>(unformatted.size());
     for (Object o : unformatted) {
-      generateResponse(o);
-    }
-  }
-
-  /**
-   * Synchronize pipeline by reading all responses. This operation close the pipeline. Whenever
-   * possible try to avoid using this version and use Pipeline.sync() as it won't go through all the
-   * responses and generate the right response type (usually it is a waste of time).
-   * @return A list of all the responses in the order you executed them.
-   */
-  public List<Object> syncAndReturnAll() {
-    if (hasPipelinedResponse()) {
-      List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
-      List<Object> formatted = new ArrayList<>();
-      for (Object o : unformatted) {
-        try {
-          formatted.add(generateResponse(o).get());
-        } catch (JedisDataException e) {
-          formatted.add(e);
-        }
+      try {
+        formatted.add(generateResponse(o).get());
+      } catch (JedisDataException e) {
+        formatted.add(e);
       }
-      return formatted;
-    } else {
-      return java.util.Collections.<Object> emptyList();
     }
+    return formatted;
   }
 
-  @Deprecated
-  public final boolean hasPipelinedResponse() {
-    return getPipelinedResponseLength() > 0;
+  public String discard() {
+    if (!inMulti) throw new IllegalStateException("DISCARD without MULTI");
+    // ignore QUEUED or ERROR
+//    connection.getMany(1 + getPipelinedResponseLength());
+    processPipelinedResponses();
+    connection.sendCommand(DISCARD);
+    String status = connection.getStatusCodeReply(); // OK
+    inMulti = false;
+    inWatch = false;
+    clean();
+    return status;
   }
 
   @Override
@@ -1245,12 +1288,12 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
-    return appendCommand(commandObjects.xrevrange(key, end, start));
+    return appendCommand(commandObjects.xrevrange(key, start, end));
   }
 
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
-    return appendCommand(commandObjects.xrevrange(key, end, start, count));
+    return appendCommand(commandObjects.xrevrange(key, start, end, count));
   }
 
   @Override
@@ -2266,7 +2309,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
   }
 
   @Override
@@ -2276,7 +2319,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
   }
 
   @Override
@@ -2286,7 +2329,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
   }
 
   @Override
@@ -2296,7 +2339,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
   }
 
   @Override
@@ -2306,7 +2349,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
   }
 
   @Override
@@ -2316,7 +2359,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
   }
 
   @Override
@@ -2326,12 +2369,12 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
   }
 
   @Override
@@ -2366,12 +2409,12 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   @Override
   public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByLex(key, max, min));
+    return appendCommand(commandObjects.zrevrangeByLex(key, min, max));
   }
 
   @Override
   public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
+    return appendCommand(commandObjects.zrevrangeByLex(key, min, max, offset, count));
   }
 
   @Override

@@ -363,32 +363,6 @@ public final class BuilderFactory {
 
   };
 
-  public static final Builder<Set<String>> STRING_ZSET = new Builder<Set<String>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Set<String> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new LinkedHashSet<>(l.size(), 1);
-      for (final byte[] barray : l) {
-        if (barray == null) {
-          result.add(null);
-        } else {
-          result.add(SafeEncoder.encode(barray));
-        }
-      }
-      return result;
-    }
-
-    @Override
-    public String toString() {
-      return "ZSet<String>";
-    }
-
-  };
-
   public static final Builder<Map<String, String>> STRING_MAP = new Builder<Map<String, String>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -457,6 +431,28 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "KeyedZSetElement";
+    }
+  };
+
+  public static final Builder<List<Tuple>> TUPLE_LIST = new Builder<List<Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Tuple> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<byte[]> l = (List<byte[]>) data;
+      final List<Tuple> result = new ArrayList<>(l.size() / 2);
+      Iterator<byte[]> iterator = l.iterator();
+      while (iterator.hasNext()) {
+        result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Tuple>";
     }
   };
 

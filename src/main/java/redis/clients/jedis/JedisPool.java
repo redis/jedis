@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
+// Legacy
 public class JedisPool extends Pool<Jedis> {
 
   private static final Logger log = LoggerFactory.getLogger(JedisPool.class);
@@ -355,7 +356,7 @@ public class JedisPool extends Pool<Jedis> {
         sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
-  public JedisPool(GenericObjectPoolConfig poolConfig, PooledObjectFactory<Jedis> factory) {
+  public JedisPool(GenericObjectPoolConfig<Jedis> poolConfig, PooledObjectFactory<Jedis> factory) {
     super(poolConfig, factory);
   }
 
@@ -373,7 +374,7 @@ public class JedisPool extends Pool<Jedis> {
         resource.resetState();
         super.returnResource(resource);
       } catch (RuntimeException e) {
-        returnBrokenResource(resource);
+        super.returnBrokenResource(resource);
         log.warn("Resource is returned to the pool as broken", e);
       }
     }

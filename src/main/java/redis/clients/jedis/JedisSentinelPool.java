@@ -185,7 +185,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   private static Set<HostAndPort> parseHostAndPorts(Set<String> strings) {
-    return strings.stream().map(HostAndPort::parseString).collect(Collectors.toSet());
+    return strings.stream().map(HostAndPort::from).collect(Collectors.toSet());
   }
 
   @Override
@@ -226,7 +226,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
       LOG.debug("Connecting to Sentinel {}", sentinel);
 
-      try (Jedis jedis = new Jedis(sentinel, sentinelClientConfig)) {
+      try (Sentinel jedis = new Sentinel(sentinel, sentinelClientConfig)) {
 
         List<String> masterAddr = jedis.sentinelGetMasterAddrByName(masterName);
 
@@ -289,8 +289,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
       // get a reference because it can change concurrently
       final HostAndPort master = currentHostMaster;
-      final HostAndPort connection = new HostAndPort(jedis.getClient().getHost(), jedis.getClient()
-          .getPort());
+      final HostAndPort connection = jedis.getClient().getHostAndPort();
 
       if (master.equals(connection)) {
         // connected to the correct master
@@ -320,7 +319,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     protected String host;
     protected int port;
     protected long subscribeRetryWaitTimeMillis = 5000;
-    protected volatile Jedis j;
+    protected volatile Sentinel j;
     protected AtomicBoolean running = new AtomicBoolean(false);
 
     protected MasterListener() {
@@ -353,7 +352,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
           }
           
           final HostAndPort hostPort = new HostAndPort(host, port);
-          j = new Jedis(hostPort, sentinelClientConfig);
+          j = new Sentinel(hostPort, sentinelClientConfig);
 
           // code for active refresh
           List<String> masterAddr = j.sentinelGetMasterAddrByName(masterName);

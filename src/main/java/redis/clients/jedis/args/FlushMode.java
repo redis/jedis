@@ -19,7 +19,7 @@ public enum FlushMode implements Rawable {
 
   private final byte[] raw;
 
-  FlushMode() {
+  private FlushMode() {
     raw = SafeEncoder.encode(this.name());
   }
 

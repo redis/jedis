@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 public class GeoCoordinate {
+
   private double longitude;
   private double latitude;
 

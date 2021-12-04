@@ -1,13 +1,10 @@
 package redis.clients.jedis.params;
 
-import redis.clients.jedis.Protocol;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static redis.clients.jedis.Protocol.Keyword.COUNT;
 
-public class XAutoClaimParams extends Params {
+import redis.clients.jedis.CommandArguments;
+
+public class XAutoClaimParams implements IParams {
 
   private Integer count;
 
@@ -29,15 +26,10 @@ public class XAutoClaimParams extends Params {
   }
 
   @Override
-  public byte[][] getByteParams() {
-    List<byte[]> byteParams = new ArrayList<>();
-
+  public void addParams(CommandArguments args) {
     if (count != null) {
-      byteParams.add(COUNT.getRaw());
-      byteParams.add(Protocol.toByteArray(count));
+      args.add(COUNT.getRaw()).add(count);
     }
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 
 }

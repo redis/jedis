@@ -1,38 +1,20 @@
 package redis.clients.jedis;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.io.Serializable;
+import java.util.*;
+import java.util.stream.Collectors;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
-
-  /**
-   * @deprecated Use {@link #RAW_OBJECT}.
-   */
-  @Deprecated
-  public static final Builder<Object> OBJECT = new Builder<Object>() {
-    @Override
-    public Object build(Object data) {
-      return data;
-    }
-
-    @Override
-    public String toString() {
-      return "Object";
-    }
-  };
 
   public static final Builder<Object> RAW_OBJECT = new Builder<Object>() {
     @Override
@@ -82,6 +64,19 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP = new Builder<Map<String, Object>>() {
+    @Override
+    public Map<String, Object> build(Object data) {
+      final List list = (List) data;
+      final Map<String, Object> map = new HashMap<>(list.size() / 2, 1);
+      final Iterator iterator = list.iterator();
+      while (iterator.hasNext()) {
+        map.put(STRING.build(iterator.next()), ENCODED_OBJECT.build(iterator.next()));
+      }
+      return map;
+    }
+  };
+
   public static final Builder<Long> LONG = new Builder<Long>() {
     @Override
     public Long build(Object data) {
@@ -90,7 +85,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "long"; // TODO: Long
+      return "Long";
     }
 
   };
@@ -128,7 +123,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "double"; // TODO: Double
+      return "Double";
     }
   };
 
@@ -156,12 +151,13 @@ public final class BuilderFactory {
   public static final Builder<Boolean> BOOLEAN = new Builder<Boolean>() {
     @Override
     public Boolean build(Object data) {
+      if (data == null) return null;
       return ((Long) data) == 1L;
     }
 
     @Override
     public String toString() {
-      return "boolean"; // Boolean?
+      return "Boolean";
     }
   };
 
@@ -175,7 +171,7 @@ public final class BuilderFactory {
       List<Long> longs = (List<Long>) data;
       List<Boolean> booleans = new ArrayList<>(longs.size());
       for (Long value : longs) {
-        booleans.add(value == 1L);
+        booleans.add(value == null ? null : value == 1L);
       }
       return booleans;
     }
@@ -214,31 +210,49 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Set<byte[]>> BYTE_ARRAY_ZSET = new Builder<Set<byte[]>>() {
+  public static final Builder<byte[]> BINARY = new Builder<byte[]>() {
+    @Override
+    public byte[] build(Object data) {
+      return (byte[]) data;
+    }
+
+    @Override
+    public String toString() {
+      return "byte[]";
+    }
+  };
+
+  public static final Builder<List<byte[]>> BINARY_LIST = new Builder<List<byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<byte[]> build(Object data) {
+      return (List<byte[]>) data;
+    }
+
+    @Override
+    public String toString() {
+      return "List<byte[]>";
+    }
+  };
+
+  public static final Builder<Set<byte[]>> BINARY_SET = new Builder<Set<byte[]>>() {
     @Override
     @SuppressWarnings("unchecked")
     public Set<byte[]> build(Object data) {
       if (null == data) {
         return null;
       }
-      List<byte[]> l = (List<byte[]>) data;
-      final Set<byte[]> result = new LinkedHashSet<>(l);
-      for (final byte[] barray : l) {
-        if (barray == null) {
-          result.add(null);
-        } else {
-          result.add(barray);
-        }
-      }
-      return result;
+      List<byte[]> l = BINARY_LIST.build(data);
+      return SetFromList.of(l);
     }
 
     @Override
     public String toString() {
-      return "ZSet<byte[]>";
+      return "Set<byte[]>";
     }
   };
-  public static final Builder<Map<byte[], byte[]>> BYTE_ARRAY_MAP = new Builder<Map<byte[], byte[]>>() {
+
+  public static final Builder<Map<byte[], byte[]>> BINARY_MAP = new Builder<Map<byte[], byte[]>>() {
     @Override
     @SuppressWarnings("unchecked")
     public Map<byte[], byte[]> build(Object data) {
@@ -256,7 +270,6 @@ public final class BuilderFactory {
     public String toString() {
       return "Map<byte[], byte[]>";
     }
-
   };
 
   public static final Builder<String> STRING = new Builder<String>() {
@@ -267,7 +280,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "string"; // TODO: String
+      return "String";
     }
 
   };
@@ -320,32 +333,6 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "Set<String>";
-    }
-
-  };
-
-  public static final Builder<Set<String>> STRING_ZSET = new Builder<Set<String>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Set<String> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new LinkedHashSet<>(l.size(), 1);
-      for (final byte[] barray : l) {
-        if (barray == null) {
-          result.add(null);
-        } else {
-          result.add(SafeEncoder.encode(barray));
-        }
-      }
-      return result;
-    }
-
-    @Override
-    public String toString() {
-      return "ZSet<String>";
     }
 
   };
@@ -421,6 +408,28 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<Tuple>> TUPLE_LIST = new Builder<List<Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Tuple> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<byte[]> l = (List<byte[]>) data;
+      final List<Tuple> result = new ArrayList<>(l.size() / 2);
+      Iterator<byte[]> iterator = l.iterator();
+      while (iterator.hasNext()) {
+        result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Tuple>";
+    }
+  };
+
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -444,52 +453,112 @@ public final class BuilderFactory {
 
   };
 
-  /**
-   * @deprecated Use {@link #ENCODED_OBJECT}.
-   */
-  @Deprecated
-  public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
-
+  public static final Builder<ScanResult<String>> SCAN_RESPONSE = new Builder<ScanResult<String>>() {
     @Override
-    public Object build(Object data) {
-      return SafeEncoder.encodeObject(data);
-    }
-
-    @Override
-    public String toString() {
-      return "Eval<Object>";
+    public ScanResult<String> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String newcursor = new String((byte[]) result.get(0));
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<String> results = new ArrayList<>(rawResults.size());
+      for (byte[] bs : rawResults) {
+        results.add(SafeEncoder.encode(bs));
+      }
+      return new ScanResult<>(newcursor, results);
     }
   };
 
-  /**
-   * @deprecated Use {@link #RAW_OBJECT}.
-   */
-  @Deprecated
-  public static final Builder<Object> EVAL_BINARY_RESULT = new Builder<Object>() {
-
+  public static final Builder<ScanResult<Map.Entry<String, String>>> HSCAN_RESPONSE
+      = new Builder<ScanResult<Map.Entry<String, String>>>() {
     @Override
-    public Object build(Object data) {
-      return data;
-    }
-
-    @Override
-    public String toString() {
-      return "Eval<Object>";
+    public ScanResult<Map.Entry<String, String>> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String newcursor = new String((byte[]) result.get(0));
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<Map.Entry<String, String>> results = new ArrayList<>(rawResults.size() / 2);
+      Iterator<byte[]> iterator = rawResults.iterator();
+      while (iterator.hasNext()) {
+        results.add(new AbstractMap.SimpleEntry<>(SafeEncoder.encode(iterator.next()),
+            SafeEncoder.encode(iterator.next())));
+      }
+      return new ScanResult<>(newcursor, results);
     }
   };
 
-  public static final Builder<Map<String, String>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, String>>() {
+  public static final Builder<ScanResult<String>> SSCAN_RESPONSE = new Builder<ScanResult<String>>() {
+    @Override
+    public ScanResult<String> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String newcursor = new String((byte[]) result.get(0));
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<String> results = new ArrayList<>(rawResults.size());
+      for (byte[] bs : rawResults) {
+        results.add(SafeEncoder.encode(bs));
+      }
+      return new ScanResult<>(newcursor, results);
+    }
+  };
+
+  public static final Builder<ScanResult<Tuple>> ZSCAN_RESPONSE = new Builder<ScanResult<Tuple>>() {
+    @Override
+    public ScanResult<Tuple> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String newcursor = new String((byte[]) result.get(0));
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<Tuple> results = new ArrayList<>(rawResults.size() / 2);
+      Iterator<byte[]> iterator = rawResults.iterator();
+      while (iterator.hasNext()) {
+        results.add(new Tuple(iterator.next(), BuilderFactory.DOUBLE.build(iterator.next())));
+      }
+      return new ScanResult<>(newcursor, results);
+    }
+  };
+
+  public static final Builder<ScanResult<byte[]>> SCAN_BINARY_RESPONSE = new Builder<ScanResult<byte[]>>() {
+    @Override
+    public ScanResult<byte[]> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      byte[] newcursor = (byte[]) result.get(0);
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      return new ScanResult<>(newcursor, rawResults);
+    }
+  };
+
+  public static final Builder<ScanResult<Map.Entry<byte[], byte[]>>> HSCAN_BINARY_RESPONSE
+      = new Builder<ScanResult<Map.Entry<byte[], byte[]>>>() {
+    @Override
+    public ScanResult<Map.Entry<byte[], byte[]>> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      byte[] newcursor = (byte[]) result.get(0);
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      List<Map.Entry<byte[], byte[]>> results = new ArrayList<>(rawResults.size() / 2);
+      Iterator<byte[]> iterator = rawResults.iterator();
+      while (iterator.hasNext()) {
+        results.add(new AbstractMap.SimpleEntry<>(iterator.next(), iterator.next()));
+      }
+      return new ScanResult<>(newcursor, results);
+    }
+  };
+
+  public static final Builder<ScanResult<byte[]>> SSCAN_BINARY_RESPONSE = new Builder<ScanResult<byte[]>>() {
+    @Override
+    public ScanResult<byte[]> build(Object data) {
+      List<Object> result = (List<Object>) data;
+      byte[] newcursor = (byte[]) result.get(0);
+      List<byte[]> rawResults = (List<byte[]>) result.get(1);
+      return new ScanResult<>(newcursor, rawResults);
+    }
+  };
+
+  public static final Builder<Map<String, Long>> PUBSUB_NUMSUB_MAP = new Builder<Map<String, Long>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public Map<String, String> build(Object data) {
+    public Map<String, Long> build(Object data) {
       final List<Object> flatHash = (List<Object>) data;
-      final Map<String, String> hash = new HashMap<>(flatHash.size() / 2, 1);
+      final Map<String, Long> hash = new HashMap<>(flatHash.size() / 2, 1);
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
-        hash.put(SafeEncoder.encode((byte[]) iterator.next()),
-          String.valueOf((Long) iterator.next()));
+        hash.put(SafeEncoder.encode((byte[]) iterator.next()), (Long) iterator.next());
       }
-
       return hash;
     }
 
@@ -1093,10 +1162,6 @@ public final class BuilderFactory {
 
   // <-- Stream Builders
 
-  private BuilderFactory() {
-    throw new InstantiationError("Must not instantiate this class");
-  }
-
   public static final Builder<LCSMatchResult> STR_ALGO_LCS_RESULT_BUILDER = new Builder<LCSMatchResult>() {
     @Override
     public LCSMatchResult build(Object data) {
@@ -1142,5 +1207,249 @@ public final class BuilderFactory {
       }
     }
   };
+
+  public static final Builder<Map<String, String>> STRING_MAP_FROM_PAIRS = new Builder<Map<String, String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, String> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      final Map<String, String> map = new HashMap<>(list.size());
+      for (Object object : list) {
+        final List<byte[]> flat = (List<byte[]>) object;
+        map.put(SafeEncoder.encode(flat.get(0)), flat.get(1) != null ? SafeEncoder.encode(flat.get(1)) : null);
+      }
+
+      return map;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, String>";
+    }
+
+  };
+
+  public static final Builder<Class<?>> JSON_TYPE = new Builder<Class<?>>() {
+    @Override
+    public Class<?> build(Object data) {
+      if (data == null) return null;
+      String str = STRING.build(data);
+      switch (str) {
+        case "null":
+          return null;
+        case "boolean":
+          return boolean.class;
+        case "integer":
+          return int.class;
+        case "number":
+          return float.class;
+        case "string":
+          return String.class;
+        case "object":
+          return Object.class;
+        case "array":
+          return List.class;
+        default:
+          throw new JedisException("Unknown type: " + str);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Class<?>";
+    }
+  };
+
+  public static final Builder<List<Class<?>>> JSON_TYPE_LIST = new Builder<List<Class<?>>>() {
+    @Override
+    public List<Class<?>> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      List<Class<?>> classes = new ArrayList<>(list.size());
+      for (Object elem : list) {
+        try {
+          classes.add(JSON_TYPE.build(elem));
+        } catch (JedisException je) {
+          classes.add(null);
+        }
+      }
+      return classes;
+    }
+  };
+
+  public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
+    @Override
+    public Object build(Object data) {
+      if (data == null) return null;
+
+      if (!(data instanceof byte[])) return data;
+
+      String str = STRING.build(data);
+      if (str.charAt(0) == '{') {
+        try {
+          return new JSONObject(str);
+        } catch (Exception ex) { }
+      } else if (str.charAt(0) == '[') {
+        try {
+          return new JSONArray(str);
+        } catch (Exception ex) { }
+      }
+      return str;
+    }
+  };
+
+  public static final Builder<JSONArray> JSON_ARRAY = new Builder<JSONArray>() {
+    @Override
+    public JSONArray build(Object data) {
+      if (data == null) return null;
+      return new JSONArray(STRING.build(data));
+    }
+  };
+
+  public static final Builder<List<JSONArray>> JSON_ARRAY_LIST = new Builder<List<JSONArray>>() {
+    @Override
+    public List<JSONArray> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      return list.stream().map(o -> JSON_ARRAY.build(o)).collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<AggregationResult> SEARCH_AGGREGATION_RESULT = new Builder<AggregationResult>() {
+    @Override
+    public AggregationResult build(Object data) {
+      return new AggregationResult(data);
+    }
+  };
+
+  public static final Builder<AggregationResult> SEARCH_AGGREGATION_RESULT_WITH_CURSOR = new Builder<AggregationResult>() {
+    @Override
+    public AggregationResult build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return new AggregationResult(list.get(0), (long) list.get(1));
+    }
+  };
+
+  public static final Builder<Map<String, List<String>>> SEARCH_SYNONYM_GROUPS = new Builder<Map<String, List<String>>>() {
+    @Override
+    public Map<String, List<String>> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      Map<String, List<String>> dump = new HashMap<>(list.size() / 2);
+      for (int i = 0; i < list.size(); i += 2) {
+        dump.put(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
+      }
+      return dump;
+    }
+  };
+
+  /**
+   * A decorator to implement Set from List. Assume that given List do not contains duplicated
+   * values. The resulting set displays the same ordering, concurrency, and performance
+   * characteristics as the backing list. This class should be used only for Redis commands which
+   * return Set result.
+   * @param <E>
+   */
+  protected static class SetFromList<E> extends AbstractSet<E> implements Serializable {
+    private static final long serialVersionUID = -2850347066962734052L;
+    private final List<E> list;
+
+    private SetFromList(List<E> list) {
+      this.list = list;
+    }
+
+    @Override
+    public void clear() {
+      list.clear();
+    }
+
+    @Override
+    public int size() {
+      return list.size();
+    }
+
+    @Override
+    public boolean isEmpty() {
+      return list.isEmpty();
+    }
+
+    @Override
+    public boolean contains(Object o) {
+      return list.contains(o);
+    }
+
+    @Override
+    public boolean remove(Object o) {
+      return list.remove(o);
+    }
+
+    @Override
+    public boolean add(E e) {
+      return !contains(e) && list.add(e);
+    }
+
+    @Override
+    public Iterator<E> iterator() {
+      return list.iterator();
+    }
+
+    @Override
+    public Object[] toArray() {
+      return list.toArray();
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a) {
+      return list.toArray(a);
+    }
+
+    @Override
+    public String toString() {
+      return list.toString();
+    }
+
+    @Override
+    public int hashCode() {
+      return list.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o == null) return false;
+      if (o == this) return true;
+      if (!(o instanceof Set)) return false;
+
+      Collection<?> c = (Collection<?>) o;
+      if (c.size() != size()) {
+        return false;
+      }
+
+      return containsAll(c);
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c) {
+      return list.containsAll(c);
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c) {
+      return list.removeAll(c);
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c) {
+      return list.retainAll(c);
+    }
+
+    protected static <E> SetFromList<E> of(List<E> list) {
+      if (list == null) {
+        return null;
+      }
+      return new SetFromList<>(list);
+    }
+  }
+
+  private BuilderFactory() {
+    throw new InstantiationError("Must not instantiate this class");
+  }
 
 }

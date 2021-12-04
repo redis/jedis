@@ -1,8 +1,7 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.Module;
-
 import java.util.List;
+import redis.clients.jedis.Module;
 
 public interface ModuleCommands {
 

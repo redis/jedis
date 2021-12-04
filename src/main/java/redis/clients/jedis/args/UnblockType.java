@@ -6,11 +6,12 @@ import redis.clients.jedis.util.SafeEncoder;
  * Unblock type for {@code CLIENT UNBLOCK} command.
  */
 public enum UnblockType implements Rawable {
+
   TIMEOUT, ERROR;
 
   private final byte[] raw;
 
-  UnblockType() {
+  private UnblockType() {
     raw = SafeEncoder.encode(this.name());
   }
 

@@ -101,7 +101,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
       // <-@wjw_add
       socket.setSoTimeout(getSoTimeout());
-      connectToFirstSuccsefulHost(socket, getSocketHostAndPort());
+      hostAndPort = getSocketHostAndPort();
+      connectToFirstSuccsefulHost(socket, hostAndPort);
       if (ssl) {
         SSLSocketFactory sslSocketFactory = getSslSocketFactory();
         if (null == sslSocketFactory) {

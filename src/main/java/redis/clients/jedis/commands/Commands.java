@@ -475,6 +475,10 @@ public interface Commands {
 
   void migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);
 
+  void migrate(String host, int port, byte[] key, int destinationDB, int timeout);
+
+  void migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys);
+
   void clientKill(String ipPort);
 
   void clientKill(String ip, int port);

@@ -130,6 +130,13 @@ public class ClusterCommandsTest {
   }
 
   @Test
+  public void clusterGetKeysInSlotBinary() {
+    node1.clusterAddSlots(501);
+    List<byte[]> keys = node1.clusterGetKeysInSlotBinary(501, 1);
+    assertEquals(0, keys.size());
+  }
+
+  @Test
   public void clusterSetSlotNode() {
     String[] nodes = node1.clusterNodes().split("\n");
     String nodeId = nodes[0].split(" ")[0];

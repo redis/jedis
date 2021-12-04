@@ -469,7 +469,7 @@ travis-install:
 	cd /usr/bin ;\
 	sudo ln -sf gcc-8 gcc ;\
 	sudo ln -sf g++-8 g++
-	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
+	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch 6.2 --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git
 	
@@ -478,7 +478,7 @@ circleci-install:
 	cd /usr/bin ;\
 	sudo ln -sf gcc-8 gcc ;\
 	sudo ln -sf g++-8 g++
-	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
+	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch 6.2 --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git	
 

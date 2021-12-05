@@ -1242,6 +1242,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<List<StreamEntry>> xrange(String key, String start, String end) {
+    return appendCommand(commandObjects.xrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrange(String key, String start, String end, int count) {
+    return appendCommand(commandObjects.xrange(key, start, end, count));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrevrange(String key, String end, String start) {
+    return appendCommand(commandObjects.xrevrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrevrange(String key, String end, String start, int count) {
+    return appendCommand(commandObjects.xrevrange(key, start, end, count));
+  }
+
+  @Override
   public Response<Long> xack(String key, String group, StreamEntryID... ids) {
     return appendCommand(commandObjects.xack(key, group, ids));
   }

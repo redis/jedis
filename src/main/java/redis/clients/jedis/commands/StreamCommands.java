@@ -83,6 +83,14 @@ public interface StreamCommands {
    */
   List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
+  List<StreamEntry> xrange(String key, String start, String end);
+
+  List<StreamEntry> xrange(String key, String start, String end, int count);
+
+  List<StreamEntry> xrevrange(String key, String end, String start);
+
+  List<StreamEntry> xrevrange(String key, String end, String start, int count);
+
   /**
    * XACK key group ID [ID ...]
    *

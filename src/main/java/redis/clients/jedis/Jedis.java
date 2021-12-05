@@ -8183,9 +8183,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xrange(key, start, end));
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public List<StreamEntry> xrange(final String key, final StreamEntryID start,
       final StreamEntryID end, final int count) {
@@ -8200,12 +8197,33 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xrevrange(key, end, start));
   }
 
-  /**
-   * {@inheritDoc}
-   */
   @Override
   public List<StreamEntry> xrevrange(final String key, final StreamEntryID end,
       final StreamEntryID start, final int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xrevrange(key, end, start, count));
+  }
+
+  @Override
+  public List<StreamEntry> xrange(final String key, final String start, final String end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xrange(key, start, end));
+  }
+
+  @Override
+  public List<StreamEntry> xrange(final String key, final String start, final String end, final int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xrange(key, start, end, count));
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final String end, final String start) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xrevrange(key, end, start));
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(final String key, final String end, final String start, final int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrevrange(key, end, start, count));
   }

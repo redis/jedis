@@ -1253,6 +1253,26 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<List<StreamEntry>> xrange(String key, String start, String end) {
+    return appendCommand(commandObjects.xrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrange(String key, String start, String end, int count) {
+    return appendCommand(commandObjects.xrange(key, start, end, count));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrevrange(String key, String end, String start) {
+    return appendCommand(commandObjects.xrevrange(key, end, start));
+  }
+
+  @Override
+  public Response<List<StreamEntry>> xrevrange(String key, String end, String start, int count) {
+    return appendCommand(commandObjects.xrevrange(key, end, start, count));
+  }
+
+  @Override
   public Response<Long> xack(String key, String group, StreamEntryID... ids) {
     return appendCommand(commandObjects.xack(key, group, ids));
   }

@@ -1927,6 +1927,22 @@ public class CommandObjects {
         .add(COUNT).add(count), BuilderFactory.STREAM_ENTRY_LIST);
   }
 
+  public final CommandObject<List<StreamEntry>> xrange(String key, String start, String end) {
+    return new CommandObject<>(commandArguments(XRANGE).key(key).add(start).add(end), BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  public final CommandObject<List<StreamEntry>> xrange(String key, String start, String end, int count) {
+    return new CommandObject<>(commandArguments(XRANGE).key(key).add(start).add(end).add(COUNT).add(count), BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  public final CommandObject<List<StreamEntry>> xrevrange(String key, String end, String start) {
+    return new CommandObject<>(commandArguments(XREVRANGE).key(key).add(end).add(start), BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
+  public final CommandObject<List<StreamEntry>> xrevrange(String key, String end, String start, int count) {
+    return new CommandObject<>(commandArguments(XREVRANGE).key(key).add(end).add(start).add(COUNT).add(count), BuilderFactory.STREAM_ENTRY_LIST);
+  }
+
   public final CommandObject<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end) {
     return new CommandObject<>(commandArguments(XRANGE).key(key).add(start == null ? "-" : start).add(end == null ? "+" : end),
         BuilderFactory.BINARY_LIST);

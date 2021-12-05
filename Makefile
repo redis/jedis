@@ -403,6 +403,7 @@ stunnel:
 	@if [ -e "$$STUNNEL_BIN" ]; then\
 	    echo "$$STUNNEL_CONF" | stunnel -fd 0;\
 	fi
+
 stop:
 	kill `cat /tmp/redis1.pid`
 	kill `cat /tmp/redis2.pid`
@@ -472,7 +473,7 @@ travis-install:
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git
-	
+
 circleci-install:
 	sudo apt-get install -y gcc-8 g++-8
 	cd /usr/bin ;\
@@ -480,10 +481,9 @@ circleci-install:
 	sudo ln -sf g++-8 g++
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git	
+	$(MAKE) -C redis-git
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c
-
 
 .PHONY: test

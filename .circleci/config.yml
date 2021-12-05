@@ -61,6 +61,7 @@ jobs:
       - run: make circleci-install
 
       - run: |
+          sudo dockerd
           sudo docker pull redislabs/redismod:edge
           sudo docker run --name redismod -p 6479:6379 -d redislabs/redismod:edge
 

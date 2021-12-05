@@ -104,12 +104,10 @@ public class JedisClusterInfoCache {
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
+    List<Object> slots = jedis.clusterSlots();
     w.lock();
-
     try {
       reset();
-      List<Object> slots = jedis.clusterSlots();
-
       for (Object slotInfoObj : slots) {
         List<Object> slotInfo = (List<Object>) slotInfoObj;
 

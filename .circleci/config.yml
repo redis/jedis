@@ -60,6 +60,10 @@ jobs:
 
       - run: make circleci-install
 
+      - run: |
+          sudo docker pull redislabs/redismod:edge
+          sudo docker run --name redismod -p 6479:6379 -d redislabs/redismod:edge
+
       - run: TEST="" make test
 
       - early_return_for_forked_pull_requests

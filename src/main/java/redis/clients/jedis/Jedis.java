@@ -19,6 +19,7 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.stream.StreamFullInfo;
 import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.Slowlog;
@@ -4623,6 +4624,22 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     client.xinfoStream(key);
 
     return BuilderFactory.STREAM_INFO.build(client.getObjectMultiBulkReply());
+
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key) {
+    client.xinfoStreamFull(key, 0);
+
+    return BuilderFactory.STREAM_INFO_FULL.build(client.getObjectMultiBulkReply());
+
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key, int count) {
+    client.xinfoStreamFull(key, count);
+
+    return BuilderFactory.STREAM_INFO_FULL.build(client.getObjectMultiBulkReply());
 
   }
 

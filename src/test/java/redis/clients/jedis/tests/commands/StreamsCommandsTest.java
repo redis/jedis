@@ -32,6 +32,7 @@ import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
+import redis.clients.jedis.stream.StreamFullInfo;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class StreamsCommandsTest extends JedisCommandTestBase {
@@ -864,6 +865,14 @@ public class StreamsCommandsTest extends JedisCommandTestBase {
 
     assertEquals(2, manyGroupsInfo.size());
     assertEquals(2, manyConsumersInfo.size());
+
+    StreamFullInfo streamInfoFull = jedis.xinfoStreamFull(STREAM_NAME);
+
+    assertEquals(2, streamInfoFull.getEntries().size());
+    assertEquals(2, streamInfoFull.getGroups().size());
+    assertEquals(2, streamInfoFull.getLength());
+    assertEquals(1, streamInfoFull.getRadixTreeKeys());
+    assertEquals(2, streamInfoFull.getRadixTreeNodes());
 
     // Not existing key - redis cli return error so we expect exception
     try {

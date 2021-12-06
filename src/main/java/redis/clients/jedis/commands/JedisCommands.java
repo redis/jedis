@@ -4,22 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.BitPosParams;
-import redis.clients.jedis.StreamConsumersInfo;
-import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.GeoRadiusResponse;
-import redis.clients.jedis.GeoUnit;
-import redis.clients.jedis.ListPosition;
-import redis.clients.jedis.StreamGroupInfo;
-import redis.clients.jedis.StreamInfo;
-import redis.clients.jedis.StreamPendingEntry;
-import redis.clients.jedis.ScanParams;
-import redis.clients.jedis.ScanResult;
-import redis.clients.jedis.SortingParams;
-import redis.clients.jedis.StreamEntry;
-import redis.clients.jedis.StreamPendingSummary;
-import redis.clients.jedis.Tuple;
+import redis.clients.jedis.*;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GetExParams;
@@ -36,6 +21,7 @@ import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.resps.LCSMatchResult;
+import redis.clients.jedis.stream.StreamFullInfo;
 
 /**
  * Common interface for sharded and non-sharded Jedis
@@ -679,6 +665,23 @@ public interface JedisCommands {
    * @return {@link StreamInfo} that contains information about the stream
    */
   StreamInfo xinfoStream (String key);
+
+  /**
+   * XINFO STREAM key FULL [COUNT count]
+   * count default is 10
+   * @param key Stream name
+   * @return {@link StreamInfo} that contains information about the stream
+   */
+  StreamFullInfo xinfoStreamFull(String key);
+
+  /**
+   * XINFO STREAM key FULL [COUNT count]
+   *
+   * @param key   Stream name
+   * @param count entries count
+   * @return {@link StreamInfo} that contains information about the stream
+   */
+  StreamFullInfo xinfoStreamFull(String key, int count);
 
   /**
    * Introspection command used in order to retrieve different information about groups in the stream

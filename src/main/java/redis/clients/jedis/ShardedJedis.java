@@ -25,6 +25,7 @@ import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.resps.LCSMatchResult;
+import redis.clients.jedis.stream.StreamFullInfo;
 import redis.clients.jedis.util.Hashing;
 
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
@@ -1282,6 +1283,20 @@ public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, C
 
     Jedis j = getShard(key);
     return j.xinfoStream(key);
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key) {
+
+    Jedis j = getShard(key);
+    return j.xinfoStreamFull(key);
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key, int count) {
+
+    Jedis j = getShard(key);
+    return j.xinfoStreamFull(key, count);
   }
 
   @Override

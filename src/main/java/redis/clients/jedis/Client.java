@@ -1703,6 +1703,16 @@ public class Client extends BinaryClient implements Commands {
   }
 
   @Override
+  public void xinfoStreamFull(String key) {
+    xinfoStreamFull(SafeEncoder.encode(key), 0);
+  }
+
+  @Override
+  public void xinfoStreamFull(String key, int count) {
+    xinfoStreamFull(SafeEncoder.encode(key), count);
+  }
+
+  @Override
   public void xinfoGroup(String key) {
     xinfoGroup(SafeEncoder.encode(key));
   }

@@ -580,6 +580,10 @@ public interface Commands {
 
   void xinfoStream (String key);
 
+  void xinfoStreamFull (String key);
+
+  void xinfoStreamFull (String key, int count);
+
   void xinfoGroup (String key);
 
   void xinfoConsumers (String key, String group);

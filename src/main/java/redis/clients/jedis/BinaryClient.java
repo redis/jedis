@@ -2074,6 +2074,14 @@ public class BinaryClient extends Connection {
     sendCommand(XINFO, Keyword.STREAM.getRaw(), key);
   }
 
+  public void xinfoStreamFull(byte[] key, int count) {
+    if (count <= 0) {
+      count = 10;
+    }
+    byte[] countBinary = String.valueOf(count).getBytes();
+    sendCommand(XINFO, Keyword.STREAM.getRaw(), key, FULL.getRaw(), COUNT.getRaw(), countBinary);
+  }
+
   public void xinfoGroup(byte[] key) {
     sendCommand(XINFO, Keyword.GROUPS.getRaw(), key);
   }

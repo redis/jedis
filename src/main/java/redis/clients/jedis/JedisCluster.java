@@ -7,6 +7,7 @@ import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
+import redis.clients.jedis.stream.StreamFullInfo;
 import redis.clients.jedis.util.JedisClusterHashTagUtil;
 import redis.clients.jedis.util.KeyMergeUtil;
 
@@ -2910,6 +2911,26 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       @Override
       public StreamInfo execute(Jedis connection) {
         return connection.xinfoStream(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key) {
+    return new JedisClusterCommand<StreamFullInfo>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public StreamFullInfo execute(Jedis connection) {
+        return connection.xinfoStreamFull(key);
+      }
+    }.run(key);
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key, int count) {
+    return new JedisClusterCommand<StreamFullInfo>(connectionHandler, maxAttempts, maxTotalRetriesDuration) {
+      @Override
+      public StreamFullInfo execute(Jedis connection) {
+        return connection.xinfoStreamFull(key, count);
       }
     }.run(key);
   }

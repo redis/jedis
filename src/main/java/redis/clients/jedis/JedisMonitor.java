@@ -1,9 +1,10 @@
 package redis.clients.jedis;
 
 public abstract class JedisMonitor {
-  protected Client client;
 
-  public void proceed(Client client) {
+  protected Connection client;
+
+  public void proceed(Connection client) {
     this.client = client;
     this.client.setTimeoutInfinite();
     do {

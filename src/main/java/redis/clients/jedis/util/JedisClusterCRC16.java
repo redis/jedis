@@ -42,7 +42,7 @@ public final class JedisClusterCRC16 {
       throw new JedisClusterOperationException("Slot calculation of null is impossible");
     }
 
-    key = JedisClusterHashTagUtil.getHashTag(key);
+    key = JedisClusterHashTag.getHashTag(key);
     // optimization with modulo operator with power of 2 equivalent to getCRC16(key) % 16384
     return getCRC16(key) & (16384 - 1);
   }

@@ -1,16 +1,18 @@
 package redis.clients.jedis.params;
 
-import redis.clients.jedis.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.Keyword.AUTH;
+import static redis.clients.jedis.Protocol.Keyword.AUTH2;
+import static redis.clients.jedis.Protocol.Keyword.COPY;
+import static redis.clients.jedis.Protocol.Keyword.REPLACE;
 
-import java.util.ArrayList;
-import java.util.List;
+import redis.clients.jedis.CommandArguments;
 
-public class MigrateParams extends Params {
+public class MigrateParams implements IParams {
 
-  private static final String COPY = "COPY";
-  private static final String REPLACE = "REPLACE";
-  private static final String AUTH = "AUTH";
-  private static final String AUTH2 = "AUTH2";
+  private boolean copy = false;
+  private boolean replace = false;
+  private String username = null;
+  private String passowrd = null;
 
   public MigrateParams() {
   }
@@ -20,45 +22,38 @@ public class MigrateParams extends Params {
   }
 
   public MigrateParams copy() {
-    addParam(COPY);
+    this.copy = true;
     return this;
   }
 
   public MigrateParams replace() {
-    addParam(REPLACE);
+    this.replace = true;
     return this;
   }
 
   public MigrateParams auth(String password) {
-    addParam(AUTH, password);
+    this.passowrd = password;
     return this;
   }
 
   public MigrateParams auth2(String username, String password) {
-    addParam(AUTH2, new String[] { username, password });
+    this.username = username;
+    this.passowrd = password;
     return this;
   }
 
   @Override
-  public byte[][] getByteParams() {
-    List<byte[]> byteParams = new ArrayList<>();
-
-    if (contains(COPY)) {
-      byteParams.add(SafeEncoder.encode(COPY));
+  public void addParams(CommandArguments args) {
+    if (copy) {
+      args.add(COPY);
     }
-    if (contains(REPLACE)) {
-      byteParams.add(SafeEncoder.encode(REPLACE));
+    if (replace) {
+      args.add(REPLACE);
     }
-    if (contains(AUTH)) {
-      byteParams.add(SafeEncoder.encode(AUTH));
-      byteParams.add(SafeEncoder.encode((String) getParam(AUTH)));
-    } else if (contains(AUTH2)) {
-      byteParams.add(SafeEncoder.encode(AUTH2));
-      String[] nameAndPass = (String[]) getParam(AUTH2);
-      byteParams.add(SafeEncoder.encode(nameAndPass[0]));
-      byteParams.add(SafeEncoder.encode(nameAndPass[1]));
+    if (username != null) {
+      args.add(AUTH2).add(username).add(passowrd);
+    } else if (passowrd != null) {
+      args.add(AUTH).add(passowrd);
     }
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 }

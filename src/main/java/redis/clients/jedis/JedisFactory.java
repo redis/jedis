@@ -19,6 +19,7 @@ import redis.clients.jedis.util.JedisURIHelper;
 /**
  * PoolableObjectFactory custom impl.
  */
+// Legacy
 public class JedisFactory implements PooledObjectFactory<Jedis> {
 
   private static final Logger logger = LoggerFactory.getLogger(JedisFactory.class);
@@ -45,7 +46,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   /**
    * {@link #setHostAndPort(redis.clients.jedis.HostAndPort) setHostAndPort} must be called later.
    */
-  protected JedisFactory(final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
+  JedisFactory(final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
       final String user, final String password, final int database, final String clientName) {
     this(connectionTimeout, soTimeout, infiniteSoTimeout, user, password, database, clientName, false, null, null, null);
   }
@@ -89,7 +90,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   /**
    * {@link #setHostAndPort(redis.clients.jedis.HostAndPort) setHostAndPort} must be called later.
    */
-  protected JedisFactory(final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
+  JedisFactory(final int connectionTimeout, final int soTimeout, final int infiniteSoTimeout,
       final String user, final String password, final int database, final String clientName, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     this(DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
@@ -102,7 +103,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   /**
    * {@link #setHostAndPort(redis.clients.jedis.HostAndPort) setHostAndPort} must be called later.
    */
-  protected JedisFactory(final JedisClientConfig clientConfig) {
+  JedisFactory(final JedisClientConfig clientConfig) {
     this.clientConfig = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(clientConfig);
   }
@@ -134,8 +135,11 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this.jedisSocketFactory = new DefaultJedisSocketFactory(new HostAndPort(uri.getHost(), uri.getPort()), this.clientConfig);
   }
 
-  public void setHostAndPort(final HostAndPort hostAndPort) {
-    jedisSocketFactory.updateHostAndPort(hostAndPort);
+  void setHostAndPort(final HostAndPort hostAndPort) {
+    if (!(jedisSocketFactory instanceof DefaultJedisSocketFactory)) {
+      throw new IllegalStateException("setHostAndPort method has limited capability.");
+    }
+    ((DefaultJedisSocketFactory) jedisSocketFactory).updateHostAndPort(hostAndPort);
   }
 
   public void setPassword(final String password) {
@@ -144,7 +148,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
 
   @Override
   public void activateObject(PooledObject<Jedis> pooledJedis) throws Exception {
-    final BinaryJedis jedis = pooledJedis.getObject();
+    final Jedis jedis = pooledJedis.getObject();
     if (jedis.getDB() != clientConfig.getDatabase()) {
       jedis.select(clientConfig.getDatabase());
     }
@@ -152,7 +156,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
 
   @Override
   public void destroyObject(PooledObject<Jedis> pooledJedis) throws Exception {
-    final BinaryJedis jedis = pooledJedis.getObject();
+    final Jedis jedis = pooledJedis.getObject();
     if (jedis.isConnected()) {
       try {
         // need a proper test, probably with mock
@@ -201,17 +205,10 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
 
   @Override
   public boolean validateObject(PooledObject<Jedis> pooledJedis) {
-    final BinaryJedis jedis = pooledJedis.getObject();
+    final Jedis jedis = pooledJedis.getObject();
     try {
-      String host = jedisSocketFactory.getHost();
-      int port = jedisSocketFactory.getPort();
-
-      String connectionHost = jedis.getClient().getHost();
-      int connectionPort = jedis.getClient().getPort();
-
-      return host.equals(connectionHost)
-          && port == connectionPort && jedis.isConnected()
-          && jedis.ping().equals("PONG");
+      // check HostAndPort ??
+      return jedis.getConnection().isConnected() && jedis.ping().equals("PONG");
     } catch (final Exception e) {
       logger.error("Error while validating pooled Jedis object.", e);
       return false;

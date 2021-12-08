@@ -1,16 +1,11 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.PONG;
+import static redis.clients.jedis.Protocol.ResponseKeyword.*;
 
 import java.util.Arrays;
 import java.util.List;
 
+import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
@@ -19,7 +14,7 @@ public abstract class JedisPubSub {
 
   private static final String JEDIS_SUBSCRIPTION_MESSAGE = "JedisPubSub is not subscribed to a Jedis instance.";
   private int subscribedChannels = 0;
-  private volatile Client client;
+  private volatile Connection client;
 
   public void onMessage(String channel, String message) {
   }
@@ -47,7 +42,7 @@ public abstract class JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
-    client.unsubscribe();
+    client.sendCommand(Command.UNSUBSCRIBE);
     client.flush();
   }
 
@@ -55,7 +50,7 @@ public abstract class JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
-    client.unsubscribe(channels);
+    client.sendCommand(Command.UNSUBSCRIBE, channels);
     client.flush();
   }
 
@@ -63,7 +58,7 @@ public abstract class JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
-    client.subscribe(channels);
+    client.sendCommand(Command.SUBSCRIBE, channels);
     client.flush();
   }
 
@@ -71,7 +66,7 @@ public abstract class JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
-    client.psubscribe(patterns);
+    client.sendCommand(Command.PSUBSCRIBE, patterns);
     client.flush();
   }
 
@@ -79,7 +74,7 @@ public abstract class JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
-    client.punsubscribe();
+    client.sendCommand(Command.PUNSUBSCRIBE);
     client.flush();
   }
 
@@ -87,7 +82,7 @@ public abstract class JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
-    client.punsubscribe(patterns);
+    client.sendCommand(Command.PUNSUBSCRIBE, patterns);
     client.flush();
   }
 
@@ -95,7 +90,7 @@ public abstract class JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
-    client.ping();
+    client.sendCommand(Command.PING);
     client.flush();
   }
 
@@ -103,7 +98,7 @@ public abstract class JedisPubSub {
     if (client == null) {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
-    client.ping(argument);
+    client.sendCommand(Command.PING, argument);
     client.flush();
   }
 
@@ -111,21 +106,26 @@ public abstract class JedisPubSub {
     return subscribedChannels > 0;
   }
 
-  public void proceedWithPatterns(Client client, String... patterns) {
+  public void proceedWithPatterns(Connection client, String... patterns) {
     this.client = client;
-    client.psubscribe(patterns);
-    client.flush();
-    process(client);
+//    client.psubscribe(patterns);
+//    client.flush();
+    psubscribe(patterns);
+//    process(client);
+    process();
   }
 
-  public void proceed(Client client, String... channels) {
+  public void proceed(Connection client, String... channels) {
     this.client = client;
-    client.subscribe(channels);
-    client.flush();
-    process(client);
+//    client.subscribe(channels);
+//    client.flush();
+    subscribe(channels);
+//    process(client);
+    process();
   }
 
-  private void process(Client client) {
+//  private void process(Client client) {
+  private void process() {
 
     do {
       List<Object> reply = client.getUnflushedObjectMultiBulkReply();

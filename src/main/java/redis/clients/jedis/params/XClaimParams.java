@@ -1,11 +1,18 @@
 package redis.clients.jedis.params;
 
-public class XClaimParams extends Params {
+import static redis.clients.jedis.Protocol.Keyword.IDLE;
+import static redis.clients.jedis.Protocol.Keyword.TIME;
+import static redis.clients.jedis.Protocol.Keyword.RETRYCOUNT;
+import static redis.clients.jedis.Protocol.Keyword.FORCE;
 
-  private static final String IDLE = "IDLE";
-  private static final String TIME = "TIME";
-  private static final String RETRYCOUNT = "RETRYCOUNT";
-  private static final String FORCE = "FORCE";
+import redis.clients.jedis.CommandArguments;
+
+public class XClaimParams implements IParams {
+
+  private Long idleTime;
+  private Long idleUnixTime;
+  private Integer retryCount;
+  private boolean force;
 
   public XClaimParams() {
   }
@@ -20,7 +27,7 @@ public class XClaimParams extends Params {
    * @return XClaimParams
    */
   public XClaimParams idle(long idleTime) {
-    addParam(IDLE, idleTime);
+    this.idleTime = idleTime;
     return this;
   }
 
@@ -30,7 +37,7 @@ public class XClaimParams extends Params {
    * @return XClaimParams
    */
   public XClaimParams time(long idleUnixTime) {
-    addParam(TIME, idleUnixTime);
+    this.idleUnixTime = idleUnixTime;
     return this;
   }
 
@@ -40,7 +47,7 @@ public class XClaimParams extends Params {
    * @return XClaimParams
    */
   public XClaimParams retryCount(int count) {
-    addParam(RETRYCOUNT, count);
+    this.retryCount = count;
     return this;
   }
 
@@ -50,7 +57,23 @@ public class XClaimParams extends Params {
    * @return XClaimParams
    */
   public XClaimParams force() {
-    addParam(FORCE);
+    this.force = true;
     return this;
+  }
+
+  @Override
+  public void addParams(CommandArguments args) {
+    if (idleTime != null) {
+      args.add(IDLE).add(idleTime);
+    }
+    if (idleUnixTime != null) {
+      args.add(TIME).add(idleUnixTime);
+    }
+    if (retryCount != null) {
+      args.add(RETRYCOUNT).add(retryCount);
+    }
+    if (force) {
+      args.add(FORCE);
+    }
   }
 }

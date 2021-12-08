@@ -1,10 +1,11 @@
 [![Release](https://img.shields.io/github/release/redis/jedis.svg)](https://github.com/redis/jedis/releases/latest)
-[![Build Status](https://travis-ci.org/redis/jedis.png?branch=master)](https://travis-ci.org/redis/jedis)
+[![CircleCI](https://circleci.com/gh/redis/jedis/tree/master.svg?style=svg)](https://circleci.com/gh/redis/jedis/tree/master)
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](http://mvnrepository.com/artifact/redis.clients/jedis)
 [![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
 [![Language grade: Java](https://img.shields.io/lgtm/grade/java/g/redis/jedis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/redis/jedis/context:java)
-[![Gitter](https://badges.gitter.im/xetorthio/jedis.svg)](https://gitter.im/xetorthio/jedis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![codecov](https://codecov.io/gh/redis/jedis/branch/master/graph/badge.svg?token=pAstxAAjYo)](https://codecov.io/gh/redis/jedis)
+[![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/qRhBuY8Z)
 
 # Jedis
 
@@ -47,7 +48,7 @@ All of the following redis features are supported:
 ## How do I use it?
 
 You can download the latest build at: 
-    http://github.com/xetorthio/jedis/releases
+    http://github.com/redis/jedis/releases
 
 Or use it as a maven dependency:
 
@@ -57,19 +58,7 @@ Or use it as a maven dependency:
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.3.0</version>
-    <type>jar</type>
-    <scope>compile</scope>
-</dependency>
-```
-
-```xml
-<dependency>
-    <groupId>redis.clients</groupId>
-    <artifactId>jedis</artifactId>
-    <version>2.10.2</version>
-    <type>jar</type>
-    <scope>compile</scope>
+    <version>3.7.0</version>
 </dependency>
 ```
 
@@ -85,12 +74,25 @@ Or use it as a maven dependency:
 ```
 
 and
+
 ```xml
   <dependencies>
     <dependency>
       <groupId>redis.clients</groupId>
       <artifactId>jedis</artifactId>
-      <version>3.4.0-SNAPSHOT</version>
+      <version>4.0.0-SNAPSHOT</version>
+    </dependency>
+  </dependencies>
+```
+
+or, for upcoming minor release
+
+```xml
+  <dependencies>
+    <dependency>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>3.8.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
 ```
@@ -106,9 +108,9 @@ String value = jedis.get("foo");
 
 For more usage examples check the tests.
 
-Please check the [wiki](http://github.com/xetorthio/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
+Please check the [wiki](http://github.com/redis/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
 
-Master branch javadocs can be found here: http://xetorthio.github.io/jedis/
+Latest release javadocs can be found here: https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html
 
 And you are done!
 
@@ -131,25 +133,29 @@ String value = jc.get("foo");
 - You're getting errors when running jedis in multi-threaded environments?
 - Do you need further instructions about pipelining, transactions or sentinel?
 
-Please check the [WIKI](https://github.com/xetorthio/jedis/wiki) for more useful information.
+Please check the [WIKI](https://github.com/redis/jedis/wiki) for more useful information.
 
 
 ## I want to contribute!
 
 That is great!
 
-Please see [CONTRIBUTING.md](https://github.com/xetorthio/jedis/blob/master/.github/CONTRIBUTING.md) on project's root directory for follow up how to contribute to Jedis project.
+Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) on project's root directory for follow up how to contribute to Jedis project.
 
 Thanks for helping!
 
 ## Sponsorship
 
+[![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.com/)
+
+---
+
+![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
+
 YourKit supports open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 
 and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp),
 innovative and intelligent tools for profiling Java and .NET applications.
-
-![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
 
 ## License
 
@@ -175,4 +181,3 @@ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
-

@@ -3,10 +3,11 @@ package redis.clients.jedis.exceptions;
 import redis.clients.jedis.HostAndPort;
 
 public class JedisRedirectionException extends JedisDataException {
+
   private static final long serialVersionUID = 3878126572474819403L;
 
-  private HostAndPort targetNode;
-  private int slot;
+  private final HostAndPort targetNode;
+  private final int slot;
 
   public JedisRedirectionException(String message, HostAndPort targetNode, int slot) {
     super(message);
@@ -26,11 +27,11 @@ public class JedisRedirectionException extends JedisDataException {
     this.slot = slot;
   }
 
-  public HostAndPort getTargetNode() {
+  public final HostAndPort getTargetNode() {
     return targetNode;
   }
 
-  public int getSlot() {
+  public final int getSlot() {
     return slot;
   }
 }

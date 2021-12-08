@@ -1,11 +1,20 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
-
-import redis.clients.jedis.ClusterReset;
+import redis.clients.jedis.args.ClusterResetType;
+import redis.clients.jedis.args.ClusterFailoverOption;
 
 public interface ClusterCommands {
+
+  String asking();
+
+  String readonly();
+
+  String readwrite();
+
   String clusterNodes();
+
+  String clusterReplicas(String nodeId);
 
   String clusterMeet(String ip, int port);
 
@@ -16,6 +25,8 @@ public interface ClusterCommands {
   String clusterInfo();
 
   List<String> clusterGetKeysInSlot(int slot, int count);
+
+  List<byte[]> clusterGetKeysInSlotBinary(int slot, int count);
 
   String clusterSetSlotNode(int slot, String nodeId);
 
@@ -29,21 +40,35 @@ public interface ClusterCommands {
 
   String clusterFlushSlots();
 
-  Long clusterKeySlot(String key);
+  long clusterKeySlot(String key);
 
-  Long clusterCountKeysInSlot(int slot);
+  long clusterCountKeysInSlot(int slot);
 
   String clusterSaveConfig();
 
   String clusterReplicate(String nodeId);
 
+  /**
+   * {@code CLUSTER SLAVES} command is deprecated since Redis 5.
+   * @deprecated Use {@link ClusterCommands#clusterReplicas(java.lang.String)}.
+   */
+  @Deprecated
   List<String> clusterSlaves(String nodeId);
 
   String clusterFailover();
 
+  String clusterFailover(ClusterFailoverOption failoverOption);
+
   List<Object> clusterSlots();
 
-  String clusterReset(ClusterReset resetType);
+  String clusterReset();
 
-  String readonly();
+  /**
+   * {@code resetType} can be null for default behavior.
+   * @param resetType
+   * @return OK
+   */
+  String clusterReset(ClusterResetType resetType);
+
+  String clusterMyId();
 }

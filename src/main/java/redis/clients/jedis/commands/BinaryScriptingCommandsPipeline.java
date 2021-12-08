@@ -1,12 +1,9 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
 import redis.clients.jedis.Response;
 
-import java.util.List;
-
 public interface BinaryScriptingCommandsPipeline {
-
-  Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params);
 
   Response<Object> eval(byte[] script, int keyCount, byte[]... params);
 

@@ -1,16 +1,19 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.Protocol.Keyword;
 
-public class SetParams extends Params {
+public class SetParams extends Params implements IParams {
 
   private static final String XX = "xx";
   private static final String NX = "nx";
   private static final String PX = "px";
   private static final String EX = "ex";
+  private static final String EXAT = "exat";
+  private static final String PXAT = "pxat";
+  private static final String KEEPTTL = "keepttl";
+  private static final String GET = "get";
 
   public SetParams() {
   }
@@ -23,8 +26,19 @@ public class SetParams extends Params {
    * Set the specified expire time, in seconds.
    * @param secondsToExpire
    * @return SetParams
+   * @deprecated Use {@link #ex(long)}.
    */
+  @Deprecated
   public SetParams ex(int secondsToExpire) {
+    return ex((long) secondsToExpire);
+  }
+
+  /**
+   * Set the specified expire time, in seconds.
+   * @param secondsToExpire
+   * @return SetParams
+   */
+  public SetParams ex(long secondsToExpire) {
     addParam(EX, secondsToExpire);
     return this;
   }
@@ -57,29 +71,76 @@ public class SetParams extends Params {
     return this;
   }
 
-  public byte[][] getByteParams(byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<>();
-    for (byte[] arg : args) {
-      byteParams.add(arg);
-    }
+  /**
+   * Set the specified Unix time at which the key will expire, in seconds.
+   * @param seconds
+   * @return SetParams
+   */
+  public SetParams exAt(long seconds) {
+    addParam(EXAT, seconds);
+    return this;
+  }
 
+  /**
+   * Set the specified Unix time at which the key will expire, in milliseconds.
+   * @param milliseconds
+   * @return SetParams
+   */
+  public SetParams pxAt(long milliseconds) {
+    addParam(PXAT, milliseconds);
+    return this;
+  }
+
+  /**
+   * Retain the time to live associated with the key.
+   * @return SetParams
+   */
+  public SetParams keepttl() {
+    addParam(KEEPTTL);
+    return this;
+  }
+
+  /**
+   * Return the old value stored at key, or nil when key did not exist.
+   * @return SetParams
+   */
+  public SetParams get() {
+    addParam(GET);
+    return this;
+  }
+
+  @Override
+  public void addParams(CommandArguments args) {
     if (contains(NX)) {
-      byteParams.add(SafeEncoder.encode(NX));
+      args.add(Keyword.NX);
     }
     if (contains(XX)) {
-      byteParams.add(SafeEncoder.encode(XX));
+      args.add(Keyword.XX);
     }
 
     if (contains(EX)) {
-      byteParams.add(SafeEncoder.encode(EX));
-      byteParams.add(Protocol.toByteArray((int) getParam(EX)));
+      args.add(Keyword.EX);
+      args.add(Protocol.toByteArray((long) getParam(EX)));
     }
     if (contains(PX)) {
-      byteParams.add(SafeEncoder.encode(PX));
-      byteParams.add(Protocol.toByteArray((long) getParam(PX)));
+      args.add(Keyword.PX);
+      args.add(Protocol.toByteArray((long) getParam(PX)));
+    }
+    if (contains(EXAT)) {
+      args.add(Keyword.EXAT);
+      args.add(Protocol.toByteArray((long) getParam(EXAT)));
+    }
+    if (contains(PXAT)) {
+      args.add(Keyword.PXAT);
+      args.add(Protocol.toByteArray((long) getParam(PXAT)));
+    }
+    if (contains(KEEPTTL)) {
+      args.add(Keyword.KEEPTTL);
     }
 
-    return byteParams.toArray(new byte[byteParams.size()][]);
+    if (contains(GET)) {
+      args.add(Keyword.GET);
+    }
   }
 
 }

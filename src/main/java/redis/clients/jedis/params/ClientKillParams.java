@@ -1,12 +1,20 @@
 package redis.clients.jedis.params;
 
+import redis.clients.jedis.args.ClientType;
+
 public class ClientKillParams extends Params {
 
   private static final String ID = "ID";
   private static final String TYPE = "TYPE";
   private static final String ADDR = "ADDR";
   private static final String SKIPME = "SKIPME";
+  private static final String USER = "USER";
+  private static final String LADDR = "LADDR";
 
+  /**
+   * @deprecated Use {@link ClientType}.
+   */
+  @Deprecated
   public static enum Type {
     NORMAL, MASTER, SLAVE, PUBSUB;
   }
@@ -32,7 +40,16 @@ public class ClientKillParams extends Params {
     return this;
   }
 
+  /**
+   * @deprecated Use {@link #type(redis.clients.jedis.args.ClientType)}.
+   */
+  @Deprecated
   public ClientKillParams type(Type type) {
+    addParam(TYPE, type);
+    return this;
+  }
+
+  public ClientKillParams type(ClientType type) {
     addParam(TYPE, type);
     return this;
   }
@@ -57,4 +74,18 @@ public class ClientKillParams extends Params {
     return this;
   }
 
+  public ClientKillParams user(String username) {
+    addParam(USER, username);
+    return this;
+  }
+
+  public ClientKillParams laddr(String ipPort) {
+    addParam(LADDR, ipPort);
+    return this;
+  }
+
+  public ClientKillParams laddr(String ip, int port) {
+    addParam(LADDR, ip + ':' + port);
+    return this;
+  }
 }

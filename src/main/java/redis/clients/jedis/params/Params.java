@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class Params {
@@ -30,6 +31,8 @@ public abstract class Params {
       if (value != null) {
         if (value instanceof byte[]) {
           byteParams.add((byte[]) value);
+        } else if (value instanceof Rawable) {
+          byteParams.add(((Rawable) value).getRaw());
         } else if (value instanceof Boolean) {
           byteParams.add(Protocol.toByteArray((boolean) value));
         } else if (value instanceof Integer) {
@@ -67,4 +70,18 @@ public abstract class Params {
     params.put(name, null);
   }
 
+  @Override
+  public String toString() {
+    ArrayList<Object> paramsFlatList = new ArrayList<>();
+    if (params != null) {
+      for (Entry<String, Object> param : params.entrySet()) {
+        paramsFlatList.add(param.getKey());
+        Object value = param.getValue();
+        if (value != null) {
+          paramsFlatList.add(SafeEncoder.encodeObject(value));
+        }
+      }
+    }
+    return paramsFlatList.toString();
+  }
 }

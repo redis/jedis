@@ -1,9 +1,6 @@
 package redis.clients.jedis.params;
 
-import redis.clients.jedis.util.SafeEncoder;
-
-import java.util.ArrayList;
-import java.util.Collections;
+import redis.clients.jedis.CommandArguments;
 
 /**
  * Parameters for ZINCRBY commands <br/>
@@ -19,7 +16,7 @@ import java.util.Collections;
  * <br/>
  * Works with Redis 3.0.2 and onwards.
  */
-public class ZIncrByParams extends Params {
+public class ZIncrByParams extends Params implements IParams {
 
   private static final String XX = "xx";
   private static final String NX = "nx";
@@ -50,21 +47,16 @@ public class ZIncrByParams extends Params {
     return this;
   }
 
-  public byte[][] getByteParams(byte[] key, byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<>();
-    byteParams.add(key);
-
+  @Override
+  public void addParams(CommandArguments args) {
     if (contains(NX)) {
-      byteParams.add(SafeEncoder.encode(NX));
+      args.add(NX);
     }
     if (contains(XX)) {
-      byteParams.add(SafeEncoder.encode(XX));
+      args.add(XX);
     }
 
-    byteParams.add(SafeEncoder.encode(INCR));
-
-    Collections.addAll(byteParams, args);
-    return byteParams.toArray(new byte[byteParams.size()][]);
+    args.add(INCR);
   }
 
 }

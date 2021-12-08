@@ -7,7 +7,7 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
 public class JedisClusterWithoutSetupTest {
 
   @Test(expected = JedisClusterOperationException.class)
-  public void test() {
+  public void uselessStartNodes() {
     new JedisCluster(new HostAndPort("localhost", 7378));
   }
 }

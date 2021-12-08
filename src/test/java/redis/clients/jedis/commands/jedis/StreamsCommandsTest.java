@@ -202,8 +202,22 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     List<StreamEntry> range7 = jedis.xrange("xrange-stream", id3, id3, 4);
     assertEquals(1, range7.size());
 
-    List<StreamEntry> range8 = jedis.xrange("xrange-stream", null, null);
+    List<StreamEntry> range8 = jedis.xrange("xrange-stream", (StreamEntryID) null, (StreamEntryID) null);
     assertEquals(3, range8.size());
+  }
+
+  @Test
+  public void xrangeExclusive() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    String id1 = jedis.xadd("xrange-stream", null, map).toString();
+    jedis.xadd("xrange-stream", null, map);
+
+    List<StreamEntry> range2 = jedis.xrange("xrange-stream", id1, "+", 2);
+    assertEquals(2, range2.size());
+
+    List<StreamEntry> range3 = jedis.xrange("xrange-stream", "(" + id1, "+", 2);
+    assertEquals(1, range3.size());
   }
 
   @Test
@@ -324,8 +338,22 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     List<StreamEntry> range7 = jedis.xrevrange("xrevrange-stream", id3, id3, 4);
     assertEquals(1, range7.size());
 
-    List<StreamEntry> range8 = jedis.xrevrange("xrevrange-stream", null, null);
+    List<StreamEntry> range8 = jedis.xrevrange("xrevrange-stream", (StreamEntryID) null, (StreamEntryID) null);
     assertEquals(3, range8.size());
+  }
+
+  @Test
+  public void xrevrangeExclusive() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    String id1 = jedis.xadd("xrange-stream", null, map).toString();
+    jedis.xadd("xrange-stream", null, map);
+
+    List<StreamEntry> range2 = jedis.xrevrange("xrange-stream", "+", id1, 2);
+    assertEquals(2, range2.size());
+
+    List<StreamEntry> range3 = jedis.xrevrange("xrange-stream", "+", "(" + id1, 2);
+    assertEquals(1, range3.size());
   }
 
   @Test
@@ -735,7 +763,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     Pipeline p = jedis.pipelined();
     Response<StreamEntryID> id1 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
     Response<StreamEntryID> id2 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
-    Response<List<StreamEntry>> results = p.xrange("stream1", null, null, 2);
+    Response<List<StreamEntry>> results = p.xrange("stream1", (StreamEntryID) null, (StreamEntryID) null, 2);
     p.sync();
 
     List<StreamEntry> entries = results.get();
@@ -758,7 +786,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     Transaction t = jedis.multi();
     Response<StreamEntryID> id1 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
     Response<StreamEntryID> id2 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
-    Response<List<StreamEntry>> results = t.xrange("stream1", null, null, 2);
+    Response<List<StreamEntry>> results = t.xrange("stream1", (StreamEntryID) null, (StreamEntryID) null, 2);
     t.exec();
 
     List<StreamEntry> entries = results.get();

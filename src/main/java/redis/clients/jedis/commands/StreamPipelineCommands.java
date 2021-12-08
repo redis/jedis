@@ -84,6 +84,14 @@ public interface StreamPipelineCommands {
    */
   Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count);
 
+  Response<List<StreamEntry>> xrange(String key, String start, String end);
+
+  Response<List<StreamEntry>> xrange(String key, String start, String end, int count);
+
+  Response<List<StreamEntry>> xrevrange(String key, String end, String start);
+
+  Response<List<StreamEntry>> xrevrange(String key, String end, String start, int count);
+
   /**
    * XACK key group ID [ID ...]
    *

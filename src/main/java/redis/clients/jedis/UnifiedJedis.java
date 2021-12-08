@@ -2359,6 +2359,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<StreamEntry> xrange(String key, String start, String end) {
+    return executeCommand(commandObjects.xrange(key, start, end));
+  }
+
+  @Override
+  public List<StreamEntry> xrange(String key, String start, String end, int count) {
+    return executeCommand(commandObjects.xrange(key, start, end, count));
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(String key, String end, String start) {
+    return executeCommand(commandObjects.xrevrange(key, end, start));
+  }
+
+  @Override
+  public List<StreamEntry> xrevrange(String key, String end, String start, int count) {
+    return executeCommand(commandObjects.xrevrange(key, end, start, count));
+  }
+
+  @Override
   public long xack(String key, String group, StreamEntryID... ids) {
     return executeCommand(commandObjects.xack(key, group, ids));
   }

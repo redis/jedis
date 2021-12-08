@@ -1,12 +1,10 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.Collections;
-
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class GetExParams extends Params {
+public class GetExParams extends Params implements IParams {
 
   private static final String PX = "px";
   private static final String EX = "ex";
@@ -68,29 +66,23 @@ public class GetExParams extends Params {
     return this;
   }
 
-  public byte[][] getByteParams(byte[] key, byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<>();
-    byteParams.add(key);
-
+  @Override
+  public void addParams(CommandArguments args) {
     if (contains(EX)) {
-      byteParams.add(SafeEncoder.encode(EX));
-      byteParams.add(Protocol.toByteArray((long) getParam(EX)));
+      args.add(SafeEncoder.encode(EX));
+      args.add(Protocol.toByteArray((long) getParam(EX)));
     } else if (contains(PX)) {
-      byteParams.add(SafeEncoder.encode(PX));
-      byteParams.add(Protocol.toByteArray((long) getParam(PX)));
+      args.add(SafeEncoder.encode(PX));
+      args.add(Protocol.toByteArray((long) getParam(PX)));
     } else if (contains(EXAT)) {
-      byteParams.add(SafeEncoder.encode(EXAT));
-      byteParams.add(Protocol.toByteArray((long) getParam(EXAT)));
+      args.add(SafeEncoder.encode(EXAT));
+      args.add(Protocol.toByteArray((long) getParam(EXAT)));
     } else if (contains(PXAT)) {
-      byteParams.add(SafeEncoder.encode(PXAT));
-      byteParams.add(Protocol.toByteArray((long) getParam(PXAT)));
+      args.add(SafeEncoder.encode(PXAT));
+      args.add(Protocol.toByteArray((long) getParam(PXAT)));
     } else if (contains(PERSIST)) {
-      byteParams.add(SafeEncoder.encode(PERSIST));
+      args.add(SafeEncoder.encode(PERSIST));
     }
-
-    Collections.addAll(byteParams, args);
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 
 }

@@ -1,16 +1,16 @@
 package redis.clients.jedis.util;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.exceptions.JedisException;
 
 /**
  * The only reason to have this is to be able to compatible with java 1.5 :(
  */
 public final class SafeEncoder {
+
+  public static volatile Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
   private SafeEncoder() {
     throw new InstantiationError("Must not instantiate this class");
@@ -28,11 +28,11 @@ public final class SafeEncoder {
     if (str == null) {
       throw new IllegalArgumentException("null value cannot be sent to redis");
     }
-    return str.getBytes(Protocol.CHARSET);
+    return str.getBytes(DEFAULT_CHARSET);
   }
 
   public static String encode(final byte[] data) {
-    return new String(data, Protocol.CHARSET);
+    return new String(data, DEFAULT_CHARSET);
   }
 
   /**

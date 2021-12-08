@@ -139,6 +139,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
           sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
+    public Builder timeoutMillis(int timeoutMillis) {
+      this.connectionTimeoutMillis = timeoutMillis;
+      this.socketTimeoutMillis = timeoutMillis;
+      return this;
+    }
+
     public Builder connectionTimeoutMillis(int connectionTimeoutMillis) {
       this.connectionTimeoutMillis = connectionTimeoutMillis;
       return this;
@@ -198,6 +204,15 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.hostAndPortMapper = hostAndPortMapper;
       return this;
     }
+  }
+
+  public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
+      int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
+      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
+    return new DefaultJedisClientConfig(connectionTimeoutMillis, soTimeoutMillis,
+        blockingSocketTimeoutMillis, user, password, database, clientName, ssl,
+        sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {

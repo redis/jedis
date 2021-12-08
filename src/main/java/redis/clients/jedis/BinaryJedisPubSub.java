@@ -1,21 +1,16 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PONG;
-import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.ResponseKeyword.*;
 
 import java.util.Arrays;
 import java.util.List;
 
+import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class BinaryJedisPubSub {
   private int subscribedChannels = 0;
-  private Client client;
+  private Connection client;
 
   public void onMessage(byte[] channel, byte[] message) {
   }
@@ -39,42 +34,42 @@ public abstract class BinaryJedisPubSub {
   }
 
   public void unsubscribe() {
-    client.unsubscribe();
+    client.sendCommand(Command.UNSUBSCRIBE);
     client.flush();
   }
 
   public void unsubscribe(byte[]... channels) {
-    client.unsubscribe(channels);
+    client.sendCommand(Command.UNSUBSCRIBE, channels);
     client.flush();
   }
 
   public void subscribe(byte[]... channels) {
-    client.subscribe(channels);
+    client.sendCommand(Command.SUBSCRIBE, channels);
     client.flush();
   }
 
   public void psubscribe(byte[]... patterns) {
-    client.psubscribe(patterns);
+    client.sendCommand(Command.PSUBSCRIBE, patterns);
     client.flush();
   }
 
   public void punsubscribe() {
-    client.punsubscribe();
+    client.sendCommand(Command.PUNSUBSCRIBE);
     client.flush();
   }
 
   public void punsubscribe(byte[]... patterns) {
-    client.punsubscribe(patterns);
+    client.sendCommand(Command.PUNSUBSCRIBE, patterns);
     client.flush();
   }
 
   public void ping() {
-    client.ping();
+    client.sendCommand(Command.PING);
     client.flush();
   }
 
   public void ping(byte[] argument) {
-    client.ping(argument);
+    client.sendCommand(Command.PING, argument);
     client.flush();
   }
 
@@ -82,21 +77,25 @@ public abstract class BinaryJedisPubSub {
     return subscribedChannels > 0;
   }
 
-  public void proceedWithPatterns(Client client, byte[]... patterns) {
+  public void proceedWithPatterns(Connection client, byte[]... patterns) {
     this.client = client;
-    client.psubscribe(patterns);
-    client.flush();
-    process(client);
+//    client.psubscribe(patterns);
+//    client.flush();
+    psubscribe(patterns);
+//    process(client);
+    process();
   }
 
-  public void proceed(Client client, byte[]... channels) {
+  public void proceed(Connection client, byte[]... channels) {
     this.client = client;
-    client.subscribe(channels);
-    client.flush();
-    process(client);
+//    client.subscribe(channels);
+//    client.flush();
+    subscribe(channels);
+//    process(client);
+    process();
   }
 
-  private void process(Client client) {
+  private void process() {
     do {
       List<Object> reply = client.getUnflushedObjectMultiBulkReply();
       final Object firstObj = reply.get(0);

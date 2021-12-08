@@ -15,5 +15,4 @@ public class InvalidURIException extends JedisException {
   public InvalidURIException(String message, Throwable cause) {
     super(message, cause);
   }
-
 }

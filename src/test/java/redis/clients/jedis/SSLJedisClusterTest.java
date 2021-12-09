@@ -138,11 +138,12 @@ public class SSLJedisClusterTest extends JedisClusterTest {
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
-      jc.get("key");
-      Assert.fail("There should be no reachable node in cluster.");
-//    } catch (JedisNoReachableClusterNodeException e) {
+//      jc.get("key");
+//      Assert.fail("There should be no reachable node in cluster.");
+////    } catch (JedisNoReachableClusterNodeException e) {
     } catch (JedisClusterOperationException e) {
-      assertEquals("No reachable node in cluster.", e.getMessage());
+//      assertEquals("No reachable node in cluster.", e.getMessage());
+      assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
   }
 
@@ -168,13 +169,14 @@ public class SSLJedisClusterTest extends JedisClusterTest {
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
-      jc2.get("foo");
-      Assert.fail("There should be no reachable node in cluster.");
-//    } catch (JedisNoReachableClusterNodeException e) {
+//      jc2.get("foo");
+//      Assert.fail("There should be no reachable node in cluster.");
+////    } catch (JedisNoReachableClusterNodeException e) {
     } catch (JedisClusterOperationException e) {
       // JedisNoReachableClusterNodeException exception occurs from not being able to connect
       // since the socket factory fails the hostname verification
-      assertEquals("No reachable node in cluster.", e.getMessage());
+//      assertEquals("No reachable node in cluster.", e.getMessage());
+      assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
     
     try (JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379),
@@ -204,11 +206,12 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslSocketFactory(sslSocketFactory).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
-      jc.get("key");
-      Assert.fail("There should be no reachable node in cluster.");
-//    } catch (JedisNoReachableClusterNodeException e) {
+//      jc.get("key");
+//      Assert.fail("There should be no reachable node in cluster.");
+////    } catch (JedisNoReachableClusterNodeException e) {
     } catch (JedisClusterOperationException e) {
-      assertEquals("No reachable node in cluster.", e.getMessage());
+//      assertEquals("No reachable node in cluster.", e.getMessage());
+      assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
   }
 

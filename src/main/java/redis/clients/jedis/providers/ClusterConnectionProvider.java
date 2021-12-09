@@ -45,6 +45,8 @@ public class ClusterConnectionProvider implements ConnectionProvider {
         // try next nodes
       }
     }
+
+    throw new JedisClusterOperationException("Could not initialize cluster slots cache.");
   }
 
   @Override

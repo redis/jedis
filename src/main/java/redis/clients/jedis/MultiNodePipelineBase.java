@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 
@@ -22,6 +23,9 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.tairhash.ExhgetWithVerResult;
+import redis.clients.jedis.tairhash.ExhincrByParams;
+import redis.clients.jedis.tairhash.ExhsetParams;
 
 public abstract class MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
@@ -3123,6 +3127,188 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   public Response<String> ftConfigSet(String indexName, String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
+
+  // TairHash commands
+  @Override
+  public Response<Long> exhset(String key, String field, String value) {
+    return appendCommand(commandObjects.exhset(key, field, value));
+  }
+
+  @Override
+  public Response<Long> exhset(String key, String field, String value, ExhsetParams params) {
+    return appendCommand(commandObjects.exhset(key, field, value, params));
+  }
+
+  @Override
+  public Response<String> exhget(String key, String field) {
+    return appendCommand(commandObjects.exhget(key, field));
+  }
+
+  @Override
+  public Response<String> exhmset(String key, Map<String, String> hash) {
+    return appendCommand(commandObjects.exhmset(key, hash));
+  }
+
+  @Override
+  public Response<Long> exhexpire(String key, String field, long seconds) {
+    return appendCommand(commandObjects.exhexpire(key, field, seconds));
+  }
+
+  @Override
+  public Response<Long> exhexpireWithVer(String key, String field, long seconds, long version) {
+    return appendCommand(commandObjects.exhexpireWithVer(key, field, seconds, version));
+  }
+
+  @Override
+  public Response<Long> exhexpireWithAbsVer(String key, String field, long seconds, long absVer) {
+    return appendCommand(commandObjects.exhexpireWithAbsVer(key, field, seconds, absVer));
+  }
+
+  @Override
+  public Response<Long> exhexpireAt(String key, String field, long unixTime) {
+    return appendCommand(commandObjects.exhexpireAt(key, field, unixTime));
+  }
+
+  @Override
+  public Response<Long> exhexpireAtWithVer(String key, String field, long unixTime, long version) {
+    return appendCommand(commandObjects.exhexpireAtWithVer(key, field, unixTime, version));
+  }
+
+  @Override
+  public Response<Long> exhexpireAtWithAbsVer(String key, String field, long unixTime, long absVer) {
+    return appendCommand(commandObjects.exhexpireAtWithAbsVer(key, field, unixTime, absVer));
+  }
+
+  @Override
+  public Response<Long> exhpexpire(String key, String field, long milliseconds) {
+    return appendCommand(commandObjects.exhpexpire(key, field, milliseconds));
+  }
+
+  @Override
+  public Response<Long> exhpexpireWithVer(String key, String field, long milliseconds, long version) {
+    return appendCommand(commandObjects.exhpexpireWithVer(key, field, milliseconds, version));
+  }
+
+  @Override
+  public Response<Long> exhpexpireWithAbsVer(String key, String field, long milliseconds, long absVer) {
+    return appendCommand(commandObjects.exhpexpireWithAbsVer(key, field, milliseconds, absVer));
+  }
+
+  @Override
+  public Response<Long> exhpexpireAt(String key, String field, long unixTime) {
+    return appendCommand(commandObjects.exhpexpireAt(key, field, unixTime));
+  }
+
+  @Override
+  public Response<Long> exhpexpireAtWithVer(String key, String field, long unixTime, long version) {
+    return appendCommand(commandObjects.exhpexpireAtWithVer(key, field, unixTime, version));
+  }
+
+  @Override
+  public Response<Long> exhpexpireAtWithAbsVer(String key, String field, long unixTime, long absVer) {
+    return appendCommand(commandObjects.exhpexpireAtWithAbsVer(key, field, unixTime, absVer));
+  }
+
+  @Override
+  public Response<Long> exhttl(String key, String field) {
+    return appendCommand(commandObjects.exhttl(key, field));
+  }
+
+  @Override
+  public Response<Long> exhpttl(String key, String field) {
+    return appendCommand(commandObjects.exhpttl(key, field));
+  }
+
+  @Override
+  public Response<Long> exhver(String key, String field) {
+    return appendCommand(commandObjects.exhver(key, field));
+  }
+
+  @Override
+  public Response<Long> exhsetVer(String key, String field, long version) {
+    return appendCommand(commandObjects.exhsetVer(key, field, version));
+  }
+
+  @Override
+  public Response<Long> exhincrBy(String key, String field, long value) {
+    return appendCommand(commandObjects.exhincrBy(key, field, value));
+  }
+
+  @Override
+  public Response<Long> exhincrBy(String key, String field, long value, ExhincrByParams<Long> params) {
+    return appendCommand(commandObjects.exhincrBy(key, field, value, params));
+  }
+
+  @Override
+  public Response<Double> exhincrByFloat(String key, String field, double value) {
+    return appendCommand(commandObjects.exhincrByFloat(key, field, value));
+  }
+
+  @Override
+  public Response<Double> exhincrByFloat(String key, String field, double value, ExhincrByParams<Double> params) {
+    return appendCommand(commandObjects.exhincrByFloat(key, field, value, params));
+  }
+
+  @Override
+  public Response<ExhgetWithVerResult<String>> exhgetWithVer(String key, String field) {
+    return appendCommand(commandObjects.exhgetWithVer(key, field));
+  }
+
+  @Override
+  public Response<List<String>> exhmget(String key, String... fields) {
+    return appendCommand(commandObjects.exhmget(key, fields));
+  }
+
+  @Override
+  public Response<List<ExhgetWithVerResult<String>>> exhmgetWithVer(String key, String... fields) {
+    return appendCommand(commandObjects.exhmgetWithVer(key, fields));
+  }
+
+  @Override
+  public Response<Long> exhdel(String key, String... fields) {
+    return appendCommand(commandObjects.exhdel(key, fields));
+  }
+
+  @Override
+  public Response<Long> exhlen(String key) {
+    return appendCommand(commandObjects.exhlen(key));
+  }
+
+  @Override
+  public Response<Long> exhlenNoExp(String key) {
+    return appendCommand(commandObjects.exhlenNoExp(key));
+  }
+
+  @Override
+  public Response<Long> exhexists(String key, String field) {
+    return appendCommand(commandObjects.exhexists(key, field));
+  }
+
+  @Override
+  public Response<Long> exhstrlen(String key, String field) {
+    return appendCommand(commandObjects.exhstrlen(key, field));
+  }
+
+  @Override
+  public Response<List<String>> exhkeys(String key) {
+    return appendCommand(commandObjects.exhkeys(key));
+  }
+
+  @Override
+  public Response<List<String>> exhvals(String key) {
+    return appendCommand(commandObjects.exhvals(key));
+  }
+
+  @Override
+  public Response<Map<String, String>> exhgetall(String key) {
+    return appendCommand(commandObjects.exhgetall(key));
+  }
+
+  @Override
+  public Response<ScanResult<Entry<String, String>>> exhscan(String key, String cursor, ScanParams params) {
+    return appendCommand(commandObjects.exhscan(key, cursor, params));
+  }
+  // TairHash commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

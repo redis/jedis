@@ -7,6 +7,7 @@ import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
@@ -28,6 +29,10 @@ import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.tairhash.ExhgetWithVerResult;
+import redis.clients.jedis.tairhash.ExhincrByParams;
+import redis.clients.jedis.tairhash.ExhsetParams;
+import redis.clients.jedis.tairhash.TairHashProtocol.TairHashCommand;
 
 public class CommandObjects {
 
@@ -2799,6 +2804,152 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
   // RedisJSON commands
+
+  // TairHash commands
+  public final CommandObject<Long> exhset(String key, String field, String value) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHSET).key(key).add(field).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhset(String key, String field, String value, ExhsetParams params) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHSET).key(key).add(field).add(value).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> exhget(String key, String field) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHGET).key(key).add(field), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> exhmset(String key, Map<String, String> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(TairHashCommand.EXHMSET).key(key), hash), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> exhexpire(String key, String field, long seconds) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHEXPIRE).key(key).add(field).add(seconds), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhexpireWithVer(String key, String field, long seconds, long version) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHEXPIRE).key(key).add(field).add(seconds).add(Keyword.VER).add(version), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhexpireWithAbsVer(String key, String field, long seconds, long absVer) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHEXPIRE).key(key).add(field).add(seconds).add(Keyword.ABS).add(absVer), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhexpireAt(String key, String field, long unixTime) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHEXPIREAT).key(key).add(field).add(unixTime), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhexpireAtWithVer(String key, String field, long unixTime, long version) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHEXPIREAT).key(key).add(field).add(unixTime).add(Keyword.VER).add(version), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhexpireAtWithAbsVer(String key, String field, long unixTime, long absVer) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHEXPIREAT).key(key).add(field).add(unixTime).add(Keyword.ABS).add(absVer), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhpexpire(String key, String field, long milliseconds) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHPEXPIRE).key(key).add(field).add(milliseconds), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhpexpireWithVer(String key, String field, long milliseconds, long version) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHPEXPIRE).key(key).add(field).add(milliseconds).add(Keyword.VER).add(version), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhpexpireWithAbsVer(String key, String field, long milliseconds, long absVer) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHPEXPIRE).key(key).add(field).add(milliseconds).add(Keyword.ABS).add(absVer), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhpexpireAt(String key, String field, long unixTime) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHPEXPIREAT).key(key).add(field).add(unixTime), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhpexpireAtWithVer(String key, String field, long unixTime, long version) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHPEXPIREAT).key(key).add(field).add(unixTime).add(Keyword.VER).add(version), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhpexpireAtWithAbsVer(String key, String field, long unixTime, long absVer) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHPEXPIREAT).key(key).add(field).add(unixTime).add(Keyword.ABS).add(absVer), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhttl(String key, String field) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHTTL).key(key).add(field), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhpttl(String key, String field) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHPTTL).key(key).add(field), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhver(String key, String field) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHVER).key(key).add(field), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhsetVer(String key, String field, long version) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHSETVER).key(key).add(field).add(version), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhincrBy(String key, String field, long value) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHINCRBY).key(key).add(field).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhincrBy(String key, String field, long value, ExhincrByParams<Long> params) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHINCRBY).key(key).add(field).add(value).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Double> exhincrByFloat(String key, String field, double value) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHINCRBYFLOAT).key(key).add(field).add(value), BuilderFactory.DOUBLE);
+  }
+
+  public final CommandObject<Double> exhincrByFloat(String key, String field, double value, ExhincrByParams<Double> params) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHINCRBYFLOAT).key(key).add(field).add(value).addParams(params), BuilderFactory.DOUBLE);
+  }
+
+  public final CommandObject<ExhgetWithVerResult<String>> exhgetWithVer(String key, String field) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHGETWITHVER).key(key).add(field), BuilderFactory.EXHGETWITHVER_RESULT_STRING);
+  }
+
+  public final CommandObject<List<String>> exhmget(String key, String... fields) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHMGET).key(key).addObjects(fields), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<ExhgetWithVerResult<String>>> exhmgetWithVer(String key, String... fields) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHMGETWITHVER).key(key).addObjects(fields), BuilderFactory.EXHMGETWITHVER_RESULT_STRING_LIST);
+  }
+
+  public final CommandObject<Long> exhdel(String key, String... fields) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHDEL).key(key).addObjects(fields), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhlen(String key) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHLEN).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhlenNoExp(String key) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHLEN).key(key).add(Keyword.NOEXP), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhexists(String key, String field) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHEXISTS).key(key).add(field), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> exhstrlen(String key, String field) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHSTRLEN).key(key).add(field), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<String>> exhkeys(String key) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHKEYS).key(key), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> exhvals(String key) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHVALS).key(key), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<Map<String, String>> exhgetall(String key) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHGETALL).key(key), BuilderFactory.STRING_MAP);
+  }
+
+  public final CommandObject<ScanResult<Map.Entry<String, String>>> exhscan(String key, String cursor, ScanParams params) {
+    return new CommandObject<>(commandArguments(TairHashCommand.EXHSCAN).key(key).add(cursor).addParams(params), BuilderFactory.HSCAN_RESPONSE);
+  }
+  // TairHash commands
 
   private static final Gson GSON = new Gson();
 

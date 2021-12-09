@@ -11,6 +11,7 @@ import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.tairhash.ExhgetWithVerResult;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -1338,6 +1339,63 @@ public final class BuilderFactory {
         dump.put(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
       }
       return dump;
+    }
+  };
+
+  public static final Builder<ExhgetWithVerResult<String>> EXHGETWITHVER_RESULT_STRING
+      = new Builder<ExhgetWithVerResult<String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public ExhgetWithVerResult<String> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      List<Object> result = (List<Object>)data;
+      if (result.size() == 0) {
+        return null;
+      } else {
+        String value = SafeEncoder.encode((byte[])result.get(0));
+        long version = (Long)result.get(1);
+        return new ExhgetWithVerResult<>(value, version);
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "exhgetwithver";
+    }
+  };
+
+  public static final Builder<List<ExhgetWithVerResult<String>>> EXHMGETWITHVER_RESULT_STRING_LIST
+      = new Builder<List<ExhgetWithVerResult<String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<ExhgetWithVerResult<String>> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      List<Object> result = (List<Object>)data;
+      if (result.size() == 0) {
+        return null;
+      } else {
+        List<ExhgetWithVerResult<String>> results = new ArrayList<ExhgetWithVerResult<String>>();
+        for (Object o : result) {
+          if (o == null) {
+            results.add(null);
+          } else {
+            List<Object> lo = (List<Object>)o;
+            String value = SafeEncoder.encode((byte[])lo.get(0));
+            long version = (Long)lo.get(1);
+            results.add(new ExhgetWithVerResult<String>(value, version));
+          }
+        }
+        return results;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "exhmgetwithver";
     }
   };
 

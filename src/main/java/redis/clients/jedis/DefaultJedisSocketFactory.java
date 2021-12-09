@@ -73,19 +73,19 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private void connectToFirstSuccsefulHost(Socket socket, HostAndPort hostAndPort) throws IOException {
     List<InetAddress> hosts = Arrays.asList(InetAddress.getAllByName(hostAndPort.getHost()));
     Collections.shuffle(hosts);
-    List<ConnectException> connectExceptions = new ArrayList<ConnectException>();
+    List<Exception> exceptions = new ArrayList<Exception>();
     boolean connected = false;
     for (InetAddress host : hosts) {
-      try{
+      try {
         socket.connect(new InetSocketAddress(host.getHostAddress(), hostAndPort.getPort()), connectionTimeout);
         connected = true;
         break;
-      } catch (ConnectException e) {
-        connectExceptions.add(e);
+      } catch (Exception e) {
+        exceptions.add(e);
       }
     }
-    if(connected == false) {
-      throw new ConnectException(connectExceptions.toString());
+    if (!connected) {
+      throw new ConnectException(exceptions.toString());
     }
   }
 
@@ -100,7 +100,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
 
       HostAndPort _hostAndPort = getSocketHostAndPort();
-      connectToFirstSuccsefulHost(socket, _hostAndPort);;
+      connectToFirstSuccsefulHost(socket, _hostAndPort);
       socket.setSoTimeout(socketTimeout);
 
       if (ssl) {

@@ -63,7 +63,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public final void close() {
+  public void close() {
     sync();
     for (Connection connection : connections.values()) {
       connection.close();

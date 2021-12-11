@@ -353,7 +353,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Works same as {@link #ping()} but returns argument message instead of <code>PONG</code>.
+   * Works same as {@link Jedis#ping()} but returns argument message instead of <code>PONG</code>.
    * @param message
    * @return message
    */
@@ -636,14 +636,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
-   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all the
-   * other aspects of the dataset. Saving a dataset containing expires and stopping the server does
-   * not stop the flow of time as Redis stores on disk the time when the key will no longer be
+   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all
+   * the other aspects of the dataset. Saving a dataset containing expires and stopping the server
+   * does not stop the flow of time as Redis stores on disk the time when the key will no longer be
    * available as Unix time, and not the remaining seconds.
    * <p>
    * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
    * set. It is also possible to undo the expire at all turning the key into a normal key using the
-   * {@link #persist(byte[]) PERSIST} command.
+   * {@link Jedis#persist(byte[]) PERSIST} command.
    * <p>
    * Time complexity: O(1)
    * @see <a href="http://redis.io/commands/expire">Expire Command</a>
@@ -660,10 +660,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * EXPIREAT works exactly like {@link #expire(byte[], int) EXPIRE} but instead to get the number of
-   * seconds representing the Time To Live of the key as a second argument (that is a relative way
-   * of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
-   * seconds elapsed since 1 Gen 1970).
+   * EXPIREAT works exactly like {@link Jedis#expire(byte[], long) EXPIRE} but instead to get the
+   * number of seconds representing the Time To Live of the key as a second argument (that is a
+   * relative way of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp
+   * (Number of seconds elapsed since 1 Gen 1970).
    * <p>
    * EXPIREAT was introduced in order to implement the Append Only File persistence mode so that
    * EXPIRE commands are automatically translated into EXPIREAT commands for the append only file.
@@ -672,7 +672,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
    * set. It is also possible to undo the expire at all turning the key into a normal key using the
-   * {@link #persist(byte[]) PERSIST} command.
+   * {@link Jedis#persist(byte[]) PERSIST} command.
    * <p>
    * Time complexity: O(1)
    * @see <a href="http://redis.io/commands/expire">Expire Command</a>
@@ -690,8 +690,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * The TTL command returns the remaining time to live in seconds of a key that has an
-   * {@link #expire(byte[], int) EXPIRE} set. This introspection capability allows a Redis connection to
- check how many seconds a given key will continue to be part of the dataset.
+   * {@link Jedis#expire(byte[], long) EXPIRE} set. This introspection capability allows a Redis
+   * connection to check how many seconds a given key will continue to be part of the dataset.
    * @param key
    * @return Integer reply, returns the remaining time to live in seconds of a key that has an
    *         EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
@@ -722,8 +722,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Select the DB with having the specified zero-based numeric index. For default every new connection
- connection is automatically selected to DB 0.
+   * Select the DB with having the specified zero-based numeric index. For default every new
+   * connection connection is automatically selected to DB 0.
    * @param index
    * @return Status code reply
    */
@@ -817,8 +817,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * SETNX works exactly like {@link #set(byte[], byte[]) SET} with the only difference that if the
-   * key already exists no operation is performed. SETNX actually means "SET if Not eXists".
+   * SETNX works exactly like {@link Jedis#set(byte[], byte[]) SET} with the only difference that if
+   * the key already exists no operation is performed. SETNX actually means "SET if Not eXists".
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -833,8 +833,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * The command is exactly equivalent to the following group of commands:
-   * {@link #set(byte[], byte[]) SET} + {@link #expire(byte[], int) EXPIRE}. The operation is
-   * atomic.
+   * {@link Jedis#set(byte[], byte[]) SET} + {@link Jedis#expire(byte[], long) EXPIRE}. The
+   * operation is atomic.
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -850,16 +850,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Set the the respective keys to the respective values. MSET will replace old values with new
-   * values, while {@link Jedis#msetnx(byte[][]) MSETNX} will not perform any operation at all even if
-   * just a single key already exists.
+   * values, while {@link Jedis#msetnx(byte[][]) MSETNX} will not perform any operation at all even
+   * if just a single key already exists.
    * <p>
    * Because of this semantic MSETNX can be used in order to set different keys representing
    * different fields of an unique logic object in a way that ensures that either all the fields or
    * none at all are set.
    * <p>
- Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
- are modified, another connection talking to Redis can either see the changes to both A and B at
- once, or no modification at all.
+   * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+   * are modified, another connection talking to Redis can either see the changes to both A and B at
+   * once, or no modification at all.
    * @see Jedis#msetnx(byte[][])
    * @param keysvalues
    * @return Status code reply Basically +OK as MSET can't fail
@@ -879,9 +879,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * different fields of an unique logic object in a way that ensures that either all the fields or
    * none at all are set.
    * <p>
- Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
- are modified, another connection talking to Redis can either see the changes to both A and B at
- once, or no modification at all.
+   * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+   * are modified, another connection talking to Redis can either see the changes to both A and B at
+   * once, or no modification at all.
    * @see Jedis#mset(byte[][])
    * @param keysvalues
    * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
@@ -894,8 +894,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * DECRBY work just like {@link #decr(byte[]) INCR} but instead to decrement by 1 the decrement is
-   * integer.
+   * DECRBY work just like {@link Jedis#decr(byte[]) INCR} but instead to decrement by 1 the
+   * decrement is integer.
    * <p>
    * INCR commands are limited to 64 bit signed integers.
    * <p>
@@ -941,8 +941,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * INCRBY work just like {@link #incr(byte[]) INCR} but instead to increment by 1 the increment is
-   * integer.
+   * INCRBY work just like {@link Jedis#incr(byte[]) INCR} but instead to increment by 1 the
+   * increment is integer.
    * <p>
    * INCR commands are limited to 64 bit signed integers.
    * <p>
@@ -965,7 +965,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * INCRBYFLOAT work just like {@link #incrBy(byte[], long)} INCRBY} but increments by floats
+   * INCRBYFLOAT work just like {@link Jedis#incrBy(byte[], long)} INCRBY} but increments by floats
    * instead of integers.
    * <p>
    * INCRBYFLOAT commands are limited to double precision floating point values.
@@ -1640,7 +1640,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Return all the members (elements) of the set value stored at key. This is just syntax glue for
-   * {@link #sinter(byte[]...)} SINTER}.
+   * {@link Jedis#sinter(byte[][])} SINTER}.
    * <p>
    * Time complexity O(N)
    * @param key the key of the set
@@ -1672,8 +1672,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Remove a random element from a Set returning it as return value. If the Set is empty or the key
    * does not exist, a nil object is returned.
    * <p>
-   * The {@link #srandmember(byte[])} command does a similar work but the returned element is not
-   * removed from the Set.
+   * The {@link Jedis#srandmember(byte[])} command does a similar work but the returned element is
+   * not removed from the Set.
    * <p>
    * Time complexity O(1)
    * @param key
@@ -1735,8 +1735,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Boolean reply, specifically: true if the element is a member of the set false if the element
-   *         is not a member of the set OR if the key does not exist
+   * @return Boolean reply, specifically: true if the element is a member of the set false if the
+   *         element is not a member of the set OR if the key does not exist
    */
   @Override
   public boolean sismember(final byte[] key, final byte[] member) {
@@ -1750,7 +1750,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(N) where N is the number of elements being checked for membership
    * @param key
    * @param members
-   * @return List representing the membership of the given elements, in the same order as they are requested.
+   * @return List representing the membership of the given elements, in the same order as they are
+   *         requested.
    */
   @Override
   public List<Boolean> smismember(final byte[] key, final byte[]... members) {
@@ -1760,10 +1761,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Return the members of a set resulting from the intersection of all the sets hold at the
-   * specified keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the
- connection as a multi-bulk reply (see the protocol specification for more information). If just a
- single key is specified, then this command produces the same result as
- {@link #smembers(byte[]) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
+   * specified keys. Like in {@link Jedis#lrange(byte[], long, long)} LRANGE} the result is sent to
+   * the connection as a multi-bulk reply (see the protocol specification for more information). If
+   * just a single key is specified, then this command produces the same result as
+   * {@link Jedis#smembers(byte[]) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
    * <p>
    * Non existing keys are considered like empty sets, so if one of the keys is missing an empty set
    * is returned (since the intersection with an empty set always is an empty set).
@@ -1780,8 +1781,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This commanad works exactly like {@link #sinter(byte[]...) SINTER} but instead of being returned
-   * the resulting set is stored as dstkey.
+   * This commanad works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of being
+   * returned the resulting set is stored as dstkey.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
@@ -1797,9 +1798,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Return the members of a set resulting from the union of all the sets hold at the specified
-   * keys. Like in {@link #lrange(byte[], long, long)} LRANGE} the result is sent to the connection as a
- multi-bulk reply (see the protocol specification for more information). If just a single key is
- specified, then this command produces the same result as {@link #smembers(byte[]) SMEMBERS}.
+   * keys. Like in {@link Jedis#lrange(byte[], long, long)} LRANGE} the result is sent to the
+   * connection as a multi-bulk reply (see the protocol specification for more information). If just
+   * a single key is specified, then this command produces the same result as
+   * {@link Jedis#smembers(byte[]) SMEMBERS}.
    * <p>
    * Non existing keys are considered like empty sets.
    * <p>
@@ -1814,8 +1816,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This command works exactly like {@link #sunion(byte[]...) SUNION} but instead of being returned
-   * the resulting set is stored as dstkey. Any existing value in dstkey will be over-written.
+   * This command works exactly like {@link Jedis#sunion(byte[][]) SUNION} but instead of being
+   * returned the resulting set is stored as dstkey. Any existing value in dstkey will be
+   * over-written.
    * <p>
    * Time complexity O(N) where N is the total number of elements in all the provided sets
    * @param dstkey
@@ -2539,13 +2542,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The elements having the same score are returned sorted lexicographically as ASCII strings (this
    * follows from a property of Redis sorted sets and does not involve further computation).
    * <p>
-   * Using the optional {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's possible
-   * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
-   * the commands needs to traverse the list for offset elements and this adds up to the O(M)
-   * figure.
+   * Using the optional {@link Jedis#zrangeByScore(byte[], double, double, int, int) LIMIT} it is
+   * possible to get only a range of the matching elements in an SQL-alike way. Note that if the
+   * offset is large the commands needs to traverse the list for offset elements and this adds up to
+   * the O(M) figure.
    * <p>
-   * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
-   * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
+   * The {@link Jedis#zcount(byte[], double, double) ZCOUNT} command is similar to
+   * {@link Jedis#zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
    * actual elements in the specified interval, it just returns the number of matching elements.
    * <p>
    * <b>Exclusive intervals and infinity</b>
@@ -2553,7 +2556,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
    * smallest element in order to take, for instance, elements "up to a given value".
    * <p>
-   * Also while the interval is for default closed (inclusive) it's possible to specify open
+   * Also while the interval is for default closed (inclusive) it is possible to specify open
    * intervals prefixing the score with a "(" character, so for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
@@ -2598,13 +2601,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The elements having the same score are returned sorted lexicographically as ASCII strings (this
    * follows from a property of Redis sorted sets and does not involve further computation).
    * <p>
-   * Using the optional {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's possible
-   * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
-   * the commands needs to traverse the list for offset elements and this adds up to the O(M)
-   * figure.
+   * Using the optional {@link Jedis#zrangeByScore(byte[], double, double, int, int) LIMIT} it is
+   * possible to get only a range of the matching elements in an SQL-alike way. Note that if offset
+   * is large the commands needs to traverse the list for offset elements and this adds up to the
+   * O(M) figure.
    * <p>
-   * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
-   * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
+   * The {@link Jedis#zcount(byte[], double, double) ZCOUNT} command is similar to
+   * {@link Jedis#zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
    * actual elements in the specified interval, it just returns the number of matching elements.
    * <p>
    * <b>Exclusive intervals and infinity</b>
@@ -2612,7 +2615,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
    * smallest element in order to take, for instance, elements "up to a given value".
    * <p>
-   * Also while the interval is for default closed (inclusive) it's possible to specify open
+   * Also while the interval is for default closed (inclusive) it is possible to specify open
    * intervals prefixing the score with a "(" character, so for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
@@ -2661,13 +2664,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The elements having the same score are returned sorted lexicographically as ASCII strings (this
    * follows from a property of Redis sorted sets and does not involve further computation).
    * <p>
-   * Using the optional {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's possible
-   * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
-   * the commands needs to traverse the list for offset elements and this adds up to the O(M)
-   * figure.
+   * Using the optional {@link Jedis#zrangeByScore(byte[], double, double, int, int) LIMIT} it is
+   * possible to get only a range of the matching elements in an SQL-alike way. Note that if offset
+   * is large the commands needs to traverse the list for offset elements and this adds up to the
+   * O(M) figure.
    * <p>
-   * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
-   * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
+   * The {@link Jedis#zcount(byte[], double, double) ZCOUNT} command is similar to
+   * {@link Jedis#zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
    * actual elements in the specified interval, it just returns the number of matching elements.
    * <p>
    * <b>Exclusive intervals and infinity</b>
@@ -2675,7 +2678,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
    * smallest element in order to take, for instance, elements "up to a given value".
    * <p>
-   * Also while the interval is for default closed (inclusive) it's possible to specify open
+   * Also while the interval is for default closed (inclusive) it is possible to specify open
    * intervals prefixing the score with a "(" character, so for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
@@ -2720,13 +2723,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The elements having the same score are returned sorted lexicographically as ASCII strings (this
    * follows from a property of Redis sorted sets and does not involve further computation).
    * <p>
-   * Using the optional {@link #zrangeByScore(byte[], double, double, int, int) LIMIT} it's possible
-   * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
-   * the commands needs to traverse the list for offset elements and this adds up to the O(M)
-   * figure.
+   * Using the optional {@link Jedis#zrangeByScore(byte[], double, double, int, int) LIMIT} it is
+   * possible to get only a range of the matching elements in an SQL-alike way. Note that if offset
+   * is large the commands needs to traverse the list for offset elements and this adds up to the
+   * O(M) figure.
    * <p>
-   * The {@link #zcount(byte[], double, double) ZCOUNT} command is similar to
-   * {@link #zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
+   * The {@link Jedis#zcount(byte[], double, double) ZCOUNT} command is similar to
+   * {@link Jedis#zrangeByScore(byte[], double, double) ZRANGEBYSCORE} but instead of returning the
    * actual elements in the specified interval, it just returns the number of matching elements.
    * <p>
    * <b>Exclusive intervals and infinity</b>
@@ -2734,7 +2737,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
    * smallest element in order to take, for instance, elements "up to a given value".
    * <p>
-   * Also while the interval is for default closed (inclusive) it's possible to specify open
+   * Also while the interval is for default closed (inclusive) it is possible to specify open
    * intervals prefixing the score with a "(" character, so for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
@@ -2901,15 +2904,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link #zinterstore(byte[], byte[]...)} ZINTERSTORE} command requires
-   * an element to be present in each of the given inputs to be inserted in the result. The {@link
-   * #zunionstore(byte[], byte[]...)} command inserts all elements across all inputs.
+   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][])} ZINTERSTORE} command
+   * requires an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link Jedis#zunionstore(byte[], byte[][])} command inserts all elements across all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
    * being passed to the aggregation. When this option is not given, all weights default to 1.
    * <p>
-   * With the AGGREGATE option, it's possible to specify how the results of the union or
+   * With the AGGREGATE option, it is possible to specify how the results of the union or
    * intersection are aggregated. This option defaults to SUM, where the score of an element is
    * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
    * resulting set will contain the minimum or maximum score of an element across the inputs where
@@ -2932,15 +2935,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The {@link
-   * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
+   * requires an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across
+   * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
    * being passed to the aggregation. When this option is not given, all weights default to 1.
    * <p>
-   * With the AGGREGATE option, it's possible to specify how the results of the union or
+   * With the AGGREGATE option, it is possible to specify how the results of the union or
    * intersection are aggregated. This option defaults to SUM, where the score of an element is
    * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
    * resulting set will contain the minimum or maximum score of an element across the inputs where
@@ -2961,7 +2965,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
- the resulting sorted set, it is returned to the connection.
+   * the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    */
@@ -2973,7 +2977,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
- the resulting sorted set, it is returned to the connection.
+   * the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    */
@@ -2988,15 +2992,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The {@link
-   * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
+   * requires an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
+   * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
    * being passed to the aggregation. When this option is not given, all weights default to 1.
    * <p>
-   * With the AGGREGATE option, it's possible to specify how the results of the union or
+   * With the AGGREGATE option, it is possible to specify how the results of the union or
    * intersection are aggregated. This option defaults to SUM, where the score of an element is
    * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
    * resulting set will contain the minimum or maximum score of an element across the inputs where
@@ -3019,15 +3024,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link #zinterstore(byte[], byte[]...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The {@link
-   * #zunionstore(byte[], byte[]...) ZUNIONSTORE} command inserts all elements across all inputs.
+   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
+   * requires an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
+   * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
    * being passed to the aggregation. When this option is not given, all weights default to 1.
    * <p>
-   * With the AGGREGATE option, it's possible to specify how the results of the union or
+   * With the AGGREGATE option, it is possible to specify how the results of the union or
    * intersection are aggregated. This option defaults to SUM, where the score of an element is
    * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
    * resulting set will contain the minimum or maximum score of an element across the inputs where
@@ -3092,8 +3098,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * completed, no connection is served in the meanwhile. An OK code is returned when the DB was
    * fully stored in disk.
    * <p>
-   * The background variant of this command is {@link #bgsave() BGSAVE} that is able to perform the
-   * saving in the background while the server continues serving other clients.
+   * The background variant of this command is {@link Jedis#bgsave() BGSAVE} that is able to perform
+   * the saving in the background while the server continues serving other clients.
    * <p>
    * @return Status code reply
    */
@@ -3140,9 +3146,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   /**
    * Return the UNIX time stamp of the last successfully saving of the dataset on disk.
    * <p>
- Return the UNIX TIME of the last DB save executed with success. A connection may check if a
- {@link #bgsave() BGSAVE} command succeeded reading the LASTSAVE value, then issuing a BGSAVE
-   * command and checking at regular intervals every N seconds if LASTSAVE changed.
+   * Return the UNIX TIME of the last DB save executed with success. A connection may check if a
+   * {@link Jedis#bgsave() BGSAVE} command succeeded reading the LASTSAVE value, then issuing a
+   * BGSAVE command and checking at regular intervals every N seconds if LASTSAVE changed.
    * @return Integer reply, specifically an UNIX time stamp.
    */
   @Override
@@ -3156,8 +3162,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Stop all the clients, save the DB, then quit the server. This commands makes sure that the DB
    * is switched off without the lost of any data. This is not guaranteed if the connection uses
-   * simply {@link #save() SAVE} and then {@link #quit() QUIT} because other clients may alter the
-   * DB data between the two commands.
+   * simply {@link Jedis#save() SAVE} and then {@link Jedis#quit() QUIT} because other clients may
+   * alter the DB data between the two commands.
    * @throws JedisException with the status code reply on error. On success nothing is thrown since
    *         the server quits and the connection is closed.
    */
@@ -3375,7 +3381,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * supported.
    * <p>
    * The list of configuration parameters supported by CONFIG SET can be obtained issuing a
-   * {@link #configGet(byte[]) CONFIG GET *} command.
+   * {@link Jedis#configGet(byte[]) CONFIG GET *} command.
    * <p>
    * The configuration set using CONFIG SET is immediately loaded by the Redis server that will
    * start acting as specified starting from the next command.
@@ -3430,7 +3436,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Undo a {@link #expire(byte[], int) expire} at turning the expire key into a normal key.
+   * Undo a {@link Jedis#expire(byte[], long) expire} at turning the expire key into a normal key.
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -3733,7 +3739,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
    * set. It is also possible to undo the expire at all turning the key into a normal key using the
-   * {@link #persist(byte[]) PERSIST} command.
+   * {@link Jedis#persist(byte[]) PERSIST} command.
    * <p>
    * Time complexity: O(1)
    * @see <a href="http://redis.io/commands/pexpire">PEXPIRE Command</a>
@@ -3762,8 +3768,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * PSETEX works exactly like {@link #setex(byte[], int, byte[])} with the sole difference that the
-   * expire time is specified in milliseconds instead of seconds. Time complexity: O(1)
+   * PSETEX works exactly like {@link Jedis#setex(byte[], long, byte[])} with the sole difference
+   * that the expire time is specified in milliseconds instead of seconds. Time complexity: O(1)
    * @param key
    * @param milliseconds
    * @param value
@@ -4492,7 +4498,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param dstKey the destination key.
    * @param db
    * @param replace
-   * @return
    */
   @Override
   public boolean copy(String srcKey, String dstKey, int db, boolean replace) {
@@ -4501,12 +4506,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * COPY source destination [DB destination-db] [REPLACE]
+   * COPY source destination [REPLACE]
    *
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param replace
-   * @return
    */
   @Override
   public boolean copy(String srcKey, String dstKey, boolean replace) {
@@ -4736,7 +4740,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
    * set. It is also possible to undo the expire at all turning the key into a normal key using the
-   * {@link #persist(String) PERSIST} command.
+   * {@link Jedis#persist(String) PERSIST} command.
    * <p>
    * Time complexity: O(1)
    * @see <a href="http://redis.io/commands/expire">Expire Command</a>
@@ -4753,10 +4757,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * EXPIREAT works exactly like {@link #expire(String, int) EXPIRE} but instead to get the number
-   * of seconds representing the Time To Live of the key as a second argument (that is a relative
-   * way of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp (Number of
-   * seconds elapsed since 1 Gen 1970).
+   * EXPIREAT works exactly like {@link Jedis#expire(String, long) EXPIRE} but instead to get the
+   * number of seconds representing the Time To Live of the key as a second argument (that is a
+   * relative way of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp
+   * (Number of seconds elapsed since 1 Gen 1970).
    * <p>
    * EXPIREAT was introduced in order to implement the Append Only File persistence mode so that
    * EXPIRE commands are automatically translated into EXPIREAT commands for the append only file.
@@ -4765,7 +4769,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
    * set. It is also possible to undo the expire at all turning the key into a normal key using the
-   * {@link #persist(String) PERSIST} command.
+   * {@link Jedis#persist(String) PERSIST} command.
    * <p>
    * Time complexity: O(1)
    * @see <a href="http://redis.io/commands/expire">Expire Command</a>
@@ -4783,8 +4787,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * The TTL command returns the remaining time to live in seconds of a key that has an
-   * {@link #expire(String, int) EXPIRE} set. This introspection capability allows a Redis connection to
- check how many seconds a given key will continue to be part of the dataset.
+   * {@link Jedis#expire(String, long) EXPIRE} set. This introspection capability allows a Redis
+   * connection to check how many seconds a given key will continue to be part of the dataset.
    * @param key
    * @return Integer reply, returns the remaining time to live in seconds of a key that has an
    *         EXPIRE. In Redis 2.6 or older, if the Key does not exists or does not have an
@@ -4864,8 +4868,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * SETNX works exactly like {@link #set(String, String) SET} with the only difference that if the
-   * key already exists no operation is performed. SETNX actually means "SET if Not eXists".
+   * SETNX works exactly like {@link Jedis#set(String, String) SET} with the only difference that if
+   * the key already exists no operation is performed. SETNX actually means "SET if Not eXists".
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -4880,8 +4884,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * The command is exactly equivalent to the following group of commands:
-   * {@link #set(String, String) SET} + {@link #expire(String, int) EXPIRE}. The operation is
-   * atomic.
+   * {@link Jedis#set(String, String) SET} + {@link Jedis#expire(String, long) EXPIRE}. The
+   * operation is atomic.
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -4897,16 +4901,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Set the the respective keys to the respective values. MSET will replace old values with new
-   * values, while {@link #msetnx(String...) MSETNX} will not perform any operation at all even if
-   * just a single key already exists.
+   * values, while {@link Jedis#msetnx(String...) MSETNX} will not perform any operation at all even
+   * if just a single key already exists.
    * <p>
    * Because of this semantic MSETNX can be used in order to set different keys representing
    * different fields of an unique logic object in a way that ensures that either all the fields or
    * none at all are set.
    * <p>
- Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
- are modified, another connection talking to Redis can either see the changes to both A and B at
- once, or no modification at all.
+   * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+   * are modified, another connection talking to Redis can either see the changes to both A and B at
+   * once, or no modification at all.
    * @see #msetnx(String...)
    * @param keysvalues
    * @return Status code reply Basically +OK as MSET can't fail
@@ -4918,7 +4922,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Set the the respective keys to the respective values. {@link #mset(String...) MSET} will
+   * Set the the respective keys to the respective values. {@link Jedis#mset(String...) MSET} will
    * replace old values with new values, while MSETNX will not perform any operation at all even if
    * just a single key already exists.
    * <p>
@@ -4926,9 +4930,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * different fields of an unique logic object in a way that ensures that either all the fields or
    * none at all are set.
    * <p>
- Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
- are modified, another connection talking to Redis can either see the changes to both A and B at
- once, or no modification at all.
+   * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
+   * are modified, another connection talking to Redis can either see the changes to both A and B at
+   * once, or no modification at all.
    * @see #mset(String...)
    * @param keysvalues
    * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
@@ -4941,8 +4945,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * IDECRBY work just like {@link #decr(String) INCR} but instead to decrement by 1 the decrement
-   * is integer.
+   * IDECRBY work just like {@link Jedis#decr(String) INCR} but instead to decrement by 1 the
+   * decrement is integer.
    * <p>
    * INCR commands are limited to 64 bit signed integers.
    * <p>
@@ -4988,8 +4992,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * INCRBY work just like {@link #incr(String) INCR} but instead to increment by 1 the increment is
-   * integer.
+   * INCRBY work just like {@link Jedis#incr(String) INCR} but instead to increment by 1 the
+   * increment is integer.
    * <p>
    * INCR commands are limited to 64 bit signed integers.
    * <p>
@@ -5642,7 +5646,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Return all the members (elements) of the set value stored at key. This is just syntax glue for
-   * {@link #sinter(String...) SINTER}.
+   * {@link Jedis#sinter(String...) SINTER}.
    * <p>
    * Time complexity O(N)
    * @param key
@@ -5674,8 +5678,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Remove a random element from a Set returning it as return value. If the Set is empty or the key
    * does not exist, a nil object is returned.
    * <p>
-   * The {@link #srandmember(String)} command does a similar work but the returned element is not
-   * removed from the Set.
+   * The {@link Jedis#srandmember(String)} command does a similar work but the returned element is
+   * not removed from the Set.
    * <p>
    * Time complexity O(1)
    * @param key
@@ -5763,10 +5767,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Return the members of a set resulting from the intersection of all the sets hold at the
-   * specified keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the
- connection as a multi-bulk reply (see the protocol specification for more information). If just a
- single key is specified, then this command produces the same result as
- {@link #smembers(String) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
+   * specified keys. Like in {@link Jedis#lrange(String, long, long) LRANGE} the result is sent to
+   * the connection as a multi-bulk reply (see the protocol specification for more information). If
+   * just a single key is specified, then this command produces the same result as
+   * {@link Jedis#smembers(String) SMEMBERS}. Actually SMEMBERS is just syntax sugar for SINTER.
    * <p>
    * Non existing keys are considered like empty sets, so if one of the keys is missing an empty set
    * is returned (since the intersection with an empty set always is an empty set).
@@ -5783,8 +5787,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This command works exactly like {@link #sinter(String...) SINTER} but instead of being returned
-   * the resulting set is stored as dstkey.
+   * This command works exactly like {@link Jedis#sinter(String...) SINTER} but instead of being
+   * returned the resulting set is stored as dstkey.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
@@ -5800,9 +5804,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Return the members of a set resulting from the union of all the sets hold at the specified
-   * keys. Like in {@link #lrange(String, long, long) LRANGE} the result is sent to the connection as a
- multi-bulk reply (see the protocol specification for more information). If just a single key is
- specified, then this command produces the same result as {@link #smembers(String) SMEMBERS}.
+   * keys. Like in {@link Jedis#lrange(String, long, long) LRANGE} the result is sent to the
+   * connection as a multi-bulk reply (see the protocol specification for more information). If just
+   * a single key is specified, then this command produces the same result as
+   * {@link Jedis#smembers(String) SMEMBERS}.
    * <p>
    * Non existing keys are considered like empty sets.
    * <p>
@@ -5817,8 +5822,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This command works exactly like {@link #sunion(String...) SUNION} but instead of being returned
-   * the resulting set is stored as dstkey. Any existing value in dstkey will be over-written.
+   * This command works exactly like {@link Jedis#sunion(String...) SUNION} but instead of being
+   * returned the resulting set is stored as dstkey. Any existing value in dstkey will be
+   * over-written.
    * <p>
    * Time complexity O(N) where N is the total number of elements in all the provided sets
    * @param dstkey
@@ -5859,8 +5865,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This command works exactly like {@link #sdiff(String...) SDIFF} but instead of being returned
-   * the resulting set is stored in dstkey.
+   * This command works exactly like {@link Jedis#sdiff(String...) SDIFF} but instead of being
+   * returned the resulting set is stored in dstkey.
    * @param dstkey
    * @param keys
    * @return Status code reply
@@ -6534,13 +6540,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The elements having the same score are returned sorted lexicographically as ASCII strings (this
    * follows from a property of Redis sorted sets and does not involve further computation).
    * <p>
-   * Using the optional {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's possible
-   * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
-   * the commands needs to traverse the list for offset elements and this adds up to the O(M)
-   * figure.
+   * Using the optional {@link Jedis#zrangeByScore(String, double, double, int, int) LIMIT} it is
+   * possible to get only a range of the matching elements in an SQL-alike way. Note that if offset
+   * is large the commands needs to traverse the list for offset elements and this adds up to the
+   * O(M) figure.
    * <p>
-   * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
-   * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
+   * The {@link Jedis#zcount(String, double, double) ZCOUNT} command is similar to
+   * {@link Jedis#zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
    * actual elements in the specified interval, it just returns the number of matching elements.
    * <p>
    * <b>Exclusive intervals and infinity</b>
@@ -6548,7 +6554,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
    * smallest element in order to take, for instance, elements "up to a given value".
    * <p>
-   * Also while the interval is for default closed (inclusive) it's possible to specify open
+   * Also while the interval is for default closed (inclusive) it is possible to specify open
    * intervals prefixing the score with a "(" character, so for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
@@ -6594,13 +6600,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The elements having the same score are returned sorted lexicographically as ASCII strings (this
    * follows from a property of Redis sorted sets and does not involve further computation).
    * <p>
-   * Using the optional {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's possible
-   * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
-   * the commands needs to traverse the list for offset elements and this adds up to the O(M)
-   * figure.
+   * Using the optional {@link Jedis#zrangeByScore(String, double, double, int, int) LIMIT} it is
+   * possible to get only a range of the matching elements in an SQL-alike way. Note that if offset
+   * is large the commands needs to traverse the list for offset elements and this adds up to the
+   * O(M) figure.
    * <p>
-   * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
-   * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
+   * The {@link Jedis#zcount(String, double, double) ZCOUNT} command is similar to
+   * {@link Jedis#zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
    * actual elements in the specified interval, it just returns the number of matching elements.
    * <p>
    * <b>Exclusive intervals and infinity</b>
@@ -6608,7 +6614,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
    * smallest element in order to take, for instance, elements "up to a given value".
    * <p>
-   * Also while the interval is for default closed (inclusive) it's possible to specify open
+   * Also while the interval is for default closed (inclusive) it is possible to specify open
    * intervals prefixing the score with a "(" character, so for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
@@ -6657,13 +6663,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The elements having the same score are returned sorted lexicographically as ASCII strings (this
    * follows from a property of Redis sorted sets and does not involve further computation).
    * <p>
-   * Using the optional {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's possible
-   * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
-   * the commands needs to traverse the list for offset elements and this adds up to the O(M)
-   * figure.
+   * Using the optional {@link Jedis#zrangeByScore(String, double, double, int, int) LIMIT} it is
+   * possible to get only a range of the matching elements in an SQL-alike way. Note that if offset
+   * is large the commands needs to traverse the list for offset elements and this adds up to the
+   * O(M) figure.
    * <p>
-   * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
-   * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
+   * The {@link Jedis#zcount(String, double, double) ZCOUNT} command is similar to
+   * {@link Jedis#zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
    * actual elements in the specified interval, it just returns the number of matching elements.
    * <p>
    * <b>Exclusive intervals and infinity</b>
@@ -6671,7 +6677,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
    * smallest element in order to take, for instance, elements "up to a given value".
    * <p>
-   * Also while the interval is for default closed (inclusive) it's possible to specify open
+   * Also while the interval is for default closed (inclusive) it is possible to specify open
    * intervals prefixing the score with a "(" character, so for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
@@ -6716,13 +6722,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The elements having the same score are returned sorted lexicographically as ASCII strings (this
    * follows from a property of Redis sorted sets and does not involve further computation).
    * <p>
-   * Using the optional {@link #zrangeByScore(String, double, double, int, int) LIMIT} it's possible
-   * to get only a range of the matching elements in an SQL-alike way. Note that if offset is large
-   * the commands needs to traverse the list for offset elements and this adds up to the O(M)
-   * figure.
+   * Using the optional {@link Jedis#zrangeByScore(String, double, double, int, int) LIMIT} it is
+   * possible to get only a range of the matching elements in an SQL-alike way. Note that if offset
+   * is large the commands needs to traverse the list for offset elements and this adds up to the
+   * O(M) figure.
    * <p>
-   * The {@link #zcount(String, double, double) ZCOUNT} command is similar to
-   * {@link #zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
+   * The {@link Jedis#zcount(String, double, double) ZCOUNT} command is similar to
+   * {@link Jedis#zrangeByScore(String, double, double) ZRANGEBYSCORE} but instead of returning the
    * actual elements in the specified interval, it just returns the number of matching elements.
    * <p>
    * <b>Exclusive intervals and infinity</b>
@@ -6730,7 +6736,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * min and max can be -inf and +inf, so that you are not required to know what's the greatest or
    * smallest element in order to take, for instance, elements "up to a given value".
    * <p>
-   * Also while the interval is for default closed (inclusive) it's possible to specify open
+   * Also while the interval is for default closed (inclusive) it is possible to specify open
    * intervals prefixing the score with a "(" character, so for instance:
    * <p>
    * {@code ZRANGEBYSCORE zset (1.3 5}
@@ -6836,7 +6842,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param start
    * @param stop
-   * @return
    */
   @Override
   public long zremrangeByRank(final String key, final long start, final long stop) {
@@ -6871,10 +6876,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
- resulting sorted set, it is returned to the connection.
+   * resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
-   * @return
    */
   @Override
   public Set<String> zunion(ZParams params, String... keys) {
@@ -6883,11 +6887,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
- resulting sorted set, it is returned to the connection.
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of
+   * storing the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
-   * @return
    */
   @Override
   public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
@@ -6900,16 +6903,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link #zinterstore(String, String...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The
-   * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across all
-   * inputs.
+   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
+   * requires an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link Jedis#zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across
+   * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
    * being passed to the aggregation. When this option is not given, all weights default to 1.
    * <p>
-   * With the AGGREGATE option, it's possible to specify how the results of the union or
+   * With the AGGREGATE option, it is possible to specify how the results of the union or
    * intersection are aggregated. This option defaults to SUM, where the score of an element is
    * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
    * resulting set will contain the minimum or maximum score of an element across the inputs where
@@ -6936,16 +6939,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link #zinterstore(String, String...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The
-   * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across all
-   * inputs.
+   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
+   * requires an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link Jedis#zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across
+   * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
    * being passed to the aggregation. When this option is not given, all weights default to 1.
    * <p>
-   * With the AGGREGATE option, it's possible to specify how the results of the union or
+   * With the AGGREGATE option, it is possible to specify how the results of the union or
    * intersection are aggregated. This option defaults to SUM, where the score of an element is
    * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
    * resulting set will contain the minimum or maximum score of an element across the inputs where
@@ -6970,10 +6973,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
- the resulting sorted set, it is returned to the connection.
+   * the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
-   * @return
    */
   @Override
   public Set<String> zinter(final ZParams params, final String... keys) {
@@ -6983,10 +6985,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
- the resulting sorted set, it is returned to the connection.
+   * the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
-   * @return
    */
   @Override
   public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
@@ -6999,16 +7000,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link #zinterstore(String, String...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The
-   * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across all
-   * inputs.
+   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
+   * requires an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link Jedis#zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across
+   * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
    * being passed to the aggregation. When this option is not given, all weights default to 1.
    * <p>
-   * With the AGGREGATE option, it's possible to specify how the results of the union or
+   * With the AGGREGATE option, it is possible to specify how the results of the union or
    * intersection are aggregated. This option defaults to SUM, where the score of an element is
    * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
    * resulting set will contain the minimum or maximum score of an element across the inputs where
@@ -7035,16 +7036,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link #zinterstore(String, String...) ZINTERSTORE} command requires an
-   * element to be present in each of the given inputs to be inserted in the result. The
-   * {@link #zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across all
-   * inputs.
+   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
+   * requires an element to be present in each of the given inputs to be inserted in the result. The
+   * {@link Jedis#zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across
+   * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
    * being passed to the aggregation. When this option is not given, all weights default to 1.
    * <p>
-   * With the AGGREGATE option, it's possible to specify how the results of the union or
+   * With the AGGREGATE option, it is possible to specify how the results of the union or
    * intersection are aggregated. This option defaults to SUM, where the score of an element is
    * summed across the inputs where it exists. When this option is set to be either MIN or MAX, the
    * resulting set will contain the minimum or maximum score of an element across the inputs where
@@ -7143,7 +7144,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Undo a {@link #expire(String, int) expire} at turning the expire key into a normal key.
+   * Undo a {@link Jedis#expire(String, long) expire} at turning the expire key into a normal key.
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -7194,7 +7195,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param offset
    * @param value
-   * @return
    */
   @Override
   public boolean setbit(final String key, final long offset, final boolean value) {
@@ -7206,7 +7206,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Returns the bit value at offset in the string value stored at key
    * @param key
    * @param offset
-   * @return
    */
   @Override
   public boolean getbit(final String key, final long offset) {
@@ -7291,7 +7290,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * supported.
    * <p>
    * The list of configuration parameters supported by CONFIG SET can be obtained issuing a
-   * {@link #configGet(String) CONFIG GET *} command.
+   * {@link Jedis#configGet(String) CONFIG GET *} command.
    * <p>
    * The configuration set using CONFIG SET is immediately loaded by the Redis server that will
    * start acting as specified starting from the next command.
@@ -7524,8 +7523,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * PSETEX works exactly like {@link #setex(String, int, String)} with the sole difference that the
-   * expire time is specified in milliseconds instead of seconds. Time complexity: O(1)
+   * PSETEX works exactly like {@link Jedis#setex(String, long, String)} with the sole difference
+   * that the expire time is specified in milliseconds instead of seconds. Time complexity: O(1)
    * @param key
    * @param milliseconds
    * @param value

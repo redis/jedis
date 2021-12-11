@@ -256,7 +256,6 @@ public class Sentinel implements SentinelCommands, Closeable {
    *    24) "2"
    *
    * </pre>
-   * @return
    */
   @Override
   public List<Map<String, String>> sentinelMasters() {
@@ -299,7 +298,6 @@ public class Sentinel implements SentinelCommands, Closeable {
    * (integer) 1
    * </pre>
    * @param pattern
-   * @return
    */
   @Override
   public Long sentinelReset(String pattern) {
@@ -340,7 +338,6 @@ public class Sentinel implements SentinelCommands, Closeable {
    *    28) "100"
    * </pre>
    * @param masterName
-   * @return
    */
   @Override
   public List<Map<String, String>> sentinelSlaves(String masterName) {

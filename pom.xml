@@ -46,7 +46,7 @@
 
 	<properties>
 		<github.global.server>github</github.global.server>
-		<log4j.version>2.13.3</log4j.version>
+		<log4j.version>2.15.0</log4j.version>
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 	</properties>
 

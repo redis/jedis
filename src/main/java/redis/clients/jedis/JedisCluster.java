@@ -108,80 +108,80 @@ public class JedisCluster extends UnifiedJedis {
     this(nodes, timeout, DEFAULT_MAX_ATTEMPTS, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int timeout, int maxAttempts,
+  public JedisCluster(Set<HostAndPort> clusterNodes, int timeout, int maxAttempts,
       final GenericObjectPoolConfig<Connection> poolConfig) {
-    this(jedisClusterNode, timeout, timeout, maxAttempts, poolConfig);
+    this(clusterNodes, timeout, timeout, maxAttempts, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-      int soTimeout, int maxAttempts, final GenericObjectPoolConfig<Connection> poolConfig) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, null, poolConfig);
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout, int soTimeout,
+      int maxAttempts, final GenericObjectPoolConfig<Connection> poolConfig) {
+    this(clusterNodes, connectionTimeout, soTimeout, maxAttempts, null, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-      int soTimeout, int maxAttempts, String password, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, password, null, poolConfig);
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout, int soTimeout,
+      int maxAttempts, String password, GenericObjectPoolConfig<Connection> poolConfig) {
+    this(clusterNodes, connectionTimeout, soTimeout, maxAttempts, password, null, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout,
       int soTimeout, int maxAttempts, String password, String clientName,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, null, password, clientName,
+    this(clusterNodes, connectionTimeout, soTimeout, maxAttempts, null, password, clientName,
         poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-      int soTimeout, int maxAttempts, String user, String password, String clientName,
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout, int soTimeout,
+      int maxAttempts, String user, String password, String clientName,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(jedisClusterNode, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+    this(clusterNodes, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).user(user).password(password).clientName(clientName).build(),
         maxAttempts, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout,
       int soTimeout, int infiniteSoTimeout, int maxAttempts, String user, String password,
       String clientName, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(jedisClusterNode, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+    this(clusterNodes, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
         .user(user).password(password).clientName(clientName).build(), maxAttempts, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-      int soTimeout, int maxAttempts, String password, String clientName,
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout, int soTimeout,
+      int maxAttempts, String password, String clientName,
       GenericObjectPoolConfig<Connection> poolConfig, boolean ssl) {
-    this(jedisClusterNode, connectionTimeout, soTimeout, maxAttempts, null, password, clientName,
+    this(clusterNodes, connectionTimeout, soTimeout, maxAttempts, null, password, clientName,
         poolConfig, ssl);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, int connectionTimeout,
-      int soTimeout, int maxAttempts, String user, String password, String clientName,
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout, int soTimeout,
+      int maxAttempts, String user, String password, String clientName,
       GenericObjectPoolConfig<Connection> poolConfig, boolean ssl) {
-    this(jedisClusterNode, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
+    this(clusterNodes, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).user(user).password(password).clientName(clientName).ssl(ssl).build(),
         maxAttempts, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, JedisClientConfig clientConfig,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       int maxAttempts, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(jedisClusterNode, clientConfig, maxAttempts,
+    this(clusterNodes, clientConfig, maxAttempts,
         Duration.ofMillis((long) clientConfig.getSocketTimeoutMillis() * maxAttempts), poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNode, JedisClientConfig clientConfig,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       int maxAttempts, Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
-    super(jedisClusterNode, clientConfig, poolConfig, maxAttempts, maxTotalRetriesDuration);
+    super(clusterNodes, clientConfig, poolConfig, maxAttempts, maxTotalRetriesDuration);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig) {
-    this(jedisClusterNodes, clientConfig, DEFAULT_MAX_ATTEMPTS);
+  public JedisCluster(Set<HostAndPort> clusterNodess, JedisClientConfig clientConfig) {
+    this(clusterNodess, clientConfig, DEFAULT_MAX_ATTEMPTS);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
-    super(jedisClusterNodes, clientConfig, maxAttempts);
+  public JedisCluster(Set<HostAndPort> clusterNodess, JedisClientConfig clientConfig, int maxAttempts) {
+    super(clusterNodess, clientConfig, maxAttempts);
   }
 
-  public JedisCluster(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    super(jedisClusterNodes, clientConfig, maxAttempts, maxTotalRetriesDuration);
+  public JedisCluster(Set<HostAndPort> clusterNodess, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+    super(clusterNodess, clientConfig, maxAttempts, maxTotalRetriesDuration);
   }
 
   public Map<String, ConnectionPool> getClusterNodes() {

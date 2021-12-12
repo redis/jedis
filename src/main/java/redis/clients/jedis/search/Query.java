@@ -280,9 +280,7 @@ public class Query implements IParams {
       }
     } else if (returnFieldNames != null && returnFieldNames.length > 0) {
       args.add(SearchKeyword.RETURN.getRaw());
-//      final int returnCountIndex = args.size();
       DelayedRawable returnCountObject = new DelayedRawable();
-//      args.add(null); // holding a place for setting the total count later.
       args.add(returnCountObject); // holding a place for setting the total count later.
       int returnCount = 0;
       for (FieldName fn : returnFieldNames) {

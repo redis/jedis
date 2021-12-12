@@ -11,8 +11,6 @@ public interface SampleKeyedPipelineCommands {
   Response<Object> eval(String script, String sampleKey);
 
   Response<Object> evalsha(String sha1, String sampleKey);
-//
-//  Response<Boolean> scriptExists(String sha1, String sampleKey);
 
   Response<List<Boolean>> scriptExists(String sampleKey, String... sha1);
 

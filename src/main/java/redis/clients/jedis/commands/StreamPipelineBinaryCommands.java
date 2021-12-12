@@ -7,8 +7,6 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.params.*;
 
 public interface StreamPipelineBinaryCommands {
-//
-//  byte[] xadd(byte[] key, byte[] id, Map<byte[], byte[]> hash, long maxLen, boolean approximateLength);
 
   default Response<byte[]> xadd(byte[] key, Map<byte[], byte[]> hash, XAddParams params) {
     return xadd(key, params, hash);

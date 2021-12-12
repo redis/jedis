@@ -256,7 +256,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
         pipeline.close();
       }
 
-//      connection.resetState();
       if (isInWatch) {
         connection.sendCommand(UNWATCH);
         connection.getStatusCodeReply();
@@ -301,7 +300,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   // Legacy
   protected void checkIsInMultiOrPipeline() {
-//    if (connection.isInMulti()) {
     if (transaction != null) {
       throw new IllegalStateException(
           "Cannot use Jedis when in Multi. Please use Transaction or reset jedis state.");
@@ -2143,7 +2141,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String watch(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(WATCH, keys);
-//    return connection.getStatusCodeReply();
     String status = connection.getStatusCodeReply();
     isInWatch = true;
     return status;

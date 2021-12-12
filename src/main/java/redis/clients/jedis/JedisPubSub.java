@@ -108,23 +108,16 @@ public abstract class JedisPubSub {
 
   public void proceedWithPatterns(Connection client, String... patterns) {
     this.client = client;
-//    client.psubscribe(patterns);
-//    client.flush();
     psubscribe(patterns);
-//    process(client);
     process();
   }
 
   public void proceed(Connection client, String... channels) {
     this.client = client;
-//    client.subscribe(channels);
-//    client.flush();
     subscribe(channels);
-//    process(client);
     process();
   }
 
-//  private void process(Client client) {
   private void process() {
 
     do {

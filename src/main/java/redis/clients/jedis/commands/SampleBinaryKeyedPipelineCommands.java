@@ -11,8 +11,6 @@ public interface SampleBinaryKeyedPipelineCommands {
   Response<Object> eval(byte[] script, byte[] sampleKey);
 
   Response<Object> evalsha(byte[] sha1, byte[] sampleKey);
-//
-//  Response<Boolean> scriptExists(byte[] sha1, byte[] sampleKey);
 
   Response<List<Boolean>> scriptExists(byte[] sampleKey, byte[]... sha1s);
 

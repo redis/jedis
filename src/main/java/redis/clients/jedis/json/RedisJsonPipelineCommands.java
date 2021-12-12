@@ -31,10 +31,6 @@ public interface RedisJsonPipelineCommands {
     return jsonSet(key, Path.ROOT_PATH, pojo, params);
   }
 
-  //<T> Response<T> jsonGet(String key);
-
-  //<T> Response<T> jsonGet(String key, Path... paths);
-
   Response<String> jsonSet(String key, Path2 path, Object object);
 
   Response<String> jsonSetWithEscape(String key, Path2 path, Object object);

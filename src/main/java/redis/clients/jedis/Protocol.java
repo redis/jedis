@@ -74,13 +74,9 @@ public final class Protocol {
     // Maybe Read only first 5 bytes instead?
     if (message.startsWith(MOVED_PREFIX)) {
       String[] movedInfo = parseTargetHostAndSlot(message);
-//      throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1],
-//          Integer.parseInt(movedInfo[2])), Integer.parseInt(movedInfo[0]));
       throw new JedisMovedDataException(message, HostAndPort.from(movedInfo[1]), Integer.parseInt(movedInfo[0]));
     } else if (message.startsWith(ASK_PREFIX)) {
       String[] askInfo = parseTargetHostAndSlot(message);
-//      throw new JedisAskDataException(message, new HostAndPort(askInfo[1],
-//          Integer.parseInt(askInfo[2])), Integer.parseInt(askInfo[0]));
       throw new JedisAskDataException(message, HostAndPort.from(askInfo[1]), Integer.parseInt(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_PREFIX)) {
       throw new JedisClusterException(message);
@@ -105,15 +101,6 @@ public final class Protocol {
     return is.readLine();
   }
 
-//  private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
-//    String[] response = new String[3];
-//    String[] messageInfo = clusterRedirectResponse.split(" ");
-//    String[] targetHostAndPort = HostAndPort.extractParts(messageInfo[2]);
-//    response[0] = messageInfo[1];
-//    response[1] = targetHostAndPort[0];
-//    response[2] = targetHostAndPort[1];
-//    return response;
-//  }
   private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
     String[] response = new String[2];
     String[] messageInfo = clusterRedirectResponse.split(" ");

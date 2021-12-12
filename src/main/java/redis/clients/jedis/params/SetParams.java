@@ -26,17 +26,6 @@ public class SetParams extends Params implements IParams {
    * Set the specified expire time, in seconds.
    * @param secondsToExpire
    * @return SetParams
-   * @deprecated Use {@link #ex(long)}.
-   */
-  @Deprecated
-  public SetParams ex(int secondsToExpire) {
-    return ex((long) secondsToExpire);
-  }
-
-  /**
-   * Set the specified expire time, in seconds.
-   * @param secondsToExpire
-   * @return SetParams
    */
   public SetParams ex(long secondsToExpire) {
     addParam(EX, secondsToExpire);

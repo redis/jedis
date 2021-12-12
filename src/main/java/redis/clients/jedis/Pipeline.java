@@ -90,7 +90,6 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
     }
   }
 
-  @Deprecated
   public final boolean hasPipelinedResponse() {
     return getPipelinedResponseLength() > 0;
   }

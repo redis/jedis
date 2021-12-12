@@ -1,10 +1,18 @@
 package redis.clients.jedis.util;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public final class KeyMergeUtil {
   private KeyMergeUtil() {
     throw new InstantiationError("Must not instantiate this class");
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public static String[] merge(String destKey, String[] keys) {
     String[] mergedKeys = new String[keys.length + 1];
     mergedKeys[0] = destKey;
@@ -12,6 +20,10 @@ public final class KeyMergeUtil {
     return mergedKeys;
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public static byte[][] merge(byte[] destKey, byte[][] keys) {
     byte[][] mergedKeys = new byte[keys.length + 1][];
     mergedKeys[0] = destKey;

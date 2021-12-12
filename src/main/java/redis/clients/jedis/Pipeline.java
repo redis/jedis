@@ -125,6 +125,10 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     }
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public Response<String> discard() {
     if (currentMulti == null) throw new JedisDataException("DISCARD without MULTI");
     client.discard();
@@ -132,6 +136,10 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     return getResponse(BuilderFactory.STRING);
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public Response<List<Object>> exec() {
     if (currentMulti == null) throw new JedisDataException("EXEC without MULTI");
 
@@ -142,6 +150,10 @@ public class Pipeline extends MultiKeyPipelineBase implements Closeable {
     return response;
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public Response<String> multi() {
     if (currentMulti != null) throw new JedisDataException("MULTI calls can not be nested");
 

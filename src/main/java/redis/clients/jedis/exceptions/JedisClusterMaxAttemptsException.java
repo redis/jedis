@@ -1,5 +1,9 @@
 package redis.clients.jedis.exceptions;
 
+/**
+ * @deprecated This exception will be removed in next major release.
+ */
+@Deprecated
 public class JedisClusterMaxAttemptsException extends JedisClusterOperationException {
   private static final long serialVersionUID = 167600616259092761L;
 

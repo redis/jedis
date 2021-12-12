@@ -28,6 +28,11 @@ public interface AdvancedBinaryJedisCommands {
   @Deprecated
   byte[] configSet(byte[] parameter, byte[] value);
 
+  /**
+   * @deprecated This method will be removed in next major release. You may consider using
+   * {@link AdvancedBinaryJedisCommands#configSet(byte[], byte[])}.
+   */
+  @Deprecated
   String configSetBinary(byte[] parameter, byte[] value);
 
   String slowlogReset();
@@ -115,7 +120,13 @@ public interface AdvancedBinaryJedisCommands {
 
   List<byte[]> aclLogBinary(int limit);
 
+  /**
+   * @deprecated Use {@link AdvancedBinaryJedisCommands#aclLogReset()}.
+   */
+  @Deprecated
   byte[] aclLog(byte[] options);
+
+  String aclLogReset();
 
   String aclLoad();
 

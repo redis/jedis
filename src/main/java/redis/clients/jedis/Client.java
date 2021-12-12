@@ -19,6 +19,10 @@ import redis.clients.jedis.commands.Commands;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public class Client extends BinaryClient implements Commands {
 
   public Client() {

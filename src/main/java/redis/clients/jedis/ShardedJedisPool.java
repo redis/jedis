@@ -13,6 +13,10 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Pool;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public class ShardedJedisPool extends Pool<ShardedJedis> {
 
   private static final Logger logger = LoggerFactory.getLogger(ShardedJedisPool.class);

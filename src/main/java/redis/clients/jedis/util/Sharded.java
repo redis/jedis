@@ -10,6 +10,10 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public class Sharded<R, S extends ShardInfo<R>> {
 
   public static final int DEFAULT_WEIGHT = 1;

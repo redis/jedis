@@ -11,6 +11,10 @@ import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.ShardInfo;
 import redis.clients.jedis.util.Sharded;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public class JedisShardInfo extends ShardInfo<Jedis> {
 
   private int connectionTimeout;
@@ -51,6 +55,12 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
+  /**
+   * @param host
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @deprecated Avoiding the {@code name} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, String name) {
     this(host, Protocol.DEFAULT_PORT, name);
   }
@@ -73,14 +83,40 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         hostnameVerifier);
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @deprecated Avoiding the {@code name} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, String name) {
     this(host, port, Protocol.DEFAULT_TIMEOUT, name);
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @param ssl
+   * @deprecated Avoiding the {@code name} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, String name, boolean ssl) {
     this(host, port, Protocol.DEFAULT_TIMEOUT, name, ssl);
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @param ssl
+   * @param sslSocketFactory
+   * @param sslParameters
+   * @param hostnameVerifier
+   * @deprecated Avoiding the {@code name} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, String name, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
@@ -103,16 +139,45 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
         sslParameters, hostnameVerifier);
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param timeout
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @deprecated Avoiding the {@code name} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, int timeout, String name) {
     this(host, port, timeout, timeout, Sharded.DEFAULT_WEIGHT);
     this.name = name;
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param timeout
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @param ssl
+   * @deprecated Avoiding the {@code name} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, int timeout, String name, boolean ssl) {
     this(host, port, timeout, timeout, Sharded.DEFAULT_WEIGHT, ssl);
     this.name = name;
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param timeout
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @param ssl
+   * @param sslSocketFactory
+   * @param sslParameters
+   * @param hostnameVerifier
+   * @deprecated Avoiding the {@code name} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, int timeout, String name, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
@@ -120,6 +185,15 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.name = name;
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param connectionTimeout
+   * @param soTimeout
+   * @param weight Avoiding this param would ease to transfer the code in next major release.
+   * @deprecated Avoiding the {@code weight} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int weight) {
     super(weight);
     this.host = host;
@@ -128,6 +202,16 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.soTimeout = soTimeout;
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param connectionTimeout
+   * @param soTimeout
+   * @param weight Avoiding this param would ease to transfer the code in next major release.
+   * @param ssl
+   * @deprecated Avoiding the {@code weight} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int weight,
       boolean ssl) {
     super(weight);
@@ -138,6 +222,19 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.ssl = ssl;
   }
 
+  /**
+   * @param host
+   * @param port
+   * @param connectionTimeout
+   * @param soTimeout
+   * @param weight Avoiding this param would ease to transfer the code in next major release.
+   * @param ssl
+   * @param sslSocketFactory
+   * @param sslParameters
+   * @param hostnameVerifier
+   * @deprecated Avoiding the {@code weight} param would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, int port, int connectionTimeout, int soTimeout, int weight,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {
@@ -147,16 +244,48 @@ public class JedisShardInfo extends ShardInfo<Jedis> {
     this.hostnameVerifier = hostnameVerifier;
   }
 
+  /**
+   * @param host
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @param port
+   * @param timeout
+   * @param weight Avoiding this param would ease to transfer the code in next major release.
+   * @deprecated Avoiding the {@code name} and {@code weight} params would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, String name, int port, int timeout, int weight) {
     this(host, port, timeout, timeout, weight);
     this.name = name;
   }
 
+  /**
+   * @param host
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @param port
+   * @param timeout
+   * @param weight Avoiding this param would ease to transfer the code in next major release.
+   * @param ssl
+   * @deprecated Avoiding the {@code name} and {@code weight} params would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, String name, int port, int timeout, int weight, boolean ssl) {
     this(host, port, timeout, timeout, weight, ssl);
     this.name = name;
   }
 
+  /**
+   * @param host
+   * @param name Avoiding this param would ease to transfer the code in next major release.
+   * @param port
+   * @param timeout
+   * @param weight Avoiding this param would ease to transfer the code in next major release.
+   * @param ssl
+   * @param sslSocketFactory
+   * @param sslParameters
+   * @param hostnameVerifier
+   * @deprecated Avoiding the {@code name} and {@code weight} params would ease to transfer the code in next major release.
+   */
+  @Deprecated
   public JedisShardInfo(String host, String name, int port, int timeout, int weight, boolean ssl,
       SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier) {

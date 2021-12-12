@@ -11,6 +11,11 @@ public class HostAndPort implements Serializable {
   private static final long serialVersionUID = -519876229978427751L;
 
   protected static Logger log = LoggerFactory.getLogger(HostAndPort.class.getName());
+
+  /**
+   * @deprecated This variable will be removed in next major release.
+   */
+  @Deprecated
   public static volatile String localhost;
 
   private String host;
@@ -70,7 +75,9 @@ public class HostAndPort implements Serializable {
    * Port is optional
    * @param from String to parse
    * @return array of host and port strings
+   * @deprecated This method will be removed in next major release.
    */
+  @Deprecated
   public static String[] extractParts(String from) {
     int idx = from.lastIndexOf(':');
     String host = idx != -1 ? from.substring(0, idx) : from;
@@ -85,7 +92,9 @@ public class HostAndPort implements Serializable {
    * @see #convertHost(String)
    * @param from String to parse
    * @return HostAndPort instance
+   * @deprecated This method will be removed in next major release.
    */
+  @Deprecated
   public static HostAndPort parseString(String from) {
     // NOTE: redis answers with
     // '99aa9999aa9a99aa099aaa990aa99a09aa9a9999 9a09:9a9:a090:9a::99a slave 8c88888888cc08088cc8c8c888c88c8888c88cc8 0 1468251272993 37 connected'
@@ -101,6 +110,10 @@ public class HostAndPort implements Serializable {
     }
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public static String convertHost(String host) {
     try {
       /*
@@ -128,6 +141,10 @@ public class HostAndPort implements Serializable {
     return host;
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public static void setLocalhost(String localhost) {
     synchronized (HostAndPort.class) {
       HostAndPort.localhost = localhost;
@@ -135,9 +152,9 @@ public class HostAndPort implements Serializable {
   }
 
   /**
-   * This method resolves the localhost in a 'lazy manner'.
-   * @return localhost
+   * @deprecated This method will be removed in next major release.
    */
+  @Deprecated
   public static String getLocalhost() {
     if (localhost == null) {
       synchronized (HostAndPort.class) {
@@ -149,6 +166,10 @@ public class HostAndPort implements Serializable {
     return localhost;
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public static String getLocalHostQuietly() {
     String localAddress;
     try {

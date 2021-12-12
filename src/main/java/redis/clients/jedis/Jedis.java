@@ -4061,6 +4061,9 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return client.getIntegerReply();
   }
 
+  /**
+   * WARNING: This method will return {@code java.util.Map<java.lang.String, java.lang.Long>} in next major release.
+   */
   public Map<String, String> pubsubNumSub(String... channels) {
     checkIsInMultiOrPipeline();
     client.pubsubNumSub(channels);
@@ -4337,6 +4340,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
     return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(client.getObjectMultiBulkReply());
   }
 
+  /**
+   * @deprecated Use {@link Jedis#aclLogReset()}.
+   */
+  @Deprecated
   @Override
   public String aclLog(String options) {
     client.aclLog(options);

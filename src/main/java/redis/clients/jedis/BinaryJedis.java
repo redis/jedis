@@ -36,6 +36,10 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
 
+/**
+ * @deprecated This class will be removed in next major release. Use {@link Jedis}.
+ */
+@Deprecated
 public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKeyBinaryCommands,
     AdvancedBinaryJedisCommands, BinaryScriptingCommands, Closeable {
 
@@ -3686,8 +3690,8 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
    * @return Status code reply
    * @deprecated The return type will be changed to {@link String}, representing {@code OK} response,
    * in next major release. If you are not checking you continue using this method. Otherwise, you
-   * can choose to use either {@link #configSet(byte[], byte[]) this method} or
-   * {@link #configSetBinary(byte[], byte[])}.
+   * can choose to use either {@link BinaryJedis#configSet(byte[], byte[]) this method} or
+   * {@link BinaryJedis#configSetBinary(byte[], byte[])}.
    */
   @Override
   @Deprecated
@@ -3697,6 +3701,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryBulkReply();
   }
 
+  /**
+   * @deprecated This method will be removed in next major release. You may consider using
+   * {@link BinaryJedis#configSet(byte[], byte[])}.
+   */
+  @Deprecated
   @Override
   public String configSetBinary(final byte[] parameter, final byte[] value) {
     checkIsInMultiOrPipeline();
@@ -3777,6 +3786,10 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getIntegerReply();
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   @Override
   public String debug(final DebugParams params) {
     client.debug(params);
@@ -3974,12 +3987,18 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getStatusCodeReply();
   }
 
+  /**
+   * WARNING: This method will return {@code java.lang.Boolean} in next major release.
+   */
   public Long scriptExists(final byte[] sha1) {
     byte[][] a = new byte[1][];
     a[0] = sha1;
     return scriptExists(a).get(0);
   }
 
+  /**
+   * WARNING: This method will return {@code java.util.List<java.lang.Boolean>} in next major release.
+   */
   @Override
   public List<Long> scriptExists(final byte[]... sha1) {
     client.scriptExists(sha1);
@@ -4288,11 +4307,22 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     return client.getBinaryMultiBulkReply();
   }
 
+  /**
+   * @deprecated Use {@link BinaryJedis#aclLogReset()}.
+   */
+  @Deprecated
   @Override
   public byte[] aclLog(byte[] options) {
     checkIsInMultiOrPipeline();
     client.aclLog(options);
     return client.getBinaryBulkReply();
+  }
+
+  @Override
+  public String aclLogReset() {
+    checkIsInMultiOrPipeline();
+    client.aclLogReset();
+    return client.getStatusCodeReply();
   }
 
   @Override

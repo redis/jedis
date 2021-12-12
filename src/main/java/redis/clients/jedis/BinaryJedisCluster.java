@@ -7,7 +7,7 @@ import redis.clients.jedis.commands.MultiKeyBinaryJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.util.JedisClusterHashTagUtil;
+import redis.clients.jedis.util.JedisClusterHashTag;
 import redis.clients.jedis.util.KeyMergeUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -23,6 +23,10 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+/**
+ * @deprecated This class will be removed in next major release. Use {@link JedisCluster}.
+ */
+@Deprecated
 public class BinaryJedisCluster implements BinaryJedisClusterCommands,
     MultiKeyBinaryJedisClusterCommands, JedisClusterBinaryScriptingCommands, Closeable {
 
@@ -2437,7 +2441,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
       throw new IllegalArgumentException(this.getClass().getSimpleName()
           + " only supports KEYS commands with non-empty patterns");
     }
-    if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(pattern)) {
+    if (!JedisClusterHashTag.isClusterCompliantMatchPattern(pattern)) {
       throw new IllegalArgumentException(
           this.getClass().getSimpleName()
           + " only supports KEYS commands with patterns containing hash-tags "
@@ -2466,7 +2470,7 @@ public class BinaryJedisCluster implements BinaryJedisClusterCommands,
           + " only supports SCAN commands with non-empty MATCH patterns");
     }
 
-    if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
+    if (!JedisClusterHashTag.isClusterCompliantMatchPattern(matchPattern)) {
       throw new IllegalArgumentException(
           BinaryJedisCluster.class.getSimpleName()
           + " only supports SCAN commands with MATCH patterns containing hash-tags"

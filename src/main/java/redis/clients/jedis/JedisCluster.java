@@ -7,7 +7,7 @@ import redis.clients.jedis.commands.MultiKeyJedisClusterCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.util.JedisClusterHashTagUtil;
+import redis.clients.jedis.util.JedisClusterHashTag;
 import redis.clients.jedis.util.KeyMergeUtil;
 
 import java.time.Duration;
@@ -1766,7 +1766,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
       throw new IllegalArgumentException(this.getClass().getSimpleName()
           + " only supports KEYS commands with non-empty patterns");
     }
-    if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(pattern)) {
+    if (!JedisClusterHashTag.isClusterCompliantMatchPattern(pattern)) {
       throw new IllegalArgumentException(
           this.getClass().getSimpleName()
           + " only supports KEYS commands with patterns containing hash-tags"
@@ -1795,7 +1795,7 @@ public class JedisCluster extends BinaryJedisCluster implements JedisClusterComm
           + " only supports SCAN commands with non-empty MATCH patterns");
     }
 
-    if (!JedisClusterHashTagUtil.isClusterCompliantMatchPattern(matchPattern)) {
+    if (!JedisClusterHashTag.isClusterCompliantMatchPattern(matchPattern)) {
       throw new IllegalArgumentException(
           JedisCluster.class.getSimpleName()
           + " only supports SCAN commands with MATCH patterns containing hash-tags"

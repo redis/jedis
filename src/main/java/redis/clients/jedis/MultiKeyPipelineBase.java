@@ -423,6 +423,10 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.STRING);
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   @Override
   public Response<String> unwatch() {
     client.unwatch();

@@ -194,6 +194,10 @@ public interface BasicCommands {
    */
   int getDB();
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   String debug(DebugParams params);
 
   String configResetStat();

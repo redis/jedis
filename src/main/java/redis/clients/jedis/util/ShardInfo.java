@@ -1,5 +1,9 @@
 package redis.clients.jedis.util;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public abstract class ShardInfo<T> {
   private int weight;
 

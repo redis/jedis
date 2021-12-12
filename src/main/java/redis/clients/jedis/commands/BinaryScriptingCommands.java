@@ -24,6 +24,9 @@ public interface BinaryScriptingCommands {
 
   Object evalsha(byte[] sha1, int keyCount, byte[]... params);
 
+  /**
+   * WARNING: This method will return {@code java.util.List<java.lang.Boolean>} in next major release.
+   */
   // TODO: should be Boolean, add singular version
   List<Long> scriptExists(byte[]... sha1);
 

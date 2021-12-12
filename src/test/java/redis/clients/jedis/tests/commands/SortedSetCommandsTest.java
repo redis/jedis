@@ -8,6 +8,7 @@ import static redis.clients.jedis.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.tests.utils.AssertUtil.assertByteArraySetEquals;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -541,6 +542,24 @@ public class SortedSetCommandsTest extends JedisCommandTestBase {
     bscore = jedis.zscore(bfoo, SafeEncoder.encode("s"));
     assertNull(bscore);
 
+  }
+
+  @Test
+  public void zmscore() {
+    jedis.zadd("foo", 1d, "a");
+    jedis.zadd("foo", 10d, "b");
+    jedis.zadd("foo", 0.1d, "c");
+    jedis.zadd("foo", 2d, "a");
+
+    assertEquals(Arrays.asList(10d, 0.1d, null), jedis.zmscore("foo", "b", "c", "s"));
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+
+    assertEquals(Arrays.asList(10d, 0.1d, null), jedis.zmscore(bfoo, bb, bc, SafeEncoder.encode("s")));
   }
 
   @Test

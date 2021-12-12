@@ -1,11 +1,17 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.exceptions.JedisException;
+import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
+import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
+import static redis.clients.jedis.Protocol.Keyword.PONG;
+import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
+import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static redis.clients.jedis.Protocol.Keyword.*;
+import redis.clients.jedis.exceptions.JedisException;
 
 public abstract class BinaryJedisPubSub {
     private int subscribedChannels = 0;
@@ -27,6 +33,9 @@ public abstract class BinaryJedisPubSub {
     }
     
     public void onPSubscribe(byte[] pattern, int subscribedChannels) {
+    }
+    
+    public void onPong(byte[] pattern) {
     }
     
     public void unsubscribe() {
@@ -59,29 +68,35 @@ public abstract class BinaryJedisPubSub {
         client.flush();
     }
     
+    public void ping() {
+        client.ping();
+        client.flush();
+    }
+    
+    public void ping(byte[] argument) {
+        client.ping(argument);
+        client.flush();
+    }
+    
     public boolean isSubscribed() {
         return subscribedChannels > 0;
     }
     
     public void proceedWithPatterns(Client client, byte[]... patterns) {
         this.client = client;
-        
         if ( patterns.length > 0 ) {
             client.psubscribe(patterns);
             client.flush();
         }
-        
         process(client);
     }
     
     public void proceed(Client client, byte[]... channels) {
         this.client = client;
-        
         if ( channels.length > 0 ) {
             client.subscribe(channels);
             client.flush();
         }
-        
         process(client);
     }
     
@@ -118,6 +133,9 @@ public abstract class BinaryJedisPubSub {
                 subscribedChannels = ((Long) reply.get(2)).intValue();
                 final byte[] bpattern = (byte[]) reply.get(1);
                 onPUnsubscribe(bpattern, subscribedChannels);
+            } else if (Arrays.equals(PONG.raw, resp)) {
+                final byte[] bpattern = (byte[]) reply.get(1);
+                onPong(bpattern);
             } else {
                 throw new JedisException("Unknown message type: " + firstObj);
             }

@@ -15,7 +15,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
   public static final int DEFAULT_WEIGHT = 1;
   private TreeMap<Long, S> nodes;
   private final Hashing algo;
-  private final Map<ShardInfo<R>, R> resources = new LinkedHashMap<ShardInfo<R>, R>();
+  private final Map<ShardInfo<R>, R> resources = new LinkedHashMap<>();
 
   /**
    * The default pattern used for extracting a key tag. The pattern must have a group (between
@@ -49,7 +49,7 @@ public class Sharded<R, S extends ShardInfo<R>> {
   }
 
   private void initialize(List<S> shards) {
-    nodes = new TreeMap<Long, S>();
+    nodes = new TreeMap<>();
 
     for (int i = 0; i != shards.size(); ++i) {
       final S shardInfo = shards.get(i);

@@ -70,7 +70,7 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
     @Override
     public PooledObject<ShardedJedis> makeObject() throws Exception {
       ShardedJedis jedis = new ShardedJedis(shards, algo, keyTagPattern);
-      return new DefaultPooledObject<ShardedJedis>(jedis);
+      return new DefaultPooledObject<>(jedis);
     }
 
     @Override

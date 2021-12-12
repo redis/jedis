@@ -74,8 +74,6 @@ public abstract class JedisClusterCommand<T> {
     try {
       connection = connectionHandler.getConnection();
       return execute(connection);
-    } catch (JedisConnectionException e) {
-      throw e;
     } finally {
       releaseConnection(connection);
     }

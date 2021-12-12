@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.commands.*;
+import redis.clients.jedis.params.GeoRadiusParam;
+import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.MigrateParams;
 
 import java.util.List;
@@ -719,4 +721,31 @@ public abstract class MultiKeyPipelineBase extends PipelineBase implements
     return getResponse(BuilderFactory.OBJECT);
   }
 
+  @Override
+  public Response<Long> georadiusStore(final String key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> georadiusStore(final byte[] key, final double longitude, final double latitude,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    client.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> georadiusByMemberStore(final byte[] key, final byte[] member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    return getResponse(BuilderFactory.LONG);
+  }
+
+  @Override
+  public Response<Long> georadiusByMemberStore(final String key, final String member,
+      final double radius, final GeoUnit unit, final GeoRadiusParam param, final GeoRadiusStoreParam storeParam) {
+    client.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    return getResponse(BuilderFactory.LONG);
+  }
 }

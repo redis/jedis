@@ -7,48 +7,41 @@ import java.util.ArrayList;
 import java.util.List;
 
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class ZParams implements IParams {
 
-  public enum Aggregate {
+  public enum Aggregate implements Rawable {
+
     SUM, MIN, MAX;
 
-    /**
-     * @deprecated This will be private in future. Use {@link #getRaw()}.
-     */
-    @Deprecated
-    public final byte[] raw;
+    private final byte[] raw;
 
-    Aggregate() {
+    private Aggregate() {
       raw = SafeEncoder.encode(name());
     }
 
+    @Override
     public byte[] getRaw() {
       return raw;
     }
   }
 
-  private final List<byte[]> params = new ArrayList<>();
+  private final List<Object> params = new ArrayList<>();
 
-  /**
-   * Set weights.
-   * @param weights weights.
-   * @return
-   */
   public ZParams weights(final double... weights) {
-    params.add(WEIGHTS.getRaw());
+    params.add(WEIGHTS);
     for (final double weight : weights) {
-      params.add(Protocol.toByteArray(weight));
+      params.add(weight);
     }
 
     return this;
   }
 
   public ZParams aggregate(final Aggregate aggregate) {
-    params.add(AGGREGATE.getRaw());
-    params.add(aggregate.raw);
+    params.add(AGGREGATE);
+    params.add(aggregate);
     return this;
   }
 

@@ -70,23 +70,19 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
   }
 
-  private void connectToFirstSuccsefulHost(Socket socket, HostAndPort hostAndPort) throws IOException {
+  private void connectToFirstSuccsefulHost(Socket socket, HostAndPort hostAndPort) throws Exception {
     List<InetAddress> hosts = Arrays.asList(InetAddress.getAllByName(hostAndPort.getHost()));
     Collections.shuffle(hosts);
-    List<Exception> exceptions = new ArrayList<Exception>();
-    boolean connected = false;
+    JedisConnectionException jce = new JedisConnectionException("Failed to connect to any host resolved for DNS name.");
     for (InetAddress host : hosts) {
       try {
         socket.connect(new InetSocketAddress(host.getHostAddress(), hostAndPort.getPort()), connectionTimeout);
-        connected = true;
-        break;
+        return;
       } catch (Exception e) {
-        exceptions.add(e);
+        jce.addSuppressed(e);
       }
     }
-    if (!connected) {
-      throw new ConnectException(exceptions.toString());
-    }
+    throw jce;
   }
 
   @Override
@@ -124,11 +120,13 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
       return socket;
 
-    } catch (IOException ex) {
-
+    } catch (Exception ex) {
       IOUtils.closeQuietly(socket);
-
-      throw new JedisConnectionException("Failed to create socket.", ex);
+      if (ex instanceof JedisConnectionException) {
+        throw (JedisConnectionException) ex;
+      } else {
+        throw new JedisConnectionException("Failed to create socket.", ex);
+      }
     }
   }
 

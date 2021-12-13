@@ -15,5 +15,4 @@ public class JedisBusyException extends JedisDataException {
   public JedisBusyException(final String message, final Throwable cause) {
     super(message, cause);
   }
-
 }

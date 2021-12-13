@@ -1,15 +1,14 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import redis.clients.jedis.CommandArguments;
+import static redis.clients.jedis.Protocol.Keyword.STORE;
+import static redis.clients.jedis.Protocol.Keyword.STOREDIST;
 
-import redis.clients.jedis.util.SafeEncoder;
+public class GeoRadiusStoreParam implements IParams {
 
-public class GeoRadiusStoreParam extends Params {
-  private static final String STORE = "store";
-  private static final String STOREDIST = "storedist";
+  private boolean store = false;
+  private boolean storeDist = false;
+  private String key;
 
   public GeoRadiusStoreParam() {
   }
@@ -20,14 +19,16 @@ public class GeoRadiusStoreParam extends Params {
 
   public GeoRadiusStoreParam store(String key) {
     if (key != null) {
-      addParam(STORE, key);
+      this.store = true;
+      this.key = key;
     }
     return this;
   }
 
   public GeoRadiusStoreParam storeDist(String key) {
     if (key != null) {
-      addParam(STOREDIST, key);
+      this.storeDist = true;
+      this.key = key;
     }
     return this;
   }
@@ -37,76 +38,17 @@ public class GeoRadiusStoreParam extends Params {
      * <p>
      * Refer: https://github.com/antirez/redis/blob/6.0/src/geo.c#L649
      *
-   * @return STORE or STOREDIST
+   * @param args
    */
-  public byte[] getOption() {
-    if (contains(STOREDIST)) {
-      return SafeEncoder.encode(STOREDIST);
+  @Override
+  public void addParams(CommandArguments args) {
+    if (storeDist) {
+      args.add(STOREDIST).key(key);
+    } else if (store) {
+      args.add(STORE).key(key);
+    } else {
+      throw new IllegalArgumentException(this.getClass().getSimpleName()
+          + " must has store or storedist option");
     }
-
-    if (contains(STORE)) {
-      return SafeEncoder.encode(STORE);
-    }
-
-    throw new IllegalArgumentException(this.getClass().getSimpleName()
-        + " must has store or storedist option");
-  }
-
-  public byte[] getKey() {
-    if (contains(STOREDIST)) {
-      return SafeEncoder.encode((String) getParam(STOREDIST));
-    }
-
-    if (contains(STORE)) {
-      return SafeEncoder.encode((String) getParam(STORE));
-    }
-
-    throw new IllegalArgumentException(this.getClass().getSimpleName()
-        + " must has store or storedist key");
-  }
-
-  public String[] getStringKeys(String key) {
-    List<String> keys = new LinkedList<>();
-    keys.add(key);
-
-    if (contains(STORE)) {
-      keys.add((String) getParam(STORE));
-    }
-
-    if (contains(STOREDIST)) {
-      keys.add((String) getParam(STOREDIST));
-    }
-    return keys.toArray(new String[keys.size()]);
-  }
-
-  public byte[][] getByteKeys(byte[] key) {
-    List<byte[]> keys = new LinkedList<>();
-    keys.add(key);
-
-    if (contains(STORE)) {
-      keys.add(SafeEncoder.encode((String) getParam(STORE)));
-    }
-
-    if (contains(STOREDIST)) {
-      keys.add(SafeEncoder.encode((String) getParam(STOREDIST)));
-    }
-    return keys.toArray(new byte[keys.size()][]);
-  }
-
-  public byte[][] getByteParams(byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<>();
-    Collections.addAll(byteParams, args);
-
-    if (contains(STORE)) {
-      byteParams.add(SafeEncoder.encode(STORE));
-      byteParams.add(SafeEncoder.encode((String) getParam(STORE)));
-    }
-
-    if (contains(STOREDIST)) {
-      byteParams.add(SafeEncoder.encode(STOREDIST));
-      byteParams.add(SafeEncoder.encode((String) getParam(STOREDIST)));
-    }
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 }

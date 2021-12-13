@@ -22,8 +22,8 @@ public interface AdvancedBinaryJedisCommands {
    * @return OK
    * @deprecated The return type will be changed to {@link String}, representing {@code OK} response,
    * in next major release. If you are not checking you continue using this method. Otherwise, you
-   * can choose to use either {@link #configSet(byte[], byte[]) this method} or
-   * {@link #configSetBinary(byte[], byte[])}.
+   * can choose to use either {@link AdvancedBinaryJedisCommands#configSet(byte[], byte[]) this
+   * method} or {@link AdvancedBinaryJedisCommands#configSetBinary(byte[], byte[])}.
    */
   @Deprecated
   byte[] configSet(byte[] parameter, byte[] value);

@@ -1,7 +1,7 @@
 package redis.clients.jedis.exceptions;
 
 /**
- * @deprecated This exception will be removed in next major release.
+ * @deprecated This exception will be removed in next major release. Use {@link JedisException}.
  */
 @Deprecated
 public class JedisExhaustedPoolException extends JedisException {

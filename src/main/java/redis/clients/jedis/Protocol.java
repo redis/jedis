@@ -296,7 +296,7 @@ public final class Protocol {
     NOMKSTREAM, MINID, DB, ABSTTL, TO, TIMEOUT, ABORT, LCS, STRINGS;
 
     /**
-     * @deprecated This will be private in future. Use {@link #getRaw()}.
+     * @deprecated This will be private in future. Use {@link Keyword#getRaw()}.
      */
     @Deprecated
     public final byte[] raw;

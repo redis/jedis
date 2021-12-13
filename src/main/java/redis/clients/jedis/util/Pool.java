@@ -87,7 +87,7 @@ public abstract class Pool<T> implements Closeable {
 
   /**
    * @param resource
-   * @deprecated This will be removed in next major release. Use {@link #returnResource(java.lang.Object)}.
+   * @deprecated This will be removed in next major release. Use {@link Pool#returnResource(java.lang.Object)}.
    */
   @Deprecated
   protected void returnResourceObject(final T resource) {
@@ -116,7 +116,7 @@ public abstract class Pool<T> implements Closeable {
 
   /**
    * @param resource
-   * @deprecated This will be removed in next major release. Use {@link #returnBrokenResource(java.lang.Object)}.
+   * @deprecated This will be removed in next major release. Use {@link Pool#returnBrokenResource(java.lang.Object)}.
    */
   @Deprecated
   protected void returnBrokenResourceObject(final T resource) {
@@ -128,7 +128,7 @@ public abstract class Pool<T> implements Closeable {
   }
 
   /**
-   * @deprecated This will be removed in next major release. Use {@link #destroy()}.
+   * @deprecated This will be removed in next major release. Use {@link Pool#destroy()}.
    */
   @Deprecated
   protected void closeInternalPool() {

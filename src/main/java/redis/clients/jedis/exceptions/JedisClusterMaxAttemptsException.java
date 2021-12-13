@@ -1,7 +1,8 @@
 package redis.clients.jedis.exceptions;
 
 /**
- * @deprecated This exception will be removed in next major release.
+ * @deprecated This exception will be removed in next major release. Use
+ * {@link JedisClusterOperationException}.
  */
 @Deprecated
 public class JedisClusterMaxAttemptsException extends JedisClusterOperationException {

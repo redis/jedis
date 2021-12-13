@@ -19,7 +19,7 @@ import redis.clients.jedis.util.SafeEncoder;
 public final class BuilderFactory {
 
   /**
-   * @deprecated Use {@link #RAW_OBJECT}.
+   * @deprecated Use {@link BuilderFactory#RAW_OBJECT}.
    */
   @Deprecated
   public static final Builder<Object> OBJECT = new Builder<Object>() {
@@ -458,7 +458,7 @@ public final class BuilderFactory {
   };
 
   /**
-   * @deprecated Use {@link #ENCODED_OBJECT}.
+   * @deprecated Use {@link BuilderFactory#ENCODED_OBJECT}.
    */
   @Deprecated
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
@@ -475,7 +475,7 @@ public final class BuilderFactory {
   };
 
   /**
-   * @deprecated Use {@link #RAW_OBJECT}.
+   * @deprecated Use {@link BuilderFactory#RAW_OBJECT}.
    */
   @Deprecated
   public static final Builder<Object> EVAL_BINARY_RESULT = new Builder<Object>() {

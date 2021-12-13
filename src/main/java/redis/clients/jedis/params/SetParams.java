@@ -28,7 +28,7 @@ public class SetParams extends Params {
    * Set the specified expire time, in seconds.
    * @param secondsToExpire
    * @return SetParams
-   * @deprecated Use {@link #ex(long)}.
+   * @deprecated Use {@link SetParams#ex(long)}.
    */
   @Deprecated
   public SetParams ex(int secondsToExpire) {

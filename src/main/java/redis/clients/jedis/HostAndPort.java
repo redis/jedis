@@ -152,6 +152,8 @@ public class HostAndPort implements Serializable {
   }
 
   /**
+   * This method resolves the localhost in a 'lazy manner'.
+   * @return localhost
    * @deprecated This method will be removed in next major release.
    */
   @Deprecated

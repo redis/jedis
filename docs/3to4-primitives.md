@@ -1,4 +1,4 @@
-### Following methods now returns primitive values (`long`/`boolean`/`double` instead of `Long`/`Boolean`/`Double`).
+### Following methods now return primitive values (`long`/`boolean`/`double` instead of `Long`/`Boolean`/`Double`):
 
 - dbSize()
 - lastsave()

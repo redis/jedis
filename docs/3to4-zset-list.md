@@ -1,4 +1,4 @@
-### Following SortedSet methods will return Java `List` instead of `Set`.
+### Following SortedSet methods now return Java `List` instead of `Set`:
 
 - zrange(byte[] key, long start, long stop)
 - zrange(String key, long start, long stop)

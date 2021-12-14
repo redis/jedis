@@ -105,7 +105,13 @@ public interface AdvancedJedisCommands {
 
   List<AccessControlLogEntry> aclLog(int limit);
 
+  /**
+   * @deprecated Use {@link AdvancedJedisCommands#aclLogReset()}.
+   */
+  @Deprecated
   String aclLog(String options);
+
+  String aclLogReset();
 
   String aclLoad();
 

@@ -7,7 +7,7 @@ import java.util.List;
 public interface BinaryScriptingCommandsPipeline {
 
   /**
-   * @deprecated Use {@link #eval(byte..., int, byte[]...)}.
+   * @deprecated Use {@link BinaryScriptingCommandsPipeline#eval(byte..., int, byte[]...)}.
    */
   @Deprecated
   Response<Object> eval(byte[] script, byte[] keyCount, byte[]... params);

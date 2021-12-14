@@ -135,7 +135,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   /**
    * @param hostAndPort
    * @deprecated This will be removed in next major release. Use
-   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
+   * {@link DefaultJedisSocketFactory#updateHostAndPort(redis.clients.jedis.HostAndPort)}.
    */
   @Deprecated
   public void setHostAndPort(HostAndPort hostAndPort) {
@@ -155,7 +155,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   /**
    * @param host
    * @deprecated This will be removed in next major release. Use
-   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
+   * {@link DefaultJedisSocketFactory#updateHostAndPort(redis.clients.jedis.HostAndPort)}.
    */
   @Override
   @Deprecated
@@ -171,7 +171,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   /**
    * @param port
    * @deprecated This will be removed in next major release. Use
-   * {@link #updateHostAndPort(redis.clients.jedis.HostAndPort)}.
+   * {@link DefaultJedisSocketFactory#updateHostAndPort(redis.clients.jedis.HostAndPort)}.
    */
   @Override
   @Deprecated

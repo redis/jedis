@@ -321,7 +321,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
 
   @Test
   public void aclLogTest() {
-    jedis.aclLog("RESET");
+    jedis.aclLogReset();
     assertTrue(jedis.aclLog().isEmpty());
 
     // create new user and cconnect
@@ -347,7 +347,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("get", jedis.aclLog().get(0).getObject());
 
     // Capture similar event
-    jedis.aclLog("RESET");
+    jedis.aclLogReset();
     assertTrue(jedis.aclLog().isEmpty());
 
     jedis.auth("antirez", "foo");
@@ -382,7 +382,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     assertEquals("somekeynotallowed", jedis.aclLog().get(0).getObject());
     assertEquals("key", jedis.aclLog().get(0).getReason());
 
-    jedis.aclLog("RESET");
+    jedis.aclLogReset();
     assertTrue(jedis.aclLog().isEmpty());
 
     jedis.auth("antirez", "foo");
@@ -423,8 +423,7 @@ public class AccessControlListCommandsTest extends JedisCommandTestBase {
     // Binary tests
     assertEquals("Number of log messages ", 3, jedis.aclLogBinary().size());
     assertEquals("Number of log messages ", 2, jedis.aclLogBinary(2).size());
-    byte[] status = jedis.aclLog("RESET".getBytes());
-    assertNotNull(status);
+    assertNotNull(jedis.aclLogReset());
     assertTrue(jedis.aclLog().isEmpty());
 
     jedis.aclDelUser("antirez");

@@ -484,6 +484,9 @@ public interface JedisCommands {
   /**
    * XRANGE key start end
    *
+   * WARNING: Sending untyped null for both start and end would raise compilation error. Casting the
+   * nulls to {@link StreamEntryID} would resolve the error.
+   *
    * @param key
    * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
    * @param end maximum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate maximum ID possible in the stream
@@ -493,6 +496,9 @@ public interface JedisCommands {
 
   /**
    * XRANGE key start end COUNT count
+   *
+   * WARNING: Sending untyped null for both start and end would raise compilation error. Casting the
+   * nulls to {@link StreamEntryID} would resolve the error.
    *
    * @param key
    * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
@@ -505,6 +511,9 @@ public interface JedisCommands {
   /**
    * XREVRANGE key end start
    *
+   * WARNING: Sending untyped null for both start and end would raise compilation error. Casting the
+   * nulls to {@link StreamEntryID} would resolve the error.
+   *
    * @param key
    * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream
    * @param end maximum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate maximum ID possible in the stream
@@ -514,6 +523,9 @@ public interface JedisCommands {
 
   /**
    * XREVRANGE key end start COUNT count
+   *
+   * WARNING: Sending untyped null for both start and end would raise compilation error. Casting the
+   * nulls to {@link StreamEntryID} would resolve the error.
    *
    * @param key
    * @param start minimum {@link StreamEntryID} for the retrieved range, passing <code>null</code> will indicate minimum ID possible in the stream

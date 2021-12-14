@@ -27,6 +27,10 @@ import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.Hashing;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public class ShardedJedis extends BinaryShardedJedis implements JedisCommands, Closeable {
 
   protected ShardedJedisPool dataSource = null;

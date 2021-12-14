@@ -29,6 +29,9 @@ public final class Protocol {
   public static final int DEFAULT_TIMEOUT = 2000;
   public static final int DEFAULT_DATABASE = 0;
 
+  /**
+   * Type of CHARSET will be changed to {@link java.nio.charset.Charset} in next major release.
+   */
   public static final String CHARSET = "UTF-8";
 
   public static final byte DOLLAR_BYTE = '$';
@@ -37,40 +40,40 @@ public final class Protocol {
   public static final byte MINUS_BYTE = '-';
   public static final byte COLON_BYTE = ':';
 
-  public static final String SENTINEL_MASTERS = "masters";
-  public static final String SENTINEL_GET_MASTER_ADDR_BY_NAME = "get-master-addr-by-name";
-  public static final String SENTINEL_RESET = "reset";
-  public static final String SENTINEL_SLAVES = "slaves";
-  public static final String SENTINEL_FAILOVER = "failover";
-  public static final String SENTINEL_MONITOR = "monitor";
-  public static final String SENTINEL_REMOVE = "remove";
-  public static final String SENTINEL_SET = "set";
+  @Deprecated public static final String SENTINEL_MASTERS = "masters";
+  @Deprecated public static final String SENTINEL_GET_MASTER_ADDR_BY_NAME = "get-master-addr-by-name";
+  @Deprecated public static final String SENTINEL_RESET = "reset";
+  @Deprecated public static final String SENTINEL_SLAVES = "slaves";
+  @Deprecated public static final String SENTINEL_FAILOVER = "failover";
+  @Deprecated public static final String SENTINEL_MONITOR = "monitor";
+  @Deprecated public static final String SENTINEL_REMOVE = "remove";
+  @Deprecated public static final String SENTINEL_SET = "set";
 
-  public static final String CLUSTER_NODES = "nodes";
-  public static final String CLUSTER_MEET = "meet";
-  public static final String CLUSTER_RESET = "reset";
-  public static final String CLUSTER_ADDSLOTS = "addslots";
-  public static final String CLUSTER_DELSLOTS = "delslots";
-  public static final String CLUSTER_INFO = "info";
-  public static final String CLUSTER_GETKEYSINSLOT = "getkeysinslot";
-  public static final String CLUSTER_SETSLOT = "setslot";
-  public static final String CLUSTER_SETSLOT_NODE = "node";
-  public static final String CLUSTER_SETSLOT_MIGRATING = "migrating";
-  public static final String CLUSTER_SETSLOT_IMPORTING = "importing";
-  public static final String CLUSTER_SETSLOT_STABLE = "stable";
-  public static final String CLUSTER_FORGET = "forget";
-  public static final String CLUSTER_FLUSHSLOT = "flushslots";
-  public static final String CLUSTER_KEYSLOT = "keyslot";
-  public static final String CLUSTER_COUNTKEYINSLOT = "countkeysinslot";
-  public static final String CLUSTER_SAVECONFIG = "saveconfig";
-  public static final String CLUSTER_REPLICATE = "replicate";
-  public static final String CLUSTER_SLAVES = "slaves";
-  public static final String CLUSTER_FAILOVER = "failover";
-  public static final String CLUSTER_SLOTS = "slots";
+  @Deprecated public static final String CLUSTER_NODES = "nodes";
+  @Deprecated public static final String CLUSTER_MEET = "meet";
+  @Deprecated public static final String CLUSTER_RESET = "reset";
+  @Deprecated public static final String CLUSTER_ADDSLOTS = "addslots";
+  @Deprecated public static final String CLUSTER_DELSLOTS = "delslots";
+  @Deprecated public static final String CLUSTER_INFO = "info";
+  @Deprecated public static final String CLUSTER_GETKEYSINSLOT = "getkeysinslot";
+  @Deprecated public static final String CLUSTER_SETSLOT = "setslot";
+  @Deprecated public static final String CLUSTER_SETSLOT_NODE = "node";
+  @Deprecated public static final String CLUSTER_SETSLOT_MIGRATING = "migrating";
+  @Deprecated public static final String CLUSTER_SETSLOT_IMPORTING = "importing";
+  @Deprecated public static final String CLUSTER_SETSLOT_STABLE = "stable";
+  @Deprecated public static final String CLUSTER_FORGET = "forget";
+  @Deprecated public static final String CLUSTER_FLUSHSLOT = "flushslots";
+  @Deprecated public static final String CLUSTER_KEYSLOT = "keyslot";
+  @Deprecated public static final String CLUSTER_COUNTKEYINSLOT = "countkeysinslot";
+  @Deprecated public static final String CLUSTER_SAVECONFIG = "saveconfig";
+  @Deprecated public static final String CLUSTER_REPLICATE = "replicate";
+  @Deprecated public static final String CLUSTER_SLAVES = "slaves";
+  @Deprecated public static final String CLUSTER_FAILOVER = "failover";
+  @Deprecated public static final String CLUSTER_SLOTS = "slots";
 
-  public static final String PUBSUB_CHANNELS = "channels";
-  public static final String PUBSUB_NUMSUB = "numsub";
-  public static final String PUBSUB_NUM_PAT = "numpat";
+  @Deprecated public static final String PUBSUB_CHANNELS = "channels";
+  @Deprecated public static final String PUBSUB_NUMSUB = "numsub";
+  @Deprecated public static final String PUBSUB_NUM_PAT = "numpat";
 
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
@@ -293,7 +296,7 @@ public final class Protocol {
     NOMKSTREAM, MINID, DB, ABSTTL, TO, TIMEOUT, ABORT, LCS, STRINGS;
 
     /**
-     * @deprecated This will be private in future. Use {@link #getRaw()}.
+     * @deprecated This will be private in future. Use {@link Keyword#getRaw()}.
      */
     @Deprecated
     public final byte[] raw;

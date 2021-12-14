@@ -20,6 +20,13 @@ public class JedisPool extends JedisPoolAbstract {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
+  /**
+   * WARNING: This constructor will be changed to accept a uri string in next major release.
+   * @param poolConfig
+   * @param host
+   * @deprecated This constructor will be changed to accept a uri string in next major release.
+   */
+  @Deprecated
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final String host) {
     this(poolConfig, host, Protocol.DEFAULT_PORT);
   }

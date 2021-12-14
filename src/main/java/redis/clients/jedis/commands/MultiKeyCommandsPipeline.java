@@ -85,6 +85,10 @@ public interface MultiKeyCommandsPipeline {
 
   Response<String> watch(String... keys);
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   Response<String> unwatch();
 
   Response<Set<String>> zdiff(String... keys);

@@ -78,6 +78,10 @@ public interface MultiKeyBinaryRedisPipeline {
 
   Response<String> watch(byte[]... keys);
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   Response<String> unwatch();
 
   Response<Set<byte[]>> zdiff(byte[]... keys);

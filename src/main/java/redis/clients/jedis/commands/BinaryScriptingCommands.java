@@ -7,7 +7,7 @@ import java.util.List;
 public interface BinaryScriptingCommands {
 
   /**
-   * @deprecated Use {@link #eval(byte..., int, byte[]...)}.
+   * @deprecated Use {@link BinaryScriptingCommands#eval(byte..., int, byte[]...)}.
    */
   @Deprecated
   Object eval(byte[] script, byte[] keyCount, byte[]... params);
@@ -24,6 +24,9 @@ public interface BinaryScriptingCommands {
 
   Object evalsha(byte[] sha1, int keyCount, byte[]... params);
 
+  /**
+   * WARNING: This method will return {@code java.util.List<java.lang.Boolean>} in next major release.
+   */
   // TODO: should be Boolean, add singular version
   List<Long> scriptExists(byte[]... sha1);
 

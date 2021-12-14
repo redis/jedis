@@ -28,6 +28,10 @@ import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.Sharded;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implements
     BinaryJedisCommands {
 

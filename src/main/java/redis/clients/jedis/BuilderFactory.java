@@ -19,7 +19,7 @@ import redis.clients.jedis.util.SafeEncoder;
 public final class BuilderFactory {
 
   /**
-   * @deprecated Use {@link #RAW_OBJECT}.
+   * @deprecated Use {@link BuilderFactory#RAW_OBJECT}.
    */
   @Deprecated
   public static final Builder<Object> OBJECT = new Builder<Object>() {
@@ -214,6 +214,10 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * @deprecated This will removed in next major release.
+   */
+  @Deprecated
   public static final Builder<Set<byte[]>> BYTE_ARRAY_ZSET = new Builder<Set<byte[]>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -238,6 +242,11 @@ public final class BuilderFactory {
       return "ZSet<byte[]>";
     }
   };
+
+  /**
+   * @deprecated This will removed in next major release.
+   */
+  @Deprecated
   public static final Builder<Map<byte[], byte[]>> BYTE_ARRAY_MAP = new Builder<Map<byte[], byte[]>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -324,6 +333,10 @@ public final class BuilderFactory {
 
   };
 
+  /**
+   * @deprecated This will removed in next major release.
+   */
+  @Deprecated
   public static final Builder<Set<String>> STRING_ZSET = new Builder<Set<String>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -445,7 +458,7 @@ public final class BuilderFactory {
   };
 
   /**
-   * @deprecated Use {@link #ENCODED_OBJECT}.
+   * @deprecated Use {@link BuilderFactory#ENCODED_OBJECT}.
    */
   @Deprecated
   public static final Builder<Object> EVAL_RESULT = new Builder<Object>() {
@@ -462,7 +475,7 @@ public final class BuilderFactory {
   };
 
   /**
-   * @deprecated Use {@link #RAW_OBJECT}.
+   * @deprecated Use {@link BuilderFactory#RAW_OBJECT}.
    */
   @Deprecated
   public static final Builder<Object> EVAL_BINARY_RESULT = new Builder<Object>() {

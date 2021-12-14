@@ -1,5 +1,9 @@
 package redis.clients.jedis;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public class DebugParams {
 
   private String[] command;

@@ -58,6 +58,10 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
     return formatted;
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public List<Response<?>> execGetResponse() {
     // Discard QUEUED or ERROR
     client.getMany(getPipelinedResponseLength());

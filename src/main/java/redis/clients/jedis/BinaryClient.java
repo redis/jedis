@@ -35,6 +35,10 @@ import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.SafeEncoder;
 
+/**
+ * @deprecated This class will be removed in next major release.
+ */
+@Deprecated
 public class BinaryClient extends Connection {
 
   private boolean isInMulti;
@@ -1109,7 +1113,7 @@ public class BinaryClient extends Connection {
   }
 
   /**
-   * @deprecated This will be removed in next major release.
+   * @deprecated This method will be removed in next major release.
    */
   @Deprecated
   public void sync() {
@@ -1137,6 +1141,10 @@ public class BinaryClient extends Connection {
     sendCommand(LINSERT, key, where.raw, pivot, value);
   }
 
+  /**
+   * @deprecated This method will be removed in next major release.
+   */
+  @Deprecated
   public void debug(final DebugParams params) {
     sendCommand(DEBUG, params.getCommand());
   }
@@ -1686,6 +1694,10 @@ public class BinaryClient extends Connection {
 
   public void aclLog(final byte[] option) {
     sendCommand(ACL, Keyword.LOG.getRaw(), option);
+  }
+
+  public void aclLogReset() {
+    sendCommand(ACL, Keyword.LOG.getRaw(), Keyword.RESET.getRaw());
   }
 
   public void aclSetUser(final byte[] name) {

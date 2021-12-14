@@ -3,34 +3,37 @@ package redis.clients.jedis.util;
 /**
  * Holds various methods/utilities to manipulate and parse redis hash-tags. See <a
  * href="http://redis.io/topics/cluster-spec">Cluster-Spec : Keys hash tags</a>
+ *
+ * @deprecated Use {@link JedisClusterHashTag}.
  */
+@Deprecated
 public final class JedisClusterHashTagUtil {
 
   private JedisClusterHashTagUtil() {
     throw new InstantiationError("Must not instantiate this class");
   }
 
+  /**
+   * @deprecated Use {@link JedisClusterHashTag#getHashTag(java.lang.String)}.
+   */
+  @Deprecated
   public static String getHashTag(String key) {
-    return extractHashTag(key, true);
+    return JedisClusterHashTag.getHashTag(key);
   }
 
+  /**
+   * @deprecated Use {@link JedisClusterHashTag#isClusterCompliantMatchPattern(byte[])}.
+   */
+  @Deprecated
   public static boolean isClusterCompliantMatchPattern(byte[] matchPattern) {
-    return isClusterCompliantMatchPattern(SafeEncoder.encode(matchPattern));
+    return JedisClusterHashTag.isClusterCompliantMatchPattern(matchPattern);
   }
 
+  /**
+   * @deprecated Use {@link JedisClusterHashTag#isClusterCompliantMatchPattern(java.lang.String)}.
+   */
+  @Deprecated
   public static boolean isClusterCompliantMatchPattern(String matchPattern) {
-    String tag = extractHashTag(matchPattern, false);
-    return tag != null && !tag.isEmpty();
-  }
-
-  private static String extractHashTag(String key, boolean returnKeyOnAbsence) {
-    int s = key.indexOf("{");
-    if (s > -1) {
-      int e = key.indexOf("}", s + 1);
-      if (e > -1 && e != s + 1) {
-        return key.substring(s + 1, e);
-      }
-    }
-    return returnKeyOnAbsence ? key : null;
+    return JedisClusterHashTag.isClusterCompliantMatchPattern(matchPattern);
   }
 }

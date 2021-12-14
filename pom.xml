@@ -94,6 +94,7 @@
 			<groupId>com.kohlschutter.junixsocket</groupId>
 			<artifactId>junixsocket-core</artifactId>
 			<version>2.4.0</version>
+			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

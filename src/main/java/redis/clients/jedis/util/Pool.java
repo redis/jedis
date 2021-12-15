@@ -7,11 +7,7 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class Pool<T> extends GenericObjectPool<T> {
 
-  /**
-   * @deprecated Use {@link Pool#Pool(org.apache.commons.pool2.PooledObjectFactory,
-   * org.apache.commons.pool2.impl.GenericObjectPoolConfig)}.
-   */
-  @Deprecated
+  // Legacy
   public Pool(GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
     this(factory, poolConfig);
   }

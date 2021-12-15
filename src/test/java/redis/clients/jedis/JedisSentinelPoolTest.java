@@ -27,8 +27,8 @@ public class JedisSentinelPoolTest {
   protected static HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
   protected static HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
 
-  protected static Sentinel sentinelJedis1;
-  protected static Sentinel sentinelJedis2;
+  protected static Jedis sentinelJedis1;
+  protected static Jedis sentinelJedis2;
 
   protected Set<String> sentinels = new HashSet<String>();
 
@@ -37,8 +37,8 @@ public class JedisSentinelPoolTest {
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
 
-    sentinelJedis1 = new Sentinel(sentinel1);
-    sentinelJedis2 = new Sentinel(sentinel2);
+    sentinelJedis1 = new Jedis(sentinel1);
+    sentinelJedis2 = new Jedis(sentinel2);
   }
 
   @After

@@ -11,7 +11,6 @@ import static redis.clients.jedis.resps.StreamInfo.*;
 import static redis.clients.jedis.resps.StreamConsumersInfo.IDLE;
 
 import java.time.Duration;
-import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -75,13 +74,13 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     map5.put("f5", "v5");
     StreamEntryID id5 = jedis.xadd("xadd-stream2", (StreamEntryID) null, map5);
     assertTrue(id5.compareTo(id4) > 0);
-//
-//    Map<String, String> map6 = new HashMap<>();
-//    map6.put("f4", "v4");
-//    map6.put("f5", "v5");
-//    StreamEntryID id6 = jedis.xadd("xadd-stream2", null, map6, 3, false);
-//    assertTrue(id6.compareTo(id5) > 0);
-//    assertEquals(3L, jedis.xlen("xadd-stream2"));
+
+    Map<String, String> map6 = new HashMap<>();
+    map6.put("f4", "v4");
+    map6.put("f5", "v5");
+    StreamEntryID id6 = jedis.xadd("xadd-stream2", map6, XAddParams.xAddParams().maxLen(3));
+    assertTrue(id6.compareTo(id5) > 0);
+    assertEquals(3L, jedis.xlen("xadd-stream2"));
   }
 
   @Test
@@ -430,12 +429,12 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     jedis.xgroupCreate("xack-stream", "xack-group", null, false);
 
-    Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>(
+    Map<String, StreamEntryID> streamQeury1 = Collections.singletonMap(
         "xack-stream", StreamEntryID.UNRECEIVED_ENTRY);
 
     // Empty Stream
     List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xack-group", "xack-consumer",
-      1, 1L, false, streamQeury1);
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQeury1);
     assertEquals(1, range.size());
 
     assertEquals(1L,
@@ -450,12 +449,12 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     assertEquals("OK", jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false));
 
-    Entry<String, StreamEntryID> streamQeury1 = new AbstractMap.SimpleImmutableEntry<>(
+    Map<String, StreamEntryID> streamQeury1 = Collections.singletonMap(
             "xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY);
 
     // Read the event from Stream put it on pending
     List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xpendeing-group",
-            "xpendeing-consumer", 1, 1L, false, streamQeury1);
+            "xpendeing-consumer", XReadGroupParams.xReadGroupParams().count(1).block(1), streamQeury1);
     assertEquals(1, range.size());
     assertEquals(1, range.get(0).getValue().size());
     assertEquals(map, range.get(0).getValue().get(0).getFields());
@@ -490,8 +489,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false));
 
     // Read the event from Stream put it on pending
-    jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", 1, 1L, false,
-            new AbstractMap.SimpleImmutableEntry<>("xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY));
+    jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", XReadGroupParams.xReadGroupParams().count(1).block(1),
+            Collections.singletonMap("xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY));
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
@@ -520,8 +519,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false));
 
     // Read the event from Stream put it on pending
-    jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", 1, 1L, false,
-      new AbstractMap.SimpleImmutableEntry<>("xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY));
+    jedis.xreadGroup("xpendeing-group", "xpendeing-consumer", XReadGroupParams.xReadGroupParams().count(1).block(1),
+        Collections.singletonMap("xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY));
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
@@ -549,8 +548,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
 
     // Read the event from Stream put it on pending
-    jedis.xreadGroup("xpending-group", "xpending-consumer", 1, 1L, false,
-            new AbstractMap.SimpleImmutableEntry<>("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+    jedis.xreadGroup("xpending-group", "xpending-consumer", XReadGroupParams.xReadGroupParams().count(1).block(1),
+        Collections.singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
@@ -579,8 +578,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
 
     // Read the event from Stream put it on pending
-    jedis.xreadGroup("xpending-group", "xpending-consumer", 1, 1L, false,
-            new AbstractMap.SimpleImmutableEntry<>("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+    jedis.xreadGroup("xpending-group", "xpending-consumer", XReadGroupParams.xReadGroupParams().count(1).block(1),
+        Collections.singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
@@ -611,8 +610,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
 
     // Read the event from Stream put it on pending
-    jedis.xreadGroup("xpending-group", "xpending-consumer", 1, 1L, false,
-            new AbstractMap.SimpleImmutableEntry<>("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+    jedis.xreadGroup("xpending-group", "xpending-consumer", XReadGroupParams.xReadGroupParams().count(1).block(1),
+        Collections.singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
@@ -641,8 +640,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
 
     // Read the event from Stream put it on pending
-    jedis.xreadGroup("xpending-group", "xpending-consumer", 1, 1L, false,
-            new AbstractMap.SimpleImmutableEntry<>("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+    jedis.xreadGroup("xpending-group", "xpending-consumer", XReadGroupParams.xReadGroupParams().count(1).block(1),
+        Collections.singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
@@ -686,9 +685,9 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertNotNull(id2);
 
     jedis.xgroupCreate(STREAM_NAME, G1, StreamEntryID.LAST_ENTRY, false);
-    Entry<String, StreamEntryID> streamQeury11 = new AbstractMap.SimpleImmutableEntry<>(
+    Map<String, StreamEntryID> streamQeury11 = Collections.singletonMap(
         STREAM_NAME, new StreamEntryID("0-0"));
-    jedis.xreadGroup(G1, MY_CONSUMER, 1, 0, false, streamQeury11);
+    jedis.xreadGroup(G1, MY_CONSUMER, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
 
     Thread.sleep(1);
 
@@ -741,9 +740,9 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // test with more groups and consumers
     jedis.xgroupCreate(STREAM_NAME, G2, StreamEntryID.LAST_ENTRY, false);
-    jedis.xreadGroup(G1, MY_CONSUMER2, 1, 0, false, streamQeury11);
-    jedis.xreadGroup(G2, MY_CONSUMER, 1, 0, false, streamQeury11);
-    jedis.xreadGroup(G2, MY_CONSUMER2, 1, 0, false, streamQeury11);
+    jedis.xreadGroup(G1, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
+    jedis.xreadGroup(G2, MY_CONSUMER, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
+    jedis.xreadGroup(G2, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
 
     List<StreamGroupInfo> manyGroupsInfo = jedis.xinfoGroup(STREAM_NAME);
     List<StreamConsumersInfo> manyConsumersInfo = jedis.xinfoConsumers(STREAM_NAME, G2);

@@ -36,19 +36,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     this(null, config);
   }
 
-  @Deprecated
-  public DefaultJedisSocketFactory(String host, int port, int connectionTimeout, int socketTimeout,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier) {
-    this.hostAndPort = new HostAndPort(host, port);
-    this.connectionTimeout = connectionTimeout;
-    this.socketTimeout = socketTimeout;
-    this.ssl = ssl;
-    this.sslSocketFactory = sslSocketFactory;
-    this.sslParameters = sslParameters;
-    this.hostnameVerifier = hostnameVerifier;
-  }
-
   public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
     if (hostAndPort != null) {
       this.hostAndPort = hostAndPort;

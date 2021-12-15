@@ -7554,7 +7554,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    */
   @Override
   public List<String> sentinelGetMasterAddrByName(String masterName) {
-    connection.sendCommand(SENTINEL, GET_MASTER_ADDR_BY_NAME.name(), masterName);
+    connection.sendCommand(SENTINEL, GET_MASTER_ADDR_BY_NAME.getRaw(), encode(masterName));
     return connection.getMultiBulkReply();
   }
 

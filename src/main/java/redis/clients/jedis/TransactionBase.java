@@ -1266,7 +1266,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<StreamEntryID> xadd_v2(String key, XAddParams params, Map<String, String> hash) {
+  public Response<StreamEntryID> xadd(String key, XAddParams params, Map<String, String> hash) {
     return appendCommand(commandObjects.xadd(key, params, hash));
   }
 

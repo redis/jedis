@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static redis.clients.jedis.params.ClientKillParams.Type;
 import static redis.clients.jedis.params.ClientKillParams.SkipMe;
 
 import java.util.concurrent.ExecutionException;
@@ -138,13 +137,6 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void killTypeNormal() {
-    long clients = jedis.clientKill(new ClientKillParams().type(Type.NORMAL));
-    assertTrue(clients > 0);
-    assertDisconnected(client);
-  }
-
-  @Test
-  public void killTypeNormal2() {
     long clients = jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL));
     assertTrue(clients > 0);
     assertDisconnected(client);
@@ -152,13 +144,6 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void killSkipmeNo() {
-    jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.NO));
-    assertDisconnected(client);
-    assertDisconnected(jedis);
-  }
-
-  @Test
-  public void killSkipmeNo2() {
     jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO));
     assertDisconnected(client);
     assertDisconnected(jedis);
@@ -166,14 +151,6 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void killSkipmeYesNo() {
-    jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.YES));
-    assertDisconnected(client);
-    assertEquals(1, jedis.clientKill(new ClientKillParams().type(Type.NORMAL).skipMe(SkipMe.NO)));
-    assertDisconnected(jedis);
-  }
-
-  @Test
-  public void killSkipmeYesNo2() {
     jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.YES));
     assertDisconnected(client);
     assertEquals(1, jedis.clientKill(new ClientKillParams().type(ClientType.NORMAL).skipMe(SkipMe.NO)));

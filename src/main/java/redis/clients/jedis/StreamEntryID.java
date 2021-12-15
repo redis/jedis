@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.io.IOException;
 import java.io.Serializable;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
 
@@ -64,10 +65,18 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
     this(0, 0L);
   }
 
+  public StreamEntryID(byte[] id) {
+    this(SafeEncoder.encode(id));
+  }
+
   public StreamEntryID(String id) {
     String[] split = id.split("-");
     this.time = Long.parseLong(split[0]);
     this.sequence = Long.parseLong(split[1]);
+  }
+
+  public StreamEntryID(long time) {
+    this(time, 0);
   }
 
   public StreamEntryID(long time, long sequence) {

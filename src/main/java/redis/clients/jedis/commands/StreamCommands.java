@@ -27,6 +27,11 @@ public interface StreamCommands {
    * @param params
    * @return the ID of the added entry
    */
+  // Legacy
+  default StreamEntryID xadd(String key, Map<String, String> hash, XAddParams params) {
+    return xadd(key, params, hash);
+  }
+
   StreamEntryID xadd(String key, XAddParams params, Map<String, String> hash);
 
   /**

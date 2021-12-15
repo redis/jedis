@@ -28,6 +28,11 @@ public interface StreamPipelineCommands {
    * @param params
    * @return the ID of the added entry
    */
+  // Legacy
+  default Response<StreamEntryID> xadd(String key, Map<String, String> hash, XAddParams params) {
+    return xadd(key, params, hash);
+  }
+
   Response<StreamEntryID> xadd(String key, XAddParams params, Map<String, String> hash);
 
   /**

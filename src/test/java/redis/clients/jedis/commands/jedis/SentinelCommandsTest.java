@@ -7,7 +7,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Sentinel;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.HostAndPorts;
 
 public class SentinelCommandsTest {
@@ -21,12 +21,12 @@ public class SentinelCommandsTest {
   @Test
   public void myIdSentinels() {
     String id1;
-    try (Sentinel sentinel = new Sentinel(sentinel2_1)) {
+    try (Jedis sentinel = new Jedis(sentinel2_1)) {
       id1 = sentinel.sentinelMyId();
       assertTrue(id1.matches("[0-9a-f]+"));
     }
 
-    try (Sentinel sentinel2 = new Sentinel(sentinel2_2)) {
+    try (Jedis sentinel2 = new Jedis(sentinel2_2)) {
       Map<String, String> details1 = sentinel2.sentinelSentinels("mymaster").get(0);
       assertEquals(id1, details1.get("runid"));
     }
@@ -35,13 +35,13 @@ public class SentinelCommandsTest {
   @Test
   public void masterMasters() {
     String runId;
-    try (Sentinel sentinel = new Sentinel(sentinel2_1)) {
+    try (Jedis sentinel = new Jedis(sentinel2_1)) {
       Map<String, String> details = sentinel.sentinelMaster("mymaster");
       assertEquals("mymaster", details.get("name"));
       runId = details.get("runid");
     }
 
-    try (Sentinel sentinel2 = new Sentinel(sentinel2_2)) {
+    try (Jedis sentinel2 = new Jedis(sentinel2_2)) {
       Map<String, String> details = sentinel2.sentinelMasters().get(0);
       assertEquals("mymaster", details.get("name"));
       assertEquals(runId, details.get("runid"));
@@ -50,7 +50,7 @@ public class SentinelCommandsTest {
 
   @Test
   public void replicas() {
-    try (Sentinel sentinel = new Sentinel(sentinel2_1)) {
+    try (Jedis sentinel = new Jedis(sentinel2_1)) {
       Map<String, String> details = sentinel.sentinelReplicas("mymaster").get(0);
       assertEquals(Integer.toString(replica2.getPort()), details.get("port"));
     }

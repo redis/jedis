@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.Protocol.SentinelKeyword.*;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -28,8 +30,8 @@ import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
-    ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands,
-    GenericControlCommands, Closeable {
+    ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
+    SentinelCommands, Closeable {
 
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();
@@ -3247,7 +3249,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    */
   public void monitor(final JedisMonitor jedisMonitor) {
 //    connection.monitor();
-    connection.sendCommand(MONITOR);
+    connection.sendCommand(Command.MONITOR);
     connection.getStatusCodeReply();
     jedisMonitor.proceed(connection);
   }
@@ -3639,7 +3641,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public String slowlogReset() {
-    connection.sendCommand(SLOWLOG, RESET);
+    connection.sendCommand(SLOWLOG, Keyword.RESET);
     return connection.getBulkReply();
   }
 
@@ -3805,7 +3807,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String failover() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(FAILOVER);
+    connection.sendCommand(Command.FAILOVER);
     connection.setTimeoutInfinite();
     try {
       return connection.getStatusCodeReply();
@@ -3817,7 +3819,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String failover(FailoverParams failoverParams) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new ClusterCommandArguments(FAILOVER).addParams(failoverParams);
+    CommandArguments args = new ClusterCommandArguments(Command.FAILOVER).addParams(failoverParams);
     connection.sendCommand(args);
     connection.setTimeoutInfinite();
     try {
@@ -3830,7 +3832,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String failoverAbort() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(FAILOVER, ABORT);
+    connection.sendCommand(Command.FAILOVER, ABORT);
     return connection.getStatusCodeReply();
   }
 
@@ -3935,7 +3937,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String aclLogReset() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, LOG.getRaw(), RESET.getRaw());
+    connection.sendCommand(ACL, LOG.getRaw(), Keyword.RESET.getRaw());
     return connection.getStatusCodeReply();
   }
 
@@ -7483,6 +7485,166 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long bitop(final BitOP op, final String destKey, final String... srcKeys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
+  }
+
+  @Override
+  public String sentinelMyId() {
+    connection.sendCommand(SENTINEL, MYID);
+    return connection.getBulkReply();
+  }
+
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381&gt; sentinel masters
+   * 1)  1) "name"
+   *     2) "mymaster"
+   *     3) "ip"
+   *     4) "127.0.0.1"
+   *     5) "port"
+   *     6) "6379"
+   *     7) "runid"
+   *     8) "93d4d4e6e9c06d0eea36e27f31924ac26576081d"
+   *     9) "flags"
+   *    10) "master"
+   *    11) "pending-commands"
+   *    12) "0"
+   *    13) "last-ok-ping-reply"
+   *    14) "423"
+   *    15) "last-ping-reply"
+   *    16) "423"
+   *    17) "info-refresh"
+   *    18) "6107"
+   *    19) "num-slaves"
+   *    20) "1"
+   *    21) "num-other-sentinels"
+   *    22) "2"
+   *    23) "quorum"
+   *    24) "2"
+   *
+   * </pre>
+   */
+  @Override
+  public List<Map<String, String>> sentinelMasters() {
+    connection.sendCommand(SENTINEL, MASTERS);
+    return connection.getObjectMultiBulkReply().stream()
+        .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
+  }
+
+  @Override
+  public Map<String, String> sentinelMaster(String masterName) {
+    connection.sendCommand(SENTINEL, MASTER.name(), masterName);
+    return BuilderFactory.STRING_MAP.build(connection.getOne());
+  }
+
+  @Override
+  public List<Map<String, String>> sentinelSentinels(String masterName) {
+    connection.sendCommand(SENTINEL, SENTINELS.name(), masterName);
+    return connection.getObjectMultiBulkReply().stream()
+        .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
+  }
+
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381&gt; sentinel get-master-addr-by-name mymaster
+   * 1) "127.0.0.1"
+   * 2) "6379"
+   * </pre>
+   * @param masterName
+   * @return two elements list of strings : host and port.
+   */
+  @Override
+  public List<String> sentinelGetMasterAddrByName(String masterName) {
+    connection.sendCommand(SENTINEL, GET_MASTER_ADDR_BY_NAME.getRaw(), encode(masterName));
+    return connection.getMultiBulkReply();
+  }
+
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381&gt; sentinel reset mymaster
+   * (integer) 1
+   * </pre>
+   * @param pattern
+   */
+  @Override
+  public Long sentinelReset(String pattern) {
+    connection.sendCommand(SENTINEL, SentinelKeyword.RESET.name(), pattern);
+    return connection.getIntegerReply();
+  }
+
+  /**
+   * <pre>
+   * redis 127.0.0.1:26381&gt; sentinel slaves mymaster
+   * 1)  1) "name"
+   *     2) "127.0.0.1:6380"
+   *     3) "ip"
+   *     4) "127.0.0.1"
+   *     5) "port"
+   *     6) "6380"
+   *     7) "runid"
+   *     8) "d7f6c0ca7572df9d2f33713df0dbf8c72da7c039"
+   *     9) "flags"
+   *    10) "slave"
+   *    11) "pending-commands"
+   *    12) "0"
+   *    13) "last-ok-ping-reply"
+   *    14) "47"
+   *    15) "last-ping-reply"
+   *    16) "47"
+   *    17) "info-refresh"
+   *    18) "657"
+   *    19) "master-link-down-time"
+   *    20) "0"
+   *    21) "master-link-status"
+   *    22) "ok"
+   *    23) "master-host"
+   *    24) "localhost"
+   *    25) "master-port"
+   *    26) "6379"
+   *    27) "slave-priority"
+   *    28) "100"
+   * </pre>
+   * @param masterName
+   */
+  @Override
+  public List<Map<String, String>> sentinelSlaves(String masterName) {
+    connection.sendCommand(SENTINEL, SLAVES.name(), masterName);
+    return connection.getObjectMultiBulkReply().stream()
+        .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
+  }
+
+  @Override
+  public List<Map<String, String>> sentinelReplicas(String masterName) {
+    connection.sendCommand(SENTINEL, REPLICAS.name(), masterName);
+    return connection.getObjectMultiBulkReply().stream()
+        .map(BuilderFactory.STRING_MAP::build).collect(Collectors.toList());
+  }
+
+  @Override
+  public String sentinelFailover(String masterName) {
+    connection.sendCommand(SENTINEL, SentinelKeyword.FAILOVER.name(), masterName);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String sentinelMonitor(String masterName, String ip, int port, int quorum) {
+    CommandArguments args = new CommandArguments(SENTINEL).add(SentinelKeyword.MONITOR)
+        .add(masterName).add(ip).add(port).add(quorum);
+    connection.sendCommand(args);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String sentinelRemove(String masterName) {
+    connection.sendCommand(SENTINEL, REMOVE.name(), masterName);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String sentinelSet(String masterName, Map<String, String> parameterMap) {
+    CommandArguments args = new CommandArguments(SENTINEL).add(SentinelKeyword.SET).add(masterName);
+    parameterMap.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
+    connection.sendCommand(args);
+    return connection.getStatusCodeReply();
   }
 
   @Override

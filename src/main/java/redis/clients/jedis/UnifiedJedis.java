@@ -2329,7 +2329,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public StreamEntryID xadd_v2(String key, XAddParams params, Map<String, String> hash) {
+  public StreamEntryID xadd(String key, XAddParams params, Map<String, String> hash) {
     return executeCommand(commandObjects.xadd(key, params, hash));
   }
 

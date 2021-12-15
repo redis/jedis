@@ -1222,7 +1222,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<StreamEntryID> xadd_v2(String key, XAddParams params, Map<String, String> hash) {
+  public Response<StreamEntryID> xadd(String key, XAddParams params, Map<String, String> hash) {
     return appendCommand(commandObjects.xadd(key, params, hash));
   }
 

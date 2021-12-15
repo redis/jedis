@@ -759,8 +759,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     Map<String, String> map = new HashMap<>();
     map.put("a", "b");
     Pipeline p = jedis.pipelined();
-    Response<StreamEntryID> id1 = p.xadd("stream1", (StreamEntryID) null, map);
-    Response<StreamEntryID> id2 = p.xadd("stream1", (StreamEntryID) null, map);
+    Response<StreamEntryID> id1 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<StreamEntryID> id2 = p.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
     Response<List<StreamEntry>> results = p.xrange("stream1", (StreamEntryID) null, (StreamEntryID) null, 2);
     p.sync();
 
@@ -782,8 +782,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     Map<String, String> map = new HashMap<>();
     map.put("a", "b");
     Transaction t = jedis.multi();
-    Response<StreamEntryID> id1 = t.xadd("stream1", (StreamEntryID) null, map);
-    Response<StreamEntryID> id2 = t.xadd("stream1", (StreamEntryID) null, map);
+    Response<StreamEntryID> id1 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
+    Response<StreamEntryID> id2 = t.xadd("stream1", StreamEntryID.NEW_ENTRY, map);
     Response<List<StreamEntry>> results = t.xrange("stream1", (StreamEntryID) null, (StreamEntryID) null, 2);
     t.exec();
 

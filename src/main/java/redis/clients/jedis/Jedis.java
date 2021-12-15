@@ -8165,7 +8165,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public StreamEntryID xadd_v2(final String key, final XAddParams params, final Map<String, String> hash) {
+  public StreamEntryID xadd(final String key, final XAddParams params, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xadd(key, params, hash));
   }

@@ -7,6 +7,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.ConsumerFullInfo;
+import redis.clients.jedis.params.StreamFullInfo;
+import redis.clients.jedis.params.StreamGroupFullInfo;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
@@ -1106,6 +1109,128 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<StreamConsumersInfo>";
+    }
+  };
+
+  public static final Builder<List<ConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST = new Builder<List<ConsumerFullInfo>>() {
+
+    final Map<String, Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String, Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(ConsumerFullInfo.NAME, STRING);
+      tempMappingFunctions.put(ConsumerFullInfo.SEEN_TIME, LONG);
+      tempMappingFunctions.put(ConsumerFullInfo.PEL_COUNT, LONG);
+      tempMappingFunctions.put(ConsumerFullInfo.PENDING, LONG_LIST);
+
+      return tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<ConsumerFullInfo> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<ConsumerFullInfo> list = new ArrayList<>();
+      List<Object> streamsEntries = (List<Object>) data;
+
+      for (Object streamsEntry : streamsEntries) {
+        List<Object> consumerInfoList = (List<Object>) streamsEntry;
+        Iterator<Object> consumerInfoIterator = consumerInfoList.iterator();
+        ConsumerFullInfo consumerInfo = new ConsumerFullInfo(createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
+        list.add(consumerInfo);
+      }
+      return list;
+    }
+
+    @Override
+    public String toString() {
+      return "List<ConsumerInfo>";
+    }
+  };
+
+  public static final Builder<List<StreamGroupFullInfo>> STREAM_GROUP_FULL_INFO_LIST = new Builder<List<StreamGroupFullInfo>>() {
+
+    final Map<String, Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String, Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamGroupFullInfo.NAME, STRING);
+      tempMappingFunctions.put(StreamGroupFullInfo.CONSUMERS, STREAM_CONSUMER_FULL_INFO_LIST);
+      tempMappingFunctions.put(StreamGroupFullInfo.PENDING, STRING_LIST);
+      tempMappingFunctions.put(StreamGroupFullInfo.LAST_DELIVERED, STREAM_ENTRY_ID);
+      tempMappingFunctions.put(StreamGroupFullInfo.PEL_COUNT, LONG);
+
+      return tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<StreamGroupFullInfo> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<StreamGroupFullInfo> list = new ArrayList<>();
+      List<Object> streamsEntries = (List<Object>) data;
+
+      for (Object streamsEntry : streamsEntries) {
+
+        List<Object> groupInfo = (List<Object>) streamsEntry;
+
+        Iterator<Object> groupInfoIterator = groupInfo.iterator();
+
+        StreamGroupFullInfo groupFullInfo = new StreamGroupFullInfo(createMapFromDecodingFunctions(
+                groupInfoIterator, mappingFunctions));
+        list.add(groupFullInfo);
+
+      }
+      return list;
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamGroupFullInfo>";
+    }
+  };
+
+  public static final Builder<StreamFullInfo> STREAM_INFO_FULL = new Builder<StreamFullInfo>() {
+
+    final Map<String, Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String, Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamFullInfo.LAST_GENERATED_ID, STREAM_ENTRY_ID);
+      tempMappingFunctions.put(StreamFullInfo.LENGTH, LONG);
+      tempMappingFunctions.put(StreamFullInfo.RADIX_TREE_KEYS, LONG);
+      tempMappingFunctions.put(StreamFullInfo.RADIX_TREE_NODES, LONG);
+      tempMappingFunctions.put(StreamFullInfo.GROUPS, STREAM_GROUP_FULL_INFO_LIST);
+      tempMappingFunctions.put(StreamFullInfo.ENTRIES, STREAM_ENTRY_LIST);
+
+      return tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public StreamFullInfo build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Object> streamsEntries = (List<Object>) data;
+      Iterator<Object> iterator = streamsEntries.iterator();
+
+      return new StreamFullInfo(createMapFromDecodingFunctions(iterator, mappingFunctions));
+    }
+
+    @Override
+    public String toString() {
+      return "StreamFullInfo";
     }
   };
 

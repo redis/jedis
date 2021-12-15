@@ -57,6 +57,14 @@ public interface StreamBinaryCommands {
 
   Object xinfoStream(byte[] key);
 
+  StreamFullInfo xinfoStreamFull(byte[] key);
+
+  StreamFullInfo xinfoStreamFull(byte[] key, int count);
+
+  StreamFullInfo xinfoStreamFull(String key);
+
+  StreamFullInfo xinfoStreamFull(String key, int count);
+
   List<Object> xinfoGroup(byte[] key);
 
   List<Object> xinfoConsumers(byte[] key, byte[] group);

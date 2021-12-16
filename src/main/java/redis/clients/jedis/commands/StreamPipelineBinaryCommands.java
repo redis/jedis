@@ -60,6 +60,14 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Object> xinfoStream(byte[] key);
 
+  Response<StreamFullInfo> xinfoStreamFull(byte[] key);
+
+  Response<StreamFullInfo> xinfoStreamFull(byte[] key, int count);
+
+  Response<StreamFullInfo> xinfoStreamFull(String key);
+
+  Response<StreamFullInfo> xinfoStreamFull(String key, int count);
+
   Response<List<Object>> xinfoGroup(byte[] key);
 
   Response<List<Object>> xinfoConsumers(byte[] key, byte[] group);

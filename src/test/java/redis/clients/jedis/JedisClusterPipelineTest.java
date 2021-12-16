@@ -19,6 +19,7 @@ import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.JedisClusterTestUtil;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
@@ -42,9 +43,9 @@ public class JedisClusterPipelineTest {
     private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG = DefaultJedisClientConfig
             .builder().password("cluster").build();
 
-    private HostAndPort nodeInfo1 = HostAndPortUtil.getClusterServers().get(0);
-    private HostAndPort nodeInfo2 = HostAndPortUtil.getClusterServers().get(1);
-    private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
+    private HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
+    private HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
+    private HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
     private Set<HostAndPort> nodes = new HashSet<>();
     {
         nodes.add(nodeInfo1);

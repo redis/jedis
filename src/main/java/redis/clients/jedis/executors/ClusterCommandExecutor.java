@@ -12,6 +12,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.util.IOUtils;
 
 public class ClusterCommandExecutor implements CommandExecutor {
 
@@ -81,9 +82,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
           provider.renewSlotCache(connection);
         }
       } finally {
-        if (connection != null) {
-          connection.close();
-        }
+        IOUtils.closeQuietly(connection);
       }
       if (Instant.now().isAfter(deadline)) {
         throw new JedisClusterOperationException("Cluster retry deadline exceeded.");

@@ -226,7 +226,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
       LOG.debug("Connecting to Sentinel {}", sentinel);
 
-      try (Sentinel jedis = new Sentinel(sentinel, sentinelClientConfig)) {
+      try (Jedis jedis = new Jedis(sentinel, sentinelClientConfig)) {
 
         List<String> masterAddr = jedis.sentinelGetMasterAddrByName(masterName);
 
@@ -319,7 +319,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     protected String host;
     protected int port;
     protected long subscribeRetryWaitTimeMillis = 5000;
-    protected volatile Sentinel j;
+    protected volatile Jedis j;
     protected AtomicBoolean running = new AtomicBoolean(false);
 
     protected MasterListener() {
@@ -352,7 +352,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
           }
           
           final HostAndPort hostPort = new HostAndPort(host, port);
-          j = new Sentinel(hostPort, sentinelClientConfig);
+          j = new Jedis(hostPort, sentinelClientConfig);
 
           // code for active refresh
           List<String> masterAddr = j.sentinelGetMasterAddrByName(masterName);

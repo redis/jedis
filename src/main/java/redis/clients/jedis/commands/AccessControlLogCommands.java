@@ -55,6 +55,12 @@ public interface AccessControlLogCommands {
    */
   List<String> aclUsers();
 
+  /**
+   * The command returns all the rules defined for an existing ACL user.
+   * @see <a href="https://redis.io/commands/acl-getuser">ACL GETUSER username</a>
+   * @param name username
+   * @return a list of ACL rule definitions for the user.
+   */
   AccessControlUser aclGetUser(String name);
 
   /**

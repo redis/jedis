@@ -44,7 +44,6 @@ public class ShardingTest {
     try (Jedis j = new Jedis(redis1)) {
       j.auth("foobared");
       long dbSize = j.dbSize();
-      System.out.println(dbSize);
       assertTrue(dbSize > 400);
       totalDbSize += dbSize;
     }

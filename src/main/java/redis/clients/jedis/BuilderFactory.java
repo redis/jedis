@@ -8,8 +8,8 @@ import org.json.JSONObject;
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.ConsumerFullInfo;
-import redis.clients.jedis.params.StreamFullInfo;
-import redis.clients.jedis.params.StreamGroupFullInfo;
+import redis.clients.jedis.resps.StreamFullInfo;
+import redis.clients.jedis.resps.StreamGroupFullInfo;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
@@ -1112,7 +1112,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<ConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST = new Builder<List<ConsumerFullInfo>>() {
+  private static final Builder<List<ConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST = new Builder<List<ConsumerFullInfo>>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 
@@ -1152,7 +1152,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<StreamGroupFullInfo>> STREAM_GROUP_FULL_INFO_LIST = new Builder<List<StreamGroupFullInfo>>() {
+  private static final Builder<List<StreamGroupFullInfo>> STREAM_GROUP_FULL_INFO_LIST = new Builder<List<StreamGroupFullInfo>>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 

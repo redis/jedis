@@ -5,6 +5,7 @@ import java.util.Map;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.StreamFullInfo;
 
 public interface StreamPipelineBinaryCommands {
 //

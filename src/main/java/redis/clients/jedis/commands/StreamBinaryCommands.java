@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.resps.StreamFullInfo;
 
 public interface StreamBinaryCommands {
 

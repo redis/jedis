@@ -1,8 +1,7 @@
 package redis.clients.jedis;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
 import java.time.Duration;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 public class JedisPoolConfig extends GenericObjectPoolConfig<Jedis> {
 

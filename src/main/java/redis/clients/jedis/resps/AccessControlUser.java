@@ -57,6 +57,6 @@ public class AccessControlUser {
   @Override
   public String toString() {
     return "AccessControlUser{" + "flags=" + flags + ", keys=" + keys + ", passwords=" + passwords
-        + ", channels='" + channels + ", commands='" + commands + '\'' + '}';
+        + ", commands='" + commands + ", channels='" + channels + '\'' + '}';
   }
 }

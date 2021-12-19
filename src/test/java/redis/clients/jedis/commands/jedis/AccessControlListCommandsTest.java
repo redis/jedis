@@ -462,7 +462,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertThat(userInfo.getCommands(), containsString("+@all"));
     assertThat(userInfo.getCommands(), containsString("-@string"));
     assertThat(userInfo.getCommands(), containsString("+debug|digest"));
-    assertEquals(userInfo.getChannels().get(0), "testchannel:*");
+    assertEquals("testchannel:*", userInfo.getChannels().get(0));
 
     jedis.aclDelUser(USER_ZZZ.getBytes());
 

@@ -741,7 +741,7 @@ public class PipeliningTest extends JedisCommandTestBase {
           scriptKillWait();
         } else {
           // #2656: Checking if this status is actually 'OK' when error occurs in next command.
-          org.apache.logging.log4j.LogManager.getLogger().error(
+          org.slf4j.LoggerFactory.getLogger(PipeliningTest.class).error(
               String.format("Status if SCRIPT KILL command is \"%s\"", status));
         }
       } finally {

@@ -30,8 +30,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.GeoUnit;
@@ -69,7 +67,6 @@ public class JedisClusterTest {
   private HostAndPort nodeInfo3 = HostAndPortUtil.getClusterServers().get(2);
   private HostAndPort nodeInfo4 = HostAndPortUtil.getClusterServers().get(3);
   private HostAndPort nodeInfoSlave2 = HostAndPortUtil.getClusterServers().get(4);
-  protected Logger log = LoggerFactory.getLogger(getClass().getName());
 
   @Before
   public void setUp() throws InterruptedException {
@@ -287,7 +284,6 @@ public class JedisClusterTest {
    */
   @Test
   public void testMigrate() {
-    log.info("test migrate slot");
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(nodeInfo1);
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
@@ -338,7 +334,6 @@ public class JedisClusterTest {
 
   @Test
   public void testMigrateToNewNode() throws InterruptedException {
-    log.info("test migrate slot to new node");
     Set<HostAndPort> jedisClusterNode = new HashSet<HostAndPort>();
     jedisClusterNode.add(nodeInfo1);
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,

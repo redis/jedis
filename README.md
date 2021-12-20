@@ -1,5 +1,5 @@
 # Jedis
----
+
 [![Release](https://img.shields.io/github/release/redis/jedis.svg)](https://github.com/redis/jedis/releases/latest)
 [![CircleCI](https://circleci.com/gh/redis/jedis/tree/master.svg?style=svg)](https://circleci.com/gh/redis/jedis/tree/master)
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](http://mvnrepository.com/artifact/redis.clients/jedis)

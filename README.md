@@ -52,56 +52,18 @@ You can download the latest build at:
 
 Or use it as a maven dependency:
 
-### Official Releases
-
 ```xml
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>3.7.0</version>
+    <version>4.0.0</version>
 </dependency>
 ```
-
-### Snapshots
-
-```xml
-  <repositories>
-    <repository>
-      <id>snapshots-repo</id>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
-  </repositories>
-```
-
-and
-
-```xml
-  <dependencies>
-    <dependency>
-      <groupId>redis.clients</groupId>
-      <artifactId>jedis</artifactId>
-      <version>4.0.0-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
-```
-
-or, for upcoming minor release
-
-```xml
-  <dependencies>
-    <dependency>
-      <groupId>redis.clients</groupId>
-      <artifactId>jedis</artifactId>
-      <version>3.8.0-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
-```
-
 
 To use it just:
     
 ```java
-Jedis jedis = new Jedis("localhost");
+Jedis jedis = new Jedis("localhost", 6379);
 jedis.set("foo", "bar");
 String value = jedis.get("foo");
 ```
@@ -120,8 +82,8 @@ Redis cluster [specification](http://redis.io/topics/cluster-spec) is implemente
 
 ```java
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
-//Jedis Cluster will attempt to discover cluster nodes automatically
 jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7379));
+//Jedis Cluster will attempt to discover cluster nodes automatically
 JedisCluster jc = new JedisCluster(jedisClusterNodes);
 jc.set("foo", "bar");
 String value = jc.get("foo");

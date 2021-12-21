@@ -30,8 +30,6 @@ jobs:
     docker:
       - image: cimg/openjdk:8.0
 
-    working_directory: ~/repo
-
     environment:
       JVM_OPTS: -Xmx3200m
       TERM: dumb

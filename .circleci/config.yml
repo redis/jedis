@@ -1,5 +1,7 @@
 version: 2.1
+
 commands:
+
   early_return_for_forked_pull_requests:
     description: >-
       If this build is from a fork, stop executing the current job and return success.
@@ -13,18 +15,20 @@ commands:
               circleci step halt
             fi
 
-executors:
-  linux-8-jdk:
-    docker:
-      - image: cimg/openjdk:8.0
+  abort_for_docs:
+    steps:
+      - run:
+          name: Avoid tests doc docs
+          command: |
+            if [[ $CIRCLE_BRANCH == *docs ]]; then
+              echo "Identified as a document PR, no testing required."
+              circleci step halt
+            fi
 
 jobs:
-  build:
-    parameters:
-      os:
-        type: executor
-
-    executor: << parameters.os >>
+  build-linux-8-jdk:
+    docker:
+      - image: cimg/openjdk:8.0
 
     working_directory: ~/repo
 
@@ -33,6 +37,7 @@ jobs:
       TERM: dumb
 
     steps:
+      - abort_for_docs
       - checkout
 
       # Download and cache dependencies
@@ -55,16 +60,36 @@ jobs:
 
       - run: TEST="" make test
 
-      - early_return_for_forked_pull_requests
-
       - run: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}
 
+      - early_return_for_forked_pull_requests
+
+  build_and_deploy:
+    docker:
+      - image: cimg/openjdk:8.0
+    steps:
       - run: mvn -s .circleci.settings.xml -DskipTests deploy
+
+on-integ-branches: &on-integ-branches
+  filters:
+    branches:
+      only:
+        - master
+        - /^\d+\.\d+.*$/
+
+on-all-branches: &on-all-branches
+  filters:
+    branches:
+      only:
+        - /.*/
 
 workflows:
   all-jdks:
     jobs:
-      - build:
-          matrix:
-            parameters:
-              os: [linux-8-jdk]
+      - build_and_deploy:
+          <<: *on-integ-branches
+          context: common
+          requires:
+            - build-linux-8-jdk
+      - build-linux-8-jdk:
+          <<: *on-all-branches

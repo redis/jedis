@@ -63,7 +63,7 @@ Or use it as a maven dependency:
 To use it just:
     
 ```java
-Jedis jedis = new Jedis("localhost");
+Jedis jedis = new Jedis("localhost", 6379);
 jedis.set("foo", "bar");
 String value = jedis.get("foo");
 ```
@@ -82,8 +82,8 @@ Redis cluster [specification](http://redis.io/topics/cluster-spec) is implemente
 
 ```java
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
-//Jedis Cluster will attempt to discover cluster nodes automatically
 jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7379));
+//Jedis Cluster will attempt to discover cluster nodes automatically
 JedisCluster jc = new JedisCluster(jedisClusterNodes);
 jc.set("foo", "bar");
 String value = jc.get("foo");

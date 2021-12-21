@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -6,18 +6,19 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import org.junit.Test;
 
+import redis.clients.jedis.Module;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class ModuleTest extends JedisCommandsTestBase {
 
   static enum ModuleCommand implements ProtocolCommand {
+
     SIMPLE("testmodule.simple");
 
     private final byte[] raw;
 
-    ModuleCommand(String alt) {
+    private ModuleCommand(String alt) {
       raw = SafeEncoder.encode(alt);
     }
 
@@ -29,19 +30,16 @@ public class ModuleTest extends JedisCommandsTestBase {
 
   @Test
   public void testModules() {
-    String res = jedis.moduleLoad("/tmp/testmodule.so");
-    assertEquals("OK", res);
+    assertEquals("OK", jedis.moduleLoad("/tmp/testmodule.so"));
 
     List<Module> modules = jedis.moduleList();
 
     assertEquals("testmodule", modules.get(0).getName());
 
-    jedis.getClient().sendCommand(ModuleCommand.SIMPLE);
-    Long out = jedis.getClient().getIntegerReply();
-    assertTrue(out > 0);
+    Object output = jedis.sendCommand(ModuleCommand.SIMPLE);
+    assertTrue((Long) output > 0);
 
-    res = jedis.moduleUnload("testmodule");
-    assertEquals("OK", res);
+    assertEquals("OK", jedis.moduleUnload("testmodule"));
+    assertEquals(0, jedis.moduleList().size());
   }
-
 }

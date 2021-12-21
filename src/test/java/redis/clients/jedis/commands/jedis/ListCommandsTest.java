@@ -13,10 +13,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ListPosition;
@@ -27,7 +26,7 @@ import redis.clients.jedis.resps.KeyedListElement;
 
 public class ListCommandsTest extends JedisCommandsTestBase {
 
-  private static final Logger logger = LogManager.getLogger();
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x05 };

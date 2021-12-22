@@ -30,8 +30,6 @@ jobs:
     docker:
       - image: cimg/openjdk:8.0
 
-    working_directory: ~/repo
-
     environment:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
@@ -68,6 +66,11 @@ jobs:
     docker:
       - image: cimg/openjdk:8.0
     steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - jedis-{{ checksum "pom.xml" }}
+      - run: mvn dependency:go-offline
       - run: mvn -s .circleci.settings.xml -DskipTests deploy
 
 on-integ-branches: &on-integ-branches
@@ -88,7 +91,8 @@ workflows:
     jobs:
       - build_and_deploy:
           <<: *on-integ-branches
-          context: common
+          context:
+            - common
           requires:
             - build-linux-8-jdk
       - build-linux-8-jdk:

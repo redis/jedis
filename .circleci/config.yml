@@ -90,8 +90,7 @@ workflows:
   all-jdks:
     jobs:
       - build_and_deploy:
-        # <<: *on-integ-branches
-          <<: *on-all-branches
+          <<: *on-integ-branches
           context:
             - common
           requires:

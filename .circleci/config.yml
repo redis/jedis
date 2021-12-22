@@ -92,7 +92,6 @@ workflows:
       - build_and_deploy:
         # <<: *on-integ-branches
           <<: *on-all-branches
-          context: common
           requires:
             - build-linux-8-jdk
       - build-linux-8-jdk:

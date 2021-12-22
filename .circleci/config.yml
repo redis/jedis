@@ -66,6 +66,11 @@ jobs:
     docker:
       - image: cimg/openjdk:8.0
     steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - jedis-{{ checksum "pom.xml" }}
+      - run: mvn dependency:go-offline
       - run: mvn -s .circleci.settings.xml -DskipTests deploy
 
 on-integ-branches: &on-integ-branches

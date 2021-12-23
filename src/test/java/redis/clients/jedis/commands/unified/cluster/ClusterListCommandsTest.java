@@ -10,8 +10,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -24,7 +24,7 @@ import redis.clients.jedis.commands.unified.ListCommandsTestBase;
 
 public class ClusterListCommandsTest extends ListCommandsTestBase {
 
-  private static final Logger logger = LogManager.getLogger();
+  private final Logger logger = LoggerFactory.getLogger(getClass());
 
   @BeforeClass
   public static void prepare() throws InterruptedException {

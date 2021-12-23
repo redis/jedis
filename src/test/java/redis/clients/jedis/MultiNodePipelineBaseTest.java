@@ -15,7 +15,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.GeoRadiusResponse;
-import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.SafeEncoder;
@@ -32,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
-public class JedisClusterPipelineTest {
+public class MultiNodePipelineBaseTest {
     private static Jedis node1;
     private static Jedis node2;
     private static Jedis node3;

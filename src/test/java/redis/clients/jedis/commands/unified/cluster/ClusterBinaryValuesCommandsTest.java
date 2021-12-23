@@ -3,9 +3,10 @@
 //import org.junit.AfterClass;
 //import org.junit.Before;
 //import org.junit.BeforeClass;
-//import redis.clients.jedis.commands.unified.HashesCommandsTestBase;
+//import org.junit.Ignore;
+//import redis.clients.jedis.commands.unified.BinaryValuesCommandsTestBase;
 //
-//public class ClusterHashesCommandsTest extends HashesCommandsTestBase {
+//public class ClusterBinaryValuesCommandsTest extends BinaryValuesCommandsTestBase {
 //
 //  @BeforeClass
 //  public static void prepare() throws InterruptedException {
@@ -25,5 +26,20 @@
 //  @Before
 //  public void setUp() {
 //    ClusterCommandsTestHelper.clearClusterData();
+//  }
+//
+//  @Ignore
+//  @Override
+//  public void mget() {
+//  }
+//
+//  @Ignore
+//  @Override
+//  public void mset() {
+//  }
+//
+//  @Ignore
+//  @Override
+//  public void msetnx() {
 //  }
 //}

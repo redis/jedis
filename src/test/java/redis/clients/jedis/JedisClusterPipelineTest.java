@@ -515,22 +515,6 @@ public class JedisClusterPipelineTest {
     }
 
     @Test
-    public void clusterPipelineStrAlgo() {
-        ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-        ClusterPipeline p = new ClusterPipeline(provider);
-
-        Response<String> r1 = p.mset("{foo}key1", "ohmytext", "{foo}key2", "mynewtext");
-        Response<LCSMatchResult> r2 = p.strAlgoLCSKeys("{foo}key1", "{foo}key2", new StrAlgoLCSParams());
-        Response<LCSMatchResult> r3 = p.strAlgoLCSStrings("ohmytext", "mynewtext", new StrAlgoLCSParams().len());
-
-        p.sync();
-        Assert.assertEquals("OK", r1.get());
-        Assert.assertEquals("mytext", r2.get().getMatchString());
-        Assert.assertNull(r3.get().getMatchString());
-        Assert.assertEquals(6, r3.get().getLen());
-    }
-
-    @Test
     public void clusterPipelineStream() {
         Map<String, String> hm = new HashMap<>();
         hm.put("one", "one");

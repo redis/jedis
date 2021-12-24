@@ -31,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
-public class MultiNodePipelineBaseTest {
+public class ClusterPipeliningTest {
     private static Jedis node1;
     private static Jedis node2;
     private static Jedis node3;

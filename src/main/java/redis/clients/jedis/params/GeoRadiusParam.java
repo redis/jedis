@@ -2,7 +2,13 @@ package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
 
-import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.Protocol.Keyword.ASC;
+import static redis.clients.jedis.Protocol.Keyword.COUNT;
+import static redis.clients.jedis.Protocol.Keyword.DESC;
+import static redis.clients.jedis.Protocol.Keyword.WITHCOORD;
+import static redis.clients.jedis.Protocol.Keyword.WITHDIST;
+import static redis.clients.jedis.Protocol.Keyword.WITHHASH;
+import static redis.clients.jedis.Protocol.Keyword.ANY;
 
 public class GeoRadiusParam implements IParams {
 

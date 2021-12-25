@@ -169,25 +169,25 @@ public class ClusterPipeliningTest {
         ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
         ClusterPipeline p = new ClusterPipeline(provider);
 
-        Response<Long> r1 = p.lpush("mylist", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
-        Response<Long> r2 = p.rpush("mynewlist{$}", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
-        Response<Long> r3 = p.lpos("mylist", "foo");
-        Response<Long> r4 = p.lpos("mylist", "foo", new LPosParams().maxlen(1));
-        Response<List<Long>> r5 = p.lpos("mylist", "foo", new LPosParams().maxlen(1), 2);
-        Response<String> r6 = p.ltrim("mylist", 2, 3); // ["hello", "hello"]
-        Response<Long> r7 = p.llen("mylist");
-        Response<String> r8 = p.lindex("mylist", -1);
-        Response<String> r9 = p.lset("mylist", 1, "foobar"); // ["hello", "foobar"]
-        Response<Long> r10 = p.lrem("mylist", 1, "hello"); // ["foobar"]
-        Response<List<String>> r11 = p.lrange("mylist",0,10);
-        Response<String> r12 = p.rpop("mynewlist{$}"); // ["hello", "hello", "foo"]
-        Response<List<String>> r13 = p.lpop("mylist", 1); // ["foobar"]
-        Response<List<String>> r14 = p.rpop("mynewlist{$}", 2); // ["hello"]
-        Response<Long> r15 = p.linsert("mynewlist{$}", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
+        Response<Long> r1 = p.lpush("my{list}", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
+        Response<Long> r2 = p.rpush("my{newlist}", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
+        Response<Long> r3 = p.lpos("my{list}", "foo");
+        Response<Long> r4 = p.lpos("my{list}", "foo", new LPosParams().maxlen(1));
+        Response<List<Long>> r5 = p.lpos("my{list}", "foo", new LPosParams().maxlen(1), 2);
+        Response<String> r6 = p.ltrim("my{list}", 2, 3); // ["hello", "hello"]
+        Response<Long> r7 = p.llen("my{list}");
+        Response<String> r8 = p.lindex("my{list}", -1);
+        Response<String> r9 = p.lset("my{list}", 1, "foobar"); // ["hello", "foobar"]
+        Response<Long> r10 = p.lrem("my{list}", 1, "hello"); // ["foobar"]
+        Response<List<String>> r11 = p.lrange("my{list}",0,10);
+        Response<String> r12 = p.rpop("my{newlist}"); // ["hello", "hello", "foo"]
+        Response<List<String>> r13 = p.lpop("my{list}", 1); // ["foobar"]
+        Response<List<String>> r14 = p.rpop("my{newlist}", 2); // ["hello"]
+        Response<Long> r15 = p.linsert("my{newlist}", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
         Response<Long> r16 = p.lpushx("myotherlist{$}", "foo", "bar");
         Response<Long> r17 = p.rpushx("myotherlist{$}", "foo", "bar");
-        Response<String> r18 = p.rpoplpush("mynewlist{$}", "myotherlist{$}");
-        Response<String> r19 = p.lmove("mynewlist{$}", "myotherlist{$}", ListDirection.LEFT, ListDirection.RIGHT);
+        Response<String> r18 = p.rpoplpush("my{newlist}", "myotherlist{$}");
+        Response<String> r19 = p.lmove("my{newlist}", "myotherlist{$}", ListDirection.LEFT, ListDirection.RIGHT);
 
         p.sync();
         Assert.assertEquals(Long.valueOf(4), r1.get());
@@ -230,25 +230,25 @@ public class ClusterPipeliningTest {
         ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
         ClusterPipeline p = new ClusterPipeline(provider);
 
-        Response<Long> r1 = p.sadd("myset{|}", "hello", "hello", "world", "foo", "bar");
-        p.sadd("mynewset{|}", "hello", "hello", "world");
-        Response<Set<String>> r2 = p.sdiff("myset{|}", "mynewset{|}");
-        Response<Long> r3 = p.sdiffstore("diffset{|}","myset{|}", "mynewset{|}");
-        Response<Set<String>> r4 = p.smembers("diffset{|}");
-        Response<Set<String>> r5 = p.sinter("myset{|}", "mynewset{|}");
-        Response<Long> r6 = p.sinterstore("interset{|}","myset{|}", "mynewset{|}");
-        Response<Set<String>> r7 = p.smembers("interset{|}");
-        Response<Set<String>> r8 = p.sunion("myset{|}", "mynewset{|}");
-        Response<Long> r9 = p.sunionstore("unionset{|}","myset{|}", "mynewset{|}");
-        Response<Set<String>> r10 = p.smembers("unionset{|}");
-        Response<Boolean> r11 = p.sismember("myset{|}", "foo");
-        Response<List<Boolean>> r12 = p.smismember("myset{|}", "foo", "foobar");
-        Response<Long> r13 = p.srem("myset{|}", "foo");
-        Response<Set<String>> r14 = p.spop("myset{|}", 1);
-        Response<Long> r15 = p.scard("myset{|}");
-        Response<String> r16 = p.srandmember("myset{|}");
-        Response<List<String>> r17 = p.srandmember("myset{|}", 2);
-        Response<Long> r18 = p.smove("myset{|}", "mynewset{|}", "hello");
+        Response<Long> r1 = p.sadd("my{set}", "hello", "hello", "world", "foo", "bar");
+        p.sadd("mynew{set}", "hello", "hello", "world");
+        Response<Set<String>> r2 = p.sdiff("my{set}", "mynew{set}");
+        Response<Long> r3 = p.sdiffstore("diffset{set}","my{set}", "mynew{set}");
+        Response<Set<String>> r4 = p.smembers("diffset{set}");
+        Response<Set<String>> r5 = p.sinter("my{set}", "mynew{set}");
+        Response<Long> r6 = p.sinterstore("interset{set}","my{set}", "mynew{set}");
+        Response<Set<String>> r7 = p.smembers("interset{set}");
+        Response<Set<String>> r8 = p.sunion("my{set}", "mynew{set}");
+        Response<Long> r9 = p.sunionstore("unionset{set}","my{set}", "mynew{set}");
+        Response<Set<String>> r10 = p.smembers("unionset{set}");
+        Response<Boolean> r11 = p.sismember("my{set}", "foo");
+        Response<List<Boolean>> r12 = p.smismember("my{set}", "foo", "foobar");
+        Response<Long> r13 = p.srem("my{set}", "foo");
+        Response<Set<String>> r14 = p.spop("my{set}", 1);
+        Response<Long> r15 = p.scard("my{set}");
+        Response<String> r16 = p.srandmember("my{set}");
+        Response<List<String>> r17 = p.srandmember("my{set}", 2);
+        Response<Long> r18 = p.smove("my{set}", "mynew{set}", "hello");
 
         p.sync();
         Assert.assertEquals(Long.valueOf(4), r1.get());
@@ -268,7 +268,7 @@ public class ClusterPipeliningTest {
         Assert.assertEquals(Long.valueOf(2), r15.get());
         Assert.assertTrue(union.contains(r16.get()));
         Assert.assertTrue(union.containsAll(r17.get()));
-        Assert.assertEquals(Long.valueOf(1), r18.get());
+        Assert.assertEquals(Long.valueOf(0), r18.get());
     }
 
     @Test
@@ -481,21 +481,21 @@ public class ClusterPipeliningTest {
         ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
         ClusterPipeline p = new ClusterPipeline(provider);
 
-        Response<String> r1 = p.set("mykey{^}", "foobar"); // foobar = 66 6f 6f 62 61 72
-        p.set("myotherkey", "foo");
-        Response<String> r2 = p.substr("mykey{^}", 0,2);
-        Response<Long> r3 = p.strlen("mykey{^}");
-        Response<Long> r4 = p.bitcount("myotherkey");
-        Response<Long> r5 = p.bitcount("myotherkey", 1,1);
-        Response<Long> r6 = p.bitpos("mykey{^}", true);
-        Response<Long> r7 = p.bitpos("mykey{^}", false, new BitPosParams(1, 2));
+        Response<String> r1 = p.set("{mykey}", "foobar"); // foobar = 66 6f 6f 62 61 72
+        p.set("my{otherkey}", "foo");
+        Response<String> r2 = p.substr("{mykey}", 0,2);
+        Response<Long> r3 = p.strlen("{mykey}");
+        Response<Long> r4 = p.bitcount("my{otherkey}");
+        Response<Long> r5 = p.bitcount("my{otherkey}", 1,1);
+        Response<Long> r6 = p.bitpos("{mykey}", true);
+        Response<Long> r7 = p.bitpos("{mykey}", false, new BitPosParams(1, 2));
         Response<List<Long>> r8 = p.bitfield("mynewkey","INCRBY", "i5", "100", "1", "GET", "u4", "0");
         Response<List<Long>> r9 = p.bitfieldReadonly("hello", "GET", "i8", "17");
-        p.set("myotherkey{^}", "abcdef");
-        Response<Long> r10 = p.bitop(BitOP.AND, "dest{^}", "mykey{^}", "myotherkey{^}");
-        Response<String> r11 = p.get("dest{^}");
-        Response<Boolean> r12 = p.setbit("myotherkey", 7, true);
-        Response<Boolean> r13 = p.getbit("myotherkey", 7);
+        p.set("myother{mykey}", "abcdef");
+        Response<Long> r10 = p.bitop(BitOP.AND, "dest{mykey}", "{mykey}", "myotherkey{mykey}");
+        Response<String> r11 = p.get("dest{mykey}");
+        Response<Boolean> r12 = p.setbit("my{otherkey}", 7, true);
+        Response<Boolean> r13 = p.getbit("my{otherkey}", 7);
 
         p.sync();
         Assert.assertEquals("OK", r1.get());

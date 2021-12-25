@@ -184,10 +184,10 @@ public class ClusterPipeliningTest {
         Response<List<String>> r13 = p.lpop("my{list}", 1); // ["foobar"]
         Response<List<String>> r14 = p.rpop("my{newlist}", 2); // ["hello"]
         Response<Long> r15 = p.linsert("my{newlist}", ListPosition.AFTER, "hello", "world"); // ["hello", "world"]
-        Response<Long> r16 = p.lpushx("myotherlist{$}", "foo", "bar");
-        Response<Long> r17 = p.rpushx("myotherlist{$}", "foo", "bar");
-        Response<String> r18 = p.rpoplpush("my{newlist}", "myotherlist{$}");
-        Response<String> r19 = p.lmove("my{newlist}", "myotherlist{$}", ListDirection.LEFT, ListDirection.RIGHT);
+        Response<Long> r16 = p.lpushx("myother{newlist}", "foo", "bar");
+        Response<Long> r17 = p.rpushx("myother{newlist}", "foo", "bar");
+        Response<String> r18 = p.rpoplpush("my{newlist}", "myother{newlist}");
+        Response<String> r19 = p.lmove("my{newlist}", "myother{newlist}", ListDirection.LEFT, ListDirection.RIGHT);
 
         p.sync();
         Assert.assertEquals(Long.valueOf(4), r1.get());
@@ -268,7 +268,7 @@ public class ClusterPipeliningTest {
         Assert.assertEquals(Long.valueOf(2), r15.get());
         Assert.assertTrue(union.contains(r16.get()));
         Assert.assertTrue(union.containsAll(r17.get()));
-        Assert.assertEquals(Long.valueOf(0), r18.get());
+        Assert.assertEquals(Long.valueOf(1), r18.get());
     }
 
     @Test
@@ -489,10 +489,10 @@ public class ClusterPipeliningTest {
         Response<Long> r5 = p.bitcount("my{otherkey}", 1,1);
         Response<Long> r6 = p.bitpos("{mykey}", true);
         Response<Long> r7 = p.bitpos("{mykey}", false, new BitPosParams(1, 2));
-        Response<List<Long>> r8 = p.bitfield("mynewkey","INCRBY", "i5", "100", "1", "GET", "u4", "0");
+        Response<List<Long>> r8 = p.bitfield("mynew{key}","INCRBY", "i5", "100", "1", "GET", "u4", "0");
         Response<List<Long>> r9 = p.bitfieldReadonly("hello", "GET", "i8", "17");
         p.set("myother{mykey}", "abcdef");
-        Response<Long> r10 = p.bitop(BitOP.AND, "dest{mykey}", "{mykey}", "myotherkey{mykey}");
+        Response<Long> r10 = p.bitop(BitOP.AND, "dest{mykey}", "{mykey}", "myother{mykey}");
         Response<String> r11 = p.get("dest{mykey}");
         Response<Boolean> r12 = p.setbit("my{otherkey}", 7, true);
         Response<Boolean> r13 = p.getbit("my{otherkey}", 7);

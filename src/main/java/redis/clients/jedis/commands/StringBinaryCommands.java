@@ -63,6 +63,10 @@ public interface StringBinaryCommands {
 
   long bitcount(byte[] key, long start, long end);
 
+  long bitcountByte(byte[] key, long start, long end);
+
+  long bitcountBit(byte[] key, long start, long end);
+
   long bitpos(byte[] key, boolean value);
 
   long bitpos(byte[] key, boolean value, BitPosParams params);

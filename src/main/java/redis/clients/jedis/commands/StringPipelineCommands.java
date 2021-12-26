@@ -64,6 +64,10 @@ public interface StringPipelineCommands {
 
   Response<Long> bitcount(String key, long start, long end);
 
+  Response<Long> bitcountByte(byte[] key, long start, long end);
+
+  Response<Long> bitcountBit(byte[] key, long start, long end);
+
   Response<Long> bitpos(String key, boolean value);
 
   Response<Long> bitpos(String key, boolean value, BitPosParams params);

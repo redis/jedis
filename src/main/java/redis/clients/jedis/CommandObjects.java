@@ -516,6 +516,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> bitcountByte(byte[] key, long start, long end) {
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(BYTE), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> bitcountBit(byte[] key, long start, long end) {
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(BIT), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> bitpos(String key, boolean value) {
     return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0), BuilderFactory.LONG);
   }

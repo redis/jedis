@@ -3706,6 +3706,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long bitcountByte(final byte[] key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitcountByte(key, start, end));
+  }
+
+  @Override
+  public long bitcountBit(final byte[] key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitcountBit(key, start, end));
+  }
+
+  @Override
   public long bitop(final BitOP op, final byte[] destKey, final byte[]... srcKeys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));

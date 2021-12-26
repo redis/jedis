@@ -454,6 +454,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Long> bitcountByte(final byte[] key, final long start, final long end) {
+    return appendCommand(commandObjects.bitcountByte(key, start, end));
+  }
+
+  @Override
+  public Response<Long> bitcountBit(final byte[] key, final long start, final long end) {
+    return appendCommand(commandObjects.bitcountBit(key, start, end));
+  }
+
+  @Override
   public Response<Long> bitpos(String key, boolean value) {
     return appendCommand(commandObjects.bitpos(key, value));
   }

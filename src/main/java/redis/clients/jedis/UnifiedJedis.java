@@ -730,6 +730,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long bitcountByte(final byte[] key, final long start, final long end) {
+    return executeCommand(commandObjects.bitcountByte(key, start, end));
+  }
+
+  @Override
+  public long bitcountBit(final byte[] key, final long start, final long end) {
+    return executeCommand(commandObjects.bitcountBit(key, start, end));
+  }
+
+  @Override
   public long bitpos(String key, boolean value) {
     return executeCommand(commandObjects.bitpos(key, value));
   }

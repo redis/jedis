@@ -6,14 +6,12 @@ import static redis.clients.jedis.json.Path.ROOT_PATH;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 

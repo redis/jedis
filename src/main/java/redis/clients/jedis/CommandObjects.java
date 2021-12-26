@@ -517,7 +517,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> bitcount(byte[] key, long start, long end, BitCountOption option) {
-    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(option.getRaw()), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(option), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> bitpos(String key, boolean value) {

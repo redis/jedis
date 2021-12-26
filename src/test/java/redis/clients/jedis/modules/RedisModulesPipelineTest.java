@@ -1,5 +1,6 @@
 package redis.clients.jedis.modules;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
@@ -17,6 +18,11 @@ import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
+    @BeforeClass
+    public static void prepare() {
+        RedisModuleCommandsTestBase.prepare();
+    }
+
     @Test
     public void search() {
         Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).build());

@@ -520,26 +520,4 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertEquals(Long.valueOf(3), client.jsonStrLen("str"));
     assertEquals(Long.valueOf(3), client.jsonStrLen("str", ROOT_PATH));
   }
-
-  @Test
-  public void pipeline() {
-    Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).build());
-    jedis.flushAll();
-
-    Map<String, String> hm = new HashMap<>();
-    hm.put("hello", "world");
-    hm.put("oh", "snap");
-
-    Pipeline p = jedis.pipelined();
-    Response<String> string = p.jsonSet("foo", Path.ROOT_PATH, hm);
-    Response<Object> object = p.jsonGet("foo");
-    Response<Long> longResponse = p.jsonDel("foo");
-    Response<Set<String>> keys = p.keys("*");
-    p.sync();
-
-    assertEquals("OK", string.get());
-    assertEquals(hm, object.get());
-    assertEquals(Long.valueOf(1), longResponse.get());
-    assertEquals(0, keys.get().size());
-  }
 }

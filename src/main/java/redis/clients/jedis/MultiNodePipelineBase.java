@@ -401,13 +401,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> bitcountByte(final byte[] key, final long start, final long end) {
-    return appendCommand(commandObjects.bitcountByte(key, start, end));
-  }
-
-  @Override
-  public Response<Long> bitcountBit(final byte[] key, final long start, final long end) {
-    return appendCommand(commandObjects.bitcountBit(key, start, end));
+  public Response<Long> bitcount(final byte[] key, final long start, final long end, BitCountOption option) {
+    return appendCommand(commandObjects.bitcount(key, start, end, option));
   }
 
   @Override

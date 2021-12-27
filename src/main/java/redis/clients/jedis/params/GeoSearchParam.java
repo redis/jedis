@@ -61,9 +61,9 @@ public class GeoSearchParam implements IParams {
   }
 
 
-  public GeoSearchParam byRadius(double r, GeoUnit unit){
+  public GeoSearchParam byRadius(double radius, GeoUnit unit){
     this.byRadius = true;
-    this.radius = r;
+    this.radius = radius;
     this.unit = unit;
     return this;
   }
@@ -103,18 +103,18 @@ public class GeoSearchParam implements IParams {
 
   public GeoSearchParam count(int count) {
     if (count > 0) {
-        this.count = count;
+      this.count = count;
     }
     return this;
   }
 
   public GeoSearchParam count(int count, boolean any) {
     if (count > 0) {
-        this.count = count;
+      this.count = count;
 
-        if (any) {
-            this.any = true;
-        }
+      if (any) {
+        this.any = true;
+      }
     }
     return this;
   }
@@ -122,45 +122,45 @@ public class GeoSearchParam implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (this.fromMember) {
-        args.add(FROMMEMBER);
-        args.add(this.member);
+      args.add(FROMMEMBER);
+      args.add(this.member);
     } else if (this.fromLonLat) {
-        args.add(FROMLONLAT);
-        args.add(coord.getLongitude());
-        args.add(coord.getLatitude());
+      args.add(FROMLONLAT);
+      args.add(coord.getLongitude());
+      args.add(coord.getLatitude());
     }
 
     if (this.byRadius) {
-        args.add(BYRADIUS);
-        args.add(this.radius);
+      args.add(BYRADIUS);
+      args.add(this.radius);
     } else if (this.byBox) {
-        args.add(BYBOX);
-        args.add(this.width);
-        args.add(this.height);
+      args.add(BYBOX);
+      args.add(this.width);
+      args.add(this.height);
     }
     args.add(this.unit);
 
     if (withCoord) {
-        args.add(WITHCOORD);
+      args.add(WITHCOORD);
     }
     if (withDist) {
-        args.add(WITHDIST);
+      args.add(WITHDIST);
     }
     if (withHash) {
-        args.add(WITHHASH);
+      args.add(WITHHASH);
     }
 
     if (count != null) {
-        args.add(COUNT).add(count);
-        if (any) {
-            args.add(ANY);
-        }
+      args.add(COUNT).add(count);
+      if (any) {
+        args.add(ANY);
+      }
     }
 
     if (asc) {
-        args.add(ASC);
+      args.add(ASC);
     } else if (desc) {
-        args.add(DESC);
+      args.add(DESC);
     }
   }
 }

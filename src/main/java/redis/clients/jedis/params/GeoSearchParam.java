@@ -1,8 +1,5 @@
 package redis.clients.jedis.params;
 
-import redis.clients.jedis.GeoCoordinate;
-import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.args.GeoUnit;
 import static redis.clients.jedis.Protocol.Keyword.ANY;
 import static redis.clients.jedis.Protocol.Keyword.ASC;
 import static redis.clients.jedis.Protocol.Keyword.BYBOX;
@@ -15,6 +12,9 @@ import static redis.clients.jedis.Protocol.Keyword.WITHHASH;
 import static redis.clients.jedis.Protocol.Keyword.FROMMEMBER;
 import static redis.clients.jedis.Protocol.Keyword.FROMLONLAT;
 
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.args.GeoUnit;
 
 public class GeoSearchParam implements IParams {
     private boolean frommember = false;

@@ -2328,7 +2328,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
@@ -2338,7 +2338,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
@@ -2348,7 +2348,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
@@ -2358,7 +2358,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
@@ -2368,7 +2368,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
@@ -2378,7 +2378,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
@@ -2388,12 +2388,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override

@@ -2304,7 +2304,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
@@ -2324,7 +2324,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
   }
 
   @Override
@@ -2334,12 +2334,12 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
   }
 
   @Override

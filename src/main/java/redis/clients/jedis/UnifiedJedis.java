@@ -2230,6 +2230,61 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit) {
+    return executeCommand(commandObjects.geosearch(key, member, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return executeCommand(commandObjects.geosearch(key, coord, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit) {
+    return executeCommand(commandObjects.geosearch(key, member, width, height, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return executeCommand(commandObjects.geosearch(key, coord, width, height, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, GeoSearchParam params) {
+    return executeCommand(commandObjects.geosearch(key, params));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, String member, double radius, GeoUnit unit) {
+    return executeCommand(commandObjects.geosearchStore(dest, src, member, radius, unit));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return executeCommand(commandObjects.geosearchStore(dest, src, coord, radius, unit));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit) {
+    return executeCommand(commandObjects.geosearchStore(dest, src, member, width, height, unit));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return executeCommand(commandObjects.geosearchStore(dest, src, coord, width, height, unit));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, GeoSearchParam params) {
+    return executeCommand(commandObjects.geosearchStore(dest, src, params));
+  }
+
+  @Override
+  public long geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
+    return executeCommand(commandObjects.geosearchStoreStoreDist(dest, src, params));
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit));
   }

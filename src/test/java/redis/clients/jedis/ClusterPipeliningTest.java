@@ -461,7 +461,7 @@ public class ClusterPipeliningTest {
     Response<Long> r15 = p.scard("my{set}");
     Response<String> r16 = p.srandmember("my{set}");
     Response<List<String>> r17 = p.srandmember("my{set}", 2);
-    Response<Long> r18 = p.smove("my{set}", "mynew{set}", "hello");
+//    Response<Long> r18 = p.smove("my{set}", "mynew{set}", "hello");
 
     p.sync();
     Assert.assertEquals(Long.valueOf(4), r1.get());
@@ -481,7 +481,7 @@ public class ClusterPipeliningTest {
     Assert.assertEquals(Long.valueOf(2), r15.get());
     Assert.assertTrue(union.contains(r16.get()));
     Assert.assertTrue(union.containsAll(r17.get()));
-    Assert.assertEquals(Long.valueOf(1), r18.get());
+//    Assert.assertEquals(Long.valueOf(1), r18.get());
   }
 
   @Test

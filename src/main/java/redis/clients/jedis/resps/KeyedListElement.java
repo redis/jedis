@@ -30,7 +30,7 @@ public class KeyedListElement {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof KeyedZSetElement)) return false;
+    if (!(o instanceof KeyedListElement)) return false;
 
     KeyedListElement other = (KeyedListElement) o;
     return key.equals(other.key) && element.equals(other.element);

@@ -485,7 +485,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
 
     // using Params
     members = jedis.geosearch("barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M)
-            .fromLonLat(2.191d,41.433d).descending());
+            .fromLonLat(2.191d,41.433d).sortDescending());
     assertEquals(2, members.size());
     assertEquals("place2", members.get(0).getMemberByString());
 
@@ -494,7 +494,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     assertEquals(3, members.size());
 
     // using Params
-    members = jedis.geosearch("barcelona", new GeoSearchParam().frommember("place1")
+    members = jedis.geosearch("barcelona", new GeoSearchParam().fromMember("place1")
             .byRadius(100, GeoUnit.KM).withDist().withCoord().withHash().count(2));
 
     assertEquals(2, members.size());
@@ -509,7 +509,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     assertEquals(3, members.size());
 
     // using Params
-    members = jedis.geosearch("barcelona", new GeoSearchParam().frommember("place3")
+    members = jedis.geosearch("barcelona", new GeoSearchParam().fromMember("place3")
             .byBox(100, 100, GeoUnit.KM).count(1, true));
     assertEquals(1, members.size());
 
@@ -539,14 +539,14 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     // without byradius and without bybox
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .frommember("foobar"));
+              .fromMember("foobar"));
       fail();
     } catch (java.lang.IllegalArgumentException ignored) { }
 
     // combine frommember and fromlonlat
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .frommember("foobar").fromLonLat(10,10));
+              .fromMember("foobar").fromLonLat(10,10));
       fail();
     } catch (java.lang.IllegalArgumentException ignored) { }
 

@@ -16,7 +16,6 @@ import static redis.clients.jedis.Protocol.Keyword.FROMMEMBER;
 import static redis.clients.jedis.Protocol.Keyword.FROMLONLAT;
 
 
-
 public class GeoSearchParam implements IParams {
     private boolean frommember = false;
     private boolean fromlonlat = false;
@@ -43,33 +42,33 @@ public class GeoSearchParam implements IParams {
 
     public static GeoSearchParam geoSearchParam() { return new GeoSearchParam(); }
 
-    public GeoSearchParam frommember(String member) {
+    public GeoSearchParam fromMember(String member) {
         this.frommember = true;
         this.member = member;
         return this;
     }
 
-    public GeoSearchParam fromlonlat(double longitude, double latitude) {
+    public GeoSearchParam fromLonLat(double longitude, double latitude) {
         this.fromlonlat = true;
         this.lonlat = new GeoCoordinate(longitude, latitude);
         return this;
     }
 
-    public GeoSearchParam fromlonlat(GeoCoordinate coord) {
+    public GeoSearchParam fromLonLat(GeoCoordinate coord) {
         this.fromlonlat = true;
         this.lonlat = coord;
         return this;
     }
 
 
-    public GeoSearchParam byradius(double r, GeoUnit unit){
+    public GeoSearchParam byRadius(double r, GeoUnit unit){
         this.byradius = true;
         this.radius = r;
         this.unit = unit;
         return this;
     }
 
-    public GeoSearchParam bybox(double width, double height, GeoUnit unit){
+    public GeoSearchParam byBox(double width, double height, GeoUnit unit){
         this.bybox = true;
         this.width = width;
         this.height = height;

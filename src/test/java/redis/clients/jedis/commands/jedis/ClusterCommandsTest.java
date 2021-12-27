@@ -6,11 +6,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -184,6 +182,27 @@ public class ClusterCommandsTest {
         assertTrue(slotInfo.get(2) instanceof List);
       }
     }
+  }
+
+  @Test
+  public void clusterLinks() throws InterruptedException {
+    List<Map<String, Object>> links = node1.clusterLinks();
+    Assert.assertNotNull(links);
+    Assert.assertEquals(0, links.size());
+    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+    // wait cluster meet success
+    Thread.sleep(300);
+    links = node1.clusterLinks();
+    Assert.assertNotNull(links);
+    Assert.assertEquals(2, links.size());
+    Assert.assertEquals(6, links.get(0).size());
+    Assert.assertEquals(6, links.get(1).size());
+    Assert.assertTrue(links.get(0).containsKey("direction"));
+    Assert.assertTrue(links.get(0).containsKey("node"));
+    Assert.assertTrue(links.get(0).containsKey("create-time"));
+    Assert.assertTrue(links.get(0).containsKey("events"));
+    Assert.assertTrue(links.get(0).containsKey("send-buffer-allocated"));
+    Assert.assertTrue(links.get(0).containsKey("send-buffer-used"));
   }
 
 }

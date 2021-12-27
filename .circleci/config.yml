@@ -60,8 +60,6 @@ jobs:
 
       - run: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}
 
-      - early_return_for_forked_pull_requests
-
   build_and_deploy:
     docker:
       - image: cimg/openjdk:8.0

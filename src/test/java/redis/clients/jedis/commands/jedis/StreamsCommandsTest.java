@@ -189,6 +189,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     List<StreamEntry> range2 = jedis.xrange("xrange-stream", (StreamEntryID) null,
       (StreamEntryID) null, 3);
     assertEquals(2, range2.size());
+    assertEquals(range2.get(0).toString(), id1 + " " + map);
 
     List<StreamEntry> range3 = jedis.xrange("xrange-stream", id1, null, 2);
     assertEquals(2, range3.size());
@@ -466,6 +467,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(id1, pendingRange.get(0).getID());
     assertEquals(1, pendingRange.get(0).getDeliveredTimes());
     assertEquals("xpendeing-consumer", pendingRange.get(0).getConsumerName());
+    assertTrue(pendingRange.get(0).toString().contains("xpendeing-consumer"));
 
     // Without consumer
     pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group", new XPendingParams().count(3));

@@ -60,6 +60,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
 
 //    assertEquals(7, jedis.slowlogLen());
     assertTrue(jedis.slowlogLen() > 5 && jedis.slowlogLen() < 12);
+    assertTrue(jedis.slowlogGet().toString().contains("SLOWLOG"));
   }
 
   @Test

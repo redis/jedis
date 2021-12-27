@@ -7,7 +7,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import redis.clients.jedis.GeoCoordinate;
 
-public class RespsTest {
+public class ResponsesToStringTest {
 
     @Test
     public void KeyedListElementTest() {
@@ -44,25 +44,6 @@ public class RespsTest {
 
         // test hashCode
         assertEquals(elem.hashCode(), elem_copy.hashCode());
-    }
-
-    @Test
-    public void TupleTest() {
-        // test equals
-        Tuple tuple = new Tuple("key-name", 1d);
-        Tuple tuple_copy = new Tuple("key-name", 1d);
-        assertEquals(tuple, tuple);
-        assertEquals(tuple, tuple_copy);
-        assertNotEquals(tuple, new Object());
-
-        // test toString
-        String toStringResult = tuple.toString();
-        assertThat(toStringResult, CoreMatchers.containsString("key-name"));
-        assertThat(toStringResult, CoreMatchers.containsString("1"));
-
-        // test getElement
-//        tuple = new Tuple((String) null, 1d);
-//        assertNull(tuple.getElement());
     }
 
     @Test

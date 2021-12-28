@@ -164,10 +164,10 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
 
     // sort
     members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-        .asc());
+        .desc());
     assertEquals(2, members.size());
-    assertEquals("Catania", members.get(0).getMemberByString());
-    assertEquals("Palermo", members.get(1).getMemberByString());
+    assertEquals("Catania", members.get(1).getMemberByString());
+    assertEquals("Palermo", members.get(0).getMemberByString());
 
     // sort, count 1
     members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
@@ -193,7 +193,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
 
     // sort, count 1, any
     members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()
-            .asc().count(1, true));
+            .desc().count(1, true));
     assertEquals(1, members.size());
     response = members.get(0);
     assertTrue(coordinateMap.containsKey(response.getMemberByString()));

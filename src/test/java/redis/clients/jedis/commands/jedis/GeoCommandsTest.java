@@ -528,7 +528,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void geosearch_negative() {
+  public void geosearchNegative() {
     // combine byradius and bybox
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()

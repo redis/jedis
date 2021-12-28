@@ -48,7 +48,7 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinel() {
-    Sentinel j = new Sentinel(sentinel);
+    Jedis j = new Jedis(sentinel);
 
     try {
       List<Map<String, String>> masters = j.sentinelMasters();
@@ -79,8 +79,8 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinelFailover() throws InterruptedException {
-    Sentinel j = new Sentinel(sentinelForFailover);
-    Sentinel j2 = new Sentinel(sentinelForFailover);
+    Jedis j = new Jedis(sentinelForFailover);
+    Jedis j2 = new Jedis(sentinelForFailover);
 
     try {
       List<String> masterHostAndPort = j.sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
@@ -102,7 +102,7 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinelMonitor() {
-    Sentinel j = new Sentinel(sentinel);
+    Jedis j = new Jedis(sentinel);
 
     try {
       // monitor new master
@@ -123,7 +123,7 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinelRemove() {
-    Sentinel j = new Sentinel(sentinel);
+    Jedis j = new Jedis(sentinel);
 
     try {
       ensureMonitored(sentinel, REMOVE_MASTER_NAME, MASTER_IP, master.getPort(), 1);
@@ -146,7 +146,7 @@ public class JedisSentinelTest {
 
   @Test
   public void sentinelSet() {
-    Sentinel j = new Sentinel(sentinel);
+    Jedis j = new Jedis(sentinel);
 
     try {
       Map<String, String> parameterMap = new HashMap<String, String>();
@@ -173,7 +173,7 @@ public class JedisSentinelTest {
 
   private void ensureMonitored(HostAndPort sentinel, String masterName, String ip, int port,
       int quorum) {
-    Sentinel j = new Sentinel(sentinel);
+    Jedis j = new Jedis(sentinel);
     try {
       j.sentinelMonitor(masterName, ip, port, quorum);
     } catch (JedisDataException e) {
@@ -183,7 +183,7 @@ public class JedisSentinelTest {
   }
 
   private void ensureRemoved(String masterName) {
-    Sentinel j = new Sentinel(sentinel);
+    Jedis j = new Jedis(sentinel);
     try {
       j.sentinelRemove(masterName);
     } catch (JedisDataException e) {

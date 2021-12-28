@@ -7,11 +7,12 @@ import static redis.clients.jedis.Protocol.Keyword.NOMKSTREAM;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class XAddParams implements IParams {
 
-  private String id;
+  private StreamEntryID id = StreamEntryID.NEW_ENTRY;
 
   private Long maxLen;
 
@@ -34,9 +35,13 @@ public class XAddParams implements IParams {
     return this;
   }
 
-  public XAddParams id(String id) {
+  public XAddParams id(StreamEntryID id) {
     this.id = id;
     return this;
+  }
+
+  public XAddParams id(byte[] id) {
+    return id(new StreamEntryID(id));
   }
 
   public XAddParams maxLen(long maxLen) {
@@ -96,10 +101,6 @@ public class XAddParams implements IParams {
       args.add(Protocol.toByteArray(limit));
     }
 
-    if (id != null) {
-      args.add(SafeEncoder.encode(id));
-    } else {
-      args.add(Protocol.BYTES_ASTERISK);
-    }
+    args.add(SafeEncoder.encode(id.toString()));
   }
 }

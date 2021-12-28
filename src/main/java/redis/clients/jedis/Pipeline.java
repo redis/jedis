@@ -2760,7 +2760,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path2 path, Object object) {
+  public Response<String> jsonSet(String key, Path2 path, Object object) { // * //
     return appendCommand(commandObjects.jsonSet(key, path, object));
   }
 
@@ -2770,27 +2770,27 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path path, Object object) {
+  public Response<String> jsonSet(String key, Path path, Object object) { // * //
     return appendCommand(commandObjects.jsonSet(key, path, object));
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path2 path, Object object, JsonSetParams params) {
+  public Response<String> jsonSet(String key, Path2 path, Object object, JsonSetParams params) { // * //
     return appendCommand(commandObjects.jsonSet(key, path, object, params));
   }
 
   @Override
-  public Response<String> jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params) {
+  public Response<String> jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params) { // * //
     return appendCommand(commandObjects.jsonSetWithEscape(key, path, object, params));
   }
 
   @Override
-  public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
+  public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) { // * //
     return appendCommand(commandObjects.jsonSet(key, path, object, params));
   }
 
   @Override
-  public Response<Object> jsonGet(String key) {
+  public Response<Object> jsonGet(String key) {  // * //
     return appendCommand(commandObjects.jsonGet(key));
   }
 
@@ -2825,7 +2825,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonDel(String key) {
+  public Response<Long> jsonDel(String key) { // * //
     return appendCommand(commandObjects.jsonDel(key));
   }
 
@@ -2835,12 +2835,12 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonDel(String key, Path path) {
+  public Response<Long> jsonDel(String key, Path path) { // * //
     return appendCommand(commandObjects.jsonDel(key, path));
   }
 
   @Override
-  public Response<Long> jsonClear(String key) {
+  public Response<Long> jsonClear(String key) { // * //
     return appendCommand(commandObjects.jsonClear(key));
   }
 
@@ -2850,7 +2850,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonClear(String key, Path path) {
+  public Response<Long> jsonClear(String key, Path path) { // * //
     return appendCommand(commandObjects.jsonClear(key, path));
   }
 
@@ -2860,12 +2860,12 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<String> jsonToggle(String key, Path path) {
+  public Response<String> jsonToggle(String key, Path path) { // * //
     return appendCommand(commandObjects.jsonToggle(key, path));
   }
 
   @Override
-  public Response<Class<?>> jsonType(String key) {
+  public Response<Class<?>> jsonType(String key) { // * //
     return appendCommand(commandObjects.jsonType(key));
   }
 
@@ -2875,42 +2875,42 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Class<?>> jsonType(String key, Path path) {
+  public Response<Class<?>> jsonType(String key, Path path) { // * //
     return appendCommand(commandObjects.jsonType(key, path));
   }
 
   @Override
-  public Response<Long> jsonStrAppend(String key, Object string) {
+  public Response<Long> jsonStrAppend(String key, Object string) { // * //
     return appendCommand(commandObjects.jsonStrAppend(key, string));
   }
 
   @Override
-  public Response<List<Long>> jsonStrAppend(String key, Path2 path, Object string) {
+  public Response<List<Long>> jsonStrAppend(String key, Path2 path, Object string) { // * //
     return appendCommand(commandObjects.jsonStrAppend(key, path, string));
   }
 
   @Override
-  public Response<Long> jsonStrAppend(String key, Path path, Object string) {
+  public Response<Long> jsonStrAppend(String key, Path path, Object string) { // * //
     return appendCommand(commandObjects.jsonStrAppend(key, path, string));
   }
 
   @Override
-  public Response<Long> jsonStrLen(String key) {
+  public Response<Long> jsonStrLen(String key) { // * //
     return appendCommand(commandObjects.jsonStrLen(key));
   }
 
   @Override
-  public Response<List<Long>> jsonStrLen(String key, Path2 path) {
+  public Response<List<Long>> jsonStrLen(String key, Path2 path) { // * //
     return appendCommand(commandObjects.jsonStrLen(key, path));
   }
 
   @Override
-  public Response<Long> jsonStrLen(String key, Path path) {
+  public Response<Long> jsonStrLen(String key, Path path) { // * //
     return appendCommand(commandObjects.jsonStrLen(key, path));
   }
 
   @Override
-  public Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) {
+  public Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) { // * //
     return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
   }
 
@@ -2920,7 +2920,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonArrAppend(String key, Path path, Object... objects) {
+  public Response<Long> jsonArrAppend(String key, Path path, Object... objects) { // * //
     return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
   }
 
@@ -2935,7 +2935,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonArrIndex(String key, Path path, Object scalar) {
+  public Response<Long> jsonArrIndex(String key, Path path, Object scalar) { // * //
     return appendCommand(commandObjects.jsonArrIndex(key, path, scalar));
   }
 
@@ -2950,7 +2950,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonArrInsert(String key, Path path, int index, Object... pojos) {
+  public Response<Long> jsonArrInsert(String key, Path path, int index, Object... pojos) { // * //
     return appendCommand(commandObjects.jsonArrInsert(key, path, index, pojos));
   }
 
@@ -2960,7 +2960,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonArrLen(String key, Path path) {
+  public Response<Long> jsonArrLen(String key, Path path) { // * //
     return appendCommand(commandObjects.jsonArrLen(key, path));
   }
 
@@ -2970,7 +2970,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonArrTrim(String key, Path path, int start, int stop) {
+  public Response<Long> jsonArrTrim(String key, Path path, int start, int stop) { // * //
     return appendCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
 
@@ -3015,7 +3015,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Object> jsonArrPop(String key, Path path) {
+  public Response<Object> jsonArrPop(String key, Path path) { // * //
     return appendCommand(commandObjects.jsonArrPop(key, path));
   }
 

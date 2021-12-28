@@ -178,7 +178,7 @@ public class ClusterCommandsTest {
     assertEquals(0, links.size());
     node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
     // wait cluster meet success
-    Thread.sleep(300);
+    Thread.sleep(1000L); // flaky, so increasing time
     links = node1.clusterLinks();
     assertNotNull(links);
     assertEquals(2, links.size());

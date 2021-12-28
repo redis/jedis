@@ -8128,6 +8128,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<Map<String, Object>> clusterLinks() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.LINKS);
+    return connection.getObjectMultiBulkReply().stream()
+            .map(BuilderFactory.ENCODED_OBJECT_MAP::build).collect(Collectors.toList());
+  }
+
+  @Override
   public String asking() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ASKING);

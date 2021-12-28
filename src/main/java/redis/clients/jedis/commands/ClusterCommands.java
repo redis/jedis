@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import java.util.Map;
+
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.args.ClusterFailoverOption;
 
@@ -71,4 +73,13 @@ public interface ClusterCommands {
   String clusterReset(ClusterResetType resetType);
 
   String clusterMyId();
+
+  /**
+   * return the information of all such peer links as an array, where each array element is a map that contains
+   * attributes and their values for an individual link.
+   *
+   * @return the information of all such peer links as an array
+   * @see <a href="https://redis.io/commands/cluster-links" >CLUSTET LINKS</a>
+   */
+  List<Map<String, Object>> clusterLinks();
 }

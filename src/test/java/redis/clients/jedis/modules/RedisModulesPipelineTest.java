@@ -1,7 +1,6 @@
 package redis.clients.jedis.modules;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import java.util.HashMap;
@@ -30,6 +29,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
   @Test
   public void search() {
     Schema sc = new Schema().addTextField("title", 1.0).addTextField("body", 1.0);
+    String index = "testindex";
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -38,19 +38,33 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Connection c = createConnection();
     Pipeline p = new Pipeline(c);
 
-    Response<String> string = p.ftCreate("testindex", IndexOptions.defaultOptions(), sc);
+    Response<String> create = p.ftCreate(index, IndexOptions.defaultOptions(), sc);
+    Response<String> alter = p.ftAlter(index, new Schema.TagField("tags", ","));
+    //Response<String> alter_sc = p.ftAlter(index, sc);
     for (int i = 0; i < 100; i++) {
       p.hset(String.format("doc%d", i), toStringMap(fields));
     }
-    Response<SearchResult> searchResultResponse = p.ftSearch("testindex", new Query("hello world").limit(0, 5).setWithScores());
+    Response<SearchResult> searchResultResponse = p.ftSearch(index,
+        new Query("hello world").limit(0, 5).setWithScores());
     Response<Long> delResponse = p.del("doc0");
-    Response<SearchResult> searchResultResponse2 = p.ftSearch("testindex", new Query("hello world"));
-    Response<String> dropIndexResponse = p.ftDropIndex("testindex");
+    Response<SearchResult> searchResultResponse2 = p.ftSearch(index, new Query("hello world"));
+    Response<String> explain = p.ftExplain(index, new Query("@title:title_val"));
+    Response<Map<String, Object>> info = p.ftInfo(index);
+    Response<String> aliasAdd = p.ftAliasAdd("ALIAS1", index);
+    Response<String> aliasUpdate = p.ftAliasUpdate("ALIAS2", index);
+    Response<String> aliasDel = p.ftAliasDel("ALIAS2");
+    Response<String> configSet = p.ftConfigSet("timeout", "100");
+    Response<Map<String, String>> configGet = p.ftConfigGet("*");
+    Response<String> configSetIndex = p.ftConfigSet(index, "timeout", "100");
+    Response<Map<String, String>> configGetIndex = p.ftConfigGet(index, "*");
+    Response<String> dropIndexResponse = p.ftDropIndex(index);
 
     p.sync();
     c.close();
 
-    assertEquals("OK", string.get());
+    assertEquals("OK", create.get());
+    assertEquals("OK", alter.get());
+    //assertEquals("OK", alter_sc.get());
     assertEquals(100, searchResultResponse.get().getTotalResults());
     assertEquals(5, searchResultResponse.get().getDocuments().size());
     for (Document d : searchResultResponse.get().getDocuments()) {
@@ -59,6 +73,15 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     }
     assertEquals(Long.valueOf(1), delResponse.get());
     assertEquals(99, searchResultResponse2.get().getTotalResults());
+    assertNotNull(explain.get());
+    assertEquals(index, info.get().get("index_name"));
+    assertEquals("OK", aliasAdd.get());
+    assertEquals("OK", aliasUpdate.get());
+    assertEquals("OK", aliasDel.get());
+    assertEquals("OK", configSet.get());
+    assertEquals("100", configGet.get().get("TIMEOUT"));
+    assertEquals("OK", configSetIndex.get());
+    assertEquals("100", configGetIndex.get().get("TIMEOUT"));
     assertEquals("OK", dropIndexResponse.get());
   }
 

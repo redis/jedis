@@ -5,9 +5,11 @@ import static org.junit.Assert.assertTrue;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONArray;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -76,9 +78,10 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
     Response<String> string1 = p.jsonSet("foo", Path.ROOT_PATH, hm1);
     Response<Object> object = p.jsonGet("foo");
+    Response<List<JSONArray>> mget = p.jsonMGet("foo");
     Response<Long> strLenPath = p.jsonStrLen("foo", new Path("hello"));
     Response<Long> strAppPath = p.jsonStrAppend("foo", new Path("hello"), "!");
-    Response<Long> delPah = p.jsonDel("foo", new Path("hello"));
+    Response<Long> delPath = p.jsonDel("foo", new Path("hello"));
     Response<Long> delKey = p.jsonDel("foo");
     Response<Set<String>> keys = p.keys("*");
     Response<String> string2 = p.jsonSet("foo", Path.ROOT_PATH, hm2, new JsonSetParams().nx());
@@ -91,6 +94,8 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<String> toggle = p.jsonToggle("foo", new Path("boolean"));
     Response<Class<?>> type = p.jsonType("foo", new Path("boolean"));
     Response<Class<?>> keyType = p.jsonType("foo");
+    Response<Long> clearPath = p.jsonClear("foo", new Path("boolean"));
+    Response<Long> clearKey = p.jsonClear("foo");
     Response<String> string3 = p.jsonSet("foo", Path.ROOT_PATH, "newStr");
     Response<Long> strLen = p.jsonStrLen("foo");
     Response<Long> strApp = p.jsonStrAppend("foo", "?");
@@ -100,9 +105,10 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
     assertEquals("OK", string1.get());
     assertEquals(hm1, object.get());
+    assertEquals(1, mget.get().size());
     assertEquals(Long.valueOf(5), strLenPath.get());
     assertEquals(Long.valueOf(6), strAppPath.get());
-    assertEquals(Long.valueOf(1), delPah.get());
+    assertEquals(Long.valueOf(1), delPath.get());
     assertEquals(Long.valueOf(1), delKey.get());
     assertEquals(0, keys.get().size());
     assertEquals("OK", string2.get());
@@ -115,6 +121,8 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals("false", toggle.get());
     assertEquals(boolean.class, type.get());
     assertEquals(Object.class, keyType.get());
+    assertEquals(Long.valueOf(0), clearPath.get());
+    assertEquals(Long.valueOf(1), clearKey.get());
     assertEquals("OK", string3.get());
     assertEquals(Long.valueOf(6), strLen.get());
     assertEquals(Long.valueOf(7), strApp.get());

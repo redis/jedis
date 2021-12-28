@@ -3706,7 +3706,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long bitcount(final byte[] key, final long start, final long end, BitCountOption option) {
+  public long bitcount(final byte[] key, final long start, final long end, final BitCountOption option) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitcount(key, start, end, option));
   }
@@ -7485,6 +7485,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long bitcount(final String key, final long start, final long end) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitcount(key, start, end));
+  }
+
+  @Override
+  public long bitcount(final String key, final long start, final long end, final BitCountOption option) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitcount(key, start, end, option));
   }
 
   @Override

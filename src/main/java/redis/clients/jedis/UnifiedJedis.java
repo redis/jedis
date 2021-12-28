@@ -21,10 +21,7 @@ import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.providers.ClusterConnectionProvider;
-import redis.clients.jedis.providers.ConnectionProvider;
-import redis.clients.jedis.providers.PooledConnectionProvider;
-import redis.clients.jedis.providers.ShardedConnectionProvider;
+import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Query;
@@ -730,7 +727,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long bitcount(final byte[] key, final long start, final long end, BitCountOption option) {
+  public long bitcount(String key, long start, long end, BitCountOption option) {
     return executeCommand(commandObjects.bitcount(key, start, end, option));
   }
 
@@ -752,6 +749,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long bitcount(byte[] key, long start, long end) {
     return executeCommand(commandObjects.bitcount(key, start, end));
+  }
+
+  @Override
+  public long bitcount(byte[] key, long start, long end, BitCountOption option) {
+    return executeCommand(commandObjects.bitcount(key, start, end, option));
   }
 
   @Override

@@ -154,7 +154,11 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L));
+
+    assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L, BitCountOption.BYTE));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L, BitCountOption.BYTE));
+
+    assertEquals(0, (long) jedis.bitcount("foo", 2L, 5L, BitCountOption.BIT));
     assertEquals(0, (long) jedis.bitcount("foo".getBytes(), 2L, 5L, BitCountOption.BIT));
   }
 

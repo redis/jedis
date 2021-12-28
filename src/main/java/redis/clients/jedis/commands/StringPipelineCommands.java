@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
@@ -63,6 +64,8 @@ public interface StringPipelineCommands {
   Response<Long> bitcount(String key);
 
   Response<Long> bitcount(String key, long start, long end);
+
+  Response<Long> bitcount(byte[] key, long start, long end, BitCountOption option);
 
   Response<Long> bitpos(String key, boolean value);
 

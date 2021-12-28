@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
@@ -153,6 +154,8 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(3, (long) jedis.bitcount("foo", 2L, 5L));
     assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L));
+    assertEquals(3, (long) jedis.bitcount("foo".getBytes(), 2L, 5L, BitCountOption.BYTE));
+    assertEquals(0, (long) jedis.bitcount("foo".getBytes(), 2L, 5L, BitCountOption.BIT));
   }
 
   @Test

@@ -412,6 +412,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<Long> bitcount(final byte[] key, final long start, final long end, BitCountOption option) {
+    return appendCommand(commandObjects.bitcount(key, start, end, option));
+  }
+
+  @Override
   public Response<Long> bitpos(String key, boolean value) {
     return appendCommand(commandObjects.bitpos(key, value));
   }

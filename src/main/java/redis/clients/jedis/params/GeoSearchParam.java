@@ -91,12 +91,12 @@ public class GeoSearchParam implements IParams {
     return this;
   }
 
-  public GeoSearchParam sortAscending() {
+  public GeoSearchParam asc() {
     asc = true;
     return this;
   }
 
-  public GeoSearchParam sortDescending() {
+  public GeoSearchParam desc() {
     desc = true;
     return this;
   }

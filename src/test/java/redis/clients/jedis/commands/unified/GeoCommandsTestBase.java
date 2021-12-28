@@ -481,7 +481,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     // using Params
     members = jedis.geosearch("barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M)
-            .fromLonLat(2.191d,41.433d).sortDescending());
+            .fromLonLat(2.191d,41.433d).desc());
     assertEquals(2, members.size());
     assertEquals("place2", members.get(0).getMemberByString());
 
@@ -506,7 +506,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     // using Params
     members = jedis.geosearch("barcelona", new GeoSearchParam().fromMember("place3")
-            .byBox(100, 100, GeoUnit.KM).sortAscending().count(1, true));
+            .byBox(100, 100, GeoUnit.KM).asc().count(1, true));
     assertEquals(1, members.size());
 
     // FROMLONLAT and BYBOX

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -64,23 +65,7 @@ public class ClusterCommandsTest {
   }
 
   @Test
-  public void testClusterSoftReset2() {
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-    assertTrue(node1.clusterNodes().split("\n").length > 1);
-    node1.clusterReset(ClusterResetType.SOFT);
-    assertEquals(1, node1.clusterNodes().split("\n").length);
-  }
-
-  @Test
   public void testClusterHardReset() {
-    String nodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
-    node1.clusterReset(ClusterResetType.HARD);
-    String newNodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
-    assertNotEquals(nodeId, newNodeId);
-  }
-
-  @Test
-  public void testClusterHardReset2() {
     String nodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
     node1.clusterReset(ClusterResetType.HARD);
     String newNodeId = JedisClusterTestUtil.getNodeId(node1.clusterNodes());
@@ -184,6 +169,28 @@ public class ClusterCommandsTest {
         assertTrue(slotInfo.get(2) instanceof List);
       }
     }
+  }
+
+  @Test
+  public void clusterLinks() throws InterruptedException {
+    List<Map<String, Object>> links = node1.clusterLinks();
+    assertNotNull(links);
+    assertEquals(0, links.size());
+    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+    // wait cluster meet success
+    Thread.sleep(300);
+    links = node1.clusterLinks();
+    assertNotNull(links);
+//    assertEquals(2, links.size()); // flaky
+    assertTrue(links.size() >= 2);
+    assertEquals(6, links.get(0).size());
+    assertEquals(6, links.get(1).size());
+    assertTrue(links.get(0).containsKey("direction"));
+    assertTrue(links.get(0).containsKey("node"));
+    assertTrue(links.get(0).containsKey("create-time"));
+    assertTrue(links.get(0).containsKey("events"));
+    assertTrue(links.get(0).containsKey("send-buffer-allocated"));
+    assertTrue(links.get(0).containsKey("send-buffer-used"));
   }
 
 }

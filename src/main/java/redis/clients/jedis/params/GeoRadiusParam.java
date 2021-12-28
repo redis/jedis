@@ -18,8 +18,7 @@ public class GeoRadiusParam implements IParams {
 
   private Integer count = null;
   private boolean any = false;
-  private boolean asc = false;
-  private boolean desc = false;
+  private boolean asc = true;
 
   public GeoRadiusParam() {
   }
@@ -43,13 +42,13 @@ public class GeoRadiusParam implements IParams {
     return this;
   }
 
-  public GeoRadiusParam sortAscending() {
+  public GeoRadiusParam asc() {
     asc = true;
     return this;
   }
 
-  public GeoRadiusParam sortDescending() {
-    desc = true;
+  public GeoRadiusParam desc() {
+    asc = false;
     return this;
   }
 
@@ -93,7 +92,7 @@ public class GeoRadiusParam implements IParams {
 
     if (asc) {
       args.add(ASC);
-    } else if (desc) {
+    } else {
       args.add(DESC);
     }
   }

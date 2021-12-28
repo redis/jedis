@@ -1,3 +1,5 @@
+# Jedis
+
 [![Release](https://img.shields.io/github/release/redis/jedis.svg?sort=semver)](https://github.com/redis/jedis/releases/latest)
 [![Maven Central](https://img.shields.io/maven-central/v/redis.clients/jedis.svg)](https://search.maven.org/artifact/redis.clients/jedis)
 [![Javadocs](https://www.javadoc.io/badge/redis.clients/jedis.svg)](https://www.javadoc.io/doc/redis.clients/jedis)
@@ -7,50 +9,13 @@
 [![codecov](https://codecov.io/gh/redis/jedis/branch/master/graph/badge.svg?token=pAstxAAjYo)](https://codecov.io/gh/redis/jedis)
 [![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/qRhBuY8Z)
 
-# Jedis
+## What is Jedis?
 
-Jedis is a blazingly small and sane [Redis](http://github.com/antirez/redis "Redis") java client.
+Jedis is a Java client for [Redis](https://github.com/redis/redis "Redis") designed for performance and ease of use.
 
-Jedis was conceived to be EASY to use.
+## Getting started
 
-Jedis is fully compatible with redis 2.8.x, 3.x.x and above*.
-
-## Community
-
-Meet us on IRC: ##jedis on freenode.net
-
-Join the mailing-list at [http://groups.google.com/group/jedis_redis](http://groups.google.com/group/jedis_redis)
-
-## So what can I do with Jedis?
-All of the following redis features are supported:
-
-- Sorting
-- Connection handling
-- Commands operating on any kind of values
-- Commands operating on string values
-- Commands operating on hashes
-- Commands operating on lists
-- Commands operating on sets
-- Commands operating on sorted sets
-- Commands operating on streams
-- Transactions
-- Pipelining
-- Publish/Subscribe
-- Persistence control commands
-- Remote server control commands
-- Connection pooling
-- Sharding (MD5, MurmurHash)
-- Key-tags for sharding
-- Sharding with pipelining
-- Scripting with pipelining
-- Redis Cluster
-
-## How do I use it?
-
-You can download the latest build at: 
-    http://github.com/redis/jedis/releases
-
-Or use it as a maven dependency:
+To get started with Jedis, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
 
 ```xml
 <dependency>
@@ -60,86 +25,88 @@ Or use it as a maven dependency:
 </dependency>
 ```
 
-To use it just:
-    
+Next, you'll need to connect to Redis. For many applications, it's best to use a connection pool. You can instantiate a Jedis connection pool like so:
+
 ```java
-Jedis jedis = new Jedis("localhost", 6379);
-jedis.set("foo", "bar");
-String value = jedis.get("foo");
+JedisPool pool = new JedisPool("localhost", 6379);
 ```
 
-For more usage examples check the tests.
+Once you have a `JedisPool` instance, you can use a [try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html) block to get a connection and run Redis commands.
 
-Please check the [wiki](http://github.com/redis/jedis/wiki "wiki"). There are lots of cool things you should know, including information about connection pooling.
+Here's how to run a single [SET](https://redis.io/commands/set) command within a *try-with-resources* block:
 
-Latest release javadocs can be found here: https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html
+```java
+try (Jedis jedis = pool.getResource()) {
+  jedis.set("clientName", "Jedis");
+}
+```
 
-And you are done!
+`Jedis` instances implement most Redis commands. See the [Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/redis/clients/jedis/Jedis.html) for a complete list of supported commands.
 
-## Jedis Cluster
+### Easier way of using connection pool
 
-Redis cluster [specification](http://redis.io/topics/cluster-spec) is implemented
+Using a *try-with-resources* block for each command may be cumbursome, so you may consider using JedisPooled.
+
+```java
+JedisPooled jedis = new JedisPooled("localhost", 6379);
+```
+
+Now you can send commands like sending from Jedis.
+
+```java
+jedis.sadd("planets", "Venus");
+```
+
+## Connecting to a Redis cluster
+
+Jedis lets you connect to Redis Clusters, supporting the [Redis Cluster Specification](https://redis.io/topics/cluster-spec). To do this, you'll need to connect using `JedisCluster`. See the example below:
 
 ```java
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
 jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7379));
-//Jedis Cluster will attempt to discover cluster nodes automatically
-JedisCluster jc = new JedisCluster(jedisClusterNodes);
-jc.set("foo", "bar");
-String value = jc.get("foo");
+jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7380));
+JedisCluster jedis = new JedisCluster(jedisClusterNodes);
 ```
 
-## FAQ
+Now you can use the `JedisCluster` instance and send commands like you would with a standard pooled connection:
 
-- Do you have strange stack traces?
-- You're getting errors when running jedis in multi-threaded environments?
-- Do you need further instructions about pipelining, transactions or sentinel?
+```java
+jedis.sadd("planets", "Mars");
+```
 
-Please check the [WIKI](https://github.com/redis/jedis/wiki) for more useful information.
+## Using Redis modules
 
+Jedis provides support for some of the [Redis modules](https://redis.io/modules), most notably [RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
 
-## I want to contribute!
+See the [RedisJSON Jedis Quick Start](docs/redisjson.md) for details.
 
-That is great!
+## Documentation
 
-Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) on project's root directory for follow up how to contribute to Jedis project.
+The [Jedis wiki](http://github.com/redis/jedis/wiki) contains several useful articles for using Jedis.
 
-Thanks for helping!
+You can also check the [latest Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html).
+
+## Troubleshooting
+
+If you run into trouble or have any questions, we're here to help!
+
+Hit us up on the [Redis Discord Server](http://discord.gg/redis) or [open an issue on GitHub](https://github.com/redis/jedis).
+
+You can also find help on the [Jedis mailing list](http://groups.google.com/group/jedis_redis) or the [GitHub Discussions](https://github.com/redis/jedis/discussions).
+
+## Contributing
+
+We'd love your contributions!
+
+**Bug reports** are always welcome! [You can open a bug report on GitHub](https://github.com/redis/jedis/issues/new).
+
+You can also **contribute documentation** -- or anything to improve Jedis. Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) for more details.
+
+## License
+
+Jedis is licensed under the [MIT license](https://github.com/redis/jedis/blob/master/LICENSE.txt).
+
 
 ## Sponsorship
 
 [![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.com/)
-
----
-
-![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
-
-YourKit supports open source projects with its full-featured Java Profiler.
-YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 
-and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp),
-innovative and intelligent tools for profiling Java and .NET applications.
-
-## License
-
-Copyright (c) 2011 Jonathan Leibiusky
-
-Permission is hereby granted, free of charge, to any person
-obtaining a copy of this software and associated documentation
-files (the "Software"), to deal in the Software without
-restriction, including without limitation the rights to use,
-copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the
-Software is furnished to do so, subject to the following
-conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
-OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
-HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.

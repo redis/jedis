@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.Protocol.Command.INCR;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.SET;
+import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ public class TransactionV2Test {
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] ba = { 0x0A };
   final byte[] bb = { 0x0B };
+  final byte[] bc = { 0x0C };
 
   final byte[] bmykey = { 0x42, 0x02, 0x03, 0x04 };
 
@@ -275,4 +277,100 @@ public class TransactionV2Test {
     assertEquals("bar", r.get());
     assertEquals("1", SafeEncoder.encode((byte[]) x.get()));
   }
+
+  @Test
+  public void zrevrangebyscore() {
+    nj.zadd("foo", 1.0d, "a");
+    nj.zadd("foo", 2.0d, "b");
+    nj.zadd("foo", 3.0d, "c");
+    nj.zadd("foo", 4.0d, "d");
+    nj.zadd("foo", 5.0d, "e");
+
+    Transaction t = new Transaction(conn);
+    Response<List<String>> range = t.zrevrangeByScore("foo", 3d, Double.NEGATIVE_INFINITY, 0, 1);
+    t.exec();
+    List<String> expected = new ArrayList<String>();
+    expected.add("c");
+
+    assertEquals(expected, range.get());
+
+    t = new Transaction(conn);
+    range = t.zrevrangeByScore("foo", 3.5d, Double.NEGATIVE_INFINITY, 0, 2);
+    t.exec();
+    expected = new ArrayList<String>();
+    expected.add("c");
+    expected.add("b");
+
+    assertEquals(expected, range.get());
+
+    t = new Transaction(conn);
+    range = t.zrevrangeByScore("foo", 3.5d, Double.NEGATIVE_INFINITY, 1, 1);
+    t.exec();
+    expected = new ArrayList<String>();
+    expected.add("b");
+
+    assertEquals(expected, range.get());
+
+    t = new Transaction(conn);
+    range = t.zrevrangeByScore("foo", 4d, 2d);
+    t.exec();
+    expected = new ArrayList<String>();
+    expected.add("d");
+    expected.add("c");
+    expected.add("b");
+
+    assertEquals(expected, range.get());
+
+    t = new Transaction(conn);
+    range = t.zrevrangeByScore("foo", "+inf", "(4");
+    t.exec();
+    expected = new ArrayList<String>();
+    expected.add("e");
+
+    assertEquals(expected, range.get());
+
+    // Binary
+    nj.zadd(bfoo, 1d, ba);
+    nj.zadd(bfoo, 10d, bb);
+    nj.zadd(bfoo, 0.1d, bc);
+    nj.zadd(bfoo, 2d, ba);
+
+    t = new Transaction(conn);
+    Response<List<byte[]>> brange = t.zrevrangeByScore(bfoo, 2d, 0d);
+    t.exec();
+
+    List<byte[]> bexpected = new ArrayList<byte[]>();
+    bexpected.add(ba);
+    bexpected.add(bc);
+
+    assertByteArrayListEquals(bexpected, brange.get());
+
+    t = new Transaction(conn);
+    brange = t.zrevrangeByScore(bfoo, 2d, 0d, 0, 1);
+    t.exec();
+
+    bexpected = new ArrayList<byte[]>();
+    bexpected.add(ba);
+
+    assertByteArrayListEquals(bexpected, brange.get());
+
+    t = new Transaction(conn);
+    Response<List<byte[]>> brange2 = t.zrevrangeByScore(bfoo, SafeEncoder.encode("+inf"),
+        SafeEncoder.encode("(2"));
+    t.exec();
+
+    bexpected = new ArrayList<byte[]>();
+    bexpected.add(bb);
+
+    assertByteArrayListEquals(bexpected, brange2.get());
+
+    t = new Transaction(conn);
+    brange = t.zrevrangeByScore(bfoo, 2d, 0d, 1, 1);
+    t.exec();
+    bexpected = new ArrayList<byte[]>();
+    bexpected.add(bc);
+
+    assertByteArrayListEquals(bexpected, brange.get());
+  }
+
 }

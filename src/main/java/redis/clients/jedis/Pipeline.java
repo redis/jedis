@@ -22,6 +22,8 @@ import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Query;
 import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.aggr.AggregationBuilder;
+import redis.clients.jedis.search.aggr.AggregationResult;
 
 public class Pipeline extends Queable  implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
@@ -407,6 +409,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<Long> bitcount(String key, long start, long end) {
     return appendCommand(commandObjects.bitcount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> bitcount(String key, long start, long end, BitCountOption option) {
+    return appendCommand(commandObjects.bitcount(key, start, end, option));
   }
 
   @Override
@@ -2728,6 +2735,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<Long> bitcount(byte[] key, long start, long end, BitCountOption option) {
+    return appendCommand(commandObjects.bitcount(key, start, end, option));
+  }
+
+  @Override
   public Response<Long> bitpos(byte[] key, boolean value) {
     return appendCommand(commandObjects.bitpos(key, value));
   }
@@ -3023,6 +3035,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<String> ftAlter(String indexName, Schema schema) {
+    return appendCommand(commandObjects.ftAlter(indexName, schema));
+  }
+
+  @Override
   public Response<SearchResult> ftSearch(String indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3030,6 +3047,91 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<String> ftExplain(String indexName, Query query) {
+    return appendCommand(commandObjects.ftExplain(indexName, query));
+  }
+
+  @Override
+  public Response<List<String>> ftExplainCLI(String indexName, Query query) {
+    return appendCommand(commandObjects.ftExplainCLI(indexName, query));
+  }
+
+  @Override
+  public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
+    return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
+    return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
+  }
+
+  @Override
+  public Response<String> ftCursorDel(String indexName, long cursorId) {
+    return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
+  }
+
+  @Override
+  public Response<String> ftDropIndex(String indexName) {
+    return appendCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public Response<String> ftDropIndexDD(String indexName) {
+    return appendCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
+  public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+    return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
+  }
+
+  @Override
+  public Response<Map<String, List<String>>> ftSynDump(String indexName) {
+    return appendCommand(commandObjects.ftSynDump(indexName));
+  }
+
+  @Override
+  public Response<Map<String, Object>> ftInfo(String indexName) {
+    return appendCommand(commandObjects.ftInfo(indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasAdd(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasDel(String aliasName) {
+    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public Response<Map<String, String>> ftConfigGet(String option) {
+    return appendCommand(commandObjects.ftConfigGet(option));
+  }
+
+  @Override
+  public Response<Map<String, String>> ftConfigGet(String indexName, String option) {
+    return appendCommand(commandObjects.ftConfigGet(indexName, option));
+  }
+
+  @Override
+  public Response<String> ftConfigSet(String option, String value) {
+    return appendCommand(commandObjects.ftConfigSet(option, value));
+  }
+
+  @Override
+  public Response<String> ftConfigSet(String indexName, String option, String value) {
+    return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
 
   public Response<Long> waitReplicas(int replicas, long timeout) {

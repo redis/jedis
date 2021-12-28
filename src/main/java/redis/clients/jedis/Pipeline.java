@@ -412,7 +412,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> bitcount(final byte[] key, final long start, final long end, BitCountOption option) {
+  public Response<Long> bitcount(String key, long start, long end, BitCountOption option) {
     return appendCommand(commandObjects.bitcount(key, start, end, option));
   }
 
@@ -2732,6 +2732,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<Long> bitcount(byte[] key, long start, long end) {
     return appendCommand(commandObjects.bitcount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> bitcount(byte[] key, long start, long end, BitCountOption option) {
+    return appendCommand(commandObjects.bitcount(key, start, end, option));
   }
 
   @Override

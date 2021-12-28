@@ -3,16 +3,17 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 
 public enum BitCountOption implements Rawable {
-    BYTE, BIT;
 
-    private final byte[] raw;
+  BYTE, BIT;
 
-    private BitCountOption() {
-        raw = SafeEncoder.encode(name());
-    }
+  private final byte[] raw;
 
-    @Override
-    public byte[] getRaw() {
-        return raw;
-    }
+  private BitCountOption() {
+    raw = SafeEncoder.encode(name());
+  }
+
+  @Override
+  public byte[] getRaw() {
+    return raw;
+  }
 }

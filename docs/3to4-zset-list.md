@@ -1,4 +1,4 @@
-### The following sorted set methods now return a Java `List` instead of a `Set`:
+## Each of the following sorted set methods now return a Java `List` instead of a `Set`:
 
 - zrange(byte[] key, long start, long stop)
 - zrange(String key, long start, long stop)

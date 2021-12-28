@@ -3,9 +3,8 @@
 Jedis supports [RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
 
 The latest versions of RedisJSON let you store, manipulate, index, and query JSON.
- To 
-use these features with Jedis, you'll need to use the `UnifiedJedis` interface. 
-See the [RedisJSON Jedis Quick Start](docs/redisjson.md) for details.
+To use these features with Jedis, you'll need to use the `UnifiedJedis` interface
+or a sub-class of it.
 
 Let's see how this works.
 
@@ -14,16 +13,14 @@ Let's see how this works.
 First, let's create a `UnifiedJedis` instance:
 
 ```java
-  HostAndPort config = new HostAndPort(Protocol.DEFAULT_HOST, 6479);
-  PooledJedisConnectionProvider provider = new PooledJedisConnectionProvider(config);
-  UnifiedJedis client = new UnifiedJedis(provider);
+UnifiedJedis client = new JedisPooled(Protocol.DEFAULT_HOST, 6479);
 ```
 Now we can start working with JSON. For these examples, we'll be using [GSON]
 (https://github.com/google/gson) to handle the serialization of POJOs to JSON.
 
 ## Creating JSON documents
 
-Suppose we're building an online learning platform, and we want to represent 
+Suppose we're building an online learning platform, and we want to represent
 students. Let's create a POJO to represent our students:
 
 ```java
@@ -58,12 +55,12 @@ client.jsonSet("student:112", oliwia);
 
 ## Querying and indexing JSON
 
-If we want to be able to query this JSON, we'll need to create an index. Let's 
-create an index on the "firstName" and "lastName" fields. 
+If we want to be able to query this JSON, we'll need to create an index. Let's
+create an index on the "firstName" and "lastName" fields.
 
 1. We define which fields to index ("firstName" and "lastName").
-2. We set up the index definition to recognize JSON and include only those 
-documents 
+2. We set up the index definition to recognize JSON and include only those
+documents
 whose key starts with "student:".
 3. Then we actually create the index, called "student-index", by calling `ftCreate
 ()`.
@@ -78,7 +75,7 @@ client.ftCreate("student-index",
             schema);
 ```
 
-With an index now defined, we can query our JSON. Let's find all students whose 
+With an index now defined, we can query our JSON. Let's find all students whose
 name begins with "maya":
 
 ```java
@@ -87,7 +84,7 @@ SearchResult mayaSearch = client.ftSearch("student-index", q);
 ```
 
 We can then iterate over our search results:
-    
+
 ```java
 List<Document> docs = mayaSearch.getDocuments();
 for (Document doc : docs) {
@@ -95,4 +92,4 @@ for (Document doc : docs) {
 }
 ```
 
-This example just scratches the surface. You can atomically manipulate JSON documents and query them in a variety of ways. See the [RedisJSON docs](https://oss.redis.com/redisjson/), the [RediSearch](https://oss.redis.com/redisearch/) docs, and our course, ["Querying, Indexing, and Full-text Search in Redis"](https://university.redis.com/courses/ru203/), for a lot more examples. 
+This example just scratches the surface. You can atomically manipulate JSON documents and query them in a variety of ways. See the [RedisJSON docs](https://oss.redis.com/redisjson/), the [RediSearch](https://oss.redis.com/redisearch/) docs, and our course, ["Querying, Indexing, and Full-text Search in Redis"](https://university.redis.com/courses/ru203/), for a lot more examples.

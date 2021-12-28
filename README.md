@@ -11,7 +11,7 @@
 
 ## What is Jedis?
 
-Jedis is a Java client for [Redis](http://github.com/antirez/redis "Redis") designed for performance and ease of use.
+Jedis is a Java client for [Redis](https://github.com/redis/redis "Redis") designed for performance and ease of use.
 
 ## Getting started
 
@@ -33,8 +33,7 @@ JedisPool pool = new JedisPool("localhost", 6379);
 
 Once you have a `JedisPool` instance, you can use a [try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html) block to get a connection and run Redis commands.
 
-Here's how to run a single [SET](https://redis.io/commands/set) command within a
-*try-with-resources* block:
+Here's how to run a single [SET](https://redis.io/commands/set) command within a *try-with-resources* block:
 
 ```java
 try (Jedis jedis = pool.getResource()) {
@@ -44,20 +43,28 @@ try (Jedis jedis = pool.getResource()) {
 
 `Jedis` instances implement most Redis commands. See the [Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/redis/clients/jedis/Jedis.html) for a complete list of supported commands.
 
-## Using RedisJSON and Redis modules
+### Easier way of using connection pool
 
-Jedis provides support for some of the [Redis modules](https://redis.io/modules), most notably [RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+Using a *try-with-resources* block for each command may be cumbursome, so you may consider using JedisPooled.
 
-See the [RedisJSON Jedis Quick Start](docs/redisjson.md) for details.
+```java
+JedisPooled jedis = new JedisPooled("localhost", 6379);
+```
+
+Now you can send commands like sending from Jedis.
+
+```java
+jedis.sadd("planets", "Venus");
+```
 
 ## Connecting to a Redis cluster
 
-Jedis lets you connect to Redis Clusters, supporting the [Redis Cluster Spec](http://redis.io/topics/cluster-spec). To do this, you'll need to connect using `JedisCluster`. See the example below:
+Jedis lets you connect to Redis Clusters, supporting the [Redis Cluster Specification](https://redis.io/topics/cluster-spec). To do this, you'll need to connect using `JedisCluster`. See the example below:
 
 ```java
 Set<HostAndPort> jedisClusterNodes = new HashSet<HostAndPort>();
 jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7379));
-jedisClusterNodes.add(new HostAndPort("127.0.0.1", 8379));
+jedisClusterNodes.add(new HostAndPort("127.0.0.1", 7380));
 JedisCluster jedis = new JedisCluster(jedisClusterNodes);
 ```
 
@@ -66,6 +73,12 @@ Now you can use the `JedisCluster` instance and send commands like you would wit
 ```java
 jedis.sadd("planets", "Mars");
 ```
+
+## Using Redis modules
+
+Jedis provides support for some of the [Redis modules](https://redis.io/modules), most notably [RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+
+See the [RedisJSON Jedis Quick Start](docs/redisjson.md) for details.
 
 ## Documentation
 
@@ -77,9 +90,9 @@ You can also check the [latest Jedis Javadocs](https://www.javadoc.io/doc/redis.
 
 If you run into trouble or have any questions, we're here to help!
 
-Hit us up on the [Redis Discord Server](http://discord.gg/redis) or [open an issue on GitHub](https://github.com/redis/jedis)
+Hit us up on the [Redis Discord Server](http://discord.gg/redis) or [open an issue on GitHub](https://github.com/redis/jedis).
 
-You can also find help on the [Jedis mailing list](http://groups.google.com/group/jedis_redis).
+You can also find help on the [Jedis mailing list](http://groups.google.com/group/jedis_redis) or the [GitHub Discussions](https://github.com/redis/jedis/discussions).
 
 ## Contributing
 
@@ -87,9 +100,7 @@ We'd love your contributions!
 
 **Bug reports** are always welcome! [You can open a bug report on GitHub](https://github.com/redis/jedis/issues/new).
 
-You can also **contribute documentation** -- or just let us know if something needs more detail. [Open an issue on GitHub](https://github.com/redis/jedis/issues/new) to get started.
-
-Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) for more details.
+You can also **contribute documentation** -- or anything to improve Jedis. Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) for more details.
 
 ## License
 
@@ -99,12 +110,3 @@ Jedis is licensed under the [MIT license](https://github.com/redis/jedis/blob/ma
 ## Sponsorship
 
 [![Redis Logo](redis-logo-full-color-rgb.png)](https://redis.com/)
-
----
-
-![YourKit Logo](https://cloud.githubusercontent.com/assets/1317309/4507430/7119527c-4b0c-11e4-9245-d72e751e26ee.png)
-
-YourKit supports open source projects with its full-featured Java Profiler.
-YourKit, LLC is the creator of [YourKit Java Profiler](http://www.yourkit.com/java/profiler/index.jsp) 
-and [YourKit .NET Profiler](http://www.yourkit.com/.net/profiler/index.jsp),
-innovative and intelligent tools for profiling Java and .NET applications.

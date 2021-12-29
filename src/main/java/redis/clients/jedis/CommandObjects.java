@@ -2167,8 +2167,16 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
   }
 
+  public final CommandObject<StreamFullInfo> xinfoStreamFull(byte[] key) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
+  }
+
   public final CommandObject<StreamFullInfo> xinfoStreamFull(String key, int count) {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
+  }
+
+  public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
   }
 
   public final CommandObject<List<Object>> xinfoGroup(byte[] key) {

@@ -1,7 +1,6 @@
 package redis.clients.jedis.resps;
 
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.params.ConsumerFullInfo;
 
 import java.io.Serializable;
 import java.util.List;

@@ -1,4 +1,4 @@
-package redis.clients.jedis.params;
+package redis.clients.jedis.resps;
 
 import java.io.Serializable;
 import java.util.List;

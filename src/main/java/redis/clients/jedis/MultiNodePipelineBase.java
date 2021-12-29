@@ -1361,7 +1361,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<StreamFullInfo> xinfoStreamFull(String key) {
-    return appendCommand(commandObjects.xinfoStreamFull(key, 10));
+    return appendCommand(commandObjects.xinfoStreamFull(key));
   }
 
   @Override

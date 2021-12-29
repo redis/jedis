@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.params.ConsumerFullInfo;
+import redis.clients.jedis.resps.ConsumerFullInfo;
 import redis.clients.jedis.resps.StreamFullInfo;
 import redis.clients.jedis.resps.StreamGroupFullInfo;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;

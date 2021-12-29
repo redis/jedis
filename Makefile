@@ -366,84 +366,20 @@ ifndef STUNNEL_BIN
 endif
 export SKIP_SSL
 
-start: stunnel cleanup
-	echo "$$REDIS1_CONF" | redis-server -
-	echo "$$REDIS2_CONF" | redis-server -
-	echo "$$REDIS3_CONF" | redis-server -
-	echo "$$REDIS4_CONF" | redis-server -
-	echo "$$REDIS5_CONF" | redis-server -
-	echo "$$REDIS6_CONF" | redis-server -
-	echo "$$REDIS7_CONF" | redis-server -
-	echo "$$REDIS8_CONF" | redis-server -
-	echo "$$REDIS9_CONF" | redis-server -
-	echo "$$REDIS10_CONF" | redis-server -
-	echo "$$REDIS11_CONF" | redis-server -
-	echo "$$REDIS_SENTINEL1" > /tmp/sentinel1.conf && redis-server /tmp/sentinel1.conf --sentinel
-	@sleep 0.5
-	echo "$$REDIS_SENTINEL2" > /tmp/sentinel2.conf && redis-server /tmp/sentinel2.conf --sentinel
-	@sleep 0.5
-	echo "$$REDIS_SENTINEL3" > /tmp/sentinel3.conf && redis-server /tmp/sentinel3.conf --sentinel
-	@sleep 0.5
-	echo "$$REDIS_SENTINEL4" > /tmp/sentinel4.conf && redis-server /tmp/sentinel4.conf --sentinel
-	@sleep 0.5
-	echo "$$REDIS_SENTINEL5" > /tmp/sentinel5.conf && redis-server /tmp/sentinel5.conf --sentinel
-	@sleep 0.5
-	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
-	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
-	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
-	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
-	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
-	echo "$$REDIS_UDS" | redis-server -
-	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
+start:
+	cd dockers && docker-compose up -d
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
 	- rm dump.rdb appendonly.aof - 2>/dev/null
 
-stunnel:
-	@if [ -e "$$STUNNEL_BIN" ]; then\
-	    echo "$$STUNNEL_CONF" | stunnel -fd 0;\
-	fi
 stop:
-	kill `cat /tmp/redis1.pid`
-	kill `cat /tmp/redis2.pid`
-	kill `cat /tmp/redis3.pid`
-	kill `cat /tmp/redis4.pid`
-	kill `cat /tmp/redis5.pid`
-	kill `cat /tmp/redis6.pid`
-	kill `cat /tmp/redis7.pid`
-	kill `cat /tmp/redis8.pid`
-	kill `cat /tmp/redis9.pid`
-	kill `cat /tmp/redis10.pid`
-	kill `cat /tmp/redis11.pid`
-	kill `cat /tmp/sentinel1.pid`
-	kill `cat /tmp/sentinel2.pid`
-	kill `cat /tmp/sentinel3.pid`
-	kill `cat /tmp/sentinel4.pid`
-	kill `cat /tmp/sentinel5.pid`
-	kill `cat /tmp/redis_cluster_node1.pid` || true
-	kill `cat /tmp/redis_cluster_node2.pid` || true
-	kill `cat /tmp/redis_cluster_node3.pid` || true
-	kill `cat /tmp/redis_cluster_node4.pid` || true
-	kill `cat /tmp/redis_cluster_node5.pid` || true
-	kill `cat /tmp/redis_uds.pid` || true
-	kill `cat /tmp/stunnel.pid` || true
-	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
-	rm -f /tmp/sentinel1.conf
-	rm -f /tmp/sentinel2.conf
-	rm -f /tmp/sentinel3.conf
-	rm -f /tmp/sentinel4.conf
-	rm -f /tmp/sentinel5.conf
-	rm -f /tmp/redis_cluster_node1.conf
-	rm -f /tmp/redis_cluster_node2.conf
-	rm -f /tmp/redis_cluster_node3.conf
-	rm -f /tmp/redis_cluster_node4.conf
-	rm -f /tmp/redis_cluster_node5.conf
+	cd docker && docker-compose down
 
-test: compile-module start
+test: start
 	sleep 2
 	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
-	make stop
+	${MAKE} stop
 
 package: start
 	mvn clean package
@@ -463,17 +399,6 @@ release:
 	mvn release:perform -DskipTests
 	make stop
 
-travis-install:
-	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-	sudo apt-get -y update
-	sudo apt-get install -y gcc-8 g++-8
-	cd /usr/bin ;\
-	sudo ln -sf gcc-8 gcc ;\
-	sudo ln -sf g++-8 g++
-	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
-	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git
-	
 circleci-install:
 	sudo apt-get install -y gcc-8 g++-8
 	cd /usr/bin ;\
@@ -481,10 +406,6 @@ circleci-install:
 	sudo ln -sf g++-8 g++
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git	
-
-compile-module:
-	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c
-
+	$(MAKE) -C redis-git
 
 .PHONY: test

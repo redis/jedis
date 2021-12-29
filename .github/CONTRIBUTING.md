@@ -43,10 +43,9 @@ Please add unit tests in order to prove your modification works smoothly. And pl
 
 # Jedis Test Environment
 
-Jedis unit tests run with latest [```Redis unstable branch```](https://github.com/antirez/redis).
-Please let them prepared and installed.
+Jedis relies on [docker](https://docs.docker.com/get-started/) and [docker-compose](https://docs.docker.com/compose/gettingstarted/) for managing test environments. Unit tests run against pre-built docker images, with configurations mounted from the *dockers* directory of this repository. GNU Make is used to wrap the environments, making for easier testing.
 
-Jedis unit tests use many Redis instances, so we use ```Makefile``` to prepare environment. 
+Jedis unit tests use many Redis instances, so we use ```Makefile``` to prepare environment.
 
 You can start test with ```make test```.
 You can set up test environments by ```make start```, and tear down environments by ```make stop```.

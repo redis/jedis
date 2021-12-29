@@ -1,0 +1,1 @@
+Dockers used by the test environment, come from the [redis-py](https://github.com/redis/redis-py) project, and have been uploaded to dockerhub. This directory contains configuration files for each of the running docker instances, as needed. Dockers can be started via *docker-compose up -d* and stopped via *docker-compose down*.

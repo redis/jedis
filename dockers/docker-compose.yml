@@ -1,0 +1,81 @@
+version: "3.9"
+
+services:
+
+  master:
+    image: redisfab/redis-py:6.2.6-buster
+    container_name: redis_master
+    ports:
+      - "6379:6379"
+    volumes:
+      - "./master/redis.conf:/redis.conf"
+
+  replica:
+    image: redisfab/redis-py:6.2.6-buster
+    container_name: redis_replica
+    ports:
+      - "6380:6380"
+    links:
+      - master
+    volumes:
+      - "./replica/redis.conf:/redis.conf"
+
+  sentinel_1:
+    image: redisfab/redis-py-sentinel:6.2.6-buster
+    container_name: redis_sentinel_1
+    ports:
+      - "26379:26379"
+    links:
+      - master
+    volumes:
+      - "./sentinel_1/sentinel.conf:/sentinel.conf"
+
+  sentinel_2:
+    image: redisfab/redis-py-sentinel:6.2.6-buster
+    container_name: redis_sentinel_2
+    ports:
+      - "26380:26380"
+    links:
+      - master
+    volumes:
+      - "./sentinel_1/sentinel.conf:/sentinel.conf"
+
+  sentinel_3:
+    image: redisfab/redis-py-sentinel:6.2.6-buster
+    container_name: redis_sentinel_3
+    ports:
+      - "26381:26381"
+    links:
+      - "master"
+    volumes:
+      - "./sentinel_1/sentinel.conf:/sentinel.conf"
+
+  redis_cluster:
+    image: redisfab/redis-py-cluster:6.2.6-buster
+    container_name: redis_cluster
+    ports:
+      - "16379:16379"
+      - "16380:16380"
+      - "16381:16381"
+      - "16382:16382"
+      - "16383:16383"
+      - "16384:16384"
+    volumes:
+      - "./cluster/redis.conf:/redis.conf"
+
+  stunnel:
+    image: redisfab/stunnel:latest
+    container_name: redis_stunnel
+    links:
+      - master
+    ports:
+      - "6666:6666"
+    volumes:
+      - "./stunnel/conf:/etc/stunnel/conf.d:ro"
+      - "./stunnel/keys:/etc/stunnel/keys:ro"
+
+  redismod:
+    image: redislabs/redismod:edge
+    container_name: redis_redismod
+    ports:
+      - "36379:6379"

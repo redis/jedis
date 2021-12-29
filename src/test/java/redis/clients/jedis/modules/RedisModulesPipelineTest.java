@@ -1,6 +1,7 @@
 package redis.clients.jedis.modules;
 
 import static org.junit.Assert.*;
+import static redis.clients.jedis.json.Path.ROOT_PATH;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import java.util.HashMap;
@@ -100,7 +101,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void json() {
+  public void jsonV1() {
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");
     hm1.put("oh", "snap");
@@ -117,20 +118,14 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<Object> object = p.jsonGet("foo");
     Response<List<JSONArray>> mget = p.jsonMGet("foo");
     Response<Long> strLenPath = p.jsonStrLen("foo", new Path("hello"));
-    Response<List<Long>> strLenPath2 = p.jsonStrLen("foo", new Path2("hello"));
     Response<Long> strAppPath = p.jsonStrAppend("foo", new Path("hello"), "!");
-    Response<List<Long>> strAppPath2 = p.jsonStrAppend("foo", new Path2("hello"), "!");
     Response<Long> delPath = p.jsonDel("foo", new Path("hello"));
     Response<Long> delKey = p.jsonDel("foo");
     Response<String> set2 = p.jsonSet("foo", Path.ROOT_PATH, hm2, new JsonSetParams().nx());
-    Response<String> setPath2 = p.jsonSet("bar", Path2.ROOT_PATH, gson.toJson("strung"));
-    Response<String> setPath2Params = p.jsonSet("bar", Path2.ROOT_PATH, gson.toJson("strung"), new JsonSetParams().xx());
-    Response<Object> pop = p.jsonArrPop("foo", new Path("array"));
+    Response<Object> popPath1 = p.jsonArrPop("foo", new Path("array"));
     Response<Long> append = p.jsonArrAppend("foo", new Path("array"), "c", "d");
-//    Response<List<Long>> append2 = p.jsonArrAppend("foo", new Path2("array"), "e");
     Response<Long> index = p.jsonArrIndex("foo", new Path("array"), "c");
     Response<Long> insert = p.jsonArrInsert("foo", new Path("array"), 0, "x");
-//    Response<List<Long>> insert2 = p.jsonArrInsert("foo", new Path2("array"), 0, "x");
     Response<Long> arrLen = p.jsonArrLen("foo", new Path("array"));
     Response<Long> trim = p.jsonArrTrim("foo", new Path("array"), 1, 4);
     Response<String> toggle = p.jsonToggle("foo", new Path("boolean"));
@@ -142,7 +137,8 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<Long> strLen = p.jsonStrLen("foo");
     Response<Long> strApp = p.jsonStrAppend("foo", "?");
     Response<String> set4 = p.jsonSetWithEscape("obj", new IRLObject());
-    Response<String> set5 = p.jsonSetWithEscape("obj", Path2.of(".str"), "strangle", JsonSetParams.jsonSetParams().xx());
+    p.jsonSet("arr", ROOT_PATH, new int[]{0, 1, 2, 3});
+    Response<Object> pop = p.jsonArrPop("arr");
 
     p.sync();
     c.close();
@@ -151,20 +147,14 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(hm1, object.get());
     assertEquals(1, mget.get().size());
     assertEquals(Long.valueOf(5), strLenPath.get());
-    assertEquals(Long.valueOf(5), strLenPath2.get().get(0));
     assertEquals(Long.valueOf(6), strAppPath.get());
-    assertEquals(1, strAppPath2.get().size());
     assertEquals(Long.valueOf(1), delPath.get());
     assertEquals(Long.valueOf(1), delKey.get());
     assertEquals("OK", set2.get());
-    assertEquals("OK", setPath2.get());
-    assertEquals("OK", setPath2Params.get());
-    assertEquals("c", pop.get());
+    assertEquals("c", popPath1.get());
     assertEquals(Long.valueOf(4), append.get());
-//    assertNotNull( append2.get()); // Throws exception
     assertEquals(Long.valueOf(2), index.get());
     assertEquals(Long.valueOf(5), insert.get());
-//    assertEquals(1, insert2.get().size());
     assertEquals(Long.valueOf(5), arrLen.get());
     assertEquals(Long.valueOf(4), trim.get());
     assertEquals("false", toggle.get());
@@ -176,6 +166,60 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(Long.valueOf(6), strLen.get());
     assertEquals(Long.valueOf(7), strApp.get());
     assertEquals("OK", set4.get());
-    assertEquals("OK", set5.get());
+    assertEquals(3.0, pop.get());
+  }
+
+  @Test
+  public void jsonV2() {
+    Map<String, String> hm1 = new HashMap<>();
+    hm1.put("hello", "world");
+    hm1.put("oh", "snap");
+
+    Map<String, Object> hm2 = new HashMap<>();
+    hm2.put("array", new String[]{"a", "b", "c"});
+    hm2.put("boolean", true);
+    hm2.put("number", 3);
+
+    Connection c = createConnection();
+    Pipeline p = new Pipeline(c);
+
+    Response<String> setWithEscape = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm1);
+    Response<List<JSONArray>> mgetPath = p.jsonMGet(Path2.ROOT_PATH, "foo");
+    Response<List<Long>> strLen = p.jsonStrLen("foo", new Path2("hello"));
+    Response<List<Long>> strApp = p.jsonStrAppend("foo", new Path2("hello"), "!");
+    Response<Long> del = p.jsonDel("foo", new Path2("hello"));
+    Response<String> set = p.jsonSet("bar", Path2.ROOT_PATH, gson.toJson("strung"));
+    Response<String> setWithParams = p.jsonSet("foo", Path2.ROOT_PATH, gson.toJson(hm2), new JsonSetParams().xx());
+    Response<List<Object>> pop = p.jsonArrPop("foo", new Path2("array"));
+    Response<List<Long>> append = p.jsonArrAppend("foo", Path2.of("$.array"), gson.toJson("d"));
+    Response<List<Long>> appendWithEscape = p.jsonArrAppendWithEscape("foo", Path2.of("$.array"), "e");
+    Response<List<Long>> insert = p.jsonArrInsert("foo", new Path2("array"), 0, gson.toJson("x"));
+    Response<List<Long>> insertWithEscape = p.jsonArrInsertWithEscape("foo", new Path2("array"), 0, "x");
+    Response<List<Long>> arrLen = p.jsonArrLen("foo", new Path2("array"));
+    Response<List<Long>> trim = p.jsonArrTrim("foo", new Path2("array"), 1, 2);
+    Response<List<Boolean>> toggle = p.jsonToggle("foo", new Path2("boolean"));
+    Response<List<Class<?>>> type = p.jsonType("foo", new Path2("boolean"));
+    Response<Long> clear = p.jsonClear("foo", new Path2("array"));
+
+    p.sync();
+    c.close();
+
+    assertEquals("OK", setWithEscape.get());
+    assertEquals(1, mgetPath.get().size());
+    assertEquals(Long.valueOf(5), strLen.get().get(0));
+    assertEquals(1, strApp.get().size());
+    assertEquals(Long.valueOf(1), del.get());
+    assertEquals("OK", set.get());
+    assertEquals("OK", setWithParams.get());
+    assertEquals("c", pop.get().get(0));
+    assertEquals(Long.valueOf(3), append.get().get(0));
+    assertEquals(Long.valueOf(4), appendWithEscape.get().get(0));
+    assertEquals(Long.valueOf(5), insert.get().get(0));
+    assertEquals(Long.valueOf(6), insertWithEscape.get().get(0));
+    assertEquals(Long.valueOf(6), arrLen.get().get(0));
+    assertEquals(Long.valueOf(2), trim.get().get(0));
+    assertEquals(false, toggle.get().get(0));
+    assertEquals(boolean.class, type.get().get(0));
+    assertEquals(Long.valueOf(1), clear.get());
   }
 }

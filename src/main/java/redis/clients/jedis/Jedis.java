@@ -3706,6 +3706,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long bitcount(final byte[] key, final long start, final long end, final BitCountOption option) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitcount(key, start, end, option));
+  }
+
+  @Override
   public long bitop(final BitOP op, final byte[] destKey, final byte[]... srcKeys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
@@ -7482,6 +7488,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long bitcount(final String key, final long start, final long end, final BitCountOption option) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitcount(key, start, end, option));
+  }
+
+  @Override
   public long bitop(final BitOP op, final String destKey, final String... srcKeys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
@@ -7606,6 +7618,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param masterName
    */
   @Override
+  @Deprecated
   public List<Map<String, String>> sentinelSlaves(String masterName) {
     connection.sendCommand(SENTINEL, SLAVES.name(), masterName);
     return connection.getObjectMultiBulkReply().stream()
@@ -8081,6 +8094,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  @Deprecated
   public List<String> clusterSlaves(final String nodeId) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.SLAVES.name(), nodeId);
@@ -8113,6 +8127,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.MYID);
     return connection.getBulkReply();
+  }
+
+  @Override
+  public List<Map<String, Object>> clusterLinks() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.LINKS);
+    return connection.getObjectMultiBulkReply().stream()
+            .map(BuilderFactory.ENCODED_OBJECT_MAP::build).collect(Collectors.toList());
   }
 
   @Override

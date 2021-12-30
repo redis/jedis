@@ -7,9 +7,11 @@ import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.gson.Gson;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -33,8 +35,38 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     }
   }
 
-  private static final Gson gson = new Gson();
+  private static class Baz {
 
+    private String quuz;
+    private String grault;
+    private String waldo;
+
+    public Baz(final String quuz, final String grault, final String waldo) {
+      this.quuz = quuz;
+      this.grault = grault;
+      this.waldo = waldo;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null) {
+        return false;
+      }
+      if (getClass() != o.getClass()) {
+        return false;
+      }
+      Baz other = (Baz) o;
+
+      return Objects.equals(quuz, other.quuz)
+              && Objects.equals(grault, other.grault)
+              && Objects.equals(waldo, other.waldo);
+    }
+  }
+
+  private static final Gson gson = new Gson();
 
   @BeforeClass
   public static void prepare() {
@@ -111,6 +143,10 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     hm2.put("boolean", true);
     hm2.put("number", 3);
 
+    Baz baz1 = new Baz("quuz1", "grault1", "waldo1");
+    Baz baz2 = new Baz("quuz2", "grault2", "waldo2");
+    Baz baz3 = new Baz("quuz3", "grault3", "waldo3");
+
     Connection c = createConnection();
     Pipeline p = new Pipeline(c);
 
@@ -120,6 +156,8 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<Object> getWithPath = p.jsonGet("foo", Path.ROOT_PATH);
     Response<Map> getObjectWithPath = p.jsonGet("foo", Map.class, Path.ROOT_PATH);
     Response<List<JSONArray>> mget = p.jsonMGet("foo");
+    p.jsonSet("baz", new JSONObject(gson.toJson(baz1)));
+    Response<List<Baz>> mgetClass = p.jsonMGet(Path.ROOT_PATH, Baz.class, "baz");
     Response<Long> strLenPath = p.jsonStrLen("foo", new Path("hello"));
     Response<Long> strAppPath = p.jsonStrAppend("foo", new Path("hello"), "!");
     Response<Long> delPath = p.jsonDel("foo", new Path("hello"));
@@ -141,9 +179,13 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<Long> strLen = p.jsonStrLen("foo");
     Response<Long> strApp = p.jsonStrAppend("foo", "?");
     Response<String> set4 = p.jsonSetWithEscape("obj", new IRLObject());
-    p.jsonSet("arr", ROOT_PATH, new int[]{0, 1, 2, 3});
+    p.jsonSet("arr", ROOT_PATH, new int[]{ 0, 1, 2, 3 });
     Response<Object> pop = p.jsonArrPop("arr");
     Response<Long> arrLen = p.jsonArrLen("arr");
+    p.jsonSet("baz", ROOT_PATH, new Baz[]{ baz1, baz2, baz3 });
+    Response<Baz> popClass = p.jsonArrPop("baz", Baz.class);
+    Response<Baz> popClassWithPath = p.jsonArrPop("baz", Baz.class, Path.ROOT_PATH);
+    Response<Baz> popClassWithIndex = p.jsonArrPop("baz", Baz.class, Path.ROOT_PATH, 0);
 
     p.sync();
     c.close();
@@ -154,6 +196,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(hm1, getWithPath.get());
     assertEquals(hm1, getObjectWithPath.get());
     assertEquals(1, mget.get().size());
+    assertEquals(baz1, mgetClass.get().get(0));
     assertEquals(Long.valueOf(5), strLenPath.get());
     assertEquals(Long.valueOf(6), strAppPath.get());
     assertEquals(Long.valueOf(1), delPath.get());
@@ -177,6 +220,9 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals("OK", set4.get());
     assertEquals(3.0, pop.get());
     assertEquals(Long.valueOf(3), arrLen.get());
+    assertEquals(baz3, popClass.get());
+    assertEquals(baz2, popClassWithPath.get());
+    assertEquals(baz1, popClassWithIndex.get());
   }
 
   @Test
@@ -203,9 +249,11 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<String> setWithParams = p.jsonSet("foo", Path2.ROOT_PATH, gson.toJson(hm2), new JsonSetParams().xx());
     Response<String> setWithEscapeWithParams = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm2, new JsonSetParams().xx());
     Response<List<Object>> pop = p.jsonArrPop("foo", new Path2("array"));
-    Response<List<Object>> indexPop = p.jsonArrPop("foo", new Path2("array"), 2);
+    Response<List<Object>> popWithIndex = p.jsonArrPop("foo", new Path2("array"), 2);
     Response<List<Long>> append = p.jsonArrAppend("foo", Path2.of("$.array"), gson.toJson("b"), gson.toJson("d"));
     Response<List<Long>> appendWithEscape = p.jsonArrAppendWithEscape("foo", Path2.of("$.array"), "e");
+    Response<List<Long>> index = p.jsonArrIndex("foo", Path2.of("$.array"), gson.toJson("b"));
+    Response<List<Long>> indexWithEscape = p.jsonArrIndexWithEscape("foo", Path2.of("$.array"), "b");
     Response<List<Long>> insert = p.jsonArrInsert("foo", new Path2("array"), 0, gson.toJson("x"));
     Response<List<Long>> insertWithEscape = p.jsonArrInsertWithEscape("foo", new Path2("array"), 0, "x");
     Response<List<Long>> arrLen = p.jsonArrLen("foo", new Path2("array"));
@@ -227,9 +275,11 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals("OK", setWithParams.get());
     assertEquals("OK", setWithEscapeWithParams.get());
     assertEquals("c", pop.get().get(0));
-    assertEquals("b", indexPop.get().get(0));
+    assertEquals("b", popWithIndex.get().get(0));
     assertEquals(Long.valueOf(3), append.get().get(0));
     assertEquals(Long.valueOf(4), appendWithEscape.get().get(0));
+    assertEquals(Long.valueOf(1), index.get().get(0));
+    assertEquals(Long.valueOf(1), indexWithEscape.get().get(0));
     assertEquals(Long.valueOf(5), insert.get().get(0));
     assertEquals(Long.valueOf(6), insertWithEscape.get().get(0));
     assertEquals(Long.valueOf(6), arrLen.get().get(0));

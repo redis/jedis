@@ -2800,7 +2800,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Object> jsonGet(String key) { 
+  public Response<Object> jsonGet(String key) {
     return appendCommand(commandObjects.jsonGet(key));
   }
 
@@ -2855,7 +2855,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<Long> jsonClear(String key, Path2 path) { 
+  public Response<Long> jsonClear(String key, Path2 path) {
     return appendCommand(commandObjects.jsonClear(key, path));
   }
 
@@ -2925,7 +2925,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects) { 
+  public Response<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects) {
     return appendCommand(commandObjects.jsonArrAppendWithEscape(key, path, objects));
   }
 

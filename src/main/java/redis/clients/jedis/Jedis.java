@@ -7684,6 +7684,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param masterName
    */
   @Override
+  @Deprecated
   public List<Map<String, String>> sentinelSlaves(String masterName) {
     connection.sendCommand(SENTINEL, SLAVES.name(), masterName);
     return connection.getObjectMultiBulkReply().stream()
@@ -8159,6 +8160,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  @Deprecated
   public List<String> clusterSlaves(final String nodeId) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.SLAVES.name(), nodeId);

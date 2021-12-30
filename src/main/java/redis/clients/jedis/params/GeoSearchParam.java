@@ -102,10 +102,7 @@ public class GeoSearchParam implements IParams {
   }
 
   public GeoSearchParam count(int count) {
-    if (count > 0) {
-      this.count = count;
-    }
-    return this;
+    return this.count(count, false);
   }
 
   public GeoSearchParam count(int count, boolean any) {

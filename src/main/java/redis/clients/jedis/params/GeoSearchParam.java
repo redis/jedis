@@ -159,7 +159,7 @@ public class GeoSearchParam implements IParams {
 
     if (asc) {
       args.add(ASC);
-    } else if (desc){
+    } else if (desc) {
       args.add(DESC);
     }
   }

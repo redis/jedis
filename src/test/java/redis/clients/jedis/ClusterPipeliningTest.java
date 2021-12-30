@@ -8,6 +8,7 @@ import java.util.*;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -845,8 +846,8 @@ public class ClusterPipeliningTest {
       p.sync();
 
       List<?> results = (List<?>) result.get();
-      assertThat((List<String>) results.get(0), listWithItem("key1"));
-      assertThat((List<Long>) results.get(1), listWithItem(2L));
+      MatcherAssert.assertThat((List<String>) results.get(0), listWithItem("key1"));
+      MatcherAssert.assertThat((List<Long>) results.get(1), listWithItem(2L));
     }
   }
 
@@ -861,8 +862,8 @@ public class ClusterPipeliningTest {
       p.sync();
 
       List<?> results = (List<?>) result.get();
-      assertThat((List<byte[]>) results.get(0), listWithItem(bKey));
-      assertThat((List<Long>) results.get(1), listWithItem(2L));
+      MatcherAssert.assertThat((List<byte[]>) results.get(0), listWithItem(bKey));
+      MatcherAssert.assertThat((List<Long>) results.get(1), listWithItem(2L));
     }
   }
 

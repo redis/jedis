@@ -35,7 +35,8 @@ public class GeoSearchParam implements IParams {
 
   private Integer count = null;
   private boolean any = false;
-  private boolean asc = true;
+  private boolean asc = false;
+  private boolean desc = false;
 
   public GeoSearchParam() { }
 
@@ -96,7 +97,7 @@ public class GeoSearchParam implements IParams {
   }
 
   public GeoSearchParam desc() {
-    asc = false;
+    desc = true;
     return this;
   }
 
@@ -158,7 +159,7 @@ public class GeoSearchParam implements IParams {
 
     if (asc) {
       args.add(ASC);
-    } else {
+    } else if (desc){
       args.add(DESC);
     }
   }

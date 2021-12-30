@@ -115,18 +115,22 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Pipeline p = new Pipeline(c);
 
     Response<String> set1 = p.jsonSet("foo", Path.ROOT_PATH, hm1);
-    Response<Object> object = p.jsonGet("foo");
+    Response<Object> get = p.jsonGet("foo");
+    Response<Map> getObject = p.jsonGet("foo", Map.class);
+    Response<Object> getWithPath = p.jsonGet("foo", Path.ROOT_PATH);
+    Response<Map> getObjectWithPath = p.jsonGet("foo", Map.class, Path.ROOT_PATH);
     Response<List<JSONArray>> mget = p.jsonMGet("foo");
     Response<Long> strLenPath = p.jsonStrLen("foo", new Path("hello"));
     Response<Long> strAppPath = p.jsonStrAppend("foo", new Path("hello"), "!");
     Response<Long> delPath = p.jsonDel("foo", new Path("hello"));
     Response<Long> delKey = p.jsonDel("foo");
     Response<String> set2 = p.jsonSet("foo", Path.ROOT_PATH, hm2, new JsonSetParams().nx());
-    Response<Object> popPath1 = p.jsonArrPop("foo", new Path("array"));
-    Response<Long> append = p.jsonArrAppend("foo", new Path("array"), "c", "d");
+    Response<Object> popPath = p.jsonArrPop("foo", new Path("array"));
+    Response<Object> indexPop = p.jsonArrPop("foo", new Path("array"), 2);
+    Response<Long> append = p.jsonArrAppend("foo", new Path("array"), "b", "c", "d");
     Response<Long> index = p.jsonArrIndex("foo", new Path("array"), "c");
     Response<Long> insert = p.jsonArrInsert("foo", new Path("array"), 0, "x");
-    Response<Long> arrLen = p.jsonArrLen("foo", new Path("array"));
+    Response<Long> arrLenWithPath = p.jsonArrLen("foo", new Path("array"));
     Response<Long> trim = p.jsonArrTrim("foo", new Path("array"), 1, 4);
     Response<String> toggle = p.jsonToggle("foo", new Path("boolean"));
     Response<Class<?>> type = p.jsonType("foo", new Path("boolean"));
@@ -139,23 +143,28 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<String> set4 = p.jsonSetWithEscape("obj", new IRLObject());
     p.jsonSet("arr", ROOT_PATH, new int[]{0, 1, 2, 3});
     Response<Object> pop = p.jsonArrPop("arr");
+    Response<Long> arrLen = p.jsonArrLen("arr");
 
     p.sync();
     c.close();
 
     assertEquals("OK", set1.get());
-    assertEquals(hm1, object.get());
+    assertEquals(hm1, get.get());
+    assertEquals(hm1, getObject.get());
+    assertEquals(hm1, getWithPath.get());
+    assertEquals(hm1, getObjectWithPath.get());
     assertEquals(1, mget.get().size());
     assertEquals(Long.valueOf(5), strLenPath.get());
     assertEquals(Long.valueOf(6), strAppPath.get());
     assertEquals(Long.valueOf(1), delPath.get());
     assertEquals(Long.valueOf(1), delKey.get());
     assertEquals("OK", set2.get());
-    assertEquals("c", popPath1.get());
+    assertEquals("c", popPath.get());
+    assertEquals("b", indexPop.get());
     assertEquals(Long.valueOf(4), append.get());
     assertEquals(Long.valueOf(2), index.get());
     assertEquals(Long.valueOf(5), insert.get());
-    assertEquals(Long.valueOf(5), arrLen.get());
+    assertEquals(Long.valueOf(5), arrLenWithPath.get());
     assertEquals(Long.valueOf(4), trim.get());
     assertEquals("false", toggle.get());
     assertEquals(boolean.class, type.get());
@@ -167,6 +176,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(Long.valueOf(7), strApp.get());
     assertEquals("OK", set4.get());
     assertEquals(3.0, pop.get());
+    assertEquals(Long.valueOf(3), arrLen.get());
   }
 
   @Test
@@ -184,14 +194,17 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Pipeline p = new Pipeline(c);
 
     Response<String> setWithEscape = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm1);
-    Response<List<JSONArray>> mgetPath = p.jsonMGet(Path2.ROOT_PATH, "foo");
+    Response<Object> get = p.jsonGet("foo",  Path2.ROOT_PATH);
+    Response<List<JSONArray>> mget = p.jsonMGet(Path2.ROOT_PATH, "foo");
     Response<List<Long>> strLen = p.jsonStrLen("foo", new Path2("hello"));
     Response<List<Long>> strApp = p.jsonStrAppend("foo", new Path2("hello"), "!");
     Response<Long> del = p.jsonDel("foo", new Path2("hello"));
     Response<String> set = p.jsonSet("bar", Path2.ROOT_PATH, gson.toJson("strung"));
     Response<String> setWithParams = p.jsonSet("foo", Path2.ROOT_PATH, gson.toJson(hm2), new JsonSetParams().xx());
+    Response<String> setWithEscapeWithParams = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm2, new JsonSetParams().xx());
     Response<List<Object>> pop = p.jsonArrPop("foo", new Path2("array"));
-    Response<List<Long>> append = p.jsonArrAppend("foo", Path2.of("$.array"), gson.toJson("d"));
+    Response<List<Object>> indexPop = p.jsonArrPop("foo", new Path2("array"), 2);
+    Response<List<Long>> append = p.jsonArrAppend("foo", Path2.of("$.array"), gson.toJson("b"), gson.toJson("d"));
     Response<List<Long>> appendWithEscape = p.jsonArrAppendWithEscape("foo", Path2.of("$.array"), "e");
     Response<List<Long>> insert = p.jsonArrInsert("foo", new Path2("array"), 0, gson.toJson("x"));
     Response<List<Long>> insertWithEscape = p.jsonArrInsertWithEscape("foo", new Path2("array"), 0, "x");
@@ -205,13 +218,16 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     c.close();
 
     assertEquals("OK", setWithEscape.get());
-    assertEquals(1, mgetPath.get().size());
+    assertNotNull(get.get());
+    assertEquals(1, mget.get().size());
     assertEquals(Long.valueOf(5), strLen.get().get(0));
     assertEquals(1, strApp.get().size());
     assertEquals(Long.valueOf(1), del.get());
     assertEquals("OK", set.get());
     assertEquals("OK", setWithParams.get());
+    assertEquals("OK", setWithEscapeWithParams.get());
     assertEquals("c", pop.get().get(0));
+    assertEquals("b", indexPop.get().get(0));
     assertEquals(Long.valueOf(3), append.get().get(0));
     assertEquals(Long.valueOf(4), appendWithEscape.get().get(0));
     assertEquals(Long.valueOf(5), insert.get().get(0));

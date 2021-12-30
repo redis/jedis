@@ -13,62 +13,62 @@ import java.util.Map;
  */
 public class StreamFullInfo implements Serializable {
 
-    public static final String LENGTH = "length";
-    public static final String RADIX_TREE_KEYS = "radix-tree-keys";
-    public static final String RADIX_TREE_NODES = "radix-tree-nodes";
-    public static final String GROUPS = "groups";
-    public static final String LAST_GENERATED_ID = "last-generated-id";
-    public static final String ENTRIES = "entries";
+  public static final String LENGTH = "length";
+  public static final String RADIX_TREE_KEYS = "radix-tree-keys";
+  public static final String RADIX_TREE_NODES = "radix-tree-nodes";
+  public static final String GROUPS = "groups";
+  public static final String LAST_GENERATED_ID = "last-generated-id";
+  public static final String ENTRIES = "entries";
 
-    private final long length;
-    private final long radixTreeKeys;
-    private final long radixTreeNodes;
-    private final List<StreamGroupFullInfo> groups;
-    private final StreamEntryID lastGeneratedId;
-    private final List<StreamEntry> entries;
-    private final Map<String, Object> streamFullInfo;
+  private final long length;
+  private final long radixTreeKeys;
+  private final long radixTreeNodes;
+  private final List<StreamGroupFullInfo> groups;
+  private final StreamEntryID lastGeneratedId;
+  private final List<StreamEntry> entries;
+  private final Map<String, Object> streamFullInfo;
 
-    /**
-     * @param map contains key-value pairs with stream info
-     */
-    @SuppressWarnings("unchecked")
-    public StreamFullInfo(Map<String, Object> map) {
+  /**
+   * @param map contains key-value pairs with stream info
+   */
+  @SuppressWarnings("unchecked")
+  public StreamFullInfo(Map<String, Object> map) {
 
-        streamFullInfo = map;
-        length = (Long) map.get(LENGTH);
-        radixTreeKeys = (Long) map.get(RADIX_TREE_KEYS);
-        radixTreeNodes = (Long) map.get(RADIX_TREE_NODES);
-        groups = (List<StreamGroupFullInfo>) map.get(GROUPS);
-        lastGeneratedId = (StreamEntryID) map.get(LAST_GENERATED_ID);
-        entries = (List<StreamEntry>) map.get(ENTRIES);
+    streamFullInfo = map;
+    length = (Long) map.get(LENGTH);
+    radixTreeKeys = (Long) map.get(RADIX_TREE_KEYS);
+    radixTreeNodes = (Long) map.get(RADIX_TREE_NODES);
+    groups = (List<StreamGroupFullInfo>) map.get(GROUPS);
+    lastGeneratedId = (StreamEntryID) map.get(LAST_GENERATED_ID);
+    entries = (List<StreamEntry>) map.get(ENTRIES);
 
-    }
+  }
 
-    public long getLength() {
-        return length;
-    }
+  public long getLength() {
+    return length;
+  }
 
-    public long getRadixTreeKeys() {
-        return radixTreeKeys;
-    }
+  public long getRadixTreeKeys() {
+    return radixTreeKeys;
+  }
 
-    public long getRadixTreeNodes() {
-        return radixTreeNodes;
-    }
+  public long getRadixTreeNodes() {
+    return radixTreeNodes;
+  }
 
-    public List<StreamGroupFullInfo> getGroups() {
-        return groups;
-    }
+  public List<StreamGroupFullInfo> getGroups() {
+    return groups;
+  }
 
-    public StreamEntryID getLastGeneratedId() {
-        return lastGeneratedId;
-    }
+  public StreamEntryID getLastGeneratedId() {
+    return lastGeneratedId;
+  }
 
-    public List<StreamEntry> getEntries() {
-        return entries;
-    }
+  public List<StreamEntry> getEntries() {
+    return entries;
+  }
 
-    public Map<String, Object> getStreamFullInfo() {
-        return streamFullInfo;
-    }
+  public Map<String, Object> getStreamFullInfo() {
+    return streamFullInfo;
+  }
 }

@@ -4481,7 +4481,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public StreamFullInfo xinfoStreamFull(String key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xinfoStreamFull(key, 10));
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key));
   }
 
   @Override

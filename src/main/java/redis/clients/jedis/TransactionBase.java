@@ -1404,7 +1404,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<StreamFullInfo> xinfoStreamFull(byte[] key) {
-    return appendCommand(commandObjects.xinfoStreamFull(key, 10));
+    return appendCommand(commandObjects.xinfoStreamFull(key));
 
   }
 

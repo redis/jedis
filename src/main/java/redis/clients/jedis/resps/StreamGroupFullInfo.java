@@ -13,59 +13,59 @@ import java.util.Map;
  */
 public class StreamGroupFullInfo implements Serializable {
 
-    public static final String NAME = "name";
-    public static final String CONSUMERS = "consumers";
-    public static final String PENDING = "pending";
-    public static final String LAST_DELIVERED = "last-delivered-id";
-    public static final String PEL_COUNT = "pel-count";
+  public static final String NAME = "name";
+  public static final String CONSUMERS = "consumers";
+  public static final String PENDING = "pending";
+  public static final String LAST_DELIVERED = "last-delivered-id";
+  public static final String PEL_COUNT = "pel-count";
 
-    private final String name;
-    private final List<ConsumerFullInfo> consumers;
-    private final List<String> pending;
-    private final Long pelCount;
-    private final StreamEntryID lastDeliveredId;
-    private final Map<String, Object> groupFullInfo;
+  private final String name;
+  private final List<ConsumerFullInfo> consumers;
+  private final List<String> pending;
+  private final Long pelCount;
+  private final StreamEntryID lastDeliveredId;
+  private final Map<String, Object> groupFullInfo;
 
-    /**
-     * @param map contains key-value pairs with group info
-     */
-    @SuppressWarnings("unchecked")
-    public StreamGroupFullInfo(Map<String, Object> map) {
+  /**
+   * @param map contains key-value pairs with group info
+   */
+  @SuppressWarnings("unchecked")
+  public StreamGroupFullInfo(Map<String, Object> map) {
 
-        groupFullInfo = map;
-        name = (String) map.get(NAME);
-        consumers = (List<ConsumerFullInfo>) map.get(CONSUMERS);
-        pending = (List<String>) map.get(PENDING);
-        lastDeliveredId = (StreamEntryID) map.get(LAST_DELIVERED);
-        pelCount = (Long) map.get(PEL_COUNT);
+    groupFullInfo = map;
+    name = (String) map.get(NAME);
+    consumers = (List<ConsumerFullInfo>) map.get(CONSUMERS);
+    pending = (List<String>) map.get(PENDING);
+    lastDeliveredId = (StreamEntryID) map.get(LAST_DELIVERED);
+    pelCount = (Long) map.get(PEL_COUNT);
 
-    }
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public List<ConsumerFullInfo> getConsumers() {
-        return consumers;
-    }
+  public List<ConsumerFullInfo> getConsumers() {
+    return consumers;
+  }
 
-    public List<String> getPending() {
-        return pending;
-    }
+  public List<String> getPending() {
+    return pending;
+  }
 
-    public StreamEntryID getLastDeliveredId() {
-        return lastDeliveredId;
-    }
+  public StreamEntryID getLastDeliveredId() {
+    return lastDeliveredId;
+  }
 
-    /**
-     * @return Generic map containing all key-value pairs returned by the server
-     */
-    public Map<String, Object> getGroupFullInfo() {
-        return groupFullInfo;
-    }
+  /**
+   * @return Generic map containing all key-value pairs returned by the server
+   */
+  public Map<String, Object> getGroupFullInfo() {
+    return groupFullInfo;
+  }
 
-    public Long getPelCount() {
-        return pelCount;
-    }
+  public Long getPelCount() {
+    return pelCount;
+  }
 
 }

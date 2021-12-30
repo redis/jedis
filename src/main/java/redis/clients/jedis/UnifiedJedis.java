@@ -2467,7 +2467,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public StreamFullInfo xinfoStreamFull(byte[] key) {
-    return executeCommand(commandObjects.xinfoStreamFull(key, 10));
+    return executeCommand(commandObjects.xinfoStreamFull(key));
   }
 
   @Override

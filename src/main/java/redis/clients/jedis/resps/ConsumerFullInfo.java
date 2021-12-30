@@ -11,43 +11,43 @@ import java.util.Map;
  */
 public class ConsumerFullInfo implements Serializable {
 
-    public static final String NAME = "name";
-    public static final String SEEN_TIME = "seen-time";
-    public static final String PEL_COUNT = "pel-count";
-    public static final String PENDING = "pending";
+  public static final String NAME = "name";
+  public static final String SEEN_TIME = "seen-time";
+  public static final String PEL_COUNT = "pel-count";
+  public static final String PENDING = "pending";
 
-    private final String name;
-    private final Long seenTime;
-    private final Long pelCount;
-    private final List<Long> pending;
-    private final Map<String, Object> consumerInfo;
+  private final String name;
+  private final Long seenTime;
+  private final Long pelCount;
+  private final List<Long> pending;
+  private final Map<String, Object> consumerInfo;
 
-    @SuppressWarnings("unchecked")
-    public ConsumerFullInfo(Map<String, Object> map){
-        consumerInfo = map;
-        name = (String) map.get(NAME);
-        seenTime = (Long) map.get(SEEN_TIME);
-        pending = (List<Long>) map.get(PENDING);
-        pelCount = (Long) map.get(PEL_COUNT);
-    }
+  @SuppressWarnings("unchecked")
+  public ConsumerFullInfo(Map<String, Object> map) {
+    consumerInfo = map;
+    name = (String) map.get(NAME);
+    seenTime = (Long) map.get(SEEN_TIME);
+    pending = (List<Long>) map.get(PENDING);
+    pelCount = (Long) map.get(PEL_COUNT);
+  }
 
-    public String getName() {
-        return name;
-    }
+  public String getName() {
+    return name;
+  }
 
-    public long getSeenTime() {
-        return seenTime;
-    }
+  public long getSeenTime() {
+    return seenTime;
+  }
 
-    public Long getPelCount() {
-        return pelCount;
-    }
+  public Long getPelCount() {
+    return pelCount;
+  }
 
-    public List<Long> getPending() {
-        return pending;
-    }
+  public List<Long> getPending() {
+    return pending;
+  }
 
-    public Map<String, Object> getConsumerInfo() {
-        return consumerInfo;
-    }
+  public Map<String, Object> getConsumerInfo() {
+    return consumerInfo;
+  }
 }

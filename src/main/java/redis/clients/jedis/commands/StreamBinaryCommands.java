@@ -58,13 +58,20 @@ public interface StreamBinaryCommands {
 
   Object xinfoStream(byte[] key);
 
+  /**
+   * Introspection command used in order to retrieve all information about the stream
+   * @param key Stream name
+   * @return {@link StreamFullInfo} that contains information about the stream
+   */
   StreamFullInfo xinfoStreamFull(byte[] key);
 
+  /**
+   * Introspection command used in order to retrieve all information about the stream
+   * @param key Stream name
+   * @param count stream info count
+   * @return {@link StreamFullInfo} that contains information about the stream
+   */
   StreamFullInfo xinfoStreamFull(byte[] key, int count);
-
-  StreamFullInfo xinfoStreamFull(String key);
-
-  StreamFullInfo xinfoStreamFull(String key, int count);
 
   List<Object> xinfoGroup(byte[] key);
 

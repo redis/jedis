@@ -766,6 +766,13 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(V2, streamInfoFull.getEntries().get(1).getFields().get(F1));
     assertEquals(id2, streamInfoFull.getLastGeneratedId());
 
+    streamInfoFull = jedis.xinfoStreamFull(STREAM_NAME, 10);
+    assertEquals(G1, streamInfoFull.getGroups().get(0).getName());
+    assertEquals(G2, streamInfoFull.getGroups().get(1).getName());
+    assertEquals(V1, streamInfoFull.getEntries().get(0).getFields().get(F1));
+    assertEquals(V2, streamInfoFull.getEntries().get(1).getFields().get(F1));
+    assertEquals(id2, streamInfoFull.getLastGeneratedId());
+
     // Not existing key - redis cli return error so we expect exception
     try {
       jedis.xinfoStream("random");

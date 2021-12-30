@@ -28,7 +28,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   /* A simple class that represents an object in real life */
   @SuppressWarnings("unused")
-  private static class IRLObject {
+  public static class IRLObject {
 
     public String str;
     public boolean bool;
@@ -57,7 +57,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     }
   }
 
-  private static class Baz {
+  public static class Baz {
 
     private String quuz;
     private String grault;

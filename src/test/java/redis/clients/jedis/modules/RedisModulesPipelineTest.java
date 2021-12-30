@@ -7,7 +7,6 @@ import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import com.google.gson.Gson;
 import org.json.JSONArray;
@@ -21,50 +20,11 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.modules.json.RedisJsonV2Test.IRLObject;
+import redis.clients.jedis.modules.json.RedisJsonV2Test.Baz;
 import redis.clients.jedis.search.*;
 
 public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
-  private static class IRLObject {
-
-    public String str;
-    public boolean bool;
-
-    public IRLObject() {
-      this.str = "string";
-      this.bool = true;
-    }
-  }
-
-  private static class Baz {
-
-    private String quuz;
-    private String grault;
-    private String waldo;
-
-    public Baz(final String quuz, final String grault, final String waldo) {
-      this.quuz = quuz;
-      this.grault = grault;
-      this.waldo = waldo;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null) {
-        return false;
-      }
-      if (getClass() != o.getClass()) {
-        return false;
-      }
-      Baz other = (Baz) o;
-
-      return Objects.equals(quuz, other.quuz)
-              && Objects.equals(grault, other.grault)
-              && Objects.equals(waldo, other.waldo);
-    }
-  }
 
   private static final Gson gson = new Gson();
 

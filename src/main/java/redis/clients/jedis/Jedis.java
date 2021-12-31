@@ -4533,6 +4533,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public StreamFullInfo xinfoStreamFull(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(byte[] key, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
   public List<Object> xinfoGroup(byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoGroup(key));

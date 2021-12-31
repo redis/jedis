@@ -2576,6 +2576,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public StreamFullInfo xinfoStreamFull(byte[] key) {
+    return executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(byte[] key, int count) {
+    return executeCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key) {
+    return executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key, int count) {
+    return executeCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
   public List<StreamGroupInfo> xinfoGroup(String key) {
     return executeCommand(commandObjects.xinfoGroup(key));
   }

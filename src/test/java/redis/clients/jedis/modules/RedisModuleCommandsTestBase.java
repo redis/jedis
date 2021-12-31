@@ -27,9 +27,9 @@ public abstract class RedisModuleCommandsTestBase {
 
   public static void prepare() {
     try (Connection connection = new Connection(hnp)) {
-      assumeTrue("No Redis running on 6479 port. Ignoring modules tests.", connection.ping());
+      assumeTrue("No Redis running on 6479 port.", connection.ping());
     } catch (JedisConnectionException jce) {
-      assumeTrue(false);
+      assumeTrue("Could not connect to Redis running on 6479 port.", false);
     }
   }
 
@@ -49,6 +49,10 @@ public abstract class RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 //    client.close();
 //  }
+
+  protected static Connection createConnection() {
+    return new Connection(hnp);
+  }
 
   protected static Jedis createJedis() {
     return new Jedis(hnp);

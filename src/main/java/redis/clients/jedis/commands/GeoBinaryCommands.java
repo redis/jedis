@@ -8,6 +8,7 @@ import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 
 public interface GeoBinaryCommands {
@@ -53,5 +54,26 @@ public interface GeoBinaryCommands {
 
   long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
+  
+  List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit);
 
+  List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double radius, GeoUnit unit);
+
+  List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit);
+
+  List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double width, double height, GeoUnit unit);
+
+  List<GeoRadiusResponse> geosearch(byte[] key, GeoSearchParam params);
+
+  long geosearchStore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit);
+
+  long geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double radius, GeoUnit unit);
+
+  long geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit);
+
+  long geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double width, double height, GeoUnit unit);
+
+  long geosearchStore(byte[] dest, byte[] src, GeoSearchParam params);
+
+  long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params);
 }

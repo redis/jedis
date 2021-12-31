@@ -1204,6 +1204,61 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, String member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, member, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, coord, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, String member, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, member, width, height, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, coord, width, height, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearch(key, params));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, String member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, member, radius, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, coord, radius, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, member, width, height, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, coord, width, height, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, params));
+  }
+
+  @Override
+  public Response<Long> geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearchStoreStoreDist(dest, src, params));
+  }
+
+  @Override
   public Response<Long> pfadd(String key, String... elements) {
     return appendCommand(commandObjects.pfadd(key, elements));
   }
@@ -1539,6 +1594,61 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return appendCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, member, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, coord, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, member, width, height, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, coord, width, height, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearch(key, params));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, member, radius, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, coord, radius, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, member, width, height, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, coord, width, height, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, params));
+  }
+
+  @Override
+  public Response<Long> geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearchStoreStoreDist(dest, src, params));
   }
 
   @Override

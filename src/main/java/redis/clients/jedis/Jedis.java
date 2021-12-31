@@ -4292,6 +4292,72 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, member, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, coord, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, member, width, height, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, coord, width, height, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(byte[] key, GeoSearchParam params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, params));
+  }
+
+  @Override
+  public long geosearchStore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, member, radius, unit));
+  }
+
+  @Override
+  public long geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, coord, radius, unit));
+  }
+
+  @Override
+  public long geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, member, width, height, unit));
+  }
+
+  @Override
+  public long geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, coord, width, height, unit));
+  }
+
+  @Override
+  public long geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, params));
+  }
+
+  @Override
+  public long geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStoreStoreDist(dest, src, params));
+  }
+
+  @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(final byte[] key, final byte[] member,
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
@@ -8280,6 +8346,72 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final double radius, final GeoUnit unit, final GeoRadiusParam param) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, member, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, coord, radius, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, member, width, height, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, coord, width, height, unit));
+  }
+
+  @Override
+  public List<GeoRadiusResponse> geosearch(String key, GeoSearchParam params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearch(key, params));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, String member, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, member, radius, unit));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, GeoCoordinate coord, double radius, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, coord, radius, unit));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, member, width, height, unit));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, coord, width, height, unit));
+  }
+
+  @Override
+  public long geosearchStore(String dest, String src, GeoSearchParam params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStore(dest, src, params));
+  }
+
+  @Override
+  public long geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.geosearchStoreStoreDist(dest, src, params));
   }
 
   @Override

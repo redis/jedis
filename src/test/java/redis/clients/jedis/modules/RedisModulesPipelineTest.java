@@ -1,13 +1,17 @@
 package redis.clients.jedis.modules;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static redis.clients.jedis.json.Path.ROOT_PATH;
+import static redis.clients.jedis.modules.json.JsonObjects.Baz;
+import static redis.clients.jedis.modules.json.JsonObjects.IRLObject;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-
 import com.google.gson.Gson;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
@@ -19,8 +23,6 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.modules.json.RedisJsonV2Test.IRLObject;
-import redis.clients.jedis.modules.json.RedisJsonV2Test.Baz;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 

@@ -8,6 +8,7 @@ import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
+import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 
 public interface GeoCommands {
@@ -54,4 +55,25 @@ public interface GeoCommands {
   long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
 
+  List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit);
+
+  List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double radius, GeoUnit unit);
+
+  List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit);
+
+  List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double width, double height, GeoUnit unit);
+
+  List<GeoRadiusResponse> geosearch(String key, GeoSearchParam params);
+  
+  long geosearchStore(String dest, String src, String member, double radius, GeoUnit unit);
+
+  long geosearchStore(String dest, String src, GeoCoordinate coord, double radius, GeoUnit unit);
+
+  long geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit);
+
+  long geosearchStore(String dest, String src, GeoCoordinate coord, double width, double height, GeoUnit unit);
+
+  long geosearchStore(String dest, String src, GeoSearchParam params);
+
+  long geosearchStoreStoreDist(String dest, String src, GeoSearchParam params);
 }

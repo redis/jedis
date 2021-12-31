@@ -9,7 +9,7 @@ import java.util.Map;
  * They can be access via getters. For future purpose there is also {@link #getConsumerInfo()} method that
  * returns a generic {@code Map} - in case where more info is returned from the server.
  */
-public class ConsumerFullInfo implements Serializable {
+public class StreamConsumerFullInfo implements Serializable {
 
   public static final String NAME = "name";
   public static final String SEEN_TIME = "seen-time";
@@ -23,7 +23,7 @@ public class ConsumerFullInfo implements Serializable {
   private final Map<String, Object> consumerInfo;
 
   @SuppressWarnings("unchecked")
-  public ConsumerFullInfo(Map<String, Object> map) {
+  public StreamConsumerFullInfo(Map<String, Object> map) {
     consumerInfo = map;
     name = (String) map.get(NAME);
     seenTime = (Long) map.get(SEEN_TIME);

@@ -7,7 +7,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.resps.ConsumerFullInfo;
+import redis.clients.jedis.resps.StreamConsumerFullInfo;
 import redis.clients.jedis.resps.StreamFullInfo;
 import redis.clients.jedis.resps.StreamGroupFullInfo;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
@@ -1112,35 +1112,35 @@ public final class BuilderFactory {
     }
   };
 
-  private static final Builder<List<ConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST = new Builder<List<ConsumerFullInfo>>() {
+  private static final Builder<List<StreamConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST = new Builder<List<StreamConsumerFullInfo>>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 
     private Map<String, Builder> createDecoderMap() {
 
       Map<String, Builder> tempMappingFunctions = new HashMap<>();
-      tempMappingFunctions.put(ConsumerFullInfo.NAME, STRING);
-      tempMappingFunctions.put(ConsumerFullInfo.SEEN_TIME, LONG);
-      tempMappingFunctions.put(ConsumerFullInfo.PEL_COUNT, LONG);
-      tempMappingFunctions.put(ConsumerFullInfo.PENDING, LONG_LIST);
+      tempMappingFunctions.put(StreamConsumerFullInfo.NAME, STRING);
+      tempMappingFunctions.put(StreamConsumerFullInfo.SEEN_TIME, LONG);
+      tempMappingFunctions.put(StreamConsumerFullInfo.PEL_COUNT, LONG);
+      tempMappingFunctions.put(StreamConsumerFullInfo.PENDING, LONG_LIST);
 
       return tempMappingFunctions;
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<ConsumerFullInfo> build(Object data) {
+    public List<StreamConsumerFullInfo> build(Object data) {
       if (null == data) {
         return null;
       }
 
-      List<ConsumerFullInfo> list = new ArrayList<>();
+      List<StreamConsumerFullInfo> list = new ArrayList<>();
       List<Object> streamsEntries = (List<Object>) data;
 
       for (Object streamsEntry : streamsEntries) {
         List<Object> consumerInfoList = (List<Object>) streamsEntry;
         Iterator<Object> consumerInfoIterator = consumerInfoList.iterator();
-        ConsumerFullInfo consumerInfo = new ConsumerFullInfo(createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
+        StreamConsumerFullInfo consumerInfo = new StreamConsumerFullInfo(createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
         list.add(consumerInfo);
       }
       return list;
@@ -1148,7 +1148,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "List<ConsumerInfo>";
+      return "List<StreamConsumerFullInfo>";
     }
   };
 

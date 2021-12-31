@@ -2,13 +2,13 @@ package redis.clients.jedis.modules.json;
 
 import static org.junit.Assert.*;
 import static redis.clients.jedis.json.Path.ROOT_PATH;
+import static redis.clients.jedis.modules.json.JsonObjects.*;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -22,102 +22,6 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
-  }
-
-  /* A simple class that represents an object in real life */
-  @SuppressWarnings("unused")
-  private static class IRLObject {
-
-    public String str;
-    public boolean bool;
-
-    public IRLObject() {
-      this.str = "string";
-      this.bool = true;
-    }
-  }
-
-  @SuppressWarnings("unused")
-  private static class FooBarObject {
-
-    public String foo;
-    public boolean fooB;
-    public int fooI;
-    public float fooF;
-    public String[] fooArr;
-
-    public FooBarObject() {
-      this.foo = "bar";
-      this.fooB = true;
-      this.fooI = 6574;
-      this.fooF = 435.345f;
-      this.fooArr = new String[]{"a", "b", "c"};
-    }
-  }
-
-  private static class Baz {
-
-    private String quuz;
-    private String grault;
-    private String waldo;
-
-    public Baz(final String quuz, final String grault, final String waldo) {
-      this.quuz = quuz;
-      this.grault = grault;
-      this.waldo = waldo;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null) {
-        return false;
-      }
-      if (getClass() != o.getClass()) {
-        return false;
-      }
-      Baz other = (Baz) o;
-
-      return Objects.equals(quuz, other.quuz)
-          && Objects.equals(grault, other.grault)
-          && Objects.equals(waldo, other.waldo);
-    }
-  }
-
-  private static class Qux {
-
-    private String quux;
-    private String corge;
-    private String garply;
-    private Baz baz;
-
-    public Qux(final String quux, final String corge, final String garply, final Baz baz) {
-      this.quux = quux;
-      this.corge = corge;
-      this.garply = garply;
-      this.baz = baz;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null) {
-        return false;
-      }
-      if (getClass() != o.getClass()) {
-        return false;
-      }
-      Qux other = (Qux) o;
-
-      return Objects.equals(quux, other.quux)
-          && Objects.equals(corge, other.corge)
-          && Objects.equals(garply, other.garply)
-          && Objects.equals(baz, other.baz);
-    }
   }
 
   private final Gson gson = new Gson();

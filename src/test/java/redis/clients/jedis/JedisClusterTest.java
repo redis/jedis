@@ -11,6 +11,7 @@ import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -588,7 +589,7 @@ public class JedisClusterTest {
   public void testIfPoolConfigAppliesToClusterPools() {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(0);
-    config.setMaxWaitMillis(DEFAULT_TIMEOUT);
+    config.setMaxWait(Duration.ofMillis(DEFAULT_TIMEOUT));
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
     try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,

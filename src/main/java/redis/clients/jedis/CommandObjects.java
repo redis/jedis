@@ -800,6 +800,14 @@ public class CommandObjects {
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.STRING);
   }
 
+  public final CommandObject<Map<String, List<String>>> lmpop(ListDirection from, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from), BuilderFactory.SEARCH_SYNONYM_GROUPS);
+  }
+
+  public final CommandObject<Map<String, List<String>>> lmpop(ListDirection from, int count, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from).add(COUNT).add(count), BuilderFactory.SEARCH_SYNONYM_GROUPS);
+  }
+
   public final CommandObject<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
     return new CommandObject<>(commandArguments(LMOVE).key(srcKey).key(dstKey)
         .add(from).add(to), BuilderFactory.BINARY);
@@ -809,6 +817,15 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BLMOVE).blocking().key(srcKey)
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY);
   }
+
+  public final CommandObject<Map<byte[], List<byte[]>>> lmpop(ListDirection from, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from), BuilderFactory.GROUPS_LIST_BINARY);
+  }
+
+  public final CommandObject<Map<byte[], List<byte[]>>> lmpop(ListDirection from, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from).add(COUNT).add(count), BuilderFactory.GROUPS_LIST_BINARY);
+  }
+
   // List commands
 
   // Hash commands

@@ -275,6 +275,20 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<byte[], List<byte[]>>> GROUPS_LIST_BINARY = new Builder<Map<byte[], List<byte[]>>>() {
+    @SuppressWarnings("unchecked")
+    @Override
+    public Map<byte[], List<byte[]>> build(Object data) {
+      final List<byte[]> flatHash = (List<byte[]>) data;
+      final Map<byte[], List<byte[]>> hash = new HashMap<>();
+      final Iterator<byte[]> iterator = flatHash.iterator();
+      while (iterator.hasNext()) {
+        hash.put(iterator.next(), BYTE_ARRAY_LIST.build(iterator.next()));
+      }
+      return hash;
+    }
+  };
+
   public static final Builder<String> STRING = new Builder<String>() {
     @Override
     public String build(Object data) {
@@ -1455,8 +1469,12 @@ public final class BuilderFactory {
   };
 
   public static final Builder<Map<String, List<String>>> SEARCH_SYNONYM_GROUPS = new Builder<Map<String, List<String>>>() {
+    @SuppressWarnings("unchecked")
     @Override
     public Map<String, List<String>> build(Object data) {
+      if (data == null) {
+        return new HashMap<>();
+      }
       List<Object> list = (List<Object>) data;
       Map<String, List<String>> dump = new HashMap<>(list.size() / 2);
       for (int i = 0; i < list.size(); i += 2) {

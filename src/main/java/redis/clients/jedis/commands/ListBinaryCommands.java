@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import java.util.Map;
 
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
@@ -59,5 +60,26 @@ public interface ListBinaryCommands {
   byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
   byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
+
+  /**
+   * Pops one element from the first non-empty list key from the list of provided key names.
+   *
+   * @param from LEFT|RIGHT
+   * @param keys key of list
+   * @return element from the first non-empty list key from the list of provided key names
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
+   */
+  Map<byte[], List<byte[]>> lmpop(ListDirection from, byte[]... keys);
+
+  /**
+   * Pops one or more elements from the first non-empty list key from the list of provided key names.
+   *
+   * @param from  LEFT|RIGHT
+   * @param count count of pop elements
+   * @param keys  key of list
+   * @return elements from the first non-empty list key from the list of provided key names.
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
+   */
+  Map<byte[], List<byte[]>> lmpop(ListDirection from, int count, byte[]... keys);
 
 }

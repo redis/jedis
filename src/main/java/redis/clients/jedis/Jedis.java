@@ -2463,6 +2463,33 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * Pops one element from the first non-empty list key from the list of provided key names.
+   *
+   * @param from LEFT|RIGHT
+   * @param keys key of list
+   * @return element from the first non-empty list key from the list of provided key names
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
+   */
+  @Override
+  public Map<byte[], List<byte[]>> lmpop(ListDirection from, byte[]... keys) {
+    return connection.executeCommand(commandObjects.lmpop(from, keys));
+  }
+
+  /**
+   * Pops one or more elements from the first non-empty list key from the list of provided key names.
+   *
+   * @param from  LEFT|RIGHT
+   * @param count count of pop elements
+   * @param keys  key of list
+   * @return elements from the first non-empty list key from the list of provided key names.
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
+   */
+  @Override
+  public Map<byte[], List<byte[]>> lmpop(ListDirection from, int count, byte[]... keys) {
+    return connection.executeCommand(commandObjects.lmpop(from, count, keys));
+  }
+
   @Override
   public List<byte[]> bzpopmax(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
@@ -6617,6 +6644,33 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public KeyedListElement brpop(double timeout, String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.brpop(timeout, key));
+  }
+
+  /**
+   * Pops one element from the first non-empty list key from the list of provided key names.
+   *
+   * @param from LEFT|RIGHT
+   * @param keys key of list
+   * @return element from the first non-empty list key from the list of provided key names
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
+   */
+  @Override
+  public Map<String, List<String>> lmpop(ListDirection from, String... keys) {
+    return connection.executeCommand(commandObjects.lmpop(from, keys));
+  }
+
+  /**
+   * Pops one or more elements from the first non-empty list key from the list of provided key names.
+   *
+   * @param from  LEFT|RIGHT
+   * @param count count of pop elements
+   * @param keys  key of list
+   * @return elements from the first non-empty list key from the list of provided key names.
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
+   */
+  @Override
+  public Map<String, List<String>> lmpop(ListDirection from, int count, String... keys) {
+    return connection.executeCommand(commandObjects.lmpop(from, count, keys));
   }
 
   @Override

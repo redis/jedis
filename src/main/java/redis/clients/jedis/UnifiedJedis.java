@@ -1028,6 +1028,33 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.brpop(timeout, keys));
   }
 
+  /**
+   * Pops one element from the first non-empty list key from the list of provided key names.
+   *
+   * @param from LEFT|RIGHT
+   * @param keys key of list
+   * @return element from the first non-empty list key from the list of provided key names
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
+   */
+  @Override
+  public Map<String, List<String>> lmpop(ListDirection from, String... keys) {
+    return executeCommand(commandObjects.lmpop(from, keys));
+  }
+
+  /**
+   * Pops one or more elements from the first non-empty list key from the list of provided key names.
+   *
+   * @param from  LEFT|RIGHT
+   * @param count count of pop elements
+   * @param keys  key of list
+   * @return elements from the first non-empty list key from the list of provided key names.
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
+   */
+  @Override
+  public Map<String, List<String>> lmpop(ListDirection from, int count, String... keys) {
+    return executeCommand(commandObjects.lmpop(from, count, keys));
+  }
+
   @Override
   public List<byte[]> blpop(int timeout, byte[]... keys) {
     return executeCommand(commandObjects.blpop(timeout, keys));
@@ -1087,6 +1114,34 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     return executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
+
+  /**
+   * Pops one element from the first non-empty list key from the list of provided key names.
+   *
+   * @param from LEFT|RIGHT
+   * @param keys key of list
+   * @return element from the first non-empty list key from the list of provided key names
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
+   */
+  @Override
+  public Map<byte[], List<byte[]>> lmpop(ListDirection from, byte[]... keys) {
+    return executeCommand(commandObjects.lmpop(from, keys));
+  }
+
+  /**
+   * Pops one or more elements from the first non-empty list key from the list of provided key names.
+   *
+   * @param from  LEFT|RIGHT
+   * @param count count of pop elements
+   * @param keys  key of list
+   * @return elements from the first non-empty list key from the list of provided key names.
+   * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
+   */
+  @Override
+  public Map<byte[], List<byte[]>> lmpop(ListDirection from, int count, byte[]... keys) {
+    return executeCommand(commandObjects.lmpop(from, count, keys));
+  }
+
   // List commands
 
   // Hash commands

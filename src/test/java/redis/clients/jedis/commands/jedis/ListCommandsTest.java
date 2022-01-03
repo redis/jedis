@@ -8,11 +8,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -874,5 +872,31 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(b3, jedis.blmove(bfoo, bbar, ListDirection.RIGHT, ListDirection.LEFT, 0));
     assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
     assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
+  }
+
+  @Test
+  public void lmpop(){
+    String mylist1 = "mylist1";
+    String mylist2 = "mylist2";
+    // clean old data
+    jedis.del(mylist1);
+    jedis.del(mylist2);
+    // add elements to list
+    jedis.lpush(mylist1, "one", "two", "three", "four", "five");
+    jedis.lpush(mylist2, "one", "two", "three", "four", "five");
+
+    Map<String, List<String>> lmpopMap = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
+    Assert.assertEquals(1, lmpopMap.size());
+    Assert.assertEquals(1, lmpopMap.get(mylist1).size());
+    lmpopMap = jedis.lmpop(ListDirection.LEFT, 5,mylist1, mylist2);
+    Assert.assertEquals(1, lmpopMap.size());
+    Assert.assertEquals(4, lmpopMap.get(mylist1).size());
+
+    lmpopMap = jedis.lmpop(ListDirection.LEFT,6, mylist1, mylist2);
+    Assert.assertEquals(1, lmpopMap.size());
+    Assert.assertEquals(5, lmpopMap.get(mylist2).size());
+
+    lmpopMap = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
+    Assert.assertEquals(0, lmpopMap.size());
   }
 }

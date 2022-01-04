@@ -508,12 +508,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> bitcount(String key, long start, long end, BitCountOption option) {
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(option), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> bitcount(byte[] key) {
     return new CommandObject<>(commandArguments(BITCOUNT).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> bitcount(byte[] key, long start, long end) {
     return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> bitcount(byte[] key, long start, long end, BitCountOption option) {
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(option), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> bitpos(String key, boolean value) {
@@ -1847,6 +1855,135 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER).key(key).add(member)
         .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
   }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, String member,
+      double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key).add(FROMMEMBER).add(member)
+        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, GeoCoordinate coord,
+      double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key)
+        .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
+        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, String member,
+      double width, double height, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key).add(FROMMEMBER).add(member)
+        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, GeoCoordinate coord,
+      double width, double height, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key)
+        .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
+        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, GeoSearchParam params) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key).addParams(params),
+        BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<Long> geosearchStore(String dest, String src, String member,
+      double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMMEMBER).add(member)
+        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStore(String dest, String src, GeoCoordinate coord,
+      double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMLONLAT).add(coord.getLongitude())
+        .add(coord.getLatitude()).add(BYRADIUS).add(radius).add(unit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStore(String dest, String src, String member,
+      double width, double height, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMMEMBER).add(member)
+        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStore(String dest, String src, GeoCoordinate coord,
+      double width, double height, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src)
+        .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
+        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStore(String dest, String src, GeoSearchParam params) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params).add(STOREDIST), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member,
+      double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key).add(FROMMEMBER).add(member)
+        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, GeoCoordinate coord,
+      double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key)
+        .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
+        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member,
+      double width, double height, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key).add(FROMMEMBER).add(member)
+        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, GeoCoordinate coord,
+      double width, double height, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key)
+        .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
+        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, GeoSearchParam params) {
+    return new CommandObject<>(commandArguments(GEOSEARCH).key(key).addParams(params),
+        BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+  }
+
+  public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, byte[] member,
+      double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMMEMBER).add(member)
+        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord,
+      double radius, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src)
+        .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
+        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, byte[] member,
+      double width, double height, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMMEMBER).add(member)
+        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord,
+      double width, double height, GeoUnit unit) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src)
+        .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
+        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params).add(STOREDIST), BuilderFactory.LONG);
+  }
   // Geo commands
 
   // Hyper Log Log commands
@@ -2153,6 +2290,22 @@ public class CommandObjects {
 
   public final CommandObject<Object> xinfoStream(byte[] key) {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key), BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<StreamFullInfo> xinfoStreamFull(byte[] key, int count) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
+  }
+
+  public final CommandObject<StreamFullInfo> xinfoStreamFull(byte[] key) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
+  }
+
+  public final CommandObject<StreamFullInfo> xinfoStreamFull(String key, int count) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
+  }
+
+  public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
   }
 
   public final CommandObject<List<Object>> xinfoGroup(byte[] key) {

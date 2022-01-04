@@ -1,14 +1,15 @@
 package redis.clients.jedis.commands;
 
+import java.util.List;
+
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
-
-import java.util.List;
 
 public interface StringPipelineBinaryCommands {
 
@@ -63,6 +64,8 @@ public interface StringPipelineBinaryCommands {
   Response<Long> bitcount(byte[] key);
 
   Response<Long> bitcount(byte[] key, long start, long end);
+
+  Response<Long> bitcount(byte[] key, long start, long end, BitCountOption option);
 
   Response<Long> bitpos(byte[] key, boolean value);
 

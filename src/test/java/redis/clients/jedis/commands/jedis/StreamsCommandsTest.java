@@ -189,6 +189,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     List<StreamEntry> range2 = jedis.xrange("xrange-stream", (StreamEntryID) null,
       (StreamEntryID) null, 3);
     assertEquals(2, range2.size());
+    assertEquals(range2.get(0).toString(), id1 + " " + map);
 
     List<StreamEntry> range3 = jedis.xrange("xrange-stream", id1, null, 2);
     assertEquals(2, range3.size());
@@ -466,6 +467,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(id1, pendingRange.get(0).getID());
     assertEquals(1, pendingRange.get(0).getDeliveredTimes());
     assertEquals("xpendeing-consumer", pendingRange.get(0).getConsumerName());
+    assertTrue(pendingRange.get(0).toString().contains("xpendeing-consumer"));
 
     // Without consumer
     pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group", new XPendingParams().count(3));
@@ -749,6 +751,27 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(2, manyGroupsInfo.size());
     assertEquals(2, manyConsumersInfo.size());
+
+    StreamFullInfo streamInfoFull = jedis.xinfoStreamFull(STREAM_NAME);
+
+    assertEquals(2, streamInfoFull.getEntries().size());
+    assertEquals(2, streamInfoFull.getGroups().size());
+    assertEquals(2, streamInfoFull.getLength());
+    assertEquals(1, streamInfoFull.getRadixTreeKeys());
+    assertEquals(2, streamInfoFull.getRadixTreeNodes());
+    assertEquals(0, streamInfo.getGroups());
+    assertEquals(G1, streamInfoFull.getGroups().get(0).getName());
+    assertEquals(G2, streamInfoFull.getGroups().get(1).getName());
+    assertEquals(V1, streamInfoFull.getEntries().get(0).getFields().get(F1));
+    assertEquals(V2, streamInfoFull.getEntries().get(1).getFields().get(F1));
+    assertEquals(id2, streamInfoFull.getLastGeneratedId());
+
+    streamInfoFull = jedis.xinfoStreamFull(STREAM_NAME, 10);
+    assertEquals(G1, streamInfoFull.getGroups().get(0).getName());
+    assertEquals(G2, streamInfoFull.getGroups().get(1).getName());
+    assertEquals(V1, streamInfoFull.getEntries().get(0).getFields().get(F1));
+    assertEquals(V2, streamInfoFull.getEntries().get(1).getFields().get(F1));
+    assertEquals(id2, streamInfoFull.getLastGeneratedId());
 
     // Not existing key - redis cli return error so we expect exception
     try {

@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
+import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
@@ -62,6 +63,8 @@ public interface StringCommands {
   long bitcount(String key);
 
   long bitcount(String key, long start, long end);
+
+  long bitcount(String key, long start, long end, BitCountOption option);
 
   long bitpos(String key, boolean value);
 

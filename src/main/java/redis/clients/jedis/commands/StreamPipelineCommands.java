@@ -239,6 +239,21 @@ public interface StreamPipelineCommands {
   Response<StreamInfo> xinfoStream (String key);
 
   /**
+   * Introspection command used in order to retrieve all information about the stream
+   * @param key Stream name
+   * @return {@link StreamFullInfo} that contains information about the stream
+   */
+  Response<StreamFullInfo> xinfoStreamFull(String key);
+
+  /**
+   * Introspection command used in order to retrieve all information about the stream
+   * @param key Stream name
+   * @param count stream info count
+   * @return {@link StreamFullInfo} that contains information about the stream
+   */
+  Response<StreamFullInfo> xinfoStreamFull(String key, int count);
+
+  /**
    * Introspection command used in order to retrieve different information about groups in the stream
    * @param key Stream name
    * @return List of {@link StreamGroupInfo} containing information about groups

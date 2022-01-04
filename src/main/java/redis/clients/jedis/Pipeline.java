@@ -22,6 +22,8 @@ import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Query;
 import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.aggr.AggregationBuilder;
+import redis.clients.jedis.search.aggr.AggregationResult;
 
 public class Pipeline extends Queable  implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
@@ -407,6 +409,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<Long> bitcount(String key, long start, long end) {
     return appendCommand(commandObjects.bitcount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> bitcount(String key, long start, long end, BitCountOption option) {
+    return appendCommand(commandObjects.bitcount(key, start, end, option));
   }
 
   @Override
@@ -1197,6 +1204,61 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, String member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, member, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, coord, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, String member, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, member, width, height, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, coord, width, height, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(String key, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearch(key, params));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, String member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, member, radius, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, coord, radius, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, member, width, height, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, coord, width, height, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(String dest, String src, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, params));
+  }
+
+  @Override
+  public Response<Long> geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearchStoreStoreDist(dest, src, params));
+  }
+
+  @Override
   public Response<Long> pfadd(String key, String... elements) {
     return appendCommand(commandObjects.pfadd(key, elements));
   }
@@ -1532,6 +1594,61 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<Long> georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return appendCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, member, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, coord, radius, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, member, width, height, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearch(key, coord, width, height, unit));
+  }
+
+  @Override
+  public Response<List<GeoRadiusResponse>> geosearch(byte[] key, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearch(key, params));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, byte[] member, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, member, radius, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double radius, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, coord, radius, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, byte[] member, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, member, width, height, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord, double width, double height, GeoUnit unit) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, coord, width, height, unit));
+  }
+
+  @Override
+  public Response<Long> geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearchStore(dest, src, params));
+  }
+
+  @Override
+  public Response<Long> geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
+    return appendCommand(commandObjects.geosearchStoreStoreDist(dest, src, params));
   }
 
   @Override
@@ -2578,6 +2695,27 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<StreamFullInfo> xinfoStreamFull(byte[] key) {
+    return appendCommand(commandObjects.xinfoStreamFull(key));
+
+  }
+
+  @Override
+  public Response<StreamFullInfo> xinfoStreamFull(byte[] key, int count) {
+    return appendCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  public Response<StreamFullInfo> xinfoStreamFull(String key) {
+    return appendCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public Response<StreamFullInfo> xinfoStreamFull(String key, int count) {
+    return appendCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
   public Response<List<Object>> xinfoGroup(byte[] key) {
     return appendCommand(commandObjects.xinfoGroup(key));
   }
@@ -2725,6 +2863,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<Long> bitcount(byte[] key, long start, long end) {
     return appendCommand(commandObjects.bitcount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> bitcount(byte[] key, long start, long end, BitCountOption option) {
+    return appendCommand(commandObjects.bitcount(key, start, end, option));
   }
 
   @Override
@@ -3023,6 +3166,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<String> ftAlter(String indexName, Schema schema) {
+    return appendCommand(commandObjects.ftAlter(indexName, schema));
+  }
+
+  @Override
   public Response<SearchResult> ftSearch(String indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3030,6 +3178,91 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<String> ftExplain(String indexName, Query query) {
+    return appendCommand(commandObjects.ftExplain(indexName, query));
+  }
+
+  @Override
+  public Response<List<String>> ftExplainCLI(String indexName, Query query) {
+    return appendCommand(commandObjects.ftExplainCLI(indexName, query));
+  }
+
+  @Override
+  public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
+    return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
+    return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
+  }
+
+  @Override
+  public Response<String> ftCursorDel(String indexName, long cursorId) {
+    return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
+  }
+
+  @Override
+  public Response<String> ftDropIndex(String indexName) {
+    return appendCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public Response<String> ftDropIndexDD(String indexName) {
+    return appendCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
+  public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+    return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
+  }
+
+  @Override
+  public Response<Map<String, List<String>>> ftSynDump(String indexName) {
+    return appendCommand(commandObjects.ftSynDump(indexName));
+  }
+
+  @Override
+  public Response<Map<String, Object>> ftInfo(String indexName) {
+    return appendCommand(commandObjects.ftInfo(indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasAdd(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasDel(String aliasName) {
+    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public Response<Map<String, String>> ftConfigGet(String option) {
+    return appendCommand(commandObjects.ftConfigGet(option));
+  }
+
+  @Override
+  public Response<Map<String, String>> ftConfigGet(String indexName, String option) {
+    return appendCommand(commandObjects.ftConfigGet(indexName, option));
+  }
+
+  @Override
+  public Response<String> ftConfigSet(String option, String value) {
+    return appendCommand(commandObjects.ftConfigSet(option, value));
+  }
+
+  @Override
+  public Response<String> ftConfigSet(String indexName, String option, String value) {
+    return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
 
   public Response<Long> waitReplicas(int replicas, long timeout) {

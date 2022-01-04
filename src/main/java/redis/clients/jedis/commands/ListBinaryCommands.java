@@ -6,6 +6,7 @@ import java.util.Map;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.resps.KeyedListElementsBinary;
 
 public interface ListBinaryCommands {
 
@@ -69,7 +70,7 @@ public interface ListBinaryCommands {
    * @return element from the first non-empty list key from the list of provided key names
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
    */
-  Map<byte[], List<byte[]>> lmpop(ListDirection from, byte[]... keys);
+  List<KeyedListElementsBinary> lmpop(ListDirection from, byte[]... keys);
 
   /**
    * Pops one or more elements from the first non-empty list key from the list of provided key names.
@@ -80,6 +81,6 @@ public interface ListBinaryCommands {
    * @return elements from the first non-empty list key from the list of provided key names.
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
    */
-  Map<byte[], List<byte[]>> lmpop(ListDirection from, int count, byte[]... keys);
+  List<KeyedListElementsBinary> lmpop(ListDirection from, int count, byte[]... keys);
 
 }

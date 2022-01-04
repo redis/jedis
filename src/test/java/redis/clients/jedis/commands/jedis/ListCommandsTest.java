@@ -21,6 +21,7 @@ import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
+import redis.clients.jedis.resps.KeyedListElements;
 
 public class ListCommandsTest extends JedisCommandsTestBase {
 
@@ -885,18 +886,21 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(mylist1, "one", "two", "three", "four", "five");
     jedis.lpush(mylist2, "one", "two", "three", "four", "five");
 
-    Map<String, List<String>> lmpopMap = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
-    Assert.assertEquals(1, lmpopMap.size());
-    Assert.assertEquals(1, lmpopMap.get(mylist1).size());
-    lmpopMap = jedis.lmpop(ListDirection.LEFT, 5,mylist1, mylist2);
-    Assert.assertEquals(1, lmpopMap.size());
-    Assert.assertEquals(4, lmpopMap.get(mylist1).size());
+    List<KeyedListElements> elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
+    Assert.assertEquals(1, elements.size());
+    Assert.assertEquals(mylist1, elements.get(0).getKey());
+    Assert.assertEquals(1, elements.get(0).getElements().size());
+    elements = jedis.lmpop(ListDirection.LEFT, 5,mylist1, mylist2);
+    Assert.assertEquals(1, elements.size());
+    Assert.assertEquals(mylist1, elements.get(0).getKey());
+    Assert.assertEquals(4, elements.get(0).getElements().size());
 
-    lmpopMap = jedis.lmpop(ListDirection.LEFT,6, mylist1, mylist2);
-    Assert.assertEquals(1, lmpopMap.size());
-    Assert.assertEquals(5, lmpopMap.get(mylist2).size());
+    elements = jedis.lmpop(ListDirection.LEFT,6, mylist1, mylist2);
+    Assert.assertEquals(1, elements.size());
+    Assert.assertEquals(mylist2, elements.get(0).getKey());
+    Assert.assertEquals(5, elements.get(0).getElements().size());
 
-    lmpopMap = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
-    Assert.assertEquals(0, lmpopMap.size());
+    elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
+    Assert.assertEquals(0, elements.size());
   }
 }

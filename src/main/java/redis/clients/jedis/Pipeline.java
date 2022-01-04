@@ -616,7 +616,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
    */
   @Override
-  public Response<Map<String, List<String>>> lmpop(ListDirection from, String... keys) {
+  public Response<List<KeyedListElements>> lmpop(ListDirection from, String... keys) {
     return appendCommand(commandObjects.lmpop(from, keys));
   }
 
@@ -630,7 +630,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
    */
   @Override
-  public Response<Map<String, List<String>>> lmpop(ListDirection from, int count, String... keys) {
+  public Response<List<KeyedListElements>> lmpop(ListDirection from, int count, String... keys) {
     return appendCommand(commandObjects.lmpop(from, count, keys));
   }
 
@@ -2128,7 +2128,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
    */
   @Override
-  public Response<Map<byte[], List<byte[]>>> lmpop(ListDirection from, byte[]... keys) {
+  public Response<List<KeyedListElementsBinary>> lmpop(ListDirection from, byte[]... keys) {
     return appendCommand(commandObjects.lmpop(from, keys));
   }
 
@@ -2142,7 +2142,7 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
    */
   @Override
-  public Response<Map<byte[], List<byte[]>>> lmpop(ListDirection from, int count, byte[]... keys) {
+  public Response<List<KeyedListElementsBinary>> lmpop(ListDirection from, int count, byte[]... keys) {
     return appendCommand(commandObjects.lmpop(from, count, keys));
   }
 

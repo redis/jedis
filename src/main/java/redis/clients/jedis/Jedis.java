@@ -2472,7 +2472,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
    */
   @Override
-  public Map<byte[], List<byte[]>> lmpop(ListDirection from, byte[]... keys) {
+  public List<KeyedListElementsBinary> lmpop(ListDirection from, byte[]... keys) {
     return connection.executeCommand(commandObjects.lmpop(from, keys));
   }
 
@@ -2486,7 +2486,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
    */
   @Override
-  public Map<byte[], List<byte[]>> lmpop(ListDirection from, int count, byte[]... keys) {
+  public List<KeyedListElementsBinary> lmpop(ListDirection from, int count, byte[]... keys) {
     return connection.executeCommand(commandObjects.lmpop(from, count, keys));
   }
 
@@ -6655,7 +6655,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
    */
   @Override
-  public Map<String, List<String>> lmpop(ListDirection from, String... keys) {
+  public List<KeyedListElements> lmpop(ListDirection from, String... keys) {
     return connection.executeCommand(commandObjects.lmpop(from, keys));
   }
 
@@ -6669,7 +6669,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
    */
   @Override
-  public Map<String, List<String>> lmpop(ListDirection from, int count, String... keys) {
+  public List<KeyedListElements> lmpop(ListDirection from, int count, String... keys) {
     return connection.executeCommand(commandObjects.lmpop(from, count, keys));
   }
 

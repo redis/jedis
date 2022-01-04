@@ -275,17 +275,18 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<byte[], List<byte[]>>> GROUPS_LIST_BINARY = new Builder<Map<byte[], List<byte[]>>>() {
+  public static final Builder<List<KeyedListElementsBinary>> KEYED_LIST_ELEMENTS_BINARY = new Builder<List<KeyedListElementsBinary>>() {
     @SuppressWarnings("unchecked")
     @Override
-    public Map<byte[], List<byte[]>> build(Object data) {
+    public List<KeyedListElementsBinary> build(Object data) {
       final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<byte[], List<byte[]>> hash = new HashMap<>();
+      List<KeyedListElementsBinary> list = new ArrayList<>();
       final Iterator<byte[]> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
-        hash.put(iterator.next(), BYTE_ARRAY_LIST.build(iterator.next()));
+        KeyedListElementsBinary elementsBinary = new KeyedListElementsBinary(iterator.next(), BYTE_ARRAY_LIST.build(iterator.next()));
+        list.add(elementsBinary);
       }
-      return hash;
+      return list;
     }
   };
 
@@ -1481,6 +1482,23 @@ public final class BuilderFactory {
         dump.put(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
       }
       return dump;
+    }
+  };
+
+  public static final Builder<List<KeyedListElements>> KEYED_LIST_ELEMENTS = new Builder<List<KeyedListElements>>() {
+    @SuppressWarnings("unchecked")
+    @Override
+    public List<KeyedListElements> build(Object data) {
+      if (data == null) {
+        return new ArrayList<>();
+      }
+      List<Object> list = (List<Object>) data;
+      List<KeyedListElements> listElements = new ArrayList<>();
+      for (int i = 0; i < list.size(); i += 2) {
+        KeyedListElements elements = new KeyedListElements(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
+        listElements.add(elements);
+      }
+      return listElements;
     }
   };
 

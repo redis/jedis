@@ -800,12 +800,12 @@ public class CommandObjects {
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Map<String, List<String>>> lmpop(ListDirection from, String... keys) {
-    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from), BuilderFactory.SEARCH_SYNONYM_GROUPS);
+  public final CommandObject<List<KeyedListElements>> lmpop(ListDirection from, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from), BuilderFactory.KEYED_LIST_ELEMENTS);
   }
 
-  public final CommandObject<Map<String, List<String>>> lmpop(ListDirection from, int count, String... keys) {
-    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from).add(COUNT).add(count), BuilderFactory.SEARCH_SYNONYM_GROUPS);
+  public final CommandObject<List<KeyedListElements>> lmpop(ListDirection from, int count, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from).add(COUNT).add(count), BuilderFactory.KEYED_LIST_ELEMENTS);
   }
 
   public final CommandObject<byte[]> lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
@@ -818,12 +818,12 @@ public class CommandObjects {
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY);
   }
 
-  public final CommandObject<Map<byte[], List<byte[]>>> lmpop(ListDirection from, byte[]... keys) {
-    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from), BuilderFactory.GROUPS_LIST_BINARY);
+  public final CommandObject<List<KeyedListElementsBinary>> lmpop(ListDirection from, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from), BuilderFactory.KEYED_LIST_ELEMENTS_BINARY);
   }
 
-  public final CommandObject<Map<byte[], List<byte[]>>> lmpop(ListDirection from, int count, byte[]... keys) {
-    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from).add(COUNT).add(count), BuilderFactory.GROUPS_LIST_BINARY);
+  public final CommandObject<List<KeyedListElementsBinary>> lmpop(ListDirection from, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys).add(from).add(COUNT).add(count), BuilderFactory.KEYED_LIST_ELEMENTS_BINARY);
   }
 
   // List commands

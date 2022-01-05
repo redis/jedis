@@ -3811,6 +3811,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<byte[]> lulwutBinary() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LULWUT);
+    return connection.getBinaryMultiBulkReply();
+  }
+
+  @Override
+  public List<byte[]> lulwutVersionBinary(final int version) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LULWUT, VERSION.getRaw(), toByteArray(version));
+    return connection.getBinaryMultiBulkReply();
+  }
+
+  @Override
   public String failover() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.FAILOVER);
@@ -8496,6 +8510,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(MEMORY, USAGE.getRaw(), encode(key), SAMPLES.getRaw(), toByteArray(samples));
     return connection.getIntegerReply();
+  }
+
+  @Override
+  public List<String> lulwut() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LULWUT);
+    return connection.getMultiBulkReply();  }
+
+  @Override
+  public List<String> lulwutVersion(int version) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LULWUT, VERSION.getRaw(), toByteArray(version));
+    return connection.getMultiBulkReply();
   }
 
   @Override

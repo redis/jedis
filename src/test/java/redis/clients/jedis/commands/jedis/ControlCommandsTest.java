@@ -376,4 +376,19 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
     assertNull(jedis.memoryUsage("roo", 2));
   }
+
+  @Test
+  public void lulwut() {
+    List<String> lulwut = jedis.lulwut();
+    assertNull(lulwut);
+
+    List<String> lulwutVersion = jedis.lulwutVersion(5);
+    assertNull(lulwutVersion);
+
+    List<byte[]> blulwut = jedis.lulwutBinary();
+    assertNull(blulwut);
+
+    List<byte[]> blulwutVersion = jedis.lulwutVersionBinary(5);
+    assertNull(blulwutVersion);
+  }
 }

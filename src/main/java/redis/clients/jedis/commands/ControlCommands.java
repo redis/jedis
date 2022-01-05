@@ -22,4 +22,8 @@ public interface ControlCommands extends AccessControlLogCommands, ClientCommand
 
   Long memoryUsage(String key, int samples);
 
+  List<String> lulwut();
+
+  List<String> lulwutVersion(int version);
+
 }

@@ -71,7 +71,13 @@ public interface StreamBinaryCommands {
    */
   Object xinfoStreamFull(byte[] key, int count);
 
+  /**
+   * @deprecated Use {@link StreamBinaryCommands#xinfoGroups(byte[])}.
+   */
+  @Deprecated
   List<Object> xinfoGroup(byte[] key);
+
+  List<Object> xinfoGroups(byte[] key);
 
   List<Object> xinfoConsumers(byte[] key, byte[] group);
 

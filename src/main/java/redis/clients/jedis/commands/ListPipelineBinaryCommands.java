@@ -71,7 +71,7 @@ public interface ListPipelineBinaryCommands {
    * @return element from the first non-empty list key from the list of provided key names
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
    */
-  Response<List<KeyedListElementsBinary>> lmpop(ListDirection from, byte[]... keys);
+  Response<List<Object>> lmpop(ListDirection from, byte[]... keys);
 
   /**
    * Pops one or more elements from the first non-empty list key from the list of provided key names.
@@ -82,6 +82,6 @@ public interface ListPipelineBinaryCommands {
    * @return elements from the first non-empty list key from the list of provided key names.
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
    */
-  Response<List<KeyedListElementsBinary>> lmpop(ListDirection from, int count, byte[]... keys);
+  Response<List<Object>> lmpop(ListDirection from, int count, byte[]... keys);
 
 }

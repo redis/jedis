@@ -275,12 +275,12 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<KeyedListElementsBinary>> KEYED_LIST_ELEMENTS_BINARY = new Builder<List<KeyedListElementsBinary>>() {
+  public static final Builder<List<Object>> KEYED_LIST_ELEMENTS_BINARY = new Builder<List<Object>>() {
     @SuppressWarnings("unchecked")
     @Override
-    public List<KeyedListElementsBinary> build(Object data) {
+    public List<Object> build(Object data) {
       final List<byte[]> flatHash = (List<byte[]>) data;
-      List<KeyedListElementsBinary> list = new ArrayList<>();
+      List<Object> list = new ArrayList<>();
       final Iterator<byte[]> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         KeyedListElementsBinary elementsBinary = new KeyedListElementsBinary(iterator.next(), BYTE_ARRAY_LIST.build(iterator.next()));
@@ -1485,15 +1485,15 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<KeyedListElements>> KEYED_LIST_ELEMENTS = new Builder<List<KeyedListElements>>() {
+  public static final Builder<List<Object>> KEYED_LIST_ELEMENTS = new Builder<List<Object>>() {
     @SuppressWarnings("unchecked")
     @Override
-    public List<KeyedListElements> build(Object data) {
+    public List<Object> build(Object data) {
       if (data == null) {
         return new ArrayList<>();
       }
       List<Object> list = (List<Object>) data;
-      List<KeyedListElements> listElements = new ArrayList<>();
+      List<Object> listElements = new ArrayList<>();
       for (int i = 0; i < list.size(); i += 2) {
         KeyedListElements elements = new KeyedListElements(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
         listElements.add(elements);

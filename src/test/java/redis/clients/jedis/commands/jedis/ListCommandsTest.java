@@ -886,19 +886,19 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(mylist1, "one", "two", "three", "four", "five");
     jedis.lpush(mylist2, "one", "two", "three", "four", "five");
 
-    List<KeyedListElements> elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
+    List<Object> elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
     Assert.assertEquals(1, elements.size());
-    Assert.assertEquals(mylist1, elements.get(0).getKey());
-    Assert.assertEquals(1, elements.get(0).getElements().size());
+    Assert.assertEquals(mylist1, ((KeyedListElements) elements.get(0)).getKey());
+    Assert.assertEquals(1, ((KeyedListElements) elements.get(0)).getElements().size());
     elements = jedis.lmpop(ListDirection.LEFT, 5,mylist1, mylist2);
     Assert.assertEquals(1, elements.size());
-    Assert.assertEquals(mylist1, elements.get(0).getKey());
-    Assert.assertEquals(4, elements.get(0).getElements().size());
+    Assert.assertEquals(mylist1, ((KeyedListElements) elements.get(0)).getKey());
+    Assert.assertEquals(4, ((KeyedListElements) elements.get(0)).getElements().size());
 
     elements = jedis.lmpop(ListDirection.LEFT,6, mylist1, mylist2);
     Assert.assertEquals(1, elements.size());
-    Assert.assertEquals(mylist2, elements.get(0).getKey());
-    Assert.assertEquals(5, elements.get(0).getElements().size());
+    Assert.assertEquals(mylist2, ((KeyedListElements) elements.get(0)).getKey());
+    Assert.assertEquals(5, ((KeyedListElements) elements.get(0)).getElements().size());
 
     elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
     Assert.assertEquals(0, elements.size());

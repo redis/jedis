@@ -80,7 +80,7 @@ public interface ListPipelineCommands {
    * @return element from the first non-empty list key from the list of provided key names
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT<a/>
    */
-  Response<List<KeyedListElements>> lmpop(ListDirection from, String... keys);
+  Response<List<Object>> lmpop(ListDirection from, String... keys);
 
   /**
    * Pops one or more elements from the first non-empty list key from the list of provided key names.
@@ -91,6 +91,6 @@ public interface ListPipelineCommands {
    * @return elements from the first non-empty list key from the list of provided key names.
    * @see <a href="https://redis.io/commands/lmpop">LMPOP numkeys key [key ...] LEFT|RIGHT COUNT count<a/>
    */
-  Response<List<KeyedListElements>> lmpop(ListDirection from, int count, String... keys);
+  Response<List<Object>> lmpop(ListDirection from, int count, String... keys);
 
 }

@@ -4545,9 +4545,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  @Deprecated
   public List<Object> xinfoGroup(byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<Object> xinfoGroups(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
@@ -8683,8 +8690,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  @Deprecated
   public List<StreamGroupInfo> xinfoGroup(String key) {
     return connection.executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroups(String key) {
+    return connection.executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override

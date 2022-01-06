@@ -254,11 +254,17 @@ public interface StreamPipelineCommands {
   Response<StreamFullInfo> xinfoStreamFull(String key, int count);
 
   /**
+   * @deprecated Use {@link StreamPipelineCommands#xinfoGroups(java.lang.String)}.
+   */
+  @Deprecated
+  Response<List<StreamGroupInfo>> xinfoGroup(String key);
+
+  /**
    * Introspection command used in order to retrieve different information about groups in the stream
    * @param key Stream name
    * @return List of {@link StreamGroupInfo} containing information about groups
    */
-  Response<List<StreamGroupInfo>> xinfoGroup (String key);
+  Response<List<StreamGroupInfo>> xinfoGroups(String key);
 
   /**
    * Introspection command used in order to retrieve different information about consumers in the group

@@ -2300,12 +2300,21 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.RAW_OBJECT);
   }
 
-
+  @Deprecated
   public final CommandObject<List<StreamGroupInfo>> xinfoGroup(String key) {
     return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
   }
 
+  public final CommandObject<List<StreamGroupInfo>> xinfoGroups(String key) {
+    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
+  }
+
+  @Deprecated
   public final CommandObject<List<Object>> xinfoGroup(byte[] key) {
+    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> xinfoGroups(byte[] key) {
     return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
   }
 

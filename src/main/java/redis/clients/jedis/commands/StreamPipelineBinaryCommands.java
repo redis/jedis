@@ -74,7 +74,13 @@ public interface StreamPipelineBinaryCommands {
    */
   Response<Object> xinfoStreamFull(byte[] key, int count);
 
+  /**
+   * @deprecated Use {@link StreamPipelineBinaryCommands#xinfoGroups(byte[])}.
+   */
+  @Deprecated
   Response<List<Object>> xinfoGroup(byte[] key);
+
+  Response<List<Object>> xinfoGroups(byte[] key);
 
   Response<List<Object>> xinfoConsumers(byte[] key, byte[] group);
 

@@ -64,17 +64,15 @@ public interface StreamPipelineBinaryCommands {
   /**
    * Introspection command used in order to retrieve all information about the stream
    * @param key Stream name
-   * @return {@link StreamFullInfo} that contains information about the stream
    */
-  Response<StreamFullInfo> xinfoStreamFull(byte[] key);
+  Response<Object> xinfoStreamFull(byte[] key);
 
   /**
    * Introspection command used in order to retrieve all information about the stream
    * @param key Stream name
    * @param count stream info count
-   * @return {@link StreamFullInfo} that contains information about the stream
    */
-  Response<StreamFullInfo> xinfoStreamFull(byte[] key, int count);
+  Response<Object> xinfoStreamFull(byte[] key, int count);
 
   Response<List<Object>> xinfoGroup(byte[] key);
 

@@ -2695,13 +2695,13 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<StreamFullInfo> xinfoStreamFull(byte[] key) {
+  public Response<Object> xinfoStreamFull(byte[] key) {
     return appendCommand(commandObjects.xinfoStreamFull(key));
 
   }
 
   @Override
-  public Response<StreamFullInfo> xinfoStreamFull(byte[] key, int count) {
+  public Response<Object> xinfoStreamFull(byte[] key, int count) {
     return appendCommand(commandObjects.xinfoStreamFull(key, count));
   }
 

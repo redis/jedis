@@ -2280,23 +2280,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key), BuilderFactory.STREAM_INFO);
   }
 
-  public final CommandObject<List<StreamGroupInfo>> xinfoGroup(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
-  }
-
-  public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
-    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
-  }
-
   public final CommandObject<Object> xinfoStream(byte[] key) {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key), BuilderFactory.RAW_OBJECT);
   }
 
-  public final CommandObject<StreamFullInfo> xinfoStreamFull(byte[] key, int count) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
-  }
-
-  public final CommandObject<StreamFullInfo> xinfoStreamFull(byte[] key) {
+  public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
   }
 
@@ -2304,12 +2292,25 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
   }
 
-  public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
+  public final CommandObject<Object> xinfoStreamFull(byte[] key, int count) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<Object> xinfoStreamFull(byte[] key) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.RAW_OBJECT);
+  }
+
+
+  public final CommandObject<List<StreamGroupInfo>> xinfoGroup(String key) {
+    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
   }
 
   public final CommandObject<List<Object>> xinfoGroup(byte[] key) {
     return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
+    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
   }
 
   public final CommandObject<List<Object>> xinfoConsumers(byte[] key, byte[] group) {

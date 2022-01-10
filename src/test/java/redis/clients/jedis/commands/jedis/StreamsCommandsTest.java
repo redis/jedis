@@ -693,7 +693,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     Thread.sleep(1);
 
-    List<StreamGroupInfo> groupInfo = jedis.xinfoGroup(STREAM_NAME);
+    List<StreamGroupInfo> groupInfo = jedis.xinfoGroups(STREAM_NAME);
     List<StreamConsumersInfo> consumersInfo = jedis.xinfoConsumers(STREAM_NAME, G1);
 
     // Stream info test
@@ -746,7 +746,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     jedis.xreadGroup(G2, MY_CONSUMER, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
     jedis.xreadGroup(G2, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
 
-    List<StreamGroupInfo> manyGroupsInfo = jedis.xinfoGroup(STREAM_NAME);
+    List<StreamGroupInfo> manyGroupsInfo = jedis.xinfoGroups(STREAM_NAME);
     List<StreamConsumersInfo> manyConsumersInfo = jedis.xinfoConsumers(STREAM_NAME, G2);
 
     assertEquals(2, manyGroupsInfo.size());

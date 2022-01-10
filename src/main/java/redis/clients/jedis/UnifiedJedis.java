@@ -2576,16 +2576,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public StreamFullInfo xinfoStreamFull(byte[] key) {
-    return executeCommand(commandObjects.xinfoStreamFull(key));
-  }
-
-  @Override
-  public StreamFullInfo xinfoStreamFull(byte[] key, int count) {
-    return executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
   public StreamFullInfo xinfoStreamFull(String key) {
     return executeCommand(commandObjects.xinfoStreamFull(key));
   }
@@ -2596,8 +2586,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public List<StreamGroupInfo> xinfoGroup(String key) {
     return executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroups(String key) {
+    return executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
@@ -2727,8 +2723,24 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Object xinfoStreamFull(byte[] key) {
+    return executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public Object xinfoStreamFull(byte[] key, int count) {
+    return executeCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  @Deprecated
   public List<Object> xinfoGroup(byte[] key) {
     return executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<Object> xinfoGroups(byte[] key) {
+    return executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override

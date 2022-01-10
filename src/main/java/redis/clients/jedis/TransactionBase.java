@@ -1458,17 +1458,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<StreamFullInfo> xinfoStreamFull(byte[] key) {
-    return appendCommand(commandObjects.xinfoStreamFull(key));
-
-  }
-
-  @Override
-  public Response<StreamFullInfo> xinfoStreamFull(byte[] key, int count) {
-    return appendCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
   public Response<StreamFullInfo> xinfoStreamFull(String key) {
     return appendCommand(commandObjects.xinfoStreamFull(key));
   }
@@ -1479,8 +1468,14 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  @Deprecated
   public Response<List<StreamGroupInfo>> xinfoGroup(String key) {
     return appendCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public Response<List<StreamGroupInfo>> xinfoGroups(String key) {
+    return appendCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
@@ -2760,8 +2755,24 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Object> xinfoStreamFull(byte[] key) {
+    return appendCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public Response<Object> xinfoStreamFull(byte[] key, int count) {
+    return appendCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  @Deprecated
   public Response<List<Object>> xinfoGroup(byte[] key) {
     return appendCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public Response<List<Object>> xinfoGroups(byte[] key) {
+    return appendCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override

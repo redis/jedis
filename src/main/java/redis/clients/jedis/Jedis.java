@@ -4547,33 +4547,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public StreamFullInfo xinfoStreamFull(byte[] key) {
+  public Object xinfoStreamFull(byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoStreamFull(key));
   }
 
   @Override
-  public StreamFullInfo xinfoStreamFull(byte[] key, int count) {
+  public Object xinfoStreamFull(byte[] key, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
   }
 
   @Override
-  public StreamFullInfo xinfoStreamFull(String key) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xinfoStreamFull(key));
-  }
-
-  @Override
-  public StreamFullInfo xinfoStreamFull(String key, int count) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
+  @Deprecated
   public List<Object> xinfoGroup(byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<Object> xinfoGroups(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
@@ -8710,8 +8705,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public StreamFullInfo xinfoStreamFull(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  @Deprecated
   public List<StreamGroupInfo> xinfoGroup(String key) {
     return connection.executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroups(String key) {
+    return connection.executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override

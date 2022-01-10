@@ -22,8 +22,8 @@ public interface ControlBinaryCommands extends AccessControlLogBinaryCommands, C
 
   Long memoryUsage(byte[] key, int samples);
 
-  List<byte[]> lolwutBinary();
+  byte[] lolwutBinary();
 
-  List<byte[]> lolwutVersionBinary(int version);
+  byte[] lolwutVersionBinary(int version);
 
 }

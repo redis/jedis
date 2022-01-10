@@ -379,16 +379,16 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void lolwut() {
-    List<String> lolwut = jedis.lolwut();
-    assertNull(lolwut);
+    String lolwut = jedis.lolwut();
+    assertNotNull(lolwut);
 
-    List<String> lolwutVersion = jedis.lolwutVersion(5);
-    assertNull(lolwutVersion);
+    String lolwutVersion = jedis.lolwutVersion(5);
+    assertNotNull(lolwutVersion);
 
-    List<byte[]> blolwut = jedis.lolwutBinary();
-    assertNull(blolwut);
+    byte[] blolwut = jedis.lolwutBinary();
+    assertNotNull(blolwut);
 
-    List<byte[]> blolwutVersion = jedis.lolwutVersionBinary(5);
-    assertNull(blolwutVersion);
+    byte[] blolwutVersion = jedis.lolwutVersionBinary(5);
+    assertNotNull(blolwutVersion);
   }
 }

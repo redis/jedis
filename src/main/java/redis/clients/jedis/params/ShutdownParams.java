@@ -5,11 +5,11 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class ShutdownParams implements IParams{
+public class ShutdownParams implements IParams {
+
   private SaveMode saveMode;
   private boolean now;
   private boolean force;
-  private boolean abort;
 
   public static ShutdownParams shutdownParams() {
     return new ShutdownParams();
@@ -20,6 +20,14 @@ public class ShutdownParams implements IParams{
     return this;
   }
 
+  public ShutdownParams nosave() {
+    return this.saveMode(SaveMode.NOSAVE);
+  }
+
+  public ShutdownParams save() {
+    return this.saveMode(SaveMode.SAVE);
+  }
+
   public ShutdownParams now() {
     this.now = true;
     return this;
@@ -27,11 +35,6 @@ public class ShutdownParams implements IParams{
 
   public ShutdownParams force() {
     this.force = true;
-    return this;
-  }
-
-  public ShutdownParams abort() {
-    this.abort = true;
     return this;
   }
 
@@ -48,10 +51,6 @@ public class ShutdownParams implements IParams{
 
     if (this.force) {
       args.add(Protocol.Keyword.FORCE.getRaw());
-    }
-
-    if (this.abort) {
-      args.add(Protocol.Keyword.ABORT.getRaw());
     }
   }
 }

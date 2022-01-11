@@ -119,7 +119,9 @@ public interface ServerCommands {
    * @param saveMode modifier to alter the data save behavior of SHUTDOWN. {@code null} would
    * trigger the default behavior.
    * @throws JedisException
+   * @deprecated Use {@link ServerCommands#shutdown(redis.clients.jedis.params.ShutdownParams)}.
    */
+  @Deprecated
   void shutdown(SaveMode saveMode) throws JedisException;
 
   /**
@@ -128,6 +130,8 @@ public interface ServerCommands {
    * @throws JedisException
    */
   void shutdown(ShutdownParams shutdownParams) throws JedisException;
+
+  String shutdownAbort();
 
   /**
    * The INFO command returns information and statistics about the server in a format that is simple

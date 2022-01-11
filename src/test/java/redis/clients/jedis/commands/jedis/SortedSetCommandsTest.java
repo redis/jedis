@@ -20,10 +20,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
@@ -959,7 +956,32 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     bexpected.add(new Tuple(ba, 2d));
 
     assertEquals(bexpected, brange);
+  }
 
+  @Test
+  public void zrangeParams() {
+    jedis.zadd("foo", 1, "aa");
+    jedis.zadd("foo", 1, "c");
+    jedis.zadd("foo", 1, "bb");
+    jedis.zadd("foo", 1, "d");
+
+    List<String> expected = new ArrayList<String>();
+    expected.add("c");
+    expected.add("bb");
+
+    assertEquals(expected, jedis.zrange("foo", "[c", "(aa", new ZRangeParams().byLex().reverse()));
+    assertNotNull(jedis.zrangeWithScores("foo", "0", "1", new ZRangeParams().byScore()));
+
+    // binary
+    jedis.zadd(bfoo, 1, ba);
+    jedis.zadd(bfoo, 1, bc);
+    jedis.zadd(bfoo, 1, bb);
+
+    List<byte[]> bExpected = new ArrayList<byte[]>();
+    bExpected.add(bb);
+
+    assertByteArrayListEquals(bExpected, jedis.zrange(bfoo, bExclusiveC, bInclusiveB, new ZRangeParams().byLex().reverse()));
+    assertNotNull(jedis.zrangeWithScores(bfoo, "0".getBytes(), "1".getBytes(), new ZRangeParams().byScore().limit(0, 3)));
   }
 
   @Test

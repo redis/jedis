@@ -1004,6 +1004,16 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<List<String>> zrange(String key, String start, String stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  }
+
+  @Override
   public Response<Long> zremrangeByRank(String key, long start, long stop) {
     return appendCommand(commandObjects.zremrangeByRank(key, start, stop));
   }
@@ -2523,6 +2533,16 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<List<byte[]>> zrange(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
   }
 
   @Override

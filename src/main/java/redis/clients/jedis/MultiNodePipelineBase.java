@@ -853,6 +853,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<List<String>> zrange(String key, String start, String stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  }
+
+  @Override
   public Response<String> zrandmember(String key) {
     return appendCommand(commandObjects.zrandmember(key));
   }
@@ -2333,6 +2343,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<List<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public Response<List<byte[]>> zrange(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
   }
 
   @Override

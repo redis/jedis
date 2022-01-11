@@ -1326,6 +1326,16 @@ public class CommandObjects {
         .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
+  public final CommandObject<List<String>> zrange(String key, String start, String stop, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).add(start).add(stop)
+      .addParams(zRangeParams), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).add(start).add(stop)
+      .addParams(zRangeParams).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
   public final CommandObject<List<String>> zrangeByScore(String key, double min, double max) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.STRING_LIST);
   }
@@ -1418,6 +1428,16 @@ public class CommandObjects {
   public final CommandObject<List<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
     return new CommandObject<>(commandArguments(ZREVRANGE).key(key)
         .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> zrange(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).add(start).add(stop)
+        .addParams(zRangeParams), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).add(start).add(stop)
+        .addParams(zRangeParams).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<List<byte[]>> zrangeByScore(byte[] key, double min, double max) {

@@ -8524,7 +8524,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String lolwut(LolwutParams lolwutParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.lolwut(lolwutParams));
+    connection.sendCommand(new CommandArguments(LOLWUT).addParams(lolwutParams));
+    return connection.getBulkReply();
   }
 
   @Override

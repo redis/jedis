@@ -377,13 +377,4 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
     assertNull(jedis.memoryUsage("roo", 2));
   }
-
-  @Test
-  public void lolwut() {
-    String lolwut = jedis.lolwut();
-    assertNotNull(lolwut);
-
-    String lolwutVersion = jedis.lolwut(new LolwutParams().version(5));
-    assertNotNull(lolwutVersion);
-  }
 }

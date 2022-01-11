@@ -2594,6 +2594,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
   }
 
+  public final CommandObject<String> lolwut(LolwutParams lolwutParams) {
+    return new CommandObject<>(commandArguments(LOLWUT).addParams(lolwutParams), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> migrate(String host, int port, String key, int timeout) {
     return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).key(key).add(0).add(timeout), BuilderFactory.STRING);
   }

@@ -23,6 +23,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -382,13 +383,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     String lolwut = jedis.lolwut();
     assertNotNull(lolwut);
 
-    String lolwutVersion = jedis.lolwutVersion(5);
+    String lolwutVersion = jedis.lolwut(new LolwutParams().version(5));
     assertNotNull(lolwutVersion);
-
-    byte[] blolwut = jedis.lolwutBinary();
-    assertNotNull(blolwut);
-
-    byte[] blolwutVersion = jedis.lolwutVersionBinary(5);
-    assertNotNull(blolwutVersion);
   }
 }

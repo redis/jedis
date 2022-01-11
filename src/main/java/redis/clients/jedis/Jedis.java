@@ -3198,7 +3198,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     }
   }
 
+  /**
+   * @deprecated Use {@link Jedis#shutdown(redis.clients.jedis.params.ShutdownParams)}.
+   */
   @Override
+  @Deprecated
   public void shutdown(final SaveMode saveMode) throws JedisException {
     connection.sendCommand(SHUTDOWN, saveMode.getRaw());
     try {
@@ -3207,6 +3211,23 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       // expected
       connection.setBroken();
     }
+  }
+
+  @Override
+  public void shutdown(ShutdownParams shutdownParams) throws JedisException {
+    connection.sendCommand(new CommandArguments(SHUTDOWN).addParams(shutdownParams));
+    try {
+      throw new JedisException(connection.getStatusCodeReply());
+    } catch (JedisConnectionException jce) {
+      // expected
+      connection.setBroken();
+    }
+  }
+
+  @Override
+  public String shutdownAbort() {
+    connection.sendCommand(SHUTDOWN, ABORT);
+    return connection.getStatusCodeReply();
   }
 
   /**

@@ -69,20 +69,20 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void pingWithMessage() {
+    String argument = "message";
+    assertEquals(argument, jedis.ping(argument));
+
+    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
+  }
+
+  @Test
   public void lolwut() {
     String lolwut = jedis.lolwut();
     assertNotNull(lolwut);
 
     String lolwutVersion = jedis.lolwut(new LolwutParams().version(5));
     assertNotNull(lolwutVersion);
-  }
-
-  @Test
-  public void pingWithMessage() {
-    String argument = "message";
-    assertEquals(argument, jedis.ping(argument));
-
-    assertArrayEquals(bfoobar, jedis.ping(bfoobar));
   }
 
   @Test

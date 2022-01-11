@@ -972,7 +972,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     assertEquals(expected, jedis.zrange("foo", "[c", "(aa", new ZRangeParams().byLex().reverse()));
     assertNotNull(jedis.zrangeWithScores("foo", "0", "1", new ZRangeParams().byScore()));
 
-    // binary
+    // Binary
     jedis.zadd(bfoo, 1, ba);
     jedis.zadd(bfoo, 1, bc);
     jedis.zadd(bfoo, 1, bb);
@@ -982,6 +982,37 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertByteArrayListEquals(bExpected, jedis.zrange(bfoo, bExclusiveC, bInclusiveB, new ZRangeParams().byLex().reverse()));
     assertNotNull(jedis.zrangeWithScores(bfoo, "0".getBytes(), "1".getBytes(), new ZRangeParams().byScore().limit(0, 3)));
+  }
+
+  @Test
+  public void zrangestore() {
+    jedis.zadd("foo", 1, "aa");
+    jedis.zadd("foo", 2, "c");
+    jedis.zadd("foo", 3, "bb");
+
+    long stored = jedis.zrangestore("bar", "foo", "1", "2", new ZRangeParams().byScore());
+    assertEquals(2, stored);
+
+    List<String> range = jedis.zrange("bar", 0, -1);
+    List<String> expected = new ArrayList<>();
+    expected.add("aa");
+    expected.add("c");
+    assertEquals(expected, range);
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+
+    long bstored = jedis.zrangestore(bbar, bfoo, "0".getBytes(), "1".getBytes(), new ZRangeParams().reverse());
+    assertEquals(2, bstored);
+
+    List<byte[]> brange = jedis.zrevrange(bbar, 0, 1);
+    List<byte[]> bexpected = new ArrayList<>();
+    bexpected.add(bb);
+    bexpected.add(ba);
+    assertByteArrayListEquals(bexpected, brange);
   }
 
   @Test

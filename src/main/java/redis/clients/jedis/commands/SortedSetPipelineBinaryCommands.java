@@ -115,6 +115,8 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<List<Tuple>> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams);
 
+  Response<Long> zrangestore(byte[] dest, byte[] src, byte[] start, byte[] stop, ZRangeParams zRangeParams);
+
   Response<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
   default Response<ScanResult<Tuple>> zscan(byte[] key, byte[] cursor) {

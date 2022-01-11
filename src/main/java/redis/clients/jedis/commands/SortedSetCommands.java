@@ -43,6 +43,8 @@ public interface SortedSetCommands {
 
   List<Tuple> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams);
 
+  long zrangestore(String dest, String src, String start, String stop, ZRangeParams zRangeParams);
+
   String zrandmember(String key);
 
   List<String> zrandmember(String key, long count);

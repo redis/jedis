@@ -2071,6 +2071,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long zrangestore(byte[] dest, byte[] src, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+  }
+
+  @Override
   public byte[] zrandmember(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrandmember(key));
@@ -6208,6 +6214,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<Tuple> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  }
+
+  @Override
+  public long zrangestore(String dest, String src, String start, String stop, ZRangeParams zRangeParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+
   }
 
   @Override

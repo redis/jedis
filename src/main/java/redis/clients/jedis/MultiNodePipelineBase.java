@@ -863,6 +863,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> zrangestore(String dest, String src, String start, String stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+  }
+
+  @Override
   public Response<String> zrandmember(String key) {
     return appendCommand(commandObjects.zrandmember(key));
   }
@@ -2353,6 +2358,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<List<Tuple>> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
     return appendCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(byte[] dest, byte[] src, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
   }
 
   @Override

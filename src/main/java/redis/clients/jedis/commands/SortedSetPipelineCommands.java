@@ -100,6 +100,8 @@ public interface SortedSetPipelineCommands {
 
   Response<List<Tuple>> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams);
 
+  Response<Long> zrangestore(String dest, String src, String start, String stop, ZRangeParams zRangeParams);
+
   Response<Long> zremrangeByRank(String key, long start, long stop);
 
   Response<Long> zremrangeByScore(String key, double min, double max);

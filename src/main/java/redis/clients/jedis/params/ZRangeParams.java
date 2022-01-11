@@ -6,7 +6,6 @@ import static redis.clients.jedis.Protocol.Keyword.BYLEX;
 import static redis.clients.jedis.Protocol.Keyword.BYSCORE;
 import static redis.clients.jedis.Protocol.Keyword.LIMIT;
 import static redis.clients.jedis.Protocol.Keyword.REV;
-import static redis.clients.jedis.Protocol.Keyword.WITHSCORES;
 
 
 public class ZRangeParams implements IParams{
@@ -61,8 +60,8 @@ public class ZRangeParams implements IParams{
 
     if (this.limit) {
       args.add(LIMIT);
-      args.add(offset);
-      args.add(count);
+      args.add(this.offset);
+      args.add(this.count);
     }
   }
 }

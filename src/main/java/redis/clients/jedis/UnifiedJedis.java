@@ -1715,6 +1715,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long zrangestore(String dest, String src, String start, String stop, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+  }
+
+  @Override
   public List<String> zrangeByScore(String key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
@@ -1822,6 +1827,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<Tuple> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
     return executeCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  }
+
+  @Override
+  public long zrangestore(byte[] dest, byte[] src, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
   }
 
   @Override

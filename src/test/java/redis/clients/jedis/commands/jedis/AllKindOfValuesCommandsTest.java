@@ -33,6 +33,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.StreamEntryID;
@@ -73,6 +74,15 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(argument, jedis.ping(argument));
 
     assertArrayEquals(bfoobar, jedis.ping(bfoobar));
+  }
+
+  @Test
+  public void lolwut() {
+    String lolwut = jedis.lolwut();
+    assertNotNull(lolwut);
+
+    String lolwutVersion = jedis.lolwut(new LolwutParams().version(5));
+    assertNotNull(lolwutVersion);
   }
 
   @Test

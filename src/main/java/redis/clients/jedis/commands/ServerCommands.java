@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ShutdownParams;
 
 public interface ServerCommands {
@@ -189,4 +190,8 @@ public interface ServerCommands {
    *         current connection
    */
   long waitReplicas(int replicas, long timeout);
+
+  String lolwut();
+
+  String lolwut(LolwutParams lolwutParams);
 }

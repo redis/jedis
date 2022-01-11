@@ -8515,6 +8515,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String lolwut() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LOLWUT);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String lolwut(LolwutParams lolwutParams) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(new CommandArguments(LOLWUT).addParams(lolwutParams));
+    return connection.getBulkReply();
+  }
+
+  @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xadd(key, id, hash));

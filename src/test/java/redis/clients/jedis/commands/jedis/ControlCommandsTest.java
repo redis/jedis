@@ -23,7 +23,6 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.SafeEncoder;
 

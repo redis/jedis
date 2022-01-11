@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.ShutdownParams;
 
 public interface ServerCommands {
 
@@ -120,6 +121,13 @@ public interface ServerCommands {
    * @throws JedisException
    */
   void shutdown(SaveMode saveMode) throws JedisException;
+
+  /**
+   * @see SaveMode
+   * @param shutdownParams set commands parameters
+   * @throws JedisException
+   */
+  void shutdown(ShutdownParams shutdownParams) throws JedisException;
 
   /**
    * The INFO command returns information and statistics about the server in a format that is simple

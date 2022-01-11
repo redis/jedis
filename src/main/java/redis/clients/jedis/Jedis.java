@@ -3191,6 +3191,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     }
   }
 
+  @Override
+  public void shutdown(ShutdownParams shutdownParams) throws JedisException {
+    CommandArguments args = new ClusterCommandArguments(Command.FAILOVER).addParams(shutdownParams);
+    connection.sendCommand(args);
+    try {
+      throw new JedisException(connection.getStatusCodeReply());
+    } catch (JedisConnectionException jce) {
+      // expected
+      connection.setBroken();
+    }
+  }
+
   /**
    * Provide information and statistics about the server.
    * <p>

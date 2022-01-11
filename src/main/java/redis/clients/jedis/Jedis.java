@@ -3297,14 +3297,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Status code reply
    */
   @Override
+  @Deprecated
   public String slaveof(final String host, final int port) {
     connection.sendCommand(SLAVEOF, encode(host), toByteArray(port));
     return connection.getStatusCodeReply();
   }
 
   @Override
+  @Deprecated
   public String slaveofNoOne() {
     connection.sendCommand(SLAVEOF, NO.getRaw(), ONE.getRaw());
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String replicaof(final String host, final int port) {
+    connection.sendCommand(REPLICAOF, encode(host), toByteArray(port));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String replicaofNoOne() {
+    connection.sendCommand(REPLICAOF, NO.getRaw(), ONE.getRaw());
     return connection.getStatusCodeReply();
   }
 
@@ -4126,18 +4140,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(WAIT, toByteArray(replicas), toByteArray(timeout));
     return connection.getIntegerReply();
-  }
-
-  @Override
-  public String replicaof(String host, int port) {
-    connection.sendCommand(REPLICAOF, encode(host), toByteArray(port));
-    return connection.getStatusCodeReply();
-  }
-
-  @Override
-  public String replicaofNoOne() {
-    connection.sendCommand(REPLICAOF, NO.getRaw(), ONE.getRaw());
-    return connection.getStatusCodeReply();
   }
 
   @Override

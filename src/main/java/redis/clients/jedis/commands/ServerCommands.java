@@ -162,7 +162,9 @@ public interface ServerCommands {
    * @param host listening at the specified hostname
    * @param port server listening at the specified port
    * @return result of the command.
+   * @deprecated Use {@link ServerCommands#replicaof(java.lang.String, int)}.
    */
+  @Deprecated
   String slaveof(String host, int port);
 
   /**
@@ -171,24 +173,10 @@ public interface ServerCommands {
    * master and set the application to use this new master in read/write. Later when the other Redis
    * server is fixed, it can be reconfigured to work as a slave.
    * @return result of the command
+   * @deprecated Use {@link ServerCommands#replicaofNoOne()}.
    */
+  @Deprecated
   String slaveofNoOne();
-
-  /**
-   * Syncrhonous replication of Redis as described here: http://antirez.com/news/66.
-   * <p>
-   * Blocks until all the previous write commands are successfully transferred and acknowledged by
-   * at least the specified number of replicas. If the timeout, specified in milliseconds, is
-   * reached, the command returns even if the specified number of replicas were not yet reached.
-   * <p>
-   * Since Java Object class has implemented {@code wait} method, we cannot use it.
-   * @param replicas successfully transferred and acknowledged by at least the specified number of
-   *          replicas
-   * @param timeout the time to block in milliseconds, a timeout of 0 means to block forever
-   * @return the number of replicas reached by all the writes performed in the context of the
-   *         current connection
-   */
-  long waitReplicas(int replicas, long timeout);
 
   /**
    * The REPLICAOF command can change the replication settings of a replica on the fly. In the
@@ -210,4 +198,20 @@ public interface ServerCommands {
    * @return result of the command
    */
   String replicaofNoOne();
+
+  /**
+   * Syncrhonous replication of Redis as described here: http://antirez.com/news/66.
+   * <p>
+   * Blocks until all the previous write commands are successfully transferred and acknowledged by
+   * at least the specified number of replicas. If the timeout, specified in milliseconds, is
+   * reached, the command returns even if the specified number of replicas were not yet reached.
+   * <p>
+   * Since Java Object class has implemented {@code wait} method, we cannot use it.
+   * @param replicas successfully transferred and acknowledged by at least the specified number of
+   *          replicas
+   * @param timeout the time to block in milliseconds, a timeout of 0 means to block forever
+   * @return the number of replicas reached by all the writes performed in the context of the
+   *         current connection
+   */
+  long waitReplicas(int replicas, long timeout);
 }

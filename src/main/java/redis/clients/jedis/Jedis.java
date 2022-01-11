@@ -4108,6 +4108,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String replicaof(String host, int port) {
+    connection.sendCommand(REPLICAOF, encode(host), toByteArray(port));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String replicaofNoOne() {
+    connection.sendCommand(REPLICAOF, NO.getRaw(), ONE.getRaw());
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public long pfadd(final byte[] key, final byte[]... elements) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pfadd(key, elements));

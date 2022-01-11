@@ -3,7 +3,7 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 
 
-public class LolwutParams implements IParams{
+public class LolwutParams implements IParams {
 
   private int version;
   private String[] args;

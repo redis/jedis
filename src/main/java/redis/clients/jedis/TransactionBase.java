@@ -51,29 +51,29 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   public final void multi() {
+    inMulti = true;
     connection.sendCommand(MULTI);
     processMultiResponse();
-    inMulti = true;
   }
 
   public String watch(final String... keys) {
+    inWatch = true;
     connection.sendCommand(WATCH, keys);
     String status = connection.getStatusCodeReply();
-    inWatch = true;
     return status;
   }
 
   public String watch(final byte[]... keys) {
+    inWatch = true;
     connection.sendCommand(WATCH, keys);
     String status = connection.getStatusCodeReply();
-    inWatch = true;
     return status;
   }
 
   public String unwatch() {
+    inWatch = false;
     connection.sendCommand(UNWATCH);
     String status = connection.getStatusCodeReply();
-    inWatch = false;
     return status;
   }
 
@@ -104,12 +104,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   public List<Object> exec() {
     if (!inMulti) throw new IllegalStateException("EXEC without MULTI");
+    inMulti = false;
+    inWatch = false;
     // ignore QUEUED or ERROR
 //    connection.getMany(1 + getPipelinedResponseLength());
     processPipelinedResponses();
     connection.sendCommand(EXEC);
-    inMulti = false;
-    inWatch = false;
 
     List<Object> unformatted = connection.getObjectMultiBulkReply();
     if (unformatted == null) {
@@ -129,13 +129,13 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   public String discard() {
     if (!inMulti) throw new IllegalStateException("DISCARD without MULTI");
+    inMulti = false;
+    inWatch = false;
     // ignore QUEUED or ERROR
 //    connection.getMany(1 + getPipelinedResponseLength());
     processPipelinedResponses();
     connection.sendCommand(DISCARD);
     String status = connection.getStatusCodeReply(); // OK
-    inMulti = false;
-    inWatch = false;
     clean();
     return status;
   }

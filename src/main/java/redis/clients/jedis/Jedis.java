@@ -3295,16 +3295,34 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param host
    * @param port
    * @return Status code reply
+   * @deprecated Use {@link Jedis#replicaof(java.lang.String, int)}.
    */
   @Override
+  @Deprecated
   public String slaveof(final String host, final int port) {
     connection.sendCommand(SLAVEOF, encode(host), toByteArray(port));
     return connection.getStatusCodeReply();
   }
 
+  /**
+   * @deprecated Use {@link Jedis#replicaofNoOne()}.
+   */
   @Override
+  @Deprecated
   public String slaveofNoOne() {
     connection.sendCommand(SLAVEOF, NO.getRaw(), ONE.getRaw());
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String replicaof(final String host, final int port) {
+    connection.sendCommand(REPLICAOF, encode(host), toByteArray(port));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String replicaofNoOne() {
+    connection.sendCommand(REPLICAOF, NO.getRaw(), ONE.getRaw());
     return connection.getStatusCodeReply();
   }
 

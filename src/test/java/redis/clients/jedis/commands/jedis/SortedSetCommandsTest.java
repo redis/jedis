@@ -1005,7 +1005,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    long bstored = jedis.zrangestore(bbar, bfoo, ZRangeParams.zrangeByScoreParams(0, 1).rev());
+    long bstored = jedis.zrangestore(bbar, bfoo, ZRangeParams.zrangeParams(0, 1).rev());
     assertEquals(2, bstored);
 
     List<byte[]> brange = jedis.zrevrange(bbar, 0, 1);

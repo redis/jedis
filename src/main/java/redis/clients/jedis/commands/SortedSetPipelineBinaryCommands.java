@@ -111,11 +111,11 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
 
-  Response<List<byte[]>> zrange(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams);
+  Response<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams);
 
-  Response<List<Tuple>> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams);
+  Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams);
 
-  Response<Long> zrangestore(byte[] dest, byte[] src, byte[] start, byte[] stop, ZRangeParams zRangeParams);
+  Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams);
 
   Response<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max);
 

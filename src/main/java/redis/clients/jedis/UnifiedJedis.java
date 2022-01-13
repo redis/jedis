@@ -1705,18 +1705,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> zrange(String key, String start, String stop, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+  public List<String> zrange(String key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrange(key, zRangeParams));
   }
 
   @Override
-  public List<Tuple> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  public List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
   }
 
   @Override
-  public long zrangestore(String dest, String src, String start, String stop, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+  public long zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -1820,18 +1820,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> zrange(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+  public List<byte[]> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrange(key, zRangeParams));
   }
 
   @Override
-  public List<Tuple> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  public List<Tuple> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
   }
 
   @Override
-  public long zrangestore(byte[] dest, byte[] src, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+  public long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override

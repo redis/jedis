@@ -1004,18 +1004,18 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<List<String>> zrange(String key, String start, String stop, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+  public Response<List<String>> zrange(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
   }
 
   @Override
-  public Response<List<Tuple>> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  public Response<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
   }
 
   @Override
-  public Response<Long> zrangestore(String dest, String src, String start, String stop, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+  public Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -2541,18 +2541,18 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<List<byte[]>> zrange(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+  public Response<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
   }
 
   @Override
-  public Response<List<Tuple>> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+  public Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
   }
 
   @Override
-  public Response<Long> zrangestore(byte[] dest, byte[] src, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+  public Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override

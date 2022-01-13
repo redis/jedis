@@ -2059,21 +2059,21 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> zrange(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+  public List<byte[]> zrange(byte[] key, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+    return connection.executeCommand(commandObjects.zrange(key, zRangeParams));
   }
 
   @Override
-  public List<Tuple> zrangeWithScores(byte[] key, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+  public List<Tuple> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+    return connection.executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
   }
 
   @Override
-  public long zrangestore(byte[] dest, byte[] src, byte[] start, byte[] stop, ZRangeParams zRangeParams) {
+  public long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
+    return connection.executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -6244,22 +6244,21 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<String> zrange(String key, String start, String stop, ZRangeParams zRangeParams) {
+  public List<String> zrange(String key, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zrange(key, start, stop, zRangeParams));
+    return connection.executeCommand(commandObjects.zrange(key, zRangeParams));
   }
 
   @Override
-  public List<Tuple> zrangeWithScores(String key, String start, String stop, ZRangeParams zRangeParams) {
+  public List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zrangeWithScores(key, start, stop, zRangeParams));
+    return connection.executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
   }
 
   @Override
-  public long zrangestore(String dest, String src, String start, String stop, ZRangeParams zRangeParams) {
+  public long zrangestore(String dest, String src, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zrangestore(dest, src, start, stop, zRangeParams));
-
+    return connection.executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override

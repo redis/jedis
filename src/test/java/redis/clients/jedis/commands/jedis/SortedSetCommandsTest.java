@@ -969,8 +969,8 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     expected.add("c");
     expected.add("bb");
 
-    assertEquals(expected, jedis.zrange("foo", "[c", "(aa", new ZRangeParams().byLex().reverse()));
-    assertNotNull(jedis.zrangeWithScores("foo", "0", "1", new ZRangeParams().byScore()));
+    assertEquals(expected, jedis.zrange("foo", ZRangeParams.zrangeByLexParams("[c", "(aa").rev()));
+    assertNotNull(jedis.zrangeWithScores("foo", ZRangeParams.zrangeByScoreParams(0, 1)));
 
     // Binary
     jedis.zadd(bfoo, 1, ba);
@@ -980,8 +980,8 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     List<byte[]> bExpected = new ArrayList<byte[]>();
     bExpected.add(bb);
 
-    assertByteArrayListEquals(bExpected, jedis.zrange(bfoo, bExclusiveC, bInclusiveB, new ZRangeParams().byLex().reverse()));
-    assertNotNull(jedis.zrangeWithScores(bfoo, "0".getBytes(), "1".getBytes(), new ZRangeParams().byScore().limit(0, 3)));
+    assertByteArrayListEquals(bExpected, jedis.zrange(bfoo, ZRangeParams.zrangeByLexParams(bExclusiveC, bInclusiveB).rev()));
+    assertNotNull(jedis.zrangeWithScores(bfoo, ZRangeParams.zrangeByScoreParams(0, 1).limit(0, 3)));
   }
 
   @Test
@@ -990,7 +990,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 2, "c");
     jedis.zadd("foo", 3, "bb");
 
-    long stored = jedis.zrangestore("bar", "foo", "1", "2", new ZRangeParams().byScore());
+    long stored = jedis.zrangestore("bar", "foo", ZRangeParams.zrangeByScoreParams(1, 2));
     assertEquals(2, stored);
 
     List<String> range = jedis.zrange("bar", 0, -1);
@@ -1005,7 +1005,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    long bstored = jedis.zrangestore(bbar, bfoo, "0".getBytes(), "1".getBytes(), new ZRangeParams().reverse());
+    long bstored = jedis.zrangestore(bbar, bfoo, ZRangeParams.zrangeByScoreParams(0, 1).rev());
     assertEquals(2, bstored);
 
     List<byte[]> brange = jedis.zrevrange(bbar, 0, 1);

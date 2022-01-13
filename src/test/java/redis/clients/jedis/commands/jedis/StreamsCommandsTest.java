@@ -443,10 +443,10 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void xpendingRange() {
-    Map<String, String> map1 = new HashMap<>();
-    map1.put("foo", "bar");
-    StreamEntryID m1 = jedis.xadd("xpendeing-stream", (StreamEntryID) null, map1);
-    StreamEntryID m2 = jedis.xadd("xpendeing-stream", (StreamEntryID) null, map1);
+    Map<String, String> map = new HashMap<>();
+    map.put("foo", "bar");
+    StreamEntryID m1 = jedis.xadd("xpendeing-stream", (StreamEntryID) null, map);
+    StreamEntryID m2 = jedis.xadd("xpendeing-stream", (StreamEntryID) null, map);
     jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false);
 
     // read 1 message from the group with each consumer

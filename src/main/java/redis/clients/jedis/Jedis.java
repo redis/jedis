@@ -3207,7 +3207,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     }
   }
 
+  /**
+   * @deprecated Use {@link Jedis#shutdown(redis.clients.jedis.params.ShutdownParams)}.
+   */
   @Override
+  @Deprecated
   public void shutdown(final SaveMode saveMode) throws JedisException {
     connection.sendCommand(SHUTDOWN, saveMode.getRaw());
     try {
@@ -3216,6 +3220,23 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       // expected
       connection.setBroken();
     }
+  }
+
+  @Override
+  public void shutdown(ShutdownParams shutdownParams) throws JedisException {
+    connection.sendCommand(new CommandArguments(SHUTDOWN).addParams(shutdownParams));
+    try {
+      throw new JedisException(connection.getStatusCodeReply());
+    } catch (JedisConnectionException jce) {
+      // expected
+      connection.setBroken();
+    }
+  }
+
+  @Override
+  public String shutdownAbort() {
+    connection.sendCommand(SHUTDOWN, ABORT);
+    return connection.getStatusCodeReply();
   }
 
   /**
@@ -3301,16 +3322,34 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param host
    * @param port
    * @return Status code reply
+   * @deprecated Use {@link Jedis#replicaof(java.lang.String, int)}.
    */
   @Override
+  @Deprecated
   public String slaveof(final String host, final int port) {
     connection.sendCommand(SLAVEOF, encode(host), toByteArray(port));
     return connection.getStatusCodeReply();
   }
 
+  /**
+   * @deprecated Use {@link Jedis#replicaofNoOne()}.
+   */
   @Override
+  @Deprecated
   public String slaveofNoOne() {
     connection.sendCommand(SLAVEOF, NO.getRaw(), ONE.getRaw());
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String replicaof(final String host, final int port) {
+    connection.sendCommand(REPLICAOF, encode(host), toByteArray(port));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String replicaofNoOne() {
+    connection.sendCommand(REPLICAOF, NO.getRaw(), ONE.getRaw());
     return connection.getStatusCodeReply();
   }
 
@@ -4560,33 +4599,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public StreamFullInfo xinfoStreamFull(byte[] key) {
+  public Object xinfoStreamFull(byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoStreamFull(key));
   }
 
   @Override
-  public StreamFullInfo xinfoStreamFull(byte[] key, int count) {
+  public Object xinfoStreamFull(byte[] key, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
   }
 
   @Override
-  public StreamFullInfo xinfoStreamFull(String key) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xinfoStreamFull(key));
-  }
-
-  @Override
-  public StreamFullInfo xinfoStreamFull(String key, int count) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
+  @Deprecated
   public List<Object> xinfoGroup(byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<Object> xinfoGroups(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
@@ -8553,6 +8587,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String lolwut() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LOLWUT);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String lolwut(LolwutParams lolwutParams) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(new CommandArguments(LOLWUT).addParams(lolwutParams));
+    return connection.getBulkReply();
+  }
+
+  @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xadd(key, id, hash));
@@ -8737,8 +8785,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public StreamFullInfo xinfoStreamFull(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public StreamFullInfo xinfoStreamFull(String key, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  @Deprecated
   public List<StreamGroupInfo> xinfoGroup(String key) {
     return connection.executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroups(String key) {
+    return connection.executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override

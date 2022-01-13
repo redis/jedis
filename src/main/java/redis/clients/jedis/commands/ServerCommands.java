@@ -3,6 +3,8 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.params.LolwutParams;
+import redis.clients.jedis.params.ShutdownParams;
 
 public interface ServerCommands {
 
@@ -118,8 +120,19 @@ public interface ServerCommands {
    * @param saveMode modifier to alter the data save behavior of SHUTDOWN. {@code null} would
    * trigger the default behavior.
    * @throws JedisException
+   * @deprecated Use {@link ServerCommands#shutdown(redis.clients.jedis.params.ShutdownParams)}.
    */
+  @Deprecated
   void shutdown(SaveMode saveMode) throws JedisException;
+
+  /**
+   * @see SaveMode
+   * @param shutdownParams set commands parameters
+   * @throws JedisException
+   */
+  void shutdown(ShutdownParams shutdownParams) throws JedisException;
+
+  String shutdownAbort();
 
   /**
    * The INFO command returns information and statistics about the server in a format that is simple
@@ -150,7 +163,9 @@ public interface ServerCommands {
    * @param host listening at the specified hostname
    * @param port server listening at the specified port
    * @return result of the command.
+   * @deprecated Use {@link ServerCommands#replicaof(java.lang.String, int)}.
    */
+  @Deprecated
   String slaveof(String host, int port);
 
   /**
@@ -159,8 +174,31 @@ public interface ServerCommands {
    * master and set the application to use this new master in read/write. Later when the other Redis
    * server is fixed, it can be reconfigured to work as a slave.
    * @return result of the command
+   * @deprecated Use {@link ServerCommands#replicaofNoOne()}.
    */
+  @Deprecated
   String slaveofNoOne();
+
+  /**
+   * The REPLICAOF command can change the replication settings of a replica on the fly. In the
+   * proper form REPLICAOF hostname port will make the server a replica of another server
+   * listening at the specified hostname and port. If a server is already a replica of some master,
+   * REPLICAOF hostname port will stop the replication against the old server and start the
+   * synchronization against the new one, discarding the old dataset.
+   * @param host listening at the specified hostname
+   * @param port server listening at the specified port
+   * @return result of the command.
+   */
+  String replicaof(String host, int port);
+
+  /**
+   * REPLICAOF NO ONE will stop replication, turning the server into a MASTER, but will not discard
+   * the replication. So, if the old master stops working, it is possible to turn the replica into
+   * a master and set the application to use this new master in read/write. Later when the other
+   * Redis server is fixed, it can be reconfigured to work as a replica.
+   * @return result of the command
+   */
+  String replicaofNoOne();
 
   /**
    * Syncrhonous replication of Redis as described here: http://antirez.com/news/66.
@@ -177,4 +215,8 @@ public interface ServerCommands {
    *         current connection
    */
   long waitReplicas(int replicas, long timeout);
+
+  String lolwut();
+
+  String lolwut(LolwutParams lolwutParams);
 }

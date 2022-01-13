@@ -2195,6 +2195,14 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }
 
+  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname,
+      String start, String end, int count, String consumername) {
+    CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
+            .add(start == null ? "-" : start).add(end == null ? "+" : end).add(count);
+    if (consumername != null) args.add(consumername);
+    return new CommandObject<>(args, BuilderFactory.STREAM_PENDING_ENTRY_LIST);
+  }
+
   public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
     return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname)
         .addParams(params), BuilderFactory.STREAM_PENDING_ENTRY_LIST);

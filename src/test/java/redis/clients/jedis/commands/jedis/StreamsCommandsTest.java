@@ -423,7 +423,6 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void xack() {
-
     Map<String, String> map = new HashMap<String, String>();
     map.put("f1", "v1");
     jedis.xadd("xack-stream", (StreamEntryID) null, map);
@@ -440,6 +439,28 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1L,
       jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  public void xpendingRange() {
+    Map<String, String> map1 = new HashMap<>();
+    map1.put("foo", "bar");
+    StreamEntryID m1 = jedis.xadd("xpendeing-stream", (StreamEntryID) null, map1);
+    StreamEntryID m2 = jedis.xadd("xpendeing-stream", (StreamEntryID) null, map1);
+    jedis.xgroupCreate("xpendeing-stream", "xpendeing-group", null, false);
+
+    // read 1 message from the group with each consumer
+    Map<String, StreamEntryID> streamQeury = Collections.singletonMap(
+            "stream", StreamEntryID.UNRECEIVED_ENTRY);
+    jedis.xreadGroup("xpendeing-group", "consumer1", XReadGroupParams.xReadGroupParams().count(1), streamQeury);
+    jedis.xreadGroup("xpendeing-group", "consumer2", XReadGroupParams.xReadGroupParams().count(1), streamQeury);
+
+    List<StreamPendingEntry> response = jedis.xpending("xpendeing-stream", "xpendeing-group", "(0", "+", 5, null);
+    assertEquals(2, response.size());
+    assertEquals(m1, response.get(0).getID());
+    assertEquals("consumer1", response.get(0).getConsumerName());
+    assertEquals(m2, response.get(1).getID());
+    assertEquals("consumer2", response.get(1).getConsumerName());
   }
 
   @Test
@@ -496,7 +517,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
-            null, null, 3, "xpendeing-consumer");
+            (StreamEntryID) null, null, 3, "xpendeing-consumer");
     // Sleep for 100ms so we can claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -526,7 +547,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
-      null, null, 3, "xpendeing-consumer");
+            (StreamEntryID) null, null, 3, "xpendeing-consumer");
     // Sleep for 100ms so we can claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -555,7 +576,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+            (StreamEntryID) null, null, 3, "xpending-consumer");
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -585,7 +606,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+            (StreamEntryID) null, null, 3, "xpending-consumer");
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -617,7 +638,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+            (StreamEntryID) null, null, 3, "xpending-consumer");
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -647,7 +668,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+            (StreamEntryID) null, null, 3, "xpending-consumer");
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);

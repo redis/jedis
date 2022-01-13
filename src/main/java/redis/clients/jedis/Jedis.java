@@ -8692,6 +8692,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<StreamPendingEntry> xpending(final String key, final String groupname,
+      final String start, final String end, final int count, final String consumername) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  }
+
+  @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupname, final XPendingParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xpending(key, groupname, params));

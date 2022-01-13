@@ -1413,6 +1413,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, String start, String end, int count, String consumername) {
+    return appendCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  }
+
+  @Override
   public Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
     return appendCommand(commandObjects.xpending(key, groupname, params));
   }

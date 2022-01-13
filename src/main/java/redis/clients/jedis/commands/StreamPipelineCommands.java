@@ -159,6 +159,19 @@ public interface StreamPipelineCommands {
       StreamEntryID end, int count, String consumername);
 
   /**
+   * XPENDING key group [start end count] [consumer]
+   *
+   * @param key
+   * @param groupname
+   * @param start as String
+   * @param end as String
+   * @param count
+   * @param consumername
+   */
+  Response<List<StreamPendingEntry>> xpending(String key, String groupname, String start,
+      String end, int count, String consumername);
+
+  /**
    * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
    *
    * @param key

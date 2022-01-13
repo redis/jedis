@@ -10,13 +10,9 @@ import redis.clients.jedis.util.SafeEncoder;
 public class XPendingParams implements IParams {
 
   private Long idle;
-
   private String consumer;
-
   private StreamEntryID start;
-
   private StreamEntryID end;
-
   private Integer count;
 
   public static XPendingParams xPendingParams() {
@@ -33,8 +29,18 @@ public class XPendingParams implements IParams {
     return this;
   }
 
+  public XPendingParams start(String start) {
+    this.start = new StreamEntryID(start);
+    return this;
+  }
+
   public XPendingParams end(StreamEntryID end) {
     this.end = end;
+    return this;
+  }
+
+  public XPendingParams end(String end) {
+    this.end = new StreamEntryID(end);
     return this;
   }
 

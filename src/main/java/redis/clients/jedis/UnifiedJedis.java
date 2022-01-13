@@ -2531,6 +2531,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<StreamPendingEntry> xpending(String key, String groupname, String start, String end, int count, String consumername) {
+    return executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  }
+
+  @Override
   public List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params) {
     return executeCommand(commandObjects.xpending(key, groupname, params));
   }

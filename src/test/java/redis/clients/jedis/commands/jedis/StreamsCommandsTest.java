@@ -451,7 +451,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // read 1 message from the group with each consumer
     Map<String, StreamEntryID> streamQeury = Collections.singletonMap(
-            "stream", StreamEntryID.UNRECEIVED_ENTRY);
+            "xpendeing-stream", StreamEntryID.UNRECEIVED_ENTRY);
     jedis.xreadGroup("xpendeing-group", "consumer1", XReadGroupParams.xReadGroupParams().count(1), streamQeury);
     jedis.xreadGroup("xpendeing-group", "consumer2", XReadGroupParams.xReadGroupParams().count(1), streamQeury);
 

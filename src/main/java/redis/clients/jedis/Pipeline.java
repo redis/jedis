@@ -1004,6 +1004,21 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<List<String>> zrange(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
+  }
+
+  @Override
   public Response<Long> zremrangeByRank(String key, long start, long stop) {
     return appendCommand(commandObjects.zremrangeByRank(key, start, stop));
   }
@@ -2523,6 +2538,21 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override

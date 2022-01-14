@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
@@ -41,6 +38,12 @@ public interface SortedSetCommands {
   List<Tuple> zrangeWithScores(String key, long start, long stop);
 
   List<Tuple> zrevrangeWithScores(String key, long start, long stop);
+
+  List<String> zrange(String key, ZRangeParams zRangeParams);
+
+  List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams);
+
+  long zrangestore(String dest, String src, ZRangeParams zRangeParams);
 
   String zrandmember(String key);
 

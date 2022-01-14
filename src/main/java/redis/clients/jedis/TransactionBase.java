@@ -907,6 +907,21 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<List<String>> zrange(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
+  }
+
+  @Override
   public Response<String> zrandmember(String key) {
     return appendCommand(commandObjects.zrandmember(key));
   }
@@ -2387,6 +2402,21 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<List<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public Response<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override

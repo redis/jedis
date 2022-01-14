@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 
@@ -40,6 +37,12 @@ public interface SortedSetBinaryCommands {
   List<Tuple> zrangeWithScores(byte[] key, long start, long stop);
 
   List<Tuple> zrevrangeWithScores(byte[] key, long start, long stop);
+
+  List<byte[]> zrange(byte[] key, ZRangeParams zRangeParams);
+
+  List<Tuple> zrangeWithScores(byte[] key, ZRangeParams zRangeParams);
+
+  long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams);
 
   byte[] zrandmember(byte[] key);
 

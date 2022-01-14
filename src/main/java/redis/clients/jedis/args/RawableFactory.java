@@ -1,8 +1,17 @@
 package redis.clients.jedis.args;
 
-import redis.clients.jedis.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.toByteArray;
+import static redis.clients.jedis.util.SafeEncoder.encode;
 
 public final class RawableFactory {
+
+  public static Rawable from(int i) {
+    return from(toByteArray(i));
+  }
+
+  public static Rawable from(double d) {
+    return from(toByteArray(d));
+  }
 
   public static Rawable from(byte[] binary) {
     return new Raw(binary);
@@ -29,7 +38,7 @@ public final class RawableFactory {
   public static class RawString extends Raw {
 
     public RawString(String str) {
-      super(SafeEncoder.encode(str));
+      super(encode(str));
     }
   }
 

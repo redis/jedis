@@ -20,10 +20,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
@@ -959,7 +956,63 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     bexpected.add(new Tuple(ba, 2d));
 
     assertEquals(bexpected, brange);
+  }
 
+  @Test
+  public void zrangeParams() {
+    jedis.zadd("foo", 1, "aa");
+    jedis.zadd("foo", 1, "c");
+    jedis.zadd("foo", 1, "bb");
+    jedis.zadd("foo", 1, "d");
+
+    List<String> expected = new ArrayList<String>();
+    expected.add("c");
+    expected.add("bb");
+
+    assertEquals(expected, jedis.zrange("foo", ZRangeParams.zrangeByLexParams("[c", "(aa").rev()));
+    assertNotNull(jedis.zrangeWithScores("foo", ZRangeParams.zrangeByScoreParams(0, 1)));
+
+    // Binary
+    jedis.zadd(bfoo, 1, ba);
+    jedis.zadd(bfoo, 1, bc);
+    jedis.zadd(bfoo, 1, bb);
+
+    List<byte[]> bExpected = new ArrayList<byte[]>();
+    bExpected.add(bb);
+
+    assertByteArrayListEquals(bExpected, jedis.zrange(bfoo, ZRangeParams.zrangeByLexParams(bExclusiveC, bInclusiveB).rev()));
+    assertNotNull(jedis.zrangeWithScores(bfoo, ZRangeParams.zrangeByScoreParams(0, 1).limit(0, 3)));
+  }
+
+  @Test
+  public void zrangestore() {
+    jedis.zadd("foo", 1, "aa");
+    jedis.zadd("foo", 2, "c");
+    jedis.zadd("foo", 3, "bb");
+
+    long stored = jedis.zrangestore("bar", "foo", ZRangeParams.zrangeByScoreParams(1, 2));
+    assertEquals(2, stored);
+
+    List<String> range = jedis.zrange("bar", 0, -1);
+    List<String> expected = new ArrayList<>();
+    expected.add("aa");
+    expected.add("c");
+    assertEquals(expected, range);
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+
+    long bstored = jedis.zrangestore(bbar, bfoo, ZRangeParams.zrangeParams(0, 1).rev());
+    assertEquals(2, bstored);
+
+    List<byte[]> brange = jedis.zrevrange(bbar, 0, 1);
+    List<byte[]> bexpected = new ArrayList<>();
+    bexpected.add(bb);
+    bexpected.add(ba);
+    assertByteArrayListEquals(bexpected, brange);
   }
 
   @Test

@@ -1705,6 +1705,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<String> zrange(String key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public long zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
+  }
+
+  @Override
   public List<String> zrangeByScore(String key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
@@ -1802,6 +1817,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<Tuple> zrevrangeWithScores(byte[] key, long start, long stop) {
     return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public List<byte[]> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public List<Tuple> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override

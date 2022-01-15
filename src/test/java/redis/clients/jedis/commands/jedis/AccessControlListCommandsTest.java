@@ -206,7 +206,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     } catch (JedisAccessControlException e) {
       assertNull(result);
       assertEquals(
-        "NOPERM this user has no permissions to run the 'ping' command or its subcommand",
+        "NOPERM this user has no permissions to run the 'ping' command",
         e.getMessage());
     }
 
@@ -247,7 +247,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     } catch (JedisAccessControlException e) {
       assertNull(result);
       assertEquals(
-        "NOPERM this user has no permissions to run the 'set' command or its subcommand",
+        "NOPERM this user has no permissions to run the 'set' command",
         e.getMessage());
     }
 

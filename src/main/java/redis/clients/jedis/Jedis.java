@@ -2059,6 +2059,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<byte[]> zrange(byte[] key, ZRangeParams zRangeParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public List<Tuple> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
+  }
+
+  @Override
   public byte[] zrandmember(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrandmember(key));
@@ -6223,6 +6241,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<Tuple> zrevrangeWithScores(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public List<String> zrange(String key, ZRangeParams zRangeParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public long zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override

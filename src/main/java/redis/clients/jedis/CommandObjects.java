@@ -1326,6 +1326,18 @@ public class CommandObjects {
         .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
+  public final CommandObject<List<String>> zrange(String key, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), BuilderFactory.LONG);
+  }
+
   public final CommandObject<List<String>> zrangeByScore(String key, double min, double max) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.STRING_LIST);
   }
@@ -1418,6 +1430,18 @@ public class CommandObjects {
   public final CommandObject<List<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
     return new CommandObject<>(commandArguments(ZREVRANGE).key(key)
         .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<byte[]>> zrangeByScore(byte[] key, double min, double max) {

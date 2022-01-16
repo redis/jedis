@@ -8720,16 +8720,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xpending(key, groupname));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
-  }
-
-  @Override
-  public List<StreamPendingEntry> xpending(final String key, final String groupname,
-      final String start, final String end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
   }

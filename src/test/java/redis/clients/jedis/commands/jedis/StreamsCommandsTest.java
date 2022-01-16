@@ -455,7 +455,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     jedis.xreadGroup("xpendeing-group", "consumer1", XReadGroupParams.xReadGroupParams().count(1), streamQeury);
     jedis.xreadGroup("xpendeing-group", "consumer2", XReadGroupParams.xReadGroupParams().count(1), streamQeury);
 
-    List<StreamPendingEntry> response = jedis.xpending("xpendeing-stream", "xpendeing-group", "(0", "+", 5, null);
+    List<StreamPendingEntry> response = jedis.xpending("xpendeing-stream", "xpendeing-group",
+        XPendingParams.xPendingParams("(0", "+", 5));
     assertEquals(2, response.size());
     assertEquals(m1, response.get(0).getID());
     assertEquals("consumer1", response.get(0).getConsumerName());

@@ -1388,7 +1388,11 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
     return appendCommand(commandObjects.xpending(key, groupname));
   }
 
+  /**
+   * @deprecated Use {@link Pipeline#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
     return appendCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
   }

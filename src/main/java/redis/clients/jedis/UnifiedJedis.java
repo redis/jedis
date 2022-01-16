@@ -2575,7 +2575,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.xpending(key, groupname));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
     return executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
   }

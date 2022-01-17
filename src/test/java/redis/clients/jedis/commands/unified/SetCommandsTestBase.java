@@ -350,6 +350,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     long bstatus = jedis.sinterstore(bcar, bfoo, bbar);
     assertEquals(1, bstatus);
+
     assertByteArraySetEquals(bexpected, jedis.smembers(bcar));
   }
 
@@ -380,7 +381,6 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     long blimitedCard = jedis.sintercard(1, bfoo, bbar);
     assertEquals(1, blimitedCard);
   }
-
 
   @Test
   public void sunion() {

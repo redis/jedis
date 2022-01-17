@@ -2139,6 +2139,45 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zmscore(key, members));
   }
 
+  /**
+   * Pops an element, that are member-score pair, from the first non-empty sorted set
+   * in the provided list of key names. COUNT set to 1 by default.
+   * <p>
+   * <b>Time complexity:</b> O(K) + O(N*log(M)) where K is the number of provided keys,
+   * N being the number of elements in the sorted set, and M being the number of elements
+   * popped.
+   * @param keys
+   * @param min When min sets to true, the elements popped are those with the lowest scores
+   *            from the first non-empty sorted set. Otherwise, MAX modifier would cause elements
+   *            with the highest scores to be popped
+   * @return member-score pair (Tuple)
+   */
+  @Override
+  public Tuple zmpop(byte[][] keys, boolean min) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmpop(keys, min));
+  }
+
+  /**
+   * Pops one or more elements, that are member-score pairs, from the first non-empty
+   * sorted set in the provided list of key names.
+   * <p>
+   * <b>Time complexity:</b> O(K) + O(N*log(M)) where K is the number of provided keys,
+   * N being the number of elements in the sorted set, and M being the number of elements
+   * popped.
+   * @param keys
+   * @param min When min sets to true, the elements popped are those with the lowest scores
+   *            from the first non-empty sorted set. Otherwise, MAX modifier would cause elements
+   *            with the highest scores to be popped
+   * @param count specify the number of elements to pop
+   * @return list of member-score pairs (Tuples)
+   */
+  @Override
+  public List<Tuple> zmpop(byte[][] keys, boolean min, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmpop(keys, min, count));
+  }
+
   @Override
   public Tuple zpopmax(final byte[] key) {
     checkIsInMultiOrPipeline();
@@ -6322,6 +6361,45 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<Double> zmscore(final String key, final String... members) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmscore(key, members));
+  }
+
+  /**
+   * Pops an element, that are member-score pair, from the first non-empty sorted set
+   * in the provided list of key names. COUNT set to 1 by default.
+   * <p>
+   * <b>Time complexity:</b> O(K) + O(N*log(M)) where K is the number of provided keys,
+   * N being the number of elements in the sorted set, and M being the number of elements
+   * popped.
+   * @param keys
+   * @param min When min sets to true, the elements popped are those with the lowest scores
+   *            from the first non-empty sorted set. Otherwise, MAX modifier would cause elements
+   *            with the highest scores to be popped
+   * @return member-score pair (Tuple)
+   */
+  @Override
+  public Tuple zmpop(String[] keys, boolean min) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmpop(keys, min));
+  }
+
+  /**
+   * Pops one or more elements, that are member-score pairs, from the first non-empty
+   * sorted set in the provided list of key names.
+   * <p>
+   * <b>Time complexity:</b> O(K) + O(N*log(M)) where K is the number of provided keys,
+   * N being the number of elements in the sorted set, and M being the number of elements
+   * popped.
+   * @param keys
+   * @param min When min sets to true, the elements popped are those with the lowest scores
+   *            from the first non-empty sorted set. Otherwise, MAX modifier would cause elements
+   *            with the highest scores to be popped
+   * @param count specify the number of elements to pop
+   * @return list of member-score pairs (Tuples)
+   */
+  @Override
+  public List<Tuple> zmpop(String[] keys, boolean min, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmpop(keys, min, count));
   }
 
   @Override

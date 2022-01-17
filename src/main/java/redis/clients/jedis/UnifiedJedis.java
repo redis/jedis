@@ -1595,6 +1595,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Tuple zmpop(String[] keys, boolean min) {
+    return executeCommand(commandObjects.zmpop(keys, min));
+  }
+
+  @Override
+  public List<Tuple> zmpop(String[] keys, boolean min, int count) {
+    return executeCommand(commandObjects.zmpop(keys, min, count));
+  }
+
+  @Override
   public byte[] zrandmember(byte[] key) {
     return executeCommand(commandObjects.zrandmember(key));
   }
@@ -1622,6 +1632,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<Double> zmscore(byte[] key, byte[]... members) {
     return executeCommand(commandObjects.zmscore(key, members));
+  }
+
+  @Override
+  public Tuple zmpop(byte[][] keys, boolean min) {
+    return executeCommand(commandObjects.zmpop(keys, min));
+  }
+
+  @Override
+  public List<Tuple> zmpop(byte[][] keys, boolean min, int count) {
+    return executeCommand(commandObjects.zmpop(keys, min, count));
   }
 
   @Override

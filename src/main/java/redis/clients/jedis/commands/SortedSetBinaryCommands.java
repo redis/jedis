@@ -56,6 +56,10 @@ public interface SortedSetBinaryCommands {
 
   List<Double> zmscore(byte[] key, byte[]... members);
 
+  Tuple zmpop(byte[][] keys, boolean min);
+
+  List<Tuple> zmpop(byte[][] keys, boolean min, int count);
+
   Tuple zpopmax(byte[] key);
 
   List<Tuple> zpopmax(byte[] key, int count);

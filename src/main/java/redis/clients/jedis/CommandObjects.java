@@ -1232,6 +1232,16 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZMSCORE).key(key).addObjects((Object[]) members), BuilderFactory.DOUBLE_LIST);
   }
 
+  public final CommandObject<Tuple> zmpop(String[] keys, boolean min) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(min ? MIN : MAX),
+        BuilderFactory.TUPLE);
+  }
+
+  public final CommandObject<List<Tuple>> zmpop(String[] keys, boolean min, int count) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(min ? MIN : MAX)
+        .add(COUNT).add(count), BuilderFactory.TUPLE_LIST);
+  }
+
   public final CommandObject<Long> zcard(byte[] key) {
     return new CommandObject<>(commandArguments(ZCARD).key(key), BuilderFactory.LONG);
   }
@@ -1242,6 +1252,16 @@ public class CommandObjects {
 
   public final CommandObject<List<Double>> zmscore(byte[] key, byte[]... members) {
     return new CommandObject<>(commandArguments(ZMSCORE).key(key).addObjects((Object[]) members), BuilderFactory.DOUBLE_LIST);
+  }
+
+  public final CommandObject<Tuple> zmpop(byte[][] keys, boolean min) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(min ? MIN : MAX),
+        BuilderFactory.TUPLE);
+  }
+
+  public final CommandObject<List<Tuple>> zmpop(byte[][] keys, boolean min, int count) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(min ? MIN : MAX)
+        .add(COUNT).add(count), BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<Tuple> zpopmax(String key) {

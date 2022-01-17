@@ -560,6 +560,40 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void zmpop() {
+    jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
+
+    Tuple single = jedis.zmpop(new String[]{"foo"}, false);
+    List<Tuple> range = jedis.zmpop(new String[]{"foo"}, true, 2);
+
+    List<Tuple> expected = new ArrayList<Tuple>();
+    expected.add(new Tuple("c", 0.1d));
+    expected.add(new Tuple("a", 1d));
+
+    assertEquals(expected, range);
+    assertEquals(new Tuple("b", 10d), single);
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+
+    Tuple bsingle = jedis.zmpop(new byte[][]{bfoo}, false);
+    List<Tuple> brange = jedis.zmpop(new byte[][]{bfoo}, true, 2);
+
+    List<Tuple> bexpected = new ArrayList<Tuple>();
+    bexpected.add(new Tuple(bc, 0.1d));
+    bexpected.add(new Tuple(ba, 2d));
+
+    assertEquals(bexpected, brange);
+    assertEquals(new Tuple(bb, 10d), bsingle);
+  }
+
+  @Test
   public void zpopmax() {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 10d, "b");

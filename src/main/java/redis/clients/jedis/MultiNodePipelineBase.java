@@ -898,6 +898,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Tuple> zmpop(String[] keys, boolean min) {
+    return appendCommand(commandObjects.zmpop(keys, min));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmpop(String[] keys, boolean min, int count) {
+    return appendCommand(commandObjects.zmpop(keys, min, count));
+  }
+
+  @Override
   public Response<Tuple> zpopmax(String key) {
     return appendCommand(commandObjects.zpopmax(key));
   }
@@ -2393,6 +2403,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<List<Double>> zmscore(byte[] key, byte[]... members) {
     return appendCommand(commandObjects.zmscore(key, members));
+  }
+
+  @Override
+  public Response<Tuple> zmpop(byte[][] keys, boolean min) {
+    return appendCommand(commandObjects.zmpop(keys, min));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmpop(byte[][] keys, boolean min, int count) {
+    return appendCommand(commandObjects.zmpop(keys, min, count));
   }
 
   @Override

@@ -52,6 +52,10 @@ public interface SortedSetPipelineCommands {
 
   Response<List<Double>> zmscore(String key, String... members);
 
+  Response<Tuple> zmpop(String[] keys, boolean min);
+
+  Response<List<Tuple>> zmpop(String[] keys, boolean min, int count);
+
   Response<Tuple> zpopmax(String key);
 
   Response<List<Tuple>> zpopmax(String key, int count);

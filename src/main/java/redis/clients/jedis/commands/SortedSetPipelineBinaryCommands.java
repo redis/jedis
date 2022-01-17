@@ -51,6 +51,10 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<List<Double>> zmscore(byte[] key, byte[]... members);
 
+  Response<Tuple> zmpop(byte[][] keys, boolean min);
+
+  Response<List<Tuple>> zmpop(byte[][] keys, boolean min, int count);
+
   Response<Tuple> zpopmax(byte[] key);
 
   Response<List<Tuple>> zpopmax(byte[] key, int count);

@@ -57,6 +57,10 @@ public interface SortedSetCommands {
 
   List<Double> zmscore(String key, String... members);
 
+  Tuple zmpop(String[] keys, boolean min);
+
+  List<Tuple> zmpop(String[] keys, boolean min, int count);
+
   Tuple zpopmax(String key);
 
   List<Tuple> zpopmax(String key, int count);

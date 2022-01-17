@@ -352,6 +352,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(1, bstatus);
 
     assertByteArraySetEquals(bexpected, jedis.smembers(bcar));
+
   }
 
   @Test

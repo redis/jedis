@@ -1232,9 +1232,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZMSCORE).key(key).addObjects((Object[]) members), BuilderFactory.DOUBLE_LIST);
   }
 
-  public final CommandObject<Tuple> zmpop(String[] keys, boolean min) {
+  public final CommandObject<List<Tuple>> zmpop(String[] keys, boolean min) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(min ? MIN : MAX),
-        BuilderFactory.TUPLE);
+        BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<List<Tuple>> zmpop(String[] keys, boolean min, int count) {
@@ -1254,9 +1254,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZMSCORE).key(key).addObjects((Object[]) members), BuilderFactory.DOUBLE_LIST);
   }
 
-  public final CommandObject<Tuple> zmpop(byte[][] keys, boolean min) {
+  public final CommandObject<List<Tuple>> zmpop(byte[][] keys, boolean min) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(min ? MIN : MAX),
-        BuilderFactory.TUPLE);
+        BuilderFactory.TUPLE_LIST);
   }
 
   public final CommandObject<List<Tuple>> zmpop(byte[][] keys, boolean min, int count) {

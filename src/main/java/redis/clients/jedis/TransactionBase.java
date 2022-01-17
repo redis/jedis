@@ -952,7 +952,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Tuple> zmpop(String[] keys, boolean min) {
+  public Response<List<Tuple>> zmpop(String[] keys, boolean min) {
     return appendCommand(commandObjects.zmpop(keys, min));
   }
 
@@ -2460,7 +2460,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Tuple> zmpop(byte[][] keys, boolean min) {
+  public Response<List<Tuple>> zmpop(byte[][] keys, boolean min) {
     return appendCommand(commandObjects.zmpop(keys, min));
   }
 

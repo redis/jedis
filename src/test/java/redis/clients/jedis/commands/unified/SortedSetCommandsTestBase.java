@@ -623,7 +623,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    Tuple single = jedis.zmpop(new String[]{"foo"}, false);
+    List<Tuple> single = jedis.zmpop(new String[]{"foo"}, false);
     List<Tuple> range = jedis.zmpop(new String[]{"foo"}, true, 2);
 
     List<Tuple> expected = new ArrayList<>();
@@ -631,7 +631,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     expected.add(new Tuple("a", 1d));
 
     assertEquals(expected, range);
-    assertEquals(new Tuple("b", 10d), single);
+    assertEquals(new Tuple("b", 10d), single.get(0));
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
@@ -639,7 +639,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    Tuple bsingle = jedis.zmpop(new byte[][]{bfoo}, false);
+    List<Tuple> bsingle = jedis.zmpop(new byte[][]{bfoo}, false);
     List<Tuple> brange = jedis.zmpop(new byte[][]{bfoo}, true, 2);
 
     List<Tuple> bexpected = new ArrayList<>();
@@ -647,7 +647,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     bexpected.add(new Tuple(ba, 2d));
 
     assertEquals(bexpected, brange);
-    assertEquals(new Tuple(bb, 10d), bsingle);
+    assertEquals(new Tuple(bb, 10d), bsingle.get(0));
   }
 
   @Test

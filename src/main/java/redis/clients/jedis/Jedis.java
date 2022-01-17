@@ -2153,7 +2153,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return member-score pair (Tuple)
    */
   @Override
-  public Tuple zmpop(byte[][] keys, boolean min) {
+  public List<Tuple> zmpop(byte[][] keys, boolean min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(keys, min));
   }
@@ -6377,7 +6377,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return member-score pair (Tuple)
    */
   @Override
-  public Tuple zmpop(String[] keys, boolean min) {
+  public List<Tuple> zmpop(String[] keys, boolean min) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(keys, min));
   }

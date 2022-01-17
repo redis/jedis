@@ -1595,7 +1595,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Tuple zmpop(String[] keys, boolean min) {
+  public List<Tuple> zmpop(String[] keys, boolean min) {
     return executeCommand(commandObjects.zmpop(keys, min));
   }
 
@@ -1635,7 +1635,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Tuple zmpop(byte[][] keys, boolean min) {
+  public List<Tuple> zmpop(byte[][] keys, boolean min) {
     return executeCommand(commandObjects.zmpop(keys, min));
   }
 

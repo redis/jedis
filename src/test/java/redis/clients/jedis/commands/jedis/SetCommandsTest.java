@@ -379,7 +379,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
 
     long bcard = jedis.sintercard(bfoo, bbar);
     assertEquals(2, bcard);
-    long blimitedCard = jedis.sintercard(1, "foo", "bar");
+    long blimitedCard = jedis.sintercard(1, bfoo, bbar);
     assertEquals(1, blimitedCard);
   }
 

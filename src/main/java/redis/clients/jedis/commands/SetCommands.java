@@ -42,6 +42,10 @@ public interface SetCommands {
 
   long sinterstore(String dstkey, String... keys);
 
+  long sintercard(String... keys);
+
+  long sintercard(int limit, String... keys);
+
   Set<String> sunion(String... keys);
 
   long sunionstore(String dstkey, String... keys);

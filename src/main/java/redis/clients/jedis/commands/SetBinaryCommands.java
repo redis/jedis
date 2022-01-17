@@ -42,6 +42,10 @@ public interface SetBinaryCommands {
 
   long sinterstore(byte[] dstkey, byte[]... keys);
 
+  long sintercard(byte[]... keys);
+
+  long sintercard(int limit, byte[]... keys);
+
   Set<byte[]> sunion(byte[]... keys);
 
   long sunionstore(byte[] dstkey, byte[]... keys);

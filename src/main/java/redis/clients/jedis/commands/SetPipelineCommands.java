@@ -43,6 +43,10 @@ public interface SetPipelineCommands {
 
   Response<Long> sinterstore(String dstKey, String... keys);
 
+  Response<Long> sintercard(String... keys);
+
+  Response<Long> sintercard(int limit, String... keys);
+
   Response<Set<String>> sunion(String... keys);
 
   Response<Long> sunionstore(String dstKey, String... keys);

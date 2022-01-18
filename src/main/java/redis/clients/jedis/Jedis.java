@@ -4567,16 +4567,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Object xpending(final byte[] key, final byte[] groupname) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xpending(key, groupname));
+  }
+
+  /**
+   * @deprecated Use {@link Jedis#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Override
+  @Deprecated
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
-  }
-
-  @Override
-  public Object xpending(final byte[] key, final byte[] groupname) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupname));
   }
 
   @Override

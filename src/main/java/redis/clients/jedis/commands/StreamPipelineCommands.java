@@ -154,7 +154,9 @@ public interface StreamPipelineCommands {
    * @param end
    * @param count
    * @param consumername
+   * @deprecated Use {@link StreamPipelineCommands#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
    */
+  @Deprecated
   Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start,
       StreamEntryID end, int count, String consumername);
 

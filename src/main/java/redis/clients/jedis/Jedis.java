@@ -4566,7 +4566,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xtrim(key, params));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     checkIsInMultiOrPipeline();
@@ -8780,7 +8784,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xpending(key, groupname));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();

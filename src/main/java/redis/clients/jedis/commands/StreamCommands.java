@@ -153,7 +153,9 @@ public interface StreamCommands {
    * @param end
    * @param count
    * @param consumername
+   * @deprecated Use {@link StreamCommands#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
    */
+  @Deprecated
   List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start,
       StreamEntryID end, int count, String consumername);
 

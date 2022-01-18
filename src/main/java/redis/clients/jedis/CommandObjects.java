@@ -1078,6 +1078,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> sintercard(String... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sintercard(int limit, String... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
+  }
+
   public final CommandObject<Set<byte[]>> sinter(byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTER).keys((Object[]) keys), BuilderFactory.BINARY_SET);
   }
@@ -1085,6 +1093,15 @@ public class CommandObjects {
   public final CommandObject<Long> sinterstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
+
+  public final CommandObject<Long> sintercard(byte[]... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sintercard(int limit, byte[]... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
+  }
+
 
   public final CommandObject<Set<String>> sunion(String... keys) {
     return new CommandObject<>(commandArguments(SUNION).keys((Object[]) keys), BuilderFactory.STRING_SET);

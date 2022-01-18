@@ -43,6 +43,10 @@ public interface SetPipelineBinaryCommands {
 
   Response<Long> sinterstore(byte[] dstkey, byte[]... keys);
 
+  Response<Long> sintercard(byte[]... keys);
+
+  Response<Long> sintercard(int limit, byte[]... keys);
+
   Response<Set<byte[]>> sunion(byte[]... keys);
 
   Response<Long> sunionstore(byte[] dstkey, byte[]... keys);

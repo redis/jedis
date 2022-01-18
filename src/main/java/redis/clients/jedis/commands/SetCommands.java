@@ -42,6 +42,28 @@ public interface SetCommands {
 
   long sinterstore(String dstkey, String... keys);
 
+  /**
+   * This command works exactly like {@link SetCommands#sinter(String[]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result. LIMIT defaults to 0 and means unlimited
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  long sintercard(String... keys);
+
+  /**
+   * This command works exactly like {@link SetCommands#sinter(String[]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality.
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  long sintercard(int limit, String... keys);
+
   Set<String> sunion(String... keys);
 
   long sunionstore(String dstkey, String... keys);

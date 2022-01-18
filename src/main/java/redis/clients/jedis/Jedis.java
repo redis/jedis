@@ -1783,7 +1783,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This commanad works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of being
+   * This command works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of being
    * returned the resulting set is stored as dstkey.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
@@ -1796,6 +1796,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long sinterstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result. LIMIT defaults to 0 and means unlimited
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  @Override
+  public long sintercard(byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sintercard(keys));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality.
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  @Override
+  public long sintercard(int limit, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   /**
@@ -5950,6 +5980,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long sinterstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#sinter(String[]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  @Override
+  public long sintercard(String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sintercard(keys));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#sinter(String[]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality.
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  @Override
+  public long sintercard(int limit, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   /**

@@ -724,13 +724,12 @@ public final class BuilderFactory {
         accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
       }
 
-      if (objectList.size() <= 9) {
-        // before redis 6.2, no channels info
-        return accessControlUser;
-      }
-      List<Object> channels = objectList.get(9);
-      for (Object channel : channels) {
-        accessControlUser.addChannel(SafeEncoder.encode((byte[]) channel));
+      // before redis 6.2, no channels info
+      if (objectList.size() > 9) {
+        List<Object> channels = objectList.get(9);
+        for (Object channel : channels) {
+          accessControlUser.addChannel(SafeEncoder.encode((byte[]) channel));
+        }
       }
 
       return accessControlUser;

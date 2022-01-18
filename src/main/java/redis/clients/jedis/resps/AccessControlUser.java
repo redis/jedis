@@ -38,7 +38,7 @@ public class AccessControlUser {
     return passwords;
   }
 
-  public void addChannel(String channel){
+  public void addChannel(String channel) {
      channels.add(channel);
   }
 

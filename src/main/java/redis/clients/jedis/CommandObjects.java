@@ -1078,6 +1078,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> sintercard(String... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sintercard(int limit, String... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
+  }
+
   public final CommandObject<Set<byte[]>> sinter(byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTER).keys((Object[]) keys), BuilderFactory.BINARY_SET);
   }
@@ -1085,6 +1093,15 @@ public class CommandObjects {
   public final CommandObject<Long> sinterstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
+
+  public final CommandObject<Long> sintercard(byte[]... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sintercard(int limit, byte[]... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
+  }
+
 
   public final CommandObject<Set<String>> sunion(String... keys) {
     return new CommandObject<>(commandArguments(SUNION).keys((Object[]) keys), BuilderFactory.STRING_SET);
@@ -1326,6 +1343,18 @@ public class CommandObjects {
         .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
   }
 
+  public final CommandObject<List<String>> zrange(String key, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), BuilderFactory.LONG);
+  }
+
   public final CommandObject<List<String>> zrangeByScore(String key, double min, double max) {
     return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.STRING_LIST);
   }
@@ -1418,6 +1447,18 @@ public class CommandObjects {
   public final CommandObject<List<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
     return new CommandObject<>(commandArguments(ZREVRANGE).key(key)
         .add(start).add(stop).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams).add(WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<byte[]>> zrangeByScore(byte[] key, double min, double max) {
@@ -2187,6 +2228,10 @@ public class CommandObjects {
         BuilderFactory.STREAM_PENDING_SUMMARY);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername) {
     CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
@@ -2205,6 +2250,10 @@ public class CommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname,
       byte[] start, byte[] end, int count, byte[] consumername) {
     CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
@@ -2280,23 +2329,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key), BuilderFactory.STREAM_INFO);
   }
 
-  public final CommandObject<List<StreamGroupInfo>> xinfoGroup(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
-  }
-
-  public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
-    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
-  }
-
   public final CommandObject<Object> xinfoStream(byte[] key) {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key), BuilderFactory.RAW_OBJECT);
   }
 
-  public final CommandObject<StreamFullInfo> xinfoStreamFull(byte[] key, int count) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
-  }
-
-  public final CommandObject<StreamFullInfo> xinfoStreamFull(byte[] key) {
+  public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
   }
 
@@ -2304,12 +2341,34 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
   }
 
-  public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
+  public final CommandObject<Object> xinfoStreamFull(byte[] key, int count) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.RAW_OBJECT);
   }
 
+  public final CommandObject<Object> xinfoStreamFull(byte[] key) {
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.RAW_OBJECT);
+  }
+
+  @Deprecated
+  public final CommandObject<List<StreamGroupInfo>> xinfoGroup(String key) {
+    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
+  }
+
+  public final CommandObject<List<StreamGroupInfo>> xinfoGroups(String key) {
+    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
+  }
+
+  @Deprecated
   public final CommandObject<List<Object>> xinfoGroup(byte[] key) {
     return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> xinfoGroups(byte[] key) {
+    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
+    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
   }
 
   public final CommandObject<List<Object>> xinfoConsumers(byte[] key, byte[] group) {

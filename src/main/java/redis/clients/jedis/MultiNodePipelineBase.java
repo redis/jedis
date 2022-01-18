@@ -768,6 +768,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> sintercard(String... keys){
+    return appendCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(int limit, String... keys){
+    return appendCommand(commandObjects.sintercard(limit, keys));
+  }
+
+  @Override
   public Response<Set<String>> sunion(String... keys) {
     return appendCommand(commandObjects.sunion(keys));
   }
@@ -850,6 +860,21 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<List<Tuple>> zrevrangeWithScores(String key, long start, long stop) {
     return appendCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public Response<List<String>> zrange(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -1404,17 +1429,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<StreamFullInfo> xinfoStreamFull(byte[] key) {
-    return appendCommand(commandObjects.xinfoStreamFull(key));
-
-  }
-
-  @Override
-  public Response<StreamFullInfo> xinfoStreamFull(byte[] key, int count) {
-    return appendCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
   public Response<StreamFullInfo> xinfoStreamFull(String key) {
     return appendCommand(commandObjects.xinfoStreamFull(key));
   }
@@ -1425,8 +1439,14 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  @Deprecated
   public Response<List<StreamGroupInfo>> xinfoGroup(String key) {
     return appendCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public Response<List<StreamGroupInfo>> xinfoGroups(String key) {
+    return appendCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
@@ -2256,6 +2276,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> sintercard(byte[]... keys){
+    return appendCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(int limit, byte[]... keys){
+    return appendCommand(commandObjects.sintercard(limit, keys));
+  }
+
+  @Override
   public Response<Set<byte[]>> sunion(byte[]... keys) {
     return appendCommand(commandObjects.sunion(keys));
   }
@@ -2338,6 +2368,21 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<List<Tuple>> zrevrangeWithScores(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public Response<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -2706,8 +2751,24 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Object> xinfoStreamFull(byte[] key) {
+    return appendCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public Response<Object> xinfoStreamFull(byte[] key, int count) {
+    return appendCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  @Deprecated
   public Response<List<Object>> xinfoGroup(byte[] key) {
     return appendCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public Response<List<Object>> xinfoGroups(byte[] key) {
+    return appendCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override

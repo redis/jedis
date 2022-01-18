@@ -5,10 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
@@ -98,6 +95,12 @@ public interface SortedSetPipelineCommands {
   Response<List<Tuple>> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
 
   Response<List<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count);
+
+  Response<List<String>> zrange(String key, ZRangeParams zRangeParams);
+
+  Response<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams);
+
+  Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams);
 
   Response<Long> zremrangeByRank(String key, long start, long stop);
 

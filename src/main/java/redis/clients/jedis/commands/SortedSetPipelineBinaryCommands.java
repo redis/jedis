@@ -5,10 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 
@@ -113,6 +110,12 @@ public interface SortedSetPipelineBinaryCommands {
   Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min);
 
   Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count);
+
+  Response<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams);
+
+  Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams);
+
+  Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams);
 
   Response<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max);
 

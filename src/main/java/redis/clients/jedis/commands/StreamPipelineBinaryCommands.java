@@ -5,7 +5,6 @@ import java.util.Map;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.StreamFullInfo;
 
 public interface StreamPipelineBinaryCommands {
 //
@@ -45,6 +44,10 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Object> xpending(byte[] key, byte[] groupname);
 
+  /**
+   * @deprecated Use {@link StreamPipelineBinaryCommands#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   Response<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params);
@@ -64,19 +67,23 @@ public interface StreamPipelineBinaryCommands {
   /**
    * Introspection command used in order to retrieve all information about the stream
    * @param key Stream name
-   * @return {@link StreamFullInfo} that contains information about the stream
    */
-  Response<StreamFullInfo> xinfoStreamFull(byte[] key);
+  Response<Object> xinfoStreamFull(byte[] key);
 
   /**
    * Introspection command used in order to retrieve all information about the stream
    * @param key Stream name
    * @param count stream info count
-   * @return {@link StreamFullInfo} that contains information about the stream
    */
-  Response<StreamFullInfo> xinfoStreamFull(byte[] key, int count);
+  Response<Object> xinfoStreamFull(byte[] key, int count);
 
+  /**
+   * @deprecated Use {@link StreamPipelineBinaryCommands#xinfoGroups(byte[])}.
+   */
+  @Deprecated
   Response<List<Object>> xinfoGroup(byte[] key);
+
+  Response<List<Object>> xinfoGroups(byte[] key);
 
   Response<List<Object>> xinfoConsumers(byte[] key, byte[] group);
 

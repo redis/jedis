@@ -7,6 +7,7 @@ import java.util.Map;
  * there is also {@link #getConsumerInfo()}} method that returns a generic {@code Map} - in case
  * where more info is returned from the server.
  */
+// TODO: Rename to StreamConsumerInfo
 public class StreamConsumersInfo {
 
   public static final String NAME = "name";

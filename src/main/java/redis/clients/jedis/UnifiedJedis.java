@@ -1413,6 +1413,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sintercard(String... keys) {
+    return executeCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public long sintercard(int limit, String... keys) {
+    return executeCommand(commandObjects.sintercard(limit, keys));
+  }
+
+  @Override
   public Set<String> sunion(String... keys) {
     return executeCommand(commandObjects.sunion(keys));
   }
@@ -1445,6 +1455,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long sinterstore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  @Override
+  public long sintercard(byte[]... keys) {
+    return executeCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public long sintercard(int limit, byte[]... keys) {
+    return executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   @Override
@@ -1705,6 +1725,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<String> zrange(String key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public long zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
+  }
+
+  @Override
   public List<String> zrangeByScore(String key, double min, double max) {
     return executeCommand(commandObjects.zrangeByScore(key, min, max));
   }
@@ -1802,6 +1837,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<Tuple> zrevrangeWithScores(byte[] key, long start, long stop) {
     return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+  }
+
+  @Override
+  public List<byte[]> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public List<Tuple> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -2576,16 +2626,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public StreamFullInfo xinfoStreamFull(byte[] key) {
-    return executeCommand(commandObjects.xinfoStreamFull(key));
-  }
-
-  @Override
-  public StreamFullInfo xinfoStreamFull(byte[] key, int count) {
-    return executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
   public StreamFullInfo xinfoStreamFull(String key) {
     return executeCommand(commandObjects.xinfoStreamFull(key));
   }
@@ -2596,8 +2636,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public List<StreamGroupInfo> xinfoGroup(String key) {
     return executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<StreamGroupInfo> xinfoGroups(String key) {
+    return executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
@@ -2727,8 +2773,24 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Object xinfoStreamFull(byte[] key) {
+    return executeCommand(commandObjects.xinfoStreamFull(key));
+  }
+
+  @Override
+  public Object xinfoStreamFull(byte[] key, int count) {
+    return executeCommand(commandObjects.xinfoStreamFull(key, count));
+  }
+
+  @Override
+  @Deprecated
   public List<Object> xinfoGroup(byte[] key) {
     return executeCommand(commandObjects.xinfoGroup(key));
+  }
+
+  @Override
+  public List<Object> xinfoGroups(byte[] key) {
+    return executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
@@ -2970,6 +3032,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public long publish(byte[] channel, byte[] message) {
     return executeCommand(commandObjects.publish(channel, message));
+  }
+
+  public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    }
+  }
+
+  public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    }
   }
 
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {

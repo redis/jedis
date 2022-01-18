@@ -14,11 +14,15 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.ArgumentMatchers.anyInt;
+import org.mockito.Mockito;
+import redis.clients.jedis.Connection;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -145,6 +149,16 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     Transaction t = jedis.multi();
     String status = t.discard();
     assertEquals("OK", status);
+  }
+
+  @Test(expected = JedisConnectionException.class)
+  public void discardMock() {
+    Connection mock = Mockito.spy(jedis.getConnection());
+    Mockito.doThrow(new JedisConnectionException("mock")).when(mock).getMany(anyInt());
+    Transaction trans = new Jedis(mock).multi();
+    trans.set("a", "a");
+    trans.set("b", "b");
+    trans.discard();
   }
 
   @Test

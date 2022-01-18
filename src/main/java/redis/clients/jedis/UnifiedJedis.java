@@ -1413,6 +1413,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sintercard(String... keys) {
+    return executeCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public long sintercard(int limit, String... keys) {
+    return executeCommand(commandObjects.sintercard(limit, keys));
+  }
+
+  @Override
   public Set<String> sunion(String... keys) {
     return executeCommand(commandObjects.sunion(keys));
   }
@@ -1445,6 +1455,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long sinterstore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  @Override
+  public long sintercard(byte[]... keys) {
+    return executeCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public long sintercard(int limit, byte[]... keys) {
+    return executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   @Override

@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.*;
 
+import static org.mockito.ArgumentMatchers.anyInt;
 import static redis.clients.jedis.Protocol.Command.INCR;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -14,10 +15,9 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.ArgumentMatchers.anyInt;
 import org.mockito.Mockito;
-import redis.clients.jedis.Connection;
 
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Response;

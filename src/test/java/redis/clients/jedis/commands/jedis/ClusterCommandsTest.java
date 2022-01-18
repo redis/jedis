@@ -8,10 +8,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -110,6 +107,32 @@ public class ClusterCommandsTest {
   public void clusterInfo() {
     String info = node1.clusterInfo();
     assertNotNull(info);
+  }
+
+  @Test
+  public void addAndDelSlotsRange() {
+    // test add
+    String res = node1.clusterAddSlotsRange(0, 5);
+    Assert.assertEquals("OK", res);
+
+    String clusterNodes = node1.clusterNodes();
+    Assert.assertTrue(clusterNodes.endsWith("connected 0-5\n"));
+
+    res = node1.clusterAddSlotsRange(10, 20);
+    Assert.assertEquals("OK", res);
+    clusterNodes = node1.clusterNodes();
+    Assert.assertTrue(clusterNodes.endsWith("connected 0-5 10-20\n"));
+
+    // test del
+    String resDel = node1.clusterDelSlotsRange(0, 5);
+    Assert.assertEquals("OK", resDel);
+    clusterNodes = node1.clusterNodes();
+    Assert.assertTrue(clusterNodes.endsWith("connected 10-20\n"));
+
+    resDel = node1.clusterDelSlotsRange(10, 20);
+    Assert.assertEquals("OK", resDel);
+    clusterNodes = node1.clusterNodes();
+    Assert.assertTrue(clusterNodes.endsWith("connected\n"));
   }
 
   @Test

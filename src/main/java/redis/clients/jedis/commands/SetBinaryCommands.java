@@ -198,6 +198,28 @@ public interface SetBinaryCommands {
   long sinterstore(byte[] dstkey, byte[]... keys);
 
   /**
+   * This command works exactly like {@link SetBinaryCommands#sinter(byte[][]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result. LIMIT defaults to 0 and means unlimited
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  long sintercard(byte[]... keys);
+
+  /**
+   * This command works exactly like {@link SetBinaryCommands#sinter(byte[][]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality.
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  long sintercard(int limit, byte[]... keys);
+
+  /**
    * Return the members of a set resulting from the union of all the sets hold at the specified
    * keys. Like in {@link ListBinaryCommands#lrange(byte[], long, long) LRANGE} the result is sent to the
    * connection as a multi-bulk reply (see the protocol specification for more information). If just
@@ -209,7 +231,7 @@ public interface SetBinaryCommands {
    * Time complexity O(N) where N is the total number of elements in all the provided sets
    * @param keys
    * @return Multi bulk reply, specifically the list of common elements.
-   */
+   */  
   Set<byte[]> sunion(byte[]... keys);
 
   /**

@@ -778,6 +778,16 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
+  public Response<Long> sintercard(String... keys) {
+    return appendCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(int limit, String... keys) {
+    return appendCommand(commandObjects.sintercard(limit, keys));
+  }
+
+  @Override
   public Response<Set<String>> sunion(String... keys) {
     return appendCommand(commandObjects.sunion(keys));
   }
@@ -2273,6 +2283,16 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   @Override
   public Response<Long> sinterstore(byte[] dstkey, byte[]... keys) {
     return appendCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(byte[]... keys) {
+    return appendCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(int limit, byte[]... keys) {
+    return appendCommand(commandObjects.sintercard(limit, keys));
   }
 
   @Override

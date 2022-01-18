@@ -7,8 +7,10 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-
-import org.junit.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -76,6 +78,7 @@ public class ClusterCommandsTest {
     String nodeId = nodes[0].split(" ")[0];
     String status = node1.clusterSetSlotImporting(6000, nodeId);
     assertEquals("OK", status);
+    node2.clusterDelSlots(6000);
   }
 
   @Test
@@ -91,16 +94,9 @@ public class ClusterCommandsTest {
   }
 
   @Test
-  public void clusterAddSlots() {
-    String status = node1.clusterAddSlots(1, 2, 3, 4, 5);
-    assertEquals("OK", status);
-  }
-
-  @Test
-  public void clusterDelSlots() {
-    node1.clusterAddSlots(900);
-    String status = node1.clusterDelSlots(900);
-    assertEquals("OK", status);
+  public void clusterAddSlotsAndDelSlots() {
+    assertEquals("OK", node1.clusterAddSlots(1, 2, 3, 4, 5));
+    assertEquals("OK", node1.clusterDelSlots(1, 2, 3, 4, 5));
   }
 
   @Test
@@ -112,27 +108,20 @@ public class ClusterCommandsTest {
   @Test
   public void addAndDelSlotsRange() {
     // test add
-    String res = node1.clusterAddSlotsRange(0, 5);
-    Assert.assertEquals("OK", res);
-
+    assertEquals("OK", node1.clusterAddSlotsRange(100, 105));
     String clusterNodes = node1.clusterNodes();
-    Assert.assertTrue(clusterNodes.endsWith("connected 0-5\n"));
+    assertTrue(clusterNodes.contains("connected 100-105"));
 
-    res = node1.clusterAddSlotsRange(10, 20);
-    Assert.assertEquals("OK", res);
+    assertEquals("OK", node1.clusterAddSlotsRange(110, 120));
     clusterNodes = node1.clusterNodes();
-    Assert.assertTrue(clusterNodes.endsWith("connected 0-5 10-20\n"));
+    assertTrue(clusterNodes.contains("connected 100-105 110-120"));
 
     // test del
-    String resDel = node1.clusterDelSlotsRange(0, 5);
-    Assert.assertEquals("OK", resDel);
+    assertEquals("OK", node1.clusterDelSlotsRange(100, 105));
     clusterNodes = node1.clusterNodes();
-    Assert.assertTrue(clusterNodes.endsWith("connected 10-20\n"));
+    assertTrue(clusterNodes.contains("connected 110-120"));
 
-    resDel = node1.clusterDelSlotsRange(10, 20);
-    Assert.assertEquals("OK", resDel);
-    clusterNodes = node1.clusterNodes();
-    Assert.assertTrue(clusterNodes.endsWith("connected\n"));
+    assertEquals("OK", node1.clusterDelSlotsRange(110, 120));
   }
 
   @Test
@@ -140,6 +129,7 @@ public class ClusterCommandsTest {
     node1.clusterAddSlots(500);
     List<String> keys = node1.clusterGetKeysInSlot(500, 1);
     assertEquals(0, keys.size());
+    node1.clusterDelSlots(500);
   }
 
   @Test
@@ -147,6 +137,7 @@ public class ClusterCommandsTest {
     node1.clusterAddSlots(501);
     List<byte[]> keys = node1.clusterGetKeysInSlotBinary(501, 1);
     assertEquals(0, keys.size());
+    node1.clusterDelSlots(501);
   }
 
   @Test
@@ -164,34 +155,33 @@ public class ClusterCommandsTest {
     String nodeId = nodes[0].split(" ")[0];
     String status = node1.clusterSetSlotMigrating(5000, nodeId);
     assertEquals("OK", status);
+    node1.clusterDelSlots(5000);
   }
 
   @Test
   public void clusterSlots() {
     // please see cluster slot output format from below commit
     // @see: https://github.com/antirez/redis/commit/e14829de3025ffb0d3294e5e5a1553afd9f10b60
-    String status = node1.clusterAddSlots(3000, 3001, 3002);
-    assertEquals("OK", status);
-    status = node2.clusterAddSlots(4000, 4001, 4002);
-    assertEquals("OK", status);
+    assertEquals("OK", node1.clusterAddSlots(3000, 3001, 3002));
 
     List<Object> slots = node1.clusterSlots();
     assertNotNull(slots);
-    assertTrue(!slots.isEmpty());
+    assertTrue(slots.size() > 0);
 
     for (Object slotInfoObj : slots) {
+      assertNotNull(slotInfoObj);
       List<Object> slotInfo = (List<Object>) slotInfoObj;
-      assertNotNull(slots);
-      assertTrue(slots.size() >= 2);
+      assertTrue(slotInfo.size() >= 2);
 
       assertTrue(slotInfo.get(0) instanceof Long);
       assertTrue(slotInfo.get(1) instanceof Long);
 
-      if (slots.size() > 2) {
+      if (slotInfo.size() > 2) {
         // assigned slots
         assertTrue(slotInfo.get(2) instanceof List);
       }
     }
+    node1.clusterDelSlots(3000, 3001, 3002);
   }
 
   @Test

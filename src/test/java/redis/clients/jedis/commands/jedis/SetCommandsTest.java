@@ -356,6 +356,34 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void sintercard() {
+    jedis.sadd("foo", "a");
+    jedis.sadd("foo", "b");
+
+    jedis.sadd("bar", "a");
+    jedis.sadd("bar", "b");
+    jedis.sadd("bar", "c");
+
+    long card = jedis.sintercard("foo", "bar");
+    assertEquals(2, card);
+    long limitedCard = jedis.sintercard(1, "foo", "bar");
+    assertEquals(1, limitedCard);
+
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
+
+    jedis.sadd(bbar, ba);
+    jedis.sadd(bbar, bb);
+    jedis.sadd(bbar, bc);
+
+    long bcard = jedis.sintercard(bfoo, bbar);
+    assertEquals(2, bcard);
+    long blimitedCard = jedis.sintercard(1, bfoo, bbar);
+    assertEquals(1, blimitedCard);
+  }
+
+  @Test
   public void sunion() {
     jedis.sadd("foo", "a");
     jedis.sadd("foo", "b");

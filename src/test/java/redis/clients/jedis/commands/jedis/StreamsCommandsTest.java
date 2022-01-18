@@ -178,7 +178,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void xrange() {
-    List<StreamEntry> range = jedis.xrange("xrange-stream", (StreamEntryID) null,
+    List<StreamEntry> range = jedis.xrange("xrange-stream", null,
       (StreamEntryID) null, Integer.MAX_VALUE);
     assertEquals(0, range.size());
 
@@ -186,7 +186,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xrange-stream", (StreamEntryID) null, map);
     StreamEntryID id2 = jedis.xadd("xrange-stream", (StreamEntryID) null, map);
-    List<StreamEntry> range2 = jedis.xrange("xrange-stream", (StreamEntryID) null,
+    List<StreamEntry> range2 = jedis.xrange("xrange-stream", null,
       (StreamEntryID) null, 3);
     assertEquals(2, range2.size());
     assertEquals(range2.get(0).toString(), id1 + " " + map);
@@ -207,7 +207,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     List<StreamEntry> range7 = jedis.xrange("xrange-stream", id3, id3, 4);
     assertEquals(1, range7.size());
 
-    List<StreamEntry> range8 = jedis.xrange("xrange-stream", (StreamEntryID) null, (StreamEntryID) null);
+    List<StreamEntry> range8 = jedis.xrange("xrange-stream", null, (StreamEntryID) null);
     assertEquals(3, range8.size());
   }
 
@@ -315,7 +315,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void xrevrange() {
-    List<StreamEntry> range = jedis.xrevrange("xrevrange-stream", (StreamEntryID) null,
+    List<StreamEntry> range = jedis.xrevrange("xrevrange-stream", null,
       (StreamEntryID) null, Integer.MAX_VALUE);
     assertEquals(0, range.size());
 
@@ -323,7 +323,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xrevrange-stream", (StreamEntryID) null, map);
     StreamEntryID id2 = jedis.xadd("xrevrange-stream", (StreamEntryID) null, map);
-    List<StreamEntry> range2 = jedis.xrange("xrevrange-stream", (StreamEntryID) null,
+    List<StreamEntry> range2 = jedis.xrange("xrevrange-stream", null,
       (StreamEntryID) null, 3);
     assertEquals(2, range2.size());
 
@@ -343,7 +343,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     List<StreamEntry> range7 = jedis.xrevrange("xrevrange-stream", id3, id3, 4);
     assertEquals(1, range7.size());
 
-    List<StreamEntry> range8 = jedis.xrevrange("xrevrange-stream", (StreamEntryID) null, (StreamEntryID) null);
+    List<StreamEntry> range8 = jedis.xrevrange("xrevrange-stream", null, (StreamEntryID) null);
     assertEquals(3, range8.size());
   }
 
@@ -518,7 +518,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
-            (StreamEntryID) null, null, 3, "xpendeing-consumer");
+            null, null, 3, "xpendeing-consumer");
     // Sleep for 100ms so we can claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -548,7 +548,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
-            (StreamEntryID) null, null, 3, "xpendeing-consumer");
+            null, null, 3, "xpendeing-consumer");
     // Sleep for 100ms so we can claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -577,7 +577,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            (StreamEntryID) null, null, 3, "xpending-consumer");
+            null, null, 3, "xpending-consumer");
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -607,7 +607,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            (StreamEntryID) null, null, 3, "xpending-consumer");
+            null, null, 3, "xpending-consumer");
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -639,7 +639,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            (StreamEntryID) null, null, 3, "xpending-consumer");
+            null, null, 3, "xpending-consumer");
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -669,7 +669,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            (StreamEntryID) null, null, 3, "xpending-consumer");
+            null, null, 3, "xpending-consumer");
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);

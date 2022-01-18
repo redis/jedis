@@ -3614,21 +3614,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceed(connection, channels);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceed(connection, channels);
   }
 
   public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceedWithPatterns(connection, patterns);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceedWithPatterns(connection, patterns);
   }
 
   /**
@@ -7560,22 +7550,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceed(connection, channels);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceed(connection, channels);
   }
 
   public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
-    checkIsInMultiOrPipeline();
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceedWithPatterns(connection, patterns);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceedWithPatterns(connection, patterns);
   }
 
   public List<String> pubsubChannels() {

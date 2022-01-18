@@ -42,18 +42,26 @@ public class Transaction extends TransactionBase {
 
   @Override
   public final List<Object> exec() {
-    List<Object> ret = super.exec();
-    if (jedis != null) {
-      jedis.resetState();
+    List<Object> ret;
+    try {
+      ret = super.exec();
+    } finally {
+      if (jedis != null) {
+        jedis.resetState();
+      }
     }
     return ret;
   }
 
   @Override
   public final String discard() {
-    String ret = super.discard();
-    if (jedis != null) {
-      jedis.resetState();
+    String ret;
+    try {
+      ret = super.discard();
+    } finally {
+      if (jedis != null) {
+        jedis.resetState();
+      }
     }
     return ret;
   }

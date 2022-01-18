@@ -59,7 +59,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   private void connectToFirstSuccsefulHost(Socket socket, HostAndPort hostAndPort) throws Exception {
     List<InetAddress> hosts = Arrays.asList(InetAddress.getAllByName(hostAndPort.getHost()));
-    Collections.shuffle(hosts);
+    if (hosts.size() > 1) {
+      Collections.shuffle(hosts);
+    }
     JedisConnectionException jce = new JedisConnectionException("Failed to connect to any host resolved for DNS name.");
     for (InetAddress host : hosts) {
       try {

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ZMPopOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
@@ -51,9 +52,9 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<List<Double>> zmscore(byte[] key, byte[]... members);
 
-  Response<List<Tuple>> zmpop(byte[][] keys, boolean min);
+  Response<List<Tuple>> zmpop(ZMPopOption option, byte[]... keys);
 
-  Response<List<Tuple>> zmpop(byte[][] keys, boolean min, int count);
+  Response<List<Tuple>> zmpop(ZMPopOption option, int count, byte[]... keys);
 
   Response<Tuple> zpopmax(byte[] key);
 

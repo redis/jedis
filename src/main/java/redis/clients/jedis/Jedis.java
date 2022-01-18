@@ -2177,15 +2177,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * N being the number of elements in the sorted set, and M being the number of elements
    * popped.
    * @param keys
-   * @param min When min sets to true, the elements popped are those with the lowest scores
-   *            from the first non-empty sorted set. Otherwise, MAX modifier would cause elements
-   *            with the highest scores to be popped
+   * @param option MIN - the elements popped are those with the lowest scores from the first non-empty sorted set.
+   *               MAX - would cause elements with the highest scores to be popped
    * @return member-score pair (Tuple)
    */
   @Override
-  public List<Tuple> zmpop(byte[][] keys, boolean min) {
+  public List<Tuple> zmpop(ZMPopOption option, byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zmpop(keys, min));
+    return connection.executeCommand(commandObjects.zmpop(option, keys));
   }
 
   /**
@@ -2196,16 +2195,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * N being the number of elements in the sorted set, and M being the number of elements
    * popped.
    * @param keys
-   * @param min When min sets to true, the elements popped are those with the lowest scores
-   *            from the first non-empty sorted set. Otherwise, MAX modifier would cause elements
-   *            with the highest scores to be popped
+   * @param option MIN - the elements popped are those with the lowest scores from the first non-empty sorted set.
+   *               MAX - would cause elements with the highest scores to be popped
    * @param count specify the number of elements to pop
    * @return list of member-score pairs (Tuples)
    */
   @Override
-  public List<Tuple> zmpop(byte[][] keys, boolean min, int count) {
+  public List<Tuple> zmpop(ZMPopOption option, int count, byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zmpop(keys, min, count));
+    return connection.executeCommand(commandObjects.zmpop(option, count, keys));
   }
 
   @Override
@@ -6431,15 +6429,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * N being the number of elements in the sorted set, and M being the number of elements
    * popped.
    * @param keys
-   * @param min When min sets to true, the elements popped are those with the lowest scores
-   *            from the first non-empty sorted set. Otherwise, MAX modifier would cause elements
-   *            with the highest scores to be popped
+   * @param option MIN - the elements popped are those with the lowest scores from the first non-empty sorted set.
+   *               MAX - would cause elements with the highest scores to be popped
    * @return member-score pair (Tuple)
    */
   @Override
-  public List<Tuple> zmpop(String[] keys, boolean min) {
+  public List<Tuple> zmpop(ZMPopOption option, String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zmpop(keys, min));
+    return connection.executeCommand(commandObjects.zmpop(option, keys));
   }
 
   /**
@@ -6450,16 +6447,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * N being the number of elements in the sorted set, and M being the number of elements
    * popped.
    * @param keys
-   * @param min When min sets to true, the elements popped are those with the lowest scores
-   *            from the first non-empty sorted set. Otherwise, MAX modifier would cause elements
-   *            with the highest scores to be popped
+   * @param option MIN - the elements popped are those with the lowest scores from the first non-empty sorted set.
+   *               MAX - would cause elements with the highest scores to be popped
    * @param count specify the number of elements to pop
    * @return list of member-score pairs (Tuples)
    */
   @Override
-  public List<Tuple> zmpop(String[] keys, boolean min, int count) {
+  public List<Tuple> zmpop(ZMPopOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zmpop(keys, min, count));
+    return connection.executeCommand(commandObjects.zmpop(option, count, keys));
   }
 
   @Override

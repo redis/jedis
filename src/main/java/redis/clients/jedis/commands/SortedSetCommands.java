@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.args.ZMPopOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
@@ -57,9 +58,9 @@ public interface SortedSetCommands {
 
   List<Double> zmscore(String key, String... members);
 
-  List<Tuple> zmpop(String[] keys, boolean min);
+  List<Tuple> zmpop(ZMPopOption option, String... keys);
 
-  List<Tuple> zmpop(String[] keys, boolean min, int count);
+  List<Tuple> zmpop(ZMPopOption option, int count, String... keys);
 
   Tuple zpopmax(String key);
 

@@ -20,6 +20,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.args.ZMPopOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
@@ -623,8 +624,8 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    List<Tuple> single = jedis.zmpop(new String[]{"foo"}, false);
-    List<Tuple> range = jedis.zmpop(new String[]{"foo"}, true, 2);
+    List<Tuple> single = jedis.zmpop(ZMPopOption.MAX, "foo");
+    List<Tuple> range = jedis.zmpop(ZMPopOption.MIN, 2, "foo");
 
     List<Tuple> expected = new ArrayList<>();
     expected.add(new Tuple("c", 0.1d));
@@ -639,8 +640,8 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    List<Tuple> bsingle = jedis.zmpop(new byte[][]{bfoo}, false);
-    List<Tuple> brange = jedis.zmpop(new byte[][]{bfoo}, true, 2);
+    List<Tuple> bsingle = jedis.zmpop(ZMPopOption.MAX, bfoo);
+    List<Tuple> brange = jedis.zmpop(ZMPopOption.MIN, 2, bfoo);
 
     List<Tuple> bexpected = new ArrayList<>();
     bexpected.add(new Tuple(bc, 0.1d));

@@ -1,8 +1,11 @@
 package redis.clients.jedis;
 
-import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocket;
@@ -51,6 +54,23 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
   }
 
+  private void connectToFirstSuccsefulHost(Socket socket, HostAndPort hostAndPort) throws Exception {
+    List<InetAddress> hosts = Arrays.asList(InetAddress.getAllByName(hostAndPort.getHost()));
+    if (hosts.size() > 1) {
+      Collections.shuffle(hosts);
+    }
+    JedisConnectionException jce = new JedisConnectionException("Failed to connect to any host resolved for DNS name.");
+    for (InetAddress host : hosts) {
+      try {
+        socket.connect(new InetSocketAddress(host.getHostAddress(), hostAndPort.getPort()), connectionTimeout);
+        return;
+      } catch (Exception e) {
+        jce.addSuppressed(e);
+      }
+    }
+    throw jce;
+  }
+
   @Override
   public Socket createSocket() throws JedisConnectionException {
     Socket socket = null;
@@ -62,7 +82,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
 
       HostAndPort _hostAndPort = getSocketHostAndPort();
-      socket.connect(new InetSocketAddress(_hostAndPort.getHost(), _hostAndPort.getPort()), connectionTimeout);
+      connectToFirstSuccsefulHost(socket, _hostAndPort);
       socket.setSoTimeout(socketTimeout);
 
       if (ssl) {
@@ -86,11 +106,13 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
       return socket;
 
-    } catch (IOException ex) {
-
+    } catch (Exception ex) {
       IOUtils.closeQuietly(socket);
-
-      throw new JedisConnectionException("Failed to create socket.", ex);
+      if (ex instanceof JedisConnectionException) {
+        throw (JedisConnectionException) ex;
+      } else {
+        throw new JedisConnectionException("Failed to create socket.", ex);
+      }
     }
   }
 

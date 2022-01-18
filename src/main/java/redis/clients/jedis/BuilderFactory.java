@@ -474,12 +474,11 @@ public final class BuilderFactory {
     @Override
     public ZMPopResponse build(Object data) {
       List<Object> result = (List<Object>) data;
-      String key = new String((byte[]) result.get(0));
-      List<byte[]> l = (List<byte[]>) data;
-      final List<Tuple> results = new ArrayList<>(l.size() / 2);
-      Iterator<byte[]> iterator = l.iterator();
-      while (iterator.hasNext()) {
-        results.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
+      String key = new String((byte[]) result.get(0)); // extract the key
+      List<List<byte[]>> l = (List<List<byte[]>>) result.get(1); // extract the list of the elements
+      final List<Tuple> results = new ArrayList<>(l.size());
+      for (List<byte[]> iterator : l) {
+        results.add(new Tuple(iterator.get(0), DOUBLE.build(iterator.get(1))));
       }
       return new ZMPopResponse(key, results);
     }

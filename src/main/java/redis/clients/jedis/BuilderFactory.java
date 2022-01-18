@@ -470,6 +470,21 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<ZMPopResponse> ZMPOP_RESPONSE = new Builder<ZMPopResponse>() {
+    @Override
+    public ZMPopResponse build(Object data) {
+      List<Object> result = (List<Object>) data;
+      String key = new String((byte[]) result.get(0));
+      List<byte[]> l = (List<byte[]>) data;
+      final List<Tuple> results = new ArrayList<>(l.size() / 2);
+      Iterator<byte[]> iterator = l.iterator();
+      while (iterator.hasNext()) {
+        results.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
+      }
+      return new ZMPopResponse(key, results);
+    }
+  };
+
   public static final Builder<ScanResult<Map.Entry<String, String>>> HSCAN_RESPONSE
       = new Builder<ScanResult<Map.Entry<String, String>>>() {
     @Override

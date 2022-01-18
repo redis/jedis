@@ -1615,12 +1615,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Tuple> zmpop(ZMPopOption option, String... keys) {
+  public ZMPopResponse zmpop(ZMPopOption option, String... keys) {
     return executeCommand(commandObjects.zmpop(option, keys));
   }
 
   @Override
-  public List<Tuple> zmpop(ZMPopOption option, int count, String... keys) {
+  public ZMPopResponse zmpop(ZMPopOption option, int count, String... keys) {
     return executeCommand(commandObjects.zmpop(option, count, keys));
   }
 
@@ -1655,12 +1655,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Tuple> zmpop(ZMPopOption option, byte[]... keys) {
+  public ZMPopResponse zmpop(ZMPopOption option, byte[]... keys) {
     return executeCommand(commandObjects.zmpop(option, keys));
   }
 
   @Override
-  public List<Tuple> zmpop(ZMPopOption option, int count, byte[]... keys) {
+  public ZMPopResponse zmpop(ZMPopOption option, int count, byte[]... keys) {
     return executeCommand(commandObjects.zmpop(option, count, keys));
   }
 

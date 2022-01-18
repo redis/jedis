@@ -8,6 +8,7 @@ import redis.clients.jedis.args.ZMPopOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.resps.ZMPopResponse;
 
 public interface SortedSetBinaryCommands {
 
@@ -57,9 +58,9 @@ public interface SortedSetBinaryCommands {
 
   List<Double> zmscore(byte[] key, byte[]... members);
 
-  List<Tuple> zmpop(ZMPopOption option, byte[]... keys);
+  ZMPopResponse zmpop(ZMPopOption option, byte[]... keys);
 
-  List<Tuple> zmpop(ZMPopOption option, int count, byte[]... keys);
+  ZMPopResponse zmpop(ZMPopOption option, int count, byte[]... keys);
 
   Tuple zpopmax(byte[] key);
 

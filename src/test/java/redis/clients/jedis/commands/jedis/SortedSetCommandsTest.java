@@ -25,6 +25,7 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.resps.ZMPopResponse;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class SortedSetCommandsTest extends JedisCommandsTestBase {
@@ -567,15 +568,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    List<Tuple> single = jedis.zmpop(ZMPopOption.MAX, "foo");
-    List<Tuple> range = jedis.zmpop(ZMPopOption.MIN, 2, "foo");
+    ZMPopResponse single = jedis.zmpop(ZMPopOption.MAX, "foo");
+    ZMPopResponse range = jedis.zmpop(ZMPopOption.MIN, 2, "foo");
 
-    List<Tuple> expected = new ArrayList<>();
-    expected.add(new Tuple("c", 0.1d));
-    expected.add(new Tuple("a", 1d));
-
-    assertEquals(expected, range);
-    assertEquals(new Tuple("b", 10d), single.get(0));
+    assertEquals(new Tuple("b", 10d), single.getElements().get(0));
+    assertEquals(2, range.getElements().size());
 
     // Binary
     jedis.zadd(bfoo, 1d, ba);
@@ -583,15 +580,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    List<Tuple> bsingle = jedis.zmpop(ZMPopOption.MAX, bfoo);
-    List<Tuple> brange = jedis.zmpop(ZMPopOption.MIN, 2, bfoo);
+    ZMPopResponse bsingle = jedis.zmpop(ZMPopOption.MAX, bfoo);
+    ZMPopResponse brange = jedis.zmpop(ZMPopOption.MIN, 2, bfoo);
 
-    List<Tuple> bexpected = new ArrayList<>();
-    bexpected.add(new Tuple(bc, 0.1d));
-    bexpected.add(new Tuple(ba, 2d));
-
-    assertEquals(bexpected, brange);
-    assertEquals(new Tuple(bb, 10d), bsingle.get(0));
+    assertEquals(new Tuple(bb, 10d), bsingle.getElements().get(0));
+    assertEquals(2, brange.getElements().size());
   }
 
   @Test

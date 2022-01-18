@@ -10,6 +10,7 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.resps.ZMPopResponse;
 
 public interface SortedSetPipelineCommands {
 
@@ -53,9 +54,9 @@ public interface SortedSetPipelineCommands {
 
   Response<List<Double>> zmscore(String key, String... members);
 
-  Response<List<Tuple>> zmpop(ZMPopOption option, String... keys);
+  Response<ZMPopResponse> zmpop(ZMPopOption option, String... keys);
 
-  Response<List<Tuple>> zmpop(ZMPopOption option, int count, String... keys);
+  Response<ZMPopResponse> zmpop(ZMPopOption option, int count, String... keys);
 
   Response<Tuple> zpopmax(String key);
 

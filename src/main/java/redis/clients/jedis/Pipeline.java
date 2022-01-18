@@ -903,12 +903,12 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<List<Tuple>> zmpop(ZMPopOption option, String... keys) {
+  public Response<ZMPopResponse> zmpop(ZMPopOption option, String... keys) {
     return appendCommand(commandObjects.zmpop(option, keys));
   }
 
   @Override
-  public Response<List<Tuple>> zmpop(ZMPopOption option, int count, String... keys) {
+  public Response<ZMPopResponse> zmpop(ZMPopOption option, int count, String... keys) {
     return appendCommand(commandObjects.zmpop(option, count, keys));
   }
 
@@ -2421,12 +2421,12 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
   }
 
   @Override
-  public Response<List<Tuple>> zmpop(ZMPopOption option, byte[]... keys) {
+  public Response<ZMPopResponse> zmpop(ZMPopOption option, byte[]... keys) {
     return appendCommand(commandObjects.zmpop(option, keys));
   }
 
   @Override
-  public Response<List<Tuple>> zmpop(ZMPopOption option, int count, byte[]... keys) {
+  public Response<ZMPopResponse> zmpop(ZMPopOption option, int count, byte[]... keys) {
     return appendCommand(commandObjects.zmpop(option, count, keys));
   }
 

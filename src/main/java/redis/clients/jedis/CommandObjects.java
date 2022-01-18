@@ -1249,14 +1249,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZMSCORE).key(key).addObjects((Object[]) members), BuilderFactory.DOUBLE_LIST);
   }
 
-  public final CommandObject<List<Tuple>> zmpop(ZMPopOption option, String... keys) {
+  public final CommandObject<ZMPopResponse> zmpop(ZMPopOption option, String... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(option),
-        BuilderFactory.TUPLE_LIST);
+        BuilderFactory.ZMPOP_RESPONSE);
   }
 
-  public final CommandObject<List<Tuple>> zmpop(ZMPopOption option, int count, String... keys) {
+  public final CommandObject<ZMPopResponse> zmpop(ZMPopOption option, int count, String... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(option)
-        .add(COUNT).add(count), BuilderFactory.TUPLE_LIST);
+        .add(COUNT).add(count), BuilderFactory.ZMPOP_RESPONSE);
   }
 
   public final CommandObject<Long> zcard(byte[] key) {
@@ -1271,14 +1271,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZMSCORE).key(key).addObjects((Object[]) members), BuilderFactory.DOUBLE_LIST);
   }
 
-  public final CommandObject<List<Tuple>> zmpop(ZMPopOption option, byte[]... keys) {
+  public final CommandObject<ZMPopResponse> zmpop(ZMPopOption option, byte[]... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(option),
-        BuilderFactory.TUPLE_LIST);
+        BuilderFactory.ZMPOP_RESPONSE);
   }
 
-  public final CommandObject<List<Tuple>> zmpop(ZMPopOption option, int count, byte[]... keys) {
+  public final CommandObject<ZMPopResponse> zmpop(ZMPopOption option, int count, byte[]... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(option)
-        .add(COUNT).add(count), BuilderFactory.TUPLE_LIST);
+        .add(COUNT).add(count), BuilderFactory.ZMPOP_RESPONSE);
   }
 
   public final CommandObject<Tuple> zpopmax(String key) {

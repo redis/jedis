@@ -2182,7 +2182,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return member-score pair (Tuple)
    */
   @Override
-  public List<Tuple> zmpop(ZMPopOption option, byte[]... keys) {
+  public ZMPopResponse zmpop(ZMPopOption option, byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, keys));
   }
@@ -2201,7 +2201,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return list of member-score pairs (Tuples)
    */
   @Override
-  public List<Tuple> zmpop(ZMPopOption option, int count, byte[]... keys) {
+  public ZMPopResponse zmpop(ZMPopOption option, int count, byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, count, keys));
   }
@@ -6434,7 +6434,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return member-score pair (Tuple)
    */
   @Override
-  public List<Tuple> zmpop(ZMPopOption option, String... keys) {
+  public ZMPopResponse zmpop(ZMPopOption option, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, keys));
   }
@@ -6453,7 +6453,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return list of member-score pairs (Tuples)
    */
   @Override
-  public List<Tuple> zmpop(ZMPopOption option, int count, String... keys) {
+  public ZMPopResponse zmpop(ZMPopOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, count, keys));
   }

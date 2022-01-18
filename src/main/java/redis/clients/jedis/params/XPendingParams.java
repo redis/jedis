@@ -104,12 +104,12 @@ public class XPendingParams implements IParams {
       } else {
         args.add(end);
       }
-
-      if (count != null) {
-        args.add(toByteArray(count));
-      }
     } else {
-      args.add(start).add(end).add(toByteArray(count));
+      args.add(start).add(end);
+    }
+
+    if (count != null) {
+      args.add(toByteArray(count));
     }
 
     if (consumer != null) {

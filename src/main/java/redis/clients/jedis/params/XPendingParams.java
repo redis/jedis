@@ -2,19 +2,20 @@ package redis.clients.jedis.params;
 
 import static redis.clients.jedis.Protocol.Keyword.IDLE;
 import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.util.SafeEncoder.encode;
+import static redis.clients.jedis.args.RawableFactory.from;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.Rawable;
 
 public class XPendingParams implements IParams {
 
   private boolean legacy = true;
   private Long idle;
-  private byte[] start; // TODO: final
-  private byte[] end; // TODO: final
-  private Integer count; // TODO: final
-  private String consumer;
+  private Rawable start; // TODO: final
+  private Rawable end; // TODO: final
+  private int count = Integer.MIN_VALUE; // TODO: final
+  private Rawable consumer;
 
   /**
    * @deprecated Use {@link XPendingParams#XPendingParams(redis.clients.jedis.StreamEntryID, redis.clients.jedis.StreamEntryID, int)}.
@@ -36,10 +37,14 @@ public class XPendingParams implements IParams {
   }
 
   public XPendingParams(String start, String end, int count) {
-    this(encode(start), encode(end), count);
+    this(from(start), from(end), count);
   }
 
   public XPendingParams(byte[] start, byte[] end, int count) {
+    this(from(start), from(end), count);
+  }
+
+  private XPendingParams(Rawable start, Rawable end, int count) {
     this.legacy = false;
     this.start = start;
     this.end = end;
@@ -65,13 +70,13 @@ public class XPendingParams implements IParams {
 
   @Deprecated
   public XPendingParams start(StreamEntryID start) {
-    this.start = encode(start.toString());
+    this.start = from(start.toString());
     return this;
   }
 
   @Deprecated
   public XPendingParams end(StreamEntryID end) {
-    this.end = encode(end.toString());
+    this.end = from(end.toString());
     return this;
   }
 
@@ -81,7 +86,12 @@ public class XPendingParams implements IParams {
   }
 
   public XPendingParams consumer(String consumer) {
-    this.consumer = consumer;
+    this.consumer = from(consumer);
+    return this;
+  }
+
+  public XPendingParams consumer(byte[] consumer) {
+    this.consumer = from(consumer);
     return this;
   }
 
@@ -94,18 +104,18 @@ public class XPendingParams implements IParams {
 
     if (legacy) {
       if (start == null) {
-        args.add(encode("-"));
+        args.add("-");
       } else {
         args.add(start);
       }
 
       if (end == null) {
-        args.add(encode("+"));
+        args.add("+");
       } else {
         args.add(end);
       }
 
-      if (count != null) {
+      if (count != Integer.MIN_VALUE) {
         args.add(toByteArray(count));
       }
     } else {

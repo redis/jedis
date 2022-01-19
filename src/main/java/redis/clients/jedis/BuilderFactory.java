@@ -1362,7 +1362,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "exhgetwithver";
+      return "ExhgetWithVerResult<String>";
     }
   };
 

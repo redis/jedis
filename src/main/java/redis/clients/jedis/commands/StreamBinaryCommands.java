@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.StreamFullInfo;
 
 public interface StreamBinaryCommands {
 
@@ -42,6 +41,10 @@ public interface StreamBinaryCommands {
 
   Object xpending(byte[] key, byte[] groupname);
 
+  /**
+   * @deprecated Use {@link StreamBinaryCommands#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params);

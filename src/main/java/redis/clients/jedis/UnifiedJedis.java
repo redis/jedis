@@ -3034,6 +3034,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.publish(channel, message));
   }
 
+  public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    }
+  }
+
+  public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    }
+  }
+
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.StreamFullInfo;
 
 public interface StreamPipelineBinaryCommands {
 //
@@ -45,6 +44,10 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Object> xpending(byte[] key, byte[] groupname);
 
+  /**
+   * @deprecated Use {@link StreamPipelineBinaryCommands#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   Response<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
 
   Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params);

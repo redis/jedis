@@ -2228,6 +2228,10 @@ public class CommandObjects {
         BuilderFactory.STREAM_PENDING_SUMMARY);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername) {
     CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
@@ -2246,6 +2250,10 @@ public class CommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname,
       byte[] start, byte[] end, int count, byte[] consumername) {
     CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)

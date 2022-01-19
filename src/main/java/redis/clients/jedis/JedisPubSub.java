@@ -108,20 +108,24 @@ public abstract class JedisPubSub {
 
   public void proceedWithPatterns(Connection client, String... patterns) {
     this.client = client;
-//    client.psubscribe(patterns);
-//    client.flush();
-    psubscribe(patterns);
-//    process(client);
-    process();
+    this.client.setTimeoutInfinite();
+    try {
+      psubscribe(patterns);
+      process();
+    } finally {
+      this.client.rollbackTimeout();
+    }
   }
 
   public void proceed(Connection client, String... channels) {
     this.client = client;
-//    client.subscribe(channels);
-//    client.flush();
-    subscribe(channels);
-//    process(client);
-    process();
+    this.client.setTimeoutInfinite();
+    try {
+      subscribe(channels);
+      process();
+    } finally {
+      this.client.rollbackTimeout();
+    }
   }
 
 //  private void process(Client client) {
@@ -177,8 +181,8 @@ public abstract class JedisPubSub {
       }
     } while (isSubscribed());
 
-    /* Invalidate instance since this thread is no longer listening */
-    this.client = null;
+//    /* Invalidate instance since this thread is no longer listening */
+//    this.client = null;
   }
 
   public int getSubscribedChannels() {

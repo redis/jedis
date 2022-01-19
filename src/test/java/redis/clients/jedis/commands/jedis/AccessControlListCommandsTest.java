@@ -454,13 +454,15 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertEquals(1L, jedis.aclDelUser(USER_ZZZ.getBytes()));
 
     jedis.aclSetUser(USER_ZZZ.getBytes(), "reset".getBytes(), "+@all".getBytes(), "~*".getBytes(),
-      "-@string".getBytes(), "+incr".getBytes(), "-debug".getBytes(), "+debug|digest".getBytes());
+      "-@string".getBytes(), "+incr".getBytes(), "-debug".getBytes(), "+debug|digest".getBytes(),
+            "resetchannels".getBytes(), "&testchannel:*".getBytes());
 
     AccessControlUser userInfo = jedis.aclGetUser(USER_ZZZ.getBytes());
 
     assertThat(userInfo.getCommands(), containsString("+@all"));
     assertThat(userInfo.getCommands(), containsString("-@string"));
     assertThat(userInfo.getCommands(), containsString("+debug|digest"));
+    assertEquals("testchannel:*", userInfo.getChannels().get(0));
 
     jedis.aclDelUser(USER_ZZZ.getBytes());
 

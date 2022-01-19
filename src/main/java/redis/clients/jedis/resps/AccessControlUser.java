@@ -8,6 +8,7 @@ public class AccessControlUser {
   private final List<String> flags = new ArrayList<>();
   private final List<String> keys = new ArrayList<>();
   private final List<String> passwords = new ArrayList<>();
+  private final List<String> channels = new ArrayList<>();
   private String commands;
 
   public AccessControlUser() {
@@ -37,6 +38,14 @@ public class AccessControlUser {
     return passwords;
   }
 
+  public void addChannel(String channel) {
+     channels.add(channel);
+  }
+
+  public List<String> getChannels() {
+    return channels;
+  }
+
   public String getCommands() {
     return commands;
   }
@@ -48,6 +57,6 @@ public class AccessControlUser {
   @Override
   public String toString() {
     return "AccessControlUser{" + "flags=" + flags + ", keys=" + keys + ", passwords=" + passwords
-        + ", commands='" + commands + '\'' + '}';
+        + ", commands='" + commands + ", channels='" + channels + '\'' + '}';
   }
 }

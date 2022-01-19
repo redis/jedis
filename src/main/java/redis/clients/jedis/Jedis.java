@@ -820,7 +820,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * SETNX works exactly like {@link Jedis#set(byte[], byte[]) SET} with the only difference that if
-   * the key already exists no operation is performed. SETNX actually means "SET if Not eXists".
+   * the key already exists no operation is performed. SETNX actually means "SET if Not Exists".
    * <p>
    * Time complexity: O(1)
    * @param key
@@ -873,7 +873,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Set the the respective keys to the respective values. {@link Jedis#mset(byte[][]) MSET} will
+   * Set the respective keys to the respective values. {@link Jedis#mset(byte[][]) MSET} will
    * replace old values with new values, while MSETNX will not perform any operation at all even if
    * just a single key already exists.
    * <p>
@@ -896,10 +896,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * DECRBY work just like {@link Jedis#decr(byte[]) INCR} but instead to decrement by 1 the
+   * DECRBY work just like {@link Jedis#decr(byte[]) DECR} but instead to decrement by 1 the
    * decrement is integer.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * DECR commands are limited to 64 bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
    * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
@@ -911,7 +911,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see #incrBy(byte[], long)
    * @param key
    * @param decrement
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return Integer reply, this commands will reply with the new value of key after the decrement.
    */
   @Override
   public long decrBy(final byte[] key, final long decrement) {
@@ -923,7 +923,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Decrement the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the decrement operation.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * DECR commands are limited to 64 bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
    * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
@@ -934,7 +934,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see #incrBy(byte[], long)
    * @see #decrBy(byte[], long)
    * @param key
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return Integer reply, this commands will reply with the new value of key after the decrement.
    */
   @Override
   public long decr(final byte[] key) {
@@ -4725,7 +4725,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @param params NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the
-   *          key if it already exist. EX|PX, expire time units: EX = seconds; PX = milliseconds
+   *          key if it already exists. EX|PX, expire time units: EX = seconds; PX = milliseconds
    * @return Status code reply
    */
   @Override
@@ -7908,7 +7908,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param value
    * @return Status code reply
    */
-
   @Override
   public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMultiOrPipeline();

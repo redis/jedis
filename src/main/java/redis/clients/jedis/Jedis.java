@@ -6189,8 +6189,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Remove the specified member from the sorted set value stored at key. If member was not a member
-   * of the set no operation is performed. If key does not not hold a set value an error is
-   * returned.
+   * of the set no operation is performed. If key does not hold a set value an error is returned.
    * <p>
    * Time complexity O(log(N)) with N being the number of elements in the sorted set
    * @param key

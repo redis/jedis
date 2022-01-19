@@ -3614,21 +3614,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceed(connection, channels);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceed(connection, channels);
   }
 
   public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceedWithPatterns(connection, patterns);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceedWithPatterns(connection, patterns);
   }
 
   /**
@@ -4566,7 +4556,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xtrim(key, params));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     checkIsInMultiOrPipeline();
@@ -7556,22 +7550,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceed(connection, channels);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceed(connection, channels);
   }
 
   public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
-    checkIsInMultiOrPipeline();
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceedWithPatterns(connection, patterns);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceedWithPatterns(connection, patterns);
   }
 
   public List<String> pubsubChannels() {
@@ -8358,6 +8341,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String clusterAddSlotsRange(int... ranges) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER,
+        joinParameters(ClusterKeyword.ADDSLOTSRANGE.getRaw(), joinParameters(ranges)));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterDelSlotsRange(int... ranges) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER,
+        joinParameters(ClusterKeyword.DELSLOTSRANGE.getRaw(), joinParameters(ranges)));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String asking() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ASKING);
@@ -8780,7 +8779,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xpending(key, groupname));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();

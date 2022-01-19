@@ -692,6 +692,7 @@ public final class BuilderFactory {
    * Create a AccessControlUser object from the ACL GETUSER < > result
    */
   public static final Builder<AccessControlUser> ACCESS_CONTROL_USER = new Builder<AccessControlUser>() {
+    @SuppressWarnings("unchecked")
     @Override
     public AccessControlUser build(Object data) {
       if (data == null) {
@@ -724,6 +725,14 @@ public final class BuilderFactory {
       List<Object> keys = objectList.get(7);
       for (Object k : keys) {
         accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
+      }
+
+      // before redis 6.2, no channels info
+      if (objectList.size() > 9) {
+        List<Object> channels = objectList.get(9);
+        for (Object channel : channels) {
+          accessControlUser.addChannel(SafeEncoder.encode((byte[]) channel));
+        }
       }
 
       return accessControlUser;

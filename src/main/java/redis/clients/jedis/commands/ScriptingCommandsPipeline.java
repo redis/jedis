@@ -3,6 +3,11 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import redis.clients.jedis.Response;
 
+/**
+ * WARNING: This interface will be removed in upcoming MINOR release.
+ * @deprecated This interface will be removed in upcoming MINOR release.
+ */
+@Deprecated
 public interface ScriptingCommandsPipeline {
 
   Response<Object> eval(String script, int keyCount, String... params);

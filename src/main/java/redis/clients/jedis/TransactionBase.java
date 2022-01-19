@@ -18,6 +18,7 @@ import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
@@ -34,6 +35,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   protected final Connection connection;
   private final CommandObjects commandObjects;
 
+  private boolean broken = false;
   private boolean inWatch = false;
   private boolean inMulti = false;
 
@@ -93,6 +95,9 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   public final void clear() {
+    if (broken) {
+      return;
+    }
     if (inMulti) {
       discard();
     } else if (inWatch) {
@@ -103,41 +108,56 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   protected abstract void processPipelinedResponses();
 
   public List<Object> exec() {
-    if (!inMulti) throw new IllegalStateException("EXEC without MULTI");
-    // ignore QUEUED or ERROR
-//    connection.getMany(1 + getPipelinedResponseLength());
-    processPipelinedResponses();
-    connection.sendCommand(EXEC);
-    inMulti = false;
-    inWatch = false;
+    if (!inMulti) {
+      throw new IllegalStateException("EXEC without MULTI");
+    }
 
-    List<Object> unformatted = connection.getObjectMultiBulkReply();
-    if (unformatted == null) {
-      clean();
-      return null;
-    }
-    List<Object> formatted = new ArrayList<>(unformatted.size());
-    for (Object o : unformatted) {
-      try {
-        formatted.add(generateResponse(o).get());
-      } catch (JedisDataException e) {
-        formatted.add(e);
+    try {
+      processPipelinedResponses();
+      connection.sendCommand(EXEC);
+
+      List<Object> unformatted = connection.getObjectMultiBulkReply();
+      if (unformatted == null) {
+        clean();
+        return null;
       }
+
+      List<Object> formatted = new ArrayList<>(unformatted.size());
+      for (Object o : unformatted) {
+        try {
+          formatted.add(generateResponse(o).get());
+        } catch (JedisDataException e) {
+          formatted.add(e);
+        }
+      }
+      return formatted;
+    } catch (JedisConnectionException jce) {
+      broken = true;
+      throw jce;
+    } finally {
+      inMulti = false;
+      inWatch = false;
+      clean();
     }
-    return formatted;
   }
 
   public String discard() {
-    if (!inMulti) throw new IllegalStateException("DISCARD without MULTI");
-    // ignore QUEUED or ERROR
-//    connection.getMany(1 + getPipelinedResponseLength());
-    processPipelinedResponses();
-    connection.sendCommand(DISCARD);
-    String status = connection.getStatusCodeReply(); // OK
-    inMulti = false;
-    inWatch = false;
-    clean();
-    return status;
+    if (!inMulti) {
+      throw new IllegalStateException("DISCARD without MULTI");
+    }
+
+    try {
+      processPipelinedResponses();
+      connection.sendCommand(DISCARD);
+      return connection.getStatusCodeReply();
+    } catch (JedisConnectionException jce) {
+      broken = true;
+      throw jce;
+    } finally {
+      inMulti = false;
+      inWatch = false;
+      clean();
+    }
   }
 
   @Override

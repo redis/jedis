@@ -1660,14 +1660,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(1)
    * @param key the key of the set
-   * @param member the set member to remove
+   * @param members the set member to remove
    * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
    *         not a member of the set
    */
   @Override
-  public long srem(final byte[] key, final byte[]... member) {
+  public long srem(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.srem(key, member));
+    return connection.executeCommand(commandObjects.srem(key, members));
   }
 
   /**
@@ -3519,9 +3519,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long lpushx(final byte[] key, final byte[]... string) {
+  public long lpushx(final byte[] key, final byte[]... strings) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.lpushx(key, string));
+    return connection.executeCommand(commandObjects.lpushx(key, strings));
   }
 
   /**
@@ -3539,9 +3539,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long rpushx(final byte[] key, final byte[]... string) {
+  public long rpushx(final byte[] key, final byte[]... strings) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.rpushx(key, string));
+    return connection.executeCommand(commandObjects.rpushx(key, strings));
   }
 
   @Override
@@ -7366,9 +7366,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long lpushx(final String key, final String... string) {
+  public long lpushx(final String key, final String... strings) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.lpushx(key, string));
+    return connection.executeCommand(commandObjects.lpushx(key, strings));
   }
 
   /**
@@ -7386,9 +7386,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long rpushx(final String key, final String... string) {
+  public long rpushx(final String key, final String... strings) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.rpushx(key, string));
+    return connection.executeCommand(commandObjects.rpushx(key, strings));
   }
 
   @Override

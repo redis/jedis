@@ -40,7 +40,6 @@ public interface DatabaseCommands {
    * that this command returns 1 only if the key was successfully moved, and 0 if the target key was
    * already there or if the source key was not found at all, so it is possible to use MOVE as a
    * locking primitive.
-   * @see <a href="http://redis.io/commands/move">Move Command</a>
    * @param key
    * @param dbIndex
    * @return Integer reply, specifically: 1 if the key was moved 0 if the key was not moved because
@@ -48,15 +47,11 @@ public interface DatabaseCommands {
    */
   long move(String key, int dbIndex);
 
-  /**
-   * @see #move(String, int)
-   */
   long move(byte[] key, int dbIndex);
 
   /**
    * Copy the value stored at the source key to the destination key.
    * <p>
-   * @see <a href="http://redis.io/commands/copy">Copy Command</a>
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param db allows specifying an alternative logical database index for the destination key.
@@ -64,28 +59,14 @@ public interface DatabaseCommands {
    */
   boolean copy(String srcKey, String dstKey, int db, boolean replace);
 
-  /**
-   * @see #copy(String, String, int, boolean)
-   */
   boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
 
   /**
-   * @see #migrate(String, int, String, int, int)
-   */
-  String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
-
-  /**
-   * @see #migrate(String, int, int, int, MigrateParams, String...)
-   */
-  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
-      byte[]... keys);
-
-  /**
+   * <b><a href="http://redis.io/commands/migrate">Migrate Command</a></b>
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
    * <p>
-   * @see <a href="http://redis.io/commands/migrate">Migrate Command</a>
    * @param host
    * @param port
    * @param key
@@ -96,12 +77,11 @@ public interface DatabaseCommands {
    */
   String migrate(String host, int port, String key, int destinationDB, int timeout);
 
+  String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
+
   /**
-   * Atomically transfer a key from a source Redis instance to a destination Redis instance.
-   * On success the key is deleted from the original instance and is guaranteed to exist in
-   * the target instance.
+   * Similar to {@link DatabaseCommands#migrate(String, int, String, int, int) MIGRATE} with more options.
    * <p>
-   * @see <a href="http://redis.io/commands/migrate">Migrate Command</a>
    * @param host
    * @param port
    * @param destinationDB
@@ -114,4 +94,6 @@ public interface DatabaseCommands {
   String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
       String... keys);
 
+  String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,
+      byte[]... keys);
 }

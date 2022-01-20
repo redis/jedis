@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
+import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
@@ -139,11 +140,8 @@ public interface ListCommands {
    * elements starting from the end of the list. So -1 is the last element, -2 is the penultimate,
    * and so forth.
    * <p>
-   * <b>Time complexity:</b>
-   * <p>
-   * O(N) (with N being the length of the list), setting the first or last elements of the list is
-   * O(1).
-   * @see #lindex(String, long)
+   * Time Complexity O(N) when N being the length of the list. For the first or last elements of
+   * the list is O(1)
    * @param key
    * @param index
    * @param value

@@ -13,10 +13,10 @@ import redis.clients.jedis.resps.LCSMatchResult;
 public interface StringCommands {
 
   /**
+   * <b><a href="http://redis.io/commands/set">Set Command</a></b>
    * Set the string value as value of the key. The string can't be longer than 1073741824 bytes (1 GB).
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/set">Set Command</a>
    * @param key
    * @param value
    * @return Status code reply
@@ -24,10 +24,10 @@ public interface StringCommands {
   String set(String key, String value);
 
   /**
+   * <b><a href="http://redis.io/commands/set">Set Command</a></b>
    * Similar to {@link StringCommands#set(String, String) SET} but with optional params.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/set">Set Command</a>
    * @param key
    * @param value
    * @param params {@link SetParams}
@@ -36,23 +36,23 @@ public interface StringCommands {
   String set(String key, String value, SetParams params);
 
   /**
+   * <b><a href="http://redis.io/commands/get">Get Command</a></b>
    * Get the value of the specified key. If the key does not exist the special value 'nil' is
    * returned. If the value stored at key is not a string an error is returned because GET can only
    * handle string values.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/get">Get Command</a>
    * @param key
    * @return Bulk reply
    */
   String get(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/getdel">GetDel Command</a></b>
    * Get the value of key and delete the key. This command is similar to GET, except for the fact
    * that it also deletes the key on success (if and only if the key's value type is a string).
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/getdel">GetDel Command</a>
    * @param key
    * @return the value of key
    * @since Redis 6.2
@@ -60,6 +60,7 @@ public interface StringCommands {
   String getDel(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/getex">GetEx Command</a></b>
    * Get the value of key and optionally set its expiration. GETEX is similar to {@link StringCommands#get(String) GET},
    * but is a write command with additional options:
    * EX seconds -- Set the specified expire time, in seconds.
@@ -69,7 +70,6 @@ public interface StringCommands {
    * PERSIST -- Remove the time to live associated with the key.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/getex">GetEx Command</a>
    * @param key
    * @param params {@link GetExParams}
    * @return The original bit value stored at offset
@@ -77,10 +77,10 @@ public interface StringCommands {
   String getEx(String key, GetExParams params);
 
   /**
+   * <b><a href="http://redis.io/commands/setbit">SetBit Command</a></b>
    * Sets or clears the bit at offset in the string value stored at key.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/setbit">SetBit Command</a>
    * @param key
    * @param offset
    * @param value
@@ -89,10 +89,10 @@ public interface StringCommands {
   boolean setbit(String key, long offset, boolean value);
 
   /**
+   * <b><a href="http://redis.io/commands/getbit">GetBit Command</a></b>
    * Returns the bit value at offset in the string value stored at key.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/getbit">GetBit Command</a>
    * @param key
    * @param offset
    * @return The bit value stored at offset
@@ -100,13 +100,13 @@ public interface StringCommands {
   boolean getbit(String key, long offset);
 
   /**
+   * <b><a href="http://redis.io/commands/setrange">SetRange Command</a></b>
    * GETRANGE overwrite part of the string stored at key, starting at the specified offset, for the entire
    * length of value. If the offset is larger than the current length of the string at key, the string is
    * padded with zero-bytes to make offset fit. Non-existing keys are considered as empty strings, so this
    * command will make sure it holds a string large enough to be able to set value at offset.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/setrange">SetRange Command</a>
    * @param key
    * @param offset
    * @param value
@@ -115,12 +115,12 @@ public interface StringCommands {
   long setrange(String key, long offset, String value);
 
   /**
+   * <b><a href="http://redis.io/commands/getrange">GetRange Command</a></b>
    * GETRANGE return the substring of the string value stored at key, determined by the offsets start
    * and end (both are inclusive). Negative offsets can be used in order to provide an offset starting
    * from the end of the string. So -1 means the last character, -2 the penultimate and so forth.
    * <p>
    * Time complexity: O(N) where N is the length of the returned string
-   * @see <a href="http://redis.io/commands/getrange">GetRange Command</a>
    * @param key
    * @param startOffset
    * @param endOffset
@@ -129,11 +129,11 @@ public interface StringCommands {
   String getrange(String key, long startOffset, long endOffset);
 
   /**
+   * <b><a href="http://redis.io/commands/getset">GetSet Command</a></b>
    * GETSET is an atomic set this value and return the old value command. Set key to the string
    * value and return the old value stored at key. The string can't be longer than 1073741824 byte (1 GB).
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/getset">GetSet Command</a>
    * @param key
    * @param value
    * @return Bulk reply
@@ -141,11 +141,11 @@ public interface StringCommands {
   String getSet(String key, String value);
 
   /**
+   * <b><a href="http://redis.io/commands/setnx">SetNE Command</a></b>
    * SETNX works exactly like {@link StringCommands#set(String, String) SET} with the only difference that if
    * the key already exists no operation is performed. SETNX actually means "SET if Not Exists".
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/setnx">SetNE Command</a>
    * @param key
    * @param value
    * @return Integer reply, specifically: 1 if the key was set 0 if the key was not set
@@ -153,12 +153,12 @@ public interface StringCommands {
   long setnx(String key, String value);
 
   /**
+   * <b><a href="http://redis.io/commands/setex">SetEx Command</a></b>
    * The command is exactly equivalent to the following group of commands:
    * {@link StringCommands#set(String, String) SET} + {@link KeyBinaryCommands#expire(byte[], long) EXPIRE}.
    * The operation is atomic.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/setex">SetEx Command</a>
    * @param key
    * @param seconds
    * @param value
@@ -167,11 +167,11 @@ public interface StringCommands {
   String setex(String key, long seconds, String value);
 
   /**
+   * <b><a href="http://redis.io/commands/psetex">PSetEx Command</a></b>
    * PSETEX works exactly like {@link StringCommands#setex(String, long, String) SETEX} with the sole difference
    * that the expire time is specified in milliseconds instead of seconds.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/psetex">PSetEx Command</a>
    * @param key
    * @param milliseconds
    * @param value
@@ -180,18 +180,19 @@ public interface StringCommands {
   String psetex(String key, long milliseconds, String value);
 
   /**
+   * <b><a href="http://redis.io/commands/mget">MGet Command</a></b>
    * Get the values of all the specified keys. If one or more keys don't exist or is not of type
    * String, a 'nil' value is returned instead of the value of the specified key, but the operation
    * never fails.
    * <p>
    * Time complexity: O(1) for every key
-   * @see <a href="http://redis.io/commands/mget">MGet Command</a>
    * @param keys
    * @return Multi bulk reply
    */
   List<String> mget(String... keys);
 
   /**
+   * <b><a href="http://redis.io/commands/mset">MSet Command</a></b>
    * Set the the respective keys to the respective values. MSET will replace old values with new
    * values, while {@link StringCommands#msetnx(String...) MSETNX} will not perform any operation at all even
    * if just a single key already exists.
@@ -203,14 +204,13 @@ public interface StringCommands {
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another connection talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @see StringCommands#msetnx(String...)
-   * @see <a href="http://redis.io/commands/mset">MSet Command</a>
    * @param keysvalues
    * @return Status code reply, Basically always OK as MSET can't fail
    */
   String mset(String... keysvalues);
 
   /**
+   * <b><a href="http://redis.io/commands/msetnx">MSetNX Command</a></b>
    * Set the respective keys to the respective values. {@link StringCommands#mset(String...) MSET} will
    * replace old values with new values, while MSETNX will not perform any operation at all even if
    * just a single key already exists.
@@ -222,8 +222,6 @@ public interface StringCommands {
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another connection talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @see StringCommands#mset(String...)
-   * @see <a href="http://redis.io/commands/msetnx">MSetNX Command</a>
    * @param keysvalues
    * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
    *         least one key already existed)
@@ -231,6 +229,7 @@ public interface StringCommands {
   long msetnx(String... keysvalues);
 
   /**
+   * <b><a href="http://redis.io/commands/incr">Incr Command</a></b>
    * Increment the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the increment operation.
    * <p>
@@ -241,13 +240,13 @@ public interface StringCommands {
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/incr">Incr Command</a>
    * @param key
    * @return Integer reply, the value of the key after the increment
    */
   long incr(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/incrby">IncrBy Command</a></b>
    * INCRBY work just like {@link StringCommands#incr(String) INCR} but instead to increment by 1 the
    * increment is integer.
    * <p>
@@ -258,7 +257,6 @@ public interface StringCommands {
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/incrby">IncrBy Command</a>
    * @param key
    * @param increment
    * @return Integer reply, the value of the key after the increment
@@ -266,6 +264,7 @@ public interface StringCommands {
   long incrBy(String key, long increment);
 
   /**
+   * <b><a href="http://redis.io/commands/incrbyfloat">IncrByFloat Command</a></b>
    * INCRBYFLOAT work just like {@link StringCommands#incrBy(String, long)} INCRBY} but increments by floats
    * instead of integers.
    * <p>
@@ -277,7 +276,6 @@ public interface StringCommands {
    * negative value will work as expected.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/incrbyfloat">IncrByFloat Command</a>
    * @param key the key to increment
    * @param increment the value to increment by
    * @return Integer reply, the value of the key after the increment
@@ -285,6 +283,7 @@ public interface StringCommands {
   double incrByFloat(String key, double increment);
 
   /**
+   * <b><a href="http://redis.io/commands/decr">Decr Command</a></b>
    * Decrement the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the decrement operation.
    * <p>
@@ -295,13 +294,13 @@ public interface StringCommands {
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/decr">Decr Command</a>
    * @param key
    * @return Integer reply, the value of the key after the decrement
    */
   long decr(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/decrby">DecrBy Command</a></b>
    * DECRBY work just like {@link StringCommands#decr(String) DECR} but instead to decrement by 1 the
    * decrement is integer.
    * <p>
@@ -312,7 +311,6 @@ public interface StringCommands {
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/decrby">DecrBy Command</a>
    * @param key
    * @param decrement
    * @return Integer reply, the value of the key after the decrement
@@ -320,6 +318,7 @@ public interface StringCommands {
   long decrBy(String key, long decrement);
 
   /**
+   * <b><a href="http://redis.io/commands/append">Append Command</a></b>
    * If the key already exists and is a string, this command appends the provided value at the end
    * of the string. If the key does not exist it is created and set as an empty string, so APPEND
    * will be very similar to SET in this special case.
@@ -327,7 +326,6 @@ public interface StringCommands {
    * Time complexity: O(1). The amortized time complexity is O(1) assuming the appended value is
    * small and the already present value is of any size, since the dynamic string library used by
    * Redis will double the free space available on every reallocation.
-   * @see <a href="http://redis.io/commands/append">Append Command</a>
    * @param key
    * @param value
    * @return Integer reply, specifically the total length of the string after the append operation.
@@ -335,6 +333,7 @@ public interface StringCommands {
   long append(String key, String value);
 
   /**
+   * <b><a href="http://redis.io/commands/substr">SubStr Command</a></b>
    * Return a subset of the string from offset start to offset end (both offsets are inclusive).
    * Negative offsets can be used in order to provide an offset starting from the end of the string.
    * So -1 means the last char, -2 the penultimate and so forth.
@@ -345,7 +344,6 @@ public interface StringCommands {
    * Time complexity: O(start+n) (with start being the start index and n the total length of the
    * requested range). Note that the lookup part of this command is O(1) so for small strings this
    * is actually an O(1) command.
-   * @see <a href="http://redis.io/commands/substr">SubStr Command</a>
    * @param key
    * @param start
    * @param end
@@ -354,25 +352,29 @@ public interface StringCommands {
   String substr(String key, int start, int end);
 
   /**
+   * <b><a href="http://redis.io/commands/strlen">StrLen Command</a></b>
    * Return the length of the string value stored at key.
    * <p>
-   * @see <a href="http://redis.io/commands/strlen">StrLen Command</a>
    * @param key
    * @return Integer reply, specifically the length of the string at key, or 0 when key does not exist
    */
   long strlen(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/bitcount">Bitcount Command</a></b>
    * Count the number of set bits (population counting) in a string.
    * <p>
-   * @see <a href="http://redis.io/commands/bitcount">Bitcount Command</a>
    * @param key
    * @return Integer reply, specifically the number of bits set to 1
    */
   long bitcount(String key);
 
   /**
-   * @see #bitcount(String) BITCOUNT
+   * Similar to {@link StringCommands#bitcount(String) BITCOUNT} withing a range.
+   * <p>
+   * Like for the GETRANGE command start and end can contain negative values in order to index bytes
+   * starting from the end of the string, where -1 is the last byte, -2 is the penultimate, and so forth.
+   * <p>
    * @param key
    * @param start byte start index
    * @param end byte end index
@@ -381,7 +383,8 @@ public interface StringCommands {
   long bitcount(String key, long start, long end);
 
   /**
-   * @see #bitcount(String) BITCOUNT
+   * Similar to {@link StringCommands#bitcount(String, long, long) BITCOUNT} with BYTE|BIT option.
+   * <p>
    * @param key
    * @param start byte start index
    * @param end byte end index
@@ -391,9 +394,9 @@ public interface StringCommands {
   long bitcount(String key, long start, long end, BitCountOption option);
 
   /**
+   * <b><a href="http://redis.io/commands/bitpos">Bitpos Command</a></b>
    * Return the position of the first bit set to 1 or 0 in a string.
    * <p>
-   * @see <a href="http://redis.io/commands/bitpos">Bitpos Command</a>
    * @param key
    * @param value the bit value
    * @return The position of the first bit set to 1 or 0 according to the request
@@ -401,7 +404,8 @@ public interface StringCommands {
   long bitpos(String key, boolean value);
 
   /**
-   * @see #bitpos(String, boolean) BITPOS
+   * Similar to {@link StringCommands#bitpos(String, boolean) BITPOS} with optional params.
+   * <p>
    * @param key
    * @param value the bit value
    * @param params {@link BitPosParams}
@@ -410,10 +414,10 @@ public interface StringCommands {
   long bitpos(String key, boolean value, BitPosParams params);
 
   /**
+   * <b><a href="http://redis.io/commands/bitfield">Bitfield Command</a></b>
    * The command treats a Redis string as an array of bits, and is capable of addressing specific integer
    * fields of varying bit widths and arbitrary non (necessary) aligned offset.
    * <p>
-   * @see <a href="http://redis.io/commands/bitfield">Bitfield Command</a>
    * @param key
    * @param arguments
    * @return A List of results
@@ -426,9 +430,9 @@ public interface StringCommands {
   List<Long> bitfieldReadonly(String key, String...arguments);
 
   /**
+   * <b><a href="http://redis.io/commands/bitop">Bitop Command</a></b>
    * Perform a bitwise operation between multiple keys (containing string values) and store the result in the destKey.
    * <p>
-   * @see <a href="http://redis.io/commands/bitop">Bitop Command</a>
    * @param op {@link BitOP}
    * @param destKey
    * @param srcKeys

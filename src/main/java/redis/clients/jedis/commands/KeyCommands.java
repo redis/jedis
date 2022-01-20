@@ -12,31 +12,25 @@ import redis.clients.jedis.resps.ScanResult;
 public interface KeyCommands {
 
   /**
+   * <b><a href="http://redis.io/commands/exists">Exists Command</a></b>
    * Test if the specified key exist.
    * <p>
    * Time complexity: O(N)
-   * @see <a href="http://redis.io/commands/exists">Exists Command</a>
    * @param key
    * @return True is the key exists, False otherwise
    */
   boolean exists(String key);
 
   /**
-   * Test if the specified keys exist. The command returns the number of keys exist.
-   * <p>
-   * Time complexity: O(N)
-   * @see <a href="http://redis.io/commands/exists">Exists Command</a>
-   * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist,
-   *         0 if none of the specified keys exist.
+   * Similar to {@link KeyCommands#exists(String) EXISTS} with multiple keys.
    */
   long exists(String... keys);
 
   /**
+   * <b><a href="http://redis.io/commands/persist">Persist Command</a></b>
    * Undo a {@link KeyCommands#expire(String, long) expire} at turning the expire key into a normal key.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/persist">Persist Command</a>
    * @param key
    * @return Integer reply, specifically: 1: the key is now persist. 0: the key is not persist (only
    *         happens when key not set).
@@ -44,11 +38,11 @@ public interface KeyCommands {
   long persist(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/type">Type Command</a></b>
    * Return the type of the value stored at key in form of a string. The type can be one of "none",
    * "string", "list", "set". "none" is returned if the key does not exist.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/type">Type Command</a>
    * @param key
    * @return Status code reply, specifically: "none" if the key does not exist "string" if the key
    *         contains a String value "list" if the key contains a List value "set" if the key
@@ -58,23 +52,23 @@ public interface KeyCommands {
   String type(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/dump">Dump Command</a></b>
    * Serialize the value stored at key in a Redis-specific format and return it to the user.
    * <p>
    * Time complexity: O(1) to access the key and additional O(N*M) to serialize it where N is
    * the number of Redis objects composing the value and M their average size.
-   * @see <a href="http://redis.io/commands/dump">Dump Command</a>
    * @param key
    * @return The serialized value.
    */
   byte[] dump(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/restore">Restore Command</a></b>
    * Create a key associated with a value that is obtained by deserializing the provided serialized
    * value (obtained via {@link KeyCommands#dump(String) DUMP}).
    * <p>
    * Time complexity: O(1) to access the key and additional O(N*M) to serialize it where N is
    * the number of Redis objects composing the value and M their average size.
-   * @see <a href="http://redis.io/commands/restore">Restore Command</a>
    * @param key
    * @param ttl If ttl is 0 the key is created without any expire, otherwise the specified expire
    *           time (in milliseconds) is set.
@@ -84,12 +78,12 @@ public interface KeyCommands {
   String restore(String key, long ttl, byte[] serializedValue);
 
   /**
+   * <b><a href="http://redis.io/commands/restore">Restore Command</a></b>
    * Create a key associated with a value that is obtained by deserializing the provided serialized
    * value (obtained via {@link KeyCommands#dump(String) DUMP}).
    * <p>
    * Time complexity: O(1) to access the key and additional O(N*M) to serialize it where N is
    * the number of Redis objects composing the value and M their average size.
-   * @see <a href="http://redis.io/commands/restore">Restore Command</a>
    * @param key
    * @param ttl If ttl is 0 the key is created without any expire, otherwise the specified expire
    *           time (in milliseconds) is set.
@@ -100,6 +94,7 @@ public interface KeyCommands {
   String restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
 
   /**
+   * <b><a href="http://redis.io/commands/expire">Expire Command</a></b>
    * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
    * the server. A key with an associated timeout is said to be volatile in Redis terminology.
    * <p>
@@ -113,7 +108,6 @@ public interface KeyCommands {
    * {@link KeyCommands#persist(String) PERSIST} command.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param seconds
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
@@ -123,11 +117,11 @@ public interface KeyCommands {
   long expire(String key, long seconds);
 
   /**
+   * <b><a href="http://redis.io/commands/pexpire">PExpire Command</a></b>
    * This command works exactly like {@link KeyCommands#expire(String, long) EXPIRE} but the time
    * to live of the key is specified in milliseconds instead of seconds.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/pexpire">PExpire Command</a>
    * @param key
    * @param milliseconds
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set.
@@ -136,6 +130,7 @@ public interface KeyCommands {
   long pexpire(String key, long milliseconds);
 
   /**
+   * <b> <a href="http://redis.io/commands/expireat">ExpireAt Command</a></b>
    * EXPIREAT works exactly like {@link KeyCommands#expire(String, long) EXPIRE} but instead to get the
    * number of seconds representing the Time To Live of the key as a second argument (that is a
    * relative way of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp
@@ -147,7 +142,6 @@ public interface KeyCommands {
    * key should expire at a given time in the future.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/expireat">ExpireAt Command</a>
    * @param key
    * @param unixTime
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set.
@@ -156,11 +150,11 @@ public interface KeyCommands {
   long expireAt(String key, long unixTime);
 
   /**
+   * <b><a href="http://redis.io/commands/pexpireat">PExpireAt Command</a></b>
    * This command works exactly like {@link KeyCommands#expireAt(String, long) EXPIREAT} but
    * Unix time at which the key will expire is specified in milliseconds instead of seconds.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/pexpireat">PExpireAt Command</a>
    * @param key
    * @param millisecondsTimestamp
    * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set.
@@ -169,10 +163,10 @@ public interface KeyCommands {
   long pexpireAt(String key, long millisecondsTimestamp);
 
   /**
+   * <b><a href="http://redis.io/commands/ttl">TTL Command</a></b>
    * The TTL command returns the remaining time to live in seconds of a key that has an
    * {@link KeyCommands#expire(String, long) EXPIRE} set. This introspection capability allows a Redis
    * connection to check how many seconds a given key will continue to be part of the dataset.
-   * @see <a href="http://redis.io/commands/ttl">TTL Command</a>
    * @param key
    * @return Integer reply, returns the remaining time to live in seconds of a key that has an
    *         EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
@@ -181,8 +175,8 @@ public interface KeyCommands {
   long ttl(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/pttl">PTTL Command</a></b>
    * Similar to {@link KeyCommands#ttl(String) TTL} returns in milliseconds.
-   * @see <a href="http://redis.io/commands/pttl">PTTL Command</a>
    * @param key
    * @return Integer reply, returns the remaining time to live in milliseconds of a key that has an
    *         EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
@@ -191,30 +185,32 @@ public interface KeyCommands {
   long pttl(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/touch">Touch Command</a></b>
    * Alters the last access time of a key. A key is ignored if it does not exist.
    * Time complexity: O(N) where N is the number of keys that will be touched.
-   * @see <a href="http://redis.io/commands/touch">Touch Command</a>
    * @param key
    * @return Integer reply: The number of keys that were touched.
    */
   long touch(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/touch">Touch Command</a></b>
    * Alters the last access time of a key(s). A key is ignored if it does not exist.
    * Time complexity: O(N) where N is the number of keys that will be touched.
-   * @see <a href="http://redis.io/commands/touch">Touch Command</a>
    * @param keys
    * @return Integer reply: The number of keys that were touched.
    */
   long touch(String... keys);
 
   /**
+   * <b><a href="http://redis.io/commands/sort">Sort Command</a></b>
    * Sort a Set or a List.
    * <p>
    * Sort the elements contained in the List, Set, or Sorted Set values at key. By default, sorting is
    * numeric with elements being compared as double precision floating point numbers. This is the
    * simplest form of SORT.
-   * @see <a href="http://redis.io/commands/sort">Sort Command</a>
+   * <p>
+   * @see #sort(String, SortingParams) for examples
    * @param key
    * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
    *         list of numbers ordered from the smallest to the biggest number.
@@ -222,13 +218,7 @@ public interface KeyCommands {
   List<String> sort(String key);
 
   /**
-   * Sort a Set or a List and Store the Result at dstkey.
-   * <p>
-   * Sort the elements contained in the List, Set, or Sorted Set values at key and store the result
-   * at dstkey. By default, sorting is numeric with elements being compared as double precision
-   * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(String)
-   * @see <a href="http://redis.io/commands/sort">Sort Command</a>
+   * Similar to {@link KeyCommands#sort(String)}, stores the answer in dstkey.
    * @param key
    * @param dstkey
    * @return The number of elements stored at dstkey.
@@ -310,9 +300,7 @@ public interface KeyCommands {
   List<String> sort(String key, SortingParams sortingParameters);
 
   /**
-   * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(String, SortingParams)
-   * @see <a href="http://redis.io/commands/sort">Sort Command</a>
+   * Similar to {@link KeyCommands#sort(String, SortingParams, String)}, stores the answer in dstkey.
    * @param key
    * @param sortingParameters {@link SortingParams}
    * @param dstkey
@@ -321,10 +309,10 @@ public interface KeyCommands {
   long sort(String key, SortingParams sortingParameters, String dstkey);
 
   /**
+   * <b><a href="http://redis.io/commands/del">Del Command</a></b>
    * Remove the specified key. If a given key does not exist, no operation is performed.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/del">Del Command</a>
    * @param key
    * @return Integer reply, specifically: 1 if the key was removed
    *         0 if the key does not exist
@@ -332,11 +320,7 @@ public interface KeyCommands {
   long del(String key);
 
   /**
-   * Remove the specified keys. If a given key does not exist, no operation is performed.
-   * The command returns the number of keys removed.
-   * <p>
-   * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/del">Del Command</a>
+   * Similar to {@link KeyCommands#del(String) DEL} with multiple keys.
    * @param keys
    * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
    *         0 if none of the specified key existed
@@ -344,6 +328,7 @@ public interface KeyCommands {
   long del(String... keys);
 
   /**
+   * <b><a href="http://redis.io/commands/unlink">Unlink Command</a></b>
    * This command is very similar to {@link KeyCommands#del(String) DEL}: it removes the specified key.
    * Just like DEL a key is ignored if it does not exist. However, the command performs the actual
    * memory reclaiming in a different thread, so it is not blocking, while DEL is. This is where the
@@ -353,32 +338,22 @@ public interface KeyCommands {
    * Time complexity: O(1) for each key removed regardless of its size. Then the command does O(N)
    * work in a different thread in order to reclaim memory, where N is the number of allocations the
    * deleted objects where composed of.
-   * @see <a href="http://redis.io/commands/unlink">Unlink Command</a>
    * @param key
    * @return Integer reply: The number of keys that were unlinked
    */
   long unlink(String key);
 
   /**
-   * This command is very similar to {@link KeyCommands#del(String...) DEL}: it removes the specified keys.
-   * Just like DEL a key is ignored if it does not exist. However, the command performs the actual
-   * memory reclaiming in a different thread, so it is not blocking, while DEL is. This is where the
-   * command name comes from: the command just unlinks the keys from the keyspace. The actual removal
-   * will happen later asynchronously.
-   * <p>
-   * Time complexity: O(1) for each key removed regardless of its size. Then the command does O(N)
-   * work in a different thread in order to reclaim memory, where N is the number of allocations the
-   * deleted objects where composed of.
-   * @see <a href="http://redis.io/commands/unlink">Unlink Command</a>
+   * Similar to {@link KeyCommands#unlink(String) UNLINK} with multiple keys.
    * @param keys
    * @return Integer reply: The number of keys that were unlinked
    */
   long unlink(String... keys);
 
   /**
+   * <b><a href="http://redis.io/commands/copy">Copy Command</a></b>
    * Copy the value stored at the source key to the destination key.
    * <p>
-   * @see <a href="http://redis.io/commands/copy">Copy Command</a>
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param replace removes the destination key before copying the value to it, in order to avoid error.
@@ -386,11 +361,11 @@ public interface KeyCommands {
   boolean copy(String srcKey, String dstKey, boolean replace);
 
   /**
+   * <b><a href="http://redis.io/commands/rename">Rename Command</a></b>
    * Atomically renames the key oldkey to newkey. If the source and destination name are the same an
    * error is returned. If newkey already exists it is overwritten.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/rename">Rename Command</a>
    * @param oldkey
    * @param newkey
    * @return Status code reply
@@ -398,10 +373,10 @@ public interface KeyCommands {
   String rename(String oldkey, String newkey);
 
   /**
+   * <b><a href="http://redis.io/commands/renamenx">RenameNX Command</a></b>
    * Rename oldkey into newkey but fails if the destination key newkey already exists.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/renamenx">RenameNX Command</a>
    * @param oldkey
    * @param newkey
    * @return Integer reply, specifically: 1 if the key was renamed 0 if the target key already exist
@@ -409,20 +384,20 @@ public interface KeyCommands {
   long renamenx(String oldkey, String newkey);
 
   /**
+   * <b><a href="http://redis.io/commands/memory-usage">Memory Usage Command</a></b>
    * Report the number of bytes that a key and its value require to be stored in RAM.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/memory-usage">Memory Usage Command</a>
    * @param key
    * @return Integer reply, The memory usage in bytes
    */
   Long memoryUsage(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/memory-usage">Memory Usage Command</a></b>
    * Report the number of bytes that a key and its value require to be stored in RAM.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/memory-usage">Memory Usage Command</a>
    * @param key
    * @param samples the number of sampled nested values. By default, this option is set to 5.
    *               To sample the all the nested values, use 0.
@@ -431,51 +406,51 @@ public interface KeyCommands {
   Long memoryUsage(String key, int samples);
 
   /**
+   * <b><a href="http://redis.io/commands/object-refcount">Object Refcount Command</a></b>
    * Return the reference count of the stored at key.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/object-refcount">Object Refcount Command</a>
    * @param key
    * @return Integer reply, The number of references
    */
   Long objectRefcount(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/object-encoding">Object Encoding Command</a></b>
    * Return the internal encoding for the Redis object stored at key.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/object-encoding">Object Encoding Command</a>
    * @param key
    * @return The encoding of the object
    */
   String objectEncoding(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/object-idletime">Object IdleTime Command</a></b>
    * Return the time in seconds since the last access to the value stored at key.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/object-idletime">Object IdleTime Command</a>
    * @param key
    * @return Integer reply, The idle time in seconds
    */
   Long objectIdletime(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/object-freq">Object Freq Command</a></b>
    * Return the logarithmic access frequency counter of a Redis object stored at key.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/object-freq">Object Freq Command</a>
    * @param key
    * @return Integer reply, The counter's value
    */
   Long objectFreq(String key);
 
   /**
+   * <b><a href="http://redis.io/commands/migrate">Migrate Command</a></b>
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
    * <p>
-   * @see <a href="http://redis.io/commands/migrate">Migrate Command</a>
    * @param host
    * @param port
    * @param key
@@ -486,11 +461,11 @@ public interface KeyCommands {
   String migrate(String host, int port, String key, int timeout);
 
   /**
+   * <b><a href="http://redis.io/commands/migrate">Migrate Command</a></b>
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
    * <p>
-   * @see <a href="http://redis.io/commands/migrate">Migrate Command</a>
    * @param host
    * @param port
    * @param timeout the maximum idle time in any moment of the communication with the
@@ -502,6 +477,7 @@ public interface KeyCommands {
   String migrate(String host, int port, int timeout, MigrateParams params, String... keys);
 
   /**
+   * <b><a href="http://redis.io/commands/keys">Keys Command</a></b>
    * Returns all the keys matching the glob-style pattern as space separated strings. For example if
    * you have in the database the keys "foo" and "foobar" the command "KEYS foo*" will return
    * "foo foobar".
@@ -526,7 +502,6 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(n) (with n being the number of keys in the DB, and assuming keys and pattern
    * of limited length)
-   * @see <a href="http://redis.io/commands/keys">Keys Command</a>
    * @param pattern
    * @return Multi bulk reply, list of keys matching pattern.
    */
@@ -539,10 +514,10 @@ public interface KeyCommands {
   ScanResult<String> scan(String cursor, ScanParams params, String type);
 
   /**
+   * <b><a href="http://redis.io/commands/randomkey">RandomKey Command</a></b>
    * Return a randomly selected key from the currently selected DB.
    * <p>
    * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/randomkey">RandomKey Command</a>
    * @return Singe line reply, specifically the randomly selected key or an empty string is the
    *         database is empty
    */

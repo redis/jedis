@@ -268,12 +268,11 @@ public interface GeoCommands {
    * Return the members of a sorted set populated with geospatial information using GEOADD,
    * which are within the borders of the area specified by a given shape.
    * <p>
-   * This command can be used in place of the GEORADIUSBYMEMBER command.
+   * This command can be used in place of the {@link GeoCommands#georadiusByMember(String, String, double, GeoUnit) GEORADIUSBYMEMBER} command.
    * <p>
    * Time complexity: O(N+log(M)) where N is the number of elements in the grid-aligned
    * bounding box area around the shape provided as the filter and M is the number of items
    * inside the shape
-   * @see GeoCommands#georadiusByMember(String, String, double, GeoUnit)
    * @param key
    * @param member
    * @param radius
@@ -286,12 +285,11 @@ public interface GeoCommands {
    * Return the members of a sorted set populated with geospatial information using GEOADD,
    * which are within the borders of the area specified by a given shape.
    * <p>
-   * This command can be used in place of the GEORADIUS command.
+   * This command can be used in place of the {@link GeoCommands#georadius(String, double, double, double, GeoUnit) GEORADIUS} command.
    * <p>
    * Time complexity: O(N+log(M)) where N is the number of elements in the grid-aligned
    * bounding box area around the shape provided as the filter and M is the number of items
    * inside the shape
-   * @see GeoCommands#georadius(String, double, double, double, GeoUnit)
    * @param key
    * @param coord
    * @param radius
@@ -351,7 +349,6 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements in the grid-aligned
    * bounding box area around the shape provided as the filter and M is the number of items
    * inside the shape
-   * @see <a href="https://redis.io/commands/geosearch">Command</a>
    * @param key
    * @param params {@link GeoSearchParam}
    * @return List of GeoRadiusResponse

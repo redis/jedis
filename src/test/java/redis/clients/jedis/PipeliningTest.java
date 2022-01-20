@@ -153,13 +153,13 @@ public class PipeliningTest extends JedisCommandsTestBase {
     assertTrue(Arrays.equals(firstKey, value1) || Arrays.equals(firstKey, value2));
     assertTrue(Arrays.equals(secondKey, value1) || Arrays.equals(secondKey, value2));
   }
-//
-//  @Test
-//  public void pipelineSelect() {
-//    Pipeline p = jedis.pipelined();
-//    p.select(1);
-//    p.sync();
-//  }
+
+  @Test
+  public void pipelineSelect() {
+    Pipeline p = jedis.pipelined();
+    p.select(1);
+    p.sync();
+  }
 
   @Test
   public void pipelineResponseWithoutData() {

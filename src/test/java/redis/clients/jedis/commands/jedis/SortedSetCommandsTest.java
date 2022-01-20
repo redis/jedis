@@ -588,6 +588,32 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void bzmpop() {
+    jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
+    jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
+
+    ZMPopResponse single = jedis.bzmpop(0, ZMPopOption.MAX, "foo");
+    ZMPopResponse range = jedis.bzmpop(0, ZMPopOption.MIN, 2, "foo");
+
+    assertEquals(new Tuple("b", 10d), single.getElements().get(0));
+    assertEquals(2, range.getElements().size());
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+
+    ZMPopResponse bsingle = jedis.bzmpop(0, ZMPopOption.MAX, bfoo);
+    ZMPopResponse brange = jedis.bzmpop(0, ZMPopOption.MIN, 2, bfoo);
+
+    assertEquals(new Tuple(bb, 10d), bsingle.getElements().get(0));
+    assertEquals(2, brange.getElements().size());
+  }
+
+  @Test
   public void zpopmax() {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 10d, "b");

@@ -2169,41 +2169,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zmscore(key, members));
   }
 
-  /**
-   * Pops an element, that are member-score pair, from the first non-empty sorted set
-   * in the provided list of key names. COUNT set to 1 by default.
-   * <p>
-   * <b>Time complexity:</b> O(K) + O(N*log(M)) where K is the number of provided keys,
-   * N being the number of elements in the sorted set, and M being the number of elements
-   * popped.
-   * @param keys
-   * @param option MIN - the elements popped are those with the lowest scores from the first non-empty sorted set.
-   *               MAX - would cause elements with the highest scores to be popped
-   * @return member-score pair (Tuple)
-   */
   @Override
   public ZMPopResponse zmpop(ZMPopOption option, byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, keys));
   }
 
-  /**
-   * Pops one or more elements, that are member-score pairs, from the first non-empty
-   * sorted set in the provided list of key names.
-   * <p>
-   * <b>Time complexity:</b> O(K) + O(N*log(M)) where K is the number of provided keys,
-   * N being the number of elements in the sorted set, and M being the number of elements
-   * popped.
-   * @param keys
-   * @param option MIN - the elements popped are those with the lowest scores from the first non-empty sorted set.
-   *               MAX - would cause elements with the highest scores to be popped
-   * @param count specify the number of elements to pop
-   * @return list of member-score pairs (Tuples)
-   */
   @Override
   public ZMPopResponse zmpop(ZMPopOption option, int count, byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public ZMPopResponse bzmpop(double timeout, ZMPopOption option, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public ZMPopResponse bzmpop(double timeout, ZMPopOption option, int count, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override
@@ -6415,41 +6402,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zmscore(key, members));
   }
 
-  /**
-   * Pops an element, that are member-score pair, from the first non-empty sorted set
-   * in the provided list of key names. COUNT set to 1 by default.
-   * <p>
-   * <b>Time complexity:</b> O(K) + O(N*log(M)) where K is the number of provided keys,
-   * N being the number of elements in the sorted set, and M being the number of elements
-   * popped.
-   * @param keys
-   * @param option MIN - the elements popped are those with the lowest scores from the first non-empty sorted set.
-   *               MAX - would cause elements with the highest scores to be popped
-   * @return member-score pair (Tuple)
-   */
   @Override
   public ZMPopResponse zmpop(ZMPopOption option, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, keys));
   }
 
-  /**
-   * Pops one or more elements, that are member-score pairs, from the first non-empty
-   * sorted set in the provided list of key names.
-   * <p>
-   * <b>Time complexity:</b> O(K) + O(N*log(M)) where K is the number of provided keys,
-   * N being the number of elements in the sorted set, and M being the number of elements
-   * popped.
-   * @param keys
-   * @param option MIN - the elements popped are those with the lowest scores from the first non-empty sorted set.
-   *               MAX - would cause elements with the highest scores to be popped
-   * @param count specify the number of elements to pop
-   * @return list of member-score pairs (Tuples)
-   */
   @Override
   public ZMPopResponse zmpop(ZMPopOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public ZMPopResponse bzmpop(double timeout, ZMPopOption option, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public ZMPopResponse bzmpop(double timeout, ZMPopOption option, int count, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override

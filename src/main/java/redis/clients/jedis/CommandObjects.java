@@ -1259,6 +1259,16 @@ public class CommandObjects {
         .add(COUNT).add(count), BuilderFactory.ZMPOP_RESPONSE);
   }
 
+  public final CommandObject<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).add(timeout).add(keys.length).keys((Object[]) keys).add(option),
+            BuilderFactory.ZMPOP_RESPONSE);
+  }
+
+  public final CommandObject<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).add(timeout).add(keys.length).keys((Object[]) keys).add(option)
+            .add(COUNT).add(count), BuilderFactory.ZMPOP_RESPONSE);
+  }
+
   public final CommandObject<Long> zcard(byte[] key) {
     return new CommandObject<>(commandArguments(ZCARD).key(key), BuilderFactory.LONG);
   }
@@ -1279,6 +1289,16 @@ public class CommandObjects {
   public final CommandObject<ZMPopResponse> zmpop(ZMPopOption option, int count, byte[]... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys).add(option)
         .add(COUNT).add(count), BuilderFactory.ZMPOP_RESPONSE);
+  }
+
+  public final CommandObject<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).add(timeout).add(keys.length).keys((Object[]) keys).add(option),
+            BuilderFactory.ZMPOP_RESPONSE);
+  }
+
+  public final CommandObject<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).add(timeout).add(keys.length).keys((Object[]) keys).add(option)
+            .add(COUNT).add(count), BuilderFactory.ZMPOP_RESPONSE);
   }
 
   public final CommandObject<Tuple> zpopmax(String key) {

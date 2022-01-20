@@ -1625,6 +1625,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public ZMPopResponse bzmpop(double timeout, ZMPopOption option, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public ZMPopResponse bzmpop(double timeout, ZMPopOption option, int count, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
   public byte[] zrandmember(byte[] key) {
     return executeCommand(commandObjects.zrandmember(key));
   }
@@ -1662,6 +1672,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public ZMPopResponse zmpop(ZMPopOption option, int count, byte[]... keys) {
     return executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public ZMPopResponse bzmpop(double timeout, ZMPopOption option, byte[]... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public ZMPopResponse bzmpop(double timeout, ZMPopOption option, int count, byte[]... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override

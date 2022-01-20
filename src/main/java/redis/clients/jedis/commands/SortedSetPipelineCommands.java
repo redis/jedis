@@ -58,6 +58,10 @@ public interface SortedSetPipelineCommands {
 
   Response<ZMPopResponse> zmpop(ZMPopOption option, int count, String... keys);
 
+  Response<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, String... keys);
+
+  Response<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, int count, String... keys);
+
   Response<Tuple> zpopmax(String key);
 
   Response<List<Tuple>> zpopmax(String key, int count);

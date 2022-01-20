@@ -992,6 +992,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, String... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public Response<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, int count, String... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
   public Response<Tuple> zpopmax(String key) {
     return appendCommand(commandObjects.zpopmax(key));
   }
@@ -2507,6 +2517,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<ZMPopResponse> zmpop(ZMPopOption option, int count, byte[]... keys) {
     return appendCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public Response<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, byte[]... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public Response<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, int count, byte[]... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override

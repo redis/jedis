@@ -59,9 +59,41 @@ public interface SortedSetCommands {
 
   List<Double> zmscore(String key, String... members);
 
+  /**
+   * Pop one or more elements, that are member-score pairs, from the first non-empty sorted set in
+   * the provided list of key names.
+   * <p>
+   * Similar to {@link SortedSetCommands#zpopmin(String) ZPOPMIN} or {@link SortedSetCommands#zpopmax(String) ZPOPMAX}
+   * which take only one key.
+   * <p>
+   * Time complexity O(K) + O(N*log(M)) where K is the number of provided keys, N being the number
+   * of elements in the sorted set, and M being the number of elements popped.
+   * @param option {@link ZMPopOption}
+   * @param keys
+   * @return {@link ZMPopResponse} including the name of the key from which elements were popped, and the
+   * popped elements.
+   */
   ZMPopResponse zmpop(ZMPopOption option, String... keys);
 
+  /**
+   * @see #zmpop(ZMPopOption, String...)
+   * @param option {@link ZMPopOption} can be MIN or MAX
+   * @param count pop up to count elements
+   * @param keys
+   * @return {@link ZMPopResponse} including the name of the key from which elements were popped, and the
+   * popped elements.
+   */
   ZMPopResponse zmpop(ZMPopOption option, int count, String... keys);
+
+  /**
+   * Blocking version of {@link SortedSetCommands#zmpop(ZMPopOption, String...) ZMPOP}
+   */
+  ZMPopResponse bzmpop(double timeout, ZMPopOption option, String... keys);
+
+  /**
+   * Blocking version of {@link SortedSetCommands#zmpop(ZMPopOption, int, String...) ZMPOP}
+   */
+  ZMPopResponse bzmpop(double timeout, ZMPopOption option, int count, String... keys);
 
   Tuple zpopmax(String key);
 

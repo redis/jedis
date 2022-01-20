@@ -57,6 +57,10 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<ZMPopResponse> zmpop(ZMPopOption option, int count, byte[]... keys);
 
+  Response<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, byte[]... keys);
+
+  Response<ZMPopResponse> bzmpop(double timeout, ZMPopOption option, int count, byte[]... keys);
+
   Response<Tuple> zpopmax(byte[] key);
 
   Response<List<Tuple>> zpopmax(byte[] key, int count);

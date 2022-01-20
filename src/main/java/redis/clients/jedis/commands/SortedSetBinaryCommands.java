@@ -58,9 +58,41 @@ public interface SortedSetBinaryCommands {
 
   List<Double> zmscore(byte[] key, byte[]... members);
 
+  /**
+   * Pop one or more elements, that are member-score pairs, from the first non-empty sorted set in
+   * the provided list of key names.
+   * <p>
+   * Similar to {@link SortedSetBinaryCommands#zpopmin(byte[]) ZPOPMIN} or {@link SortedSetBinaryCommands#zpopmax(byte[]) ZPOPMAX}
+   * which take only one key.
+   * <p>
+   * Time complexity O(K) + O(N*log(M)) where K is the number of provided keys, N being the number
+   * of elements in the sorted set, and M being the number of elements popped.
+   * @param option {@link ZMPopOption} can be MIN or MAX
+   * @param keys
+   * @return {@link ZMPopResponse} including the name of the key from which elements were popped, and the
+   * popped elements.
+   */
   ZMPopResponse zmpop(ZMPopOption option, byte[]... keys);
 
+  /**
+   * @see #zmpop(ZMPopOption, byte[]...)
+   * @param option {@link ZMPopOption} can be MIN or MAX
+   * @param count pop up to count elements
+   * @param keys
+   * @return {@link ZMPopResponse} including the name of the key from which elements were popped, and the
+   * popped elements.
+   */
   ZMPopResponse zmpop(ZMPopOption option, int count, byte[]... keys);
+
+  /**
+   * Blocking version of {@link SortedSetBinaryCommands#zmpop(ZMPopOption, byte[]...) ZMPOP}
+   */
+  ZMPopResponse bzmpop(double timeout, ZMPopOption option, byte[]... keys);
+
+  /**
+   * Blocking version of {@link SortedSetBinaryCommands#zmpop(ZMPopOption, int, byte[]...) ZMPOP}
+   */
+  ZMPopResponse bzmpop(double timeout, ZMPopOption option, int count, byte[]... keys);
 
   Tuple zpopmax(byte[] key);
 

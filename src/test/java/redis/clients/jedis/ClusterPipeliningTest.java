@@ -452,6 +452,8 @@ public class ClusterPipeliningTest {
     Response<Set<String>> r4 = p.smembers("diffset{set}");
     Response<Set<String>> r5 = p.sinter("my{set}", "mynew{set}");
     Response<Long> r6 = p.sinterstore("interset{set}", "my{set}", "mynew{set}");
+    Response<Long> intercard = p.sintercard("my{set}", "mynew{set}");
+    Response<Long> intercardLimit = p.sintercard(1,"my{set}", "mynew{set}");
     Response<Set<String>> r7 = p.smembers("interset{set}");
     Response<Set<String>> r8 = p.sunion("my{set}", "mynew{set}");
     Response<Long> r9 = p.sunionstore("unionset{set}", "my{set}", "mynew{set}");
@@ -472,6 +474,8 @@ public class ClusterPipeliningTest {
     Assert.assertEquals(diff, r4.get());
     Assert.assertEquals(inter, r5.get());
     Assert.assertEquals(Long.valueOf(inter.size()), r6.get());
+    Assert.assertEquals(Long.valueOf(inter.size()), intercard.get());
+    Assert.assertEquals(Long.valueOf(1), intercardLimit.get());
     Assert.assertEquals(inter, r7.get());
     Assert.assertEquals(union, r8.get());
     Assert.assertEquals(Long.valueOf(union.size()), r9.get());

@@ -8,6 +8,7 @@ import java.util.Set;
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
+import redis.clients.jedis.commands.DatabasePipelineCommands;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -25,8 +26,8 @@ import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 
-public class Pipeline extends Queable  implements PipelineCommands, PipelineBinaryCommands,
-    RedisModulePipelineCommands, Closeable {
+public class Pipeline extends Queable implements PipelineCommands, PipelineBinaryCommands,
+    DatabasePipelineCommands, RedisModulePipelineCommands, Closeable {
 
   protected final Connection connection;
 //  private final Jedis jedis;
@@ -3328,6 +3329,74 @@ public class Pipeline extends Queable  implements PipelineCommands, PipelineBina
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
+  }
+
+  public Response<List<String>> time() {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.TIME), BuilderFactory.STRING_LIST));
+  }
+
+  @Override
+  public Response<String> select(final int index) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.SELECT), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<Long> dbSize() {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.DBSIZE), BuilderFactory.LONG));
+  }
+
+  @Override
+  public Response<String> swapDB(final int index1, final int index2) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.SWAPDB)
+        .add(index1).add(index2), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<Long> move(String key, int dbIndex) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MOVE)
+        .key(key).add(dbIndex), BuilderFactory.LONG));
+  }
+
+  @Override
+  public Response<Long> move(final byte[] key, final int dbIndex) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MOVE)
+        .key(key).add(dbIndex), BuilderFactory.LONG));
+  }
+
+  @Override
+  public Response<Boolean> copy(String srcKey, String dstKey, int db, boolean replace) {
+    return appendCommand(commandObjects.copy(srcKey, dstKey, db, replace));
+  }
+
+  @Override
+  public Response<Boolean> copy(byte[] srcKey, byte[] dstKey, int db, boolean replace) {
+    return appendCommand(commandObjects.copy(srcKey, dstKey, db, replace));
+  }
+
+  @Override
+  public Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
+        .add(host).add(port).key(key).add(destinationDB).add(timeout), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> migrate(String host, int port, String key, int destinationDB, int timeout) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
+        .add(host).add(port).key(key).add(destinationDB).add(timeout), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
+        .add(host).add(port).add(new byte[0]).add(destinationDB).add(timeout).addParams(params)
+        .add(Protocol.Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
+        .add(host).add(port).add(new byte[0]).add(destinationDB).add(timeout).addParams(params)
+        .add(Protocol.Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING));
   }
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {

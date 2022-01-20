@@ -54,7 +54,7 @@ public interface GeoBinaryCommands {
 
   long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit,
       GeoRadiusParam param, GeoRadiusStoreParam storeParam);
-
+  
   List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit);
 
   List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double radius, GeoUnit unit);

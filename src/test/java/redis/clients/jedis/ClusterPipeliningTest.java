@@ -22,6 +22,7 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.resps.ZMPopResponse;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -501,6 +502,7 @@ public class ClusterPipeliningTest {
     ClusterPipeline p = new ClusterPipeline(provider);
 
     Response<Long> r1 = p.zadd("myset", hm);
+    p.zadd("myset2", hm);
     Response<Long> r2 = p.zrank("myset", "a3");
     Response<Long> r3 = p.zrevrank("myset", "a3");
     Response<Long> r4 = p.zrem("myset", "a1");
@@ -521,6 +523,8 @@ public class ClusterPipeliningTest {
     p.zadd("myset", hm, new ZAddParams().nx()); // return the elements that were popped
     Response<List<Tuple>> r19 = p.zpopmax("myset", 2);
     Response<List<Tuple>> r20 = p.zpopmin("myset", 1);
+    Response<ZMPopResponse> r21 = p.zmpop(ZMPopOption.MIN, "myset2");
+    Response<ZMPopResponse> r22 = p.zmpop(ZMPopOption.MAX, 1,"myset2");
 
     p.sync();
     Assert.assertEquals(Long.valueOf(3), r1.get());
@@ -543,6 +547,8 @@ public class ClusterPipeliningTest {
     Assert.assertEquals(Long.valueOf(0), r18.get());
     Assert.assertTrue(r19.get().size() == 2 && r19.get().contains(max));
     Assert.assertTrue(r20.get().size() == 1 && r20.get().contains(min));
+    Assert.assertTrue(r21.get().getElements().contains(min));
+    Assert.assertTrue(r22.get().getElements().contains(max));
   }
 
   @Test

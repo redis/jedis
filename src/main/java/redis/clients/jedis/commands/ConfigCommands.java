@@ -3,29 +3,29 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 /**
- * The interface about the configuration parameters of a running Redis server.
+ * The interface about managing configuration parameters of Redis server.
  */
 public interface ConfigCommands {
 
   /**
-   * Used to read the configuration parameters of a running Redis server.
+   * Used to read the configuration parameters of Redis server.
    *
    * @param pattern config name
-   * @return Return config value of Redis server
+   * @return config value of Redis server
    */
   List<String> configGet(String pattern);
 
   /**
-   * Used to read the configuration parameters of a running Redis server.
+   * Used to read the configuration parameters of Redis server.
    *
    * @param pattern name of Redis server's configuration
-   * @return Return value of Redis server's configuration
+   * @return value of Redis server's configuration
    */
   List<byte[]> configGet(byte[] pattern);
 
   /**
-   * Used in order to reconfigure the server at run time without the
-   * need to restart Redis.
+   * Used in order to reconfigure the Redis server at run time without
+   * the need to restart.
    *
    * @param parameter name of Redis server's configuration
    * @param value     value of Redis server's configuration
@@ -35,8 +35,8 @@ public interface ConfigCommands {
   String configSet(String parameter, String value);
 
   /**
-   * Used in order to reconfigure the server at run time without the
-   * need to restart Redis.
+   * Used in order to reconfigure the Redis server at run time without
+   * the need to restart.
    *
    * @param parameter name of Redis server's configuration
    * @param value     value of Redis server's configuration

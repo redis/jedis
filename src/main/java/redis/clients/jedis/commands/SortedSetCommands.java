@@ -384,7 +384,7 @@ public interface SortedSetCommands {
   List<String> zrangeByScore(String key, double min, double max, int offset, int count);
 
   /**
-   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGEBYSCORE} with string range.
+   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGEBYSCORE} with <i>exclusive</i> range.
    */
   List<String> zrevrangeByScore(String key, String max, String min);
 

@@ -95,3 +95,14 @@ workflows:
             - build-linux-8-jdk
       - build-linux-8-jdk:
           <<: *on-all-branches
+
+  nightly:
+    triggers:
+      - schedule:
+          cron: "5 5 * * *"
+          filters:
+            branches:
+              only: master
+
+    jobs:
+      - build-linux-8-jdk

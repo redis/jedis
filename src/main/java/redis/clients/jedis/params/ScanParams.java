@@ -2,6 +2,7 @@ package redis.clients.jedis.params;
 
 import static redis.clients.jedis.Protocol.Keyword.COUNT;
 import static redis.clients.jedis.Protocol.Keyword.MATCH;
+import static redis.clients.jedis.Protocol.Keyword.TYPE;
 
 import java.nio.ByteBuffer;
 import java.util.EnumMap;
@@ -38,6 +39,14 @@ public class ScanParams implements IParams {
    */
   public ScanParams count(final Integer count) {
     params.put(COUNT, ByteBuffer.wrap(Protocol.toByteArray(count)));
+    return this;
+  }
+
+  /**
+   * @see <a href="https://redis.io/commands/scan#the-type-option">TYPE option in Redis documentation</a>
+   */
+  public ScanParams type(final String type) {
+    params.put(TYPE, ByteBuffer.wrap(SafeEncoder.encode(type)));
     return this;
   }
 

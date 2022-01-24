@@ -632,4 +632,28 @@ public class SetCommandsTest extends JedisCommandsTestBase {
 
     assertFalse(bResult.getResult().isEmpty());
   }
+
+  @Test
+  public void scanType() {
+    ScanParams params = new ScanParams();
+    params.type("set");
+
+    jedis.sadd("foo", "a1", "a2", "a3", "a4", "a5");
+
+    ScanResult<String> result = jedis.scan(SCAN_POINTER_START, params);
+
+    assertFalse(result.getResult().isEmpty());
+    assertEquals("foo", result.getResult().get(0));
+
+    // binary
+    params = new ScanParams();
+    params.type("set");
+
+    jedis.sadd(bfoo, bbar1, bbar2, bbar3);
+    ScanResult<byte[]> bResult = jedis.scan(SCAN_POINTER_START_BINARY, params);
+
+    assertFalse(bResult.getResult().isEmpty());
+    assertEquals(1, result.getResult().size());
+    assertEquals("foo", result.getResult().get(0));
+  }
 }

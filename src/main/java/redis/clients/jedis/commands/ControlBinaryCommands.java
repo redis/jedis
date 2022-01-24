@@ -18,29 +18,30 @@ public interface ControlBinaryCommands extends AccessControlLogBinaryCommands, C
   List<Object> roleBinary();
 
   /**
-   * Returns the reference count of the stored at <key>.
+   * Returns the reference count of the stored at {@code key}.
    *
    * @param key The key in Redis server
-   * @return Returns the reference count of the stored at <key>.
+   * @return The reference count of the stored at {@code key}
    */
   Long objectRefcount(byte[] key);
 
   /**
-   * Returns the internal encoding for the Redis object stored at <key>
+   * Returns the internal encoding for the Redis object stored at {@code key}.
+   * <p>
    * See for details: <a href="https://redis.io/commands/object-encoding">OBJECT ENCODING key</a>
    *
    * @param key The key in Redis server
-   * @return The number of references.
+   * @return The number of references
    */
   byte[] objectEncoding(byte[] key);
 
   /**
-   * Returns the time in seconds since the last access to the value stored at <key>.
+   * Returns the time in seconds since the last access to the value stored at {@code key}.
    * The command is only available when the maxmemory-policy configuration directive
    * is not set to one of the LFU policies.
    *
    * @param key The key in Redis server
-   * @return The idle time in seconds.
+   * @return The idle time in seconds
    */
   Long objectIdletime(byte[] key);
 
@@ -52,21 +53,19 @@ public interface ControlBinaryCommands extends AccessControlLogBinaryCommands, C
   List<byte[]> objectHelpBinary();
 
   /**
-   * Returns the logarithmic access frequency counter of a Redis object stored at <key>.
+   * Returns the logarithmic access frequency counter of a Redis object stored at {@code key}.
    * <p>
    * The command is only available when the maxmemory-policy configuration directive is
    * set to one of the LFU policies.
    *
    * @param key The key in Redis server
-   * @return The counter's value.
+   * @return The counter's value
    */
   Long objectFreq(byte[] key);
 
   /**
    * Reports about different memory-related issues that the Redis server experiences,
    * and advises about possible remedies.
-   *
-   * @return Bulk string reply
    */
   byte[] memoryDoctorBinary();
 
@@ -74,10 +73,11 @@ public interface ControlBinaryCommands extends AccessControlLogBinaryCommands, C
    * Reports the number of bytes that a key and its value require to be stored in RAM.
    * The reported usage is the total of memory allocations for data and administrative
    * overheads that a key its value require.
+   * <p>
    * See for details: <a href="https://redis.io/commands/memory-usage">MEMORY USAGE key</a>
    *
    * @param key The key in Redis server
-   * @return The memory usage in bytes, or nil when the key does not exist.
+   * @return The memory usage in bytes, or nil when the key does not exist
    */
   Long memoryUsage(byte[] key);
 
@@ -85,10 +85,11 @@ public interface ControlBinaryCommands extends AccessControlLogBinaryCommands, C
    * Reports the number of bytes that a key and its value require to be stored in RAM.
    * The reported usage is the total of memory allocations for data and administrative
    * overheads that a key its value require.
+   * <p>
    * See for details: <a href="https://redis.io/commands/memory-usage">MEMORY USAGE key SAMPLES count</a>
    *
    * @param key The key in Redis server
-   * @return The memory usage in bytes, or nil when the key does not exist.
+   * @return The memory usage in bytes, or nil when the key does not exist
    */
   Long memoryUsage(byte[] key, int samples);
 

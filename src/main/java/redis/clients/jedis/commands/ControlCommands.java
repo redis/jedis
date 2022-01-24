@@ -46,7 +46,7 @@ public interface ControlCommands extends AccessControlLogCommands, ClientCommand
   Long objectIdletime(String key);
 
   /**
-   * Returns the object subcommands and usages
+   * Returns the object subcommands and usages.
    *
    * @return object subcommands and usages
    */

@@ -46,7 +46,7 @@ public interface ControlBinaryCommands extends AccessControlLogBinaryCommands, C
   Long objectIdletime(byte[] key);
 
   /**
-   * Returns the object subcommands and usages
+   * Returns the object subcommands and usages.
    *
    * @return object subcommands and usages
    */

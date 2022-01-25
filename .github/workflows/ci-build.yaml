@@ -11,6 +11,12 @@ jobs:
       - name: clone sources
         uses: actions/checkout@v2
 
+      - name: clone redis unstable
+        uses: actions/checkout@v2
+        with:
+          repository: redis/redis
+          path: redis-git
+
       - name: Cache paths
         uses: actions/cache@v2
         with:
@@ -31,7 +37,11 @@ jobs:
       - name: install dependencies
         run: |
           sudo apt update -q
-          sudo apt install -y stunnel make
+          sudo apt install -y stunnel build-essential libssl-dev
+
+      - name: build redis
+        run:
+          make -C redis-git
 
       - name: cache dependencies
         run: |

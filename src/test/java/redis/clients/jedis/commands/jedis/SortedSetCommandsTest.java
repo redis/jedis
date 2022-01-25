@@ -48,20 +48,14 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   @Test
   public void zadd() {
     assertEquals(1, jedis.zadd("foo", 1d, "a"));
-
     assertEquals(1, jedis.zadd("foo", 10d, "b"));
-
     assertEquals(1, jedis.zadd("foo", 0.1d, "c"));
-
     assertEquals(0, jedis.zadd("foo", 2d, "a"));
 
     // Binary
     assertEquals(1, jedis.zadd(bfoo, 1d, ba));
-
     assertEquals(1, jedis.zadd(bfoo, 10d, bb));
-
     assertEquals(1, jedis.zadd(bfoo, 0.1d, bc));
-
     assertEquals(0, jedis.zadd(bfoo, 2d, ba));
   }
 

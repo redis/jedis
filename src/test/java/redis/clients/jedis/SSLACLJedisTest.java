@@ -34,7 +34,7 @@ public class SSLACLJedisTest {
 
   @Test
   public void connectWithSsl() {
-    try (Jedis jedis = new Jedis("localhost", 6390, true)) {
+    try (Jedis jedis = new Jedis("127.0.0.1", 6390, true)) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
@@ -42,7 +42,7 @@ public class SSLACLJedisTest {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig
+    try (Jedis jedis = new Jedis(new HostAndPort("127.0.0.1", 6390), DefaultJedisClientConfig
         .builder().ssl(true).build())) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
@@ -52,11 +52,11 @@ public class SSLACLJedisTest {
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    try (Jedis jedis = new Jedis("rediss://localhost:6390")) {
+    try (Jedis jedis = new Jedis("rediss://127.0.0.1:6390")) {
       jedis.auth("default", "foobared");
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis("rediss://localhost:6390")) {
+    try (Jedis jedis = new Jedis("rediss://127.0.0.1:6390")) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
@@ -65,10 +65,10 @@ public class SSLACLJedisTest {
   @Test
   public void connectWithCompleteCredentialsUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    try (Jedis jedis = new Jedis("rediss://default:foobared@localhost:6390")) {
+    try (Jedis jedis = new Jedis("rediss://default:foobared@127.0.0.1:6390")) {
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis("rediss://acljedis:fizzbuzz@localhost:6390")) {
+    try (Jedis jedis = new Jedis("rediss://acljedis:fizzbuzz@127.0.0.1:6390")) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -76,7 +76,7 @@ public class SSLACLJedisTest {
   @Test
   public void connectWithUri() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    try (Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"))) {
+    try (Jedis jedis = new Jedis(URI.create("rediss://127.0.0.1:6390"))) {
       jedis.auth("acljedis", "fizzbuzz");
       assertEquals("PONG", jedis.ping());
     }
@@ -85,10 +85,10 @@ public class SSLACLJedisTest {
   @Test
   public void connectWithCompleteCredentialsUri() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    try (Jedis jedis = new Jedis(URI.create("rediss://default:foobared@localhost:6390"))) {
+    try (Jedis jedis = new Jedis(URI.create("rediss://default:foobared@127.0.0.1:6390"))) {
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(URI.create("rediss://acljedis:fizzbuzz@localhost:6390"))) {
+    try (Jedis jedis = new Jedis(URI.create("rediss://acljedis:fizzbuzz@127.0.0.1:6390"))) {
       assertEquals("PONG", jedis.ping());
     }
   }

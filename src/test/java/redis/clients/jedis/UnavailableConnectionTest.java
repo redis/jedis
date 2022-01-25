@@ -13,7 +13,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class UnavailableConnectionTest {
 
-  private static final HostAndPort unavailableNode = new HostAndPort("localhost", 6400);
+  private static final HostAndPort unavailableNode = new HostAndPort("127.0.0.1", 6400);
 
   @BeforeClass
   public static void setup() {

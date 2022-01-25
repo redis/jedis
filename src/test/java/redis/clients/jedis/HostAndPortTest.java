@@ -17,7 +17,7 @@ public class HostAndPortTest {
 
   @Test(expected = IllegalArgumentException.class)
   public void checkFromWithoutPort() throws Exception {
-    String host = "localhost";
+    String host = "127.0.0.1";
     HostAndPort.from(host + ":");
   }
 }

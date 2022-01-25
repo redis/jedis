@@ -63,8 +63,8 @@ public class JedisSentinelPoolTest {
   @Test(expected = JedisConnectionException.class)
   public void initializeWithNotAvailableSentinelsShouldThrowException() {
     Set<String> wrongSentinels = new HashSet<String>();
-    wrongSentinels.add(new HostAndPort("localhost", 65432).toString());
-    wrongSentinels.add(new HostAndPort("localhost", 65431).toString());
+    wrongSentinels.add(new HostAndPort("127.0.0.1", 65432).toString());
+    wrongSentinels.add(new HostAndPort("127.0.0.1", 65431).toString());
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, wrongSentinels);
     pool.destroy();

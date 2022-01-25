@@ -26,7 +26,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     String host = hostAndPort.getHost();
     int port = hostAndPort.getPort();
     if (host.equals("127.0.0.1")) {
-      host = "localhost";
+      host = "127.0.0.1";
       port = port + 1000;
     }
     return new HostAndPort(host, port);
@@ -34,7 +34,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
 
   // don't map IP addresses so that we try to connect with host 127.0.0.1
   private final HostAndPortMapper portMap = (HostAndPort hostAndPort) -> {
-    if ("localhost".equals(hostAndPort.getHost())) {
+    if ("127.0.0.1".equals(hostAndPort.getHost())) {
       return hostAndPort;
     }
     return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() + 1000);
@@ -47,7 +47,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
 
   @Test
   public void testSSLDiscoverNodesAutomatically() {
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
+    try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("127.0.0.1", 8379)),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 //      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
@@ -60,7 +60,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
       jc.get("foo");
     }
 
-    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
+    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .hostAndPortMapper(hostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 //      Map<String, JedisPool> clusterNodes = jc2.getClusterNodes();
@@ -75,7 +75,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
 
   @Test
   public void testSSLWithoutPortMap() {
-    try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("localhost", 8379)),
+    try (JedisCluster jc = new JedisCluster(Collections.singleton(new HostAndPort("127.0.0.1", 8379)),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 //      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
@@ -102,7 +102,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslParameters(sslParameters).hostAndPortMapper(portMap).build(), DEFAULT_REDIRECTIONS,
         DEFAULT_POOL_CONFIG)) {
@@ -110,7 +110,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
       Assert.fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
     } catch (JedisClusterOperationException e) {
-      // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
+      // initial connection to 127.0.0.1 works, but subsequent connections to nodes use 127.0.0.1
       // and fail hostname verification
       assertEquals("No more cluster attempts left.", e.getMessage());
     }
@@ -121,7 +121,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -152,7 +152,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
     HostnameVerifier localhostVerifier = new LocalhostVerifier();
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -160,7 +160,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
       Assert.fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
     } catch (JedisClusterOperationException e) {
-      // initial connection made with 'localhost' but subsequent connections to nodes use 127.0.0.1
+      // initial connection made with '127.0.0.1' but subsequent connections to nodes use 127.0.0.1
       // which causes custom hostname verification to fail
       assertEquals("No more cluster attempts left.", e.getMessage());
     }
@@ -178,8 +178,8 @@ public class SSLJedisClusterTest extends JedisClusterTest {
 //      assertEquals("No reachable node in cluster.", e.getMessage());
       assertEquals("Could not initialize cluster slots cache.", e.getMessage());
     }
-    
-    try (JedisCluster jc3 = new JedisCluster(new HostAndPort("localhost", 8379),
+
+    try (JedisCluster jc3 = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .hostnameVerifier(localhostVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -191,7 +191,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   public void connectWithCustomSocketFactory() throws Exception {
     final SSLSocketFactory sslSocketFactory = SSLJedisTest.createTrustStoreSslSocketFactory();
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslSocketFactory(sslSocketFactory).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -203,7 +203,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   public void connectWithEmptyTrustStore() throws Exception {
     final SSLSocketFactory sslSocketFactory = SSLJedisTest.createTrustNoOneSslSocketFactory();
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslSocketFactory(sslSocketFactory).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 //      jc.get("key");
@@ -219,7 +219,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
   public void defaultHostAndPortUsedIfMapReturnsNull() {
     HostAndPortMapper nullHostAndPortMap = (HostAndPort hostAndPort) -> null;
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 7379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 7379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(false)
             .hostAndPortMapper(nullHostAndPortMap).build(), DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
 
@@ -236,7 +236,7 @@ public class SSLJedisClusterTest extends JedisClusterTest {
     @Override
     public boolean verify(String hostname, SSLSession session) {
       if (hostname.equals("127.0.0.1")) {
-        hostname = "localhost";
+        hostname = "127.0.0.1";
       }
       return super.verify(hostname, session);
     }

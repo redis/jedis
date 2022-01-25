@@ -48,7 +48,7 @@ pidfile /tmp/redis4.pid
 logfile /tmp/redis4.log
 save ""
 appendonly no
-slaveof localhost 6381
+slaveof 127.0.0.1 6381
 endef
 
 define REDIS5_CONF
@@ -61,7 +61,7 @@ pidfile /tmp/redis5.pid
 logfile /tmp/redis5.log
 save ""
 appendonly no
-slaveof localhost 6379
+slaveof 127.0.0.1 6379
 endef
 
 define REDIS6_CONF
@@ -86,7 +86,7 @@ pidfile /tmp/redis7.pid
 logfile /tmp/redis7.log
 save ""
 appendonly no
-slaveof localhost 6384
+slaveof 127.0.0.1 6384
 endef
 
 define REDIS8_CONF
@@ -131,7 +131,7 @@ pidfile /tmp/redis11.pid
 logfile /tmp/redis11.log
 save ""
 appendonly no
-replicaof localhost 6388
+replicaof 127.0.0.1 6388
 endef
 
 # SENTINELS
@@ -462,26 +462,6 @@ release:
 	mvn release:prepare
 	mvn release:perform -DskipTests
 	make stop
-
-travis-install:
-	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-	sudo apt-get -y update
-	sudo apt-get install -y gcc-8 g++-8
-	cd /usr/bin ;\
-	sudo ln -sf gcc-8 gcc ;\
-	sudo ln -sf g++-8 g++
-	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
-	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git
-	
-circleci-install:
-	sudo apt-get install -y gcc-8 g++-8
-	cd /usr/bin ;\
-	sudo ln -sf gcc-8 gcc ;\
-	sudo ln -sf g++-8 g++
-	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
-	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git	
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

@@ -151,13 +151,13 @@ public class JedisPoolTest {
 
   @Test
   public void startWithUrlString() {
-    try (Jedis j = new Jedis("localhost", 6380)) {
+    try (Jedis j = new Jedis("127.0.0.1", 6380)) {
       j.auth("foobared");
       j.select(2);
       j.set("foo", "bar");
     }
 
-    try (JedisPool pool = new JedisPool("redis://:foobared@localhost:6380/2");
+    try (JedisPool pool = new JedisPool("redis://:foobared@127.0.0.1:6380/2");
         Jedis jedis = pool.getResource()) {
       assertEquals("PONG", jedis.ping());
       assertEquals("bar", jedis.get("foo"));
@@ -166,13 +166,13 @@ public class JedisPoolTest {
 
   @Test
   public void startWithUrl() throws URISyntaxException {
-    try (Jedis j = new Jedis("localhost", 6380)) {
+    try (Jedis j = new Jedis("127.0.0.1", 6380)) {
       j.auth("foobared");
       j.select(2);
       j.set("foo", "bar");
     }
 
-    try (JedisPool pool = new JedisPool(new URI("redis://:foobared@localhost:6380/2"));
+    try (JedisPool pool = new JedisPool(new URI("redis://:foobared@127.0.0.1:6380/2"));
         Jedis jedis = pool.getResource()) {
       assertEquals("bar", jedis.get("foo"));
     }
@@ -180,13 +180,13 @@ public class JedisPoolTest {
 
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
-    new JedisPool(new URI("localhost:6380")).close();
+    new JedisPool(new URI("127.0.0.1:6380")).close();
   }
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
-    new JedisPool("redis://localhost:6380").close();
-    new JedisPool(new URI("redis://localhost:6380")).close();
+    new JedisPool("redis://127.0.0.1:6380").close();
+    new JedisPool(new URI("redis://127.0.0.1:6380")).close();
   }
 
   @Test
@@ -377,7 +377,7 @@ public class JedisPoolTest {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
-        "wrong pass"); Jedis jedis = new Jedis("redis://:foobared@localhost:6379/")) {
+        "wrong pass"); Jedis jedis = new Jedis("redis://:foobared@127.0.0.1:6379/")) {
       int currentClientCount = getClientCount(jedis.clientList());
       try {
         pool.getResource();

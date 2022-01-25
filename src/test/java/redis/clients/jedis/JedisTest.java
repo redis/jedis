@@ -78,7 +78,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void timeoutConnection() throws Exception {
-    Jedis jedis = new Jedis("localhost", 6379, 15000);
+    Jedis jedis = new Jedis("127.0.0.1", 6379, 15000);
     jedis.auth("foobared");
     String timeout = jedis.configGet("timeout").get(1);
     jedis.configSet("timeout", "1");
@@ -92,7 +92,7 @@ public class JedisTest extends JedisCommandsTestBase {
     jedis.close();
 
     // reset config
-    jedis = new Jedis("localhost", 6379);
+    jedis = new Jedis("127.0.0.1", 6379);
     jedis.auth("foobared");
     jedis.configSet("timeout", timeout);
     jedis.close();
@@ -100,7 +100,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void infiniteTimeout() throws Exception {
-    try (Jedis timeoutJedis = new Jedis("localhost", 6379, 350, 350, 350)) {
+    try (Jedis timeoutJedis = new Jedis("127.0.0.1", 6379, 350, 350, 350)) {
       timeoutJedis.auth("foobared");
       try {
         timeoutJedis.blpop(0, "foo");
@@ -120,7 +120,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
-    Jedis j = new Jedis(new URI("localhost:6380"));
+    Jedis j = new Jedis(new URI("127.0.0.1:6380"));
   }
 //
 //  @Test
@@ -134,13 +134,13 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void startWithUrl() {
-    try (Jedis j = new Jedis("localhost", 6380)) {
+    try (Jedis j = new Jedis("127.0.0.1", 6380)) {
       j.auth("foobared");
       j.select(2);
       j.set("foo", "bar");
     }
 
-    try (Jedis j2 = new Jedis("redis://:foobared@localhost:6380/2")) {
+    try (Jedis j2 = new Jedis("redis://:foobared@127.0.0.1:6380/2")) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -148,13 +148,13 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void startWithUri() throws URISyntaxException {
-    try (Jedis j = new Jedis("localhost", 6380)) {
+    try (Jedis j = new Jedis("127.0.0.1", 6380)) {
       j.auth("foobared");
       j.select(2);
       j.set("foo", "bar");
     }
 
-    try (Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2"))) {
+    try (Jedis jedis = new Jedis(new URI("redis://:foobared@127.0.0.1:6380/2"))) {
       assertEquals("PONG", jedis.ping());
       assertEquals("bar", jedis.get("foo"));
     }
@@ -175,16 +175,16 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    try (Jedis j1 = new Jedis("redis://localhost:6380")) {
+    try (Jedis j1 = new Jedis("redis://127.0.0.1:6380")) {
       j1.auth("foobared");
-//      assertEquals("localhost", j1.getClient().getHost());
+//      assertEquals("127.0.0.1", j1.getClient().getHost());
 //      assertEquals(6380, j1.getClient().getPort());
       assertEquals(0, j1.getDB());
     }
 
-    try (Jedis j2 = new Jedis("redis://localhost:6380/")) {
+    try (Jedis j2 = new Jedis("redis://127.0.0.1:6380/")) {
       j2.auth("foobared");
-//      assertEquals("localhost", j2.getClient().getHost());
+//      assertEquals("127.0.0.1", j2.getClient().getHost());
 //      assertEquals(6380, j2.getClient().getPort());
       assertEquals(0, j2.getDB());
     }
@@ -195,7 +195,7 @@ public class JedisTest extends JedisCommandsTestBase {
     int fakePort = 6378;
     int timeoutMillis = 3250;
     int deltaMillis = 500;
-    URI uri = new URI(String.format("redis://localhost:%d/1", fakePort));
+    URI uri = new URI(String.format("redis://127.0.0.1:%d/1", fakePort));
     Instant start = Instant.now();
 
     try (ServerSocket server = new ServerSocket(fakePort);

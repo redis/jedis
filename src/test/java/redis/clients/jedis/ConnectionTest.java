@@ -30,13 +30,13 @@ public class ConnectionTest {
 
   @Test
   public void connectIfNotConnectedWhenSettingTimeoutInfinite() {
-    client = new Connection("localhost", 6379);
+    client = new Connection("127.0.0.1", 6379);
     client.setTimeoutInfinite();
   }
 
   @Test
   public void checkCloseable() {
-    client = new Connection("localhost", 6379);
+    client = new Connection("127.0.0.1", 6379);
     client.connect();
     client.close();
   }

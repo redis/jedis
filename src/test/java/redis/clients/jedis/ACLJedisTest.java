@@ -71,12 +71,12 @@ public class ACLJedisTest extends JedisCommandsTestBase {
 
   @Test
   public void startWithUrl() {
-    try (Jedis j = new Jedis("localhost", 6379)) {
+    try (Jedis j = new Jedis("127.0.0.1", 6379)) {
       assertEquals("OK", j.auth("acljedis", "fizzbuzz"));
       assertEquals("OK", j.select(2));
       j.set("foo", "bar");
     }
-    try (Jedis j2 = new Jedis("redis://acljedis:fizzbuzz@localhost:6379/2")) {
+    try (Jedis j2 = new Jedis("redis://acljedis:fizzbuzz@127.0.0.1:6379/2")) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -84,12 +84,12 @@ public class ACLJedisTest extends JedisCommandsTestBase {
 
   @Test
   public void startWithUri() throws URISyntaxException {
-    try (Jedis j = new Jedis("localhost", 6379)) {
+    try (Jedis j = new Jedis("127.0.0.1", 6379)) {
       assertEquals("OK", j.auth("acljedis", "fizzbuzz"));
       assertEquals("OK", j.select(2));
       j.set("foo", "bar");
     }
-    try (Jedis j2 = new Jedis(new URI("redis://acljedis:fizzbuzz@localhost:6379/2"))) {
+    try (Jedis j2 = new Jedis(new URI("redis://acljedis:fizzbuzz@127.0.0.1:6379/2"))) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -99,12 +99,12 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   public void connectWithURICredentials() throws URISyntaxException {
     jedis.set("foo", "bar");
 
-    try (Jedis j1 = new Jedis(new URI("redis://default:foobared@localhost:6379"))) {
+    try (Jedis j1 = new Jedis(new URI("redis://default:foobared@127.0.0.1:6379"))) {
       assertEquals("PONG", j1.ping());
       assertEquals("bar", j1.get("foo"));
     }
 
-    try (Jedis j2 = new Jedis(new URI("redis://acljedis:fizzbuzz@localhost:6379"))) {
+    try (Jedis j2 = new Jedis(new URI("redis://acljedis:fizzbuzz@127.0.0.1:6379"))) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -112,16 +112,16 @@ public class ACLJedisTest extends JedisCommandsTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    try (Jedis j1 = new Jedis("redis://localhost:6379")) {
+    try (Jedis j1 = new Jedis("redis://127.0.0.1:6379")) {
       assertEquals("OK", j1.auth("acljedis", "fizzbuzz"));
-//      assertEquals("localhost", j1.getClient().getHost());
+//      assertEquals("127.0.0.1", j1.getClient().getHost());
 //      assertEquals(6379, j1.getClient().getPort());
       assertEquals(0, j1.getDB());
     }
 
-    try (Jedis j2 = new Jedis("redis://localhost:6379/")) {
+    try (Jedis j2 = new Jedis("redis://127.0.0.1:6379/")) {
       assertEquals("OK", j2.auth("acljedis", "fizzbuzz"));
-//      assertEquals("localhost", j2.getClient().getHost());
+//      assertEquals("127.0.0.1", j2.getClient().getHost());
 //      assertEquals(6379, j2.getClient().getPort());
       assertEquals(0, j2.getDB());
     }

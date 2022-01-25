@@ -52,39 +52,39 @@ public class JedisPooledTest {
 
   @Test
   public void startWithUrlString() {
-    try (Jedis j = new Jedis("localhost", 6380)) {
+    try (Jedis j = new Jedis("127.0.0.1", 6380)) {
       j.auth("foobared");
       j.select(2);
       j.set("foo", "bar");
     }
 
-    try (JedisPooled pool = new JedisPooled("redis://:foobared@localhost:6380/2")) {
+    try (JedisPooled pool = new JedisPooled("redis://:foobared@127.0.0.1:6380/2")) {
       assertEquals("bar", pool.get("foo"));
     }
   }
 
   @Test
   public void startWithUrl() throws URISyntaxException {
-    try (Jedis j = new Jedis("localhost", 6380)) {
+    try (Jedis j = new Jedis("127.0.0.1", 6380)) {
       j.auth("foobared");
       j.select(2);
       j.set("foo", "bar");
     }
 
-    try (JedisPooled pool = new JedisPooled(new URI("redis://:foobared@localhost:6380/2"))) {
+    try (JedisPooled pool = new JedisPooled(new URI("redis://:foobared@127.0.0.1:6380/2"))) {
       assertEquals("bar", pool.get("foo"));
     }
   }
 
   @Test(expected = Exception.class)
   public void shouldThrowExceptionForInvalidURI() throws URISyntaxException {
-    new JedisPooled(new URI("localhost:6380")).close();
+    new JedisPooled(new URI("127.0.0.1:6380")).close();
   }
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
-    new JedisPooled("redis://localhost:6380").close();
-    new JedisPooled(new URI("redis://localhost:6380")).close();
+    new JedisPooled("redis://127.0.0.1:6380").close();
+    new JedisPooled(new URI("redis://127.0.0.1:6380")).close();
   }
 
   @Test

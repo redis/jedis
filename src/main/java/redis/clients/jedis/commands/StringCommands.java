@@ -25,9 +25,9 @@ public interface StringCommands {
 
   /**
    * <b><a href="http://redis.io/commands/set">Set Command</a></b>
-   * Similar to {@link StringCommands#set(String, String) SET} but with optional params.
+   * Set the string value as value of the key. Can be used with optional params.
    * <p>
-   * Time complexity: O(1)
+   * Time complexity: O(1)<
    * @param key
    * @param value
    * @param params {@link SetParams}
@@ -370,7 +370,8 @@ public interface StringCommands {
   long bitcount(String key);
 
   /**
-   * Similar to {@link StringCommands#bitcount(String) BITCOUNT} withing a range.
+   * <b><a href="http://redis.io/commands/bitcount">Bitcount Command</a></b>
+   * Count the number of set bits (population counting) in a string only in an interval start and end.
    * <p>
    * Like for the GETRANGE command start and end can contain negative values in order to index bytes
    * starting from the end of the string, where -1 is the last byte, -2 is the penultimate, and so forth.
@@ -383,8 +384,7 @@ public interface StringCommands {
   long bitcount(String key, long start, long end);
 
   /**
-   * Similar to {@link StringCommands#bitcount(String, long, long) BITCOUNT} with BYTE|BIT option.
-   * <p>
+   * @see StringCommands#bitcount(String, long, long) with BYTE|BIT option.
    * @param key
    * @param start byte start index
    * @param end byte end index
@@ -404,7 +404,8 @@ public interface StringCommands {
   long bitpos(String key, boolean value);
 
   /**
-   * Similar to {@link StringCommands#bitpos(String, boolean) BITPOS} with optional params.
+   * <b><a href="http://redis.io/commands/bitpos">Bitpos Command</a></b>
+   * Return the position of the first bit set to 1 or 0 in a string.
    * <p>
    * @param key
    * @param value the bit value

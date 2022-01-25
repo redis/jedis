@@ -15,14 +15,20 @@ public interface KeyCommands {
    * <b><a href="http://redis.io/commands/exists">Exists Command</a></b>
    * Test if the specified key exist.
    * <p>
-   * Time complexity: O(N)
+   * Time complexity: O(1)
    * @param key
-   * @return True is the key exists, False otherwise
+   * @return True if the key exists, False otherwise
    */
   boolean exists(String key);
 
   /**
-   * Similar to {@link KeyCommands#exists(String) EXISTS} with multiple keys.
+   /**
+   * <b><a href="http://redis.io/commands/exists">Exists Command</a></b>
+   * Test if the specified keys exist.
+   * <p>
+   * Time complexity: O(N)
+   * @param keys
+   * @return Integer reply, specifically the number of keys that exist from those specified as <i>keys</i>.
    */
   long exists(String... keys);
 
@@ -167,26 +173,28 @@ public interface KeyCommands {
    * The TTL command returns the remaining time to live in seconds of a key that has an
    * {@link KeyCommands#expire(String, long) EXPIRE} set. This introspection capability allows a Redis
    * connection to check how many seconds a given key will continue to be part of the dataset.
+   * <p>
+   * Time complexity: O(1)
    * @param key
-   * @return Integer reply, returns the remaining time to live in seconds of a key that has an
-   *         EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
-   *         returned.
+   * @return Integer reply, TTL in seconds, or a negative value in order to signal an error
    */
   long ttl(String key);
 
   /**
    * <b><a href="http://redis.io/commands/pttl">PTTL Command</a></b>
-   * Similar to {@link KeyCommands#ttl(String) TTL} returns in milliseconds.
+   * The PTTL command returns the remaining time to live in milliseconds of a key that has an
+   * {@link KeyCommands#expire(String, long) EXPIRE} set.
+   * <p>
+   * Time complexity: O(1)
    * @param key
-   * @return Integer reply, returns the remaining time to live in milliseconds of a key that has an
-   *         EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
-   *         returned.
+   * @return Integer reply, TTL in milliseconds, or a negative value in order to signal an error
    */
   long pttl(String key);
 
   /**
    * <b><a href="http://redis.io/commands/touch">Touch Command</a></b>
    * Alters the last access time of a key. A key is ignored if it does not exist.
+   * <p>
    * Time complexity: O(N) where N is the number of keys that will be touched.
    * @param key
    * @return Integer reply: The number of keys that were touched.
@@ -196,6 +204,7 @@ public interface KeyCommands {
   /**
    * <b><a href="http://redis.io/commands/touch">Touch Command</a></b>
    * Alters the last access time of a key(s). A key is ignored if it does not exist.
+   * <p>
    * Time complexity: O(N) where N is the number of keys that will be touched.
    * @param keys
    * @return Integer reply: The number of keys that were touched.
@@ -210,7 +219,7 @@ public interface KeyCommands {
    * numeric with elements being compared as double precision floating point numbers. This is the
    * simplest form of SORT.
    * <p>
-   * @see #sort(String, SortingParams) for examples
+   * @see KeyCommands#sort(String, SortingParams) for examples
    * @param key
    * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
    *         list of numbers ordered from the smallest to the biggest number.
@@ -218,7 +227,7 @@ public interface KeyCommands {
   List<String> sort(String key);
 
   /**
-   * Similar to {@link KeyCommands#sort(String)}, stores the answer in dstkey.
+   * @see KeyCommands#sort(String) store the result in <i>dstkey</i>.
    * @param key
    * @param dstkey
    * @return The number of elements stored at dstkey.
@@ -300,7 +309,7 @@ public interface KeyCommands {
   List<String> sort(String key, SortingParams sortingParameters);
 
   /**
-   * Similar to {@link KeyCommands#sort(String, SortingParams, String)}, stores the answer in dstkey.
+   * @see KeyCommands#sort(String, SortingParams, String) store the result in <i>dstkey</i>.
    * @param key
    * @param sortingParameters {@link SortingParams}
    * @param dstkey
@@ -320,10 +329,12 @@ public interface KeyCommands {
   long del(String key);
 
   /**
-   * Similar to {@link KeyCommands#del(String) DEL} with multiple keys.
+   * Remove the specified keys. If a given key does not exist, no operation is performed.
+   * <p>
+   * Time complexity: O(N)
    * @param keys
    * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
-   *         0 if none of the specified key existed
+   *         0 if none of the specified keys existed
    */
   long del(String... keys);
 
@@ -344,7 +355,7 @@ public interface KeyCommands {
   long unlink(String key);
 
   /**
-   * Similar to {@link KeyCommands#unlink(String) UNLINK} with multiple keys.
+   * @see KeyCommands#unlink(String) can be used with multiple keys.
    * @param keys
    * @return Integer reply: The number of keys that were unlinked
    */

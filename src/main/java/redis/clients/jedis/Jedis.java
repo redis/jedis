@@ -906,9 +906,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(byte[])
-   * @see #decr(byte[])
-   * @see #incrBy(byte[], long)
+   * @see Jedis#incr(byte[])
+   * @see Jedis#decr(byte[])
+   * @see Jedis#incrBy(byte[], long)
    * @param key
    * @param decrement
    * @return Integer reply, this commands will reply with the new value of key after the decrement.
@@ -930,9 +930,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(byte[])
-   * @see #incrBy(byte[], long)
-   * @see #decrBy(byte[], long)
+   * @see Jedis#incr(byte[])
+   * @see Jedis#incrBy(byte[], long)
+   * @see Jedis#decrBy(byte[], long)
    * @param key
    * @return Integer reply, this commands will reply with the new value of key after the decrement.
    */
@@ -953,9 +953,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(byte[])
-   * @see #decr(byte[])
-   * @see #decrBy(byte[], long)
+   * @see Jedis#incr(byte[])
+   * @see Jedis#decr(byte[])
+   * @see Jedis#decrBy(byte[], long)
    * @param key
    * @param increment
    * @return Integer reply, this commands will reply with the new value of key after the increment.
@@ -978,9 +978,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * negative value will work as expected.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(byte[])
-   * @see #decr(byte[])
-   * @see #decrBy(byte[], long)
+   * @see Jedis#incr(byte[])
+   * @see Jedis#decr(byte[])
+   * @see Jedis#decrBy(byte[], long)
    * @param key the key to increment
    * @param increment the value to increment by
    * @return Integer reply, this commands will reply with the new value of key after the increment.
@@ -1002,9 +1002,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incrBy(byte[], long)
-   * @see #decr(byte[])
-   * @see #decrBy(byte[], long)
+   * @see Jedis#incrBy(byte[], long)
+   * @see Jedis#decr(byte[])
+   * @see Jedis#decrBy(byte[], long)
    * @param key
    * @return Integer reply, this commands will reply with the new value of key after the increment.
    */
@@ -1463,7 +1463,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * O(N) (with N being the length of the list), setting the first or last elements of the list is
    * O(1).
-   * @see #lindex(byte[], long)
+   * @see Jedis#lindex(byte[], long)
    * @param key
    * @param index
    * @param value
@@ -1502,7 +1502,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * "b","c".
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
-   * @see #rpop(byte[])
+   * @see Jedis#rpop(byte[])
    * @param key
    * @return Bulk reply
    */
@@ -1524,7 +1524,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * 'nil' is returned.
    * <p>
    * Time complexity: O(N) where N is the number of elements in the list
-   * @see #lpos(byte[], byte[])
+   * @see Jedis#lpos(byte[], byte[])
    * @param key
    * @param element
    * @return Integer Reply, specifically: The index of first matching element in the list. Value will
@@ -1566,7 +1566,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * is returned.
    * <p>
    * Time complexity: O(N) where N is the number of elements in the list
-   * @see #lpos(byte[], byte[], LPosParams, long)
+   * @see Jedis#lpos(byte[], byte[], LPosParams, long)
    * @param key
    * @param element
    * @param params
@@ -1586,7 +1586,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * "b","c".
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
-   * @see #lpop(byte[])
+   * @see Jedis#lpop(byte[])
    * @param key
    * @return Bulk reply
    */
@@ -2036,7 +2036,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b>
    * <p>
    * O(log(N))
-   * @see #zrevrank(byte[], byte[])
+   * @see Jedis#zrevrank(byte[], byte[])
    * @param key
    * @param member
    * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
@@ -2058,7 +2058,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b>
    * <p>
    * O(log(N))
-   * @see #zrank(byte[], byte[])
+   * @see Jedis#zrank(byte[], byte[])
    * @param key
    * @param member
    * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
@@ -2214,9 +2214,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Sort the elements contained in the List, Set, or Sorted Set value at key. By default sorting is
    * numeric with elements being compared as double precision floating point numbers. This is the
    * simplest form of SORT.
-   * @see #sort(byte[], byte[])
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[], SortingParams, byte[])
+   * @see Jedis#sort(byte[], byte[])
+   * @see Jedis#sort(byte[], SortingParams)
+   * @see Jedis#sort(byte[], SortingParams, byte[])
    * @param key
    * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
    *         list of numbers ordered from the smallest to the biggest number.
@@ -2295,8 +2295,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
-   * @see #sort(byte[])
-   * @see #sort(byte[], SortingParams, byte[])
+   * @see Jedis#sort(byte[])
+   * @see Jedis#sort(byte[], SortingParams, byte[])
    * @param key
    * @param sortingParameters
    * @return a list of sorted elements.
@@ -2309,9 +2309,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[])
-   * @see #sort(byte[], byte[])
+   * @see Jedis#sort(byte[], SortingParams)
+   * @see Jedis#sort(byte[])
+   * @see Jedis#sort(byte[], byte[])
    * @param key
    * @param sortingParameters
    * @param dstkey
@@ -2329,9 +2329,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
    * at dstkey. By default sorting is numeric with elements being compared as double precision
    * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(byte[])
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[], SortingParams, byte[])
+   * @see Jedis#sort(byte[])
+   * @see Jedis#sort(byte[], SortingParams)
+   * @see Jedis#sort(byte[], SortingParams, byte[])
    * @param key
    * @param dstkey
    * @return The number of elements of the list at dstkey.
@@ -2622,11 +2622,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(byte[], double, double)
-   * @see #zrangeByScore(byte[], double, double, int, int)
-   * @see #zrangeByScoreWithScores(byte[], double, double)
-   * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
-   * @see #zcount(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double, int, int)
+   * @see Jedis#zcount(byte[], double, double)
    * @param key
    * @param min
    * @param max
@@ -2681,11 +2681,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(byte[], double, double)
-   * @see #zrangeByScore(byte[], double, double, int, int)
-   * @see #zrangeByScoreWithScores(byte[], double, double)
-   * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
-   * @see #zcount(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double, int, int)
+   * @see Jedis#zcount(byte[], double, double)
    * @param key
    * @param min
    * @param max
@@ -2744,11 +2744,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(byte[], double, double)
-   * @see #zrangeByScore(byte[], double, double, int, int)
-   * @see #zrangeByScoreWithScores(byte[], double, double)
-   * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
-   * @see #zcount(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double, int, int)
+   * @see Jedis#zcount(byte[], double, double)
    * @param key
    * @param min
    * @param max
@@ -2803,11 +2803,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(byte[], double, double)
-   * @see #zrangeByScore(byte[], double, double, int, int)
-   * @see #zrangeByScoreWithScores(byte[], double, double)
-   * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
-   * @see #zcount(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double, int, int)
+   * @see Jedis#zcount(byte[], double, double)
    * @param key
    * @param min
    * @param max
@@ -5085,7 +5085,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another connection talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @see #msetnx(String...)
+   * @see Jedis#msetnx(String...)
    * @param keysvalues
    * @return Status code reply Basically +OK as MSET can't fail
    */
@@ -5107,7 +5107,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another connection talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @see #mset(String...)
+   * @see Jedis#mset(String...)
    * @param keysvalues
    * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
    *         least one key already existed)
@@ -5129,9 +5129,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(String)
-   * @see #decr(String)
-   * @see #incrBy(String, long)
+   * @see Jedis#incr(String)
+   * @see Jedis#decr(String)
+   * @see Jedis#incrBy(String, long)
    * @param key
    * @param decrement
    * @return Integer reply, this commands will reply with the new value of key after the increment.
@@ -5153,9 +5153,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(String)
-   * @see #incrBy(String, long)
-   * @see #decrBy(String, long)
+   * @see Jedis#incr(String)
+   * @see Jedis#incrBy(String, long)
+   * @see Jedis#decrBy(String, long)
    * @param key
    * @return Integer reply, this commands will reply with the new value of key after the increment.
    */
@@ -5176,9 +5176,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(String)
-   * @see #decr(String)
-   * @see #decrBy(String, long)
+   * @see Jedis#incr(String)
+   * @see Jedis#decr(String)
+   * @see Jedis#decrBy(String, long)
    * @param key
    * @param increment
    * @return Integer reply, this commands will reply with the new value of key after the increment.
@@ -5221,9 +5221,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incrBy(String, long)
-   * @see #decr(String)
-   * @see #decrBy(String, long)
+   * @see Jedis#incrBy(String, long)
+   * @see Jedis#decr(String)
+   * @see Jedis#decrBy(String, long)
    * @param key
    * @return Integer reply, this commands will reply with the new value of key after the increment.
    */
@@ -5684,7 +5684,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * O(N) (with N being the length of the list), setting the first or last elements of the list is
    * O(1).
-   * @see #lindex(String, long)
+   * @see Jedis#lindex(String, long)
    * @param key
    * @param index
    * @param value
@@ -5723,7 +5723,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * "b","c".
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
-   * @see #rpop(String)
+   * @see Jedis#rpop(String)
    * @param key
    * @return Bulk reply
    */
@@ -5764,7 +5764,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * "a","b".
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
-   * @see #lpop(String)
+   * @see Jedis#lpop(String)
    * @param key
    * @return Bulk reply
    */
@@ -6244,7 +6244,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b>
    * <p>
    * O(log(N))
-   * @see #zrevrank(String, String)
+   * @see Jedis#zrevrank(String, String)
    * @param key
    * @param member
    * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
@@ -6266,7 +6266,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b>
    * <p>
    * O(log(N))
-   * @see #zrank(String, String)
+   * @see Jedis#zrank(String, String)
    * @param key
    * @param member
    * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
@@ -6416,9 +6416,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Sort the elements contained in the List, Set, or Sorted Set value at key. By default sorting is
    * numeric with elements being compared as double precision floating point numbers. This is the
    * simplest form of SORT.
-   * @see #sort(String, String)
-   * @see #sort(String, SortingParams)
-   * @see #sort(String, SortingParams, String)
+   * @see Jedis#sort(String, String)
+   * @see Jedis#sort(String, SortingParams)
+   * @see Jedis#sort(String, SortingParams, String)
    * @param key
    * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
    *         list of numbers ordered from the smallest to the biggest number.
@@ -6497,8 +6497,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
-   * @see #sort(String)
-   * @see #sort(String, SortingParams, String)
+   * @see Jedis#sort(String)
+   * @see Jedis#sort(String, SortingParams, String)
    * @param key
    * @param sortingParameters
    * @return a list of sorted elements.
@@ -6511,9 +6511,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(String, SortingParams)
-   * @see #sort(String)
-   * @see #sort(String, String)
+   * @see Jedis#sort(String, SortingParams)
+   * @see Jedis#sort(String)
+   * @see Jedis#sort(String, String)
    * @param key
    * @param sortingParameters
    * @param dstkey
@@ -6531,9 +6531,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
    * at dstkey. By default sorting is numeric with elements being compared as double precision
    * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(String)
-   * @see #sort(String, SortingParams)
-   * @see #sort(String, SortingParams, String)
+   * @see Jedis#sort(String)
+   * @see Jedis#sort(String, SortingParams)
+   * @see Jedis#sort(String, SortingParams, String)
    * @param key
    * @param dstkey
    * @return The number of elements of the list at dstkey.
@@ -6610,7 +6610,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * it like if inside MULTI/EXEC the time will flow at infinite speed :)
    * <p>
    * Time complexity: O(1)
-   * @see #brpop(int, String...)
+   * @see Jedis#brpop(int, String...)
    * @param timeout
    * @param keys
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
@@ -6684,7 +6684,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * it like if inside MULTI/EXEC the time will flow at infinite speed :)
    * <p>
    * Time complexity: O(1)
-   * @see #blpop(int, String...)
+   * @see Jedis#blpop(int, String...)
    * @param timeout
    * @param keys
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
@@ -6791,12 +6791,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(String, double, double)
-   * @see #zrangeByScore(String, double, double, int, int)
-   * @see #zrangeByScoreWithScores(String, double, double)
-   * @see #zrangeByScoreWithScores(String, String, String)
-   * @see #zrangeByScoreWithScores(String, double, double, int, int)
-   * @see #zcount(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double)
+   * @see Jedis#zrangeByScoreWithScores(String, String, String)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double, int, int)
+   * @see Jedis#zcount(String, double, double)
    * @param key
    * @param min a double or Double.NEGATIVE_INFINITY for "-inf"
    * @param max a double or Double.POSITIVE_INFINITY for "+inf"
@@ -6851,11 +6851,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(String, double, double)
-   * @see #zrangeByScore(String, double, double, int, int)
-   * @see #zrangeByScoreWithScores(String, double, double)
-   * @see #zrangeByScoreWithScores(String, double, double, int, int)
-   * @see #zcount(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double, int, int)
+   * @see Jedis#zcount(String, double, double)
    * @param key
    * @param min
    * @param max
@@ -6914,11 +6914,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(String, double, double)
-   * @see #zrangeByScore(String, double, double, int, int)
-   * @see #zrangeByScoreWithScores(String, double, double)
-   * @see #zrangeByScoreWithScores(String, double, double, int, int)
-   * @see #zcount(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double, int, int)
+   * @see Jedis#zcount(String, double, double)
    * @param key
    * @param min
    * @param max
@@ -6973,11 +6973,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(String, double, double)
-   * @see #zrangeByScore(String, double, double, int, int)
-   * @see #zrangeByScoreWithScores(String, double, double)
-   * @see #zrangeByScoreWithScores(String, double, double, int, int)
-   * @see #zcount(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double, int, int)
+   * @see Jedis#zcount(String, double, double)
    * @param key
    * @param min
    * @param max
@@ -7141,10 +7141,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(String, String...)
-   * @see #zunionstore(String, ZParams, String...)
-   * @see #zinterstore(String, String...)
-   * @see #zinterstore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @return Integer reply, specifically the number of elements in the sorted set at dstkey
@@ -7177,10 +7177,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(String, String...)
-   * @see #zunionstore(String, ZParams, String...)
-   * @see #zinterstore(String, String...)
-   * @see #zinterstore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @param params
@@ -7238,10 +7238,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(String, String...)
-   * @see #zunionstore(String, ZParams, String...)
-   * @see #zinterstore(String, String...)
-   * @see #zinterstore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @return Integer reply, specifically the number of elements in the sorted set at dstkey
@@ -7274,10 +7274,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(String, String...)
-   * @see #zunionstore(String, ZParams, String...)
-   * @see #zinterstore(String, String...)
-   * @see #zinterstore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @param params

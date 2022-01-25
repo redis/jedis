@@ -1,0 +1,53 @@
+name: Jedis Deploy Snapshot
+
+on:
+  push:
+    branches:
+      - 'master'
+      - '[0-9]+.[0-9]+'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clone sources
+        uses: actions/checkout@v2
+
+      - name: Cache paths
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2
+            /var/cache/apt
+          key: ${{ hashFiles('pom.xml') }}
+
+      - name: Set up publishing to maven central
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+
+      - name: install dependencies
+        run: |
+          apt update -q
+          apt install -y stunnel make
+
+      - name: Install gpg key
+        run: |
+          cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+
+      - name: cache dependencies
+        run: |
+          mvn dependency:go-offline
+          mvn --no-transfer-progress \
+              --batch-mode \
+              -Dgpg.passphrase='${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}' \
+              -DskipTests deploy
+        env:
+          MAVEN_USERNAME: ${{secrets.OSSH_USERNAME}}
+          MAVEN_PASSWORD: ${{secrets.OSSH_TOKEN}}

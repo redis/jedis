@@ -44,7 +44,9 @@ public interface KeyPipelineBinaryCommands {
 
   Response<List<byte[]>> sort(byte[] key);
 
-  Response<List<byte[]>> sort(byte[] key, SortingParams sortingParameters);
+  Response<List<byte[]>> sort(byte[] key, SortingParams sortingParams);
+
+  Response<List<byte[]>> sortReadonly(byte[] key, SortingParams sortingParams);
 
   Response<Long> del(byte[] key);
 
@@ -60,7 +62,7 @@ public interface KeyPipelineBinaryCommands {
 
   Response<Long> renamenx(byte[] oldkey, byte[] newkey);
 
-  Response<Long> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
+  Response<Long> sort(byte[] key, SortingParams sortingParams, byte[] dstkey);
 
   Response<Long> sort(byte[] key, byte[] dstkey);
 

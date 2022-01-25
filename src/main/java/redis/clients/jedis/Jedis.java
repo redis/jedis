@@ -2298,13 +2298,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see #sort(byte[])
    * @see #sort(byte[], SortingParams, byte[])
    * @param key
-   * @param sortingParameters
+   * @param sortingParams
    * @return a list of sorted elements.
    */
   @Override
-  public List<byte[]> sort(final byte[] key, final SortingParams sortingParameters) {
+  public List<byte[]> sort(final byte[] key, final SortingParams sortingParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sort(key, sortingParameters));
+    return connection.executeCommand(commandObjects.sort(key, sortingParams));
   }
 
   /**
@@ -2313,14 +2313,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see #sort(byte[])
    * @see #sort(byte[], byte[])
    * @param key
-   * @param sortingParameters
+   * @param sortingParams
    * @param dstkey
    * @return The number of elements of the list at dstkey.
    */
   @Override
-  public long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
+  public long sort(final byte[] key, final SortingParams sortingParams, final byte[] dstkey) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+    return connection.executeCommand(commandObjects.sort(key, sortingParams, dstkey));
   }
 
   /**
@@ -2340,6 +2340,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long sort(final byte[] key, final byte[] dstkey) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sort(key, dstkey));
+  }
+
+  @Override
+  public List<byte[]> sortReadonly(byte[] key, SortingParams sortingParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   /**
@@ -6501,13 +6507,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see #sort(String)
    * @see #sort(String, SortingParams, String)
    * @param key
-   * @param sortingParameters
+   * @param sortingParams
    * @return a list of sorted elements.
    */
   @Override
-  public List<String> sort(final String key, final SortingParams sortingParameters) {
+  public List<String> sort(final String key, final SortingParams sortingParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sort(key, sortingParameters));
+    return connection.executeCommand(commandObjects.sort(key, sortingParams));
   }
 
   /**
@@ -6516,14 +6522,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see #sort(String)
    * @see #sort(String, String)
    * @param key
-   * @param sortingParameters
+   * @param sortingParams
    * @param dstkey
    * @return The number of elements of the list at dstkey.
    */
   @Override
-  public long sort(final String key, final SortingParams sortingParameters, final String dstkey) {
+  public long sort(final String key, final SortingParams sortingParams, final String dstkey) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+    return connection.executeCommand(commandObjects.sort(key, sortingParams, dstkey));
+  }
+
+  @Override
+  public List<String> sortReadonly(String key, SortingParams sortingParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   /**

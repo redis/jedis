@@ -45,9 +45,11 @@ public interface KeyCommands {
 
   long sort(String key, String dstkey);
 
-  List<String> sort(String key, SortingParams sortingParameters);
+  List<String> sort(String key, SortingParams sortingParams);
 
-  long sort(String key, SortingParams sortingParameters, String dstkey);
+  long sort(String key, SortingParams sortingParams, String dstkey);
+
+  List<String> sortReadonly(String key, SortingParams sortingParams);
 
   long del(String key);
 

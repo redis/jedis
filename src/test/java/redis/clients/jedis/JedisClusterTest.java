@@ -735,11 +735,11 @@ public class JedisClusterTest {
 
   @Test
   public void testLocalhostNodeNotAddedWhen127Present() {
-    HostAndPort 127.0.0.1 = new HostAndPort("127.0.0.1", 7379);
+    HostAndPort localhost = new HostAndPort("127.0.0.1", 7379);
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     // cluster node is defined as 127.0.0.1; adding 127.0.0.1 should work,
     // but shouldn't show up.
-    jedisClusterNode.add(127.0.0.1);
+    jedisClusterNode.add(localhost);
     ConnectionPoolConfig config = new ConnectionPoolConfig();
     config.setMaxTotal(1);
 
@@ -748,7 +748,7 @@ public class JedisClusterTest {
 //      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(127.0.0.1)));
+      assertFalse(clusterNodes.containsKey(JedisClusterInfoCache.getNodeKey(localhost)));
     }
   }
 

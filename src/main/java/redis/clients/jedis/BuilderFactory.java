@@ -744,10 +744,10 @@ public final class BuilderFactory {
         // TODO: Proper implementation of ACL V2.
 
         // keys
-        accessControlUser.setKeys(SafeEncoder.encode((byte[]) objectList.get(7)));
+        accessControlUser.addKeys(SafeEncoder.encode((byte[]) objectList.get(7)));
 
         // channels
-        accessControlUser.setChannels(SafeEncoder.encode((byte[]) objectList.get(9)));
+        accessControlUser.addChannels(SafeEncoder.encode((byte[]) objectList.get(9)));
       }
 
       // selectors

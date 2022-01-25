@@ -78,8 +78,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, userInfo.getFlags().size());
     assertEquals(1, userInfo.getPassword().size());
     assertEquals("+@all", userInfo.getCommands());
-//    assertEquals("*", userInfo.getKeys().get(0));
-    assertEquals("~*", userInfo.getKeysString());
+    assertEquals("~*", userInfo.getKeys().get(0));
 
     // create new user
     jedis.aclDelUser(USER_ZZZ);
@@ -463,8 +462,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertThat(userInfo.getCommands(), containsString("+@all"));
     assertThat(userInfo.getCommands(), containsString("-@string"));
     assertThat(userInfo.getCommands(), containsString("+debug|digest"));
-//    assertEquals("testchannel:*", userInfo.getChannels().get(0));
-    assertEquals("&testchannel:*", userInfo.getChannelsString());
+    assertEquals("&testchannel:*", userInfo.getChannels().get(0));
 
     jedis.aclDelUser(USER_ZZZ.getBytes());
 

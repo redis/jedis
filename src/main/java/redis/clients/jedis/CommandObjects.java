@@ -1621,31 +1621,31 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZSCAN).key(key).add(cursor).addParams(params), BuilderFactory.ZSCAN_RESPONSE);
   }
 
-  public final CommandObject<Set<String>> zdiff(String... keys) {
-    return new CommandObject<>(commandArguments(ZDIFF).add(keys.length).keys((Object[]) keys), BuilderFactory.STRING_SET);
+  public final CommandObject<Set<String>> zdiff(String... sets) {
+    return new CommandObject<>(commandArguments(ZDIFF).add(sets.length).keys((Object[]) sets), BuilderFactory.STRING_SET);
   }
 
-  public final CommandObject<Set<Tuple>> zdiffWithScores(String... keys) {
-    return new CommandObject<>(commandArguments(ZDIFF).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<Tuple>> zdiffWithScores(String... sets) {
+    return new CommandObject<>(commandArguments(ZDIFF).add(sets.length).keys((Object[]) sets)
         .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
-  public final CommandObject<Long> zdiffStore(String dstkey, String... keys) {
-    return new CommandObject<>(commandArguments(ZDIFFSTORE).key(dstkey).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  public final CommandObject<Long> zdiffStore(String dstkey, String... sets) {
+    return new CommandObject<>(commandArguments(ZDIFFSTORE).key(dstkey).add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<byte[]>> zdiff(byte[]... keys) {
-    return new CommandObject<>(commandArguments(ZDIFF).add(keys.length).keys((Object[]) keys), BuilderFactory.BINARY_SET);
+  public final CommandObject<Set<byte[]>> zdiff(byte[]... sets) {
+    return new CommandObject<>(commandArguments(ZDIFF).add(sets.length).keys((Object[]) sets), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Set<Tuple>> zdiffWithScores(byte[]... keys) {
-    return new CommandObject<>(commandArguments(ZDIFF).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<Tuple>> zdiffWithScores(byte[]... sets) {
+    return new CommandObject<>(commandArguments(ZDIFF).add(sets.length).keys((Object[]) sets)
         .add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
-  public final CommandObject<Long> zdiffStore(byte[] dstkey, byte[]... keys) {
+  public final CommandObject<Long> zdiffStore(byte[] dstkey, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZDIFFSTORE).key(dstkey)
-        .add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+        .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zinterstore(String dstkey, String... sets) {
@@ -1658,14 +1658,24 @@ public class CommandObjects {
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<String>> zinter(ZParams params, String... keys) {
-    return new CommandObject<>(commandArguments(ZINTER).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<String>> zinter(ZParams params, String... sets) {
+    return new CommandObject<>(commandArguments(ZINTER).add(sets.length).keys((Object[]) sets)
         .addParams(params), BuilderFactory.STRING_SET);
   }
 
-  public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
-    return new CommandObject<>(commandArguments(ZINTER).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, String... sets) {
+    return new CommandObject<>(commandArguments(ZINTER).add(sets.length).keys((Object[]) sets)
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<Long> zintercard(String... sets) {
+    return new CommandObject<>(commandArguments(ZINTERCARD)
+            .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(long limit, String... sets) {
+    return new CommandObject<>(commandArguments(ZINTERCARD)
+            .add(sets.length).keys((Object[]) sets).add(LIMIT).add(limit), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zinterstore(byte[] dstkey, byte[]... sets) {
@@ -1678,13 +1688,23 @@ public class CommandObjects {
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
-    return new CommandObject<>(commandArguments(ZINTER).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Long> zintercard(byte[]... sets) {
+    return new CommandObject<>(commandArguments(ZINTERCARD)
+        .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(long limit, byte[]... sets) {
+    return new CommandObject<>(commandArguments(ZINTERCARD)
+            .add(sets.length).keys((Object[]) sets).add(LIMIT).add(limit), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Set<byte[]>> zinter(ZParams params, byte[]... sets) {
+    return new CommandObject<>(commandArguments(ZINTER).add(sets.length).keys((Object[]) sets)
         .addParams(params), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
-    return new CommandObject<>(commandArguments(ZINTER).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, byte[]... sets) {
+    return new CommandObject<>(commandArguments(ZINTER).add(sets.length).keys((Object[]) sets)
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
@@ -1698,13 +1718,13 @@ public class CommandObjects {
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<String>> zunion(ZParams params, String... keys) {
-    return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<String>> zunion(ZParams params, String... sets) {
+    return new CommandObject<>(commandArguments(ZUNION).add(sets.length).keys((Object[]) sets)
         .addParams(params), BuilderFactory.STRING_SET);
   }
 
-  public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
-    return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, String... sets) {
+    return new CommandObject<>(commandArguments(ZUNION).add(sets.length).keys((Object[]) sets)
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
@@ -1718,13 +1738,13 @@ public class CommandObjects {
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
-    return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<byte[]>> zunion(ZParams params, byte[]... sets) {
+    return new CommandObject<>(commandArguments(ZUNION).add(sets.length).keys((Object[]) sets)
         .addParams(params), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
-    return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
+  public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, byte[]... sets) {
+    return new CommandObject<>(commandArguments(ZUNION).add(sets.length).keys((Object[]) sets)
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
   // Sorted Set commands

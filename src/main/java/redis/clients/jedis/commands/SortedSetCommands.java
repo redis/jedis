@@ -129,23 +129,27 @@ public interface SortedSetCommands {
 
   KeyedZSetElement bzpopmin(double timeout, String... keys);
 
-  Set<String> zdiff(String... keys);
+  Set<String> zdiff(String... sets);
 
-  Set<Tuple> zdiffWithScores(String... keys);
+  Set<Tuple> zdiffWithScores(String... sets);
 
-  long zdiffStore(String dstkey, String... keys);
+  long zdiffStore(String dstkey, String... sets);
 
   long zinterstore(String dstkey, String... sets);
 
   long zinterstore(String dstkey, ZParams params, String... sets);
 
-  Set<String> zinter(ZParams params, String... keys);
+  Set<String> zinter(ZParams params, String... sets);
 
-  Set<Tuple> zinterWithScores(ZParams params, String... keys);
+  Set<Tuple> zinterWithScores(ZParams params, String... sets);
 
-  Set<String> zunion(ZParams params, String... keys);
+  long zintercard(String... sets);
 
-  Set<Tuple> zunionWithScores(ZParams params, String... keys);
+  long zintercard(long limit, String... sets);
+
+  Set<String> zunion(ZParams params, String... sets);
+
+  Set<Tuple> zunionWithScores(ZParams params, String... sets);
 
   long zunionstore(String dstkey, String... sets);
 

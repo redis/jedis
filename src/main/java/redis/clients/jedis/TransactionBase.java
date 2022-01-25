@@ -1188,6 +1188,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Long> zintercard(String... sets) {
+    return appendCommand(commandObjects.zintercard(sets));
+  }
+
+  @Override
+  public Response<Long> zintercard(long limit, String... sets) {
+    return appendCommand(commandObjects.zintercard(limit, sets));
+  }
+
+  @Override
   public Response<Set<String>> zunion(ZParams params, String... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
@@ -2692,6 +2702,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return appendCommand(commandObjects.zinterstore(dstkey, params, sets));
+  }
+
+  @Override
+  public Response<Long> zintercard(byte[]... sets) {
+    return appendCommand(commandObjects.zintercard(sets));
+  }
+
+  @Override
+  public Response<Long> zintercard(long limit, byte[]... sets) {
+    return appendCommand(commandObjects.zintercard(limit, sets));
   }
 
   @Override

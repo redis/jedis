@@ -130,23 +130,27 @@ public interface SortedSetPipelineCommands {
 
   Response<KeyedZSetElement> bzpopmin(double timeout, String... keys);
 
-  Response<Set<String>> zdiff(String... keys);
+  Response<Set<String>> zdiff(String... sets);
 
-  Response<Set<Tuple>> zdiffWithScores(String... keys);
+  Response<Set<Tuple>> zdiffWithScores(String... sets);
 
-  Response<Long> zdiffStore(String dstKey, String... keys);
+  Response<Long> zdiffStore(String dstKey, String... sets);
 
   Response<Long> zinterstore(String dstKey, String... sets);
 
   Response<Long> zinterstore(String dstKey, ZParams params, String... sets);
 
-  Response<Set<String>> zinter(ZParams params, String... keys);
+  Response<Set<String>> zinter(ZParams params, String... sets);
 
-  Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys);
+  Response<Set<Tuple>> zinterWithScores(ZParams params, String... sets);
 
-  Response<Set<String>> zunion(ZParams params, String... keys);
+  Response<Long> zintercard(String... sets);
 
-  Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys);
+  Response<Long> zintercard(long limit, String... sets);
+
+  Response<Set<String>> zunion(ZParams params, String... sets);
+
+  Response<Set<Tuple>> zunionWithScores(ZParams params, String... sets);
 
   Response<Long> zunionstore(String dstKey, String... sets);
 

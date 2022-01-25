@@ -2929,24 +2929,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
  resulting sorted set, it is returned to the connection.
    * @param params
-   * @param keys
+   * @param sets
    */
   @Override
-  public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
+  public Set<byte[]> zunion(final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zunion(params, keys));
+    return connection.executeCommand(commandObjects.zunion(params, sets));
   }
 
   /**
    * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
  resulting sorted set, it is returned to the connection.
    * @param params
-   * @param keys
+   * @param sets
    */
   @Override
-  public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
+  public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zunionWithScores(params, keys));
+    return connection.executeCommand(commandObjects.zunionWithScores(params, sets));
   }
 
   /**
@@ -3017,24 +3017,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
    * the resulting sorted set, it is returned to the connection.
    * @param params
-   * @param keys
+   * @param sets
    */
   @Override
-  public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
+  public Set<byte[]> zinter(final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinter(params, keys));
+    return connection.executeCommand(commandObjects.zinter(params, sets));
   }
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
    * the resulting sorted set, it is returned to the connection.
    * @param params
-   * @param keys
+   * @param sets
    */
   @Override
-  public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
+  public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterWithScores(params, keys));
+    return connection.executeCommand(commandObjects.zinterWithScores(params, sets));
   }
 
   /**
@@ -3100,6 +3100,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long zinterstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zinterstore(dstkey, params, sets));
+  }
+
+  @Override
+  public long zintercard(byte[]... sets) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(sets));
+  }
+
+  @Override
+  public long zintercard(long limit, byte[]... sets) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(limit, sets));
   }
 
   @Override
@@ -7100,24 +7112,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
    * resulting sorted set, it is returned to the connection.
    * @param params
-   * @param keys
+   * @param sets
    */
   @Override
-  public Set<String> zunion(ZParams params, String... keys) {
+  public Set<String> zunion(ZParams params, String... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zunion(params, keys));
+    return connection.executeCommand(commandObjects.zunion(params, sets));
   }
 
   /**
    * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of
    * storing the resulting sorted set, it is returned to the connection.
    * @param params
-   * @param keys
+   * @param sets
    */
   @Override
-  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+  public Set<Tuple> zunionWithScores(ZParams params, String... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zunionWithScores(params, keys));
+    return connection.executeCommand(commandObjects.zunionWithScores(params, sets));
   }
 
   /**
@@ -7197,24 +7209,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
    * the resulting sorted set, it is returned to the connection.
    * @param params
-   * @param keys
+   * @param sets
    */
   @Override
-  public Set<String> zinter(final ZParams params, final String... keys) {
+  public Set<String> zinter(final ZParams params, final String... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinter(params, keys));
+    return connection.executeCommand(commandObjects.zinter(params, sets));
   }
 
   /**
    * Intersect multiple sorted sets, This command is similar to ZINTERSTORE, but instead of storing
    * the resulting sorted set, it is returned to the connection.
    * @param params
-   * @param keys
+   * @param sets
    */
   @Override
-  public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
+  public Set<Tuple> zinterWithScores(final ZParams params, final String... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterWithScores(params, keys));
+    return connection.executeCommand(commandObjects.zinterWithScores(params, sets));
+  }
+
+  @Override
+  public long zintercard(String... sets) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(sets));
+  }
+
+  @Override
+  public long zintercard(long limit, String... sets) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(limit, sets));
   }
 
   /**

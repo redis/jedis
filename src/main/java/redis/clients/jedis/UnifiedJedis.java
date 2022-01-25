@@ -2115,6 +2115,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long zintercard(byte[]... sets) {
+    return executeCommand(commandObjects.zintercard(sets));
+  }
+
+  @Override
+  public long zintercard(long limit, byte[]... sets) {
+    return executeCommand(commandObjects.zintercard(limit, sets));
+  }
+
+  @Override
+  public long zintercard(String... sets) {
+    return executeCommand(commandObjects.zintercard(sets));
+  }
+
+  @Override
+  public long zintercard(long limit, String... sets) {
+    return executeCommand(commandObjects.zintercard(limit, sets));
+  }
+
+  @Override
   public Set<byte[]> zinter(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zinter(params, keys));
   }

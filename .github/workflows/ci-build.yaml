@@ -1,6 +1,7 @@
 name: Jedis CI
 
-on: [push, pull_request]
+on:
+  pull_request:
 
 jobs:
 
@@ -29,8 +30,8 @@ jobs:
 
       - name: install dependencies
         run: |
-          apt update -q
-          apt install -y stunnel make
+          sudo apt update -q
+          sudo apt install -y stunnel make
 
       - name: cache dependencies
         run: |

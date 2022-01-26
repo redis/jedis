@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
@@ -153,7 +154,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.set("foo", "bar");
     jedis.eval("return redis.call('get','foo')");
     String result = (String) jedis.evalshaReadonly("6b1bf486c81ceb7edf3c093f4c48582e38c0e791",
-            new ArrayList<String>(){}, new ArrayList<String>(){});
+            Collections.emptyList(), Collections.emptyList());
 
     assertEquals("bar", result);
   }
@@ -173,7 +174,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.set(SafeEncoder.encode("foo"), SafeEncoder.encode("bar"));
     jedis.eval(SafeEncoder.encode("return redis.call('get','foo')"));
     byte[] result = (byte[]) jedis.evalshaReadonly(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"),
-            new ArrayList<byte[]>(){}, new ArrayList<byte[]>(){});
+            Collections.emptyList(), Collections.emptyList());
 
     assertArrayEquals(SafeEncoder.encode("bar"), result);
   }

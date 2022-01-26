@@ -1129,8 +1129,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Set<String>> zunion(ZParams params, String... sets) {
-    return appendCommand(commandObjects.zunion(params, sets));
+  public Response<Set<String>> zunion(ZParams params, String... keys) {
+    return appendCommand(commandObjects.zunion(params, keys));
   }
 
   @Override

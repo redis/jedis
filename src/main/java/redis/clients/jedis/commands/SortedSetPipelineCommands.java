@@ -148,7 +148,7 @@ public interface SortedSetPipelineCommands {
 
   Response<Long> zintercard(long limit, String... sets);
 
-  Response<Set<String>> zunion(ZParams params, String... sets);
+  Response<Set<String>> zunion(ZParams params, String... keys);
 
   Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys);
 

@@ -147,7 +147,7 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<Long> zintercard(long limit, byte[]... sets);
 
-  Response<Set<byte[]>> zunion(ZParams params, byte[]... sets);
+  Response<Set<byte[]>> zunion(ZParams params, byte[]... keys);
 
   Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys);
 

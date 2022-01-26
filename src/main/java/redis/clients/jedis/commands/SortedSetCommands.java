@@ -147,7 +147,7 @@ public interface SortedSetCommands {
 
   long zintercard(long limit, String... sets);
 
-  Set<String> zunion(ZParams params, String... sets);
+  Set<String> zunion(ZParams params, String... keys);
 
   Set<Tuple> zunionWithScores(ZParams params, String... keys);
 

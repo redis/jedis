@@ -1145,8 +1145,8 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
 
   @Override
-  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... sets) {
-    return appendCommand(commandObjects.zunionWithScores(params, sets));
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+    return appendCommand(commandObjects.zunionWithScores(params, keys));
   }
 
   @Override

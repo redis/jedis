@@ -146,7 +146,7 @@ public interface SortedSetBinaryCommands {
 
   long zintercard(long limit, byte[]... sets);
 
-  Set<byte[]> zunion(ZParams params, byte[]... sets);
+  Set<byte[]> zunion(ZParams params, byte[]... keys);
 
   Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 

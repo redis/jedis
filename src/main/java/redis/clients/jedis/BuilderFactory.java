@@ -699,7 +699,7 @@ public final class BuilderFactory {
         return null;
       }
 
-      List<List<Object>> objectList = (List<List<Object>>) data;
+      List<Object> objectList = (List<Object>) data;
       if (objectList.isEmpty()) {
         return null;
       }
@@ -707,34 +707,51 @@ public final class BuilderFactory {
       AccessControlUser accessControlUser = new AccessControlUser();
 
       // flags
-      List<Object> flags = objectList.get(1);
+      List<Object> flags = (List<Object>) objectList.get(1);
       for (Object f : flags) {
         accessControlUser.addFlag(SafeEncoder.encode((byte[]) f));
       }
 
       // passwords
-      List<Object> passwords = objectList.get(3);
+      List<Object> passwords = (List<Object>) objectList.get(3);
       for (Object p : passwords) {
         accessControlUser.addPassword(SafeEncoder.encode((byte[]) p));
       }
 
       // commands
-      accessControlUser.setCommands(SafeEncoder.encode((byte[]) (Object) objectList.get(5)));
+      accessControlUser.setCommands(SafeEncoder.encode((byte[]) objectList.get(5)));
 
-      // keys
-      List<Object> keys = objectList.get(7);
-      for (Object k : keys) {
-        accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
-      }
+      // Redis 7 -->
+      boolean withSelectors = objectList.size() >= 12;
+      if (!withSelectors) {
 
-      // before redis 6.2, no channels info
-      if (objectList.size() > 9) {
-        List<Object> channels = objectList.get(9);
-        for (Object channel : channels) {
-          accessControlUser.addChannel(SafeEncoder.encode((byte[]) channel));
+        // keys
+        List<Object> keys = (List<Object>) objectList.get(7);
+        for (Object k : keys) {
+          accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
         }
+
+        // Redis 6.2 -->
+        // channels
+        if (objectList.size() >= 10) {
+          List<Object> channels = (List<Object>) objectList.get(9);
+          for (Object channel : channels) {
+            accessControlUser.addChannel(SafeEncoder.encode((byte[]) channel));
+          }
+        }
+
+      } else {
+        // TODO: Proper implementation of ACL V2.
+
+        // keys
+        accessControlUser.addKeys(SafeEncoder.encode((byte[]) objectList.get(7)));
+
+        // channels
+        accessControlUser.addChannels(SafeEncoder.encode((byte[]) objectList.get(9)));
       }
 
+      // selectors
+      // TODO: Proper implementation of ACL V2.
       return accessControlUser;
     }
 

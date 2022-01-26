@@ -381,7 +381,7 @@ public interface StringCommands {
   long bitcount(String key, long start, long end);
 
   /**
-   * @see StringCommands#bitcount(String, long, long) with BYTE|BIT option.
+   * @see StringCommands#bitcount(String, long, long)
    * @param key
    * @param start byte start index
    * @param end byte end index

@@ -30,7 +30,8 @@ public interface SortedSetCommands {
   long zadd(String key, double score, String member);
 
   /**
-   * @see SortedSetCommands#zadd(String, double, String) same with optional params
+   * Similar to {@link SortedSetCommands#zadd(String, double, String) ZADD} but can be used with optional params.
+   * @see SortedSetCommands#zadd(String, double, String)
    * @param key
    * @param score
    * @param member
@@ -41,7 +42,8 @@ public interface SortedSetCommands {
   long zadd(String key, double score, String member, ZAddParams params);
 
   /**
-   * @see SortedSetCommands#zadd(String, double, String) fits to multiple members.
+   * Similar to {@link SortedSetCommands#zadd(String, double, String) ZADD} but for multiple members.
+   * @see SortedSetCommands#zadd(String, double, String)
    * @param key
    * @param scoreMembers
    * @return The number of elements added to the sorted set (excluding score updates).
@@ -49,8 +51,9 @@ public interface SortedSetCommands {
   long zadd(String key, Map<String, Double> scoreMembers);
 
   /**
-   * @see SortedSetCommands#zadd(String, double, String) fits to multiple members,
-   * and can be used with optional params.
+   * Similar to {@link SortedSetCommands#zadd(String, double, String) ZADD} but can be used with optional params,
+   * and fits for multiple members.
+   * @see SortedSetCommands#zadd(String, double, String)
    * @param key
    * @param scoreMembers
    * @param params {@link ZAddParams}
@@ -108,7 +111,8 @@ public interface SortedSetCommands {
   double zincrby(String key, double increment, String member);
 
   /**
-   * @see SortedSetCommands#zincrby(String, double, String) can be used with optionals params.
+   * Similar to {@link SortedSetCommands#zincrby(String, double, String) ZINCRBY} but can be used with optionals params.
+   * @see SortedSetCommands#zincrby(String, double, String)
    * @param key
    * @param increment
    * @param member
@@ -183,8 +187,9 @@ public interface SortedSetCommands {
   List<Tuple> zrangeWithScores(String key, long start, long stop);
 
   /**
-   * @see SortedSetCommands#zrevrange(String, long, long) same but the reply will
+   * Similar to {@link SortedSetCommands#zrevrange(String, long, long) ZREVRANGE} but the reply will
    * include the scores of the returned elements.
+   * @see SortedSetCommands#zrevrange(String, long, long)
    * @param key the key to query
    * @param start the minimum index
    * @param stop the maximum index
@@ -193,7 +198,8 @@ public interface SortedSetCommands {
   List<Tuple> zrevrangeWithScores(String key, long start, long stop);
 
   /**
-   * @see SortedSetCommands#zrange(String, long, long) can be used with additional params.
+   * Similar to {@link SortedSetCommands#zrange(String, long, long) ZRANGE} but can be used with additional params.
+   * @see SortedSetCommands#zrange(String, long, long)
    * @param key the key to query
    * @param zRangeParams {@link ZRangeParams}
    * @return A List of Strings in the specified range
@@ -201,7 +207,8 @@ public interface SortedSetCommands {
   List<String> zrange(String key, ZRangeParams zRangeParams);
 
   /**
-   * @see SortedSetCommands#zrangeWithScores(String, long, long) can be used with additional params.
+   * Similar to {@link SortedSetCommands#zrangeWithScores(String, long, long) ZRANGE} but can be used with additional params.
+   * @see SortedSetCommands#zrangeWithScores(String, long, long)
    * @param key the key to query
    * @param zRangeParams {@link ZRangeParams}
    * @return A List of Tuple in the specified range (elements names and their scores)
@@ -209,7 +216,8 @@ public interface SortedSetCommands {
   List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams);
 
   /**
-   * @see SortedSetCommands#zrange(String, ZRangeParams) stores the result in <i>dest</i>.
+   * Similar to {@link SortedSetCommands#zrange(String, ZRangeParams) ZRANGE} but stores the result in <i>dest</i>.
+   * @see SortedSetCommands#zrange(String, ZRangeParams)
    * @param dest the storing key
    * @param src the key to query
    * @param zRangeParams {@link ZRangeParams}
@@ -238,7 +246,9 @@ public interface SortedSetCommands {
   List<String> zrandmember(String key, long count);
 
   /**
-   * @see SortedSetCommands#zrandmember(String, long) the replay will include the scores with the result.
+   * Similar to {@link SortedSetCommands#zrandmember(String, long) ZRANDMEMBER} but the replay will
+   * include the scores with the result.
+   * @see SortedSetCommands#zrandmember(String, long)
    * @param key
    * @param count choose up to count elements
    * @return A List of distinct Strings with their scores
@@ -330,7 +340,8 @@ public interface SortedSetCommands {
   long zcount(String key, double min, double max);
 
   /**
-   * @see SortedSetCommands#zcount(String, double, double) same with <i>exclusive</i> range.
+   * Similar to {@link SortedSetCommands#zcount(String, double, double) ZCOUNT} but with <i>exclusive</i> range.
+   * @see SortedSetCommands#zcount(String, double, double)
    */
   long zcount(String key, String min, String max);
 
@@ -349,7 +360,8 @@ public interface SortedSetCommands {
   List<String> zrangeByScore(String key, double min, double max);
 
   /**
-   * @see SortedSetCommands#zrangeByScore(String, double, double) same with <i>exclusive</i> range.
+   * Similar to {@link SortedSetCommands#zrangeByScore(String, double, double) ZRANGE} but with <i>exclusive</i> range.
+   * @see SortedSetCommands#zrangeByScore(String, double, double)
    */
   List<String> zrangeByScore(String key, String min, String max);
 
@@ -371,7 +383,8 @@ public interface SortedSetCommands {
   List<String> zrevrangeByScore(String key, double max, double min);
 
   /**
-   * @see SortedSetCommands#zrangeByScore(String, double, double) same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zrangeByScore(String, double, double) ZRANGE} but with <i>exclusive</i> range.
+   * @see SortedSetCommands#zrangeByScore(String, double, double)
    * @param key the key to query
    * @param min minimum score
    * @param max maximum score
@@ -382,12 +395,14 @@ public interface SortedSetCommands {
   List<String> zrangeByScore(String key, double min, double max, int offset, int count);
 
   /**
-   * @see SortedSetCommands#zrevrangeByScore(String, double, double) same with <i>exclusive</i> range.
+   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGE} but with <i>exclusive</i> range.
+   * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    */
   List<String> zrevrangeByScore(String key, String max, String min);
 
   /**
-   * @see SortedSetCommands#zrangeByScore(String, double, double) same with <i>limit</i> option,
+   * Similar to {@link SortedSetCommands#zrangeByScore(String, double, double) ZRANGE} but with <i>limit</i> option,
+   * @see SortedSetCommands#zrangeByScore(String, double, double)
    * and with <i>exclusive</i> range.
    * @param key the key to query
    * @param min minimum score
@@ -399,7 +414,8 @@ public interface SortedSetCommands {
   List<String> zrangeByScore(String key, String min, String max, int offset, int count);
 
   /**
-   * @see SortedSetCommands#zrangeByScore(String, double, double) same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZRANGE} but with <i>limit</i> option,
+   * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    * @param key the key to query
    * @param max maximum score
    * @param min minimum score
@@ -410,6 +426,7 @@ public interface SortedSetCommands {
   List<String> zrevrangeByScore(String key, double max, double min, int offset, int count);
 
   /**
+   * Similar to {@link SortedSetCommands#zrangeByScore(String, double, double) ZRANGE} but return with scores.
    * @see SortedSetCommands#zrangeByScore(String, double, double)
    * return both the element and its score, instead of the element alone.
    * @param key the key to query
@@ -420,6 +437,7 @@ public interface SortedSetCommands {
   List<Tuple> zrangeByScoreWithScores(String key, double min, double max);
 
   /**
+   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGE} but return with scores.
    * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    * return both the element and its score, instead of the element alone.
    * @param key the key to query
@@ -430,7 +448,9 @@ public interface SortedSetCommands {
   List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min);
 
   /**
-   * @see SortedSetCommands#zrangeByScoreWithScores(String, double, double) same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zrangeByScore(String, double, double) ZRANGE} but with <i>limit</i> option,
+   * and return with scores.
+   * @see SortedSetCommands#zrangeByScore(String, double, double)
    * @param key the key to query
    * @param min minimum score
    * @param max maximum score
@@ -441,7 +461,8 @@ public interface SortedSetCommands {
   List<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count);
 
   /**
-   * @see SortedSetCommands#zrevrangeByScore(String, double, double) same with <i>limit</i> option,
+   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGE} but with <i>limit</i> option,
+   * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    * and with <i>exclusive</i> range.
    * @param key the key to query
    * @param max maximum score
@@ -453,17 +474,23 @@ public interface SortedSetCommands {
   List<String> zrevrangeByScore(String key, String max, String min, int offset, int count);
 
   /**
-   * @see SortedSetCommands#zrangeByScoreWithScores(String, double, double) same with <i>exclusive</i> range.
+   * Similar to {@link SortedSetCommands#zrangeByScore(String, double, double) ZRANGE} but with <i>exclusive</i> range,
+   * and return with scores.
+   * @see SortedSetCommands#zrangeByScore(String, double, double)
    */
   List<Tuple> zrangeByScoreWithScores(String key, String min, String max);
 
   /**
-   * @see SortedSetCommands#zrevrangeByScoreWithScores(String, double, double) same with <i>exclusive</i> range.
+   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGE} but with <i>exclusive</i> range,
+   * and return with scores.
+   * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    */
   List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min);
 
   /**
-   * @see SortedSetCommands#zrangeByScoreWithScores(String, String, String) same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zrangeByScore(String, double, double) ZRANGE} but with <i>exclusive</i> range,
+   * with <i>limit</i> options and return with scores.
+   * @see SortedSetCommands#zrangeByScore(String, String, String)
    * @param key the key to query
    * @param min minimum score
    * @param max maximum score
@@ -474,7 +501,9 @@ public interface SortedSetCommands {
   List<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count);
 
   /**
-   * @see SortedSetCommands#zrevrangeByScoreWithScores(String, double, double) same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGE} but with
+   * <i>limit</i> options and return with scores.
+   * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    * @param key the key to query
    * @param max maximum score
    * @param min minimum score
@@ -485,7 +514,9 @@ public interface SortedSetCommands {
   List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count);
 
   /**
-   * @see SortedSetCommands#zrevrangeByScoreWithScores(String, String, String) same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zrevrangeByScore(String, double, double) ZREVRANGE} but with
+   * <i>exclusive</i> range, with <i>limit</i> options and return with scores.
+   * @see SortedSetCommands#zrevrangeByScore(String, double, double)
    * @param key the key to query
    * @param max maximum score
    * @param min minimum score
@@ -525,7 +556,8 @@ public interface SortedSetCommands {
   long zremrangeByScore(String key, double min, double max);
 
   /**
-   * @see SortedSetCommands#zremrangeByScore(String, double, double)  same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zremrangeByScore(String, double, double) ZREMRANGE} but with <i>limit</i> option.
+   * @see SortedSetCommands#zremrangeByScore(String, double, double)
    */
   long zremrangeByScore(String key, String min, String max);
 
@@ -555,7 +587,8 @@ public interface SortedSetCommands {
   List<String> zrangeByLex(String key, String min, String max);
 
   /**
-   * @see SortedSetCommands#zrangeByLex(String, String, String) same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zrangeByLex(String, String, String) ZRANGE} but with <i>limit</i> option.
+   * @see SortedSetCommands#zrangeByLex(String, String, String)
    * @param key
    * @param min minimum value
    * @param max maximum value
@@ -579,7 +612,8 @@ public interface SortedSetCommands {
   List<String> zrevrangeByLex(String key, String max, String min);
 
   /**
-   * @see SortedSetCommands#zrevrangeByLex(String, String, String) same with <i>limit</i> option.
+   * Similar to {@link SortedSetCommands#zrevrangeByLex(String, String, String) ZRANGE} but with <i>limit</i> option.
+   * @see SortedSetCommands#zrevrangeByLex(String, String, String)
    * @param key
    * @param max maximum value
    * @param min minimum value

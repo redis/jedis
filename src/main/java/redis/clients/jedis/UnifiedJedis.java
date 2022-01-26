@@ -2836,6 +2836,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Object evalReadonly(String script, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Object evalsha(String sha1) {
     return executeCommand(commandObjects.evalsha(sha1));
   }
@@ -2848,6 +2853,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Object evalsha(String sha1, List<String> keys, List<String> args) {
     return executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -2866,6 +2876,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Object evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Object evalsha(byte[] sha1) {
     return executeCommand(commandObjects.evalsha(sha1));
   }
@@ -2878,6 +2893,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     return executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
   // Scripting commands
 

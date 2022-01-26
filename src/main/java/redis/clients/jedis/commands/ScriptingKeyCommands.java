@@ -10,9 +10,13 @@ public interface ScriptingKeyCommands {
 
   Object eval(String script, List<String> keys, List<String> args);
 
+  Object evalReadonly(String script, List<String> keys, List<String> args);
+
   Object evalsha(String sha1);
 
   Object evalsha(String sha1, int keyCount, String... params);
 
   Object evalsha(String sha1, List<String> keys, List<String> args);
+
+  Object evalshaReadonly(String sha1, List<String> keys, List<String> args);
 }

@@ -3641,6 +3641,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.eval(script, keys, args));
   }
 
+  @Override
+  public Object evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
   protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
     final int keyCount = keys.size();
     final int argCount = args.size();
@@ -3677,6 +3683,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object evalsha(final byte[] sha1, final List<byte[]> keys, final List<byte[]> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -7606,6 +7618,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Object evalReadonly(String script, List<String> keys, List<String> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Object eval(final String script) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.eval(script));
@@ -7621,6 +7639,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override

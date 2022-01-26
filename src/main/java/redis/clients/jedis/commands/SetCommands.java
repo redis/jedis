@@ -83,7 +83,7 @@ public interface SetCommands {
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return True if the element is a member of the set, False otherwise
+   * @return {@code true} if the element is a member of the set, {@code false} otherwise
    */
   boolean sismember(String key, String member);
 
@@ -133,7 +133,7 @@ public interface SetCommands {
   ScanResult<String> sscan(String key, String cursor, ScanParams params);
 
   /**
-   * Return the difference between the Sets stored at <i>keys</i>
+   * Return the difference between the Sets stored at {@code keys}
    * <p>
    * <b>Example:</b>
    *

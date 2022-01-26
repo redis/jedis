@@ -17,7 +17,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return True if the key exists, False otherwise
+   * @return {@code true} if the key exists, {@code false} otherwise
    */
   boolean exists(String key);
 
@@ -27,7 +27,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(N)
    * @param keys
-   * @return The number of keys that exist from those specified as <i>keys</i>.
+   * @return The number of keys that exist from those specified as {@code keys}.
    */
   long exists(String... keys);
 
@@ -223,7 +223,7 @@ public interface KeyCommands {
   List<String> sort(String key);
 
   /**
-   * Similar to {@link KeyCommands#sort(String) SORT} but store the result in <i>dstkey</i>.
+   * Similar to {@link KeyCommands#sort(String) SORT} but store the result in {@code dstkey}.
    * @see KeyCommands#sort(String)
    * @param key
    * @param dstkey
@@ -306,7 +306,7 @@ public interface KeyCommands {
   List<String> sort(String key, SortingParams sortingParameters);
 
   /**
-   * Similar to {@link KeyCommands#sort(String, SortingParams) SORT} but store the result in <i>dstkey</i>.
+   * Similar to {@link KeyCommands#sort(String, SortingParams) SORT} but store the result in {@code dstkey}.
    * @see KeyCommands#sort(String, SortingParams)
    * @param key
    * @param sortingParameters {@link SortingParams}
@@ -373,14 +373,14 @@ public interface KeyCommands {
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param replace removes the destination key before copying the value to it, in order to avoid error.
-   * @return True if source was copied, False otherwise
+   * @return {@code true} if source was copied, {@code false} otherwise
    */
   boolean copy(String srcKey, String dstKey, boolean replace);
 
   /**
    * <b><a href="http://redis.io/commands/rename">Rename Command</a></b>
-   * Atomically renames the key <i>oldkey</i> to <i>newkey</i>. If the source and destination name are the same an
-   * error is returned. If <i>newkey</i> already exists it is overwritten.
+   * Atomically renames the key {@code oldkey} to {@code newkey}. If the source and destination name are the same an
+   * error is returned. If {@code newkey} already exists it is overwritten.
    * <p>
    * Time complexity: O(1)
    * @param oldkey

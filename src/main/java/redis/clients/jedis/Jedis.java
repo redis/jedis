@@ -455,7 +455,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
-   * @return True if the key exists, otherwise False
+   * @return {@code true} if the key exists, otherwise {@code false}
    */
   @Override
   public boolean exists(final byte[] key) {
@@ -1180,7 +1180,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return Return true if the hash stored at key contains the specified field. Return false if the key is
+   * @return {@code true} if the hash stored at key contains the specified field, {@code false} if the key is
    *         not found or the field is not present.
    */
   @Override
@@ -1724,7 +1724,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return True if the element is a member of the set, False otherwise
+   * @return {@code true} if the element is a member of the set, {@code false} otherwise
    */
   @Override
   public boolean sismember(final byte[] key, final byte[] member) {
@@ -4764,7 +4764,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
    * @param keys
-   * @return The number of keys that exist from those specified as <i>keys</i>.
+   * @return The number of keys that exist from those specified as {@code keys}
    */
   @Override
   public long exists(final String... keys) {
@@ -4777,7 +4777,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
-   * @return True if the key exists, False otherwise
+   * @return {@code true} if the key exists, otherwise {@code false}
    */
   @Override
   public boolean exists(final String key) {
@@ -5389,7 +5389,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return True if the hash stored at key contains the specified field, False if the key is
+   * @return {@code true} if the hash stored at key contains the specified field, {@code false} if the key is
    *         not found or the field is not present.
    */
   @Override
@@ -5891,7 +5891,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return True if the element is a member of the set, False otherwise
+   * @return {@code true} if the element is a member of the set, {@code false} otherwise
    */
   @Override
   public boolean sismember(final String key, final String member) {

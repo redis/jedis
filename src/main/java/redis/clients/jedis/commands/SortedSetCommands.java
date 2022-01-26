@@ -216,7 +216,7 @@ public interface SortedSetCommands {
   List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams);
 
   /**
-   * Similar to {@link SortedSetCommands#zrange(String, ZRangeParams) ZRANGE} but stores the result in <i>dest</i>.
+   * Similar to {@link SortedSetCommands#zrange(String, ZRangeParams) ZRANGE} but stores the result in {@code dest}.
    * @see SortedSetCommands#zrange(String, ZRangeParams)
    * @param dest the storing key
    * @param src the key to query

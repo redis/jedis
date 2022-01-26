@@ -1679,8 +1679,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zintercard(String... keys) {
-    return new CommandObject<>(commandArguments(ZINTERCARD)
-            .add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zintercard(long limit, String... keys) {

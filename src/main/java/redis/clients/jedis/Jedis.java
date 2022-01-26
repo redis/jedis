@@ -3109,15 +3109,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long zintercard(byte[]... sets) {
+  public long zintercard(byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zintercard(sets));
+    return connection.executeCommand(commandObjects.zintercard(keys));
   }
 
   @Override
-  public long zintercard(long limit, byte[]... sets) {
+  public long zintercard(long limit, byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zintercard(limit, sets));
+    return connection.executeCommand(commandObjects.zintercard(limit, keys));
   }
 
   @Override
@@ -7242,15 +7242,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long zintercard(String... sets) {
+  public long zintercard(String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zintercard(sets));
+    return connection.executeCommand(commandObjects.zintercard(keys));
   }
 
   @Override
-  public long zintercard(long limit, String... sets) {
+  public long zintercard(long limit, String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zintercard(limit, sets));
+    return connection.executeCommand(commandObjects.zintercard(limit, keys));
   }
 
   /**

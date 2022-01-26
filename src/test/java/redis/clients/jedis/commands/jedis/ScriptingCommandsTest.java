@@ -126,7 +126,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void evalBulkReadonly() {
+  public void evalReadonly() {
     String script = "return KEYS[1]";
     List<String> keys = new ArrayList<String>();
     keys.add("key1");

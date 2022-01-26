@@ -1684,8 +1684,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zintercard(long limit, String... keys) {
-    return new CommandObject<>(commandArguments(ZINTERCARD)
-            .add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zinterstore(byte[] dstkey, byte[]... sets) {

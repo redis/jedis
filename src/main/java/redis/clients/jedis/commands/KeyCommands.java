@@ -22,7 +22,6 @@ public interface KeyCommands {
   boolean exists(String key);
 
   /**
-   /**
    * <b><a href="http://redis.io/commands/exists">Exists Command</a></b>
    * Test if the specified keys exist.
    * <p>

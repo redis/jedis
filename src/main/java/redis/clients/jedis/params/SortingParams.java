@@ -60,7 +60,7 @@ public class SortingParams implements IParams {
   /**
    * No sorting.
    * <p>
-   * This is useful if you want to retrieve a external key (using {@link #get(String...) GET}) but
+   * This is useful if you want to retrieve an external key (using {@link #get(String...) GET}) but
    * you don't want the sorting overhead.
    * @return the SortingParams Object
    */

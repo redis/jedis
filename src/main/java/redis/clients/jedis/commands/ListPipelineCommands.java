@@ -42,9 +42,9 @@ public interface ListPipelineCommands {
 
   Response<Long> linsert(String key, ListPosition where, String pivot, String value);
 
-  Response<Long> lpushx(String key, String... string);
+  Response<Long> lpushx(String key, String... strings);
 
-  Response<Long> rpushx(String key, String... string);
+  Response<Long> rpushx(String key, String... strings);
 
   Response<List<String>> blpop(int timeout, String key);
 

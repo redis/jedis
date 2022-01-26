@@ -544,13 +544,13 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Long> lpushx(String key, String... string) {
-    return appendCommand(commandObjects.lpushx(key, string));
+  public Response<Long> lpushx(String key, String... strings) {
+    return appendCommand(commandObjects.lpushx(key, strings));
   }
 
   @Override
-  public Response<Long> rpushx(String key, String... string) {
-    return appendCommand(commandObjects.rpushx(key, string));
+  public Response<Long> rpushx(String key, String... strings) {
+    return appendCommand(commandObjects.rpushx(key, strings));
   }
 
   @Override
@@ -709,8 +709,8 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Long> sadd(String key, String... member) {
-    return appendCommand(commandObjects.sadd(key, member));
+  public Response<Long> sadd(String key, String... members) {
+    return appendCommand(commandObjects.sadd(key, members));
   }
 
   @Override
@@ -719,8 +719,8 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Long> srem(String key, String... member) {
-    return appendCommand(commandObjects.srem(key, member));
+  public Response<Long> srem(String key, String... members) {
+    return appendCommand(commandObjects.srem(key, members));
   }
 
   @Override
@@ -2094,13 +2094,13 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Long> lpushx(byte[] key, byte[]... arg) {
-    return appendCommand(commandObjects.lpushx(key, arg));
+  public Response<Long> lpushx(byte[] key, byte[]... args) {
+    return appendCommand(commandObjects.lpushx(key, args));
   }
 
   @Override
-  public Response<Long> rpushx(byte[] key, byte[]... arg) {
-    return appendCommand(commandObjects.rpushx(key, arg));
+  public Response<Long> rpushx(byte[] key, byte[]... args) {
+    return appendCommand(commandObjects.rpushx(key, args));
   }
 
   @Override
@@ -2222,8 +2222,8 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Long> sadd(byte[] key, byte[]... member) {
-    return appendCommand(commandObjects.sadd(key, member));
+  public Response<Long> sadd(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.sadd(key, members));
   }
 
   @Override
@@ -2232,8 +2232,8 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Long> srem(byte[] key, byte[]... member) {
-    return appendCommand(commandObjects.srem(key, member));
+  public Response<Long> srem(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.srem(key, members));
   }
 
   @Override

@@ -46,9 +46,11 @@ public interface KeyPipelineCommands {
 
   Response<Long> sort(String key, String dstkey);
 
-  Response<List<String>> sort(String key, SortingParams sortingParameters);
+  Response<List<String>> sort(String key, SortingParams sortingParams);
 
-  Response<Long> sort(String key, SortingParams sortingParameters, String dstkey);
+  Response<Long> sort(String key, SortingParams sortingParams, String dstkey);
+
+  Response<List<String>> sortReadonly(String key, SortingParams sortingParams);
 
   Response<Long> del(String key);
 

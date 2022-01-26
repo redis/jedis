@@ -813,7 +813,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * SETNX works exactly like {@link Jedis#set(byte[], byte[]) SET} with the only difference that if
-   * the key already exists no operation is performed. SETNX actually means "SET if Not Exists".
+   * the key already exists no operation is performed. SETNX actually means "SET if Not eXists".
    * <p>
    * Time complexity: O(1)
    * @param key

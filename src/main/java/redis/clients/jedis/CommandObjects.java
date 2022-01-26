@@ -164,16 +164,16 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SORT).key(key), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<List<String>> sort(String key, SortingParams sortingParameters) {
-    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParameters), BuilderFactory.STRING_LIST);
+  public final CommandObject<List<String>> sort(String key, SortingParams sortingParams) {
+    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams), BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<List<byte[]>> sort(byte[] key) {
     return new CommandObject<>(commandArguments(SORT).key(key), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> sort(byte[] key, SortingParams sortingParameters) {
-    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParameters), BuilderFactory.BINARY_LIST);
+  public final CommandObject<List<byte[]>> sort(byte[] key, SortingParams sortingParams) {
+    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> sort(String key, String dstkey) {
@@ -181,8 +181,8 @@ public class CommandObjects {
         .add(STORE).key(dstkey), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sort(String key, SortingParams sortingParameters, String dstkey) {
-    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParameters)
+  public final CommandObject<Long> sort(String key, SortingParams sortingParams, String dstkey) {
+    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams)
         .add(STORE).key(dstkey), BuilderFactory.LONG);
   }
 
@@ -191,9 +191,19 @@ public class CommandObjects {
         .add(STORE).key(dstkey), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
-    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParameters)
+  public final CommandObject<Long> sort(byte[] key, SortingParams sortingParams, byte[] dstkey) {
+    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams)
         .add(STORE).key(dstkey), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<byte[]>> sortReadonly(byte[] key, SortingParams sortingParams) {
+    return new CommandObject<>(commandArguments(SORT_RO).key(key).addParams(sortingParams),
+        BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<String>> sortReadonly(String key, SortingParams sortingParams) {
+    return new CommandObject<>(commandArguments(SORT_RO).key(key).addParams(sortingParams),
+        BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<Long> del(String key) {

@@ -43,9 +43,7 @@ public interface KeyBinaryCommands {
 
   List<byte[]> sort(byte[] key);
 
-  long sort(byte[] key, byte[] dstkey);
-
-  List<byte[]> sort(byte[] key, SortingParams sortingParameters);
+  List<byte[]> sort(byte[] key, SortingParams sortingParams);
 
   long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
 
@@ -62,6 +60,12 @@ public interface KeyBinaryCommands {
   String rename(byte[] oldkey, byte[] newkey);
 
   long renamenx(byte[] oldkey, byte[] newkey);
+
+  long sort(byte[] key, SortingParams sortingParams, byte[] dstkey);
+
+  long sort(byte[] key, byte[] dstkey);
+
+  List<byte[]> sortReadonly(byte[] key, SortingParams sortingParams);
 
   Long memoryUsage(byte[] key);
 

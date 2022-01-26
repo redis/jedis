@@ -315,4 +315,27 @@ public class SortingCommandsTest extends JedisCommandsTestBase {
     assertByteArrayListEquals(bexpected, jedis.lrange(bkresult, 0, 1000));
   }
 
+  @Test
+  public void sort_ro() {
+    jedis.rpush("foo", "1", "3", "2");
+
+    List<String> result = jedis.sortReadonly("foo", new SortingParams().desc());
+    List<String> expected = new ArrayList<>();
+    expected.add("3");
+    expected.add("2");
+    expected.add("1");
+
+    assertEquals(expected, result);
+
+    // Binary
+    jedis.rpush(bfoo, b3, b1, b2);
+
+    List<byte[]> bresult = jedis.sortReadonly(bfoo, new SortingParams().alpha());
+    List<byte[]> bexpected = new ArrayList<>();
+    bexpected.add(b1);
+    bexpected.add(b2);
+    bexpected.add(b3);
+
+    assertByteArrayListEquals(bexpected, bresult);
+  }
 }

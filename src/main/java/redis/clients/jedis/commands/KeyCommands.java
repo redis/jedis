@@ -315,6 +315,19 @@ public interface KeyCommands {
    */
   long sort(String key, SortingParams sortingParameters, String dstkey);
 
+  List<String> sort(String key, SortingParams sortingParams);
+
+  long sort(String key, SortingParams sortingParams, String dstkey);
+
+  /**
+   * Read-only variant of the {@link KeyCommands#sort(String, SortingParams) SORT} command.
+   * It is exactly like the original SORT but refuses the STORE option and can safely be used in read-only replicas.
+   * @param key the key to sort
+   * @param sortingParams {@link SortingParams}
+   * @return list of sorted elements.
+   */
+  List<String> sortReadonly(String key, SortingParams sortingParams);
+
   /**
    * <b><a href="http://redis.io/commands/del">Del Command</a></b>
    * Remove the specified key. If a given key does not exist, no operation is performed.

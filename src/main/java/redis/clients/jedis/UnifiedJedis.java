@@ -296,8 +296,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> sort(String key, SortingParams sortingParameters) {
-    return executeCommand(commandObjects.sort(key, sortingParameters));
+  public List<String> sort(String key, SortingParams sortingParams) {
+    return executeCommand(commandObjects.sort(key, sortingParams));
   }
 
   @Override
@@ -306,8 +306,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sort(String key, SortingParams sortingParameters, String dstkey) {
-    return executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+  public long sort(String key, SortingParams sortingParams, String dstkey) {
+    return executeCommand(commandObjects.sort(key, sortingParams, dstkey));
+  }
+
+  @Override
+  public List<String> sortReadonly(String key, SortingParams sortingParams) {
+    return executeCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   @Override
@@ -316,8 +321,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> sort(byte[] key, SortingParams sortingParameters) {
-    return executeCommand(commandObjects.sort(key, sortingParameters));
+  public List<byte[]> sort(byte[] key, SortingParams sortingParams) {
+    return executeCommand(commandObjects.sort(key, sortingParams));
   }
 
   @Override
@@ -326,8 +331,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
-    return executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+  public List<byte[]> sortReadonly(byte[] key, SortingParams sortingParams) {
+    return executeCommand(commandObjects.sortReadonly(key, sortingParams));
+  }
+
+  @Override
+  public long sort(byte[] key, SortingParams sortingParams, byte[] dstkey) {
+    return executeCommand(commandObjects.sort(key, sortingParams, dstkey));
   }
 
   @Override

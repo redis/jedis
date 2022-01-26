@@ -173,13 +173,18 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<String>> sort(String key, SortingParams sortingParameters) {
-    return appendCommand(commandObjects.sort(key, sortingParameters));
+  public Response<List<String>> sort(String key, SortingParams sortingParams) {
+    return appendCommand(commandObjects.sort(key, sortingParams));
   }
 
   @Override
-  public Response<Long> sort(String key, SortingParams sortingParameters, String dstKey) {
-    return appendCommand(commandObjects.sort(key, sortingParameters, dstKey));
+  public Response<Long> sort(String key, SortingParams sortingParams, String dstKey) {
+    return appendCommand(commandObjects.sort(key, sortingParams, dstKey));
+  }
+
+  @Override
+  public Response<List<String>> sortReadonly(String key, SortingParams sortingParams) {
+    return appendCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   @Override
@@ -1898,8 +1903,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<byte[]>> sort(byte[] key, SortingParams sortingParameters) {
-    return appendCommand(commandObjects.sort(key, sortingParameters));
+  public Response<List<byte[]>> sort(byte[] key, SortingParams sortingParams) {
+    return appendCommand(commandObjects.sort(key, sortingParams));
+  }
+
+  @Override
+  public Response<List<byte[]>> sortReadonly(byte[] key, SortingParams sortingParams) {
+    return appendCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   @Override
@@ -1938,8 +1948,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
-    return appendCommand(commandObjects.sort(key, sortingParameters, dstkey));
+  public Response<Long> sort(byte[] key, SortingParams sortingParams, byte[] dstkey) {
+    return appendCommand(commandObjects.sort(key, sortingParams, dstkey));
   }
 
   @Override

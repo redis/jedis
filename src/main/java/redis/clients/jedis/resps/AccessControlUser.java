@@ -1,6 +1,7 @@
 package redis.clients.jedis.resps;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class AccessControlUser {
@@ -30,6 +31,12 @@ public class AccessControlUser {
     return keys;
   }
 
+  public void addKeys(String keys) {
+    if (!keys.isEmpty()) {
+      this.keys.addAll(Arrays.asList(keys.split(" ")));
+    }
+  }
+
   public void addPassword(String password) {
     passwords.add(password);
   }
@@ -39,11 +46,17 @@ public class AccessControlUser {
   }
 
   public void addChannel(String channel) {
-     channels.add(channel);
+    channels.add(channel);
   }
 
   public List<String> getChannels() {
     return channels;
+  }
+
+  public void addChannels(String channels) {
+    if (!channels.isEmpty()) {
+      this.channels.addAll(Arrays.asList(channels.split(" ")));
+    }
   }
 
   public String getCommands() {
@@ -56,7 +69,7 @@ public class AccessControlUser {
 
   @Override
   public String toString() {
-    return "AccessControlUser{" + "flags=" + flags + ", keys=" + keys + ", passwords=" + passwords
-        + ", commands='" + commands + ", channels='" + channels + '\'' + '}';
+    return "AccessControlUser{" + "flags=" + flags + ", passwords=" + passwords
+        + ", commands='" + commands + "', keys='" + keys + "', channels='" + channels + "'}";
   }
 }

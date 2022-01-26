@@ -117,6 +117,7 @@ public interface GeoCommands {
    * <p>
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
+   * @see GeoCommands#georadius(String, double, double, double, GeoUnit)
    * @param key
    * @param longitude of the center point
    * @param latitude of the center point
@@ -156,6 +157,7 @@ public interface GeoCommands {
    * <p>
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
+   * @see GeoCommands#georadius(String, double, double, double, GeoUnit, GeoRadiusParam)
    * @param key
    * @param longitude of the center point
    * @param latitude of the center point

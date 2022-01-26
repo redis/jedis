@@ -215,7 +215,7 @@ public interface KeyCommands {
    * Sort the elements contained in the List, Set, or Sorted Set values at key. By default, sorting is
    * numeric with elements being compared as double precision floating point numbers. This is the
    * simplest form of SORT.
-   * @see KeyCommands#sort(String, SortingParams) for examples
+   * @see KeyCommands#sort(String, SortingParams)
    * @param key
    * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
    *         list of numbers ordered from the smallest to the biggest number.
@@ -223,7 +223,8 @@ public interface KeyCommands {
   List<String> sort(String key);
 
   /**
-   * @see KeyCommands#sort(String) store the result in <i>dstkey</i>.
+   * Similar to {@link KeyCommands#sort(String) SORT} but store the result in <i>dstkey</i>.
+   * @see KeyCommands#sort(String)
    * @param key
    * @param dstkey
    * @return The number of elements stored at dstkey.
@@ -305,7 +306,8 @@ public interface KeyCommands {
   List<String> sort(String key, SortingParams sortingParameters);
 
   /**
-   * @see KeyCommands#sort(String, SortingParams, String) store the result in <i>dstkey</i>.
+   * Similar to {@link KeyCommands#sort(String, SortingParams) SORT} but store the result in <i>dstkey</i>.
+   * @see KeyCommands#sort(String, SortingParams)
    * @param key
    * @param sortingParameters {@link SortingParams}
    * @param dstkey
@@ -349,7 +351,8 @@ public interface KeyCommands {
   long unlink(String key);
 
   /**
-   * @see KeyCommands#unlink(String) can be used with multiple keys.
+   * Similar to {@link KeyCommands#unlink(String) SORT} but can be used with multiple keys.
+   * @see KeyCommands#unlink(String)
    * @param keys
    * @return The number of keys that were unlinked
    */

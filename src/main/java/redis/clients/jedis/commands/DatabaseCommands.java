@@ -48,6 +48,7 @@ public interface DatabaseCommands {
   long move(String key, int dbIndex);
 
   /**
+   * Binary version of {@link DatabaseCommands#move(String, int) MOVE}.
    * @see DatabaseCommands#move(String, int)
    */
   long move(byte[] key, int dbIndex);
@@ -62,6 +63,7 @@ public interface DatabaseCommands {
   boolean copy(String srcKey, String dstKey, int db, boolean replace);
 
   /**
+   * Binary version of {@link DatabaseCommands#copy(String, String, int, boolean) COPY}.
    * @see DatabaseCommands#copy(String, String, int, boolean)
    */
   boolean copy(byte[] srcKey, byte[] dstKey, int db, boolean replace);
@@ -82,6 +84,7 @@ public interface DatabaseCommands {
   String migrate(String host, int port, String key, int destinationDB, int timeout);
 
   /**
+   * Binary version of {@link DatabaseCommands#migrate(String, int, String, int, int) MIGRATE}.
    * @see DatabaseCommands#migrate(String, int, String, int, int)
    */
   String migrate(String host, int port, byte[] key, int destinationDB, int timeout);
@@ -104,6 +107,7 @@ public interface DatabaseCommands {
       String... keys);
 
   /**
+   * Binary version of {@link DatabaseCommands#migrate(String, int, int, int, MigrateParams, String...) MIGRATE}.
    * @see DatabaseCommands#migrate(String, int, int, int, MigrateParams, String...)
    */
   String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,

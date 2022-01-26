@@ -1119,7 +1119,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> zintercard(String... sets) {
+  public Response<Long> zintercard(String... keys) {
     return appendCommand(commandObjects.zintercard(keys));
   }
 

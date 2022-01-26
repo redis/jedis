@@ -143,9 +143,31 @@ public interface SortedSetCommands {
 
   Set<Tuple> zinterWithScores(ZParams params, String... keys);
 
-  long zintercard(String... sets);
+  /**
+   * Similar to {@link SortedSetCommands#zinter(ZParams, String...) ZINTER}, but
+   * instead of returning the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
+   * being the number of input sorted sets
+   * @see SortedSetCommands#zinter(ZParams, String...)
+   * @param keys group of sets
+   * @return The number of elements in the resulting intersection
+   */
+  long zintercard(String... keys);
 
-  long zintercard(long limit, String... sets);
+  /**
+   * Similar to {@link SortedSetCommands#zinter(ZParams, String...) ZINTER}, but
+   * instead of returning the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
+   * being the number of input sorted sets
+   * @see SortedSetCommands#zinter(ZParams, String...)
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality
+   * @param keys group of sets
+   * @return The number of elements in the resulting intersection
+   */
+  long zintercard(long limit, String... keys);
 
   Set<String> zunion(ZParams params, String... keys);
 

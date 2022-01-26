@@ -19,7 +19,7 @@ public interface StringCommands {
    * Time complexity: O(1)
    * @param key
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   String set(String key, String value);
 
@@ -31,7 +31,7 @@ public interface StringCommands {
    * @param key
    * @param value
    * @param params {@link SetParams}
-   * @return Status code reply
+   * @return OK
    */
   String set(String key, String value, SetParams params);
 
@@ -43,7 +43,7 @@ public interface StringCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Bulk reply
+   * @return The value stored in key
    */
   String get(String key);
 
@@ -54,8 +54,7 @@ public interface StringCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return the value of key
-   * @since Redis 6.2
+   * @return The value of key
    */
   String getDel(String key);
 
@@ -110,13 +109,13 @@ public interface StringCommands {
    * @param key
    * @param offset
    * @param value
-   * @return Integer reply, specifically the length of the string after it was modified by the command
+   * @return The length of the string after it was modified by the command
    */
   long setrange(String key, long offset, String value);
 
   /**
    * <b><a href="http://redis.io/commands/getrange">GetRange Command</a></b>
-   * GETRANGE return the substring of the string value stored at key, determined by the offsets start
+   * Return the substring of the string value stored at key, determined by the offsets start
    * and end (both are inclusive). Negative offsets can be used in order to provide an offset starting
    * from the end of the string. So -1 means the last character, -2 the penultimate and so forth.
    * <p>
@@ -124,7 +123,7 @@ public interface StringCommands {
    * @param key
    * @param startOffset
    * @param endOffset
-   * @return Bulk reply
+   * @return The substring
    */
   String getrange(String key, long startOffset, long endOffset);
 
@@ -136,7 +135,7 @@ public interface StringCommands {
    * Time complexity: O(1)
    * @param key
    * @param value
-   * @return Bulk reply
+   * @return The old value that was stored in key
    */
   String getSet(String key, String value);
 
@@ -148,7 +147,7 @@ public interface StringCommands {
    * Time complexity: O(1)
    * @param key
    * @param value
-   * @return Integer reply, specifically: 1 if the key was set 0 if the key was not set
+   * @return 1 if the key was set, 0 otherwise
    */
   long setnx(String key, String value);
 
@@ -162,7 +161,7 @@ public interface StringCommands {
    * @param key
    * @param seconds
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   String setex(String key, long seconds, String value);
 
@@ -175,7 +174,7 @@ public interface StringCommands {
    * @param key
    * @param milliseconds
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   String psetex(String key, long milliseconds, String value);
 
@@ -204,8 +203,9 @@ public interface StringCommands {
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another connection talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @param keysvalues
-   * @return Status code reply, Basically always OK as MSET can't fail
+   * @param keysvalues pairs of keys and their values
+   *                   e.g mset("foo", "foovalue", "bar", "barvalue")
+   * @return OK
    */
   String mset(String... keysvalues);
 
@@ -222,9 +222,9 @@ public interface StringCommands {
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another connection talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @param keysvalues
-   * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
-   *         least one key already existed)
+   * @param keysvalues pairs of keys and their values
+   *                   e.g msetnx("foo", "foovalue", "bar", "barvalue")
+   * @return 1 if the all the keys were set, 0 if no key was set (at least one key already existed)
    */
   long msetnx(String... keysvalues);
 
@@ -240,8 +240,8 @@ public interface StringCommands {
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @param key
-   * @return Integer reply, the value of the key after the increment
+   * @param key the key to increment
+   * @return The value of the key after the increment
    */
   long incr(String key);
 
@@ -257,9 +257,9 @@ public interface StringCommands {
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @param key
-   * @param increment
-   * @return Integer reply, the value of the key after the increment
+   * @param key the key to increment
+   * @param increment the value to increment by
+   * @return The value of the key after the increment
    */
   long incrBy(String key, long increment);
 
@@ -278,7 +278,7 @@ public interface StringCommands {
    * Time complexity: O(1)
    * @param key the key to increment
    * @param increment the value to increment by
-   * @return Integer reply, the value of the key after the increment
+   * @return The value of the key after the increment
    */
   double incrByFloat(String key, double increment);
 
@@ -294,8 +294,8 @@ public interface StringCommands {
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @param key
-   * @return Integer reply, the value of the key after the decrement
+   * @param key the key to decrement
+   * @return The value of the key after the decrement
    */
   long decr(String key);
 
@@ -311,9 +311,9 @@ public interface StringCommands {
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @param key
-   * @param decrement
-   * @return Integer reply, the value of the key after the decrement
+   * @param key the key to decrement
+   * @param decrement the value to decrement by
+   * @return The value of the key after the decrement
    */
   long decrBy(String key, long decrement);
 
@@ -326,9 +326,9 @@ public interface StringCommands {
    * Time complexity: O(1). The amortized time complexity is O(1) assuming the appended value is
    * small and the already present value is of any size, since the dynamic string library used by
    * Redis will double the free space available on every reallocation.
-   * @param key
-   * @param value
-   * @return Integer reply, specifically the total length of the string after the append operation.
+   * @param key the key to append to
+   * @param value the value to append
+   * @return The total length of the string after the append operation.
    */
   long append(String key, String value);
 
@@ -347,25 +347,23 @@ public interface StringCommands {
    * @param key
    * @param start
    * @param end
-   * @return Bulk reply
+   * @return The substring
    */
   String substr(String key, int start, int end);
 
   /**
    * <b><a href="http://redis.io/commands/strlen">StrLen Command</a></b>
    * Return the length of the string value stored at key.
-   * <p>
    * @param key
-   * @return Integer reply, specifically the length of the string at key, or 0 when key does not exist
+   * @return The length of the string at key, or 0 when key does not exist
    */
   long strlen(String key);
 
   /**
    * <b><a href="http://redis.io/commands/bitcount">Bitcount Command</a></b>
    * Count the number of set bits (population counting) in a string.
-   * <p>
    * @param key
-   * @return Integer reply, specifically the number of bits set to 1
+   * @return The number of bits set to 1
    */
   long bitcount(String key);
 
@@ -375,11 +373,10 @@ public interface StringCommands {
    * <p>
    * Like for the GETRANGE command start and end can contain negative values in order to index bytes
    * starting from the end of the string, where -1 is the last byte, -2 is the penultimate, and so forth.
-   * <p>
    * @param key
    * @param start byte start index
    * @param end byte end index
-   * @return Integer reply, specifically the number of bits set to 1
+   * @return The number of bits set to 1
    */
   long bitcount(String key, long start, long end);
 
@@ -388,15 +385,14 @@ public interface StringCommands {
    * @param key
    * @param start byte start index
    * @param end byte end index
-   * @param option {@link BitCountOption}
-   * @return Integer reply, specifically the number of bits set to 1
+   * @param option indicate BYTE or BIT
+   * @return The number of bits set to 1
    */
   long bitcount(String key, long start, long end, BitCountOption option);
 
   /**
    * <b><a href="http://redis.io/commands/bitpos">Bitpos Command</a></b>
    * Return the position of the first bit set to 1 or 0 in a string.
-   * <p>
    * @param key
    * @param value the bit value
    * @return The position of the first bit set to 1 or 0 according to the request
@@ -406,7 +402,6 @@ public interface StringCommands {
   /**
    * <b><a href="http://redis.io/commands/bitpos">Bitpos Command</a></b>
    * Return the position of the first bit set to 1 or 0 in a string.
-   * <p>
    * @param key
    * @param value the bit value
    * @param params {@link BitPosParams}
@@ -418,26 +413,24 @@ public interface StringCommands {
    * <b><a href="http://redis.io/commands/bitfield">Bitfield Command</a></b>
    * The command treats a Redis string as an array of bits, and is capable of addressing specific integer
    * fields of varying bit widths and arbitrary non (necessary) aligned offset.
-   * <p>
    * @param key
-   * @param arguments
+   * @param arguments may be used with optional arguments
    * @return A List of results
    */
   List<Long> bitfield(String key, String...arguments);
 
   /**
-   * The readonly version of {@link #bitfield(String, String...) BITFIELD}
+   * The readonly version of {@link StringCommands#bitfield(String, String...) BITFIELD}
    */
   List<Long> bitfieldReadonly(String key, String...arguments);
 
   /**
    * <b><a href="http://redis.io/commands/bitop">Bitop Command</a></b>
    * Perform a bitwise operation between multiple keys (containing string values) and store the result in the destKey.
-   * <p>
-   * @param op {@link BitOP}
+   * @param op can be AND, OR, XOR or NOT
    * @param destKey
    * @param srcKeys
-   * @return Integer reply, The size of the string stored in the destKey
+   * @return The size of the string stored in the destKey
    */
   long bitop(BitOP op, String destKey, String... srcKeys);
 

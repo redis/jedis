@@ -8,20 +8,20 @@ public interface DatabaseCommands {
   /**
    * Select the DB with having the specified zero-based numeric index.
    * @param index the index
-   * @return a simple string reply OK
+   * @return OK
    */
   String select(int index);
 
   /**
    * Return the number of keys in the currently-selected database.
-   * @return the number of key in the currently-selected database.
+   * @return The number of keys
    */
   long dbSize();
 
   /**
    * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
    * for this operation is O(N), N being the number of keys in the database.
-   * @param flushMode
+   * @param flushMode can be SYNC or ASYNC
    * @return OK
    */
   String flushDB(FlushMode flushMode);
@@ -31,7 +31,7 @@ public interface DatabaseCommands {
    * given database will see the data of the other database, and the other way around.
    * @param index1
    * @param index2
-   * @return Simple string reply: OK if SWAPDB was executed correctly.
+   * @return OK
    */
   String swapDB(int index1, int index2);
 
@@ -41,9 +41,9 @@ public interface DatabaseCommands {
    * already there or if the source key was not found at all, so it is possible to use MOVE as a
    * locking primitive.
    * @param key
-   * @param dbIndex
-   * @return Integer reply, specifically: 1 if the key was moved 0 if the key was not moved because
-   *         already present on the target DB or was not found in the current DB.
+   * @param dbIndex specified destination database
+   * @return 1 if the key was moved, 0 if the key was not moved because already present on the target
+   * DB or was not found in the current DB
    */
   long move(String key, int dbIndex);
 
@@ -54,7 +54,6 @@ public interface DatabaseCommands {
 
   /**
    * Copy the value stored at the source key to the destination key.
-   * <p>
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param db allows specifying an alternative logical database index for the destination key.
@@ -72,14 +71,13 @@ public interface DatabaseCommands {
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
-   * <p>
    * @param host
    * @param port
    * @param key
    * @param destinationDB
    * @param timeout the maximum idle time in any moment of the communication with the
    *               destination instance in milliseconds.
-   * @return OK on success, or NOKEY if no keys were found in the source instance.
+   * @return OK on success, or NOKEY if no keys were found in the source instance
    */
   String migrate(String host, int port, String key, int destinationDB, int timeout);
 
@@ -93,14 +91,13 @@ public interface DatabaseCommands {
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
-   * <p>
    * @param host
    * @param port
    * @param destinationDB
    * @param timeout the maximum idle time in any moment of the communication with the
    *               destination instance in milliseconds.
    * @param params {@link MigrateParams}
-   * @param keys
+   * @param keys to migrate
    * @return OK on success, or NOKEY if no keys were found in the source instance.
    */
   String migrate(String host, int port, int destinationDB, int timeout, MigrateParams params,

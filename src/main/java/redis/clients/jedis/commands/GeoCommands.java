@@ -69,7 +69,7 @@ public interface GeoCommands {
    * @param key
    * @param member1
    * @param member2
-   * @param unit
+   * @param unit can be M, KM, MI or FT can  M, KM, MI or FT
    * @return The distance as a double
    */
   Double geodist(String key, String member1, String member2, GeoUnit unit);
@@ -103,10 +103,10 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param longitude
-   * @param latitude
-   * @param radius
-   * @param unit
+   * @param longitude of the center point
+   * @param latitude of the center point
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
@@ -118,10 +118,10 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param longitude
-   * @param latitude
-   * @param radius
-   * @param unit
+   * @param longitude of the center point
+   * @param latitude of the center point
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
@@ -141,11 +141,11 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param longitude
-   * @param latitude
-   * @param radius
-   * @param unit
-   * @param param
+   * @param longitude of the center point
+   * @param latitude of the center point
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
+   * @param param {@link GeoRadiusParam}
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius,
@@ -157,11 +157,11 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param longitude
-   * @param latitude
-   * @param radius
-   * @param unit
-   * @param param
+   * @param longitude of the center point
+   * @param latitude of the center point
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
+   * @param param {@link GeoRadiusParam}
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude,
@@ -176,9 +176,9 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param member
-   * @param radius
-   * @param unit
+   * @param member represents the center of the area
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit);
@@ -189,9 +189,9 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param member
-   * @param radius
-   * @param unit
+   * @param member represents the center of the area
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit);
@@ -205,10 +205,10 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param member
-   * @param radius
-   * @param unit
-   * @param param
+   * @param member represents the center of the area
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
+   * @param param {@link GeoRadiusParam}
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit,
@@ -220,10 +220,10 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param member
-   * @param radius
-   * @param unit
-   * @param param
+   * @param member represents the center of the area
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
+   * @param param {@link GeoRadiusParam}
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius,
@@ -236,10 +236,10 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param longitude
-   * @param latitude
-   * @param radius
-   * @param unit
+   * @param longitude of the center point
+   * @param latitude of the center point
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
    * @param param {@link GeoRadiusParam}
    * @param storeParam {@link GeoRadiusStoreParam}
    * @return The number of results being stored
@@ -254,9 +254,9 @@ public interface GeoCommands {
    * Time complexity: O(N+log(M)) where N is the number of elements inside the bounding box of
    * the circular area delimited by center and radius and M is the number of items inside the index.
    * @param key
-   * @param member
-   * @param radius
-   * @param unit
+   * @param member represents the center of the area
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
    * @param param {@link GeoRadiusParam}
    * @param storeParam {@link GeoRadiusStoreParam}
    * @return The number of results being stored
@@ -274,9 +274,9 @@ public interface GeoCommands {
    * bounding box area around the shape provided as the filter and M is the number of items
    * inside the shape
    * @param key
-   * @param member
-   * @param radius
-   * @param unit
+   * @param member represents the center of the area
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit);
@@ -291,9 +291,9 @@ public interface GeoCommands {
    * bounding box area around the shape provided as the filter and M is the number of items
    * inside the shape
    * @param key
-   * @param coord
-   * @param radius
-   * @param unit
+   * @param coord represents the center of the area
+   * @param radius of the area
+   * @param unit can be M, KM, MI or FT
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double radius, GeoUnit unit);
@@ -311,10 +311,10 @@ public interface GeoCommands {
    * bounding box area around the shape provided as the filter and M is the number of items
    * inside the shape
    * @param key
-   * @param member
-   * @param width
-   * @param height
-   * @param unit
+   * @param member represents the center of the area
+   * @param width of the rectangular area
+   * @param height of the rectangular area
+   * @param unit can be M, KM, MI or FT
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit);
@@ -332,10 +332,10 @@ public interface GeoCommands {
    * bounding box area around the shape provided as the filter and M is the number of items
    * inside the shape
    * @param key
-   * @param coord
-   * @param width
-   * @param height
-   * @param unit
+   * @param coord represents the center point
+   * @param width of the rectangular area
+   * @param height of the rectangular area
+   * @param unit can be M, KM, MI or FT
    * @return List of GeoRadiusResponse
    */
   List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double width, double height, GeoUnit unit);
@@ -363,10 +363,10 @@ public interface GeoCommands {
    * bounding box area around the shape provided as the filter and M is the number of items
    * inside the shape
    * @param dest
-   * @param src
-   * @param member
-   * @param radius
-   * @param unit
+   * @param src the sorted set (key)
+   * @param member represents the center of the area
+   * @param radius of the circular area
+   * @param unit can be M, KM, MI or FT
    * @return The number of results being stored
    */
   long geosearchStore(String dest, String src, String member, double radius, GeoUnit unit);
@@ -380,9 +380,9 @@ public interface GeoCommands {
    * inside the shape
    * @param dest
    * @param src
-   * @param coord
-   * @param radius
-   * @param unit
+   * @param coord represents the center point
+   * @param radius of the circular area
+   * @param unit can be M, KM, MI or FT
    * @return The number of results being stored
    */
   long geosearchStore(String dest, String src, GeoCoordinate coord, double radius, GeoUnit unit);
@@ -396,10 +396,10 @@ public interface GeoCommands {
    * inside the shape
    * @param dest
    * @param src
-   * @param member
-   * @param width
-   * @param height 
-   * @param unit
+   * @param member represents the center of the area
+   * @param width of the rectangular area
+   * @param height of the rectangular area
+   * @param unit can be M, KM, MI or FT
    * @return The number of results being stored
    */
   long geosearchStore(String dest, String src, String member, double width, double height, GeoUnit unit);
@@ -413,10 +413,10 @@ public interface GeoCommands {
    * inside the shape
    * @param dest
    * @param src
-   * @param coord
-   * @param width
-   * @param height
-   * @param unit
+   * @param coord represents the center point
+   * @param width of the rectangular area
+   * @param height of the rectangular area
+   * @param unit can be M, KM, MI or FT
    * @return The number of results being stored
    */
   long geosearchStore(String dest, String src, GeoCoordinate coord, double width, double height, GeoUnit unit);

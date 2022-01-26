@@ -28,7 +28,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically the number of keys that exist from those specified as <i>keys</i>.
+   * @return The number of keys that exist from those specified as <i>keys</i>.
    */
   long exists(String... keys);
 
@@ -38,8 +38,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, specifically: 1: the key is now persist. 0: the key is not persist (only
-   *         happens when key not set).
+   * @return 1 if the key is now persist. 0 otherwise (only happens when key not set)
    */
   long persist(String key);
 
@@ -50,10 +49,9 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Status code reply, specifically: "none" if the key does not exist "string" if the key
-   *         contains a String value "list" if the key contains a List value "set" if the key
-   *         contains a Set value "zset" if the key contains a Sorted Set value "hash" if the key
-   *         contains a Hash value
+   * @return "none" if the key does not exist, "string" if the key contains a String value, "list"
+   * if the key contains a List value, "set" if the key contains a Set value, "zset" if the key
+   * contains a Sorted Set value, "hash" if the key contains a Hash value
    */
   String type(String key);
 
@@ -64,7 +62,7 @@ public interface KeyCommands {
    * Time complexity: O(1) to access the key and additional O(N*M) to serialize it where N is
    * the number of Redis objects composing the value and M their average size.
    * @param key
-   * @return The serialized value.
+   * @return The serialized value
    */
   byte[] dump(String key);
 
@@ -79,7 +77,7 @@ public interface KeyCommands {
    * @param ttl If ttl is 0 the key is created without any expire, otherwise the specified expire
    *           time (in milliseconds) is set.
    * @param serializedValue
-   * @return Status code reply
+   * @return OK
    */
   String restore(String key, long ttl, byte[] serializedValue);
 
@@ -95,7 +93,7 @@ public interface KeyCommands {
    *           time (in milliseconds) is set.
    * @param serializedValue
    * @param params {@link RestoreParams}
-   * @return Status code reply
+   * @return OK
    */
   String restore(String key, long ttl, byte[] serializedValue, RestoreParams params);
 
@@ -115,10 +113,10 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @param seconds
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
-   *         the key already has an associated timeout (this may happen only in Redis versions &lt;
-   *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
+   * @param seconds time to expire
+   * @return 1 if the timeout was set, 0 otherwise. Since the key already has an associated timeout
+   * (this may happen only in Redis versions &lt; 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout),
+   * or the key does not exist.
    */
   long expire(String key, long seconds);
 
@@ -129,8 +127,8 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @param milliseconds
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set.
+   * @param milliseconds time to expire
+   * @return 1 if the timeout was set, 0 otherwise.
    * e.g. key doesn't exist, or operation skipped due to the provided arguments.
    */
   long pexpire(String key, long milliseconds);
@@ -149,8 +147,8 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @param unixTime
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set.
+   * @param unixTime time to expire
+   * @return 1 if the timeout was set, 0 otherwise.
    * e.g. key doesn't exist, or operation skipped due to the provided arguments.
    */
   long expireAt(String key, long unixTime);
@@ -162,8 +160,8 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @param millisecondsTimestamp
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set.
+   * @param millisecondsTimestamp time to expire
+   * @return 1 if the timeout was set, 0 otherwise.
    * e.g. key doesn't exist, or operation skipped due to the provided arguments.
    */
   long pexpireAt(String key, long millisecondsTimestamp);
@@ -176,7 +174,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, TTL in seconds, or a negative value in order to signal an error
+   * @return TTL in seconds, or a negative value in order to signal an error
    */
   long ttl(String key);
 
@@ -187,7 +185,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, TTL in milliseconds, or a negative value in order to signal an error
+   * @return TTL in milliseconds, or a negative value in order to signal an error
    */
   long pttl(String key);
 
@@ -197,7 +195,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(N) where N is the number of keys that will be touched.
    * @param key
-   * @return Integer reply: The number of keys that were touched.
+   * @return The number of keys that were touched
    */
   long touch(String key);
 
@@ -207,7 +205,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(N) where N is the number of keys that will be touched.
    * @param keys
-   * @return Integer reply: The number of keys that were touched.
+   * @return The number of keys that were touched
    */
   long touch(String... keys);
 
@@ -218,7 +216,6 @@ public interface KeyCommands {
    * Sort the elements contained in the List, Set, or Sorted Set values at key. By default, sorting is
    * numeric with elements being compared as double precision floating point numbers. This is the
    * simplest form of SORT.
-   * <p>
    * @see KeyCommands#sort(String, SortingParams) for examples
    * @param key
    * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
@@ -304,7 +301,7 @@ public interface KeyCommands {
    * </pre>
    * @param key
    * @param sortingParameters {@link SortingParams}
-   * @return A list of sorted elements.
+   * @return A list of sorted elements
    */
   List<String> sort(String key, SortingParams sortingParameters);
 
@@ -313,7 +310,7 @@ public interface KeyCommands {
    * @param key
    * @param sortingParameters {@link SortingParams}
    * @param dstkey
-   * @return The number of elements stored at dstkey.
+   * @return The number of elements stored at dstkey
    */
   long sort(String key, SortingParams sortingParameters, String dstkey);
 
@@ -323,8 +320,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, specifically: 1 if the key was removed
-   *         0 if the key does not exist
+   * @return 1 if the key was removed, 0 if the key does not exist
    */
   long del(String key);
 
@@ -333,8 +329,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
-   *         0 if none of the specified keys existed
+   * @return An integer greater than 0 if one or more keys were removed, 0 if none of the specified keys existed
    */
   long del(String... keys);
 
@@ -350,36 +345,36 @@ public interface KeyCommands {
    * work in a different thread in order to reclaim memory, where N is the number of allocations the
    * deleted objects where composed of.
    * @param key
-   * @return Integer reply: The number of keys that were unlinked
+   * @return The number of keys that were unlinked
    */
   long unlink(String key);
 
   /**
    * @see KeyCommands#unlink(String) can be used with multiple keys.
    * @param keys
-   * @return Integer reply: The number of keys that were unlinked
+   * @return The number of keys that were unlinked
    */
   long unlink(String... keys);
 
   /**
    * <b><a href="http://redis.io/commands/copy">Copy Command</a></b>
    * Copy the value stored at the source key to the destination key.
-   * <p>
    * @param srcKey the source key.
    * @param dstKey the destination key.
    * @param replace removes the destination key before copying the value to it, in order to avoid error.
+   * @return True if source was copied, False otherwise
    */
   boolean copy(String srcKey, String dstKey, boolean replace);
 
   /**
    * <b><a href="http://redis.io/commands/rename">Rename Command</a></b>
-   * Atomically renames the key oldkey to newkey. If the source and destination name are the same an
-   * error is returned. If newkey already exists it is overwritten.
+   * Atomically renames the key <i>oldkey</i> to <i>newkey</i>. If the source and destination name are the same an
+   * error is returned. If <i>newkey</i> already exists it is overwritten.
    * <p>
    * Time complexity: O(1)
    * @param oldkey
    * @param newkey
-   * @return Status code reply
+   * @return OK
    */
   String rename(String oldkey, String newkey);
 
@@ -390,7 +385,7 @@ public interface KeyCommands {
    * Time complexity: O(1)
    * @param oldkey
    * @param newkey
-   * @return Integer reply, specifically: 1 if the key was renamed 0 if the target key already exist
+   * @return 1 if the key was renamed, 0 if the target key already exist
    */
   long renamenx(String oldkey, String newkey);
 
@@ -400,7 +395,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, The memory usage in bytes
+   * @return The memory usage in bytes
    */
   Long memoryUsage(String key);
 
@@ -412,7 +407,7 @@ public interface KeyCommands {
    * @param key
    * @param samples the number of sampled nested values. By default, this option is set to 5.
    *               To sample the all the nested values, use 0.
-   * @return Integer reply, The memory usage in bytes
+   * @return The memory usage in bytes
    */
   Long memoryUsage(String key, int samples);
 
@@ -422,7 +417,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, The number of references
+   * @return The number of references
    */
   Long objectRefcount(String key);
 
@@ -442,7 +437,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, The idle time in seconds
+   * @return The idle time in seconds
    */
   Long objectIdletime(String key);
 
@@ -452,7 +447,7 @@ public interface KeyCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, The counter's value
+   * @return The counter's value
    */
   Long objectFreq(String key);
 
@@ -461,7 +456,6 @@ public interface KeyCommands {
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
-   * <p>
    * @param host
    * @param port
    * @param key
@@ -476,7 +470,6 @@ public interface KeyCommands {
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
-   * <p>
    * @param host
    * @param port
    * @param timeout the maximum idle time in any moment of the communication with the
@@ -514,7 +507,7 @@ public interface KeyCommands {
    * Time complexity: O(n) (with n being the number of keys in the DB, and assuming keys and pattern
    * of limited length)
    * @param pattern
-   * @return Multi bulk reply, list of keys matching pattern.
+   * @return List of keys matching the pattern.
    */
   Set<String> keys(String pattern);
 
@@ -529,8 +522,7 @@ public interface KeyCommands {
    * Return a randomly selected key from the currently selected DB.
    * <p>
    * Time complexity: O(1)
-   * @return Singe line reply, specifically the randomly selected key or an empty string is the
-   *         database is empty
+   * @return Randomly selected key or an empty string if the database is empty
    */
   String randomKey();
 

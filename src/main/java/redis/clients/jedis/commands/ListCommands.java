@@ -16,9 +16,8 @@ public interface ListCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @param strings
-   * @return Integer reply, specifically, the number of elements inside the list after the push
-   *         operation.
+   * @param strings data to push
+   * @return The number of elements inside the list after the push operation
    */
   long rpush(String key, String... strings);
 
@@ -29,9 +28,8 @@ public interface ListCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @param strings
-   * @return Integer reply, specifically, the number of elements inside the list after the push
-   *         operation.
+   * @param strings data to push
+   * @return The number of elements inside the list after the push operation
    */
   long lpush(String key, String... strings);
 
@@ -42,7 +40,7 @@ public interface ListCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return The length of the list.
+   * @return The length of the list
    */
   long llen(String key);
 
@@ -76,7 +74,7 @@ public interface ListCommands {
    * @param key
    * @param start
    * @param stop
-   * @return Multi bulk reply, specifically a list of elements in the specified range.
+   * @return A list of elements in the specified range
    */
   List<String> lrange(String key, long start, long stop);
 
@@ -108,14 +106,14 @@ public interface ListCommands {
    * @param key
    * @param start
    * @param stop
-   * @return Status code reply
+   * @return OK
    */
   String ltrim(String key, long start, long stop);
 
   /**
-   * Return the specified element of the list stored at the specified key. 0 is the first element, 1
-   * the second and so on. Negative indexes are supported, for example -1 is the last element, -2
-   * the penultimate and so on.
+   * Returns the element at index in the list stored at key.  0 is the first element, 1 the second
+   * and so on. Negative indexes are supported, for example -1 is the last element, -2 the penultimate
+   * and so on.
    * <p>
    * If the value stored at key is not of list type an error is returned. If the index is out of
    * range a 'nil' reply is returned.
@@ -126,7 +124,7 @@ public interface ListCommands {
    * Time complexity: O(n) (with n being the length of the list)
    * @param key
    * @param index
-   * @return Bulk reply, specifically the requested element
+   * @return The requested element
    */
   String lindex(String key, long index);
 
@@ -144,7 +142,7 @@ public interface ListCommands {
    * @param key
    * @param index
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   String lset(String key, long index, String value);
 
@@ -161,7 +159,7 @@ public interface ListCommands {
    * @param key
    * @param count
    * @param value
-   * @return Integer Reply, specifically: The number of removed elements if the operation succeeded
+   * @return The number of removed elements if the operation succeeded
    */
   long lrem(String key, long count, String value);
 
@@ -172,7 +170,7 @@ public interface ListCommands {
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
    * @param key
-   * @return Bulk reply
+   * @return The popped element
    */
   String lpop(String key);
 
@@ -180,11 +178,9 @@ public interface ListCommands {
    * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example
    * if the list contains the elements "a","b","c" LPOP will return "a" and the list will become
    * "b","c".
-   * <p>
-   * If the key does not exist or the list is already empty the special value 'nil' is returned.
    * @param key
    * @param count
-   * @return List of count Bulk replies
+   * @return A list of popped elements, or 'nil' when key does not exist
    */
   List<String> lpop(String key, int count);
 
@@ -196,8 +192,8 @@ public interface ListCommands {
    * Time complexity: O(N) where N is the number of elements in the list
    * @param key
    * @param element
-   * @return Integer Reply, specifically: The index of first matching element in the list. Value will
-   * be 'nil' when the element is not present in the list.
+   * @return The index of first matching element in the list. Value will be 'nil' when the element
+   * is not present in the list
    */
   Long lpos(String key, String element);
 
@@ -214,23 +210,21 @@ public interface ListCommands {
    * Following is how we could use the Maxlen option lpos("foo", "b", LPosParams.lPosParams().rank(1).maxlen(2)).
    * @param key
    * @param element
-   * @param params
-   * @return Integer Reply
+   * @param params {@link LPosParams}
+   * @return The integer representing the matching element, or 'nil' if there is no match
    */
   Long lpos(String key, String element, LPosParams params);
 
   /**
-   * Count will return list of position of all the first N matching elements. It is possible to
-   * specify 0 as the number of matches, as a way to tell the command we want all the matches
-   * found returned as an array of indexes. When count is used and no match is found, an empty list
-   * is returned.
+   * Returns the index of matching elements inside a Redis list. If the element is found, its index
+   * (the zero-based position in the list) is returned. Otherwise, if no match is found, nil is returned.
    * <p>
    * Time complexity: O(N) where N is the number of elements in the list
    * @param key
    * @param element
-   * @param params
+   * @param params {@link LPosParams}
    * @param count
-   * @return Returns value will be a list containing position of the matching elements inside the list.
+   * @return A list containing position of the matching elements inside the list
    */
   List<Long> lpos(String key, String element, LPosParams params, long count);
 
@@ -238,10 +232,8 @@ public interface ListCommands {
    * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example
    * if the list contains the elements "a","b","c" LPOP will return "a" and the list will become
    * "b","c".
-   * <p>
-   * If the key does not exist or the list is already empty the special value 'nil' is returned.
    * @param key
-   * @return Bulk reply
+   * @return The popped element
    */
   String rpop(String key);
 
@@ -249,11 +241,9 @@ public interface ListCommands {
    * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example
    * if the list contains the elements "a","b","c" LPOP will return "a" and the list will become
    * "b","c".
-   * <p>
-   * If the key does not exist or the list is already empty the special value 'nil' is returned.
    * @param key
-   * @param count
-   * @return List of count Bulk replies
+   * @param count return up to count elements
+   * @return A list of count popped elements, or 'nil' when key does not exist.
    */
   List<String> rpop(String key, int count);
 
@@ -262,9 +252,9 @@ public interface ListCommands {
    * <p>
    * When key does not exist, it is considered an empty list and no operation is performed.
    * @param key
-   * @param where
-   * @param pivot
-   * @param value
+   * @param where can be  BEFORE or AFTER
+   * @param pivot reference value
+   * @param value the value
    * @return The length of the list after the insert operation, or -1 when the value pivot was not found
    */
   long linsert(String key, ListPosition where, String pivot, String value);
@@ -273,7 +263,7 @@ public interface ListCommands {
    * Inserts specified values at the head of the list stored at key. In contrary to {@link ListBinaryCommands#lpush(byte[], byte[]...) LPUSH},
    * no operation will be performed when key does not yet exist.
    * @param key
-   * @param strings
+   * @param strings the strings to push
    * @return The length of the list after the push operation
    */
   long lpushx(String key, String... strings);
@@ -282,54 +272,71 @@ public interface ListCommands {
    * Inserts specified values at the tail of the list stored at key. In contrary to {@link ListBinaryCommands#rpush(byte[], byte[]...) RPUSH},
    * no operation will be performed when key does not yet exist.
    * @param key
-   * @param strings
+   * @param strings the strings to push
    * @return The length of the list after the push operation
    */
   long rpushx(String key, String... strings);
-
-  List<String> blpop(int timeout, String key);
-
-  KeyedListElement blpop(double timeout, String key);
-
-  List<String> brpop(int timeout, String key);
-
-  KeyedListElement brpop(double timeout, String key);
 
   /**
    * The blocking version of {@link ListCommands#lpop(String)} LPOP} because it blocks the connection
    * when there are no elements to pop from any of the given lists. An element is popped from the head of
    * the first list that is non-empty, with the given keys being checked in the order that they are given.
-   * @param timeout
+   * @param timeout the timeout argument is interpreted as a double value specifying the maximum number of
+   *               seconds to block. A timeout of zero can be used to block indefinitely.
    * @param keys
    */
   List<String> blpop(int timeout, String... keys);
 
   /**
+   * @see ListCommands#blpop(int, String...)
+   */
+  List<String> blpop(int timeout, String key);
+
+  /**
    * The blocking version of {@link ListCommands#lpop(String)} LPOP} because it blocks the connection
    * when there are no elements to pop from any of the given lists. An element is popped from the head of
    * the first list that is non-empty, with the given keys being checked in the order that they are given.
-   * @param timeout
+   * @param timeout the timeout argument is interpreted as a double value specifying the maximum number of
+   *               seconds to block. A timeout of zero can be used to block indefinitely.
    * @param keys
    */
   KeyedListElement blpop(double timeout, String... keys);
+
+
+  /**
+   * @see ListCommands#blpop(double, String...)
+   */
+  KeyedListElement blpop(double timeout, String key);
 
   /**
    * The blocking version of {@link ListCommands#rpop(String)} RPOP} because it blocks the connection
    * when there are no elements to pop from any of the given lists. An element is popped from the tail of
    * the first list that is non-empty, with the given keys being checked in the order that they are given.
-   * @param timeout
+   * @param timeout the timeout argument is interpreted as a double value specifying the maximum number of
+   *               seconds to block. A timeout of zero can be used to block indefinitely.
    * @param keys
    */
   List<String> brpop(int timeout, String... keys);
 
   /**
+   * @see ListCommands#brpop(int, String...)
+   */
+  List<String> brpop(int timeout, String key);
+
+  /**
    * The blocking version of {@link ListCommands#rpop(String)} RPOP} because it blocks the connection
    * when there are no elements to pop from any of the given lists. An element is popped from the tail of
    * the first list that is non-empty, with the given keys being checked in the order that they are given.
-   * @param timeout
+   * @param timeout the timeout argument is interpreted as a double value specifying the maximum number of
+   *               seconds to block. A timeout of zero can be used to block indefinitely.
    * @param keys
    */
   KeyedListElement brpop(double timeout, String... keys);
+
+  /**
+   * @see ListCommands#brpop(double, String...)
+   */
+  KeyedListElement brpop(double timeout, String key);
 
   /**
    * Atomically return and remove the last (tail) element of the srckey list, and push the element
@@ -356,8 +363,9 @@ public interface ListCommands {
    * Time complexity: O(1)
    * @param source
    * @param destination
-   * @param timeout
-   * @return Bulk reply
+   * @param timeout the timeout argument is interpreted as a double value specifying the maximum number of
+   *               seconds to block. A timeout of zero can be used to block indefinitely.
+   * @return The element being popped from source and pushed to destination
    */
   String brpoplpush(String source, String destination, int timeout);
 
@@ -365,8 +373,9 @@ public interface ListCommands {
    * Pop an element from a list, push it to another list and return it
    * @param srcKey
    * @param dstKey
-   * @param from
-   * @param to
+   * @param from can be LEFT or RIGHT
+   * @param to can be LEFT or RIGHT
+   * @return The element being popped and pushed
    */
   String lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
@@ -374,9 +383,11 @@ public interface ListCommands {
    * Pop an element from a list, push it to another list and return it; or block until one is available
    * @param srcKey
    * @param dstKey
-   * @param from
-   * @param to
-   * @param timeout
+   * @param from can be LEFT or RIGHT
+   * @param to can be LEFT or RIGHT
+   * @param timeout the timeout argument is interpreted as a double value specifying the maximum number of
+   *               seconds to block. A timeout of zero can be used to block indefinitely.
+   * @return The element being popped and pushed
    */
   String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
 

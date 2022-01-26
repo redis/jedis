@@ -16,8 +16,8 @@ public interface SetCommands {
    * Time complexity O(1)
    * @param key
    * @param members
-   * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
-   *         already a member of the set
+   * @return The number of elements that were added to the set, not including all the elements
+   * already present in the set
    */
   long sadd(String key, String... members);
 
@@ -27,7 +27,7 @@ public interface SetCommands {
    * <p>
    * Time complexity O(N)
    * @param key
-   * @return Multi bulk reply
+   * @return All elements of the set
    */
   Set<String> smembers(String key);
 
@@ -38,8 +38,7 @@ public interface SetCommands {
    * Time complexity O(1)
    * @param key
    * @param members
-   * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
-   *         not a member of the set
+   * @return The number of members that were removed from the set, not including non-existing members
    */
   long srem(String key, String... members);
 
@@ -52,7 +51,7 @@ public interface SetCommands {
    * <p>
    * Time complexity O(1)
    * @param key
-   * @return Bulk reply
+   * @return The removed member, or nil when key does not exist
    */
   String spop(String key);
 
@@ -63,10 +62,10 @@ public interface SetCommands {
    * The {@link SetCommands#srandmember(String)} command does a similar work but the returned element is
    * not removed from the Set.
    * <p>
-   * Time complexity O(1)
+   * Time complexity O(N), where N is the value of the passed count
    * @param key
    * @param count
-   * @return Bulk reply
+   * @return The removed members
    */
   Set<String> spop(String key, long count);
 
@@ -74,8 +73,7 @@ public interface SetCommands {
    * Return the set cardinality (number of elements). If the key does not exist 0 is returned, like
    * for empty sets.
    * @param key
-   * @return Integer reply, specifically: the cardinality (number of elements) of the set as an
-   *         integer.
+   * @return The cardinality (number of elements) of the set
    */
   long scard(String key);
 
@@ -85,8 +83,7 @@ public interface SetCommands {
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Boolean reply, specifically: true if the element is a member of the set false if the
-   *         element is not a member of the set OR if the key does not exist
+   * @return True if the element is a member of the set, False otherwise
    */
   boolean sismember(String key, String member);
 
@@ -96,8 +93,7 @@ public interface SetCommands {
    * Time complexity O(N) where N is the number of elements being checked for membership
    * @param key
    * @param members
-   * @return List representing the membership of the given elements, in the same order as they are
-   *         requested.
+   * @return List representing the membership of the given elements, in the same order as they are requested
    */
   List<Boolean> smismember(String key, String... members);
 
@@ -110,7 +106,7 @@ public interface SetCommands {
    * <p>
    * Time complexity O(1)
    * @param key
-   * @return Bulk reply
+   * @return The randomly selected element
    */
   String srandmember(String key);
 
@@ -126,7 +122,7 @@ public interface SetCommands {
    * @param count if positive, return an array of distinct elements.
    *        If negative the behavior changes and the command is allowed to
    *        return the same element multiple times
-   * @return list of elements
+   * @return A list of randomly selected elements
    */
   List<String> srandmember(String key, int count);
 
@@ -137,7 +133,7 @@ public interface SetCommands {
   ScanResult<String> sscan(String key, String cursor, ScanParams params);
 
   /**
-   * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
+   * Return the difference between the Sets stored at <i>keys</i>
    * <p>
    * <b>Example:</b>
    *
@@ -150,12 +146,9 @@ public interface SetCommands {
    *
    * Non existing keys are considered like empty sets.
    * <p>
-   * <b>Time complexity:</b>
-   * <p>
-   * O(N) with N being the total number of elements of all the sets
-   * @param keys
-   * @return Return the members of a set resulting from the difference between the first set
-   *         provided and all the successive sets.
+   * Time complexity O(N) with N being the total number of elements of all the sets
+   * @param keys group of sets
+   * @return The members of a set resulting from the difference between the sets
    */
   Set<String> sdiff(String... keys);
 
@@ -163,8 +156,8 @@ public interface SetCommands {
    * This command works exactly like {@link SetCommands#sdiff(String...) SDIFF} but instead of being
    * returned the resulting set is stored in dstkey.
    * @param dstkey
-   * @param keys
-   * @return Status code reply
+   * @param keys group of sets
+   * @return The number of elements in the resulting set
    */
   long sdiffstore(String dstkey, String... keys);
 
@@ -180,8 +173,8 @@ public interface SetCommands {
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
-   * @param keys
-   * @return Multi bulk reply, specifically the list of common elements.
+   * @param keys group of sets
+   * @return A set with members of the resulting set
    */
   Set<String> sinter(String... keys);
 
@@ -192,8 +185,8 @@ public interface SetCommands {
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
    * @param dstkey
-   * @param keys
-   * @return Status code reply
+   * @param keys group of sets
+   * @return The number of elements in the resulting set
    */
   long sinterstore(String dstkey, String... keys);
 
@@ -202,7 +195,7 @@ public interface SetCommands {
    * the result set, it returns just the cardinality of the result. LIMIT defaults to 0 and means unlimited
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest
-   * @param keys
+   * @param keys group of sets
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
   long sintercard(String... keys);
@@ -214,7 +207,7 @@ public interface SetCommands {
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest
    * @param limit If the intersection cardinality reaches limit partway through the computation,
    *              the algorithm will exit and yield limit as the cardinality.
-   * @param keys
+   * @param keys group of sets
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
   long sintercard(int limit, String... keys);
@@ -229,8 +222,8 @@ public interface SetCommands {
    * Non existing keys are considered like empty sets.
    * <p>
    * Time complexity O(N) where N is the total number of elements in all the provided sets
-   * @param keys
-   * @return Multi bulk reply, specifically the list of common elements.
+   * @param keys group of sets
+   * @return A set with members of the resulting set
    */
   Set<String> sunion(String... keys);
 
@@ -241,8 +234,8 @@ public interface SetCommands {
    * <p>
    * Time complexity O(N) where N is the total number of elements in all the provided sets
    * @param dstkey
-   * @param keys
-   * @return Status code reply
+   * @param keys group of sets
+   * @return The number of elements in the resulting set
    */
   long sunionstore(String dstkey, String... keys);
 
@@ -262,8 +255,7 @@ public interface SetCommands {
    * @param srckey
    * @param dstkey
    * @param member
-   * @return Integer reply, specifically: 1 if the element was moved 0 if the element was not found
-   *         on the first set and no operation was performed
+   * @return 1 if the element was moved, 0 if no operation was performed
    */
   long smove(String srckey, String dstkey, String member);
 

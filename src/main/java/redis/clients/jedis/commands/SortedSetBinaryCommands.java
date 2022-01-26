@@ -128,11 +128,11 @@ public interface SortedSetBinaryCommands {
 
   List<byte[]> bzpopmin(double timeout, byte[]... keys);
 
-  Set<byte[]> zdiff(byte[]... sets);
+  Set<byte[]> zdiff(byte[]... keys);
 
-  Set<Tuple> zdiffWithScores(byte[]... sets);
+  Set<Tuple> zdiffWithScores(byte[]... keys);
 
-  long zdiffStore(byte[] dstkey, byte[]... sets);
+  long zdiffStore(byte[] dstkey, byte[]... keys);
 
   Set<byte[]> zinter(ZParams params, byte[]... keys);
 
@@ -148,7 +148,7 @@ public interface SortedSetBinaryCommands {
 
   Set<byte[]> zunion(ZParams params, byte[]... sets);
 
-  Set<Tuple> zunionWithScores(ZParams params, byte[]... sets);
+  Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 
   long zunionstore(byte[] dstkey, byte[]... sets);
 

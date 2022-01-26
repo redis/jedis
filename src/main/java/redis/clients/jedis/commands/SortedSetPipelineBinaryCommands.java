@@ -129,15 +129,15 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys);
 
-  Response<Set<byte[]>> zdiff(byte[]... sets);
+  Response<Set<byte[]>> zdiff(byte[]... keys);
 
-  Response<Set<Tuple>> zdiffWithScores(byte[]... sets);
+  Response<Set<Tuple>> zdiffWithScores(byte[]... keys);
 
-  Response<Long> zdiffStore(byte[] dstkey, byte[]... sets);
+  Response<Long> zdiffStore(byte[] dstkey, byte[]... keys);
 
-  Response<Set<byte[]>> zinter(ZParams params, byte[]... sets);
+  Response<Set<byte[]>> zinter(ZParams params, byte[]... keys);
 
-  Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... sets);
+  Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys);
 
   Response<Long> zinterstore(byte[] dstkey, byte[]... sets);
 
@@ -149,7 +149,7 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<Set<byte[]>> zunion(ZParams params, byte[]... sets);
 
-  Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... sets);
+  Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys);
 
   Response<Long> zunionstore(byte[] dstkey, byte[]... sets);
 

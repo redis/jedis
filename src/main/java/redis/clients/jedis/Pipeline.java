@@ -1095,18 +1095,18 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<String>> zdiff(String... sets) {
-    return appendCommand(commandObjects.zdiff(sets));
+  public Response<Set<String>> zdiff(String... keys) {
+    return appendCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zdiffWithScores(String... sets) {
-    return appendCommand(commandObjects.zdiffWithScores(sets));
+  public Response<Set<Tuple>> zdiffWithScores(String... keys) {
+    return appendCommand(commandObjects.zdiffWithScores(keys));
   }
 
   @Override
-  public Response<Long> zdiffStore(String dstKey, String... sets) {
-    return appendCommand(commandObjects.zdiffStore(dstKey, sets));
+  public Response<Long> zdiffStore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.zdiffStore(dstKey, keys));
   }
 
   @Override
@@ -1120,15 +1120,14 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<String>> zinter(ZParams params, String... sets) {
-    return appendCommand(commandObjects.zinter(params, sets));
+  public Response<Set<String>> zinter(ZParams params, String... keys) {
+    return appendCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zinterWithScores(ZParams params, String... sets) {
-    return appendCommand(commandObjects.zinterWithScores(params, sets));
+  public Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
+    return appendCommand(commandObjects.zinterWithScores(params, keys));
   }
-
   @Override
   public Response<Long> zintercard(String... sets) {
     return appendCommand(commandObjects.zintercard(sets));
@@ -1140,9 +1139,10 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<String>> zunion(ZParams params, String... sets) {
-    return appendCommand(commandObjects.zunion(params, sets));
+  public Response<Set<String>> zunion(ZParams params, String... keys) {
+    return appendCommand(commandObjects.zunion(params, keys));
   }
+
 
   @Override
   public Response<Set<Tuple>> zunionWithScores(ZParams params, String... sets) {
@@ -2617,28 +2617,28 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<byte[]>> zdiff(byte[]... sets) {
-    return appendCommand(commandObjects.zdiff(sets));
+  public Response<Set<byte[]>> zdiff(byte[]... keys) {
+    return appendCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zdiffWithScores(byte[]... sets) {
-    return appendCommand(commandObjects.zdiffWithScores(sets));
+  public Response<Set<Tuple>> zdiffWithScores(byte[]... keys) {
+    return appendCommand(commandObjects.zdiffWithScores(keys));
   }
 
   @Override
-  public Response<Long> zdiffStore(byte[] dstkey, byte[]... sets) {
-    return appendCommand(commandObjects.zdiffStore(dstkey, sets));
+  public Response<Long> zdiffStore(byte[] dstkey, byte[]... keys) {
+    return appendCommand(commandObjects.zdiffStore(dstkey, keys));
   }
 
   @Override
-  public Response<Set<byte[]>> zinter(ZParams params, byte[]... sets) {
-    return appendCommand(commandObjects.zinter(params, sets));
+  public Response<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
+    return appendCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... sets) {
-    return appendCommand(commandObjects.zinterWithScores(params, sets));
+  public Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
+    return appendCommand(commandObjects.zinterWithScores(params, keys));
   }
 
   @Override
@@ -2662,13 +2662,13 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<byte[]>> zunion(ZParams params, byte[]... sets) {
-    return appendCommand(commandObjects.zunion(params, sets));
+  public Response<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
+    return appendCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... sets) {
-    return appendCommand(commandObjects.zunionWithScores(params, sets));
+  public Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
+    return appendCommand(commandObjects.zunionWithScores(params, keys));
   }
 
   @Override

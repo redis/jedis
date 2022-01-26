@@ -45,8 +45,6 @@ public interface KeyBinaryCommands {
 
   List<byte[]> sort(byte[] key, SortingParams sortingParams);
 
-  long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey);
-
   long del(byte[] key);
 
   long del(byte[]... keys);

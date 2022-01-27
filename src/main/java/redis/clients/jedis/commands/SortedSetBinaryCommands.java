@@ -142,6 +142,32 @@ public interface SortedSetBinaryCommands {
 
   long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
 
+  /**
+   * Similar to {@link SortedSetBinaryCommands#zinter(ZParams, byte[]...) ZINTER}, but
+   * instead of returning the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
+   * being the number of input sorted sets
+   * @see SortedSetBinaryCommands#zinter(ZParams, byte[]...)
+   * @param keys group of sets
+   * @return The number of elements in the resulting intersection
+   */
+  long zintercard(byte[]... keys);
+
+  /**
+   * Similar to {@link SortedSetBinaryCommands#zinter(ZParams, byte[]...) ZINTER}, but
+   * instead of returning the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
+   * being the number of input sorted sets
+   * @see SortedSetBinaryCommands#zinter(ZParams, byte[]...)
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality
+   * @param keys group of sets
+   * @return The number of elements in the resulting intersection
+   */
+  long zintercard(long limit, byte[]... keys);
+
   Set<byte[]> zunion(ZParams params, byte[]... keys);
 
   Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);

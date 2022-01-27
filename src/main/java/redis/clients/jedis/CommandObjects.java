@@ -1678,6 +1678,16 @@ public class CommandObjects {
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
+  public final CommandObject<Long> zintercard(String... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(long limit, String... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> zinterstore(byte[] dstkey, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
@@ -1686,6 +1696,16 @@ public class CommandObjects {
   public final CommandObject<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(long limit, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<byte[]>> zinter(ZParams params, byte[]... keys) {

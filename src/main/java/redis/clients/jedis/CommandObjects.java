@@ -2459,8 +2459,8 @@ public class CommandObjects {
     String[] keysArray = keys.toArray(new String[keys.size()]);
     String[] argsArray = args.toArray(new String[args.size()]);
     return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keysArray.length)
-            .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-            BuilderFactory.ENCODED_OBJECT);
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> eval(byte[] script) {
@@ -2489,8 +2489,8 @@ public class CommandObjects {
     byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
     byte[][] argsArray = args.toArray(new byte[args.size()][]);
     return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keysArray.length)
-            .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-            BuilderFactory.RAW_OBJECT);
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(String sha1) {
@@ -2519,8 +2519,8 @@ public class CommandObjects {
     String[] keysArray = keys.toArray(new String[keys.size()]);
     String[] argsArray = args.toArray(new String[args.size()]);
     return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keysArray.length)
-            .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-            BuilderFactory.ENCODED_OBJECT);
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(byte[] sha1) {
@@ -2549,8 +2549,8 @@ public class CommandObjects {
     byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
     byte[][] argsArray = args.toArray(new byte[args.size()][]);
     return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keysArray.length)
-            .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-            BuilderFactory.RAW_OBJECT);
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {

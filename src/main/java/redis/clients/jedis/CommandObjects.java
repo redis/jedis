@@ -718,20 +718,20 @@ public class CommandObjects {
         .add(pivot).add(value), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> lpushx(String key, String... string) {
-    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) string), BuilderFactory.LONG);
+  public final CommandObject<Long> lpushx(String key, String... strings) {
+    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> rpushx(String key, String... string) {
-    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) string), BuilderFactory.LONG);
+  public final CommandObject<Long> rpushx(String key, String... strings) {
+    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> lpushx(byte[] key, byte[]... arg) {
-    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) arg), BuilderFactory.LONG);
+  public final CommandObject<Long> lpushx(byte[] key, byte[]... args) {
+    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> rpushx(byte[] key, byte[]... arg) {
-    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) arg), BuilderFactory.LONG);
+  public final CommandObject<Long> rpushx(byte[] key, byte[]... args) {
+    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<String>> blpop(int timeout, String key) {

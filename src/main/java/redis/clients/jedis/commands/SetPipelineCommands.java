@@ -9,11 +9,11 @@ import redis.clients.jedis.resps.ScanResult;
 
 public interface SetPipelineCommands {
 
-  Response<Long> sadd(String key, String... member);
+  Response<Long> sadd(String key, String... members);
 
   Response<Set<String>> smembers(String key);
 
-  Response<Long> srem(String key, String... member);
+  Response<Long> srem(String key, String... members);
 
   Response<String> spop(String key);
 

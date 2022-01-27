@@ -9,11 +9,11 @@ import redis.clients.jedis.resps.ScanResult;
 
 public interface SetPipelineBinaryCommands {
 
-  Response<Long> sadd(byte[] key, byte[]... member);
+  Response<Long> sadd(byte[] key, byte[]... members);
 
   Response<Set<byte[]>> smembers(byte[] key);
 
-  Response<Long> srem(byte[] key, byte[]... member);
+  Response<Long> srem(byte[] key, byte[]... members);
 
   Response<byte[]> spop(byte[] key);
 

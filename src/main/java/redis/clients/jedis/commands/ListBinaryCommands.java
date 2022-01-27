@@ -40,9 +40,9 @@ public interface ListBinaryCommands {
 
   long linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
 
-  long lpushx(byte[] key, byte[]... arg);
+  long lpushx(byte[] key, byte[]... args);
 
-  long rpushx(byte[] key, byte[]... arg);
+  long rpushx(byte[] key, byte[]... args);
 
   List<byte[]> blpop(int timeout, byte[]... keys);
 

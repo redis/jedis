@@ -41,9 +41,9 @@ public interface ListPipelineBinaryCommands {
 
   Response<Long> linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value);
 
-  Response<Long> lpushx(byte[] key, byte[]... arg);
+  Response<Long> lpushx(byte[] key, byte[]... args);
 
-  Response<Long> rpushx(byte[] key, byte[]... arg);
+  Response<Long> rpushx(byte[] key, byte[]... args);
 
   Response<List<byte[]>> blpop(int timeout, byte[]... keys);
 

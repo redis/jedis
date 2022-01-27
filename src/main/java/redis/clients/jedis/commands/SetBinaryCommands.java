@@ -8,11 +8,11 @@ import redis.clients.jedis.resps.ScanResult;
 
 public interface SetBinaryCommands {
 
-  long sadd(byte[] key, byte[]... member);
+  long sadd(byte[] key, byte[]... members);
 
   Set<byte[]> smembers(byte[] key);
 
-  long srem(byte[] key, byte[]... member);
+  long srem(byte[] key, byte[]... members);
 
   byte[] spop(byte[] key);
 

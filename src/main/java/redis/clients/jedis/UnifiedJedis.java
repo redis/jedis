@@ -974,13 +974,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long lpushx(String key, String... string) {
-    return executeCommand(commandObjects.lpushx(key, string));
+  public long lpushx(String key, String... strings) {
+    return executeCommand(commandObjects.lpushx(key, strings));
   }
 
   @Override
-  public long rpushx(String key, String... string) {
-    return executeCommand(commandObjects.rpushx(key, string));
+  public long rpushx(String key, String... strings) {
+    return executeCommand(commandObjects.rpushx(key, strings));
   }
 
   @Override
@@ -989,13 +989,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long lpushx(byte[] key, byte[]... arg) {
-    return executeCommand(commandObjects.lpushx(key, arg));
+  public long lpushx(byte[] key, byte[]... args) {
+    return executeCommand(commandObjects.lpushx(key, args));
   }
 
   @Override
-  public long rpushx(byte[] key, byte[]... arg) {
-    return executeCommand(commandObjects.rpushx(key, arg));
+  public long rpushx(byte[] key, byte[]... args) {
+    return executeCommand(commandObjects.rpushx(key, args));
   }
 
   @Override
@@ -1293,8 +1293,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   // Set commands
   @Override
-  public long sadd(String key, String... member) {
-    return executeCommand(commandObjects.sadd(key, member));
+  public long sadd(String key, String... members) {
+    return executeCommand(commandObjects.sadd(key, members));
   }
 
   @Override
@@ -1303,8 +1303,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long srem(String key, String... member) {
-    return executeCommand(commandObjects.srem(key, member));
+  public long srem(String key, String... members) {
+    return executeCommand(commandObjects.srem(key, members));
   }
 
   @Override
@@ -1333,8 +1333,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sadd(byte[] key, byte[]... member) {
-    return executeCommand(commandObjects.sadd(key, member));
+  public long sadd(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.sadd(key, members));
   }
 
   @Override
@@ -1343,8 +1343,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long srem(byte[] key, byte[]... member) {
-    return executeCommand(commandObjects.srem(key, member));
+  public long srem(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.srem(key, members));
   }
 
   @Override

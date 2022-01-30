@@ -10,11 +10,11 @@ public enum SetExpireOption implements Rawable {
   private final byte[] raw;
 
   private SetExpireOption() {
-        raw = SafeEncoder.encode(name());
-    }
+    raw = SafeEncoder.encode(name());
+  }
 
   @Override
   public byte[] getRaw() {
-        return raw;
-    }
+    return raw;
+  }
 }

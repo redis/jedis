@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
@@ -126,10 +127,34 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void evalReadonly() {
+    String script = "return KEYS[1]";
+    List<String> keys = new ArrayList<String>();
+    keys.add("key1");
+
+    List<String> args = new ArrayList<String>();
+    args.add("first");
+
+    String response = (String) jedis.evalReadonly(script, keys, args);
+
+    assertEquals("key1", response);
+  }
+
+  @Test
   public void evalsha() {
     jedis.set("foo", "bar");
     jedis.eval("return redis.call('get','foo')");
     String result = (String) jedis.evalsha("6b1bf486c81ceb7edf3c093f4c48582e38c0e791");
+
+    assertEquals("bar", result);
+  }
+
+  @Test
+  public void evalshaReadonly() {
+    jedis.set("foo", "bar");
+    jedis.eval("return redis.call('get','foo')");
+    String result = (String) jedis.evalshaReadonly("6b1bf486c81ceb7edf3c093f4c48582e38c0e791",
+            Collections.emptyList(), Collections.emptyList());
 
     assertEquals("bar", result);
   }
@@ -140,6 +165,16 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.eval(SafeEncoder.encode("return redis.call('get','foo')"));
     byte[] result = (byte[]) jedis.evalsha(SafeEncoder
         .encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"));
+
+    assertArrayEquals(SafeEncoder.encode("bar"), result);
+  }
+
+  @Test
+  public void evalshaReadonlyBinary() {
+    jedis.set(SafeEncoder.encode("foo"), SafeEncoder.encode("bar"));
+    jedis.eval(SafeEncoder.encode("return redis.call('get','foo')"));
+    byte[] result = (byte[]) jedis.evalshaReadonly(SafeEncoder.encode("6b1bf486c81ceb7edf3c093f4c48582e38c0e791"),
+            Collections.emptyList(), Collections.emptyList());
 
     assertArrayEquals(SafeEncoder.encode("bar"), result);
   }

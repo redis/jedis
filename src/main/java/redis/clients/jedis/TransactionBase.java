@@ -1589,6 +1589,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Object> evalReadonly(String script, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Response<Object> evalsha(String sha1) {
     return appendCommand(commandObjects.evalsha(sha1));
   }
@@ -1602,6 +1607,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
     return appendCommand(commandObjects.evalsha(sha1, keys, args));
   }
+
+  @Override
+  public Response<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
+  }
+
 
   @Override
   public Response<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
@@ -2320,6 +2331,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Object> evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Response<Object> evalsha(byte[] sha1) {
     return appendCommand(commandObjects.evalsha(sha1));
   }
@@ -2332,6 +2348,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     return appendCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Response<Object> evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override

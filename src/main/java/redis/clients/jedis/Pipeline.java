@@ -1525,6 +1525,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Object> evalReadonly(String script, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Response<Object> evalsha(String sha1) {
     return appendCommand(commandObjects.evalsha(sha1));
   }
@@ -1537,6 +1542,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
     return appendCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Response<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -2256,6 +2266,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Object> evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Response<Object> evalsha(byte[] sha1) {
     return appendCommand(commandObjects.evalsha(sha1));
   }
@@ -2268,6 +2283,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     return appendCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Response<Object> evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override

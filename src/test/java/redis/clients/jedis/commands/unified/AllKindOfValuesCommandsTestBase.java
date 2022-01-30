@@ -289,14 +289,14 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set("foo", "bar");
     assertEquals(1, jedis.expire("foo", 20L));
-    assertEquals(1, jedis.expire("foo", 20L, SetExpireOption.NX));
+    assertEquals(0, jedis.expire("foo", 20L, SetExpireOption.NX));
 
     // Binary
     assertEquals(0, jedis.expire(bfoo, 20L));
 
     jedis.set(bfoo, bbar);
     assertEquals(1, jedis.expire(bfoo, 20L));
-    assertEquals(1, jedis.expire(bfoo, 20L, SetExpireOption.NX));
+    assertEquals(0, jedis.expire(bfoo, 20L, SetExpireOption.NX));
   }
 
   @Test

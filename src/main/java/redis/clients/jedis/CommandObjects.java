@@ -1718,6 +1718,16 @@ public class CommandObjects {
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
+  public final CommandObject<Long> zintercard(String... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(long limit, String... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> zinterstore(byte[] dstkey, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
@@ -1726,6 +1736,16 @@ public class CommandObjects {
   public final CommandObject<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(long limit, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
@@ -2495,6 +2515,14 @@ public class CommandObjects {
         BuilderFactory.ENCODED_OBJECT);
   }
 
+  public final CommandObject<Object> evalReadonly(String script, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
   public final CommandObject<Object> eval(byte[] script) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(0), BuilderFactory.RAW_OBJECT);
   }
@@ -2513,6 +2541,14 @@ public class CommandObjects {
     byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
     byte[][] argsArray = args.toArray(new byte[args.size()][]);
     return new CommandObject<>(commandArguments(EVAL).add(script).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<Object> evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
+    byte[][] argsArray = args.toArray(new byte[args.size()][]);
+    return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keysArray.length)
         .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
         BuilderFactory.RAW_OBJECT);
   }
@@ -2539,6 +2575,14 @@ public class CommandObjects {
         BuilderFactory.ENCODED_OBJECT);
   }
 
+  public final CommandObject<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
   public final CommandObject<Object> evalsha(byte[] sha1) {
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.RAW_OBJECT);
   }
@@ -2557,6 +2601,14 @@ public class CommandObjects {
     byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
     byte[][] argsArray = args.toArray(new byte[args.size()][]);
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<Object> evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
+    byte[][] argsArray = args.toArray(new byte[args.size()][]);
+    return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keysArray.length)
         .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
         BuilderFactory.RAW_OBJECT);
   }

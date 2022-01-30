@@ -54,7 +54,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
   }
 
-  private void connectToFirstSuccsefulHost(Socket socket, HostAndPort hostAndPort) throws Exception {
+  private void connectToFirstSuccessfulHost(Socket socket, HostAndPort hostAndPort) throws Exception {
     List<InetAddress> hosts = Arrays.asList(InetAddress.getAllByName(hostAndPort.getHost()));
     if (hosts.size() > 1) {
       Collections.shuffle(hosts);
@@ -82,7 +82,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
 
       HostAndPort _hostAndPort = getSocketHostAndPort();
-      connectToFirstSuccsefulHost(socket, _hostAndPort);
+      connectToFirstSuccessfulHost(socket, _hostAndPort);
       socket.setSoTimeout(socketTimeout);
 
       if (ssl) {

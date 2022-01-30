@@ -138,8 +138,28 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Long> expire(String key, long seconds, SetExpireOption setExpireOption) {
+    return appendCommand(commandObjects.expire(key, seconds, setExpireOption));
+  }
+
+  @Override
+  public Response<Long> expiretime(String key) {
+    return appendCommand(commandObjects.expiretime(key));
+  }
+
+  @Override
   public Response<Long> pexpire(String key, long milliseconds) {
     return appendCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public Response<Long> pexpire(String key, long milliseconds, SetExpireOption setExpireOption) {
+    return appendCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));
+  }
+
+  @Override
+  public Response<Long> pexpiretime(String key) {
+    return appendCommand(commandObjects.pexpiretime(key));
   }
 
   @Override
@@ -1863,8 +1883,28 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Long> expire(byte[] key, long seconds, SetExpireOption setExpireOption) {
+    return appendCommand(commandObjects.expire(key, seconds, setExpireOption));
+  }
+
+  @Override
+  public Response<Long> expiretime(byte[] key) {
+    return appendCommand(commandObjects.expiretime(key));
+  }
+
+  @Override
   public Response<Long> pexpire(byte[] key, long milliseconds) {
     return appendCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public Response<Long> pexpire(byte[] key, long milliseconds, SetExpireOption setExpireOption) {
+    return appendCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));
+  }
+
+  @Override
+  public Response<Long> pexpiretime(byte[] key) {
+    return appendCommand(commandObjects.pexpiretime(key));
   }
 
   @Override

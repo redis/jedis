@@ -34,6 +34,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.SetExpireOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.params.RestoreParams;
@@ -288,12 +289,14 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set("foo", "bar");
     assertEquals(1, jedis.expire("foo", 20L));
+    assertEquals(1, jedis.expire("foo", 20L, SetExpireOption.NX));
 
     // Binary
     assertEquals(0, jedis.expire(bfoo, 20L));
 
     jedis.set(bfoo, bbar);
     assertEquals(1, jedis.expire(bfoo, 20L));
+    assertEquals(1, jedis.expire(bfoo, 20L, SetExpireOption.NX));
   }
 
   @Test
@@ -312,6 +315,22 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     jedis.set(bfoo, bbar);
     unixTime = (System.currentTimeMillis() / 1000L) + 20;
     assertEquals(1, jedis.expireAt(bfoo, unixTime));
+  }
+
+  @Test
+  public void expiretime() {
+    long unixTime;
+
+    jedis.set("foo", "bar");
+    unixTime = (System.currentTimeMillis() / 1000L) + 20;
+    jedis.expireAt("foo", unixTime);
+    assertEquals(unixTime, jedis.expiretime("foo"), 0.0001);
+
+    // Binary
+    jedis.set(bfoo, bbar);
+    unixTime = (System.currentTimeMillis() / 1000L) + 20;
+    jedis.expireAt(bfoo, unixTime);
+    assertEquals(unixTime, jedis.expiretime(bfoo), 0.0001);
   }
 
   @Test
@@ -443,6 +462,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set("foo2", "bar2");
     assertEquals(1, jedis.pexpire("foo2", 200000000000L));
+    assertEquals(0, jedis.pexpire("foo2", 10000, SetExpireOption.NX));
 
     long pttl = jedis.pttl("foo2");
     assertTrue(pttl > 100000000000L);
@@ -452,6 +472,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set(bfoo, bbar);
     assertEquals(1, jedis.pexpire(bfoo, 10000));
+    assertEquals(0, jedis.pexpire(bfoo, 10000, SetExpireOption.NX));
   }
 
   @Test
@@ -468,6 +489,20 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set(bfoo, bbar);
     assertEquals(1, jedis.pexpireAt(bfoo, unixTime));
+  }
+
+  @Test
+  public void pexpiretime() {
+    long unixTime = (System.currentTimeMillis()) + 10000;
+
+    jedis.set("foo", "bar");
+    jedis.pexpireAt("foo", unixTime);
+    assertEquals(unixTime, jedis.pexpiretime("foo"), 0.0001);
+
+    // Binary
+    jedis.set(bfoo, bbar);
+    jedis.pexpireAt(bfoo, unixTime);
+    assertEquals(unixTime, jedis.pexpiretime(bfoo), 0.0001);
   }
 
   @Test

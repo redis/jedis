@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
+import redis.clients.jedis.args.SetExpireOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
@@ -28,7 +29,15 @@ public interface KeyPipelineCommands {
 
   Response<Long> expire(String key, long seconds);
 
+  Response<Long> expire(String key, long seconds, SetExpireOption setExpireOption);
+
+  Response<Long> expiretime(String key);
+
   Response<Long> pexpire(String key, long milliseconds);
+
+  Response<Long> pexpire(String key, long milliseconds, SetExpireOption setExpireOption);
+
+  Response<Long> pexpiretime(String key);
 
   Response<Long> expireAt(String key, long unixTime);
 

@@ -3,7 +3,7 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 import java.util.Locale;
 
-public enum SetExpireOption implements Rawable{
+public enum SetExpireOption implements Rawable {
 
     NX, XX, GT, LT;
 

@@ -5,16 +5,16 @@ import java.util.Locale;
 
 public enum SetExpireOption implements Rawable {
 
-    NX, XX, GT, LT;
+  NX, XX, GT, LT;
 
-    private final byte[] raw;
+  private final byte[] raw;
 
-    private SetExpireOption() {
+  private SetExpireOption() {
         raw = SafeEncoder.encode(name());
     }
 
-    @Override
-    public byte[] getRaw() {
+  @Override
+  public byte[] getRaw() {
         return raw;
     }
 }

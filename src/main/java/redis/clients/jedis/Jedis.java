@@ -3097,6 +3097,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long zintercard(byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public long zintercard(long limit, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(limit, keys));
+  }
+
+  @Override
   public long zlexcount(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zlexcount(key, min, max));
@@ -3626,6 +3638,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.eval(script, keys, args));
   }
 
+  @Override
+  public Object evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
   protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
     final int keyCount = keys.size();
     final int argCount = args.size();
@@ -3662,6 +3680,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object evalsha(final byte[] sha1, final List<byte[]> keys, final List<byte[]> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -7196,6 +7220,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
+  @Override
+  public long zintercard(String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public long zintercard(long limit, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(limit, keys));
+  }
+
   /**
    * Creates a union or intersection of N sorted sets given by keys k1 through kN, and stores it at
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
@@ -7572,6 +7608,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Object evalReadonly(String script, List<String> keys, List<String> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Object eval(final String script) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.eval(script));
@@ -7587,6 +7629,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override

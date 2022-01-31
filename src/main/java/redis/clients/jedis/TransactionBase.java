@@ -1193,6 +1193,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Long> zintercard(String... keys) {
+    return appendCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public Response<Long> zintercard(long limit, String... keys) {
+    return appendCommand(commandObjects.zintercard(limit, keys));
+  }
+
+  @Override
   public Response<Set<String>> zunion(ZParams params, String... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
@@ -1559,6 +1569,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Object> evalReadonly(String script, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Response<Object> evalsha(String sha1) {
     return appendCommand(commandObjects.evalsha(sha1));
   }
@@ -1572,6 +1587,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
     return appendCommand(commandObjects.evalsha(sha1, keys, args));
   }
+
+  @Override
+  public Response<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
+  }
+
 
   @Override
   public Response<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
@@ -2270,6 +2291,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Object> evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Response<Object> evalsha(byte[] sha1) {
     return appendCommand(commandObjects.evalsha(sha1));
   }
@@ -2282,6 +2308,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     return appendCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Response<Object> evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -2702,6 +2733,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return appendCommand(commandObjects.zinterstore(dstkey, params, sets));
+  }
+
+  @Override
+  public Response<Long> zintercard(byte[]... keys) {
+    return appendCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public Response<Long> zintercard(long limit, byte[]... keys) {
+    return appendCommand(commandObjects.zintercard(limit, keys));
   }
 
   @Override

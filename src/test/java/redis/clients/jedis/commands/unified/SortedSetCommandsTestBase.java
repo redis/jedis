@@ -1371,6 +1371,26 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  public void zintercard() {
+    jedis.zadd("foo", 1, "a");
+    jedis.zadd("foo", 2, "b");
+    jedis.zadd("bar", 2, "a");
+    jedis.zadd("bar", 1, "b");
+
+    assertEquals(2, jedis.zintercard("foo", "bar"));
+    assertEquals(1, jedis.zintercard(1, "foo", "bar"));
+
+    // Binary
+    jedis.zadd(bfoo, 1, ba);
+    jedis.zadd(bfoo, 2, bb);
+    jedis.zadd(bbar, 2, ba);
+    jedis.zadd(bbar, 2, bb);
+
+    assertEquals(2, jedis.zintercard(bfoo, bbar));
+    assertEquals(1, jedis.zintercard(1, bfoo, bbar));
+  }
+
+  @Test
   public void zscan() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");

@@ -720,6 +720,32 @@ public interface SortedSetCommands {
   long zinterstore(String dstkey, ZParams params, String... sets);
 
   /**
+   * Similar to {@link SortedSetCommands#zinter(ZParams, String...) ZINTER}, but
+   * instead of returning the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
+   * being the number of input sorted sets
+   * @see SortedSetCommands#zinter(ZParams, String...)
+   * @param keys group of sets
+   * @return The number of elements in the resulting intersection
+   */
+  long zintercard(String... keys);
+
+  /**
+   * Similar to {@link SortedSetCommands#zinter(ZParams, String...) ZINTER}, but
+   * instead of returning the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*K) worst case with N being the smallest input sorted set, K
+   * being the number of input sorted sets
+   * @see SortedSetCommands#zinter(ZParams, String...)
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality
+   * @param keys group of sets
+   * @return The number of elements in the resulting intersection
+   */
+  long zintercard(long limit, String... keys);
+
+  /**
    * Compute the union between all the sets in the given keys.
    * <p>
    * Time complexity O(N)+O(M log(M)) with N being the sum of the sizes of the input sorted sets,

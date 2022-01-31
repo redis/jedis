@@ -21,7 +21,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>4.0.1</version>
+    <version>4.1.1</version>
 </dependency>
 ```
 

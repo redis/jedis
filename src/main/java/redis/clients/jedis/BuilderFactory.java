@@ -1506,13 +1506,6 @@ public final class BuilderFactory {
   public static final Builder<List<TSElement>> TIMESERIES_ELEMENT_LIST = new Builder<List<TSElement>>() {
     @Override
     public List<TSElement> build(Object data) {
-//      List<Object> list = (List<Object>) data;
-//      List<TSElement> elements = new ArrayList<>(list.size());
-//      for (Object pairObject : list) {
-//        List<Object> pairList = (List<Object>) pairObject;
-//        elements.add(new TSElement(LONG.build(pairList.get(0)), DOUBLE.build(pairList.get(1))));
-//      }
-//      return elements;
       return ((List<Object>) data).stream().map((pairObject) -> (List<Object>) pairObject)
           .map((pairList)
               -> new TSElement(LONG.build(pairList.get(0)), DOUBLE.build(pairList.get(1))))
@@ -1523,16 +1516,6 @@ public final class BuilderFactory {
   public static final Builder<List<TSElements>> TIMESERIES_MRANGE_RESPONSE = new Builder<List<TSElements>>() {
     @Override
     public List<TSElements> build(Object data) {
-//      List<Object> list = (List<Object>) data;
-//      List<TSRange> ranges = new ArrayList<>(list.size());
-//      for (Object tsObject : list) {
-//        List<Object> tsList = (List<Object>) tsObject;
-//        String key = STRING.build(tsList.get(0));
-//        Map<String, String> labels = STRING_MAP_FROM_PAIRS.build(tsList.get(1));
-//        List<TSElement> elements = TIMESERIES_ELEMENT_LIST.build(tsList.get(2));
-//        ranges.add(new TSRange(key, labels, elements));
-//      }
-//      return ranges;
       return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
           .map((tsList) -> new TSElements(STRING.build(tsList.get(0)),
               STRING_MAP_FROM_PAIRS.build(tsList.get(1)),

@@ -31,7 +31,6 @@ public class TSMGetParams implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
-
     if (withLabels) {
       args.add(WITHLABELS);
     } else if (selectedLabels != null) {

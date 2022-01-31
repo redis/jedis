@@ -14,6 +14,8 @@ import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.TSElement;
+import redis.clients.jedis.timeseries.TSElements;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -1489,6 +1491,64 @@ public final class BuilderFactory {
         dump.put(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
       }
       return dump;
+    }
+  };
+
+  public static final Builder<TSElement> TIMESERIES_ELEMENT = new Builder<TSElement>() {
+    @Override
+    public TSElement build(Object data) {
+      List<Object> list = (List<Object>) data;
+      if (list == null || list.isEmpty()) return null;
+      return new TSElement(LONG.build(list.get(0)), DOUBLE.build(list.get(1)));
+    }
+  };
+
+  public static final Builder<List<TSElement>> TIMESERIES_ELEMENT_LIST = new Builder<List<TSElement>>() {
+    @Override
+    public List<TSElement> build(Object data) {
+//      List<Object> list = (List<Object>) data;
+//      List<TSElement> elements = new ArrayList<>(list.size());
+//      for (Object pairObject : list) {
+//        List<Object> pairList = (List<Object>) pairObject;
+//        elements.add(new TSElement(LONG.build(pairList.get(0)), DOUBLE.build(pairList.get(1))));
+//      }
+//      return elements;
+      return ((List<Object>) data).stream().map((pairObject) -> (List<Object>) pairObject)
+          .map((pairList)
+              -> new TSElement(LONG.build(pairList.get(0)), DOUBLE.build(pairList.get(1))))
+          .collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<List<TSElements>> TIMESERIES_MRANGE_RESPONSE = new Builder<List<TSElements>>() {
+    @Override
+    public List<TSElements> build(Object data) {
+//      List<Object> list = (List<Object>) data;
+//      List<TSRange> ranges = new ArrayList<>(list.size());
+//      for (Object tsObject : list) {
+//        List<Object> tsList = (List<Object>) tsObject;
+//        String key = STRING.build(tsList.get(0));
+//        Map<String, String> labels = STRING_MAP_FROM_PAIRS.build(tsList.get(1));
+//        List<TSElement> elements = TIMESERIES_ELEMENT_LIST.build(tsList.get(2));
+//        ranges.add(new TSRange(key, labels, elements));
+//      }
+//      return ranges;
+      return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
+          .map((tsList) -> new TSElements(STRING.build(tsList.get(0)),
+              STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
+              TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
+          .collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<List<TSElements>> TIMESERIES_MGET_RESPONSE = new Builder<List<TSElements>>() {
+    @Override
+    public List<TSElements> build(Object data) {
+      return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
+          .map((tsList) -> new TSElements(STRING.build(tsList.get(0)),
+              STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
+              TIMESERIES_ELEMENT.build(tsList.get(2))))
+          .collect(Collectors.toList());
     }
   };
 

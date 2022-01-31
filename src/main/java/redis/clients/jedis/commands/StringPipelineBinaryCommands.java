@@ -5,10 +5,7 @@ import java.util.List;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.params.BitPosParams;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringPipelineBinaryCommands {
@@ -77,5 +74,7 @@ public interface StringPipelineBinaryCommands {
 
   Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
-  Response<LCSMatchResult> strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params);
+  Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params);
+
+  Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params);
 }

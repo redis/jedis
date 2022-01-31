@@ -453,6 +453,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
+    return appendCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
+  @Override
   public Response<String> set(String key, String value) {
     return appendCommand(commandObjects.set(key, value));
   }
@@ -3009,6 +3014,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
     return appendCommand(commandObjects.strAlgoLCSStrings(keyA, keyB, params));
+  }
+
+  @Override
+  public Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params) {
+    return appendCommand(commandObjects.lcs(keyA, keyB, params));
   }
 
   @Override

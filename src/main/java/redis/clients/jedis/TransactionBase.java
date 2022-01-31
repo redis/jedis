@@ -516,6 +516,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
+    return appendCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
+  @Override
   public Response<String> set(String key, String value) {
     return appendCommand(commandObjects.set(key, value));
   }
@@ -3073,8 +3078,14 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSStrings(keyA, keyB, params));
+    return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
+
+  @Override
+  public Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params) {
+    return appendCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
 
   @Override
   public Response<String> jsonSet(String key, Path2 path, Object object) {

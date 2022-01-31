@@ -4,10 +4,7 @@ import java.util.List;
 
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.params.BitPosParams;
-import redis.clients.jedis.params.GetExParams;
-import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
+import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringCommands {
@@ -438,9 +435,18 @@ public interface StringCommands {
    * Calculate the longest common subsequence of keyA and keyB.
    * @param keyA keyA
    * @param keyB keyB
-   * @param params the params
+   * @param params {@link StrAlgoLCSParams}
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
+
+  /**
+   * Calculate the longest common subsequence of keyA and keyB.
+   * @param keyA keyA
+   * @param keyB keyB
+   * @param params {@link LCSParams}
+   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
+   */
+  LCSMatchResult lcs(String keyA, String keyB, LCSParams params);
 
 }

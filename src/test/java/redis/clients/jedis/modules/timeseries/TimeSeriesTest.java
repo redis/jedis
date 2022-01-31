@@ -580,6 +580,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(labels, ranges2.get(0).getLabels());
     assertEquals(labels, ranges2.get(1).getLabels());
     assertEquals(0, ranges2.get(0).getElements().size());
+    assertNull(ranges2.get(0).getElement());
 
     // Test for returned result on MGet
     client.tsAdd("seriesMGet1", 1500, 1.3);

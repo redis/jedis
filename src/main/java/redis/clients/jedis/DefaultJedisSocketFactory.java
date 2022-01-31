@@ -69,7 +69,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         socket.setKeepAlive(true); // Will monitor the TCP connection is valid
         socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
         socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
-        socket.setSoTimeout(socketTimeout);
 
         socket.connect(new InetSocketAddress(host.getHostAddress(), hostAndPort.getPort()), connectionTimeout);
         return socket;
@@ -86,6 +85,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     try {
       HostAndPort _hostAndPort = getSocketHostAndPort();
       socket = connectToFirstSuccsefulHost(_hostAndPort);
+      socket.setSoTimeout(socketTimeout);
 
       if (ssl) {
         SSLSocketFactory _sslSocketFactory = this.sslSocketFactory;

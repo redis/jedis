@@ -315,6 +315,7 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(position1.getB().getEnd(), 1);
     assertEquals(position1.getMatchLen(), 2);
   }
+
   @Test
   public void lcs() {
     jedis.mset("key1", "ohmytext", "key2", "mynewtext");

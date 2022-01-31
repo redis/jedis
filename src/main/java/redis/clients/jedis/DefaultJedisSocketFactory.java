@@ -54,16 +54,24 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     }
   }
 
-  private void connectToFirstSuccsefulHost(Socket socket, HostAndPort hostAndPort) throws Exception {
+  private Socket connectToFirstSuccsefulHost(HostAndPort hostAndPort) throws Exception {
     List<InetAddress> hosts = Arrays.asList(InetAddress.getAllByName(hostAndPort.getHost()));
     if (hosts.size() > 1) {
       Collections.shuffle(hosts);
     }
+
     JedisConnectionException jce = new JedisConnectionException("Failed to connect to any host resolved for DNS name.");
     for (InetAddress host : hosts) {
       try {
+        Socket socket = new Socket();
+
+        socket.setReuseAddress(true);
+        socket.setKeepAlive(true); // Will monitor the TCP connection is valid
+        socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
+        socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
+
         socket.connect(new InetSocketAddress(host.getHostAddress(), hostAndPort.getPort()), connectionTimeout);
-        return;
+        return socket;
       } catch (Exception e) {
         jce.addSuppressed(e);
       }
@@ -75,14 +83,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   public Socket createSocket() throws JedisConnectionException {
     Socket socket = null;
     try {
-      socket = new Socket();
-      socket.setReuseAddress(true);
-      socket.setKeepAlive(true); // Will monitor the TCP connection is valid
-      socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
-      socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
-
       HostAndPort _hostAndPort = getSocketHostAndPort();
-      connectToFirstSuccsefulHost(socket, _hostAndPort);
+      socket = connectToFirstSuccsefulHost(_hostAndPort);
       socket.setSoTimeout(socketTimeout);
 
       if (ssl) {

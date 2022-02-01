@@ -7382,6 +7382,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of strA and strB.
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
    * @param strA
    * @param strB
    * @param params

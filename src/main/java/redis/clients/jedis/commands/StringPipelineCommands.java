@@ -79,7 +79,8 @@ public interface StringPipelineCommands {
   Response<Long> bitop(BitOP op, String destKey, String... srcKeys);
 
   /**
-   * @deprecated Use {@link StringPipelineCommands#lcs(String, String, LCSParams) LCS}
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link StringPipelineCommands#lcs(String, String, LCSParams) LCS} can be used instead of this method.
    */
   @Deprecated
   Response<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);

@@ -437,7 +437,8 @@ public interface StringCommands {
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
-   * @deprecated Use {@link StringCommands#lcs(String, String, LCSParams) LCS}
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link StringCommands#lcs(String, String, LCSParams) LCS} can be used instead of this method.
    * @param keyA keyA
    * @param keyB keyB
    * @param params {@link StrAlgoLCSParams}

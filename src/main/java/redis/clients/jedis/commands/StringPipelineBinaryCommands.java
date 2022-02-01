@@ -79,7 +79,8 @@ public interface StringPipelineBinaryCommands {
   Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
   /**
-   * @deprecated Use {@link StringPipelineBinaryCommands#lcs(byte[], byte[], LCSParams) LCS}
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link StringPipelineBinaryCommands#lcs(byte[], byte[], LCSParams) LCS} can be used instead of this method.
    */
   @Deprecated
   Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params);

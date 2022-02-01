@@ -77,4 +77,5 @@ public interface StringBinaryCommands {
   long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
   LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params);
+
 }

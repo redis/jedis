@@ -7351,9 +7351,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
-   * @param keyA keyA
-   * @param keyB keyB
-   * @param params the params
+   * @param keyA
+   * @param keyB
+   * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   @Override
@@ -7364,9 +7364,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of strA and strB.
-   * @param strA strA
-   * @param strB strB
-   * @param params the params
+   * @param strA
+   * @param strB
+   * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {

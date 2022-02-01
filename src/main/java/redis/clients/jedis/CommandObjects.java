@@ -106,7 +106,7 @@ public class CommandObjects {
 
   public final CommandObject<Long> expire(String key, long seconds, SetExpireOption setExpireOption) {
     return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(setExpireOption),
-            BuilderFactory.LONG);
+        BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> expire(byte[] key, long seconds, SetExpireOption setExpireOption) {

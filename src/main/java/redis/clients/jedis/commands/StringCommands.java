@@ -436,9 +436,9 @@ public interface StringCommands {
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
-   * @param keyA keyA
-   * @param keyB keyB
-   * @param params the params
+   * @param keyA
+   * @param keyB
+   * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);

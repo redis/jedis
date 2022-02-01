@@ -62,7 +62,7 @@ public class LCSParams implements IParams {
     if (idx) {
       args.add(IDX);
     }
-    if (minMatchLen != null && minMatchLen >= 0) {
+    if (minMatchLen != null) {
       args.add(MINMATCHLEN).add(minMatchLen);
     }
     if (withMatchLen) {

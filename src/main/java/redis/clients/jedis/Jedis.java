@@ -3523,6 +3523,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   */
   @Deprecated
   public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();

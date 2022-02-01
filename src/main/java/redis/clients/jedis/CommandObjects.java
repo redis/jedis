@@ -16,10 +16,8 @@ import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.json.JsonSetParams;
-import redis.clients.jedis.json.Path;
-import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -28,6 +26,9 @@ import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
+import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword;
 
 public class CommandObjects {
 
@@ -3065,6 +3066,105 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
   // RedisJSON commands
+
+  // RedisTimeSeries commands
+  public final CommandObject<String> tsCreate(String key) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.CREATE).key(key), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tsCreate(String key, TSCreateParams createParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.CREATE).key(key).addParams(createParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> tsDel(String key, long fromTimestamp, long toTimestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.DEL).key(key)
+        .add(fromTimestamp).add(toTimestamp), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> tsAlter(String key, TSAlterParams alterParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ALTER).key(key).addParams(alterParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> tsAdd(String key, double value) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
+        .add(Protocol.BYTES_ASTERISK).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsAdd(String key, long timestamp, double value) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
+        .add(timestamp).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
+        .add(timestamp).add(value).addParams(createParams), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.RANGE).key(key)
+        .add(fromTimestamp).add(toTimestamp), BuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsRange(String key, TSRangeParams rangeParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.RANGE).key(key)
+        .addParams(rangeParams), BuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsRevRange(String key, long fromTimestamp, long toTimestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.REVRANGE).key(key)
+        .add(fromTimestamp).add(toTimestamp), BuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.REVRANGE).key(key)
+        .addParams(rangeParams), BuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE).add(fromTimestamp)
+        .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
+        BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE)
+        .addParams(multiRangeParams), BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).add(fromTimestamp)
+        .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
+        BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).addParams(multiRangeParams),
+        BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+  }
+
+  public final CommandObject<TSElement> tsGet(String key) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.GET).key(key), BuilderFactory.TIMESERIES_ELEMENT);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MGET).addParams(multiGetParams)
+        .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters), BuilderFactory.TIMESERIES_MGET_RESPONSE);
+  }
+
+  public final CommandObject<String> tsCreateRule(String sourceKey, String destKey,
+      AggregationType aggregationType, long timeBucket) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.CREATERULE).key(sourceKey).key(destKey)
+        .add(TimeSeriesKeyword.AGGREGATION).add(aggregationType).add(timeBucket), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tsDeleteRule(String sourceKey, String destKey) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.DELETERULE).key(sourceKey).key(destKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<String>> tsQueryIndex(String... filters) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.QUERYINDEX).addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
+  }
+  // RedisTimeSeries commands
 
   private static final Gson GSON = new Gson();
 

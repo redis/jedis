@@ -14,6 +14,8 @@ import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.KeyedTSElements;
+import redis.clients.jedis.timeseries.TSElement;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -1489,6 +1491,47 @@ public final class BuilderFactory {
         dump.put(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
       }
       return dump;
+    }
+  };
+
+  public static final Builder<TSElement> TIMESERIES_ELEMENT = new Builder<TSElement>() {
+    @Override
+    public TSElement build(Object data) {
+      List<Object> list = (List<Object>) data;
+      if (list == null || list.isEmpty()) return null;
+      return new TSElement(LONG.build(list.get(0)), DOUBLE.build(list.get(1)));
+    }
+  };
+
+  public static final Builder<List<TSElement>> TIMESERIES_ELEMENT_LIST = new Builder<List<TSElement>>() {
+    @Override
+    public List<TSElement> build(Object data) {
+      return ((List<Object>) data).stream().map((pairObject) -> (List<Object>) pairObject)
+          .map((pairList)
+              -> new TSElement(LONG.build(pairList.get(0)), DOUBLE.build(pairList.get(1))))
+          .collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<List<KeyedTSElements>> TIMESERIES_MRANGE_RESPONSE = new Builder<List<KeyedTSElements>>() {
+    @Override
+    public List<KeyedTSElements> build(Object data) {
+      return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
+          .map((tsList) -> new KeyedTSElements(STRING.build(tsList.get(0)),
+              STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
+              TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
+          .collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<List<KeyedTSElements>> TIMESERIES_MGET_RESPONSE = new Builder<List<KeyedTSElements>>() {
+    @Override
+    public List<KeyedTSElements> build(Object data) {
+      return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
+          .map((tsList) -> new KeyedTSElements(STRING.build(tsList.get(0)),
+              STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
+              TIMESERIES_ELEMENT.build(tsList.get(2))))
+          .collect(Collectors.toList());
     }
   };
 

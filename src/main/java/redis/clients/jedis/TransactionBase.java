@@ -28,6 +28,7 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.*;
 
 public abstract class TransactionBase extends Queable implements PipelineCommands,
     PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
@@ -3076,6 +3077,114 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
+  // RediSearch commands
+  @Override
+  public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+    return appendCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+  }
+
+  @Override
+  public Response<String> ftAlter(String indexName, Schema schema) {
+    return appendCommand(commandObjects.ftAlter(indexName, schema));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, Query query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<String> ftExplain(String indexName, Query query) {
+    return appendCommand(commandObjects.ftExplain(indexName, query));
+  }
+
+  @Override
+  public Response<List<String>> ftExplainCLI(String indexName, Query query) {
+    return appendCommand(commandObjects.ftExplainCLI(indexName, query));
+  }
+
+  @Override
+  public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
+    return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
+    return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
+  }
+
+  @Override
+  public Response<String> ftCursorDel(String indexName, long cursorId) {
+    return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
+  }
+
+  @Override
+  public Response<String> ftDropIndex(String indexName) {
+    return appendCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public Response<String> ftDropIndexDD(String indexName) {
+    return appendCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
+  public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+    return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
+  }
+
+  @Override
+  public Response<Map<String, List<String>>> ftSynDump(String indexName) {
+    return appendCommand(commandObjects.ftSynDump(indexName));
+  }
+
+  @Override
+  public Response<Map<String, Object>> ftInfo(String indexName) {
+    return appendCommand(commandObjects.ftInfo(indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasAdd(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasDel(String aliasName) {
+    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public Response<Map<String, String>> ftConfigGet(String option) {
+    return appendCommand(commandObjects.ftConfigGet(option));
+  }
+
+  @Override
+  public Response<Map<String, String>> ftConfigGet(String indexName, String option) {
+    return appendCommand(commandObjects.ftConfigGet(indexName, option));
+  }
+
+  @Override
+  public Response<String> ftConfigSet(String option, String value) {
+    return appendCommand(commandObjects.ftConfigSet(option, value));
+  }
+
+  @Override
+  public Response<String> ftConfigSet(String indexName, String option, String value) {
+    return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
+  }
+  // RediSearch commands
+
+  // RedisJSON commands
   @Override
   public Response<String> jsonSet(String key, Path2 path, Object object) {
     return appendCommand(commandObjects.jsonSet(key, path, object));
@@ -3335,111 +3444,109 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<Object> jsonArrPop(String key, Path path) {
     return appendCommand(commandObjects.jsonArrPop(key, path));
   }
+  // RedisJSON commands
 
+  // RedisTimeSeries commands
   @Override
-  public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
-    return appendCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+  public Response<String> tsCreate(String key) {
+    return executeCommand(commandObjects.tsCreate(key));
   }
 
   @Override
-  public Response<String> ftAlter(String indexName, Schema schema) {
-    return appendCommand(commandObjects.ftAlter(indexName, schema));
+  public Response<String> tsCreate(String key, TSCreateParams createParams) {
+    return executeCommand(commandObjects.tsCreate(key, createParams));
   }
 
   @Override
-  public Response<SearchResult> ftSearch(String indexName, Query query) {
-    return appendCommand(commandObjects.ftSearch(indexName, query));
+  public Response<Long> tsDel(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsDel(key, fromTimestamp, toTimestamp));
   }
 
   @Override
-  public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
-    return appendCommand(commandObjects.ftSearch(indexName, query));
+  public Response<String> tsAlter(String key, TSAlterParams alterParams) {
+    return executeCommand(commandObjects.tsAlter(key, alterParams));
   }
 
   @Override
-  public Response<String> ftExplain(String indexName, Query query) {
-    return appendCommand(commandObjects.ftExplain(indexName, query));
+  public Response<Long> tsAdd(String key, double value) {
+    return executeCommand(commandObjects.tsAdd(key, value));
   }
 
   @Override
-  public Response<List<String>> ftExplainCLI(String indexName, Query query) {
-    return appendCommand(commandObjects.ftExplainCLI(indexName, query));
+  public Response<Long> tsAdd(String key, long timestamp, double value) {
+    return executeCommand(commandObjects.tsAdd(key, timestamp, value));
   }
 
   @Override
-  public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
-    return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  public Response<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
+    return executeCommand(commandObjects.tsAdd(key, timestamp, value, createParams));
   }
 
   @Override
-  public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
-    return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
+  public Response<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp));
   }
 
   @Override
-  public Response<String> ftCursorDel(String indexName, long cursorId) {
-    return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
+  public Response<List<TSElement>> tsRange(String key, TSRangeParams rangeParams) {
+    return executeCommand(commandObjects.tsRange(key, rangeParams));
   }
 
   @Override
-  public Response<String> ftDropIndex(String indexName) {
-    return appendCommand(commandObjects.ftDropIndex(indexName));
+  public Response<List<TSElement>> tsRevRange(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp));
   }
 
   @Override
-  public Response<String> ftDropIndexDD(String indexName) {
-    return appendCommand(commandObjects.ftDropIndexDD(indexName));
+  public Response<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams) {
+    return executeCommand(commandObjects.tsRevRange(key, rangeParams));
   }
 
   @Override
-  public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
-    return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
+  public Response<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<Map<String, List<String>>> ftSynDump(String indexName) {
-    return appendCommand(commandObjects.ftSynDump(indexName));
+  public Response<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+    return executeCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public Response<Map<String, Object>> ftInfo(String indexName) {
-    return appendCommand(commandObjects.ftInfo(indexName));
+  public Response<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return executeCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<String> ftAliasAdd(String aliasName, String indexName) {
-    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  public Response<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+    return executeCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
   @Override
-  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
-    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  public Response<TSElement> tsGet(String key) {
+    return executeCommand(commandObjects.tsGet(key));
   }
 
   @Override
-  public Response<String> ftAliasDel(String aliasName) {
-    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  public Response<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+    return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 
   @Override
-  public Response<Map<String, String>> ftConfigGet(String option) {
-    return appendCommand(commandObjects.ftConfigGet(option));
+  public Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket) {
+    return executeCommand(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket));
   }
 
   @Override
-  public Response<Map<String, String>> ftConfigGet(String indexName, String option) {
-    return appendCommand(commandObjects.ftConfigGet(indexName, option));
+  public Response<String> tsDeleteRule(String sourceKey, String destKey) {
+    return executeCommand(commandObjects.tsDeleteRule(sourceKey, destKey));
   }
 
   @Override
-  public Response<String> ftConfigSet(String option, String value) {
-    return appendCommand(commandObjects.ftConfigSet(option, value));
+  public Response<List<String>> tsQueryIndex(String... filters) {
+    return executeCommand(commandObjects.tsQueryIndex(filters));
   }
-
-  @Override
-  public Response<String> ftConfigSet(String indexName, String option, String value) {
-    return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
-  }
+  // RedisTimeSeries commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

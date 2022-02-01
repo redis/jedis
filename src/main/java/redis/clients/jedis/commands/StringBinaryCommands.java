@@ -4,7 +4,11 @@ import java.util.List;
 
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.params.*;
+import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.SetParams;
+import redis.clients.jedis.params.StrAlgoLCSParams;
+import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringBinaryCommands {
@@ -75,5 +79,12 @@ public interface StringBinaryCommands {
 
   LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params);
 
+  /**
+   * Calculate the longest common subsequence of keyA and keyB.
+   * @param keyA keyA
+   * @param keyB keyB
+   * @param params {@link LCSParams}
+   * @return According to LCSParams to decide to return content to fill LCSMatchResult.
+   */
   LCSMatchResult lcs(byte[] keyA, byte[] keyB, LCSParams params);
 }

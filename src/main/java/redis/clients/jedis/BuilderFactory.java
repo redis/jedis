@@ -15,7 +15,7 @@ import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.TSElement;
-import redis.clients.jedis.timeseries.TSElements;
+import redis.clients.jedis.timeseries.KeyedTSElements;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -1513,22 +1513,22 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<TSElements>> TIMESERIES_MRANGE_RESPONSE = new Builder<List<TSElements>>() {
+  public static final Builder<List<KeyedTSElements>> TIMESERIES_MRANGE_RESPONSE = new Builder<List<KeyedTSElements>>() {
     @Override
-    public List<TSElements> build(Object data) {
+    public List<KeyedTSElements> build(Object data) {
       return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
-          .map((tsList) -> new TSElements(STRING.build(tsList.get(0)),
+          .map((tsList) -> new KeyedTSElements(STRING.build(tsList.get(0)),
               STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
           .collect(Collectors.toList());
     }
   };
 
-  public static final Builder<List<TSElements>> TIMESERIES_MGET_RESPONSE = new Builder<List<TSElements>>() {
+  public static final Builder<List<KeyedTSElements>> TIMESERIES_MGET_RESPONSE = new Builder<List<KeyedTSElements>>() {
     @Override
-    public List<TSElements> build(Object data) {
+    public List<KeyedTSElements> build(Object data) {
       return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
-          .map((tsList) -> new TSElements(STRING.build(tsList.get(0)),
+          .map((tsList) -> new KeyedTSElements(STRING.build(tsList.get(0)),
               STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT.build(tsList.get(2))))
           .collect(Collectors.toList());

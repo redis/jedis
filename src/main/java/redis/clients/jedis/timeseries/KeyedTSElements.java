@@ -5,21 +5,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class TSElements implements Iterable<TSElement> {
+public class KeyedTSElements implements Iterable<TSElement> {
 
   private final String key;
   private final Map<String, String> labels;
   private final List<TSElement> elements;
   private final TSElement element;
 
-  public TSElements(String key, Map<String, String> labels, List<TSElement> elements) {
+  public KeyedTSElements(String key, Map<String, String> labels, List<TSElement> elements) {
     this.key = key;
     this.labels = labels;
     this.elements = elements;
     this.element = null;
   }
 
-  public TSElements(String key, Map<String, String> labels, TSElement element) {
+  public KeyedTSElements(String key, Map<String, String> labels, TSElement element) {
     this.key = key;
     this.labels = labels;
     this.element = element;

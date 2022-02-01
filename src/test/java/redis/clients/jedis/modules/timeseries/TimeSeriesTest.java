@@ -177,11 +177,11 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     } catch (IllegalArgumentException e) {
     }
 
-    List<TSElements> ranges = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
+    List<KeyedTSElements> ranges = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
         .aggregation(AggregationType.COUNT, 1).filter("l1=v1"));
     assertEquals(1, ranges.size());
 
-    TSElements range = ranges.get(0);
+    KeyedTSElements range = ranges.get(0);
     assertEquals("seriesAdd", range.getKey());
     assertEquals(Collections.emptyMap(), range.getLabels());
 
@@ -197,7 +197,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     labels2.put("l3", "v3");
     labels2.put("l4", "v4");
     assertEquals(1000L, client.tsAdd("seriesAdd2", 1000L, 1.1, TSCreateParams.createParams().retention(10000).labels(labels2)));
-    List<TSElements> ranges2 = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
+    List<KeyedTSElements> ranges2 = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
         .aggregation(AggregationType.COUNT, 1).withLabels().filter("l4=v4"));
     assertEquals(1, ranges2.size());
     assertEquals(labels2, ranges2.get(0).getLabels());
@@ -208,7 +208,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(1000L, client.tsAdd("seriesAdd3", 1000L, 1.1, TSCreateParams.createParams().labels(labels3)));
     assertEquals(2000L, client.tsAdd("seriesAdd3", 2000L, 1.1, TSCreateParams.createParams().labels(labels3)));
     assertEquals(3000L, client.tsAdd("seriesAdd3", 3000L, 1.1, TSCreateParams.createParams().labels(labels3)));
-    List<TSElements> ranges3 = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
+    List<KeyedTSElements> ranges3 = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
         .aggregation(AggregationType.AVG, 1L).withLabels(true).count(2).filter("l4=v4"));
     assertEquals(2, ranges3.size());
     assertEquals(1, ranges3.get(0).getElements().size());
@@ -454,7 +454,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     client.tsAdd("ts1", rawValues[3].getTimestamp(), rawValues[3].getValue());
 
     // MRANGE
-    List<TSElements> range = client.tsMRange(0L, 5000L, filter);
+    List<KeyedTSElements> range = client.tsMRange(0L, 5000L, filter);
     assertEquals("ts1", range.get(0).getKey());
     assertEquals(Arrays.asList(rawValues[0], rawValues[3]), range.get(0).getElements());
     assertEquals("ts2", range.get(1).getKey());
@@ -511,7 +511,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
 
 //    List<TSElements> range = client.tsMRange(TSMRangeParams.multiGetParams(0L, 100L).withLabels()
 //        .groupByReduce("metric_name", "max"), "metric=cpu");
-    List<TSElements> range = client.tsMRange(TSMRangeParams.multiRangeParams(0L, 100L).withLabels()
+    List<KeyedTSElements> range = client.tsMRange(TSMRangeParams.multiRangeParams(0L, 100L).withLabels()
         .filter("metric=cpu").groupBy("metric_name", "max"));
     assertEquals(2, range.size());
 
@@ -571,11 +571,11 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
         .retention(100 * 1000 /*100sec retentionTime*/).labels(labels)));
 
     // Test for empty result
-    List<TSElements> ranges1 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v2");
+    List<KeyedTSElements> ranges1 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v2");
     assertEquals(0, ranges1.size());
 
     // Test for empty ranges
-    List<TSElements> ranges2 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(true), "l1=v1");
+    List<KeyedTSElements> ranges2 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(true), "l1=v1");
     assertEquals(2, ranges2.size());
     assertEquals(labels, ranges2.get(0).getLabels());
     assertEquals(labels, ranges2.get(1).getLabels());
@@ -584,7 +584,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
 
     // Test for returned result on MGet
     client.tsAdd("seriesMGet1", 1500, 1.3);
-    List<TSElements> ranges3 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v1");
+    List<KeyedTSElements> ranges3 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v1");
     assertEquals(2, ranges3.size());
     assertEquals(Collections.emptyMap(), ranges3.get(0).getLabels());
     assertEquals(Collections.emptyMap(), ranges3.get(1).getLabels());
@@ -729,7 +729,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
         TSCreateParams.createParams().retention(10000).labels(labels1)));
     assertEquals(2222L, client.tsAdd("seriesMRevRange1", 2222L, 3.1,
         TSCreateParams.createParams().retention(10000).labels(labels1)));
-    List<TSElements> ranges1 = client.tsMRevRange(TSMRangeParams.multiRangeParams(500L, 4600L)
+    List<KeyedTSElements> ranges1 = client.tsMRevRange(TSMRangeParams.multiRangeParams(500L, 4600L)
         .aggregation(AggregationType.COUNT, 1).withLabels().filter("l4=v4"));
     assertEquals(1, ranges1.size());
     assertEquals(labels1, ranges1.get(0).getLabels());
@@ -742,7 +742,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
         TSCreateParams.createParams().retention(10000).labels(labels2)));
     assertEquals(1111L, client.tsAdd("seriesMRevRange2", 1111L, 99.99,
         TSCreateParams.createParams().retention(10000).labels(labels2)));
-    List<TSElements> ranges2 = client.tsMRevRange(500L, 4600L, "l3=v3");
+    List<KeyedTSElements> ranges2 = client.tsMRevRange(500L, 4600L, "l3=v3");
     assertEquals(2, ranges2.size());
     assertEquals(Collections.emptyMap(), ranges2.get(0).getLabels());
     assertEquals(Arrays.asList(new TSElement(2222L, 3.1), new TSElement(1000L, 1.1)), ranges2.get(0).getElements());
@@ -755,7 +755,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(2200L, client.tsAdd("seriesMRevRange3", 2200L, -1.1, TSCreateParams.createParams().labels(labels3)));
     assertEquals(2400L, client.tsAdd("seriesMRevRange3", 2400L, 1.1, TSCreateParams.createParams().labels(labels3)));
     assertEquals(3300L, client.tsAdd("seriesMRevRange3", 3300L, -33, TSCreateParams.createParams().labels(labels3)));
-    List<TSElements> ranges3 = client.tsMRevRange(TSMRangeParams.multiRangeParams(500L, 4600L)
+    List<KeyedTSElements> ranges3 = client.tsMRevRange(TSMRangeParams.multiRangeParams(500L, 4600L)
         .aggregation(AggregationType.AVG, 500).withLabels().count(5).filter("l4=v4"));
     assertEquals(2, ranges3.size());
     assertEquals(labels1, ranges3.get(0).getLabels());

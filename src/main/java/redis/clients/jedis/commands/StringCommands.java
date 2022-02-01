@@ -437,11 +437,13 @@ public interface StringCommands {
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
+   * @deprecated Use {@link StringCommands#lcs(String, String, LCSParams) LCS}
    * @param keyA keyA
    * @param keyB keyB
    * @param params {@link StrAlgoLCSParams}
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
+  @Deprecated
   LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
 
   /**

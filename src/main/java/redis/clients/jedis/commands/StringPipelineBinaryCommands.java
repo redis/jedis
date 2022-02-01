@@ -78,6 +78,10 @@ public interface StringPipelineBinaryCommands {
 
   Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
+  /**
+   * @deprecated Use {@link StringPipelineBinaryCommands#lcs(byte[], byte[], LCSParams) LCS}
+   */
+  @Deprecated
   Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params);
 
   Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params);

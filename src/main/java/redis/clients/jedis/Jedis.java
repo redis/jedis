@@ -3512,12 +3512,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.strlen(key));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#lcs(byte[], byte[], LCSParams) LCS}
+   */
   @Override
+  @Deprecated
   public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
+  @Deprecated
   public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
@@ -7357,12 +7362,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
+   * @deprecated Use {@link Jedis#lcs(String, String, LCSParams) LCS}
    * @param keyA keyA
    * @param keyB keyB
    * @param params the params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   @Override
+  @Deprecated
   public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
@@ -7375,6 +7382,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param params the params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
+  @Deprecated
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));

@@ -78,6 +78,10 @@ public interface StringPipelineCommands {
 
   Response<Long> bitop(BitOP op, String destKey, String... srcKeys);
 
+  /**
+   * @deprecated Use {@link StringPipelineCommands#lcs(String, String, LCSParams) LCS}
+   */
+  @Deprecated
   Response<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
 
   Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params);

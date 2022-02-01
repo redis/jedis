@@ -3073,7 +3073,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSStrings(keyA, keyB, params));
+    return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
   @Override

@@ -2998,7 +2998,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSStrings(keyA, keyB, params));
+    return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
   @Override

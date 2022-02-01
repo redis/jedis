@@ -7395,9 +7395,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
-   * @param keyA keyA
-   * @param keyB keyB
-   * @param params the params
+   * @param keyA
+   * @param keyB
+   * @param params
    * @return According to LCSParams to decide to return content to fill LCSMatchResult.
    */
   @Override

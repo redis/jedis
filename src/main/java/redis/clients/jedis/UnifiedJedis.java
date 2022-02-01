@@ -17,18 +17,14 @@ import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.executors.*;
-import redis.clients.jedis.json.JsonSetParams;
-import redis.clients.jedis.json.Path;
-import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.IndexOptions;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.Schema;
-import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -3485,6 +3481,108 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
   // RedisJSON commands
+
+  // RedisTimeSeries commands
+  @Override
+  public String tsCreate(String key) {
+    return executeCommand(commandObjects.tsCreate(key));
+  }
+
+  @Override
+  public String tsCreate(String key, TSCreateParams createParams) {
+    return executeCommand(commandObjects.tsCreate(key, createParams));
+  }
+
+  @Override
+  public long tsDel(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsDel(key, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public String tsAlter(String key, TSAlterParams alterParams) {
+    return executeCommand(commandObjects.tsAlter(key, alterParams));
+  }
+
+  @Override
+  public long tsAdd(String key, double value) {
+    return executeCommand(commandObjects.tsAdd(key, value));
+  }
+
+  @Override
+  public long tsAdd(String key, long timestamp, double value) {
+    return executeCommand(commandObjects.tsAdd(key, timestamp, value));
+  }
+
+  @Override
+  public long tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
+    return executeCommand(commandObjects.tsAdd(key, timestamp, value, createParams));
+  }
+
+  @Override
+  public List<TSElement> tsRange(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public List<TSElement> tsRange(String key, TSRangeParams rangeParams) {
+    return executeCommand(commandObjects.tsRange(key, rangeParams));
+  }
+
+  @Override
+  public List<TSElement> tsRevRange(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public List<TSElement> tsRevRange(String key, TSRangeParams rangeParams) {
+    return executeCommand(commandObjects.tsRevRange(key, rangeParams));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMRange(TSMRangeParams multiRangeParams) {
+    return executeCommand(commandObjects.tsMRange(multiRangeParams));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return executeCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMRevRange(TSMRangeParams multiRangeParams) {
+    return executeCommand(commandObjects.tsMRevRange(multiRangeParams));
+  }
+
+  @Override
+  public TSElement tsGet(String key) {
+    return executeCommand(commandObjects.tsGet(key));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMGet(TSMGetParams multiGetParams, String... filters) {
+    return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
+  }
+
+  @Override
+  public String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket) {
+    return executeCommand(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket));
+  }
+
+  @Override
+  public String tsDeleteRule(String sourceKey, String destKey) {
+    return executeCommand(commandObjects.tsDeleteRule(sourceKey, destKey));
+  }
+
+  @Override
+  public List<String> tsQueryIndex(String... filters) {
+    return executeCommand(commandObjects.tsQueryIndex(filters));
+  }
+  // RedisTimeSeries commands
 
   public Object sendCommand(ProtocolCommand cmd) {
     return executeCommand(commandObjects.commandArguments(cmd));

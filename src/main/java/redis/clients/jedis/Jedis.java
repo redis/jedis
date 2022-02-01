@@ -7377,9 +7377,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of strA and strB.
-   * @param strA strA
-   * @param strB strB
-   * @param params the params
+   * @param strA
+   * @param strB
+   * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   @Deprecated

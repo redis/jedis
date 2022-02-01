@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The interface about managing configuration parameters of Redis server.
@@ -10,10 +11,18 @@ public interface ConfigCommands {
   /**
    * Used to read the configuration parameters of Redis server.
    *
-   * @param pattern config name
+   * @param pattern name of Redis server's configuration
    * @return config value of Redis server
    */
   List<String> configGet(String pattern);
+
+  /**
+   * Used to read the configuration parameters of Redis server.
+   *
+   * @param patterns names of Redis server's configuration
+   * @return values of Redis server's configuration
+   */
+  List<String> configGet(String... patterns);
 
   /**
    * Used to read the configuration parameters of Redis server.
@@ -22,6 +31,14 @@ public interface ConfigCommands {
    * @return value of Redis server's configuration
    */
   List<byte[]> configGet(byte[] pattern);
+
+  /**
+   * Used to read the configuration parameters of Redis server.
+   *
+   * @param patterns names of Redis server's configuration
+   * @return values of Redis server's configuration
+   */
+  List<byte[]> configGet(byte[]... patterns);
 
   /**
    * Used in order to reconfigure the Redis server at run time without

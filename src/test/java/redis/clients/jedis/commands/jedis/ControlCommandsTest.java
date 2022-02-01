@@ -184,6 +184,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void configGet() {
     List<String> info = jedis.configGet("m*");
     assertNotNull(info);
+    info = jedis.configGet("*max-*-entries*", "maxmemory");
+    assertNotNull(info);
+    assertEquals(12, info.size());
+    List<byte[]> infoBinary = jedis.configGet("m*".getBytes());
+    assertNotNull(infoBinary);
+    infoBinary = jedis.configGet("*max-*-entries*".getBytes(), "maxmemory".getBytes());
+    assertEquals(12, infoBinary.size());
   }
 
   @Test

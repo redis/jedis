@@ -114,11 +114,11 @@ public class CommandObjects {
         BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> expiretime(String key) {
+  public final CommandObject<Long> expireTime(String key) {
     return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> expiretime(byte[] key) {
+  public final CommandObject<Long> expireTime(byte[] key) {
     return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
   }
 
@@ -140,11 +140,11 @@ public class CommandObjects {
         BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> pexpiretime(String key) {
+  public final CommandObject<Long> pexpireTime(String key) {
     return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> pexpiretime(byte[] key) {
+  public final CommandObject<Long> pexpireTime(byte[] key) {
     return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), BuilderFactory.LONG);
   }
 

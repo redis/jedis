@@ -663,9 +663,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long expiretime(final byte[] key) {
+  public long expireTime(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand((commandObjects.expiretime(key)));
+    return connection.executeCommand((commandObjects.expireTime(key)));
   }
 
   /**
@@ -3873,9 +3873,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));  }
 
   @Override
-  public long pexpiretime(final byte[] key) {
+  public long pexpireTime(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpiretime(key));
+    return connection.executeCommand(commandObjects.pexpireTime(key));
   }
 
   @Override
@@ -4970,9 +4970,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long expiretime(final String key) {
+  public long expireTime(final String key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.expiretime(key));
+    return connection.executeCommand(commandObjects.expireTime(key));
   }
 
   /**
@@ -7956,9 +7956,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long pexpiretime(final String key) {
+  public long pexpireTime(final String key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpiretime(key));
+    return connection.executeCommand(commandObjects.pexpireTime(key));
   }
 
   @Override

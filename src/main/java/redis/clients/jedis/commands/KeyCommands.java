@@ -133,7 +133,7 @@ public interface KeyCommands {
   long expire(String key, long seconds, SetExpireOption setExpireOption);
 
   /**
-   * <b><a href="http://redis.io/commands/expiretime">ExpireTime Command</a></b>
+   * <b><a href="http://redis.io/commands/expireTime">ExpireTime Command</a></b>
    * Returns the absolute Unix timestamp (since January 1, 1970) in seconds at which the given key will expire.
    * <p>
    * The command returns -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
@@ -143,7 +143,7 @@ public interface KeyCommands {
    * @return Expiration Unix timestamp in seconds, or a negative value in order to signal an error:
    * -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
    */
-  long expiretime(String key);
+  long expireTime(String key);
 
   /**
    * <b><a href="http://redis.io/commands/pexpire">PExpire Command</a></b>
@@ -170,17 +170,17 @@ public interface KeyCommands {
   long pexpire(String key, long milliseconds, SetExpireOption setExpireOption);
 
   /**
-   * <b><a href="http://redis.io/commands/pexpiretime">PExpireTime Command</a></b>
-   * Similar to {@link KeyCommands#expiretime(String) EXPIRETIME} but returns the absolute Unix expiration
+   * <b><a href="http://redis.io/commands/pexpireTime">PExpireTime Command</a></b>
+   * Similar to {@link KeyCommands#expireTime(String) EXPIRETIME} but returns the absolute Unix expiration
    * timestamp in milliseconds instead of seconds.
    * <p>
    * Time complexity: O(1)
-   * @see KeyCommands#expiretime(String)
+   * @see KeyCommands#expireTime(String)
    * @param key
    * @return Expiration Unix timestamp in milliseconds, or a negative value in order to signal an error:
    * -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
    */
-  long pexpiretime(String key);
+  long pexpireTime(String key);
 
   /**
    * <b> <a href="http://redis.io/commands/expireat">ExpireAt Command</a></b>

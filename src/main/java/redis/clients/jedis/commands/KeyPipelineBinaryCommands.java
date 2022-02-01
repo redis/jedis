@@ -31,13 +31,13 @@ public interface KeyPipelineBinaryCommands {
 
   Response<Long> expire(byte[] key, long seconds, SetExpireOption setExpireOption);
 
-  Response<Long> expiretime(byte[] key);
+  Response<Long> expireTime(byte[] key);
 
   Response<Long> pexpire(byte[] key, long milliseconds);
 
   Response<Long> pexpire(byte[] key, long milliseconds, SetExpireOption setExpireOption);
 
-  Response<Long> pexpiretime(byte[] key);
+  Response<Long> pexpireTime(byte[] key);
 
   Response<Long> expireAt(byte[] key, long unixTime);
 

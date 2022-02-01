@@ -361,19 +361,19 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void expiretime() {
+  public void expireTime() {
     long unixTime;
 
     jedis.set("foo", "bar");
     unixTime = (System.currentTimeMillis() / 1000L) + 20;
     jedis.expireAt("foo", unixTime);
-    assertEquals(unixTime, jedis.expiretime("foo"), 0.0001);
+    assertEquals(unixTime, jedis.expireTime("foo"), 0.0001);
 
     // Binary
     jedis.set(bfoo, bbar);
     unixTime = (System.currentTimeMillis() / 1000L) + 20;
     jedis.expireAt(bfoo, unixTime);
-    assertEquals(unixTime, jedis.expiretime(bfoo), 0.0001);
+    assertEquals(unixTime, jedis.expireTime(bfoo), 0.0001);
   }
 
   @Test
@@ -697,17 +697,17 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void pexpiretime() {
+  public void pexpireTime() {
     long unixTime = (System.currentTimeMillis()) + 10000;
 
     jedis.set("foo", "bar");
     jedis.pexpireAt("foo", unixTime);
-    assertEquals(unixTime, jedis.pexpiretime("foo"), 0.0001);
+    assertEquals(unixTime, jedis.pexpireTime("foo"), 0.0001);
 
     // Binary
     jedis.set(bfoo, bbar);
     jedis.pexpireAt(bfoo, unixTime);
-    assertEquals(unixTime, jedis.pexpiretime(bfoo), 0.0001);
+    assertEquals(unixTime, jedis.pexpireTime(bfoo), 0.0001);
   }
 
   @Test

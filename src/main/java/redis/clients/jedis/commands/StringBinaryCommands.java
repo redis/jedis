@@ -86,9 +86,9 @@ public interface StringBinaryCommands {
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
-   * @param keyA keyA
-   * @param keyB keyB
-   * @param params {@link LCSParams}
+   * @param keyA
+   * @param keyB
+   * @param params
    * @return According to LCSParams to decide to return content to fill LCSMatchResult.
    */
   LCSMatchResult lcs(byte[] keyA, byte[] keyB, LCSParams params);

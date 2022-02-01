@@ -2,19 +2,28 @@ package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
 
-import static redis.clients.jedis.Protocol.Keyword.LEN;
 import static redis.clients.jedis.Protocol.Keyword.IDX;
+import static redis.clients.jedis.Protocol.Keyword.LEN;
 import static redis.clients.jedis.Protocol.Keyword.MINMATCHLEN;
 import static redis.clients.jedis.Protocol.Keyword.WITHMATCHLEN;
 
 public class LCSParams implements IParams {
 
-  private boolean idx = false;
   private boolean len = false;
+  private boolean idx = false;
+  private Long minMatchLen;
   private boolean withMatchLen = false;
-  private long minMatchLen;
 
   public static LCSParams LCSParams() { return new LCSParams(); }
+
+  /**
+   * When LEN is given the command returns the length of the longest common substring.
+   * @return LCSParams
+   */
+  public LCSParams len() {
+    this.len = true;
+    return this;
+  }
 
   /**
    * When IDX is given the command returns an array with the LCS length
@@ -28,11 +37,11 @@ public class LCSParams implements IParams {
   }
 
   /**
-   * When LEN is given the command returns the length of the longest common substring.
+   * Specify the minimum match length.
    * @return LCSParams
    */
-  public LCSParams len() {
-    this.len = true;
+  public LCSParams minMatchLen(long minMatchLen) {
+    this.minMatchLen = minMatchLen;
     return this;
   }
 
@@ -45,15 +54,6 @@ public class LCSParams implements IParams {
     return this;
   }
 
-  /**
-   * Specify the minimum match length.
-   * @return LCSParams
-   */
-  public LCSParams minMatchLen(long minMatchLen) {
-    this.minMatchLen = minMatchLen;
-    return this;
-  }
-
   @Override
   public void addParams(CommandArguments args) {
     if (len) {
@@ -62,9 +62,8 @@ public class LCSParams implements IParams {
     if (idx) {
       args.add(IDX);
     }
-    if (minMatchLen > 0) {
-      args.add(MINMATCHLEN);
-      args.add(minMatchLen);
+    if (minMatchLen != null) {
+      args.add(MINMATCHLEN).add(minMatchLen);
     }
     if (withMatchLen) {
       args.add(WITHMATCHLEN);

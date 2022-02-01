@@ -2,7 +2,6 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;

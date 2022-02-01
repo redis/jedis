@@ -586,7 +586,7 @@ public class CommandObjects {
 
   public final CommandObject<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
     return new CommandObject<>(commandArguments(Command.LCS).key(keyA).key(keyB)
-            .addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+        .addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 
   public final CommandObject<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params) {

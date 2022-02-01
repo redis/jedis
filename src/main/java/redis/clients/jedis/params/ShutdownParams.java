@@ -1,15 +1,18 @@
 package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.SaveMode;
+import redis.clients.jedis.args.ShutdownMode;
 import redis.clients.jedis.util.SafeEncoder;
+
+import static redis.clients.jedis.args.ShutdownMode.NOW;
+import static redis.clients.jedis.args.ShutdownMode.FORCE;
+import static redis.clients.jedis.args.ShutdownMode.ABORT;
 
 public class ShutdownParams implements IParams {
 
   private SaveMode saveMode;
-  private boolean now;
-  private boolean force;
+  private ShutdownMode shutdownMode;
 
   public static ShutdownParams shutdownParams() {
     return new ShutdownParams();
@@ -29,12 +32,19 @@ public class ShutdownParams implements IParams {
   }
 
   public ShutdownParams now() {
-    this.now = true;
-    return this;
+    return shutdownMode(NOW);
   }
 
   public ShutdownParams force() {
-    this.force = true;
+    return shutdownMode(FORCE);
+  }
+  
+  public ShutdownParams abort(){
+    return shutdownMode(ABORT);
+  }
+  
+  public ShutdownParams shutdownMode(ShutdownMode shutdownMode){
+    this.shutdownMode = shutdownMode;
     return this;
   }
 
@@ -45,12 +55,8 @@ public class ShutdownParams implements IParams {
       args.add(SafeEncoder.encode(saveMode.getRaw()));
     }
 
-    if (this.now) {
-      args.add(Protocol.Keyword.NOW.getRaw());
-    }
-
-    if (this.force) {
-      args.add(Protocol.Keyword.FORCE.getRaw());
+    if (this.shutdownMode != null) {
+      args.add(this.shutdownMode);
     }
   }
 }

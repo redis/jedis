@@ -30,5 +30,4 @@ public interface ConfigBinaryCommands {
    * Otherwise, an error is returned.
    */
   String configSet(byte[] parameter, byte[] value);
-
 }

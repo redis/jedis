@@ -14,7 +14,6 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
-import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -3472,8 +3471,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   public Response<List<String>> tsQueryIndex(String... filters) {
     return appendCommand(commandObjects.tsQueryIndex(filters));
   }
-  // RedisTimeSeries commands
-
   // RedisTimeSeries commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {

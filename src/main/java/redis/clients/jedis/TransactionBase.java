@@ -3548,6 +3548,55 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
   // RedisTimeSeries commands
 
+
+  @Override
+  public Response<List<String>> configGet(String pattern) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.GET).add(pattern), BuilderFactory.STRING_LIST));
+  }
+
+  @Override
+  public Response<List<String>> configGet(String... patterns) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.GET).keys((Object[]) patterns), BuilderFactory.STRING_LIST));
+  }
+
+  @Override
+  public Response<List<byte[]>> configGet(byte[] pattern) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.GET).add(pattern), BuilderFactory.BYTE_ARRAY_LIST));
+  }
+
+  @Override
+  public Response<List<byte[]>> configGet(byte[]... patterns) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.GET).keys((Object[]) patterns), BuilderFactory.BYTE_ARRAY_LIST));
+  }
+
+  @Override
+  public Response<String> configSet(String parameter, String value) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.SET).add(parameter).add(value), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> configSet(byte[] parameter, byte[] value) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.SET).add(parameter).add(value), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> configResetStat() {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.RESETSTAT), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> configRewrite() {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.REWRITE), BuilderFactory.STRING));
+  }
+
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
   }

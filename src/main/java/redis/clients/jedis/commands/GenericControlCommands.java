@@ -4,7 +4,8 @@ import java.util.List;
 import redis.clients.jedis.Module;
 import redis.clients.jedis.params.FailoverParams;
 
-public interface GenericControlCommands extends ConfigCommands, ScriptingControlCommands, SlowlogCommands {
+public interface GenericControlCommands extends ConfigCommands, ConfigBinaryCommands,
+    ScriptingControlCommands, SlowlogCommands {
 
   String failover();
 

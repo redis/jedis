@@ -14,6 +14,7 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -3472,6 +3473,46 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.tsQueryIndex(filters));
   }
   // RedisTimeSeries commands
+
+  @Override
+  public Response<String> configSet(String parameter, String value) {
+    throw new JedisClusterException("multi node pipeline not support config command");
+  }
+
+  @Override
+  public Response<String> configSet(byte[] parameter, byte[] value) {
+    throw new JedisClusterException("multi node pipeline not support config command");
+  }
+
+  @Override
+  public Response<List<String>> configGet(String... patterns) {
+    throw new JedisClusterException("multi node pipeline not support config command");
+  }
+
+  @Override
+  public Response<List<byte[]>> configGet(byte[]... patterns) {
+    throw new JedisClusterException("multi node pipeline not support config command");
+  }
+
+  @Override
+  public Response<List<byte[]>> configGet(byte[] pattern) {
+    throw new JedisClusterException("multi node pipeline not support config command");
+  }
+
+  @Override
+  public Response<List<String>> configGet(String pattern) {
+    throw new JedisClusterException("multi node pipeline not support config command");
+  }
+
+  @Override
+  public Response<String> configRewrite() {
+    throw new JedisClusterException("multi node pipeline not support config command");
+  }
+
+  @Override
+  public Response<String> configResetStat() {
+    throw new JedisClusterException("multi node pipeline not support config command");
+  }
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

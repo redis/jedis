@@ -3555,6 +3555,54 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
         .add(Protocol.Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING));
   }
 
+  @Override
+  public Response<List<String>> configGet(String pattern) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.GET).add(pattern), BuilderFactory.STRING_LIST));
+  }
+
+  @Override
+  public Response<List<String>> configGet(String... patterns) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.GET).keys((Object[]) patterns), BuilderFactory.STRING_LIST));
+  }
+
+  @Override
+  public Response<List<byte[]>> configGet(byte[] pattern) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.GET).add(pattern), BuilderFactory.BYTE_ARRAY_LIST));
+  }
+
+  @Override
+  public Response<List<byte[]>> configGet(byte[]... patterns) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.GET).keys((Object[]) patterns), BuilderFactory.BYTE_ARRAY_LIST));
+  }
+
+  @Override
+  public Response<String> configSet(String parameter, String value) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.SET).add(parameter).add(value), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> configSet(byte[] parameter, byte[] value) {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.SET).add(parameter).add(value), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> configResetStat() {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.RESETSTAT), BuilderFactory.STRING));
+  }
+
+  @Override
+  public Response<String> configRewrite() {
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
+        .add(Protocol.Keyword.REWRITE), BuilderFactory.STRING));
+  }
+
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
   }

@@ -1,11 +1,13 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.Response;
+
 import java.util.List;
 
 /**
  * The interface about managing configuration parameters of Redis server.
  */
-public interface ConfigCommands {
+public interface ConfigPipelineCommands {
 
   /**
    * Used to read the configuration parameters of Redis server.
@@ -13,7 +15,7 @@ public interface ConfigCommands {
    * @param pattern name of Redis server's configuration
    * @return config value of Redis server
    */
-  List<String> configGet(String pattern);
+  Response<List<String>> configGet(String pattern);
 
   /**
    * Used to read the configuration parameters of Redis server.
@@ -21,7 +23,7 @@ public interface ConfigCommands {
    * @param patterns names of Redis server's configuration
    * @return values of Redis server's configuration
    */
-  List<String> configGet(String... patterns);
+  Response<List<String>> configGet(String... patterns);
 
   /**
    * Used in order to reconfigure the Redis server at run time without
@@ -32,7 +34,7 @@ public interface ConfigCommands {
    * @return OK when the configuration was set properly.
    * Otherwise, an error is returned.
    */
-  String configSet(String parameter, String value);
+  Response<String> configSet(String parameter, String value);
 
   /**
    * Resets the statistics reported by Redis using the INFO command.
@@ -50,7 +52,7 @@ public interface ConfigCommands {
    *
    * @return always OK.
    */
-  String configResetStat();
+  Response<String> configResetStat();
 
   /**
    * Rewrites the redis.conf file the server was started with, applying
@@ -61,6 +63,5 @@ public interface ConfigCommands {
    * @return OK when the configuration was rewritten properly.
    * Otherwise, an error is returned.
    */
-  String configRewrite();
-
+  Response<String> configRewrite();
 }

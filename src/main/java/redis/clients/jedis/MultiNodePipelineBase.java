@@ -3474,45 +3474,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
   // RedisTimeSeries commands
 
-  @Override
-  public Response<String> configSet(String parameter, String value) {
-    throw new JedisClusterException("multi node pipeline not support config command");
-  }
-
-  @Override
-  public Response<String> configSet(byte[] parameter, byte[] value) {
-    throw new JedisClusterException("multi node pipeline not support config command");
-  }
-
-  @Override
-  public Response<List<String>> configGet(String... patterns) {
-    throw new JedisClusterException("multi node pipeline not support config command");
-  }
-
-  @Override
-  public Response<List<byte[]>> configGet(byte[]... patterns) {
-    throw new JedisClusterException("multi node pipeline not support config command");
-  }
-
-  @Override
-  public Response<List<byte[]>> configGet(byte[] pattern) {
-    throw new JedisClusterException("multi node pipeline not support config command");
-  }
-
-  @Override
-  public Response<List<String>> configGet(String pattern) {
-    throw new JedisClusterException("multi node pipeline not support config command");
-  }
-
-  @Override
-  public Response<String> configRewrite() {
-    throw new JedisClusterException("multi node pipeline not support config command");
-  }
-
-  @Override
-  public Response<String> configResetStat() {
-    throw new JedisClusterException("multi node pipeline not support config command");
-  }
   // RedisTimeSeries commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {

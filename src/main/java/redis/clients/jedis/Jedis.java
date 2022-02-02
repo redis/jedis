@@ -5743,6 +5743,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Map<String, List<String>> lmpop(ListDirection listDirection,int count, String... keys){
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmpop(listDirection,count, keys));
+  }
+
+  @Override
   public Long lpos(final String key, final String element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.lpos(key, element));

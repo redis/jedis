@@ -82,6 +82,19 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, List<String>>> STRING_LIST_MAP = new Builder<Map<String, List<String>>>() {
+    @Override
+    public Map<String, List<String>> build(Object data) {
+      final List list = (List) data;
+      final Map<String, List<String>> map = new HashMap<>(list.size() / 2, 1);
+      final Iterator iterator = list.iterator();
+      while (iterator.hasNext()) {
+        map.put(STRING.build(iterator.next()), STRING_LIST.build(iterator.next()));
+      }
+      return map;
+    }
+  };
+
   public static final Builder<Long> LONG = new Builder<Long>() {
     @Override
     public Long build(Object data) {

@@ -875,4 +875,10 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
     assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
   }
+
+  @Test
+  public void lmpop(){
+    jedis.lpush("foo", "bar", "foo");
+    jedis.lmpop(ListDirection.LEFT,1,"foo");
+  }
 }

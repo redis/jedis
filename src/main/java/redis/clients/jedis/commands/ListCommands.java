@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import java.util.Map;
 
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
@@ -236,6 +237,9 @@ public interface ListCommands {
    * @return The popped element
    */
   String rpop(String key);
+
+  Map<String, List<String>> lmpop(ListDirection listDirection, int count, String... key);
+
 
   /**
    * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example

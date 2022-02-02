@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.Command.*;
+import static redis.clients.jedis.Protocol.Command.LMPOP;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
 import com.google.gson.Gson;
@@ -649,6 +650,10 @@ public class CommandObjects {
 
   public final CommandObject<Long> lrem(byte[] key, long count, byte[] value) {
     return new CommandObject<>(commandArguments(LREM).key(key).add(count).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Map<String, List<String>>> lmpop(ListDirection listDirection, int count,String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).addObjects((Object[]) keys).add(listDirection.name()).add("COUNT").add(count), BuilderFactory.STRING_LIST_MAP);
   }
 
   public final CommandObject<String> lpop(String key) {

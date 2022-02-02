@@ -22,6 +22,7 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.*;
 
 public abstract class MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
@@ -173,13 +174,18 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<String>> sort(String key, SortingParams sortingParameters) {
-    return appendCommand(commandObjects.sort(key, sortingParameters));
+  public Response<List<String>> sort(String key, SortingParams sortingParams) {
+    return appendCommand(commandObjects.sort(key, sortingParams));
   }
 
   @Override
-  public Response<Long> sort(String key, SortingParams sortingParameters, String dstKey) {
-    return appendCommand(commandObjects.sort(key, sortingParameters, dstKey));
+  public Response<Long> sort(String key, SortingParams sortingParams, String dstKey) {
+    return appendCommand(commandObjects.sort(key, sortingParams, dstKey));
+  }
+
+  @Override
+  public Response<List<String>> sortReadonly(String key, SortingParams sortingParams) {
+    return appendCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   @Override
@@ -528,13 +534,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> lpushx(String key, String... string) {
-    return appendCommand(commandObjects.lpushx(key, string));
+  public Response<Long> lpushx(String key, String... strings) {
+    return appendCommand(commandObjects.lpushx(key, strings));
   }
 
   @Override
-  public Response<Long> rpushx(String key, String... string) {
-    return appendCommand(commandObjects.rpushx(key, string));
+  public Response<Long> rpushx(String key, String... strings) {
+    return appendCommand(commandObjects.rpushx(key, strings));
   }
 
   @Override
@@ -720,8 +726,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> sadd(String key, String... member) {
-    return appendCommand(commandObjects.sadd(key, member));
+  public Response<Long> sadd(String key, String... members) {
+    return appendCommand(commandObjects.sadd(key, members));
   }
 
   @Override
@@ -730,8 +736,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> srem(String key, String... member) {
-    return appendCommand(commandObjects.srem(key, member));
+  public Response<Long> srem(String key, String... members) {
+    return appendCommand(commandObjects.srem(key, members));
   }
 
   @Override
@@ -792,6 +798,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Long> sinterstore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sinterstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(String... keys){
+    return appendCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(int limit, String... keys){
+    return appendCommand(commandObjects.sintercard(limit, keys));
   }
 
   @Override
@@ -1128,6 +1144,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
     return appendCommand(commandObjects.zinterWithScores(params, keys));
+  }
+
+  @Override
+  public Response<Long> zintercard(String... keys) {
+    return appendCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public Response<Long> zintercard(long limit, String... keys) {
+    return appendCommand(commandObjects.zintercard(limit, keys));
   }
 
   @Override
@@ -1497,6 +1523,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Object> evalReadonly(String script, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Response<Object> evalsha(String sha1) {
     return appendCommand(commandObjects.evalsha(sha1));
   }
@@ -1509,6 +1540,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Object> evalsha(String sha1, List<String> keys, List<String> args) {
     return appendCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Response<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -1895,8 +1931,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<byte[]>> sort(byte[] key, SortingParams sortingParameters) {
-    return appendCommand(commandObjects.sort(key, sortingParameters));
+  public Response<List<byte[]>> sort(byte[] key, SortingParams sortingParams) {
+    return appendCommand(commandObjects.sort(key, sortingParams));
+  }
+
+  @Override
+  public Response<List<byte[]>> sortReadonly(byte[] key, SortingParams sortingParams) {
+    return appendCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   @Override
@@ -1935,8 +1976,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
-    return appendCommand(commandObjects.sort(key, sortingParameters, dstkey));
+  public Response<Long> sort(byte[] key, SortingParams sortingParams, byte[] dstkey) {
+    return appendCommand(commandObjects.sort(key, sortingParams, dstkey));
   }
 
   @Override
@@ -2090,13 +2131,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> lpushx(byte[] key, byte[]... arg) {
-    return appendCommand(commandObjects.lpushx(key, arg));
+  public Response<Long> lpushx(byte[] key, byte[]... args) {
+    return appendCommand(commandObjects.lpushx(key, args));
   }
 
   @Override
-  public Response<Long> rpushx(byte[] key, byte[]... arg) {
-    return appendCommand(commandObjects.rpushx(key, arg));
+  public Response<Long> rpushx(byte[] key, byte[]... args) {
+    return appendCommand(commandObjects.rpushx(key, args));
   }
 
   @Override
@@ -2230,6 +2271,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Object> evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Response<Object> evalsha(byte[] sha1) {
     return appendCommand(commandObjects.evalsha(sha1));
   }
@@ -2245,8 +2291,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> sadd(byte[] key, byte[]... member) {
-    return appendCommand(commandObjects.sadd(key, member));
+  public Response<Object> evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
+  }
+
+  @Override
+  public Response<Long> sadd(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.sadd(key, members));
   }
 
   @Override
@@ -2255,8 +2306,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> srem(byte[] key, byte[]... member) {
-    return appendCommand(commandObjects.srem(key, member));
+  public Response<Long> srem(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.srem(key, members));
   }
 
   @Override
@@ -2317,6 +2368,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Long> sinterstore(byte[] dstkey, byte[]... keys) {
     return appendCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(byte[]... keys){
+    return appendCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public Response<Long> sintercard(int limit, byte[]... keys){
+    return appendCommand(commandObjects.sintercard(limit, keys));
   }
 
   @Override
@@ -2655,6 +2716,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> zintercard(byte[]... keys) {
+    return appendCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public Response<Long> zintercard(long limit, byte[]... keys) {
+    return appendCommand(commandObjects.zintercard(limit, keys));
+  }
+
+  @Override
   public Response<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
@@ -2982,9 +3053,112 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSStrings(keyA, keyB, params));
+    return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
+  // RediSearch commands
+  @Override
+  public Response<String> ftAlter(String indexName, Schema schema) {
+    return appendCommand(commandObjects.ftAlter(indexName, schema));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, Query query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<String> ftExplain(String indexName, Query query) {
+    return appendCommand(commandObjects.ftExplain(indexName, query));
+  }
+
+  @Override
+  public Response<List<String>> ftExplainCLI(String indexName, Query query) {
+    return appendCommand(commandObjects.ftExplainCLI(indexName, query));
+  }
+
+  @Override
+  public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
+    return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
+    return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
+  }
+
+  @Override
+  public Response<String> ftCursorDel(String indexName, long cursorId) {
+    return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
+  }
+
+  @Override
+  public Response<String> ftDropIndex(String indexName) {
+    return appendCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public Response<String> ftDropIndexDD(String indexName) {
+    return appendCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
+  public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+    return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
+  }
+
+  @Override
+  public Response<Map<String, List<String>>> ftSynDump(String indexName) {
+    return appendCommand(commandObjects.ftSynDump(indexName));
+  }
+
+  @Override
+  public Response<Map<String, Object>> ftInfo(String indexName) {
+    return appendCommand(commandObjects.ftInfo(indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasAdd(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasDel(String aliasName) {
+    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public Response<Map<String, String>> ftConfigGet(String option) {
+    return appendCommand(commandObjects.ftConfigGet(option));
+  }
+
+  @Override
+  public Response<Map<String, String>> ftConfigGet(String indexName, String option) {
+    return appendCommand(commandObjects.ftConfigGet(indexName, option));
+  }
+
+  @Override
+  public Response<String> ftConfigSet(String option, String value) {
+    return appendCommand(commandObjects.ftConfigSet(option, value));
+  }
+
+  @Override
+  public Response<String> ftConfigSet(String indexName, String option, String value) {
+    return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
+  }
+  // RediSearch commands
+
+  // RedisJSON commands
   @Override
   public Response<String> jsonSet(String key, Path2 path, Object object) {
     return appendCommand(commandObjects.jsonSet(key, path, object));
@@ -3249,106 +3423,109 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
     return appendCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
   }
+  // RedisJSON commands
 
+  // RedisTimeSeries commands
   @Override
-  public Response<String> ftAlter(String indexName, Schema schema) {
-    return appendCommand(commandObjects.ftAlter(indexName, schema));
+  public Response<String> tsCreate(String key) {
+    return appendCommand(commandObjects.tsCreate(key));
   }
 
   @Override
-  public Response<SearchResult> ftSearch(String indexName, Query query) {
-    return appendCommand(commandObjects.ftSearch(indexName, query));
+  public Response<String> tsCreate(String key, TSCreateParams createParams) {
+    return appendCommand(commandObjects.tsCreate(key, createParams));
   }
 
   @Override
-  public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
-    return appendCommand(commandObjects.ftSearch(indexName, query));
+  public Response<Long> tsDel(String key, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsDel(key, fromTimestamp, toTimestamp));
   }
 
   @Override
-  public Response<String> ftExplain(String indexName, Query query) {
-    return appendCommand(commandObjects.ftExplain(indexName, query));
+  public Response<String> tsAlter(String key, TSAlterParams alterParams) {
+    return appendCommand(commandObjects.tsAlter(key, alterParams));
   }
 
   @Override
-  public Response<List<String>> ftExplainCLI(String indexName, Query query) {
-    return appendCommand(commandObjects.ftExplainCLI(indexName, query));
+  public Response<Long> tsAdd(String key, double value) {
+    return appendCommand(commandObjects.tsAdd(key, value));
   }
 
   @Override
-  public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
-    return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  public Response<Long> tsAdd(String key, long timestamp, double value) {
+    return appendCommand(commandObjects.tsAdd(key, timestamp, value));
   }
 
   @Override
-  public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
-    return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
+  public Response<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
+    return appendCommand(commandObjects.tsAdd(key, timestamp, value, createParams));
   }
 
   @Override
-  public Response<String> ftCursorDel(String indexName, long cursorId) {
-    return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
+  public Response<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp));
   }
 
   @Override
-  public Response<String> ftDropIndex(String indexName) {
-    return appendCommand(commandObjects.ftDropIndex(indexName));
+  public Response<List<TSElement>> tsRange(String key, TSRangeParams rangeParams) {
+    return appendCommand(commandObjects.tsRange(key, rangeParams));
   }
 
   @Override
-  public Response<String> ftDropIndexDD(String indexName) {
-    return appendCommand(commandObjects.ftDropIndexDD(indexName));
+  public Response<List<TSElement>> tsRevRange(String key, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp));
   }
 
   @Override
-  public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
-    return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
+  public Response<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams) {
+    return appendCommand(commandObjects.tsRevRange(key, rangeParams));
   }
 
   @Override
-  public Response<Map<String, List<String>>> ftSynDump(String indexName) {
-    return appendCommand(commandObjects.ftSynDump(indexName));
+  public Response<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<Map<String, Object>> ftInfo(String indexName) {
-    return appendCommand(commandObjects.ftInfo(indexName));
+  public Response<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+    return appendCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public Response<String> ftAliasAdd(String aliasName, String indexName) {
-    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  public Response<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return appendCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
-    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  public Response<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+    return appendCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
   @Override
-  public Response<String> ftAliasDel(String aliasName) {
-    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  public Response<TSElement> tsGet(String key) {
+    return appendCommand(commandObjects.tsGet(key));
   }
 
   @Override
-  public Response<Map<String, String>> ftConfigGet(String option) {
-    return appendCommand(commandObjects.ftConfigGet(option));
+  public Response<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+    return appendCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 
   @Override
-  public Response<Map<String, String>> ftConfigGet(String indexName, String option) {
-    return appendCommand(commandObjects.ftConfigGet(indexName, option));
+  public Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket) {
+    return appendCommand(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket));
   }
 
   @Override
-  public Response<String> ftConfigSet(String option, String value) {
-    return appendCommand(commandObjects.ftConfigSet(option, value));
+  public Response<String> tsDeleteRule(String sourceKey, String destKey) {
+    return appendCommand(commandObjects.tsDeleteRule(sourceKey, destKey));
   }
 
   @Override
-  public Response<String> ftConfigSet(String indexName, String option, String value) {
-    return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
+  public Response<List<String>> tsQueryIndex(String... filters) {
+    return appendCommand(commandObjects.tsQueryIndex(filters));
   }
+  // RedisTimeSeries commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

@@ -14,6 +14,8 @@ import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.KeyedTSElements;
+import redis.clients.jedis.timeseries.TSElement;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -707,13 +709,14 @@ public final class BuilderFactory {
    * Create a AccessControlUser object from the ACL GETUSER < > result
    */
   public static final Builder<AccessControlUser> ACCESS_CONTROL_USER = new Builder<AccessControlUser>() {
+    @SuppressWarnings("unchecked")
     @Override
     public AccessControlUser build(Object data) {
       if (data == null) {
         return null;
       }
 
-      List<List<Object>> objectList = (List<List<Object>>) data;
+      List<Object> objectList = (List<Object>) data;
       if (objectList.isEmpty()) {
         return null;
       }
@@ -721,26 +724,51 @@ public final class BuilderFactory {
       AccessControlUser accessControlUser = new AccessControlUser();
 
       // flags
-      List<Object> flags = objectList.get(1);
+      List<Object> flags = (List<Object>) objectList.get(1);
       for (Object f : flags) {
         accessControlUser.addFlag(SafeEncoder.encode((byte[]) f));
       }
 
       // passwords
-      List<Object> passwords = objectList.get(3);
+      List<Object> passwords = (List<Object>) objectList.get(3);
       for (Object p : passwords) {
         accessControlUser.addPassword(SafeEncoder.encode((byte[]) p));
       }
 
       // commands
-      accessControlUser.setCommands(SafeEncoder.encode((byte[]) (Object) objectList.get(5)));
+      accessControlUser.setCommands(SafeEncoder.encode((byte[]) objectList.get(5)));
 
-      // keys
-      List<Object> keys = objectList.get(7);
-      for (Object k : keys) {
-        accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
+      // Redis 7 -->
+      boolean withSelectors = objectList.size() >= 12;
+      if (!withSelectors) {
+
+        // keys
+        List<Object> keys = (List<Object>) objectList.get(7);
+        for (Object k : keys) {
+          accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
+        }
+
+        // Redis 6.2 -->
+        // channels
+        if (objectList.size() >= 10) {
+          List<Object> channels = (List<Object>) objectList.get(9);
+          for (Object channel : channels) {
+            accessControlUser.addChannel(SafeEncoder.encode((byte[]) channel));
+          }
+        }
+
+      } else {
+        // TODO: Proper implementation of ACL V2.
+
+        // keys
+        accessControlUser.addKeys(SafeEncoder.encode((byte[]) objectList.get(7)));
+
+        // channels
+        accessControlUser.addChannels(SafeEncoder.encode((byte[]) objectList.get(9)));
       }
 
+      // selectors
+      // TODO: Proper implementation of ACL V2.
       return accessControlUser;
     }
 
@@ -1485,6 +1513,7 @@ public final class BuilderFactory {
     }
   };
 
+
   public static final Builder<List<Object>> KEYED_LIST_ELEMENTS = new Builder<List<Object>>() {
     @SuppressWarnings("unchecked")
     @Override
@@ -1498,7 +1527,45 @@ public final class BuilderFactory {
         KeyedListElements elements = new KeyedListElements(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
         listElements.add(elements);
       }
-      return listElements;
+
+  public static final Builder<TSElement> TIMESERIES_ELEMENT = new Builder<TSElement>() {
+    @Override
+    public TSElement build(Object data) {
+      List<Object> list = (List<Object>) data;
+      if (list == null || list.isEmpty()) return null;
+      return new TSElement(LONG.build(list.get(0)), DOUBLE.build(list.get(1)));
+    }
+  };
+
+  public static final Builder<List<TSElement>> TIMESERIES_ELEMENT_LIST = new Builder<List<TSElement>>() {
+    @Override
+    public List<TSElement> build(Object data) {
+      return ((List<Object>) data).stream().map((pairObject) -> (List<Object>) pairObject)
+          .map((pairList)
+              -> new TSElement(LONG.build(pairList.get(0)), DOUBLE.build(pairList.get(1))))
+          .collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<List<KeyedTSElements>> TIMESERIES_MRANGE_RESPONSE = new Builder<List<KeyedTSElements>>() {
+    @Override
+    public List<KeyedTSElements> build(Object data) {
+      return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
+          .map((tsList) -> new KeyedTSElements(STRING.build(tsList.get(0)),
+              STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
+              TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
+          .collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<List<KeyedTSElements>> TIMESERIES_MGET_RESPONSE = new Builder<List<KeyedTSElements>>() {
+    @Override
+    public List<KeyedTSElements> build(Object data) {
+      return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
+          .map((tsList) -> new KeyedTSElements(STRING.build(tsList.get(0)),
+              STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
+              TIMESERIES_ELEMENT.build(tsList.get(2))))
+          .collect(Collectors.toList());
     }
   };
 

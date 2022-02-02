@@ -16,10 +16,8 @@ import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.json.JsonSetParams;
-import redis.clients.jedis.json.Path;
-import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -28,6 +26,9 @@ import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
+import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword;
 
 public class CommandObjects {
 
@@ -164,16 +165,16 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SORT).key(key), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<List<String>> sort(String key, SortingParams sortingParameters) {
-    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParameters), BuilderFactory.STRING_LIST);
+  public final CommandObject<List<String>> sort(String key, SortingParams sortingParams) {
+    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams), BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<List<byte[]>> sort(byte[] key) {
     return new CommandObject<>(commandArguments(SORT).key(key), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> sort(byte[] key, SortingParams sortingParameters) {
-    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParameters), BuilderFactory.BINARY_LIST);
+  public final CommandObject<List<byte[]>> sort(byte[] key, SortingParams sortingParams) {
+    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams), BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<Long> sort(String key, String dstkey) {
@@ -181,8 +182,8 @@ public class CommandObjects {
         .add(STORE).key(dstkey), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sort(String key, SortingParams sortingParameters, String dstkey) {
-    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParameters)
+  public final CommandObject<Long> sort(String key, SortingParams sortingParams, String dstkey) {
+    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams)
         .add(STORE).key(dstkey), BuilderFactory.LONG);
   }
 
@@ -191,9 +192,19 @@ public class CommandObjects {
         .add(STORE).key(dstkey), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
-    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParameters)
+  public final CommandObject<Long> sort(byte[] key, SortingParams sortingParams, byte[] dstkey) {
+    return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams)
         .add(STORE).key(dstkey), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<byte[]>> sortReadonly(byte[] key, SortingParams sortingParams) {
+    return new CommandObject<>(commandArguments(SORT_RO).key(key).addParams(sortingParams),
+        BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<String>> sortReadonly(String key, SortingParams sortingParams) {
+    return new CommandObject<>(commandArguments(SORT_RO).key(key).addParams(sortingParams),
+        BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<Long> del(String key) {
@@ -708,20 +719,20 @@ public class CommandObjects {
         .add(pivot).add(value), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> lpushx(String key, String... string) {
-    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) string), BuilderFactory.LONG);
+  public final CommandObject<Long> lpushx(String key, String... strings) {
+    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> rpushx(String key, String... string) {
-    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) string), BuilderFactory.LONG);
+  public final CommandObject<Long> rpushx(String key, String... strings) {
+    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> lpushx(byte[] key, byte[]... arg) {
-    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) arg), BuilderFactory.LONG);
+  public final CommandObject<Long> lpushx(byte[] key, byte[]... args) {
+    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> rpushx(byte[] key, byte[]... arg) {
-    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) arg), BuilderFactory.LONG);
+  public final CommandObject<Long> rpushx(byte[] key, byte[]... args) {
+    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<String>> blpop(int timeout, String key) {
@@ -1095,6 +1106,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> sintercard(String... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sintercard(int limit, String... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
+  }
+
   public final CommandObject<Set<byte[]>> sinter(byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTER).keys((Object[]) keys), BuilderFactory.BINARY_SET);
   }
@@ -1102,6 +1121,15 @@ public class CommandObjects {
   public final CommandObject<Long> sinterstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
+
+  public final CommandObject<Long> sintercard(byte[]... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sintercard(int limit, byte[]... keys) {
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
+  }
+
 
   public final CommandObject<Set<String>> sunion(String... keys) {
     return new CommandObject<>(commandArguments(SUNION).keys((Object[]) keys), BuilderFactory.STRING_SET);
@@ -1668,6 +1696,16 @@ public class CommandObjects {
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
+  public final CommandObject<Long> zintercard(String... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(long limit, String... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> zinterstore(byte[] dstkey, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
@@ -1676,6 +1714,16 @@ public class CommandObjects {
   public final CommandObject<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> zintercard(long limit, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
+        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
@@ -2228,6 +2276,10 @@ public class CommandObjects {
         BuilderFactory.STREAM_PENDING_SUMMARY);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname,
       StreamEntryID start, StreamEntryID end, int count, String consumername) {
     CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
@@ -2246,6 +2298,10 @@ public class CommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
+  @Deprecated
   public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname,
       byte[] start, byte[] end, int count, byte[] consumername) {
     CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
@@ -2437,6 +2493,14 @@ public class CommandObjects {
         BuilderFactory.ENCODED_OBJECT);
   }
 
+  public final CommandObject<Object> evalReadonly(String script, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
   public final CommandObject<Object> eval(byte[] script) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(0), BuilderFactory.RAW_OBJECT);
   }
@@ -2455,6 +2519,14 @@ public class CommandObjects {
     byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
     byte[][] argsArray = args.toArray(new byte[args.size()][]);
     return new CommandObject<>(commandArguments(EVAL).add(script).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<Object> evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
+    byte[][] argsArray = args.toArray(new byte[args.size()][]);
+    return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keysArray.length)
         .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
         BuilderFactory.RAW_OBJECT);
   }
@@ -2481,6 +2553,14 @@ public class CommandObjects {
         BuilderFactory.ENCODED_OBJECT);
   }
 
+  public final CommandObject<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
   public final CommandObject<Object> evalsha(byte[] sha1) {
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.RAW_OBJECT);
   }
@@ -2499,6 +2579,14 @@ public class CommandObjects {
     byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
     byte[][] argsArray = args.toArray(new byte[args.size()][]);
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<Object> evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
+    byte[][] argsArray = args.toArray(new byte[args.size()][]);
+    return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keysArray.length)
         .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
         BuilderFactory.RAW_OBJECT);
   }
@@ -2995,6 +3083,105 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
   // RedisJSON commands
+
+  // RedisTimeSeries commands
+  public final CommandObject<String> tsCreate(String key) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.CREATE).key(key), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tsCreate(String key, TSCreateParams createParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.CREATE).key(key).addParams(createParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> tsDel(String key, long fromTimestamp, long toTimestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.DEL).key(key)
+        .add(fromTimestamp).add(toTimestamp), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> tsAlter(String key, TSAlterParams alterParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ALTER).key(key).addParams(alterParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> tsAdd(String key, double value) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
+        .add(Protocol.BYTES_ASTERISK).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsAdd(String key, long timestamp, double value) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
+        .add(timestamp).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
+        .add(timestamp).add(value).addParams(createParams), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.RANGE).key(key)
+        .add(fromTimestamp).add(toTimestamp), BuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsRange(String key, TSRangeParams rangeParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.RANGE).key(key)
+        .addParams(rangeParams), BuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsRevRange(String key, long fromTimestamp, long toTimestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.REVRANGE).key(key)
+        .add(fromTimestamp).add(toTimestamp), BuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.REVRANGE).key(key)
+        .addParams(rangeParams), BuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE).add(fromTimestamp)
+        .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
+        BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE)
+        .addParams(multiRangeParams), BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).add(fromTimestamp)
+        .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
+        BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).addParams(multiRangeParams),
+        BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+  }
+
+  public final CommandObject<TSElement> tsGet(String key) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.GET).key(key), BuilderFactory.TIMESERIES_ELEMENT);
+  }
+
+  public final CommandObject<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.MGET).addParams(multiGetParams)
+        .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters), BuilderFactory.TIMESERIES_MGET_RESPONSE);
+  }
+
+  public final CommandObject<String> tsCreateRule(String sourceKey, String destKey,
+      AggregationType aggregationType, long timeBucket) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.CREATERULE).key(sourceKey).key(destKey)
+        .add(TimeSeriesKeyword.AGGREGATION).add(aggregationType).add(timeBucket), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tsDeleteRule(String sourceKey, String destKey) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.DELETERULE).key(sourceKey).key(destKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<String>> tsQueryIndex(String... filters) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.QUERYINDEX).addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
+  }
+  // RedisTimeSeries commands
 
   private static final Gson GSON = new Gson();
 

@@ -17,18 +17,14 @@ import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.executors.*;
-import redis.clients.jedis.json.JsonSetParams;
-import redis.clients.jedis.json.Path;
-import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.*;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.IndexOptions;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.Schema;
-import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -296,8 +292,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> sort(String key, SortingParams sortingParameters) {
-    return executeCommand(commandObjects.sort(key, sortingParameters));
+  public List<String> sort(String key, SortingParams sortingParams) {
+    return executeCommand(commandObjects.sort(key, sortingParams));
   }
 
   @Override
@@ -306,8 +302,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sort(String key, SortingParams sortingParameters, String dstkey) {
-    return executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+  public long sort(String key, SortingParams sortingParams, String dstkey) {
+    return executeCommand(commandObjects.sort(key, sortingParams, dstkey));
+  }
+
+  @Override
+  public List<String> sortReadonly(String key, SortingParams sortingParams) {
+    return executeCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   @Override
@@ -316,8 +317,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> sort(byte[] key, SortingParams sortingParameters) {
-    return executeCommand(commandObjects.sort(key, sortingParameters));
+  public List<byte[]> sort(byte[] key, SortingParams sortingParams) {
+    return executeCommand(commandObjects.sort(key, sortingParams));
   }
 
   @Override
@@ -326,8 +327,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sort(byte[] key, SortingParams sortingParameters, byte[] dstkey) {
-    return executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+  public List<byte[]> sortReadonly(byte[] key, SortingParams sortingParams) {
+    return executeCommand(commandObjects.sortReadonly(key, sortingParams));
+  }
+
+  @Override
+  public long sort(byte[] key, SortingParams sortingParams, byte[] dstkey) {
+    return executeCommand(commandObjects.sort(key, sortingParams, dstkey));
   }
 
   @Override
@@ -964,13 +970,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long lpushx(String key, String... string) {
-    return executeCommand(commandObjects.lpushx(key, string));
+  public long lpushx(String key, String... strings) {
+    return executeCommand(commandObjects.lpushx(key, strings));
   }
 
   @Override
-  public long rpushx(String key, String... string) {
-    return executeCommand(commandObjects.rpushx(key, string));
+  public long rpushx(String key, String... strings) {
+    return executeCommand(commandObjects.rpushx(key, strings));
   }
 
   @Override
@@ -979,13 +985,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long lpushx(byte[] key, byte[]... arg) {
-    return executeCommand(commandObjects.lpushx(key, arg));
+  public long lpushx(byte[] key, byte[]... args) {
+    return executeCommand(commandObjects.lpushx(key, args));
   }
 
   @Override
-  public long rpushx(byte[] key, byte[]... arg) {
-    return executeCommand(commandObjects.rpushx(key, arg));
+  public long rpushx(byte[] key, byte[]... args) {
+    return executeCommand(commandObjects.rpushx(key, args));
   }
 
   @Override
@@ -1338,8 +1344,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   // Set commands
   @Override
-  public long sadd(String key, String... member) {
-    return executeCommand(commandObjects.sadd(key, member));
+  public long sadd(String key, String... members) {
+    return executeCommand(commandObjects.sadd(key, members));
   }
 
   @Override
@@ -1348,8 +1354,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long srem(String key, String... member) {
-    return executeCommand(commandObjects.srem(key, member));
+  public long srem(String key, String... members) {
+    return executeCommand(commandObjects.srem(key, members));
   }
 
   @Override
@@ -1378,8 +1384,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sadd(byte[] key, byte[]... member) {
-    return executeCommand(commandObjects.sadd(key, member));
+  public long sadd(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.sadd(key, members));
   }
 
   @Override
@@ -1388,8 +1394,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long srem(byte[] key, byte[]... member) {
-    return executeCommand(commandObjects.srem(key, member));
+  public long srem(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.srem(key, members));
   }
 
   @Override
@@ -1468,6 +1474,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sintercard(String... keys) {
+    return executeCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public long sintercard(int limit, String... keys) {
+    return executeCommand(commandObjects.sintercard(limit, keys));
+  }
+
+  @Override
   public Set<String> sunion(String... keys) {
     return executeCommand(commandObjects.sunion(keys));
   }
@@ -1500,6 +1516,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long sinterstore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  @Override
+  public long sintercard(byte[]... keys) {
+    return executeCommand(commandObjects.sintercard(keys));
+  }
+
+  @Override
+  public long sintercard(int limit, byte[]... keys) {
+    return executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   @Override
@@ -2147,6 +2173,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return executeCommand(commandObjects.zinterstore(dstkey, params, sets));
+  }
+
+  @Override
+  public long zintercard(byte[]... keys) {
+    return executeCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public long zintercard(long limit, byte[]... keys) {
+    return executeCommand(commandObjects.zintercard(limit, keys));
+  }
+
+  @Override
+  public long zintercard(String... keys) {
+    return executeCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public long zintercard(long limit, String... keys) {
+    return executeCommand(commandObjects.zintercard(limit, keys));
   }
 
   @Override
@@ -2861,6 +2907,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Object evalReadonly(String script, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Object evalsha(String sha1) {
     return executeCommand(commandObjects.evalsha(sha1));
   }
@@ -2873,6 +2924,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Object evalsha(String sha1, List<String> keys, List<String> args) {
     return executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -2891,6 +2947,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Object evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Object evalsha(byte[] sha1) {
     return executeCommand(commandObjects.evalsha(sha1));
   }
@@ -2903,6 +2964,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Object evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     return executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
   // Scripting commands
 
@@ -3067,6 +3133,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public long publish(byte[] channel, byte[] message) {
     return executeCommand(commandObjects.publish(channel, message));
+  }
+
+  public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    }
+  }
+
+  public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    }
   }
 
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
@@ -3446,6 +3536,108 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
   // RedisJSON commands
+
+  // RedisTimeSeries commands
+  @Override
+  public String tsCreate(String key) {
+    return executeCommand(commandObjects.tsCreate(key));
+  }
+
+  @Override
+  public String tsCreate(String key, TSCreateParams createParams) {
+    return executeCommand(commandObjects.tsCreate(key, createParams));
+  }
+
+  @Override
+  public long tsDel(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsDel(key, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public String tsAlter(String key, TSAlterParams alterParams) {
+    return executeCommand(commandObjects.tsAlter(key, alterParams));
+  }
+
+  @Override
+  public long tsAdd(String key, double value) {
+    return executeCommand(commandObjects.tsAdd(key, value));
+  }
+
+  @Override
+  public long tsAdd(String key, long timestamp, double value) {
+    return executeCommand(commandObjects.tsAdd(key, timestamp, value));
+  }
+
+  @Override
+  public long tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
+    return executeCommand(commandObjects.tsAdd(key, timestamp, value, createParams));
+  }
+
+  @Override
+  public List<TSElement> tsRange(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public List<TSElement> tsRange(String key, TSRangeParams rangeParams) {
+    return executeCommand(commandObjects.tsRange(key, rangeParams));
+  }
+
+  @Override
+  public List<TSElement> tsRevRange(String key, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public List<TSElement> tsRevRange(String key, TSRangeParams rangeParams) {
+    return executeCommand(commandObjects.tsRevRange(key, rangeParams));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMRange(TSMRangeParams multiRangeParams) {
+    return executeCommand(commandObjects.tsMRange(multiRangeParams));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+    return executeCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMRevRange(TSMRangeParams multiRangeParams) {
+    return executeCommand(commandObjects.tsMRevRange(multiRangeParams));
+  }
+
+  @Override
+  public TSElement tsGet(String key) {
+    return executeCommand(commandObjects.tsGet(key));
+  }
+
+  @Override
+  public List<KeyedTSElements> tsMGet(TSMGetParams multiGetParams, String... filters) {
+    return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
+  }
+
+  @Override
+  public String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket) {
+    return executeCommand(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket));
+  }
+
+  @Override
+  public String tsDeleteRule(String sourceKey, String destKey) {
+    return executeCommand(commandObjects.tsDeleteRule(sourceKey, destKey));
+  }
+
+  @Override
+  public List<String> tsQueryIndex(String... filters) {
+    return executeCommand(commandObjects.tsQueryIndex(filters));
+  }
+  // RedisTimeSeries commands
 
   public Object sendCommand(ProtocolCommand cmd) {
     return executeCommand(commandObjects.commandArguments(cmd));

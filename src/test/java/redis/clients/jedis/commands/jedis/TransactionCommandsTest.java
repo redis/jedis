@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.*;
 
+import static org.mockito.ArgumentMatchers.any;
 import static redis.clients.jedis.Protocol.Command.INCR;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -14,11 +15,15 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -145,6 +150,46 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     Transaction t = jedis.multi();
     String status = t.discard();
     assertEquals("OK", status);
+  }
+
+  @Test
+  public void discardFail() {
+    Transaction trans = jedis.multi();
+    trans.set("a", "a");
+    trans.set("b", "b");
+
+    try (MockedStatic<Protocol> protocol = Mockito.mockStatic(Protocol.class)) {
+      protocol.when(() -> Protocol.read(any())).thenThrow(JedisConnectionException.class);
+
+      trans.discard();
+      fail("Should get mocked JedisConnectionException.");
+    } catch (JedisConnectionException jce) {
+      // should be here
+    } finally {
+      // close() should pass
+      trans.close();
+    }
+    assertTrue(jedis.isBroken());
+  }
+
+  @Test
+  public void execFail() {
+    Transaction trans = jedis.multi();
+    trans.set("a", "a");
+    trans.set("b", "b");
+
+    try (MockedStatic<Protocol> protocol = Mockito.mockStatic(Protocol.class)) {
+      protocol.when(() -> Protocol.read(any())).thenThrow(JedisConnectionException.class);
+
+      trans.exec();
+      fail("Should get mocked JedisConnectionException.");
+    } catch (JedisConnectionException jce) {
+      // should be here
+    } finally {
+      // close() should pass
+      trans.close();
+    }
+    assertTrue(jedis.isBroken());
   }
 
   @Test

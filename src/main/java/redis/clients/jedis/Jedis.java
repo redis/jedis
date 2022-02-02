@@ -372,7 +372,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String set(final byte[] key, final byte[] value) {
@@ -386,7 +386,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @param params
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String set(final byte[] key, final byte[] value, final SetParams params) {
@@ -415,8 +415,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return the value of key
-   * @since Redis 6.2
+   * @return The value of key
    */
   @Override
   public byte[] getDel(final byte[] key) {
@@ -443,8 +442,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist,
-   *         0 if none of the specified keys exist.
+   * @return An integer greater than 0 if one or more keys exist, 0 if none of the specified keys exist
    */
   @Override
   public long exists(final byte[]... keys) {
@@ -457,7 +455,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
-   * @return Boolean reply, true if the key exists, otherwise false
+   * @return {@code true} if the key exists, otherwise {@code false}
    */
   @Override
   public boolean exists(final byte[] key) {
@@ -469,8 +467,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Remove the specified keys. If a given key does not exist no operation is performed for this
    * key. The command returns the number of keys removed. Time complexity: O(1)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
-   *         0 if none of the specified key existed
+   * @return The number of keys that were removed
    */
   @Override
   public long del(final byte[]... keys) {
@@ -495,7 +492,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * work in a different thread in order to reclaim memory, where N is the number of allocations the
    * deleted objects where composed of.
    * @param keys
-   * @return Integer reply: The number of keys that were unlinked
+   * @return The number of keys that were unlinked
    */
   @Override
   public long unlink(final byte[]... keys) {
@@ -513,10 +510,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Return the type of the value stored at key in form of a string. The type can be one of "none",
    * "string", "list", "set". "none" is returned if the key does not exist. Time complexity: O(1)
    * @param key
-   * @return Status code reply, specifically: "none" if the key does not exist "string" if the key
-   *         contains a String value "list" if the key contains a List value "set" if the key
-   *         contains a Set value "zset" if the key contains a Sorted Set value "hash" if the key
-   *         contains a Hash value
+   * @return "none" if the key does not exist, "string" if the key contains a String value, "list"
+   * if the key contains a List value, "set" if the key contains a Set value, "zset" if the key
+   * contains a Sorted Set value, "hash" if the key contains a Hash value
    */
   @Override
   public String type(final byte[] key) {
@@ -526,7 +522,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Delete all the keys of the currently selected DB. This command never fails.
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String flushDB() {
@@ -538,7 +534,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   /**
    * Delete all the keys of the currently selected DB. This command never fails.
    * @param flushMode
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String flushDB(FlushMode flushMode) {
@@ -585,8 +581,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Return a randomly selected key from the currently selected DB.
    * <p>
    * Time complexity: O(1)
-   * @return Single line reply, specifically the randomly selected key or an empty string is the
-   *         database is empty
+   * @return The randomly selected key or an empty string is the database is empty
    */
   @Override
   public byte[] randomBinaryKey() {
@@ -601,7 +596,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param oldkey
    * @param newkey
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String rename(final byte[] oldkey, final byte[] newkey) {
@@ -615,7 +610,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param oldkey
    * @param newkey
-   * @return Integer reply, specifically: 1 if the key was renamed 0 if the target key already exist
+   * @return 1 if the key was renamed 0 if the target key already exist
    */
   @Override
   public long renamenx(final byte[] oldkey, final byte[] newkey) {
@@ -625,7 +620,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Return the number of keys in the currently selected database.
-   * @return Integer reply
+   * @return The number of keys
    */
   @Override
   public long dbSize() {
@@ -651,7 +646,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param seconds
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+   * @return 1: the timeout was set. 0: the timeout was not set since
    *         the key already has an associated timeout (this may happen only in Redis versions &lt;
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
@@ -680,7 +675,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param unixTime
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+   * @return 1: the timeout was set. 0: the timeout was not set since
    *         the key already has an associated timeout (this may happen only in Redis versions &lt;
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
@@ -695,9 +690,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * {@link Jedis#expire(byte[], long) EXPIRE} set. This introspection capability allows a Redis
    * connection to check how many seconds a given key will continue to be part of the dataset.
    * @param key
-   * @return Integer reply, returns the remaining time to live in seconds of a key that has an
-   *         EXPIRE. If the Key does not exists or does not have an associated expire, -1 is
-   *         returned.
+   * @return TTL in seconds, or a negative value in order to signal an error
    */
   @Override
   public long ttl(final byte[] key) {
@@ -709,7 +702,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Alters the last access time of a key(s). A key is ignored if it does not exist.
    * Time complexity: O(N) where N is the number of keys that will be touched.
    * @param keys
-   * @return Integer reply: The number of keys that were touched.
+   * @return The number of keys that were touched.
    */
   @Override
   public long touch(final byte[]... keys) {
@@ -727,7 +720,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Select the DB with having the specified zero-based numeric index. For default every new
    * connection connection is automatically selected to DB 0.
    * @param index
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String select(final int index) {
@@ -752,7 +745,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * locking primitive.
    * @param key
    * @param dbIndex
-   * @return Integer reply, specifically: 1 if the key was moved 0 if the key was not moved because
+   * @return 1 if the key was moved 0 if the key was not moved because
    *         already present on the target DB or was not found in the current DB.
    */
   @Override
@@ -765,7 +758,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   /**
    * Delete all the keys of all the existing databases, not just the currently selected one. This
    * command never fails.
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String flushAll() {
@@ -778,7 +771,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Delete all the keys of all the existing databases, not just the currently selected one. This
    * command never fails.
    * @param flushMode
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String flushAll(FlushMode flushMode) {
@@ -825,7 +818,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param value
-   * @return Integer reply, specifically: 1 if the key was set 0 if the key was not set
+   * @return 1 if the key was set 0 if the key was not set
    */
   @Override
   public long setnx(final byte[] key, final byte[] value) {
@@ -842,7 +835,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param seconds
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String setex(final byte[] key, final long seconds, final byte[] value) {
@@ -864,7 +857,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * once, or no modification at all.
    * @see Jedis#msetnx(byte[][])
    * @param keysvalues
-   * @return Status code reply Basically +OK as MSET can't fail
+   * @return OK
    */
   @Override
   public String mset(final byte[]... keysvalues) {
@@ -873,7 +866,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Set the the respective keys to the respective values. {@link Jedis#mset(byte[][]) MSET} will
+   * Set the respective keys to the respective values. {@link Jedis#mset(byte[][]) MSET} will
    * replace old values with new values, while MSETNX will not perform any operation at all even if
    * just a single key already exists.
    * <p>
@@ -886,7 +879,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * once, or no modification at all.
    * @see Jedis#mset(byte[][])
    * @param keysvalues
-   * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
+   * @return 1 if the all the keys were set 0 if no key was set (at
    *         least one key already existed)
    */
   @Override
@@ -896,22 +889,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * DECRBY work just like {@link Jedis#decr(byte[]) INCR} but instead to decrement by 1 the
+   * DECRBY work just like {@link Jedis#decr(byte[]) DECR} but instead to decrement by 1 the
    * decrement is integer.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * DECR commands are limited to 64 bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
    * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(byte[])
-   * @see #decr(byte[])
-   * @see #incrBy(byte[], long)
+   * @see Jedis#incr(byte[])
+   * @see Jedis#decr(byte[])
+   * @see Jedis#incrBy(byte[], long)
    * @param key
    * @param decrement
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the decrement
    */
   @Override
   public long decrBy(final byte[] key, final long decrement) {
@@ -923,18 +916,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Decrement the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the decrement operation.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * DECR commands are limited to 64 bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
    * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(byte[])
-   * @see #incrBy(byte[], long)
-   * @see #decrBy(byte[], long)
+   * @see Jedis#incr(byte[])
+   * @see Jedis#incrBy(byte[], long)
+   * @see Jedis#decrBy(byte[], long)
    * @param key
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the decrement
    */
   @Override
   public long decr(final byte[] key) {
@@ -953,12 +946,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(byte[])
-   * @see #decr(byte[])
-   * @see #decrBy(byte[], long)
+   * @see Jedis#incr(byte[])
+   * @see Jedis#decr(byte[])
+   * @see Jedis#decrBy(byte[], long)
    * @param key
    * @param increment
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the increment
    */
   @Override
   public long incrBy(final byte[] key, final long increment) {
@@ -978,12 +971,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * negative value will work as expected.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(byte[])
-   * @see #decr(byte[])
-   * @see #decrBy(byte[], long)
+   * @see Jedis#incr(byte[])
+   * @see Jedis#decr(byte[])
+   * @see Jedis#decrBy(byte[], long)
    * @param key the key to increment
    * @param increment the value to increment by
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the increment
    */
   @Override
   public double incrByFloat(final byte[] key, final double increment) {
@@ -1002,11 +995,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incrBy(byte[], long)
-   * @see #decr(byte[])
-   * @see #decrBy(byte[], long)
+   * @see Jedis#incrBy(byte[], long)
+   * @see Jedis#decr(byte[])
+   * @see Jedis#decrBy(byte[], long)
    * @param key
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the increment
    */
   @Override
   public long incr(final byte[] key) {
@@ -1024,7 +1017,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Redis will double the free space available on every reallocation.
    * @param key
    * @param value
-   * @return Integer reply, specifically the total length of the string after the append operation.
+   * @return The total length of the string after the append operation
    */
   @Override
   public long append(final byte[] key, final byte[] value) {
@@ -1117,7 +1110,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b> O(N) (with N being the number of fields)
    * @param key
    * @param hash
-   * @return Always OK because HMSET can't fail
+   * @return OK
    */
   @Override
   public String hmset(final byte[] key, final Map<byte[], byte[]> hash) {
@@ -1134,8 +1127,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b> O(N) (with N being the number of fields)
    * @param key
    * @param fields
-   * @return Multi Bulk Reply specifically a list of all the values associated with the specified
-   *         fields, in the same order of the request.
+   * @return A list of all the values associated with the specified fields, in the same order of the request
    */
   @Override
   public List<byte[]> hmget(final byte[] key, final byte[]... fields) {
@@ -1155,7 +1147,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param field
    * @param value
-   * @return Integer reply The new value at field after the increment operation.
+   * @return The value of key after the increment
    */
   @Override
   public long hincrBy(final byte[] key, final byte[] field, final long value) {
@@ -1176,8 +1168,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param field
    * @param value
-   * @return Double precision floating point reply The new value at field after the increment
-   *         operation.
+   * @return The new value at field after the increment operation
    */
   @Override
   public double hincrByFloat(final byte[] key, final byte[] field, final double value) {
@@ -1189,7 +1180,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return Return true if the hash stored at key contains the specified field. Return false if the key is
+   * @return {@code true} if the hash stored at key contains the specified field, {@code false} if the key is
    *         not found or the field is not present.
    */
   @Override
@@ -1284,7 +1275,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N), where N is the number of fields returned
    * @param key
-   * @return multiple random fields from a hash.
+   * @return Multiple random fields from a hash.
    */
   @Override
   public List<byte[]> hrandfield(final byte[] key, final long count) {
@@ -1297,7 +1288,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N), where N is the number of fields returned
    * @param key
-   * @return one or multiple random fields with values from a hash.
+   * @return One or multiple random fields with values from a hash.
    */
   @Override
   public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
@@ -1313,8 +1304,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param strings
-   * @return Integer reply, specifically, the number of elements inside the list after the push
-   *         operation.
+   * @return The number of elements inside the list after the push operation
    */
   @Override
   public long rpush(final byte[] key, final byte[]... strings) {
@@ -1330,8 +1320,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param strings
-   * @return Integer reply, specifically, the number of elements inside the list after the push
-   *         operation.
+   * @return The number of elements inside the list after the push operation
    */
   @Override
   public long lpush(final byte[] key, final byte[]... strings) {
@@ -1346,7 +1335,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return The length of the list.
+   * @return The length of the list
    */
   @Override
   public long llen(final byte[] key) {
@@ -1384,7 +1373,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param start
    * @param stop
-   * @return Multi bulk reply, specifically a list of elements in the specified range.
+   * @return A list of elements in the specified range
    */
   @Override
   public List<byte[]> lrange(final byte[] key, final long start, final long stop) {
@@ -1420,7 +1409,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param start
    * @param stop
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String ltrim(final byte[] key, final long start, final long stop) {
@@ -1442,7 +1431,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(n) (with n being the length of the list)
    * @param key
    * @param index
-   * @return Bulk reply, specifically the requested element
+   * @return The requested element
    */
   @Override
   public byte[] lindex(final byte[] key, final long index) {
@@ -1463,11 +1452,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * O(N) (with N being the length of the list), setting the first or last elements of the list is
    * O(1).
-   * @see #lindex(byte[], long)
+   * @see Jedis#lindex(byte[], long)
    * @param key
    * @param index
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String lset(final byte[] key, final long index, final byte[] value) {
@@ -1488,7 +1477,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param count
    * @param value
-   * @return Integer Reply, specifically: The number of removed elements if the operation succeeded
+   * @return The number of removed elements if the operation succeeded
    */
   @Override
   public long lrem(final byte[] key, final long count, final byte[] value) {
@@ -1502,7 +1491,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * "b","c".
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
-   * @see #rpop(byte[])
+   * @see Jedis#rpop(byte[])
    * @param key
    * @return Bulk reply
    */
@@ -1524,10 +1513,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * 'nil' is returned.
    * <p>
    * Time complexity: O(N) where N is the number of elements in the list
-   * @see #lpos(byte[], byte[])
+   * @see Jedis#lpos(byte[], byte[])
    * @param key
    * @param element
-   * @return Integer Reply, specifically: The index of first matching element in the list. Value will
+   * @return The index of first matching element in the list. Value will
    * be 'nil' when the element is not present in the list.
    */
   @Override
@@ -1547,11 +1536,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * comparison is made for the first part or the last part depending on the fact we use a positive or
    * negative rank.
    * Following is how we could use the Maxlen option lpos("foo", "b", LPosParams.lPosParams().rank(1).maxlen(2)).
-   * @see   #lpos(byte[], byte[], LPosParams)
+   * @see Jedis#lpos(byte[], byte[], LPosParams)
    * @param key
    * @param element
    * @param params
-   * @return Integer Reply
+   * @return The index of first matching element in the list. Value will be 'nil' when the element
+   * is not present in the list
    */
   @Override
   public Long lpos(final byte[] key, final byte[] element, final LPosParams params) {
@@ -1566,12 +1556,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * is returned.
    * <p>
    * Time complexity: O(N) where N is the number of elements in the list
-   * @see #lpos(byte[], byte[], LPosParams, long)
+   * @see Jedis#lpos(byte[], byte[], LPosParams, long)
    * @param key
    * @param element
    * @param params
    * @param count
-   * @return Returns value will be a list containing position of the matching elements inside the list.
+   * @return A list containing position of the matching elements inside the list
    */
   @Override
   public List<Long> lpos(final byte[] key, final byte[] element, final LPosParams params,
@@ -1586,7 +1576,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * "b","c".
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
-   * @see #lpop(byte[])
+   * @see Jedis#lpop(byte[])
    * @param key
    * @return Bulk reply
    */
@@ -1631,8 +1621,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(1)
    * @param key
    * @param members
-   * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
-   *         already a member of the set
+   * @return The number of elements that were added to the set, not including all the elements already
+   * present in the set
    */
   @Override
   public long sadd(final byte[] key, final byte[]... members) {
@@ -1646,7 +1636,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(N)
    * @param key the key of the set
-   * @return Multi bulk reply
+   * @return All elements of the set
    */
   @Override
   public Set<byte[]> smembers(final byte[] key) {
@@ -1660,14 +1650,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(1)
    * @param key the key of the set
-   * @param member the set member to remove
-   * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
-   *         not a member of the set
+   * @param members the set member to remove
+   * @return The number of members that were removed from the set, not including non-existing members
    */
   @Override
-  public long srem(final byte[] key, final byte[]... member) {
+  public long srem(final byte[] key, final byte[]... members) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.srem(key, member));
+    return connection.executeCommand(commandObjects.srem(key, members));
   }
 
   /**
@@ -1679,7 +1668,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(1)
    * @param key
-   * @return Bulk reply
+   * @return The removed member, or nil when key does not exist
    */
   @Override
   public byte[] spop(final byte[] key) {
@@ -1709,8 +1698,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param srckey
    * @param dstkey
    * @param member
-   * @return Integer reply, specifically: 1 if the element was moved 0 if the element was not found
-   *         on the first set and no operation was performed
+   * @return 1 if the element was moved, 0 if no operation was performed
    */
   @Override
   public long smove(final byte[] srckey, final byte[] dstkey, final byte[] member) {
@@ -1722,8 +1710,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Return the set cardinality (number of elements). If the key does not exist 0 is returned, like
    * for empty sets.
    * @param key
-   * @return Integer reply, specifically: the cardinality (number of elements) of the set as an
-   *         integer.
+   * @return The cardinality (number of elements) of the set
    */
   @Override
   public long scard(final byte[] key) {
@@ -1737,8 +1724,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Boolean reply, specifically: true if the element is a member of the set false if the
-   *         element is not a member of the set OR if the key does not exist
+   * @return {@code true} if the element is a member of the set, {@code false} otherwise
    */
   @Override
   public boolean sismember(final byte[] key, final byte[] member) {
@@ -1752,8 +1738,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(N) where N is the number of elements being checked for membership
    * @param key
    * @param members
-   * @return List representing the membership of the given elements, in the same order as they are
-   *         requested.
+   * @return List representing the membership of the given elements, in the same order as they are requested
    */
   @Override
   public List<Boolean> smismember(final byte[] key, final byte[]... members) {
@@ -1774,7 +1759,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
    * @param keys
-   * @return Multi bulk reply, specifically the list of common elements.
+   * @return A set with members of the resulting set
    */
   @Override
   public Set<byte[]> sinter(final byte[]... keys) {
@@ -1783,19 +1768,49 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This commanad works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of being
+   * This command works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of being
    * returned the resulting set is stored as dstkey.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
    * @param dstkey
    * @param keys
-   * @return Status code reply
+   * @return The number of elements in the resulting set
    */
   @Override
   public long sinterstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result. LIMIT defaults to 0 and means unlimited
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  @Override
+  public long sintercard(byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sintercard(keys));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#sinter(byte[][]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality.
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  @Override
+  public long sintercard(int limit, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   /**
@@ -1809,7 +1824,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(N) where N is the total number of elements in all the provided sets
    * @param keys
-   * @return Multi bulk reply, specifically the list of common elements.
+   * @return A set with members of the resulting set
    */
   @Override
   public Set<byte[]> sunion(final byte[]... keys) {
@@ -1825,7 +1840,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(N) where N is the total number of elements in all the provided sets
    * @param dstkey
    * @param keys
-   * @return Status code reply
+   * @return The number of elements in the resulting set
    */
   @Override
   public long sunionstore(final byte[] dstkey, final byte[]... keys) {
@@ -1851,8 +1866,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * O(N) with N being the total number of elements of all the sets
    * @param keys
-   * @return Return the members of a set resulting from the difference between the first set
-   *         provided and all the successive sets.
+   * @return A set with members of the resulting set
    */
   @Override
   public Set<byte[]> sdiff(final byte[]... keys) {
@@ -1865,7 +1879,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * the resulting set is stored in dstkey.
    * @param dstkey
    * @param keys
-   * @return Status code reply
+   * @return The number of elements in the resulting set
    */
   @Override
   public long sdiffstore(final byte[] dstkey, final byte[]... keys) {
@@ -1881,7 +1895,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(1)
    * @param key
-   * @return Bulk reply
+   * @return The randomly selected element
    */
   @Override
   public byte[] srandmember(final byte[] key) {
@@ -1908,8 +1922,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param score
    * @param member
-   * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
-   *         already a member of the sorted set and the score was updated
+   * @return 1 if the new element was added, 0 if the element was already a member of the sorted
+   * set and the score was updated
    */
   @Override
   public long zadd(final byte[] key, final double score, final byte[] member) {
@@ -1956,8 +1970,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(log(N)) with N being the number of elements in the sorted set
    * @param key
    * @param members
-   * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
-   *         not a member of the set
+   * @return 1 if the new element was removed, 0 if the new element was not a member of the set
    */
   @Override
   public long zrem(final byte[] key, final byte[]... members) {
@@ -2006,11 +2019,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b>
    * <p>
    * O(log(N))
-   * @see #zrevrank(byte[], byte[])
+   * @see Jedis#zrevrank(byte[], byte[])
    * @param key
    * @param member
-   * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
-   *         reply if the element exists. A nil bulk reply if there is no such element.
+   * @return The element as an integer if the element exists. A 'nil' bulk reply if there is no such element
    */
   @Override
   public Long zrank(final byte[] key, final byte[] member) {
@@ -2028,11 +2040,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b>
    * <p>
    * O(log(N))
-   * @see #zrank(byte[], byte[])
+   * @see Jedis#zrank(byte[], byte[])
    * @param key
    * @param member
-   * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
-   *         reply if the element exists. A nil bulk reply if there is no such element.
+   * @return The element as an integer if the element exists. A 'nil' bulk reply if there is no such element.
    */
   @Override
   public Long zrevrank(final byte[] key, final byte[] member) {
@@ -2100,7 +2111,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(1)
    * @param key
-   * @return the cardinality (number of elements) of the set as an integer.
+   * @return The cardinality (number of elements) of the set as an integer.
    */
   @Override
   public long zcard(final byte[] key) {
@@ -2116,7 +2127,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b> O(1)
    * @param key
    * @param member
-   * @return the score
+   * @return The score
    */
   @Override
   public Double zscore(final byte[] key, final byte[] member) {
@@ -2131,7 +2142,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b> O(N) where N is the number of members being requested.
    * @param key
    * @param members
-   * @return the scores
+   * @return The scores
    */
   @Override
   public List<Double> zmscore(final byte[] key, final byte[]... members) {
@@ -2184,9 +2195,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Sort the elements contained in the List, Set, or Sorted Set value at key. By default sorting is
    * numeric with elements being compared as double precision floating point numbers. This is the
    * simplest form of SORT.
-   * @see #sort(byte[], byte[])
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[], SortingParams, byte[])
+   * @see Jedis#sort(byte[], byte[])
+   * @see Jedis#sort(byte[], SortingParams)
+   * @see Jedis#sort(byte[], SortingParams, byte[])
    * @param key
    * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
    *         list of numbers ordered from the smallest to the biggest number.
@@ -2265,32 +2276,32 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
-   * @see #sort(byte[])
-   * @see #sort(byte[], SortingParams, byte[])
+   * @see Jedis#sort(byte[])
+   * @see Jedis#sort(byte[], SortingParams, byte[])
    * @param key
-   * @param sortingParameters
+   * @param sortingParams
    * @return a list of sorted elements.
    */
   @Override
-  public List<byte[]> sort(final byte[] key, final SortingParams sortingParameters) {
+  public List<byte[]> sort(final byte[] key, final SortingParams sortingParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sort(key, sortingParameters));
+    return connection.executeCommand(commandObjects.sort(key, sortingParams));
   }
 
   /**
    * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[])
-   * @see #sort(byte[], byte[])
+   * @see Jedis#sort(byte[], SortingParams)
+   * @see Jedis#sort(byte[])
+   * @see Jedis#sort(byte[], byte[])
    * @param key
-   * @param sortingParameters
+   * @param sortingParams
    * @param dstkey
    * @return The number of elements of the list at dstkey.
    */
   @Override
-  public long sort(final byte[] key, final SortingParams sortingParameters, final byte[] dstkey) {
+  public long sort(final byte[] key, final SortingParams sortingParams, final byte[] dstkey) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+    return connection.executeCommand(commandObjects.sort(key, sortingParams, dstkey));
   }
 
   /**
@@ -2299,9 +2310,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
    * at dstkey. By default sorting is numeric with elements being compared as double precision
    * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(byte[])
-   * @see #sort(byte[], SortingParams)
-   * @see #sort(byte[], SortingParams, byte[])
+   * @see Jedis#sort(byte[])
+   * @see Jedis#sort(byte[], SortingParams)
+   * @see Jedis#sort(byte[], SortingParams, byte[])
    * @param key
    * @param dstkey
    * @return The number of elements of the list at dstkey.
@@ -2312,12 +2323,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.sort(key, dstkey));
   }
 
+  @Override
+  public List<byte[]> sortReadonly(byte[] key, SortingParams sortingParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sortReadonly(key, sortingParams));
+  }
+
   /**
    * Pop an element from a list, push it to another list and return it
    * @param srcKey
    * @param dstKey
    * @param from
    * @param to
+   * @return The element being popped and pushed
    */
   @Override
   public byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
@@ -2332,6 +2350,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param from
    * @param to
    * @param timeout
+   * @return The element being popped and pushed
    */
   @Override
   public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
@@ -2362,16 +2381,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Blocking behavior</b>
    * <p>
- If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
- connection performs a LPUSH or an RPUSH operation against one of the lists.
- <p>
- Once new data is present on one of the lists, the connection finally returns with the name of the
- key unblocking it and the popped value.
- <p>
- When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
- special value if the specified amount of seconds passed without a push operation against at
- least one of the specified keys.
- <p>
+   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+   * connection performs a LPUSH or an RPUSH operation against one of the lists.
+   * <p>
+   * Once new data is present on one of the lists, the connection finally returns with the name of the
+   * key unblocking it and the popped value.
+   * <p>
+   * When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
+   * special value if the specified amount of seconds passed without a push operation against at
+   * least one of the specified keys.
+   * <p>
    * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
    * block forever.
    * <p>
@@ -2433,16 +2452,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Blocking behavior</b>
    * <p>
- If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
- connection performs a LPUSH or an RPUSH operation against one of the lists.
- <p>
- Once new data is present on one of the lists, the connection finally returns with the name of the
- key unblocking it and the popped value.
- <p>
- When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
- special value if the specified amount of seconds passed without a push operation against at
- least one of the specified keys.
- <p>
+   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+   * connection performs a LPUSH or an RPUSH operation against one of the lists.
+   * <p>
+   * Once new data is present on one of the lists, the connection finally returns with the name of the
+   * key unblocking it and the popped value.
+   * <p>
+   * When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
+   * special value if the specified amount of seconds passed without a push operation against at
+   * least one of the specified keys.
+   * <p>
    * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
    * block forever.
    * <p>
@@ -2520,15 +2539,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Request for authentication in a password protected Redis server. A Redis server can be
- instructed to require a password before to allow clients to issue commands. This is done using
- the requirepass directive in the Redis configuration file. If the password given by the connection
- is correct the server replies with an OK status code reply and starts accepting commands from
- the connection. Otherwise an error is returned and the clients needs to try a new password. Note
- that for the high performance nature of Redis it is possible to try a lot of passwords in
- parallel in very short time, so make sure to generate a strong and very long password so that
- this attack is infeasible.
+   * instructed to require a password before to allow clients to issue commands. This is done using
+   * the requirepass directive in the Redis configuration file. If the password given by the connection
+   * is correct the server replies with an OK status code reply and starts accepting commands from
+   * the connection. Otherwise an error is returned and the clients needs to try a new password. Note
+   * that for the high performance nature of Redis it is possible to try a lot of passwords in
+   * parallel in very short time, so make sure to generate a strong and very long password so that
+   * this attack is infeasible.
    * @param password
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String auth(final String password) {
@@ -2619,15 +2638,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(byte[], double, double)
-   * @see #zrangeByScore(byte[], double, double, int, int)
-   * @see #zrangeByScoreWithScores(byte[], double, double)
-   * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
-   * @see #zcount(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double, int, int)
+   * @see Jedis#zcount(byte[], double, double)
    * @param key
    * @param min
    * @param max
-   * @return Multi bulk reply specifically a list of elements in the specified score range.
+   * @return A list of elements in the specified score range
    */
   @Override
   public List<byte[]> zrangeByScore(final byte[] key, final double min, final double max) {
@@ -2678,17 +2697,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(byte[], double, double)
-   * @see #zrangeByScore(byte[], double, double, int, int)
-   * @see #zrangeByScoreWithScores(byte[], double, double)
-   * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
-   * @see #zcount(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double, int, int)
+   * @see Jedis#zcount(byte[], double, double)
    * @param key
    * @param min
    * @param max
    * @param offset
    * @param count
-   * @return Multi bulk reply specifically a list of elements in the specified score range.
+   * @return A list of elements in the specified score range
    */
   @Override
   public List<byte[]> zrangeByScore(final byte[] key, final double min, final double max,
@@ -2741,15 +2760,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(byte[], double, double)
-   * @see #zrangeByScore(byte[], double, double, int, int)
-   * @see #zrangeByScoreWithScores(byte[], double, double)
-   * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
-   * @see #zcount(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double, int, int)
+   * @see Jedis#zcount(byte[], double, double)
    * @param key
    * @param min
    * @param max
-   * @return Multi bulk reply specifically a list of elements in the specified score range.
+   * @return A list of elements in the specified score range
    */
   @Override
   public List<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max) {
@@ -2800,17 +2819,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(byte[], double, double)
-   * @see #zrangeByScore(byte[], double, double, int, int)
-   * @see #zrangeByScoreWithScores(byte[], double, double)
-   * @see #zrangeByScoreWithScores(byte[], double, double, int, int)
-   * @see #zcount(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double)
+   * @see Jedis#zrangeByScore(byte[], double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double)
+   * @see Jedis#zrangeByScoreWithScores(byte[], double, double, int, int)
+   * @see Jedis#zcount(byte[], double, double)
    * @param key
    * @param min
    * @param max
    * @param offset
    * @param count
-   * @return Multi bulk reply specifically a list of elements in the specified score range.
+   * @return A list of elements in the specified score range
    */
   @Override
   public List<Tuple> zrangeByScoreWithScores(final byte[] key, final double min, final double max,
@@ -2890,6 +2909,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param start
    * @param stop
+   * @return The number of elements removed
    */
   @Override
   public long zremrangeByRank(final byte[] key, final long start, final long stop) {
@@ -2908,7 +2928,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param min
    * @param max
-   * @return Integer reply, specifically the number of elements removed.
+   * @return The number of elements removed
    */
   @Override
   public long zremrangeByScore(final byte[] key, final double min, final double max) {
@@ -2927,6 +2947,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
  resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
+   * @return The result of the union
    */
   @Override
   public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
@@ -2936,9 +2957,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
- resulting sorted set, it is returned to the connection.
+   * resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
+   * @return The result of the union with their scores
    */
   @Override
   public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
@@ -2969,7 +2991,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sorted sets, and M being the number of elements in the resulting sorted set
    * @param dstkey
    * @param sets
-   * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+   * @return The number of elements in the sorted set at dstkey
    */
   @Override
   public long zunionstore(final byte[] dstkey, final byte[]... sets) {
@@ -3002,7 +3024,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param dstkey
    * @param sets
    * @param params
-   * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+   * @return The number of elements in the sorted set at dstkey
    */
   @Override
   public long zunionstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
@@ -3015,6 +3037,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
+   * @return The result of the intersection
    */
   @Override
   public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
@@ -3027,6 +3050,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
+   * @return The result of the intersection with scores
    */
   @Override
   public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
@@ -3058,7 +3082,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sorted sets, and M being the number of elements in the resulting sorted set
    * @param dstkey
    * @param sets
-   * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+   * @return The number of elements in the sorted set at dstkey
    */
   @Override
   public long zinterstore(final byte[] dstkey, final byte[]... sets) {
@@ -3091,12 +3115,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param dstkey
    * @param sets
    * @param params
-   * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+   * @return The number of elements in the sorted set at dstkey
    */
   @Override
   public long zinterstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zinterstore(dstkey, params, sets));
+  }
+
+  @Override
+  public long zintercard(byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public long zintercard(long limit, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(limit, keys));
   }
 
   @Override
@@ -3148,7 +3184,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * The background variant of this command is {@link Jedis#bgsave() BGSAVE} that is able to perform
    * the saving in the background while the server continues serving other clients.
    * <p>
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String save() {
@@ -3159,10 +3195,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   /**
    * Asynchronously save the DB on disk.
    * <p>
- Save the DB in background. The OK code is immediately returned. Redis forks, the parent
- continues to server the clients, the child saves the DB on disk then exit. A connection my be able
- to check if the operation succeeded using the LASTSAVE command.
-   * @return Status code reply
+   * Save the DB in background. The OK code is immediately returned. Redis forks, the parent
+   * continues to server the clients, the child saves the DB on disk then exit. A connection my be able
+   * to check if the operation succeeded using the LASTSAVE command.
+   * @return OK
    */
   @Override
   public String bgsave() {
@@ -3182,7 +3218,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * directly form the dataset in memory in order to guarantee the generation of the minimal number
    * of commands needed to rebuild the database.
    * <p>
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String bgrewriteaof() {
@@ -3196,7 +3232,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Return the UNIX TIME of the last DB save executed with success. A connection may check if a
    * {@link Jedis#bgsave() BGSAVE} command succeeded reading the LASTSAVE value, then issuing a
    * BGSAVE command and checking at regular intervals every N seconds if LASTSAVE changed.
-   * @return Integer reply, specifically an UNIX time stamp.
+   * @return An UNIX time stamp
    */
   @Override
   public long lastsave() {
@@ -3336,10 +3372,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * discard the replication. So if the old master stop working it is possible to turn the slave
    * into a master and set the application to use the new master in read/write. Later when the other
    * Redis server will be fixed it can be configured in order to work as slave.
-   * <p>
    * @param host
    * @param port
-   * @return Status code reply
+   * @return OK
    * @deprecated Use {@link Jedis#replicaof(java.lang.String, int)}.
    */
   @Override
@@ -3489,7 +3524,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * </ul>
    * @param parameter
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String configSet(final byte[] parameter, final byte[] value) {
@@ -3516,9 +3551,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long lpushx(final byte[] key, final byte[]... string) {
+  public long lpushx(final byte[] key, final byte[]... strings) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.lpushx(key, string));
+    return connection.executeCommand(commandObjects.lpushx(key, strings));
   }
 
   /**
@@ -3526,8 +3561,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, specifically: 1: the key is now persist. 0: the key is not persist (only
-   *         happens when key not set).
+   * @return 1 if the key is now persist, 0 if the key is not persist (only happens when key not set)
    */
   @Override
   public long persist(final byte[] key) {
@@ -3536,9 +3570,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long rpushx(final byte[] key, final byte[]... string) {
+  public long rpushx(final byte[] key, final byte[]... strings) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.rpushx(key, string));
+    return connection.executeCommand(commandObjects.rpushx(key, strings));
   }
 
   @Override
@@ -3611,26 +3645,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceed(connection, channels);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceed(connection, channels);
   }
 
   public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceedWithPatterns(connection, patterns);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceedWithPatterns(connection, patterns);
   }
 
   /**
    * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
-   * <p>
    * @param script
    * @param keys
    * @param args
@@ -3640,6 +3663,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object eval(final byte[] script, final List<byte[]> keys, final List<byte[]> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.eval(script, keys, args));
+  }
+
+  @Override
+  public Object evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalReadonly(script, keys, args));
   }
 
   protected static byte[][] getParamsWithBinary(List<byte[]> keys, List<byte[]> args) {
@@ -3678,6 +3707,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object evalsha(final byte[] sha1, final List<byte[]> keys, final List<byte[]> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -3837,7 +3872,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="http://redis.io/commands/pexpire">PEXPIRE Command</a>
    * @param key
    * @param milliseconds
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+   * @return 1: the timeout was set. 0: the timeout was not set since
    *         the key already has an associated timeout (this may happen only in Redis versions <
    *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
    */
@@ -3865,7 +3900,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param milliseconds
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String psetex(final byte[] key, final long milliseconds, final byte[] value) {
@@ -4563,7 +4598,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xtrim(key, params));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
       byte[] consumername) {
     checkIsInMultiOrPipeline();
@@ -4714,7 +4753,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String set(final String key, final String value) {
@@ -4728,8 +4767,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @param params NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the
-   *          key if it already exist. EX|PX, expire time units: EX = seconds; PX = milliseconds
-   * @return Status code reply
+   *          key if it already exists. EX|PX, expire time units: EX = seconds; PX = milliseconds
+   * @return OK
    */
   @Override
   public String set(final String key, final String value, final SetParams params) {
@@ -4758,8 +4797,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return the value of key
-   * @since Redis 6.2
+   * @return The value of key
    */
   @Override
   public String getDel(final String key) {
@@ -4777,8 +4815,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Test if the specified keys exist. The command returns the number of keys exist.
    * Time complexity: O(N)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys exist,
-   *         0 if none of the specified keys exist.
+   * @return The number of keys that exist from those specified as {@code keys}
    */
   @Override
   public long exists(final String... keys) {
@@ -4791,7 +4828,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * returned. Note that even keys set with an empty string as value will return true. Time
    * complexity: O(1)
    * @param key
-   * @return Boolean reply, true if the key exists, otherwise false
+   * @return {@code true} if the key exists, otherwise {@code false}
    */
   @Override
   public boolean exists(final String key) {
@@ -4803,8 +4840,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Remove the specified keys. If a given key does not exist no operation is performed for this
    * key. The command returns the number of keys removed. Time complexity: O(1)
    * @param keys
-   * @return Integer reply, specifically: an integer greater than 0 if one or more keys were removed
-   *         0 if none of the specified key existed
+   * @return An integer greater than 0 if one or more keys were removed, 0 if none of the specified keys existed
    */
   @Override
   public long del(final String... keys) {
@@ -4829,7 +4865,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * work in a different thread in order to reclaim memory, where N is the number of allocations the
    * deleted objects where composed of.
    * @param keys
-   * @return Integer reply: The number of keys that were unlinked
+   * @return The number of keys that were unlinked
    */
   @Override
   public long unlink(final String... keys) {
@@ -4847,10 +4883,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Return the type of the value stored at key in form of a string. The type can be one of "none",
    * "string", "list", "set". "none" is returned if the key does not exist. Time complexity: O(1)
    * @param key
-   * @return Status code reply, specifically: "none" if the key does not exist "string" if the key
-   *         contains a String value "list" if the key contains a List value "set" if the key
-   *         contains a Set value "zset" if the key contains a Sorted Set value "hash" if the key
-   *         contains a Hash value
+   * @return "none" if the key does not exist, "string" if the key contains a String value, "list"
+   * if the key contains a List value, "set" if the key contains a Set value, "zset" if the key
+   * contains a Sorted Set value, "hash" if the key contains a Hash value
    */
   @Override
   public String type(final String key) {
@@ -4868,8 +4903,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Return a randomly selected key from the currently selected DB.
    * <p>
    * Time complexity: O(1)
-   * @return Singe line reply, specifically the randomly selected key or an empty string is the
-   *         database is empty
+   * @return Randomly selected key or an empty string if the database is empty
    */
   @Override
   public String randomKey() {
@@ -4884,7 +4918,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param oldkey
    * @param newkey
-   * @return Status code repy
+   * @return OK
    */
   @Override
   public String rename(final String oldkey, final String newkey) {
@@ -4898,7 +4932,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param oldkey
    * @param newkey
-   * @return Integer reply, specifically: 1 if the key was renamed 0 if the target key already exist
+   * @return 1 if the key was renamed, 0 if the target key already exist
    */
   @Override
   public long renamenx(final String oldkey, final String newkey) {
@@ -4923,7 +4957,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param seconds
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+   * @return 1: the timeout was set. 0: the timeout was not set since
    *         the key already has an associated timeout (this may happen only in Redis versions &lt;
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
@@ -4952,7 +4986,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @see <a href="http://redis.io/commands/expire">Expire Command</a>
    * @param key
    * @param unixTime
-   * @return Integer reply, specifically: 1: the timeout was set. 0: the timeout was not set since
+   * @return 1: the timeout was set. 0: the timeout was not set since
    *         the key already has an associated timeout (this may happen only in Redis versions &lt;
    *         2.1.3, Redis &gt;= 2.1.3 will happily update the timeout), or the key does not exist.
    */
@@ -4967,10 +5001,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * {@link Jedis#expire(String, long) EXPIRE} set. This introspection capability allows a Redis
    * connection to check how many seconds a given key will continue to be part of the dataset.
    * @param key
-   * @return Integer reply, returns the remaining time to live in seconds of a key that has an
-   *         EXPIRE. In Redis 2.6 or older, if the Key does not exists or does not have an
-   *         associated expire, -1 is returned. In Redis 2.8 or newer, if the Key does not have an
-   *         associated expire, -1 is returned or if the Key does not exists, -2 is returned.
+   * @return TTL in seconds, or a negative value in order to signal an error
+
    */
   @Override
   public long ttl(final String key) {
@@ -4982,7 +5014,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Alters the last access time of a key(s). A key is ignored if it does not exist.
    * Time complexity: O(N) where N is the number of keys that will be touched.
    * @param keys
-   * @return Integer reply: The number of keys that were touched.
+   * @return The number of keys that were touched.
    */
   @Override
   public long touch(final String... keys) {
@@ -5003,8 +5035,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * locking primitive.
    * @param key
    * @param dbIndex
-   * @return Integer reply, specifically: 1 if the key was moved 0 if the key was not moved because
-   *         already present on the target DB or was not found in the current DB.
+   * @return 1 if the key was moved, 0 if the key was not moved because already present on the target
+   * DB or was not found in the current DB
    */
   @Override
   public long move(final String key, final int dbIndex) {
@@ -5051,7 +5083,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param value
-   * @return Integer reply, specifically: 1 if the key was set 0 if the key was not set
+   * @return 1 if the key was set, 0 if the key was not set
    */
   @Override
   public long setnx(final String key, final String value) {
@@ -5068,7 +5100,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param seconds
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String setex(final String key, final long seconds, final String value) {
@@ -5088,9 +5120,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another connection talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @see #msetnx(String...)
+   * @see Jedis#msetnx(String...)
    * @param keysvalues
-   * @return Status code reply Basically +OK as MSET can't fail
+   * @return OK
    */
   @Override
   public String mset(final String... keysvalues) {
@@ -5110,10 +5142,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Both MSET and MSETNX are atomic operations. This means that for instance if the keys A and B
    * are modified, another connection talking to Redis can either see the changes to both A and B at
    * once, or no modification at all.
-   * @see #mset(String...)
+   * @see Jedis#mset(String...)
    * @param keysvalues
-   * @return Integer reply, specifically: 1 if the all the keys were set 0 if no key was set (at
-   *         least one key already existed)
+   * @return 1 if the all the keys were set, 0 if no key was set (at least one key already existed)
    */
   @Override
   public long msetnx(final String... keysvalues) {
@@ -5132,12 +5163,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(String)
-   * @see #decr(String)
-   * @see #incrBy(String, long)
+   * @see Jedis#incr(String)
+   * @see Jedis#decr(String)
+   * @see Jedis#incrBy(String, long)
    * @param key
    * @param decrement
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the decrement
    */
   @Override
   public long decrBy(final String key, final long decrement) {
@@ -5156,11 +5187,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(String)
-   * @see #incrBy(String, long)
-   * @see #decrBy(String, long)
+   * @see Jedis#incr(String)
+   * @see Jedis#incrBy(String, long)
+   * @see Jedis#decrBy(String, long)
    * @param key
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the decrement
    */
   @Override
   public long decr(final String key) {
@@ -5179,12 +5210,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incr(String)
-   * @see #decr(String)
-   * @see #decrBy(String, long)
+   * @see Jedis#incr(String)
+   * @see Jedis#decr(String)
+   * @see Jedis#decrBy(String, long)
    * @param key
    * @param increment
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the increment
    */
   @Override
   public long incrBy(final String key, final long increment) {
@@ -5205,7 +5236,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param increment
-   * @return Double reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the increment
    */
   @Override
   public double incrByFloat(final String key, final double increment) {
@@ -5224,11 +5255,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
-   * @see #incrBy(String, long)
-   * @see #decr(String)
-   * @see #decrBy(String, long)
+   * @see Jedis#incrBy(String, long)
+   * @see Jedis#decr(String)
+   * @see Jedis#decrBy(String, long)
    * @param key
-   * @return Integer reply, this commands will reply with the new value of key after the increment.
+   * @return The value of key after the increment
    */
   @Override
   public long incr(final String key) {
@@ -5246,7 +5277,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Redis will double the free space available on every reallocation.
    * @param key
    * @param value
-   * @return Integer reply, specifically the total length of the string after the append operation.
+   * @return The total length of the string after the append operation.
    */
   @Override
   public long append(final String key, final String value) {
@@ -5268,7 +5299,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param start
    * @param end
-   * @return Bulk reply
+   * @return The substring
    */
   @Override
   public String substr(final String key, final int start, final int end) {
@@ -5356,8 +5387,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b> O(N) (with N being the number of fields)
    * @param key
    * @param fields
-   * @return Multi Bulk Reply specifically a list of all the values associated with the specified
-   *         fields, in the same order of the request.
+   * @return A list of all the values associated with the specified fields, in the same order of the request.
    */
   @Override
   public List<String> hmget(final String key, final String... fields) {
@@ -5377,7 +5407,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param field
    * @param value
-   * @return Integer reply The new value at field after the increment operation.
+   * @return The value of key after the increment
    */
   @Override
   public long hincrBy(final String key, final String field, final long value) {
@@ -5398,8 +5428,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param field
    * @param value
-   * @return Double precision floating point reply The new value at field after the increment
-   *         operation.
+   * @return The new value at field after the increment operation
    */
   @Override
   public double hincrByFloat(final String key, final String field, final double value) {
@@ -5411,7 +5440,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Test for existence of a specified field in a hash. <b>Time complexity:</b> O(1)
    * @param key
    * @param field
-   * @return Return true if the hash stored at key contains the specified field. Return false if the key is
+   * @return {@code true} if the hash stored at key contains the specified field, {@code false} if the key is
    *         not found or the field is not present.
    */
   @Override
@@ -5537,8 +5566,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param strings
-   * @return Integer reply, specifically, the number of elements inside the list after the push
-   *         operation.
+   * @return The number of elements inside the list after the push operation
    */
   @Override
   public long rpush(final String key, final String... strings) {
@@ -5554,8 +5582,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(1)
    * @param key
    * @param strings
-   * @return Integer reply, specifically, the number of elements inside the list after the push
-   *         operation.
+   * @return The number of elements inside the list after the push operation
    */
   @Override
   public long lpush(final String key, final String... strings) {
@@ -5570,7 +5597,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return The length of the list.
+   * @return The length of the list
    */
   @Override
   public long llen(final String key) {
@@ -5608,7 +5635,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param start
    * @param stop
-   * @return Multi bulk reply, specifically a list of elements in the specified range.
+   * @return A list of elements in the specified range
    */
   @Override
   public List<String> lrange(final String key, final long start, final long stop) {
@@ -5644,7 +5671,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param start
    * @param stop
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String ltrim(final String key, final long start, final long stop) {
@@ -5666,7 +5693,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity: O(n) (with n being the length of the list)
    * @param key
    * @param index
-   * @return Bulk reply, specifically the requested element
+   * @return The requested element
    */
   @Override
   public String lindex(final String key, final long index) {
@@ -5687,11 +5714,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * O(N) (with N being the length of the list), setting the first or last elements of the list is
    * O(1).
-   * @see #lindex(String, long)
+   * @see Jedis#lindex(String, long)
    * @param key
    * @param index
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String lset(final String key, final long index, final String value) {
@@ -5712,7 +5739,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param count
    * @param value
-   * @return Integer Reply, specifically: The number of removed elements if the operation succeeded
+   * @return The number of removed elements if the operation succeeded
    */
   @Override
   public long lrem(final String key, final long count, final String value) {
@@ -5726,7 +5753,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * "b","c".
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
-   * @see #rpop(String)
+   * @see Jedis#rpop(String)
    * @param key
    * @return Bulk reply
    */
@@ -5767,7 +5794,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * "a","b".
    * <p>
    * If the key does not exist or the list is already empty the special value 'nil' is returned.
-   * @see #lpop(String)
+   * @see Jedis#lpop(String)
    * @param key
    * @return Bulk reply
    */
@@ -5812,8 +5839,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(1)
    * @param key
    * @param members
-   * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
-   *         already a member of the set
+   * @return 1 if the new element was added, 0 if the element was already a member of the set
    */
   @Override
   public long sadd(final String key, final String... members) {
@@ -5842,8 +5868,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(1)
    * @param key
    * @param members
-   * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
-   *         not a member of the set
+   * @return 1 if the new element was removed, 0 if the new element was not a member of the set
    */
   @Override
   public long srem(final String key, final String... members) {
@@ -5890,7 +5915,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param srckey
    * @param dstkey
    * @param member
-   * @return Integer reply, specifically: 1 if the element was moved 0 if the element was not found
+   * @return 1 if the element was moved, 0 if the element was not found
    *         on the first set and no operation was performed
    */
   @Override
@@ -5903,8 +5928,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Return the set cardinality (number of elements). If the key does not exist 0 is returned, like
    * for empty sets.
    * @param key
-   * @return Integer reply, specifically: the cardinality (number of elements) of the set as an
-   *         integer.
+   * @return The cardinality (number of elements) of the set as an integer
    */
   @Override
   public long scard(final String key) {
@@ -5918,8 +5942,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(1)
    * @param key
    * @param member
-   * @return Boolean reply, specifically: true if the element is a member of the set false if the
-   *         element is not a member of the set OR if the key does not exist
+   * @return {@code true} if the element is a member of the set, {@code false} otherwise
    */
   @Override
   public boolean sismember(final String key, final String member) {
@@ -5933,8 +5956,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(N) where N is the number of elements being checked for membership
    * @param key
    * @param members
-   * @return List representing the membership of the given elements, in the same order as they are
-   *         requested.
+   * @return List representing the membership of the given elements, in the same order as they are requested
    */
   @Override
   public List<Boolean> smismember(final String key, final String... members) {
@@ -5955,7 +5977,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
    * @param keys
-   * @return Multi bulk reply, specifically the list of common elements.
+   * @return A set with members of the resulting set
    */
   @Override
   public Set<String> sinter(final String... keys) {
@@ -5971,12 +5993,42 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * number of sets
    * @param dstkey
    * @param keys
-   * @return Status code reply
+   * @return The number of elements in the resulting set
    */
   @Override
   public long sinterstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sinterstore(dstkey, keys));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#sinter(String[]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  @Override
+  public long sintercard(String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sintercard(keys));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#sinter(String[]) SINTER} but instead of returning
+   * the result set, it returns just the cardinality of the result.
+   * <p>
+   * Time complexity O(N*M) worst case where N is the cardinality of the smallest
+   * @param limit If the intersection cardinality reaches limit partway through the computation,
+   *              the algorithm will exit and yield limit as the cardinality.
+   * @param keys
+   * @return The cardinality of the set which would result from the intersection of all the given sets
+   */
+  @Override
+  public long sintercard(int limit, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   /**
@@ -5990,7 +6042,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(N) where N is the total number of elements in all the provided sets
    * @param keys
-   * @return Multi bulk reply, specifically the list of common elements.
+   * @return A set with members of the resulting set
    */
   @Override
   public Set<String> sunion(final String... keys) {
@@ -6006,7 +6058,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Time complexity O(N) where N is the total number of elements in all the provided sets
    * @param dstkey
    * @param keys
-   * @return Status code reply
+   * @return The number of elements in the resulting set
    */
   @Override
   public long sunionstore(final String dstkey, final String... keys) {
@@ -6032,8 +6084,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * O(N) with N being the total number of elements of all the sets
    * @param keys
-   * @return Return the members of a set resulting from the difference between the first set
-   *         provided and all the successive sets.
+   * @return A set with members of the resulting set
    */
   @Override
   public Set<String> sdiff(final String... keys) {
@@ -6046,7 +6097,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * returned the resulting set is stored in dstkey.
    * @param dstkey
    * @param keys
-   * @return Status code reply
+   * @return The number of elements in the resulting set
    */
   @Override
   public long sdiffstore(final String dstkey, final String... keys) {
@@ -6062,7 +6113,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(1)
    * @param key
-   * @return Bulk reply
+   * @return The randomly selected element
    */
   @Override
   public String srandmember(final String key) {
@@ -6081,7 +6132,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param count if positive, return an array of distinct elements.
    *        If negative the behavior changes and the command is allowed to
    *        return the same element multiple times  
-   * @return list of elements
+   * @return A list of randomly selected elements
    */
   @Override
   public List<String> srandmember(final String key, final int count) {
@@ -6102,8 +6153,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param score
    * @param member
-   * @return Integer reply, specifically: 1 if the new element was added 0 if the element was
-   *         already a member of the sorted set and the score was updated
+   * @return 1 if the new element was added, 0 if the element was already a member of the sorted
+   * set and the score was updated
    */
   @Override
   public long zadd(final String key, final double score, final String member) {
@@ -6162,14 +6213,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Remove the specified member from the sorted set value stored at key. If member was not a member
-   * of the set no operation is performed. If key does not not hold a set value an error is
-   * returned.
+   * of the set no operation is performed. If key does not hold a set value an error is returned.
    * <p>
    * Time complexity O(log(N)) with N being the number of elements in the sorted set
    * @param key
    * @param members
-   * @return Integer reply, specifically: 1 if the new element was removed 0 if the new element was
-   *         not a member of the set
+   * @return 1 if the new element was removed, 0 if the new element was not a member of the set
    */
   @Override
   public long zrem(final String key, final String... members) {
@@ -6218,11 +6267,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b>
    * <p>
    * O(log(N))
-   * @see #zrevrank(String, String)
+   * @see Jedis#zrevrank(String, String)
    * @param key
    * @param member
-   * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
-   *         reply if the element exists. A nil bulk reply if there is no such element.
+   * @return The element as an integer if the element exists. A 'nil' bulk reply if there is no such element.
    */
   @Override
   public Long zrank(final String key, final String member) {
@@ -6240,11 +6288,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b>
    * <p>
    * O(log(N))
-   * @see #zrank(String, String)
+   * @see Jedis#zrank(String, String)
    * @param key
    * @param member
-   * @return Integer reply or a nil bulk reply, specifically: the rank of the element as an integer
-   *         reply if the element exists. A nil bulk reply if there is no such element.
+   * @return The element as an integer if the element exists. A 'nil' bulk reply if there is no such element.
    */
   @Override
   public Long zrevrank(final String key, final String member) {
@@ -6312,7 +6359,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity O(1)
    * @param key
-   * @return the cardinality (number of elements) of the set as an integer.
+   * @return The cardinality (number of elements) of the set as an integer
    */
   @Override
   public long zcard(final String key) {
@@ -6328,7 +6375,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b> O(1)
    * @param key
    * @param member
-   * @return the score
+   * @return The score
    */
   @Override
   public Double zscore(final String key, final String member) {
@@ -6343,7 +6390,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <b>Time complexity:</b> O(N) where N is the number of members being requested.
    * @param key
    * @param members
-   * @return the scores
+   * @return The scores
    */
   @Override
   public List<Double> zmscore(final String key, final String... members) {
@@ -6390,9 +6437,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Sort the elements contained in the List, Set, or Sorted Set value at key. By default sorting is
    * numeric with elements being compared as double precision floating point numbers. This is the
    * simplest form of SORT.
-   * @see #sort(String, String)
-   * @see #sort(String, SortingParams)
-   * @see #sort(String, SortingParams, String)
+   * @see Jedis#sort(String, String)
+   * @see Jedis#sort(String, SortingParams)
+   * @see Jedis#sort(String, SortingParams, String)
    * @param key
    * @return Assuming the Set/List at key contains a list of numbers, the return value will be the
    *         list of numbers ordered from the smallest to the biggest number.
@@ -6471,32 +6518,38 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sort(x, sp.by(w*).get(#).get(k*))
    * -&gt; [3, x, 2, y, 1, z]
    * </pre>
-   * @see #sort(String)
-   * @see #sort(String, SortingParams, String)
+   * @see Jedis#sort(String)
+   * @see Jedis#sort(String, SortingParams, String)
    * @param key
-   * @param sortingParameters
+   * @param sortingParams
    * @return a list of sorted elements.
    */
   @Override
-  public List<String> sort(final String key, final SortingParams sortingParameters) {
+  public List<String> sort(final String key, final SortingParams sortingParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sort(key, sortingParameters));
+    return connection.executeCommand(commandObjects.sort(key, sortingParams));
   }
 
   /**
    * Sort a Set or a List accordingly to the specified parameters and store the result at dstkey.
-   * @see #sort(String, SortingParams)
-   * @see #sort(String)
-   * @see #sort(String, String)
+   * @see Jedis#sort(String, SortingParams)
+   * @see Jedis#sort(String)
+   * @see Jedis#sort(String, String)
    * @param key
-   * @param sortingParameters
+   * @param sortingParams
    * @param dstkey
-   * @return The number of elements of the list at dstkey.
+   * @return The number of elements of the list at dstkey
    */
   @Override
-  public long sort(final String key, final SortingParams sortingParameters, final String dstkey) {
+  public long sort(final String key, final SortingParams sortingParams, final String dstkey) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sort(key, sortingParameters, dstkey));
+    return connection.executeCommand(commandObjects.sort(key, sortingParams, dstkey));
+  }
+
+  @Override
+  public List<String> sortReadonly(String key, SortingParams sortingParams) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sortReadonly(key, sortingParams));
   }
 
   /**
@@ -6505,12 +6558,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Sort the elements contained in the List, Set, or Sorted Set value at key and store the result
    * at dstkey. By default sorting is numeric with elements being compared as double precision
    * floating point numbers. This is the simplest form of SORT.
-   * @see #sort(String)
-   * @see #sort(String, SortingParams)
-   * @see #sort(String, SortingParams, String)
+   * @see Jedis#sort(String)
+   * @see Jedis#sort(String, SortingParams)
+   * @see Jedis#sort(String, SortingParams, String)
    * @param key
    * @param dstkey
-   * @return The number of elements of the list at dstkey.
+   * @return The number of elements of the list at dstkey
    */
   @Override
   public long sort(final String key, final String dstkey) {
@@ -6555,16 +6608,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Blocking behavior</b>
    * <p>
- If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
- connection performs a LPUSH or an RPUSH operation against one of the lists.
- <p>
- Once new data is present on one of the lists, the connection finally returns with the name of the
- key unblocking it and the popped value.
- <p>
- When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
- special value if the specified amount of seconds passed without a push operation against at
- least one of the specified keys.
- <p>
+   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+   * connection performs a LPUSH or an RPUSH operation against one of the lists.
+   * <p>
+   * Once new data is present on one of the lists, the connection finally returns with the name of the
+   * key unblocking it and the popped value.
+   * <p>
+   * When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
+   * special value if the specified amount of seconds passed without a push operation against at
+   * least one of the specified keys.
+   * <p>
    * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
    * block forever.
    * <p>
@@ -6584,7 +6637,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * it like if inside MULTI/EXEC the time will flow at infinite speed :)
    * <p>
    * Time complexity: O(1)
-   * @see #brpop(int, String...)
+   * @see Jedis#brpop(int, String...)
    * @param timeout
    * @param keys
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
@@ -6629,16 +6682,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Blocking behavior</b>
    * <p>
- If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
- connection performs a LPUSH or an RPUSH operation against one of the lists.
- <p>
- Once new data is present on one of the lists, the connection finally returns with the name of the
- key unblocking it and the popped value.
- <p>
- When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
- special value if the specified amount of seconds passed without a push operation against at
- least one of the specified keys.
- <p>
+   * If none of the specified keys exist or contain non empty lists, BLPOP blocks until some other
+   * connection performs a LPUSH or an RPUSH operation against one of the lists.
+   * <p>
+   * Once new data is present on one of the lists, the connection finally returns with the name of the
+   * key unblocking it and the popped value.
+   * <p>
+   * When blocking, if a non-zero timeout is specified, the connection will unblock returning a nil
+   * special value if the specified amount of seconds passed without a push operation against at
+   * least one of the specified keys.
+   * <p>
    * The timeout argument is interpreted as an integer value. A timeout of zero means instead to
    * block forever.
    * <p>
@@ -6658,7 +6711,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * it like if inside MULTI/EXEC the time will flow at infinite speed :)
    * <p>
    * Time complexity: O(1)
-   * @see #blpop(int, String...)
+   * @see Jedis#blpop(int, String...)
    * @param timeout
    * @param keys
    * @return BLPOP returns a two-elements array via a multi bulk reply in order to return both the
@@ -6792,16 +6845,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(String, double, double)
-   * @see #zrangeByScore(String, double, double, int, int)
-   * @see #zrangeByScoreWithScores(String, double, double)
-   * @see #zrangeByScoreWithScores(String, String, String)
-   * @see #zrangeByScoreWithScores(String, double, double, int, int)
-   * @see #zcount(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double)
+   * @see Jedis#zrangeByScoreWithScores(String, String, String)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double, int, int)
+   * @see Jedis#zcount(String, double, double)
    * @param key
    * @param min a double or Double.NEGATIVE_INFINITY for "-inf"
    * @param max a double or Double.POSITIVE_INFINITY for "+inf"
-   * @return Multi bulk reply specifically a list of elements in the specified score range.
+   * @return A list of elements in the specified score range
    */
   @Override
   public List<String> zrangeByScore(final String key, final double min, final double max) {
@@ -6852,17 +6905,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(String, double, double)
-   * @see #zrangeByScore(String, double, double, int, int)
-   * @see #zrangeByScoreWithScores(String, double, double)
-   * @see #zrangeByScoreWithScores(String, double, double, int, int)
-   * @see #zcount(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double, int, int)
+   * @see Jedis#zcount(String, double, double)
    * @param key
    * @param min
    * @param max
    * @param offset
    * @param count
-   * @return Multi bulk reply specifically a list of elements in the specified score range.
+   * @return A list of elements in the specified score range
    */
   @Override
   public List<String> zrangeByScore(final String key, final double min, final double max,
@@ -6915,15 +6968,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(String, double, double)
-   * @see #zrangeByScore(String, double, double, int, int)
-   * @see #zrangeByScoreWithScores(String, double, double)
-   * @see #zrangeByScoreWithScores(String, double, double, int, int)
-   * @see #zcount(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double, int, int)
+   * @see Jedis#zcount(String, double, double)
    * @param key
    * @param min
    * @param max
-   * @return Multi bulk reply specifically a list of elements in the specified score range.
+   * @return A list of elements in the specified score range
    */
   @Override
   public List<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max) {
@@ -6974,17 +7027,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * O(log(N))+O(M) with N being the number of elements in the sorted set and M the number of
    * elements returned by the command, so if M is constant (for instance you always ask for the
    * first ten elements with LIMIT) you can consider it O(log(N))
-   * @see #zrangeByScore(String, double, double)
-   * @see #zrangeByScore(String, double, double, int, int)
-   * @see #zrangeByScoreWithScores(String, double, double)
-   * @see #zrangeByScoreWithScores(String, double, double, int, int)
-   * @see #zcount(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double)
+   * @see Jedis#zrangeByScore(String, double, double, int, int)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double)
+   * @see Jedis#zrangeByScoreWithScores(String, double, double, int, int)
+   * @see Jedis#zcount(String, double, double)
    * @param key
    * @param min
    * @param max
    * @param offset
    * @param count
-   * @return Multi bulk reply specifically a list of elements in the specified score range.
+   * @return A list of elements in the specified score range
    */
   @Override
   public List<Tuple> zrangeByScoreWithScores(final String key, final double min, final double max,
@@ -7082,7 +7135,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param min
    * @param max
-   * @return Integer reply, specifically the number of elements removed.
+   * @return The number of elements removed
    */
   @Override
   public long zremrangeByScore(final String key, final double min, final double max) {
@@ -7101,6 +7154,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
+   * @return A set with members of the resulting set
    */
   @Override
   public Set<String> zunion(ZParams params, String... keys) {
@@ -7113,6 +7167,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * storing the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
+   * @return A set with members of the resulting set with scores
    */
   @Override
   public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
@@ -7142,13 +7197,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(String, String...)
-   * @see #zunionstore(String, ZParams, String...)
-   * @see #zinterstore(String, String...)
-   * @see #zinterstore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
-   * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+   * @return The number of elements in the sorted set at dstkey
    */
   @Override
   public long zunionstore(final String dstkey, final String... sets) {
@@ -7178,14 +7233,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(String, String...)
-   * @see #zunionstore(String, ZParams, String...)
-   * @see #zinterstore(String, String...)
-   * @see #zinterstore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @param params
-   * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+   * @return The number of elements in the sorted set at dstkey
    */
   @Override
   public long zunionstore(final String dstkey, final ZParams params, final String... sets) {
@@ -7198,6 +7253,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
+   * @return A set with members of the resulting set
    */
   @Override
   public Set<String> zinter(final ZParams params, final String... keys) {
@@ -7210,11 +7266,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
+   * @return A set with members of the resulting set with scores
    */
   @Override
   public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zinterWithScores(params, keys));
+  }
+
+  @Override
+  public long zintercard(String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(keys));
+  }
+
+  @Override
+  public long zintercard(long limit, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zintercard(limit, keys));
   }
 
   /**
@@ -7239,13 +7308,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(String, String...)
-   * @see #zunionstore(String, ZParams, String...)
-   * @see #zinterstore(String, String...)
-   * @see #zinterstore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
-   * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+   * @return The number of elements in the sorted set at dstkey
    */
   @Override
   public long zinterstore(final String dstkey, final String... sets) {
@@ -7275,14 +7344,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see #zunionstore(String, String...)
-   * @see #zunionstore(String, ZParams, String...)
-   * @see #zinterstore(String, String...)
-   * @see #zinterstore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @param params
-   * @return Integer reply, specifically the number of elements in the sorted set at dstkey
+   * @return The number of elements in the sorted set at dstkey
    */
   @Override
   public long zinterstore(final String dstkey, final ZParams params, final String... sets) {
@@ -7336,9 +7405,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
-   * @param keyA keyA
-   * @param keyB keyB
-   * @param params the params
+   * @param keyA
+   * @param keyB
+   * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   @Override
@@ -7349,9 +7418,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of strA and strB.
-   * @param strA strA
-   * @param strB strB
-   * @param params the params
+   * @param strA
+   * @param strB
+   * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
@@ -7360,9 +7429,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long lpushx(final String key, final String... string) {
+  public long lpushx(final String key, final String... strings) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.lpushx(key, string));
+    return connection.executeCommand(commandObjects.lpushx(key, strings));
   }
 
   /**
@@ -7370,8 +7439,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return Integer reply, specifically: 1: the key is now persist. 0: the key is not persist (only
-   *         happens when key not set).
+   * @return 1 if the key is now persist, 0 if the key is not persist (only happens when key not set)
    */
   @Override
   public long persist(final String key) {
@@ -7380,9 +7448,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long rpushx(final String key, final String... string) {
+  public long rpushx(final String key, final String... strings) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.rpushx(key, string));
+    return connection.executeCommand(commandObjects.rpushx(key, strings));
   }
 
   @Override
@@ -7404,7 +7472,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param source
    * @param destination
    * @param timeout
-   * @return the element
+   * @return The element
    */
   @Override
   public String brpoplpush(final String source, final String destination, final int timeout) {
@@ -7534,7 +7602,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * </ul>
    * @param parameter
    * @param value
-   * @return Status code reply
+   * @return OK
    */
   @Override
   public String configSet(final String parameter, final String value) {
@@ -7550,22 +7618,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceed(connection, channels);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceed(connection, channels);
   }
 
   public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
-    checkIsInMultiOrPipeline();
-    connection.setTimeoutInfinite();
-    try {
-      jedisPubSub.proceedWithPatterns(connection, patterns);
-    } finally {
-      connection.rollbackTimeout();
-    }
+    jedisPubSub.proceedWithPatterns(connection, patterns);
   }
 
   public List<String> pubsubChannels() {
@@ -7605,6 +7662,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Object evalReadonly(String script, List<String> keys, List<String> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalReadonly(script, keys, args));
+  }
+
+  @Override
   public Object eval(final String script) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.eval(script));
@@ -7620,6 +7683,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object evalsha(final String sha1, final List<String> keys, final List<String> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.evalsha(sha1, keys, args));
+  }
+
+  @Override
+  public Object evalshaReadonly(String sha1, List<String> keys, List<String> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
   @Override
@@ -7917,9 +7986,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param milliseconds
    * @param value
-   * @return Status code reply
+   * @return OK
    */
-
   @Override
   public String psetex(final String key, final long milliseconds, final String value) {
     checkIsInMultiOrPipeline();
@@ -8352,6 +8420,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String clusterAddSlotsRange(int... ranges) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER,
+        joinParameters(ClusterKeyword.ADDSLOTSRANGE.getRaw(), joinParameters(ranges)));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterDelSlotsRange(int... ranges) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER,
+        joinParameters(ClusterKeyword.DELSLOTSRANGE.getRaw(), joinParameters(ranges)));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String asking() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ASKING);
@@ -8774,7 +8858,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xpending(key, groupname));
   }
 
+  /**
+   * @deprecated Use {@link Jedis#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
+   */
   @Override
+  @Deprecated
   public List<StreamPendingEntry> xpending(final String key, final String groupname,
       final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
     checkIsInMultiOrPipeline();

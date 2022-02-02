@@ -3546,6 +3546,21 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<List<String>> tsQueryIndex(String... filters) {
     return executeCommand(commandObjects.tsQueryIndex(filters));
   }
+
+  @Override
+  public Response<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+    return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
+  }
+
+  @Override
+  public Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket) {
+    return executeCommand(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket));
+  }
+
+  @Override
+  public Response<String> tsDeleteRule(String sourceKey, String destKey) {
+    return executeCommand(commandObjects.tsDeleteRule(sourceKey, destKey));
+  }
   // RedisTimeSeries commands
 
 
@@ -3596,6 +3611,10 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.CONFIG)
         .add(Protocol.Keyword.REWRITE), BuilderFactory.STRING));
   }
+  public Response<List<String>> tsQueryIndex(String... filters) {
+    return executeCommand(commandObjects.tsQueryIndex(filters));
+  }
+  // RedisTimeSeries commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

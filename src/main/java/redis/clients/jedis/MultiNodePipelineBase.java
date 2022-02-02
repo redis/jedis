@@ -3513,6 +3513,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   public Response<String> configResetStat() {
     throw new JedisClusterException("multi node pipeline not support config command");
   }
+  // RedisTimeSeries commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

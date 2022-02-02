@@ -16,7 +16,6 @@ import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.commands.StringBinaryCommands;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.params.*;

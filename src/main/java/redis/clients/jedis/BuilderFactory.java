@@ -1527,6 +1527,9 @@ public final class BuilderFactory {
         KeyedListElements elements = new KeyedListElements(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
         listElements.add(elements);
       }
+      return listElements;
+    }
+  };
 
   public static final Builder<TSElement> TIMESERIES_ELEMENT = new Builder<TSElement>() {
     @Override

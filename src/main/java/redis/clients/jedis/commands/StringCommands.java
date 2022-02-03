@@ -8,6 +8,7 @@ import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
+import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringCommands {
@@ -436,11 +437,23 @@ public interface StringCommands {
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link StringCommands#lcs(String, String, LCSParams) LCS} can be used instead of this method.
    * @param keyA
    * @param keyB
    * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
+  @Deprecated
   LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
+
+  /**
+   * Calculate the longest common subsequence of keyA and keyB.
+   * @param keyA
+   * @param keyB
+   * @param params
+   * @return According to LCSParams to decide to return content to fill LCSMatchResult.
+   */
+  LCSMatchResult lcs(String keyA, String keyB, LCSParams params);
 
 }

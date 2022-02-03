@@ -575,14 +575,34 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BITOP).add(op).key(destKey).keys((Object[]) srcKeys), BuilderFactory.LONG);
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * LCS can be used instead of this method.
+   */
+  @Deprecated
   public final CommandObject<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(Keyword.KEYS)
+    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(Keyword.KEYS)
         .key(keyA).key(keyB).addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * LCS can be used instead of this method.
+   */
+  @Deprecated
   public final CommandObject<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(Keyword.KEYS)
+    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(Keyword.KEYS)
         .key(keyA).key(keyB).addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+  }
+
+  public final CommandObject<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
+    return new CommandObject<>(commandArguments(Command.LCS).key(keyA).key(keyB)
+        .addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+  }
+
+  public final CommandObject<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params) {
+    return new CommandObject<>(commandArguments(Command.LCS).key(keyA).key(keyB)
+        .addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
   // String commands
 
@@ -2618,14 +2638,16 @@ public class CommandObjects {
   // Scripting commands
 
   // Miscellaneous commands
+  @Deprecated
   public final CommandObject<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(STRINGS)
+    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(STRINGS)
         .add(strA).add(strB).addParams(params),
         BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 
+  @Deprecated
   public final CommandObject<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(STRINGS)
+    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(STRINGS)
         .add(strA).add(strB).addParams(params),
         BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }

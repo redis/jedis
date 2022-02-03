@@ -333,6 +333,12 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void clientNoEvict() {
+    assertEquals("OK", jedis.clientNoEvictOn());
+    assertEquals("OK", jedis.clientNoEvictOff());
+  }
+
+  @Test
   public void memoryDoctorString() {
     String memoryInfo = jedis.memoryDoctor();
     assertNotNull(memoryInfo);

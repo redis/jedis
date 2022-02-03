@@ -444,6 +444,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
+    return appendCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
+  @Override
   public Response<String> set(String key, String value) {
     return appendCommand(commandObjects.set(key, value));
   }
@@ -3105,6 +3110,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   // RediSearch commands
 
   // RedisJSON commands
+  @Override
+  public Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params) {
+    return appendCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
   @Override
   public Response<String> jsonSet(String key, Path2 path, Object object) {
     return appendCommand(commandObjects.jsonSet(key, path, object));

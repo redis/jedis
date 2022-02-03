@@ -33,7 +33,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.args.SetExpireOption;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -332,14 +332,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     jedis.set("foo", "bar");
     assertEquals(1, jedis.expire("foo", 20L));
-    assertEquals(0, jedis.expire("foo", 20L, SetExpireOption.NX));
+    assertEquals(0, jedis.expire("foo", 20L, ExpiryOption.NX));
 
     // Binary
     assertEquals(0, jedis.expire(bfoo, 20L));
 
     jedis.set(bfoo, bbar);
     assertEquals(1, jedis.expire(bfoo, 20L));
-    assertEquals(0, jedis.expire(bfoo, 20L, SetExpireOption.NX));
+    assertEquals(0, jedis.expire(bfoo, 20L, ExpiryOption.NX));
   }
 
   @Test
@@ -667,7 +667,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     jedis.set("foo2", "bar2");
     assertEquals(1, jedis.pexpire("foo2", 200000000000L));
-    assertEquals(0, jedis.pexpire("foo2", 100000, SetExpireOption.NX));
+    assertEquals(0, jedis.pexpire("foo2", 100000, ExpiryOption.NX));
 
     long pttl = jedis.pttl("foo2");
     assertTrue(pttl > 100000000000L);
@@ -677,7 +677,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     jedis.set(bfoo, bbar);
     assertEquals(1, jedis.pexpire(bfoo, 10000));
-    assertEquals(0, jedis.pexpire(bfoo, 10000, SetExpireOption.NX));
+    assertEquals(0, jedis.pexpire(bfoo, 10000, ExpiryOption.NX));
   }
 
   @Test

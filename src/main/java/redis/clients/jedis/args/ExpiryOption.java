@@ -1,15 +1,14 @@
 package redis.clients.jedis.args;
 
 import redis.clients.jedis.util.SafeEncoder;
-import java.util.Locale;
 
-public enum SetExpireOption implements Rawable {
+public enum ExpiryOption implements Rawable {
 
   NX, XX, GT, LT;
 
   private final byte[] raw;
 
-  private SetExpireOption() {
+  private ExpiryOption() {
     raw = SafeEncoder.encode(name());
   }
 

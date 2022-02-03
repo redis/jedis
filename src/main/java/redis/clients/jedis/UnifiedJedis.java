@@ -212,7 +212,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long expire(String key, long seconds, SetExpireOption setExpireOption) {
+  public long expire(String key, long seconds, ExpiryOption setExpireOption) {
     return executeCommand(commandObjects.expire(key, seconds, setExpireOption));
   }
 
@@ -227,7 +227,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long pexpire(String key, long milliseconds, SetExpireOption setExpireOption) {
+  public long pexpire(String key, long milliseconds, ExpiryOption setExpireOption) {
     return executeCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));
   }
 
@@ -252,7 +252,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long expire(byte[] key, long seconds, SetExpireOption setExpireOption) {
+  public long expire(byte[] key, long seconds, ExpiryOption setExpireOption) {
     return executeCommand(commandObjects.expire(key, seconds, setExpireOption));
   }
 
@@ -267,7 +267,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long pexpire(byte[] key, long milliseconds, SetExpireOption setExpireOption) {
+  public long pexpire(byte[] key, long milliseconds, ExpiryOption setExpireOption) {
     return executeCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));
   }
 

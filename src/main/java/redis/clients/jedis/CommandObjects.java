@@ -105,12 +105,12 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> expire(String key, long seconds, SetExpireOption setExpireOption) {
+  public final CommandObject<Long> expire(String key, long seconds, ExpiryOption setExpireOption) {
     return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(setExpireOption),
         BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> expire(byte[] key, long seconds, SetExpireOption setExpireOption) {
+  public final CommandObject<Long> expire(byte[] key, long seconds, ExpiryOption setExpireOption) {
     return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(setExpireOption),
         BuilderFactory.LONG);
   }
@@ -131,12 +131,12 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> pexpire(String key, long milliseconds, SetExpireOption setExpireOption) {
+  public final CommandObject<Long> pexpire(String key, long milliseconds, ExpiryOption setExpireOption) {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(setExpireOption),
         BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> pexpire(byte[] key, long milliseconds, SetExpireOption setExpireOption) {
+  public final CommandObject<Long> pexpire(byte[] key, long milliseconds, ExpiryOption setExpireOption) {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(setExpireOption),
         BuilderFactory.LONG);
   }

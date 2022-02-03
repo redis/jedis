@@ -3,7 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
-import redis.clients.jedis.args.SetExpireOption;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
@@ -130,7 +130,7 @@ public interface KeyCommands {
    * (this may happen only in Redis versions &lt; 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout),
    * or the key does not exist.
    */
-  long expire(String key, long seconds, SetExpireOption setExpireOption);
+  long expire(String key, long seconds, ExpiryOption setExpireOption);
 
   /**
    * <b><a href="http://redis.io/commands/expireTime">ExpireTime Command</a></b>
@@ -167,7 +167,7 @@ public interface KeyCommands {
    * @return 1 if the timeout was set, 0 otherwise.
    * e.g. key doesn't exist, or operation skipped due to the provided arguments.
    */
-  long pexpire(String key, long milliseconds, SetExpireOption setExpireOption);
+  long pexpire(String key, long milliseconds, ExpiryOption setExpireOption);
 
   /**
    * <b><a href="http://redis.io/commands/pexpireTime">PExpireTime Command</a></b>

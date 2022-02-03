@@ -125,12 +125,12 @@ public interface KeyCommands {
    * @see KeyCommands#expire(String, long)
    * @param key
    * @param seconds time to expire
-   * @param setExpireOption can be NX, XX, GT or LT
+   * @param expiryOption can be NX, XX, GT or LT
    * @return 1 if the timeout was set, 0 otherwise. Since the key already has an associated timeout
    * (this may happen only in Redis versions &lt; 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout),
    * or the key does not exist.
    */
-  long expire(String key, long seconds, ExpiryOption setExpireOption);
+  long expire(String key, long seconds, ExpiryOption expiryOption);
 
   /**
    * <b><a href="http://redis.io/commands/expireTime">ExpireTime Command</a></b>
@@ -163,11 +163,11 @@ public interface KeyCommands {
    * @see KeyCommands#pexpire(String, long)
    * @param key
    * @param milliseconds time to expire
-   * @param setExpireOption can be NX, XX, GT or LT
+   * @param expiryOption can be NX, XX, GT or LT
    * @return 1 if the timeout was set, 0 otherwise.
    * e.g. key doesn't exist, or operation skipped due to the provided arguments.
    */
-  long pexpire(String key, long milliseconds, ExpiryOption setExpireOption);
+  long pexpire(String key, long milliseconds, ExpiryOption expiryOption);
 
   /**
    * <b><a href="http://redis.io/commands/pexpireTime">PExpireTime Command</a></b>

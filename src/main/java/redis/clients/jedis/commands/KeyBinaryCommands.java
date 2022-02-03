@@ -28,13 +28,13 @@ public interface KeyBinaryCommands {
 
   long expire(byte[] key, long seconds);
 
-  long expire(byte[] key, long seconds, ExpiryOption setExpireOption);
+  long expire(byte[] key, long seconds, ExpiryOption expiryOption);
 
   long expireTime(byte[] key);
 
   long pexpire(byte[] key, long milliseconds);
 
-  long pexpire(byte[] key, long milliseconds, ExpiryOption setExpireOption);
+  long pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption);
 
   long pexpireTime(byte[] key);
 

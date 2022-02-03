@@ -29,13 +29,13 @@ public interface KeyPipelineCommands {
 
   Response<Long> expire(String key, long seconds);
 
-  Response<Long> expire(String key, long seconds, ExpiryOption setExpireOption);
+  Response<Long> expire(String key, long seconds, ExpiryOption expiryOption);
 
   Response<Long> expireTime(String key);
 
   Response<Long> pexpire(String key, long milliseconds);
 
-  Response<Long> pexpire(String key, long milliseconds, ExpiryOption setExpireOption);
+  Response<Long> pexpire(String key, long milliseconds, ExpiryOption expiryOption);
 
   Response<Long> pexpireTime(String key);
 

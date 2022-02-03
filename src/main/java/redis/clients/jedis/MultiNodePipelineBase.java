@@ -129,8 +129,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> expire(String key, long seconds, ExpiryOption setExpireOption) {
-    return appendCommand(commandObjects.expire(key, seconds, setExpireOption));
+  public Response<Long> expire(String key, long seconds, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.expire(key, seconds, expiryOption));
   }
 
   @Override
@@ -144,8 +144,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> pexpire(String key, long milliseconds, ExpiryOption setExpireOption) {
-    return appendCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));
+  public Response<Long> pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
   }
 
   @Override
@@ -1889,8 +1889,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> expire(byte[] key, long seconds, ExpiryOption setExpireOption) {
-    return appendCommand(commandObjects.expire(key, seconds, setExpireOption));
+  public Response<Long> expire(byte[] key, long seconds, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.expire(key, seconds, expiryOption));
   }
 
   @Override
@@ -1904,8 +1904,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> pexpire(byte[] key, long milliseconds, ExpiryOption setExpireOption) {
-    return appendCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));
+  public Response<Long> pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
   }
 
   @Override

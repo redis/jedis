@@ -657,9 +657,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long expire(final byte[] key, final long seconds, final ExpiryOption setExpireOption) {
+  public long expire(final byte[] key, final long seconds, final ExpiryOption expiryOption) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand((commandObjects.expire(key, seconds, setExpireOption)));
+    return connection.executeCommand((commandObjects.expire(key, seconds, expiryOption)));
   }
 
   @Override
@@ -3883,9 +3883,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long pexpire(final byte[] key, final long milliseconds, final ExpiryOption setExpireOption) {
+  public long pexpire(final byte[] key, final long milliseconds, final ExpiryOption expiryOption) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));  }
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));  }
 
   @Override
   public long pexpireTime(final byte[] key) {
@@ -4979,9 +4979,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long expire(final String key, final long seconds, final ExpiryOption setExpireOption) {
+  public long expire(final String key, final long seconds, final ExpiryOption expiryOption) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.expire(key, seconds, setExpireOption));
+    return connection.executeCommand(commandObjects.expire(key, seconds, expiryOption));
   }
 
   @Override
@@ -7983,9 +7983,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long pexpire(final String key, final long milliseconds, final ExpiryOption setExpireOption) {
+  public long pexpire(final String key, final long milliseconds, final ExpiryOption expiryOption) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, setExpireOption));
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
   }
 
   @Override

@@ -105,13 +105,13 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> expire(String key, long seconds, ExpiryOption setExpireOption) {
-    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(setExpireOption),
+  public final CommandObject<Long> expire(String key, long seconds, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(expiryOption),
         BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> expire(byte[] key, long seconds, ExpiryOption setExpireOption) {
-    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(setExpireOption),
+  public final CommandObject<Long> expire(byte[] key, long seconds, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(expiryOption),
         BuilderFactory.LONG);
   }
 
@@ -131,13 +131,13 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> pexpire(String key, long milliseconds, ExpiryOption setExpireOption) {
-    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(setExpireOption),
+  public final CommandObject<Long> pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(expiryOption),
         BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> pexpire(byte[] key, long milliseconds, ExpiryOption setExpireOption) {
-    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(setExpireOption),
+  public final CommandObject<Long> pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(expiryOption),
         BuilderFactory.LONG);
   }
 

@@ -327,8 +327,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientNoEvict() {
-    assertEquals("OK", jedis.clientNoEvict(true));
-    assertEquals("OK", jedis.clientNoEvict(false));
+    assertEquals("OK", jedis.clientNoEvictOn());
+    assertEquals("OK", jedis.clientNoEvictOff());
   }
 
   @Test

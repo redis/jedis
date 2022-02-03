@@ -202,8 +202,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> expire(String key, long seconds, ) {
-    return appendCommand(commandObjects.expire(key, seconds, setexpiryOption));
+  public Response<Long> expire(String key, long seconds, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.expire(key, seconds, expiryOption));
   }
 
   @Override
@@ -217,8 +217,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> pexpire(String key, long milliseconds, ) {
-    return appendCommand(commandObjects.pexpire(key, milliseconds, setexpiryOption));
+  public Response<Long> pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
   }
 
   @Override
@@ -1964,8 +1964,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> expire(byte[] key, long seconds, ) {
-    return appendCommand(commandObjects.expire(key, seconds, setexpiryOption));
+  public Response<Long> expire(byte[] key, long seconds, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.expire(key, seconds, expiryOption));
   }
 
   @Override
@@ -1979,8 +1979,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> pexpire(byte[] key, long milliseconds, ) {
-    return appendCommand(commandObjects.pexpire(key, milliseconds, setexpiryOption));
+  public Response<Long> pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
   }
 
   @Override

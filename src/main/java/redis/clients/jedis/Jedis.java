@@ -3427,6 +3427,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getBinaryMultiBulkReply();
   }
 
+  @Override
+  public List<byte[]> configGet(byte[]... patterns) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.GET.getRaw(), patterns));
+    return connection.getBinaryMultiBulkReply();
+  }
+
   /**
    * Reset the stats returned by INFO
    */
@@ -7565,6 +7572,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<String> configGet(final String pattern) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CONFIG, Keyword.GET.name(), pattern);
+    return connection.getMultiBulkReply();
+  }
+
+  @Override
+  public List<String> configGet(String... patterns) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.GET.name(), patterns));
     return connection.getMultiBulkReply();
   }
 

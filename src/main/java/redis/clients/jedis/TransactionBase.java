@@ -3546,6 +3546,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<List<String>> tsQueryIndex(String... filters) {
     return executeCommand(commandObjects.tsQueryIndex(filters));
   }
+  // RedisTimeSeries commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

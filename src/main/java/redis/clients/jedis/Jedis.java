@@ -3439,6 +3439,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getBinaryMultiBulkReply();
   }
 
+  @Override
+  public List<byte[]> configGet(byte[]... patterns) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.GET.getRaw(), patterns));
+    return connection.getBinaryMultiBulkReply();
+  }
+
   /**
    * Reset the stats returned by INFO
    */
@@ -4190,6 +4197,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String clientPause(final long timeout, final ClientPauseMode mode) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLIENT, PAUSE.getRaw(), toByteArray(timeout), mode.getRaw());
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String clientNoEvictOn() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT,"NO-EVICT", "ON");
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String clientNoEvictOff() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT,"NO-EVICT", "OFF");
     return connection.getBulkReply();
   }
 
@@ -7586,6 +7607,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<String> configGet(final String pattern) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CONFIG, Keyword.GET.name(), pattern);
+    return connection.getMultiBulkReply();
+  }
+
+  @Override
+  public List<String> configGet(String... patterns) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.GET.name(), patterns));
     return connection.getMultiBulkReply();
   }
 

@@ -7,6 +7,7 @@ import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
+import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 import java.util.List;
@@ -77,6 +78,13 @@ public interface StringPipelineCommands {
 
   Response<Long> bitop(BitOP op, String destKey, String... srcKeys);
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link StringPipelineCommands#lcs(String, String, LCSParams) LCS} can be used instead of this method.
+   */
+  @Deprecated
   Response<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
+
+  Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params);
 
 }

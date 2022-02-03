@@ -803,13 +803,23 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
+  public LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
   @Override
   public LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
+  }
+
+  @Override
+  public LCSMatchResult lcs(String keyA, String keyB, LCSParams params) {
+    return executeCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
+  @Override
+  public LCSMatchResult lcs(byte[] keyA, byte[] keyB, LCSParams params) {
+    return executeCommand(commandObjects.lcs(keyA, keyB, params));
   }
   // String commands
 

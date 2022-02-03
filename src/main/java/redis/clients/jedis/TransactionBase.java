@@ -3541,7 +3541,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<String> tsDeleteRule(String sourceKey, String destKey) {
     return executeCommand(commandObjects.tsDeleteRule(sourceKey, destKey));
   }
-  // RedisTimeSeries commands
 
   @Override
   public Response<List<String>> tsQueryIndex(String... filters) {

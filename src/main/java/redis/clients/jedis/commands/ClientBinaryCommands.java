@@ -133,4 +133,12 @@ public interface ClientBinaryCommands {
    */
   String clientPause(long timeout, ClientPauseMode mode);
 
+  /**
+   * Set the client eviction mode for the current connection.
+   *
+   * @param on {@code true} will turn eviction mode on, and {@code false} will turn it off.
+   * @return OK
+   */
+  String clientNoEvict(boolean on);
+
 }

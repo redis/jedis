@@ -4155,6 +4155,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getBulkReply();
   }
 
+  @Override
+  public String clientNoEvict(boolean on) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, (NO+"-"+EVICT).getBytes(), on ? ON.getRaw() : OFF.getRaw());
+    return connection.getBulkReply();
+  }
+
   public List<String> time() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.TIME);

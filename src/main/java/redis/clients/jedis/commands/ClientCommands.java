@@ -96,9 +96,7 @@ public interface ClientCommands {
    * blocking operation, such as for instance BRPOP or XREAD or WAIT.
    *
    * @param clientId The id of the client
-   * @return Specifically:
-   * 1 if the client was unblocked successfully.
-   * 0 if the client wasn't unblocked.
+   * @return 1 if the client was unblocked successfully, 0 if the client wasn't unblocked.
    */
   long clientUnblock(long clientId);
 
@@ -108,9 +106,7 @@ public interface ClientCommands {
    *
    * @param clientId    The id of the client
    * @param unblockType TIMEOUT|ERROR
-   * @return Specifically:
-   * 1 if the client was unblocked successfully.
-   * 0 if the client wasn't unblocked.
+   * @return 1 if the client was unblocked successfully, 0 if the client wasn't unblocked.
    */
   long clientUnblock(long clientId, UnblockType unblockType);
 
@@ -132,5 +128,13 @@ public interface ClientCommands {
    * @return The command returns OK or an error if the timeout is invalid.
    */
   String clientPause(long timeout, ClientPauseMode mode);
+
+  /**
+   * Set the client eviction mode for the current connection.
+   *
+   * @param on {@code true} will turn eviction mode on, and {@code false} will turn it off.
+   * @return OK
+   */
+  String clientNoEvict(boolean on);
 
 }

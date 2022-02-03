@@ -8,6 +8,7 @@ import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
+import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringBinaryCommands {
@@ -76,6 +77,19 @@ public interface StringBinaryCommands {
 
   long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link StringBinaryCommands#lcs(byte[], byte[], LCSParams) LCS} can be used instead of this method.
+   */
+  @Deprecated
   LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params);
 
+  /**
+   * Calculate the longest common subsequence of keyA and keyB.
+   * @param keyA
+   * @param keyB
+   * @param params
+   * @return According to LCSParams to decide to return content to fill LCSMatchResult.
+   */
+  LCSMatchResult lcs(byte[] keyA, byte[] keyB, LCSParams params);
 }

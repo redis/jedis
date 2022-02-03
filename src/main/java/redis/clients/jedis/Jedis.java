@@ -3512,15 +3512,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.strlen(key));
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link Jedis#lcs(byte[], byte[], LCSParams) LCS} can be used instead of this method.
+   */
   @Override
+  @Deprecated
   public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   */
+  @Deprecated
   public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
+  }
+
+  @Override
+  public LCSMatchResult lcs(final byte[] keyA, final byte[] keyB, final LCSParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lcs(keyA, keyB, params));
   }
 
   @Override
@@ -7351,12 +7366,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link Jedis#lcs(String, String, LCSParams) LCS} can be used instead of this method.
    * @param keyA
    * @param keyB
    * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   @Override
+  @Deprecated
   public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
@@ -7364,14 +7382,29 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of strA and strB.
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
    * @param strA
    * @param strB
    * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
+  @Deprecated
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
+  }
+
+  /**
+   * Calculate the longest common subsequence of keyA and keyB.
+   * @param keyA
+   * @param keyB
+   * @param params
+   * @return According to LCSParams to decide to return content to fill LCSMatchResult.
+   */
+  @Override
+  public LCSMatchResult lcs(final String keyA, final String keyB, final LCSParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lcs(keyA, keyB, params));
   }
 
   @Override

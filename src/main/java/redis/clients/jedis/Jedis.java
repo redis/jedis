@@ -656,6 +656,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.expire(key, seconds));
   }
 
+  @Override
+  public long expire(final byte[] key, final long seconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand((commandObjects.expire(key, seconds, expiryOption)));
+  }
+
+  @Override
+  public long expireTime(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand((commandObjects.expireTime(key)));
+  }
+
   /**
    * EXPIREAT works exactly like {@link Jedis#expire(byte[], long) EXPIRE} but instead to get the
    * number of seconds representing the Time To Live of the key as a second argument (that is a
@@ -3454,6 +3466,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getBinaryMultiBulkReply();
   }
 
+  @Override
+  public List<byte[]> configGet(byte[]... patterns) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.GET.getRaw(), patterns));
+    return connection.getBinaryMultiBulkReply();
+  }
+
   /**
    * Reset the stats returned by INFO
    */
@@ -3539,15 +3558,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.strlen(key));
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link Jedis#lcs(byte[], byte[], LCSParams) LCS} can be used instead of this method.
+   */
   @Override
+  @Deprecated
   public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   */
+  @Deprecated
   public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
+  }
+
+  @Override
+  public LCSMatchResult lcs(final byte[] keyA, final byte[] keyB, final LCSParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lcs(keyA, keyB, params));
   }
 
   @Override
@@ -3883,6 +3917,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long pexpire(final byte[] key, final long milliseconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));  }
+
+  @Override
+  public long pexpireTime(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireTime(key));
+  }
+
+  @Override
   public long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
@@ -4179,6 +4224,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String clientPause(final long timeout, final ClientPauseMode mode) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLIENT, PAUSE.getRaw(), toByteArray(timeout), mode.getRaw());
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String clientNoEvictOn() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT,"NO-EVICT", "ON");
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String clientNoEvictOff() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT,"NO-EVICT", "OFF");
     return connection.getBulkReply();
   }
 
@@ -4965,6 +5024,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long expire(final String key, final long seconds) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.expire(key, seconds));
+  }
+
+  @Override
+  public long expire(final String key, final long seconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.expire(key, seconds, expiryOption));
+  }
+
+  @Override
+  public long expireTime(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.expireTime(key));
   }
 
   /**
@@ -7405,12 +7476,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * {@link Jedis#lcs(String, String, LCSParams) LCS} can be used instead of this method.
    * @param keyA
    * @param keyB
    * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
   @Override
+  @Deprecated
   public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
@@ -7418,14 +7492,29 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of strA and strB.
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
    * @param strA
    * @param strB
    * @param params
    * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
    */
+  @Deprecated
   public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
+  }
+
+  /**
+   * Calculate the longest common subsequence of keyA and keyB.
+   * @param keyA
+   * @param keyB
+   * @param params
+   * @return According to LCSParams to decide to return content to fill LCSMatchResult.
+   */
+  @Override
+  public LCSMatchResult lcs(final String keyA, final String keyB, final LCSParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lcs(keyA, keyB, params));
   }
 
   @Override
@@ -7572,6 +7661,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<String> configGet(final String pattern) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CONFIG, Keyword.GET.name(), pattern);
+    return connection.getMultiBulkReply();
+  }
+
+  @Override
+  public List<String> configGet(String... patterns) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.GET.name(), patterns));
     return connection.getMultiBulkReply();
   }
 
@@ -7966,6 +8062,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long pexpire(final String key, final long milliseconds) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public long pexpire(final String key, final long milliseconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public long pexpireTime(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireTime(key));
   }
 
   @Override

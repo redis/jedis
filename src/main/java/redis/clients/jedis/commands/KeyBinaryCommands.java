@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
@@ -27,7 +28,15 @@ public interface KeyBinaryCommands {
 
   long expire(byte[] key, long seconds);
 
+  long expire(byte[] key, long seconds, ExpiryOption expiryOption);
+
+  long expireTime(byte[] key);
+
   long pexpire(byte[] key, long milliseconds);
+
+  long pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption);
+
+  long pexpireTime(byte[] key);
 
   long expireAt(byte[] key, long unixTime);
 

@@ -656,6 +656,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.expire(key, seconds));
   }
 
+  @Override
+  public long expire(final byte[] key, final long seconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand((commandObjects.expire(key, seconds, expiryOption)));
+  }
+
+  @Override
+  public long expireTime(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand((commandObjects.expireTime(key)));
+  }
+
   /**
    * EXPIREAT works exactly like {@link Jedis#expire(byte[], long) EXPIRE} but instead to get the
    * number of seconds representing the Time To Live of the key as a second argument (that is a
@@ -3203,6 +3215,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
+  @Override
+  public String bgsaveSchedule() {
+    connection.sendCommand(BGSAVE, SCHEDULE);
+    return connection.getStatusCodeReply();
+  }
+
   /**
    * Rewrite the append only file in background when it gets too big. Please for detailed
    * information about the Redis Append Only File check the <a
@@ -3899,6 +3917,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long pexpire(final byte[] key, final long milliseconds) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public long pexpire(final byte[] key, final long milliseconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));  }
+
+  @Override
+  public long pexpireTime(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireTime(key));
   }
 
   @Override
@@ -4998,6 +5027,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long expire(final String key, final long seconds) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.expire(key, seconds));
+  }
+
+  @Override
+  public long expire(final String key, final long seconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.expire(key, seconds, expiryOption));
+  }
+
+  @Override
+  public long expireTime(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.expireTime(key));
   }
 
   /**
@@ -8021,6 +8062,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long pexpire(final String key, final long milliseconds) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public long pexpire(final String key, final long milliseconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public long pexpireTime(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireTime(key));
   }
 
   @Override

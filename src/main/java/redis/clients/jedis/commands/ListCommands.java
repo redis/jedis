@@ -240,6 +240,7 @@ public interface ListCommands {
 
   Map<String, List<String>> lmpop(ListDirection listDirection, int count, String... key);
 
+  Map<Object, byte[]> lmpop(ListDirection listDirection, int count, byte[]... key);
 
   /**
    * Atomically return and remove the first (LPOP) or last (RPOP) element of the list. For example

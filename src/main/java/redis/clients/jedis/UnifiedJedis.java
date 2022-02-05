@@ -227,6 +227,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map<Object, byte[]> lmpop(ListDirection listDirection, int count, byte[]... keys){
+    return executeCommand(commandObjects.lmpop(listDirection,count, keys));
+  }
+
+  @Override
   public long pexpireAt(String key, long millisecondsTimestamp) {
     return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
   }

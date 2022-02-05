@@ -656,6 +656,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(LMPOP).add(keys.length).addObjects((Object[]) keys).add(listDirection.name()).add("COUNT").add(count), BuilderFactory.STRING_LIST_MAP);
   }
 
+  public final CommandObject<Map<Object, byte[]>> lmpop(ListDirection listDirection, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).addObjects((Object[]) keys).add(listDirection.name()).add("COUNT").add(count), BuilderFactory.BYTE_LIST_MAP);
+  }
+
   public final CommandObject<String> lpop(String key) {
     return new CommandObject<>(commandArguments(LPOP).key(key), BuilderFactory.STRING);
   }
@@ -3172,6 +3176,7 @@ public class CommandObjects {
   // RedisTimeSeries commands
 
   private static final Gson GSON = new Gson();
+
 
   private class GsonObjectBuilder<T> extends Builder<T> {
 

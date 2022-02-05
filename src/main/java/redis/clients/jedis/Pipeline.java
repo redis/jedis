@@ -2084,6 +2084,13 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Map<Object, byte[]>> lmpop(ListDirection listDirection, int count, byte[]... key) {
+    return appendCommand(commandObjects.lmpop(listDirection,count,key));
+  }
+
+
+
+  @Override
   public Response<Long> lpos(byte[] key, byte[] element) {
     return appendCommand(commandObjects.lpos(key, element));
   }

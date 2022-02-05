@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import java.util.Map;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
@@ -28,6 +29,8 @@ public interface ListPipelineBinaryCommands {
   Response<byte[]> lpop(byte[] key);
 
   Response<List<byte[]>> lpop(byte[] key, int count);
+
+  Response<Map<Object, byte[]>> lmpop(ListDirection listDirection, int count, byte[]... key);
 
   Response<Long> lpos(byte[] key, byte[] element);
 

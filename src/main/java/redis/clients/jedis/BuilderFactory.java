@@ -95,6 +95,19 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<Object, byte[]>> BYTE_LIST_MAP = new Builder<Map<Object, byte[]>>() {
+    @Override
+    public Map<Object, byte[]> build(Object data) {
+      final List<byte[]> list = (List<byte[]>) data;
+      final Map<Object, byte[]> map = new HashMap<>(list.size() / 2, 1);
+      final Iterator iterator = list.iterator();
+      while (iterator.hasNext()) {
+        map.put(iterator.next(), BYTE_ARRAY.build(iterator.next()));
+      }
+      return map;
+    }
+  };
+
   public static final Builder<Long> LONG = new Builder<Long>() {
     @Override
     public Long build(Object data) {

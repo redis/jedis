@@ -6,7 +6,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +48,17 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     } catch (JedisDataException e) {
       assertTrue("ERR Background save already in progress".equalsIgnoreCase(e.getMessage()));
     }
+  }
+
+  @Test
+  public void bgsaveSchedule() {
+    Set<String> responses = new HashSet<>();
+    responses.add("OK");
+    responses.add("Background saving scheduled");
+    responses.add("Background saving started");
+
+    String status = jedis.bgsaveSchedule();
+    assertTrue(responses.contains(status));
   }
 
   @Test

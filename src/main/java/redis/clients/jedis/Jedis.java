@@ -3191,6 +3191,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
+  @Override
+  public String bgsaveSchedule() {
+    connection.sendCommand(BGSAVE, SCHEDULE);
+    return connection.getStatusCodeReply();
+  }
+
   /**
    * Rewrite the append only file in background when it gets too big. Please for detailed
    * information about the Redis Append Only File check the <a

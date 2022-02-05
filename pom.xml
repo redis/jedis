@@ -200,7 +200,7 @@
 				<artifactId>maven-java-formatter-plugin</artifactId>
 				<version>0.4</version>
 				<configuration>
-					<configFile>${project.basedir}/hbase-formatter.xml</configFile>
+					<configFile>${project.basedir}/jedis-formatter.xml</configFile>
 				</configuration>
 			</plugin>
 			<plugin>

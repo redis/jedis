@@ -217,11 +217,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long expireTime(String key) {
-    return executeCommand(commandObjects.expireTime(key));
-  }
-
-  @Override
   public long pexpire(String key, long milliseconds) {
     return executeCommand(commandObjects.pexpire(key, milliseconds));
   }
@@ -229,6 +224,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
     return executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public long expireTime(String key) {
+    return executeCommand(commandObjects.expireTime(key));
   }
 
   @Override
@@ -267,11 +267,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long expireTime(byte[] key) {
-    return executeCommand(commandObjects.expireTime(key));
-  }
-
-  @Override
   public long pexpire(byte[] key, long milliseconds) {
     return executeCommand(commandObjects.pexpire(key, milliseconds));
   }
@@ -279,6 +274,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
     return executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public long expireTime(byte[] key) {
+    return executeCommand(commandObjects.expireTime(key));
   }
 
   @Override

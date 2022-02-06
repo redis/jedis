@@ -53,10 +53,10 @@ public interface DatabasePipelineCommands {
   /**
    * Copy the value stored at the source key to the destination key.
    *
-   * @param srcKey  the source key.
-   * @param dstKey  the destination key.
-   * @param db      allows specifying an alternative logical database index for the destination key.
-   * @param replace removes the destination key before copying the value to it, in order to avoid error.
+   * @param srcKey  The source key.
+   * @param dstKey  The destination key.
+   * @param db      Allows specifying an alternative logical database index for the destination key.
+   * @param replace Removes the destination key before copying the value to it, in order to avoid error.
    */
   Response<Boolean> copy(String srcKey, String dstKey, int db, boolean replace);
 
@@ -87,11 +87,11 @@ public interface DatabasePipelineCommands {
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
    *
-   * @param host          target host
-   * @param port          target port
-   * @param key           migrate key
-   * @param destinationDB target db
-   * @param timeout       the maximum idle time in any moment of the communication with the
+   * @param host          Target host
+   * @param port          Target port
+   * @param key           Migrate key
+   * @param destinationDB Target db
+   * @param timeout       The maximum idle time in any moment of the communication with the
    *                      destination instance in milliseconds.
    * @return OK on success, or NOKEY if no keys were found in the source instance
    */
@@ -103,13 +103,13 @@ public interface DatabasePipelineCommands {
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
    *
-   * @param host          target host
-   * @param port          target port
-   * @param destinationDB target db
-   * @param timeout       the maximum idle time in any moment of the communication with the
+   * @param host          Target host
+   * @param port          Target port
+   * @param destinationDB Target db
+   * @param timeout       The maximum idle time in any moment of the communication with the
    *                      destination instance in milliseconds.
    * @param params        {@link MigrateParams}
-   * @param keys          to migrate
+   * @param keys          The keys to migrate
    * @return OK on success, or NOKEY if no keys were found in the source instance.
    */
   Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys);

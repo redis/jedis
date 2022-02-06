@@ -165,6 +165,24 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp).add(expiryOption),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp).add(expiryOption),
+        BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> ttl(String key) {
     return new CommandObject<>(commandArguments(TTL).key(key), BuilderFactory.LONG);
   }

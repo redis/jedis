@@ -697,6 +697,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.expireAt(key, unixTime));
   }
 
+  @Override
+  public long expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
   /**
    * The TTL command returns the remaining time to live in seconds of a key that has an
    * {@link Jedis#expire(byte[], long) EXPIRE} set. This introspection capability allows a Redis
@@ -3913,6 +3919,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
+  }
+
+  @Override
   public long pttl(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pttl(key));
@@ -5044,6 +5056,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long expireAt(final String key, final long unixTime) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.expireAt(key, unixTime));
+  }
+
+  @Override
+  public long expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.expireAt(key, unixTime, expiryOption));
   }
 
   /**
@@ -8032,6 +8050,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long pexpireAt(final String key, final long millisecondsTimestamp) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  @Override
+  public long pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override

@@ -139,6 +139,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> expireAt(String key, long unixTime) {
+    return appendCommand(commandObjects.expireAt(key, unixTime));
+  }
+
+  @Override
+  public Response<Long> expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
   public Response<Long> pexpire(String key, long milliseconds) {
     return appendCommand(commandObjects.pexpire(key, milliseconds));
   }
@@ -154,13 +164,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> expireAt(String key, long unixTime) {
-    return appendCommand(commandObjects.expireAt(key, unixTime));
+  public Response<Long> pexpireAt(String key, long millisecondsTimestamp) {
+    return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
   }
 
   @Override
-  public Response<Long> pexpireAt(String key, long millisecondsTimestamp) {
-    return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  public Response<Long> pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -1899,6 +1909,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> expireAt(byte[] key, long unixTime) {
+    return appendCommand(commandObjects.expireAt(key, unixTime));
+  }
+
+  @Override
+  public Response<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
   public Response<Long> pexpire(byte[] key, long milliseconds) {
     return appendCommand(commandObjects.pexpire(key, milliseconds));
   }
@@ -1914,13 +1934,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> expireAt(byte[] key, long unixTime) {
-    return appendCommand(commandObjects.expireAt(key, unixTime));
+  public Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp) {
+    return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
   }
 
   @Override
-  public Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp) {
-    return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  public Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override

@@ -33,15 +33,19 @@ public interface KeyPipelineBinaryCommands {
 
   Response<Long> expireTime(byte[] key);
 
+  Response<Long> expireAt(byte[] key, long unixTime);
+
+  Response<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption);
+
   Response<Long> pexpire(byte[] key, long milliseconds);
 
   Response<Long> pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption);
 
   Response<Long> pexpireTime(byte[] key);
 
-  Response<Long> expireAt(byte[] key, long unixTime);
-
   Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp);
+
+  Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption);
 
   Response<Long> ttl(byte[] key);
 

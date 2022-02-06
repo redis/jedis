@@ -32,15 +32,19 @@ public interface KeyBinaryCommands {
 
   long expireTime(byte[] key);
 
+  long expireAt(byte[] key, long unixTime);
+
+  long expireAt(byte[] key, long unixTime, ExpiryOption expiryOption);
+
   long pexpire(byte[] key, long milliseconds);
 
   long pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption);
 
   long pexpireTime(byte[] key);
 
-  long expireAt(byte[] key, long unixTime);
-
   long pexpireAt(byte[] key, long millisecondsTimestamp);
+
+  long pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption);
 
   long ttl(byte[] key);
 

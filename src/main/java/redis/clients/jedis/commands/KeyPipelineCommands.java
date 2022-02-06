@@ -33,15 +33,19 @@ public interface KeyPipelineCommands {
 
   Response<Long> expireTime(String key);
 
+  Response<Long> expireAt(String key, long unixTime);
+
+  Response<Long> expireAt(String key, long unixTime, ExpiryOption expiryOption);
+
   Response<Long> pexpire(String key, long milliseconds);
 
   Response<Long> pexpire(String key, long milliseconds, ExpiryOption expiryOption);
 
   Response<Long> pexpireTime(String key);
 
-  Response<Long> expireAt(String key, long unixTime);
-
   Response<Long> pexpireAt(String key, long millisecondsTimestamp);
+
+  Response<Long> pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption);
 
   Response<Long> ttl(String key);
 

@@ -308,6 +308,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     jedis.set("foo", "bar");
     unixTime = (System.currentTimeMillis() / 1000L) + 20;
     assertEquals(1, jedis.expireAt("foo", unixTime));
+    assertEquals(1, jedis.expireAt("foo", unixTime, ExpiryOption.XX));
 
     // Binary
     assertEquals(0, jedis.expireAt(bfoo, unixTime));
@@ -315,6 +316,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     jedis.set(bfoo, bbar);
     unixTime = (System.currentTimeMillis() / 1000L) + 20;
     assertEquals(1, jedis.expireAt(bfoo, unixTime));
+    assertEquals(1, jedis.expireAt(bfoo, unixTime, ExpiryOption.XX));
   }
 
   @Test

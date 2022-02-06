@@ -24,8 +24,8 @@ public interface DatabasePipelineCommands {
    * This command swaps two Redis databases, so that immediately all the clients connected to a
    * given database will see the data of the other database, and the other way around.
    *
-   * @param index1 Swapped db's index
-   * @param index2 Swapped db's index
+   * @param index1
+   * @param index2
    * @return OK
    */
   Response<String> swapDB(int index1, int index2);

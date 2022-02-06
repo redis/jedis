@@ -130,7 +130,7 @@ public class CommandObjects {
 
   public final CommandObject<Long> pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(expiryOption),
-            BuilderFactory.LONG);
+        BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> expireTime(String key) {

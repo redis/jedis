@@ -64,7 +64,7 @@ jobs:
     docker:
       - image: cimg/openjdk:8.0
       - image: redislabs/redismod:edge
-          name: mod
+        name: mod
 
     environment:
       JVM_OPTS: -Xmx3200m

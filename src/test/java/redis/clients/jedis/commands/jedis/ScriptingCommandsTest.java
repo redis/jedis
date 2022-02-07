@@ -353,19 +353,19 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String engine = "LUA";
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
-    jedis.functionLoad(engine, library, function);
+    jedis.functionLoad(engine, library, new FunctionLoadParams().libraryDescription("test"), function);
 
     LibraryInfo response = jedis.functionList().get(0);
     assertEquals(library, response.getName());
     assertEquals(engine, response.getEngine());
-    assertNull(response.getDescription());
+    assertEquals("test", response.getDescription());
     assertEquals(1, response.getFunctions().size());
 
     // check function info
     LibraryInfo.FunctionInfo func = response.getFunctions().get(0);
-    assertEquals("name", func.getName());
-    assertEquals("myfunc", func.getDescription());
-    assertNull(func.getFlags());
+    assertEquals("myfunc", func.getName());
+    assertNull(func.getDescription());
+    assertTrue(func.getFlags().isEmpty());
 
     // check WITHCODE
     response = jedis.functionListWithCode().get(0);

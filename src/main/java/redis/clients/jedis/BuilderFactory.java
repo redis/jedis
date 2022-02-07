@@ -1430,7 +1430,7 @@ public final class BuilderFactory {
         List<List<Object>> rawFunctions = (List<List<Object>>) objectList.get(7);
         List<LibraryInfo.FunctionInfo> functions = new ArrayList<>();
         for (List<Object> object : rawFunctions) {
-          functions.add(new LibraryInfo.FunctionInfo(STRING.build(object.get(0)), STRING.build(object.get(1)), null));
+          functions.add(new LibraryInfo.FunctionInfo(STRING.build(object.get(1)), STRING.build(object.get(3)), STRING_LIST.build(object.get(5))));
         }
         String code = null;
         if (objectList.size() > 8) {

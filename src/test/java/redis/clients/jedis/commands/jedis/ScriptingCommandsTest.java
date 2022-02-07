@@ -1,7 +1,13 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -433,6 +439,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertNotNull(jedis.fcall("myfunc", new ArrayList<>(), args));
 //    assertNotNull(jedis.fcallReadonly("myfunc", new ArrayList<>(), args));
 
+    // Binary
     List<byte[]> bargs = new ArrayList<>();
     bargs.add("hello".getBytes());
     assertNotNull(jedis.fcall("myfunc".getBytes(), new ArrayList<>(), bargs));

@@ -11,6 +11,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -313,6 +314,24 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(position1.getB().getStart(), 0);
     assertEquals(position1.getB().getEnd(), 1);
     assertEquals(position1.getMatchLen(), 2);
+  }
+
+  @Test
+  public void lcs() {
+    jedis.mset("key1", "ohmytext", "key2", "mynewtext");
+
+    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2",
+        LCSParams.LCSParams());
+    assertEquals("mytext", stringMatchResult.getMatchString());
+
+    stringMatchResult = jedis.lcs( "key1", "key2",
+            LCSParams.LCSParams().idx().withMatchLen());
+    assertEquals(stringMatchResult.getLen(), 6);
+    assertEquals(2, stringMatchResult.getMatches().size());
+
+    stringMatchResult = jedis.lcs( "key1", "key2",
+            LCSParams.LCSParams().idx().minMatchLen(10));
+    assertEquals(0, stringMatchResult.getMatches().size());
   }
 
 }

@@ -213,8 +213,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long expire(String key, long seconds, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.expire(key, seconds, expiryOption));
+  }
+
+  @Override
   public long pexpire(String key, long milliseconds) {
     return executeCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public long pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public long expireTime(String key) {
+    return executeCommand(commandObjects.expireTime(key));
+  }
+
+  @Override
+  public long pexpireTime(String key) {
+    return executeCommand(commandObjects.pexpireTime(key));
   }
 
   @Override
@@ -223,8 +243,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
   public long pexpireAt(String key, long millisecondsTimestamp) {
     return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  @Override
+  public long pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -233,8 +263,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long expire(byte[] key, long seconds, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.expire(key, seconds, expiryOption));
+  }
+
+  @Override
   public long pexpire(byte[] key, long milliseconds) {
     return executeCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public long pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public long expireTime(byte[] key) {
+    return executeCommand(commandObjects.expireTime(key));
+  }
+
+  @Override
+  public long pexpireTime(byte[] key) {
+    return executeCommand(commandObjects.pexpireTime(key));
   }
 
   @Override
@@ -243,8 +293,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
   public long pexpireAt(byte[] key, long millisecondsTimestamp) {
     return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  @Override
+  public long pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.expireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -804,13 +864,23 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
+  public LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
   @Override
   public LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
     return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
+  }
+
+  @Override
+  public LCSMatchResult lcs(String keyA, String keyB, LCSParams params) {
+    return executeCommand(commandObjects.lcs(keyA, keyB, params));
+  }
+
+  @Override
+  public LCSMatchResult lcs(byte[] keyA, byte[] keyB, LCSParams params) {
+    return executeCommand(commandObjects.lcs(keyA, keyB, params));
   }
   // String commands
 

@@ -6,7 +6,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +48,17 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     } catch (JedisDataException e) {
       assertTrue("ERR Background save already in progress".equalsIgnoreCase(e.getMessage()));
     }
+  }
+
+  @Test
+  public void bgsaveSchedule() {
+    Set<String> responses = new HashSet<>();
+    responses.add("OK");
+    responses.add("Background saving scheduled");
+    responses.add("Background saving started");
+
+    String status = jedis.bgsaveSchedule();
+    assertTrue(responses.contains(status));
   }
 
   @Test
@@ -184,6 +197,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void configGet() {
     List<String> info = jedis.configGet("m*");
     assertNotNull(info);
+    info = jedis.configGet("zset-max-ziplist-entries", "maxmemory");
+    assertNotNull(info);
+    assertEquals(4, info.size());
+    List<byte[]> infoBinary = jedis.configGet("m*".getBytes());
+    assertNotNull(infoBinary);
+    infoBinary = jedis.configGet("zset-max-ziplist-entries".getBytes(), "maxmemory".getBytes());
+    assertEquals(4, infoBinary.size());
   }
 
   @Test
@@ -323,6 +343,12 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         executorService.shutdownNow();
       }
     }
+  }
+
+  @Test
+  public void clientNoEvict() {
+    assertEquals("OK", jedis.clientNoEvictOn());
+    assertEquals("OK", jedis.clientNoEvictOff());
   }
 
   @Test

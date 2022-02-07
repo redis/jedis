@@ -107,12 +107,48 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> expire(String key, long seconds, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(expiryOption),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> expire(byte[] key, long seconds, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(expiryOption),
+        BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> pexpire(String key, long milliseconds) {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> pexpire(byte[] key, long milliseconds) {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(expiryOption),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(expiryOption),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> expireTime(String key) {
+    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> expireTime(byte[] key) {
+    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpireTime(String key) {
+    return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpireTime(byte[] key) {
+    return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> expireAt(String key, long unixTime) {
@@ -123,12 +159,30 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> pexpireAt(String key, long millisecondsTimestamp) {
     return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> pexpireAt(byte[] key, long millisecondsTimestamp) {
     return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp).add(expiryOption),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp).add(expiryOption),
+        BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> ttl(String key) {
@@ -577,14 +631,34 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BITOP).add(op).key(destKey).keys((Object[]) srcKeys), BuilderFactory.LONG);
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * LCS can be used instead of this method.
+   */
+  @Deprecated
   public final CommandObject<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(Keyword.KEYS)
+    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(Keyword.KEYS)
         .key(keyA).key(keyB).addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 
+  /**
+   * @deprecated STRALGO LCS command will be removed from Redis 7.
+   * LCS can be used instead of this method.
+   */
+  @Deprecated
   public final CommandObject<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(Keyword.KEYS)
+    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(Keyword.KEYS)
         .key(keyA).key(keyB).addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+  }
+
+  public final CommandObject<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
+    return new CommandObject<>(commandArguments(Command.LCS).key(keyA).key(keyB)
+        .addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
+  }
+
+  public final CommandObject<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params) {
+    return new CommandObject<>(commandArguments(Command.LCS).key(keyA).key(keyB)
+        .addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
   // String commands
 
@@ -2620,14 +2694,16 @@ public class CommandObjects {
   // Scripting commands
 
   // Miscellaneous commands
+  @Deprecated
   public final CommandObject<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(STRINGS)
+    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(STRINGS)
         .add(strA).add(strB).addParams(params),
         BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 
+  @Deprecated
   public final CommandObject<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(LCS).add(STRINGS)
+    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(STRINGS)
         .add(strA).add(strB).addParams(params),
         BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }

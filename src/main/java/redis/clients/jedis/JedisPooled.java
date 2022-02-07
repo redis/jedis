@@ -18,8 +18,8 @@ public class JedisPooled extends UnifiedJedis {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
 
-  public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig, final String host) {
-    this(poolConfig, host, Protocol.DEFAULT_PORT);
+  public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig, final String url) {
+    this(poolConfig, URI.create(url));
   }
 
   public JedisPooled(String host, int port) {
@@ -36,7 +36,7 @@ public class JedisPooled extends UnifiedJedis {
    * @param url
    */
   public JedisPooled(final String url) {
-    super(url);
+    this(URI.create(url));
   }
 
   /**

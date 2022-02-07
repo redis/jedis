@@ -40,8 +40,8 @@ public interface DatabaseCommands {
    * that this command returns 1 only if the key was successfully moved, and 0 if the target key was
    * already there or if the source key was not found at all, so it is possible to use MOVE as a
    * locking primitive.
-   * @param key
-   * @param dbIndex specified destination database
+   * @param key  The specified key
+   * @param dbIndex Specified destination database
    * @return 1 if the key was moved, 0 if the key was not moved because already present on the target
    * DB or was not found in the current DB
    */
@@ -73,12 +73,13 @@ public interface DatabaseCommands {
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
-   * @param host
-   * @param port
-   * @param key
-   * @param destinationDB
-   * @param timeout the maximum idle time in any moment of the communication with the
-   *               destination instance in milliseconds.
+   *
+   * @param host          target host
+   * @param port          target port
+   * @param key           migrate key
+   * @param destinationDB target db
+   * @param timeout       the maximum idle time in any moment of the communication with the
+   *                      destination instance in milliseconds.
    * @return OK on success, or NOKEY if no keys were found in the source instance
    */
   String migrate(String host, int port, String key, int destinationDB, int timeout);
@@ -94,9 +95,9 @@ public interface DatabaseCommands {
    * Atomically transfer a key from a source Redis instance to a destination Redis instance.
    * On success the key is deleted from the original instance and is guaranteed to exist in
    * the target instance.
-   * @param host
-   * @param port
-   * @param destinationDB
+   * @param host          target host
+   * @param port          target port
+   * @param destinationDB target db
    * @param timeout the maximum idle time in any moment of the communication with the
    *               destination instance in milliseconds.
    * @param params {@link MigrateParams}

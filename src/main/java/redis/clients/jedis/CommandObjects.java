@@ -2747,7 +2747,7 @@ public class CommandObjects {
 
   public final CommandObject<String> functionRestore(byte[] serializedValue, RestorePolicy policy) {
     return new CommandObject<>(commandArguments(FUNCTION).add(RESTORE).add(serializedValue)
-        .processKey(policy.getRaw()), BuilderFactory.STRING);
+        .add(policy.getRaw()), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {

@@ -8,8 +8,19 @@ import java.util.List;
 
 public interface FunctionCommands {
 
+    /**
+     * Invoke a function.
+     * @param name
+     * @param keys
+     * @param args
+     * @return
+     */
     byte[] fcall(String name, List<String> keys, List<String> args);
 
+    /**
+     * This is a read-only variant of the {@link FunctionCommands#fcall(String, List, List) FCALL}
+     * command that cannot execute commands that modify data.
+     */
     byte[] fcallReadonly(String name, List<String> keys, List<String> args);
 
     /**

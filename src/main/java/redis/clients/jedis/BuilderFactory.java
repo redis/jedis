@@ -1415,13 +1415,13 @@ public final class BuilderFactory {
   public static final Builder<List<LibraryInfo>> LIBRARY_LIST = new Builder<List<LibraryInfo>>() {
     @Override
     public List<LibraryInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
       List<LibraryInfo> list = new ArrayList<>();
       List<Object> liblist = (List<Object>) data;
 
       for (Object libdata : liblist) {
-        if (data == null) {
-          return null;
-        }
 
         List<Object> objectList = (List<Object>) libdata;
         String libname = STRING.build(objectList.get(1));

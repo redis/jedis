@@ -86,7 +86,7 @@ jobs:
             - ~/.m2
           key: jedis-{{ checksum "pom.xml" }}
 
-      - run: mvn '-DmodulesDocker=mod:6379' '-Dtest=redis.clients.jedis.modules.*Test' test
+      - run: mvn -DmodulesDocker="mod:6379" -Dtest="redis.clients.jedis.modules.**" test
 
   build_and_deploy:
     docker:

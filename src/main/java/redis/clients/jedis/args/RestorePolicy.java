@@ -2,7 +2,7 @@ package redis.clients.jedis.args;
 
 import redis.clients.jedis.util.SafeEncoder;
 
-public enum RestorePolicy implements Rawable {
+public enum FunctionRestorePolicy implements Rawable {
     /**
      * Delete all existing libraries before restoring the payload
      */

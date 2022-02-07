@@ -1421,7 +1421,7 @@ public final class BuilderFactory {
       List<LibraryInfo> list = new ArrayList<>();
       List<Object> liblist = (List<Object>) data;
 
-      for (Object libdata : liblist) {
+      for (Object libData : libList) {
 
         List<Object> objectList = (List<Object>) libdata;
         String libname = STRING.build(objectList.get(1));

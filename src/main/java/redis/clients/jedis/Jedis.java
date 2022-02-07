@@ -662,11 +662,51 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand((commandObjects.expire(key, seconds, expiryOption)));
   }
 
+  /**
+   * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
+   * the server. A key with an associated timeout is said to be volatile in Redis terminology.
+   * <p>
+   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all
+   * the other aspects of the dataset. Saving a dataset containing expires and stopping the server
+   * does not stop the flow of time as Redis stores on disk the time when the key will no longer be
+   * available as Unix time, and not the remaining milliseconds.
+   * <p>
+   * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
+   * set. It is also possible to undo the expire at all turning the key into a normal key using the
+   * {@link Jedis#persist(byte[]) PERSIST} command.
+   * <p>
+   * Time complexity: O(1)
+   * @see <a href="http://redis.io/commands/pexpire">PEXPIRE Command</a>
+   * @param key
+   * @param milliseconds
+   * @return 1: the timeout was set. 0: the timeout was not set since
+   *         the key already has an associated timeout (this may happen only in Redis versions <
+   *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
+   */
+  @Override
+  public long pexpire(final byte[] key, final long milliseconds) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public long pexpire(final byte[] key, final long milliseconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
   @Override
   public long expireTime(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand((commandObjects.expireTime(key)));
   }
+
+  @Override
+  public long pexpireTime(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireTime(key));
+  }
+
 
   /**
    * EXPIREAT works exactly like {@link Jedis#expire(byte[], long) EXPIRE} but instead to get the
@@ -695,6 +735,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long expireAt(final byte[] key, final long unixTime) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.expireAt(key, unixTime));
+  }
+
+  @Override
+  public long expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
+  public long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  @Override
+  public long pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   /**
@@ -3868,50 +3926,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.restore(key, ttl, serializedValue, params));
   }
 
-  /**
-   * Set a timeout on the specified key. After the timeout the key will be automatically deleted by
-   * the server. A key with an associated timeout is said to be volatile in Redis terminology.
-   * <p>
-   * Volatile keys are stored on disk like the other keys, the timeout is persistent too like all
-   * the other aspects of the dataset. Saving a dataset containing expires and stopping the server
-   * does not stop the flow of time as Redis stores on disk the time when the key will no longer be
-   * available as Unix time, and not the remaining milliseconds.
-   * <p>
-   * Since Redis 2.1.3 you can update the value of the timeout of a key already having an expire
-   * set. It is also possible to undo the expire at all turning the key into a normal key using the
-   * {@link Jedis#persist(byte[]) PERSIST} command.
-   * <p>
-   * Time complexity: O(1)
-   * @see <a href="http://redis.io/commands/pexpire">PEXPIRE Command</a>
-   * @param key
-   * @param milliseconds
-   * @return 1: the timeout was set. 0: the timeout was not set since
-   *         the key already has an associated timeout (this may happen only in Redis versions <
-   *         2.1.3, Redis >= 2.1.3 will happily update the timeout), or the key does not exist.
-   */
-  @Override
-  public long pexpire(final byte[] key, final long milliseconds) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
-  }
-
-  @Override
-  public long pexpire(final byte[] key, final long milliseconds, final ExpiryOption expiryOption) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));  }
-
-  @Override
-  public long pexpireTime(final byte[] key) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpireTime(key));
-  }
-
-  @Override
-  public long pexpireAt(final byte[] key, final long millisecondsTimestamp) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
-  }
-
   @Override
   public long pttl(final byte[] key) {
     checkIsInMultiOrPipeline();
@@ -5005,6 +5019,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.expire(key, seconds));
   }
 
+  /**
+   * Similar to {@link Jedis#expire(String, long) EXPIRE} but with optional expiry setting.
+   * @see Jedis#expire(String, long)
+   * @param key
+   * @param seconds time to expire
+   * @param expiryOption can be NX, XX, GT or LT
+   * @return 1 if the timeout was set, 0 otherwise. Since the key already has an associated timeout
+   * (this may happen only in Redis versions &lt; 2.1.3, Redis &gt;= 2.1.3 will happily update the timeout),
+   * or the key does not exist.
+   */
   @Override
   public long expire(final String key, final long seconds, final ExpiryOption expiryOption) {
     checkIsInMultiOrPipeline();
@@ -5012,9 +5036,47 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long pexpire(final String key, final long milliseconds) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
+  }
+
+  @Override
+  public long pexpire(final String key, final long milliseconds, final ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  /**
+   * Returns the absolute Unix timestamp (since January 1, 1970) in seconds at which the given key will expire.
+   * <p>
+   * The command returns -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
+   * <p>
+   * Time complexity: O(1)
+   * @param key
+   * @return Expiration Unix timestamp in seconds, or a negative value in order to signal an error:
+   * -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
+   */
+  @Override
   public long expireTime(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.expireTime(key));
+  }
+
+  /**
+   * Similar to {@link Jedis#expireTime(String) EXPIRETIME} but returns the absolute Unix expiration
+   * timestamp in milliseconds instead of seconds.
+   * <p>
+   * Time complexity: O(1)
+   * @see Jedis#expireTime(String)
+   * @param key
+   * @return Expiration Unix timestamp in milliseconds, or a negative value in order to signal an error:
+   * -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
+   */
+  @Override
+  public long pexpireTime(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireTime(key));
   }
 
   /**
@@ -5044,6 +5106,53 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long expireAt(final String key, final long unixTime) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.expireAt(key, unixTime));
+  }
+
+  /**
+   * Similar to {@link Jedis#expireAt(String, long) EXPIREAT} but with {@code ExpiryOption}.
+   * @see Jedis#expireAt(String, long)
+   * @param key
+   * @param unixTime time to expire
+   * @param expiryOption can be NX, XX, GT or LT
+   * @return 1 if the timeout was set, 0 otherwise.
+   * e.g. key doesn't exist, or operation skipped due to the provided arguments.
+   */
+  @Override
+  public long expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  /**
+   * This command works exactly like {@link Jedis#expireAt(String, long) EXPIREAT} but
+   * Unix time at which the key will expire is specified in milliseconds instead of seconds.
+   * <p>
+   * Time complexity: O(1)
+   * @param key
+   * @param millisecondsTimestamp time to expire
+   * @return 1 if the timeout was set, 0 otherwise.
+   * e.g. key doesn't exist, or operation skipped due to the provided arguments.
+   */
+  @Override
+  public long pexpireAt(final String key, final long millisecondsTimestamp) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  /**
+   * <b><a href="http://redis.io/commands/expireat">ExpireAt Command</a></b>
+   * Similar to {@link Jedis#pexpireAt(String, long) PEXPIREAT} but with {@code ExpiryOption}.
+   * @see Jedis#pexpireAt(String, long)
+   * @param key
+   * @param millisecondsTimestamp time to expire
+   * @param expiryOption can be NX, XX, GT or LT
+   * @return 1 if the timeout was set, 0 otherwise.
+   * e.g. key doesn't exist, or operation skipped due to the provided arguments.
+   */
+  @Override
+  public long pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   /**
@@ -8008,30 +8117,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final RestoreParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.restore(key, ttl, serializedValue, params));
-  }
-
-  @Override
-  public long pexpire(final String key, final long milliseconds) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpire(key, milliseconds));
-  }
-
-  @Override
-  public long pexpire(final String key, final long milliseconds, final ExpiryOption expiryOption) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
-  }
-
-  @Override
-  public long pexpireTime(final String key) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpireTime(key));
-  }
-
-  @Override
-  public long pexpireAt(final String key, final long millisecondsTimestamp) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
   }
 
   @Override

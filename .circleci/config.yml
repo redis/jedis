@@ -26,7 +26,7 @@ commands:
             fi
 
 jobs:
-  test:
+  build-linux-8-jdk:
     docker:
       - image: cimg/openjdk:8.0
 
@@ -120,8 +120,8 @@ workflows:
           context:
             - common
           requires:
-            - test
-      - test:
+            - build-linux-8-jdk
+      - build-linux-8-jdk:
           <<: *on-all-branches
       - test-modules:
           <<: *on-all-branches

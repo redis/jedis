@@ -16,8 +16,8 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
 
 public abstract class RedisModuleCommandsTestBase {
 
-  protected static final String host = System.getProperty("modulesDockerName", Protocol.DEFAULT_HOST);
-  protected static final HostAndPort hnp = new HostAndPort(host, 6479);
+  protected static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
+  protected static final HostAndPort hnp = HostAndPort.from(address);
 
   private static final PooledConnectionProvider provider = new PooledConnectionProvider(hnp);
   protected UnifiedJedis client;

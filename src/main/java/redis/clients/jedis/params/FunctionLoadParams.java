@@ -2,6 +2,7 @@ package redis.clients.jedis.params;
 
 import static redis.clients.jedis.Protocol.Keyword.REPLACE;
 import static redis.clients.jedis.Protocol.Keyword.DESC;
+
 import redis.clients.jedis.CommandArguments;
 
 public class FunctionLoadParams implements IParams {

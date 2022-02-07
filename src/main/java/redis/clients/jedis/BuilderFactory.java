@@ -1428,10 +1428,9 @@ public final class BuilderFactory {
         String engine = STRING.build(objectList.get(3));
         String desc = STRING.build(objectList.get(5));
         List<List<Object>> rawFunctions = (List<List<Object>>) objectList.get(7);
-        LibraryInfo.FunctionInfo[] functions = new LibraryInfo.FunctionInfo[rawFunctions.size()];
-        int i = 0;
+        List<LibraryInfo.FunctionInfo> functions = new ArrayList<>();
         for (List<Object> object : rawFunctions) {
-          functions[i++] = new LibraryInfo.FunctionInfo(STRING.build(object.get(0)), STRING.build(object.get(1)), null);
+          functions.add(new LibraryInfo.FunctionInfo(STRING.build(object.get(0)), STRING.build(object.get(1)), null));
         }
         String code = null;
         if (objectList.size() > 8) {

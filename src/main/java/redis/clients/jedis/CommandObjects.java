@@ -2745,7 +2745,7 @@ public class CommandObjects {
         BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> functionRestore(byte[] serializedValue, RestorePolicy policy) {
+  public final CommandObject<String> functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
     return new CommandObject<>(commandArguments(FUNCTION).add(RESTORE).add(serializedValue)
         .add(policy.getRaw()), BuilderFactory.STRING);
   }

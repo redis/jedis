@@ -3101,7 +3101,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String functionRestore(byte[] serializedValue, RestorePolicy policy) {
+  public String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
     return executeCommand(commandObjects.functionRestore(serializedValue, policy));
   }
   // Scripting commands

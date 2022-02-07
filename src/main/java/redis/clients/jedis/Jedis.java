@@ -4409,7 +4409,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String functionRestore(final byte[] serializedValue, final RestorePolicy policy) {
+  public String functionRestore(final byte[] serializedValue, final FunctionRestorePolicy policy) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.functionRestore(serializedValue, policy));
   }

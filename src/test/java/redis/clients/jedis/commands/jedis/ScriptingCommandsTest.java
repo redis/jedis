@@ -14,7 +14,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.FlushMode;
-import redis.clients.jedis.args.RestorePolicy;
+import redis.clients.jedis.args.FunctionRestorePolicy;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisNoScriptException;
@@ -360,10 +360,10 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertEquals(library, response.getName());
     assertEquals(engine, response.getEngine());
     assertNull(response.getDescription());
-    assertEquals(1, response.getFunctions().length);
+    assertEquals(1, response.getFunctions().size());
 
     // check function info
-    LibraryInfo.FunctionInfo func = response.getFunctions()[0];
+    LibraryInfo.FunctionInfo func = response.getFunctions().get(0);
     assertEquals("name", func.getName());
     assertEquals("myfunc", func.getDescription());
     assertNull(func.getFlags());
@@ -401,11 +401,11 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.functionFlush();
     assertEquals("OK", jedis.functionRestore(payload));
     jedis.functionFlush();
-    assertEquals("OK", jedis.functionRestore(payload, RestorePolicy.FLUSH));
+    assertEquals("OK", jedis.functionRestore(payload, FunctionRestorePolicy.FLUSH));
     jedis.functionFlush();
-    assertEquals("OK", jedis.functionRestore(payload, RestorePolicy.APPEND));
+    assertEquals("OK", jedis.functionRestore(payload, FunctionRestorePolicy.APPEND));
     jedis.functionFlush();
-    assertEquals("OK", jedis.functionRestore(payload, RestorePolicy.REPLACE));
+    assertEquals("OK", jedis.functionRestore(payload, FunctionRestorePolicy.REPLACE));
     jedis.functionFlush();
   }
 

@@ -29,6 +29,8 @@ jobs:
   build-linux-8-jdk:
     docker:
       - image: cimg/openjdk:8.0
+      - image: redislabs/redismod:edge
+        command: ['-p', '6479:6369']
 
     environment:
       JVM_OPTS: -Xmx3200m

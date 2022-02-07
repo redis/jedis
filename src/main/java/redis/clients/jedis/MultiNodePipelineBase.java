@@ -7,10 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
+import redis.clients.jedis.bloom.BFInsertParams;
+import redis.clients.jedis.bloom.BFReserveParams;
+import redis.clients.jedis.bloom.CFInsertParams;
+import redis.clients.jedis.bloom.CFReserveParams;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
@@ -19,7 +22,10 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.*;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
@@ -3542,6 +3548,188 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.tsQueryIndex(filters));
   }
   // RedisTimeSeries commands
+
+  // RedisBloom commands
+  @Override
+  public Response<String> bfReserve(String key, double errorRate, long capacity) {
+    return appendCommand(commandObjects.bfReserve(key, errorRate, capacity));
+  }
+
+  @Override
+  public Response<String> bfReserve(String key, double errorRate, long capacity, BFReserveParams reserveParams) {
+    return appendCommand(commandObjects.bfReserve(key, errorRate, capacity, reserveParams));
+  }
+
+  @Override
+  public Response<Boolean> bfAdd(String key, String item) {
+    return appendCommand(commandObjects.bfAdd(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> bfMAdd(String key, String... items) {
+    return appendCommand(commandObjects.bfMAdd(key, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> bfInsert(String key, String... items) {
+    return appendCommand(commandObjects.bfInsert(key, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> bfInsert(String key, BFInsertParams insertParams, String... items) {
+    return appendCommand(commandObjects.bfInsert(key, insertParams, items));
+  }
+
+  @Override
+  public Response<Boolean> bfExists(String key, String item) {
+    return appendCommand(commandObjects.bfExists(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> bfMExists(String key, String... items) {
+    return appendCommand(commandObjects.bfMExists(key, items));
+  }
+
+  @Override
+  public Response<Map<String, Object>> bfInfo(String key) {
+    return appendCommand(commandObjects.bfInfo(key));
+  }
+
+  @Override
+  public Response<String> cfReserve(String key, long capacity) {
+    return appendCommand(commandObjects.cfReserve(key, capacity));
+  }
+
+  @Override
+  public Response<String> cfReserve(String key, long capacity, CFReserveParams reserveParams) {
+    return appendCommand(commandObjects.cfReserve(key, capacity, reserveParams));
+  }
+
+  @Override
+  public Response<Boolean> cfAdd(String key, String item) {
+    return appendCommand(commandObjects.cfAdd(key, item));
+  }
+
+  @Override
+  public Response<Boolean> cfAddNx(String key, String item) {
+    return appendCommand(commandObjects.cfAddNx(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfInsert(String key, String... items) {
+    return appendCommand(commandObjects.cfInsert(key, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfInsert(String key, CFInsertParams insertParams, String... items) {
+    return appendCommand(commandObjects.cfInsert(key, insertParams, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfInsertNx(String key, String... items) {
+    return appendCommand(commandObjects.cfInsertNx(key, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfInsertNx(String key, CFInsertParams insertParams, String... items) {
+    return appendCommand(commandObjects.cfInsertNx(key, insertParams, items));
+  }
+
+  @Override
+  public Response<Boolean> cfExists(String key, String item) {
+    return appendCommand(commandObjects.cfExists(key, item));
+  }
+
+  @Override
+  public Response<Boolean> cfDel(String key, String item) {
+    return appendCommand(commandObjects.cfDel(key, item));
+  }
+
+  @Override
+  public Response<Long> cfCount(String key, String item) {
+    return appendCommand(commandObjects.cfCount(key, item));
+  }
+
+  @Override
+  public Response<Map<String, Object>> cfInfo(String key) {
+    return appendCommand(commandObjects.cfInfo(key));
+  }
+
+  @Override
+  public Response<String> cmsInitByDim(String key, long width, long depth) {
+    return appendCommand(commandObjects.cmsInitByDim(key, width, depth));
+  }
+
+  @Override
+  public Response<String> cmsInitByProb(String key, double error, double probability) {
+    return appendCommand(commandObjects.cmsInitByProb(key, error, probability));
+  }
+
+  @Override
+  public Response<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
+    return appendCommand(commandObjects.cmsIncrBy(key, itemIncrements));
+  }
+
+  @Override
+  public Response<List<Long>> cmsQuery(String key, String... items) {
+    return appendCommand(commandObjects.cmsQuery(key, items));
+  }
+
+  @Override
+  public Response<String> cmsMerge(String destKey, String... keys) {
+    return appendCommand(commandObjects.cmsMerge(destKey, keys));
+  }
+
+  @Override
+  public Response<String> cmsMerge(String destKey, Map<String, Long> keysAndWeights) {
+    return appendCommand(commandObjects.cmsMerge(destKey, keysAndWeights));
+  }
+
+  @Override
+  public Response<Map<String, Object>> cmsInfo(String key) {
+    return appendCommand(commandObjects.cmsInfo(key));
+  }
+
+  @Override
+  public Response<String> topkReserve(String key, long topk) {
+    return appendCommand(commandObjects.topkReserve(key, topk));
+  }
+
+  @Override
+  public Response<String> topkReserve(String key, long topk, long width, long depth, double decay) {
+    return appendCommand(commandObjects.topkReserve(key, topk, width, depth, decay));
+  }
+
+  @Override
+  public Response<List<String>> topkAdd(String key, String... items) {
+    return appendCommand(commandObjects.topkAdd(key, items));
+  }
+
+  @Override
+  public Response<List<String>> topkIncrBy(String key, Map<String, Long> itemIncrements) {
+    return appendCommand(commandObjects.topkIncrBy(key, itemIncrements));
+  }
+
+  @Override
+  public Response<List<Boolean>> topkQuery(String key, String... items) {
+    return appendCommand(commandObjects.topkQuery(key, items));
+  }
+
+  @Override
+  public Response<List<Long>> topkCount(String key, String... items) {
+    return appendCommand(commandObjects.topkCount(key, items));
+  }
+
+  @Override
+  public Response<List<String>> topkList(String key) {
+    return appendCommand(commandObjects.topkList(key));
+  }
+
+  @Override
+  public Response<Map<String, Object>> topkInfo(String key) {
+    return appendCommand(commandObjects.topkInfo(key));
+  }
+  // RedisBloom commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

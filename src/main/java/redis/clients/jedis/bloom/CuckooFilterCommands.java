@@ -1,9 +1,7 @@
 package redis.clients.jedis.bloom;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 /**
  * Interface for RedisBloom Cuckoo Filter Commands

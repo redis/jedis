@@ -222,7 +222,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void clearScalar() {
-    client.jsonSet("foobar", ROOT_PATH, new FooBarObject());
+    client.jsonSet("foobar", ROOT_PATH, gson.toJson(new FooBarObject()));
 
     Path2 strPath = Path2.of(".foo");
     assertJsonArrayEquals(singletonJSONArray("bar"), client.jsonGet("foobar", strPath));

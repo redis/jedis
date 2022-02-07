@@ -321,8 +321,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
 
     assertEquals("OK", jedis.functionLoad(engine, library, function));
-    assertEquals("OK", jedis.functionLoad(engine, library, new FunctionLoadParams().replace(), function));
-//    assertEquals("OK", jedis.functionLoad(engine, library, new FunctionLoadParams().libraryDescription(""), function));
+    assertEquals("OK", jedis.functionLoad(engine, library, new FunctionLoadParams().replace().libraryDescription(""), function));
 
     jedis.functionDelete(library);
 
@@ -407,6 +406,18 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.functionFlush();
     assertEquals("OK", jedis.functionRestore(payload, FunctionRestorePolicy.REPLACE));
     jedis.functionFlush();
+  }
+
+  @Test
+  public void functionKill() {
+    jedis.functionFlush();
+    String engine = "Lua";
+    String library = "mylib";
+    String function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
+
+    jedis.functionLoad(engine, library, function);
+//    jedis.fcall("myfunc", new ArrayList<>(), new ArrayList<>());
+//    assertEquals("OK", jedis.functionKill());
   }
 
   @Test

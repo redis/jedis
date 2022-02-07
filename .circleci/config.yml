@@ -63,6 +63,8 @@ jobs:
   test-modules:
     docker:
       - image: cimg/openjdk:8.0
+      - image: redislabs/redismod:edge
+          name: mod
 
     environment:
       JVM_OPTS: -Xmx3200m
@@ -84,7 +86,7 @@ jobs:
             - ~/.m2
           key: jedis-{{ checksum "pom.xml" }}
 
-      - run: mvn '-Dtest=redis.clients.jedis.modules.*Test' test
+      - run: mvn '-DmodulesDockerName=mod' '-Dtest=redis.clients.jedis.modules.*Test' test
 
   build_and_deploy:
     docker:

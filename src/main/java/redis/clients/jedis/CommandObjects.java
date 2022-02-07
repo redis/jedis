@@ -2705,12 +2705,12 @@ public class CommandObjects {
 
   public final CommandObject<byte[]> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
     return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size()).add(keys).add(args),
-            BuilderFactory.BINARY);
+        BuilderFactory.BINARY);
   }
 
   public final CommandObject<byte[]> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
     return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keys.size()).add(keys).add(args),
-            BuilderFactory.BINARY);
+        BuilderFactory.BINARY);
   }
 
   public final CommandObject<String> functionDelete(byte[] libraryName) {

@@ -15,6 +15,8 @@ import org.json.JSONObject;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.*;
+import redis.clients.jedis.bloom.*;
+import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
@@ -3238,9 +3240,177 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<String>> tsQueryIndex(String... filters) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.QUERYINDEX).addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.QUERYINDEX)
+        .addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
   }
   // RedisTimeSeries commands
+
+  // RedisBloom commands
+  public final CommandObject<String> bfReserve(String key, double errorRate, long capacity) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.RESERVE).key(key)
+        .add(errorRate).add(capacity), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> bfReserve(String key, double errorRate, long capacity, BFReserveParams reserveParams) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.RESERVE).key(key)
+        .add(errorRate).add(capacity).addParams(reserveParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Boolean> bfAdd(String key, String item) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.ADD).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> bfMAdd(String key, String... items) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.MADD).key(key).
+        addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> bfInsert(String key, String... items) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.INSERT).key(key)
+        .add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_WITH_ERROR_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> bfInsert(String key, BFInsertParams insertParams, String... items) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.INSERT).key(key).addParams(insertParams)
+        .add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_WITH_ERROR_LIST);
+  }
+
+  public final CommandObject<Boolean> bfExists(String key, String item) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.EXISTS).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> bfMExists(String key, String... items) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.MEXISTS).key(key).
+        addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<Map<String, Object>> bfInfo(String key) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+
+  public final CommandObject<String> cfReserve(String key, long capacity) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.RESERVE).key(key).add(capacity), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> cfReserve(String key, long capacity, CFReserveParams reserveParams) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.RESERVE).key(key).add(capacity).addParams(reserveParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Boolean> cfAdd(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.ADD).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> cfAddNx(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.ADDNX).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> cfInsert(String key, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INSERT).key(key)
+        .add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> cfInsert(String key, CFInsertParams insertParams, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INSERT).key(key)
+        .addParams(insertParams).add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> cfInsertNx(String key, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INSERTNX).key(key)
+        .add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> cfInsertNx(String key, CFInsertParams insertParams, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INSERTNX).key(key)
+        .addParams(insertParams).add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<Boolean> cfExists(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.EXISTS).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> cfDel(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.DEL).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> cfCount(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.COUNT).key(key).add(item), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Map<String, Object>> cfInfo(String key) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+
+  public final CommandObject<String> cmsInitByDim(String key, long width, long depth) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYDIM).key(key).add(width).add(depth), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> cmsInitByProb(String key, double error, double probability) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error).add(probability), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
+    CommandArguments args = commandArguments(CountMinSketchCommand.INCRBY).key(key);
+    itemIncrements.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> cmsQuery(String key, String... items) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.QUERY).key(key).addObjects((Object[]) items), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<String> cmsMerge(String destKey, String... keys) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.MERGE).key(destKey)
+        .add(keys.length).keys((Object[]) keys), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> cmsMerge(String destKey, Map<String, Long> keysAndWeights) {
+    CommandArguments args = commandArguments(CountMinSketchCommand.MERGE).key(destKey);
+    args.add(keysAndWeights.size());
+    keysAndWeights.entrySet().forEach(entry -> args.key(entry.getKey()));
+    args.add(RedisBloomKeyword.WEIGHTS);
+    keysAndWeights.entrySet().forEach(entry -> args.add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, Object>> cmsInfo(String key) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+
+  public final CommandObject<String> topkReserve(String key, long topk) {
+    return new CommandObject<>(commandArguments(TopKCommand.RESERVE).key(key).add(topk), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> topkReserve(String key, long topk, long width, long depth, double decay) {
+    return new CommandObject<>(commandArguments(TopKCommand.RESERVE).key(key).add(topk)
+        .add(width).add(depth).add(decay), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<String>> topkAdd(String key, String... items) {
+    return new CommandObject<>(commandArguments(TopKCommand.ADD).key(key).addObjects((Object[]) items), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> topkIncrBy(String key, Map<String, Long> itemIncrements) {
+    CommandArguments args = commandArguments(TopKCommand.INCRBY).key(key);
+    itemIncrements.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> topkQuery(String key, String... items) {
+    return new CommandObject<>(commandArguments(TopKCommand.QUERY).key(key).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Long>> topkCount(String key, String... items) {
+    return new CommandObject<>(commandArguments(TopKCommand.COUNT).key(key).addObjects((Object[]) items), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<String>> topkList(String key) {
+    return new CommandObject<>(commandArguments(TopKCommand.LIST).key(key), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<Map<String, Object>> topkInfo(String key) {
+    return new CommandObject<>(commandArguments(TopKCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+  // RedisBloom commands
 
   private static final Gson GSON = new Gson();
 

@@ -1,12 +1,7 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,9 +14,12 @@ import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.RestorePolicy;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisNoScriptException;
+import redis.clients.jedis.params.FunctionLoadParams;
+import redis.clients.jedis.resps.LibraryInfo;
 import redis.clients.jedis.util.ClientKillerUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -313,6 +311,121 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertEquals(true, deadClient.isBroken());
 
     deadClient.close();
+  }
+
+  @Test
+  public void functionLoadAndDelete() {
+    jedis.functionFlush();
+    String engine = "Lua";
+    String library = "mylib";
+    String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
+
+    assertEquals("OK", jedis.functionLoad(engine, library, function));
+    assertEquals("OK", jedis.functionLoad(engine, library, new FunctionLoadParams().replace(), function));
+//    assertEquals("OK", jedis.functionLoad(engine, library, new FunctionLoadParams().libraryDescription(""), function));
+
+    jedis.functionDelete(library);
+
+    // Binary
+    assertEquals("OK", jedis.functionLoad(engine.getBytes(), library.getBytes(), function.getBytes()));
+    assertEquals("OK", jedis.functionLoad(engine.getBytes(), library.getBytes(), new FunctionLoadParams().replace(), function.getBytes()));
+
+    jedis.functionDelete(library.getBytes());
+  }
+
+  @Test
+  public void functionFlush() {
+    jedis.functionFlush();
+    String engine = "Lua";
+    String library = "mylib";
+    String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
+
+    assertEquals("OK", jedis.functionLoad(engine, library, function));
+    jedis.functionFlush();
+    assertEquals("OK", jedis.functionLoad(engine, library, function));
+    jedis.functionFlush(FlushMode.ASYNC);
+    assertEquals("OK", jedis.functionLoad(engine, library, function));
+    jedis.functionFlush(FlushMode.SYNC);
+  }
+
+  @Test
+  public void functionList() {
+    jedis.functionFlush();
+    String engine = "LUA";
+    String library = "mylib";
+    String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
+    jedis.functionLoad(engine, library, function);
+
+    LibraryInfo response = jedis.functionList().get(0);
+    assertEquals(library, response.getName());
+    assertEquals(engine, response.getEngine());
+    assertNull(response.getDescription());
+    assertEquals(1, response.getFunctions().length);
+
+    // check function info
+    LibraryInfo.FunctionInfo func = response.getFunctions()[0];
+    assertEquals("name", func.getName());
+    assertEquals("myfunc", func.getDescription());
+    assertNull(func.getFlags());
+
+    // check WITHCODE
+    response = jedis.functionListWithCode().get(0);
+    assertEquals(function, response.getCode());
+
+    // check with LIBRARYNAME
+    response = jedis.functionList(library).get(0);
+    assertEquals(library, response.getName());
+
+    // check with code and with LIBRARYNAME
+    response = jedis.functionListWithCode(library).get(0);
+    assertEquals(library, response.getName());
+    assertEquals(function, response.getCode());
+
+    // Binary
+    response = jedis.functionList(library.getBytes()).get(0);
+    assertEquals(library, response.getName());
+
+    response = jedis.functionListWithCode(library.getBytes()).get(0);
+    assertEquals(library, response.getName());
+  }
+
+  @Test
+  public void functionDumpRestore() {
+    jedis.functionFlush();
+    String engine = "Lua";
+    String library = "mylib";
+    String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
+
+    jedis.functionLoad(engine, library, function);
+    byte[] payload = jedis.functionDump();
+    jedis.functionFlush();
+    assertEquals("OK", jedis.functionRestore(payload));
+    jedis.functionFlush();
+    assertEquals("OK", jedis.functionRestore(payload, RestorePolicy.FLUSH));
+    jedis.functionFlush();
+    assertEquals("OK", jedis.functionRestore(payload, RestorePolicy.APPEND));
+    jedis.functionFlush();
+    assertEquals("OK", jedis.functionRestore(payload, RestorePolicy.REPLACE));
+    jedis.functionFlush();
+  }
+
+  @Test
+  public void fcall() {
+    jedis.functionFlush();
+    String engine = "Lua";
+    String library = "mylib";
+    String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
+
+    jedis.functionLoad(engine, library, function);
+    List<String> args = new ArrayList<>();
+    args.add("hello");
+    assertNotNull(jedis.fcall("myfunc", new ArrayList<>(), args));
+//    assertNotNull(jedis.fcallReadonly("myfunc", new ArrayList<>(), args));
+
+    List<byte[]> bargs = new ArrayList<>();
+    bargs.add("hello".getBytes());
+    assertNotNull(jedis.fcall("myfunc".getBytes(), new ArrayList<>(), bargs));
+//    assertNotNull(jedis.fcallReadonly("myfunc".getBytes(), new ArrayList<>(), bargs));
   }
 
   private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {

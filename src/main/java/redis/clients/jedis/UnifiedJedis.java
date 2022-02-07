@@ -2985,6 +2985,116 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public Object evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     return executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
+
+  @Override
+  public byte[] fcall(String name, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public byte[] fcallReadonly(String name, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public String functionDelete(String libraryName) {
+    return executeCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public String functionFlush() {
+    return executeCommand(commandObjects.functionFlush());
+  }
+
+  @Override
+  public String functionFlush(FlushMode mode) {
+    return executeCommand(commandObjects.functionFlush(mode));
+  }
+
+  @Override
+  public String functionKill() {
+    return executeCommand(commandObjects.functionKill());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList() {
+    return executeCommand(commandObjects.functionList());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList(String libraryNamePattern) {
+    return executeCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode() {
+    return executeCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode(String libraryNamePattern) {
+    return executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public String functionLoad(String engineName, String libraryName, String functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public String functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public byte[] fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public byte[] fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public String functionDelete(byte[] libraryName) {
+    return executeCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public byte[] functionDump() {
+    return executeCommand(commandObjects.functionDump());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList(byte[] libraryNamePattern) {
+    return executeCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode(byte[] libraryNamePattern) {
+    return executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public String functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public String functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public String functionRestore(byte[] serializedValue) {
+    return executeCommand(commandObjects.functionRestore(serializedValue));
+  }
+
+  @Override
+  public String functionRestore(byte[] serializedValue, RestorePolicy policy) {
+    return executeCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
   // Scripting commands
 
   // Other key commands

@@ -2648,6 +2648,106 @@ public class CommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
+  public final CommandObject<byte[]> fcall(String name, List<String> keys, List<String> args) {
+    return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size()).add(keys).add(args),
+        BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<byte[]> fcallReadonly(String name, List<String> keys, List<String> args) {
+    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keys.size()).add(keys).add(args),
+        BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<String> functionDelete(String libraryName) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName),
+        BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionList() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionList(String libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionListWithCode() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<String> functionLoad(String engineName, String libraryName, String functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
+        .add(libraryName).add(functionCode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
+        .add(libraryName).addParams(params).add(functionCode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionFlush() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(FLUSH), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionFlush(FlushMode mode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(FLUSH).add(mode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionKill() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(KILL), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size()).add(keys).add(args),
+            BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<byte[]> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keys.size()).add(keys).add(args),
+            BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<String> functionDelete(byte[] libraryName) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName),
+        BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> functionDump() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(DUMP), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionList(byte[] libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionListWithCode(byte[] libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
+        .add(libraryName).add(functionCode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
+        .add(libraryName).addParams(params).add(functionCode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionRestore(byte[] serializedValue) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(RESTORE).add(serializedValue),
+        BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionRestore(byte[] serializedValue, RestorePolicy policy) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(RESTORE).add(serializedValue)
+        .processKey(policy.getRaw()), BuilderFactory.STRING);
+  }
+
   public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {
     return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
         .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);

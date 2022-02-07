@@ -1382,6 +1382,39 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<List<LibraryInfo>> LIBRARY_LIST = new Builder<List<LibraryInfo>>() {
+    @Override
+    public List<LibraryInfo> build(Object data) {
+      List<LibraryInfo> list = new ArrayList<>();
+      List<Object> liblist = (List<Object>) data;
+
+      for (Object libdata : liblist) {
+        if (data == null) {
+          return null;
+        }
+
+        List<Object> objectList = (List<Object>) libdata;
+        String libname = STRING.build(objectList.get(1));
+        String engine = STRING.build(objectList.get(3));
+        String desc = STRING.build(objectList.get(5));
+        List<List<Object>> rawFunctions = (List<List<Object>>) objectList.get(7);
+        LibraryInfo.FunctionInfo[] functions = new LibraryInfo.FunctionInfo[rawFunctions.size()];
+        int i = 0;
+        for (List<Object> object : rawFunctions) {
+          functions[i++] = new LibraryInfo.FunctionInfo(STRING.build(object.get(0)), STRING.build(object.get(1)), null);
+        }
+        String code = null;
+        if (objectList.size() > 8) {
+          code = STRING.build(objectList.get(9));
+        }
+
+        list.add(new LibraryInfo(libname, engine, desc, functions, code));
+      }
+
+      return list;
+    }
+  };
+
   public static final Builder<Class<?>> JSON_TYPE = new Builder<Class<?>>() {
     @Override
     public Class<?> build(Object data) {

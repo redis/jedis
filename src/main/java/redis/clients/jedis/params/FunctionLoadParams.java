@@ -4,7 +4,7 @@ import static redis.clients.jedis.Protocol.Keyword.REPLACE;
 import static redis.clients.jedis.Protocol.Keyword.DESC;
 import redis.clients.jedis.CommandArguments;
 
-public class FunctionLoadParams implements IParams{
+public class FunctionLoadParams implements IParams {
     private boolean replace = false;
     private String description;
 

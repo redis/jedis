@@ -1418,8 +1418,8 @@ public final class BuilderFactory {
       if (data == null) {
         return null;
       }
-      List<LibraryInfo> list = new ArrayList<>();
-      List<Object> liblist = (List<Object>) data;
+      List<Object> libList = (List<Object>) data;
+      List<LibraryInfo> list = new ArrayList<>(libList.size());
 
       for (Object libData : libList) {
 

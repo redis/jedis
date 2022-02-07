@@ -1423,7 +1423,7 @@ public final class BuilderFactory {
 
       for (Object libData : libList) {
 
-        List<Object> objectList = (List<Object>) libdata;
+        List<Object> objectList = (List<Object>) libData;
         String libname = STRING.build(objectList.get(1));
         String engine = STRING.build(objectList.get(3));
         String desc = STRING.build(objectList.get(5));

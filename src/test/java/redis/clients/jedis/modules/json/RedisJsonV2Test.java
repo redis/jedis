@@ -221,6 +221,17 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void clearScalar() {
+    client.jsonSet("foobar", ROOT_PATH, gson.toJson(new FooBarObject()));
+
+    Path2 strPath = Path2.of(".foo");
+    assertJsonArrayEquals(singletonJSONArray("bar"), client.jsonGet("foobar", strPath));
+
+    assertEquals(1L, client.jsonClear("foobar", strPath));
+    assertJsonArrayEquals(singletonJSONArray(""), client.jsonGet("foobar", strPath));
+  }
+
+  @Test
   public void clearArray() {
     client.jsonSet("foobar", ROOT_PATH, gson.toJson(new FooBarObject()));
 
@@ -229,11 +240,6 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
     assertEquals(1L, client.jsonClear("foobar", arrPath));
     assertEquals(singletonList(0L), client.jsonArrLen("foobar", arrPath));
-
-    // ignore non-array
-    Path2 strPath = Path2.of(".foo");
-    assertEquals(0L, client.jsonClear("foobar", strPath));
-    assertJsonArrayEquals(singletonJSONArray("bar"), client.jsonGet("foobar", strPath));
   }
 
   @Test

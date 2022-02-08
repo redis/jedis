@@ -187,6 +187,36 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<Boolean>> BOOLEAN_WITH_ERROR_LIST = new Builder<List<Boolean>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Boolean> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      List<Object> longs = (List<Object>) data;
+      List<Boolean> booleans = new ArrayList<>(longs.size());
+      for (Object value : longs) {
+        Boolean bool = null;
+        if (value != null && value instanceof Long) {
+          long longValue = (Long) value;
+          if (longValue == 1L) {
+            bool = Boolean.TRUE;
+          } else if (longValue == 0L) {
+            bool = Boolean.FALSE;
+          }
+        }
+        booleans.add(bool);
+      }
+      return booleans;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Boolean>";
+    }
+  };
+
   public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
     @Override
     public byte[] build(Object data) {

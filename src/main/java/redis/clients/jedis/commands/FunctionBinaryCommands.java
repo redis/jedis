@@ -8,6 +8,13 @@ import java.util.List;
 
 public interface FunctionBinaryCommands {
 
+/**
+   * Invoke a function.
+   * @param name
+   * @param keys
+   * @param args
+   * @return
+   */
   byte[] fcall(byte[] name, List<byte[]> keys, List<byte[]> args);
 
   byte[] fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args);

@@ -83,7 +83,5 @@ public interface FunctionBinaryCommands {
    * @return OK
    */
   String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy);
-
-//  functionStat
     
 }

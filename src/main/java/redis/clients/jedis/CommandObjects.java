@@ -2691,6 +2691,10 @@ public class CommandObjects {
         .add(libraryName).addParams(params).add(functionCode), BuilderFactory.STRING);
   }
 
+  public final CommandObject<FunctionStatus> functionStats() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(STATS), BuilderFactory.FUNCTION_STATUS);
+  }
+
   public final CommandObject<String> functionFlush() {
     return new CommandObject<>(commandArguments(FUNCTION).add(FLUSH), BuilderFactory.STRING);
   }

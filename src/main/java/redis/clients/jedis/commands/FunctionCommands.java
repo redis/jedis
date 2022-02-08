@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.FunctionLoadParams;
+import redis.clients.jedis.resps.FunctionStatus;
 import redis.clients.jedis.resps.LibraryInfo;
 
 import java.util.List;
@@ -101,6 +102,11 @@ public interface FunctionCommands {
    */
   String functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode);
 
-//    functionStat
+  /**
+   * Return information about the function that's currently running and information
+   * about the available execution engines.
+   * @return {@link FunctionStatus}
+   */
+  FunctionStatus functionStats();
 
 }

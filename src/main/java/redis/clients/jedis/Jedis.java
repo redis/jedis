@@ -8700,6 +8700,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public FunctionStatus functionStats() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionStats());
+  }
+
+  @Override
   public String functionFlush() {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.functionFlush());

@@ -25,6 +25,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.jedis.params.FunctionLoadParams;
+import redis.clients.jedis.resps.FunctionStatus;
 import redis.clients.jedis.resps.LibraryInfo;
 import redis.clients.jedis.util.ClientKillerUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -412,6 +413,29 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.functionFlush();
     assertEquals("OK", jedis.functionRestore(payload, FunctionRestorePolicy.REPLACE));
     jedis.functionFlush();
+  }
+
+  @Test
+  public void functionStats() {
+    jedis.functionFlush();
+    String engine = "Lua";
+    String library = "mylib";
+    String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
+
+    jedis.functionLoad(engine, library, function);
+    FunctionStatus stats = jedis.functionStats();
+    assertNull(stats.getScript());
+    assertEquals(1, stats.getEngines().size());
+
+    // Now try with running script
+    jedis.functionFlush();
+    function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
+
+//    jedis.functionLoad(engine, library, function);
+//    jedis.fcall("myfunc", new ArrayList<>(), new ArrayList<>());
+//    stats = jedis.functionStats();
+//    assertNotNull(stats.getScript());
+//    assertEquals("myfunc", stats.getScript().getName());
   }
 
   @Test

@@ -3056,6 +3056,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public FunctionStatus functionStats() {
+    return executeCommand(commandObjects.functionStats());
+  }
+
+  @Override
   public byte[] fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
     return executeCommand(commandObjects.fcall(name, keys, args));
   }

@@ -1444,6 +1444,31 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<FunctionStatus> FUNCTION_STATUS = new Builder<FunctionStatus>() {
+    @Override
+    public FunctionStatus build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> objectList = (List<Object>) data;
+
+      List<Object> rawScript = (List<Object>) objectList.get(1);
+      FunctionStatus.ScriptInfo script = null;
+
+      if (rawScript != null) {
+        String name = STRING.build(rawScript.get(1));
+        List<String> command = STRING_LIST.build(rawScript.get(3));
+        long duration = LONG.build(rawScript.get(5));
+
+        script = new FunctionStatus.ScriptInfo(name, command, duration);
+      }
+
+      List<String> engines = STRING_LIST.build(objectList.get(3));
+      return new FunctionStatus(script, engines);
+    }
+  };
+
   public static final Builder<Class<?>> JSON_TYPE = new Builder<Class<?>>() {
     @Override
     public Class<?> build(Object data) {

@@ -428,8 +428,8 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, stats.getEngines().size());
 
     // Now try with running script
-    jedis.functionFlush();
-    function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
+//    jedis.functionFlush();
+//    function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
 
 //    jedis.functionLoad(engine, library, function);
 //    jedis.fcall("myfunc", new ArrayList<>(), new ArrayList<>());

@@ -3,6 +3,7 @@ package redis.clients.jedis.resps;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.awt.*;
+import java.util.ArrayList;
 
 /**
  * This class is used to represent a List element when it is returned with respective key name.
@@ -20,13 +21,13 @@ public class KeyedListElement {
   public KeyedListElement(String key, String element) {
     this.key = key;
     this.element = element;
-    this.elementList = null;
+    this.elementList = new List();
   }
 
   public KeyedListElement(String key, List elementList) {
     this.key = key;
     this.elementList = elementList;
-    this.element = null;
+    this.element = "";
   }
 
   public String getKey() {

@@ -8852,6 +8852,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String memoryPurge() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(MEMORY, PURGE);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public Map<String, Object> memoryStats() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.memoryStats());
+  }
+
+  @Override
   public String lolwut() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(LOLWUT);

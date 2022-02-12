@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The interface about Redis management command
@@ -92,5 +93,19 @@ public interface ControlCommands extends AccessControlLogCommands, ClientCommand
    * @return The memory usage in bytes, or {@code nil} when the key does not exist
    */
   Long memoryUsage(String key, int samples);
+
+  /**
+   * Attempts to purge dirty pages so these can be reclaimed by the allocator.
+   *
+   * @return OK
+   */
+  String memoryPurge();
+
+  /**
+   * Returns an Array reply about the memory usage of the server.
+   *
+   * @return nested list of memory usage metrics and their values
+   */
+  Map<String, Object> memoryStats();
 
 }

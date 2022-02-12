@@ -8,6 +8,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -16,6 +17,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -401,5 +403,17 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertTrue(usage <= 190);
 
     assertNull(jedis.memoryUsage("roo", 2));
+  }
+
+  @Test
+  public void memoryPurge() {
+     String memoryPurge = jedis.memoryPurge();
+     Assert.assertNotNull(memoryPurge);
+  }
+
+  @Test
+  public void memoryStats() {
+    Map<String, Object> stats = jedis.memoryStats();
+    Assert.assertNotNull(stats);
   }
 }

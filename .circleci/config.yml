@@ -60,6 +60,34 @@ jobs:
 
       - run: bash <(curl -s https://codecov.io/bash) -t ${CODECOV_TOKEN}
 
+  test-modules:
+    docker:
+      - image: cimg/openjdk:8.0
+      - image: redislabs/redismod:edge
+        name: mod
+
+    environment:
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+    steps:
+      - abort_for_docs
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - jedis-{{ checksum "pom.xml" }}
+
+      - run: mvn dependency:go-offline
+
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: jedis-{{ checksum "pom.xml" }}
+
+      - run: mvn -DmodulesDocker="mod:6379" -Dtest="redis.clients.jedis.modules.**" test
+
   build_and_deploy:
     docker:
       - image: cimg/openjdk:8.0
@@ -94,4 +122,6 @@ workflows:
           requires:
             - build-linux-8-jdk
       - build-linux-8-jdk:
+          <<: *on-all-branches
+      - test-modules:
           <<: *on-all-branches

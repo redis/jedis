@@ -82,16 +82,12 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, List<String>>> STRING_LIST_MAP = new Builder<Map<String, List<String>>>() {
+  public static final Builder<KeyedListValueElements<String,String>> KEY_LIST_VALUE_ELEMENT = new Builder<KeyedListValueElements<String, String>>() {
     @Override
-    public Map<String, List<String>> build(Object data) {
+    public KeyedListValueElements<String, String> build(Object data) {
+      if(Objects.isNull(data)) return null;
       final List list = (List) data;
-      final Map<String, List<String>> map = new HashMap<>(list.size() / 2, 1);
-      final Iterator iterator = list.iterator();
-      while (iterator.hasNext()) {
-        map.put(STRING.build(iterator.next()), STRING_LIST.build(iterator.next()));
-      }
-      return map;
+      return new KeyedListValueElements<>( STRING.build(list.get(0)), STRING_LIST.build(list.get(1)));
     }
   };
 

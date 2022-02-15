@@ -5929,7 +5929,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Map<String, List<String>> lmpop(ListDirection listDirection,int count, String... keys){
+  public KeyedListValueElements<String,String> lmpop(ListDirection listDirection,int count, String... keys){
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.lmpop(listDirection,count, keys));
   }

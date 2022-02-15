@@ -251,7 +251,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Map<String, List<String>> lmpop(ListDirection listDirection,int count, String... keys){
+  public KeyedListValueElements<String,String> lmpop(ListDirection listDirection,int count, String... keys){
     return executeCommand(commandObjects.lmpop(listDirection,count, keys));
   }
 

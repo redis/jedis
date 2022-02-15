@@ -7,6 +7,7 @@ import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
+import redis.clients.jedis.resps.KeyedListValueElements;
 
 public interface ListCommands {
 
@@ -238,7 +239,7 @@ public interface ListCommands {
    */
   String rpop(String key);
 
-  Map<String, List<String>> lmpop(ListDirection listDirection, int count, String... key);
+  KeyedListValueElements<String,String> lmpop(ListDirection listDirection, int count, String... key);
 
   Map<Object, byte[]> lmpop(ListDirection listDirection, int count, byte[]... key);
 

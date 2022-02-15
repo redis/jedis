@@ -23,6 +23,7 @@ import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
+import redis.clients.jedis.resps.KeyedListValueElements;
 
 public class ListCommandsTest extends JedisCommandsTestBase {
 
@@ -878,7 +879,22 @@ public class ListCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void lmpop(){
-    jedis.lpush("foo", "bar", "foo");
-    jedis.lmpop(ListDirection.LEFT,1,"foo");
+    KeyedListValueElements keyedListValueElements;
+    assertEquals(null,jedis.lmpop(ListDirection.LEFT,10,"non1", "non2"));
+    jedis.lpush("mylist", "one", "two", "three","four","five");
+    keyedListValueElements = jedis.lmpop(ListDirection.LEFT,1,"mylist");
+    assertEquals("mylist",keyedListValueElements.getKey());
+    assertEquals(Arrays.asList("five"), keyedListValueElements.getElements());
+    keyedListValueElements = jedis.lmpop(ListDirection.RIGHT,10,"mylist");
+    assertEquals(Arrays.asList("one", "two", "three","four"), keyedListValueElements.getElements());
+    jedis.lpush("mylist", "one", "two", "three","four","five");
+    jedis.lpush("mylist2", "a", "b", "c","d","e");
+    keyedListValueElements = jedis.lmpop(ListDirection.RIGHT,3,"mylist","mylist2");
+    assertEquals(Arrays.asList("one", "two", "three"), keyedListValueElements.getElements());
+    keyedListValueElements = jedis.lmpop(ListDirection.RIGHT,5,"mylist","mylist2");
+    assertEquals(Arrays.asList("four","five"), keyedListValueElements.getElements());
+    keyedListValueElements = jedis.lmpop(ListDirection.RIGHT,10,"mylist","mylist2");
+    assertEquals("mylist2",keyedListValueElements.getKey());
+    assertEquals(Arrays.asList("a", "b", "c","d","e"), keyedListValueElements.getElements());
   }
 }

@@ -728,8 +728,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(LREM).key(key).add(count).add(value), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Map<String, List<String>>> lmpop(ListDirection listDirection, int count,String... keys) {
-    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).addObjects((Object[]) keys).add(listDirection.name()).add("COUNT").add(count), BuilderFactory.STRING_LIST_MAP);
+  public final CommandObject<KeyedListValueElements<String, String>> lmpop(ListDirection listDirection, int count,String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).addObjects((Object[]) keys).add(listDirection.name()).add("COUNT").add(count), BuilderFactory.KEY_LIST_VALUE_ELEMENT);
   }
 
   public final CommandObject<Map<Object, byte[]>> lmpop(ListDirection listDirection, int count, byte[]... keys) {

@@ -414,6 +414,6 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void memoryStats() {
     Map<String, Object> stats = jedis.memoryStats();
-    Assert.assertNotNull(stats);
+    assertNotNull(stats);
   }
 }

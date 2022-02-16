@@ -8861,7 +8861,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public Map<String, Object> memoryStats() {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.memoryStats());
+    connection.sendCommand(MEMORY, STATS);
+    return BuilderFactory.ENCODED_OBJECT_MAP.build(connection.getOne());
   }
 
   @Override

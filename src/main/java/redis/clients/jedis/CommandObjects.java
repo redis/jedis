@@ -2740,10 +2740,6 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(SAMPLES).add(samples), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Map<String, Object>> memoryStats() {
-    return new CommandObject<>(commandArguments(MEMORY).add(STATS), BuilderFactory.ENCODED_OBJECT_MAP);
-  }
-
   public final CommandObject<Long> objectRefcount(String key) {
     return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), BuilderFactory.LONG);
   }

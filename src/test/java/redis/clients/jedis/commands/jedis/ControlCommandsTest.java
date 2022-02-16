@@ -408,7 +408,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void memoryPurge() {
      String memoryPurge = jedis.memoryPurge();
-     Assert.assertNotNull(memoryPurge);
+     assertNotNull(memoryPurge);
   }
 
   @Test

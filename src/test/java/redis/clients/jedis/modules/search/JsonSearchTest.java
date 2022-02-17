@@ -127,7 +127,10 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void parseJson() {
-    Schema schema = new Schema();
+    Schema schema = new Schema()
+        .addField(new TextField(FieldName.of("$.first").as("first")))
+        .addField(new TextField(FieldName.of("$.last")))
+        .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), schema));
@@ -144,7 +147,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1, sr.getTotalResults());
 
     Document doc = sr.getDocuments().get(0);
-    assertEquals(Double.POSITIVE_INFINITY, doc.getScore(), 0);
+    assertEquals(1.0, doc.getScore(), 0);
     assertNull(doc.getPayload());
     assertEquals(json.toString(), doc.get(JSON_ROOT));
 
@@ -165,7 +168,10 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void parseJsonPartial() {
-    Schema schema = new Schema();
+    Schema schema = new Schema()
+                .addField(new TextField(FieldName.of("$.first").as("first")))
+                .addField(new TextField(FieldName.of("$.last")))
+                .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), schema));
@@ -197,7 +203,10 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void parseJsonPartialWithFieldNames() {
-    Schema schema = new Schema();
+    Schema schema = new Schema()
+                .addField(new TextField(FieldName.of("$.first").as("first")))
+                .addField(new TextField(FieldName.of("$.last")))
+                .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), schema));

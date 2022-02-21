@@ -8,7 +8,6 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8802,7 +8801,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String moduleLoad(String path, String... args) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, LOAD.name(), path, Arrays.toString(args));
+    String[] newArgs = new String[args.length + 2];
+    newArgs[0] = LOAD.name();
+    newArgs[1] = path;
+    System.arraycopy(args, 0, newArgs, 2, args.length);
+
+    connection.sendCommand(MODULE, newArgs);
     return connection.getStatusCodeReply();  }
 
   @Override

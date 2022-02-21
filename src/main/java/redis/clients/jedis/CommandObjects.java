@@ -2273,6 +2273,11 @@ public class CommandObjects {
         .key(key).add(groupname), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> xgroupCreateConsumer(String key, String groupname, String consumername) {
+    return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
+        .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
     return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
         .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
@@ -2295,11 +2300,15 @@ public class CommandObjects {
         .key(key).add(groupname), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
-    return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
-        .key(key).add(groupname).add(consumerName), BuilderFactory.LONG);
+  public final CommandObject<Long> xgroupCreateConsumer(byte[] key, byte[] groupname, byte[] consumername) {
+    return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
+        .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername) {
+    return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
+        .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
+  }
   public final CommandObject<Long> xdel(String key, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
   }

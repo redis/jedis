@@ -31,6 +31,8 @@ public interface StreamBinaryCommands {
 
   long xgroupDestroy(byte[] key, byte[] groupname);
 
+  long xgroupCreateConsumer(byte[] key, byte[] groupname, byte[] consumerName);
+
   long xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName);
 
   long xdel(byte[] key, byte[]... ids);

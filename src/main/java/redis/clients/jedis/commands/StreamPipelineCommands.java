@@ -130,6 +130,14 @@ public interface StreamPipelineCommands {
   Response<Long> xgroupDestroy(String key, String groupname);
 
   /**
+   * XGROUP CREATECONSUMER <key> <groupname> <consumername>
+   * @param key
+   * @param groupname
+   * @param consumername
+   */
+  Response<Long> xgroupCreateConsumer( String key, String groupname, String consumername);
+
+  /**
    * XGROUP DELCONSUMER <key> <groupname> <consumername>
    * @param key
    * @param groupname

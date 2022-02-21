@@ -4627,6 +4627,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
+  }
+
+  @Override
   public long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xgroupDelConsumer(key, consumer, consumerName));
@@ -8977,6 +8983,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long xgroupDestroy(final String key, final String groupname) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xgroupDestroy(key, groupname));
+  }
+
+  @Override
+  public long xgroupCreateConsumer(String key, String groupName, String consumerName) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
   }
 
   @Override

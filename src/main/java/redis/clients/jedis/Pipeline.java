@@ -1434,6 +1434,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Long> xgroupCreateConsumer(String key, String groupname, String consumername) {
+    return appendCommand(commandObjects.xgroupCreateConsumer(key, groupname, consumername));
+  }
+
+  @Override
   public Response<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
     return appendCommand(commandObjects.xgroupDelConsumer(key, groupname, consumername));
   }
@@ -2818,6 +2823,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<Long> xgroupDestroy(byte[] key, byte[] groupname) {
     return appendCommand(commandObjects.xgroupDestroy(key, groupname));
+  }
+
+  @Override
+  public Response<Long> xgroupCreateConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
+    return appendCommand(commandObjects.xgroupCreateConsumer(key, groupname, consumerName));
   }
 
   @Override

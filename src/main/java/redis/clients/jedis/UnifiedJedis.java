@@ -2671,6 +2671,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long xgroupCreateConsumer(String key, String groupname, String consumername) {
+    return executeCommand(commandObjects.xgroupCreateConsumer(key, groupname, consumername));
+  }
+
+  @Override
   public long xgroupDelConsumer(String key, String groupname, String consumername) {
     return executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumername));
   }
@@ -2815,6 +2820,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long xgroupDestroy(byte[] key, byte[] groupname) {
     return executeCommand(commandObjects.xgroupDestroy(key, groupname));
+  }
+
+  @Override
+  public long xgroupCreateConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
+    return executeCommand(commandObjects.xgroupCreateConsumer(key, groupname, consumerName));
   }
 
   @Override

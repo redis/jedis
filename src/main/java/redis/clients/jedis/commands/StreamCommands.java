@@ -129,12 +129,20 @@ public interface StreamCommands {
   long xgroupDestroy(String key, String groupname);
 
   /**
+   * XGROUP CREATECONSUMER <key> <groupname> <consumername>
+   * @param key
+   * @param groupname
+   * @param consumername
+   */
+  long xgroupCreateConsumer(String key, String groupname, String consumername);
+
+  /**
    * XGROUP DELCONSUMER <key> <groupname> <consumername>
    * @param key
    * @param groupname
    * @param consumername
    */
-  long xgroupDelConsumer( String key, String groupname, String consumername);
+  long xgroupDelConsumer(String key, String groupname, String consumername);
 
   /**
    * XPENDING key group

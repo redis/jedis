@@ -34,6 +34,8 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Long> xgroupDestroy(byte[] key, byte[] groupname);
 
+  Response<Long> xgroupCreateConsumer(byte[] key, byte[] groupname, byte[] consumerName);
+
   Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName);
 
   Response<Long> xdel(byte[] key, byte[]... ids);

@@ -3811,6 +3811,120 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
         .add(Protocol.Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING));
   }
 
+  @Override
+  public Response<byte[]> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Response<byte[]> fcall(String name, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Response<byte[]> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public Response<byte[]> fcallReadonly(String name, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public Response<String> functionDelete(byte[] libraryName) {
+    return appendCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public Response<String> functionDelete(String libraryName) {
+    return appendCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public Response<byte[]> functionDump() {
+    return appendCommand(commandObjects.functionDump());
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList(byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList(String libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList() {
+    return appendCommand(commandObjects.functionList());
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode(byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode() {
+    return appendCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(String engineName, String libraryName, String functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public Response<String> functionRestore(byte[] serializedValue) {
+    return appendCommand(commandObjects.functionRestore(serializedValue));
+  }
+
+  @Override
+  public Response<String> functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
+    return appendCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Response<String> functionFlush() {
+    return appendCommand(commandObjects.functionFlush());
+  }
+
+  @Override
+  public Response<String> functionFlush(FlushMode mode) {
+    return appendCommand(commandObjects.functionFlush(mode));
+  }
+
+  @Override
+  public Response<String> functionKill() {
+    return appendCommand(commandObjects.functionKill());
+  }
+  @Override
+  public Response<FunctionStatus> functionStats() {
+    return appendCommand(commandObjects.functionStats());
+  }
+
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));
   }

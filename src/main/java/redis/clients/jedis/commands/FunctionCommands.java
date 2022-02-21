@@ -31,6 +31,7 @@ public interface FunctionCommands {
    * @return OK
    */
   String functionDelete(String libraryName);
+
   /**
    * Deletes all the libraries, unless called with the optional mode argument, the
    * 'lazyfree-lazy-user-flush' configuration directive sets the effective behavior.

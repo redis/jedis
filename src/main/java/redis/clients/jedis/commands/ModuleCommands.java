@@ -7,6 +7,8 @@ public interface ModuleCommands {
 
   String moduleLoad(String path);
 
+  String moduleLoad(String path, String... args);
+
   String moduleUnload(String name);
 
   List<Module> moduleList();

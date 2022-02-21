@@ -31,6 +31,7 @@ public class ModuleTest extends JedisCommandsTestBase {
   @Test
   public void testModules() {
     assertEquals("OK", jedis.moduleLoad("/tmp/testmodule.so"));
+    assertEquals("OK", jedis.moduleLoad("/tmp/testmodule.so", ""));
 
     List<Module> modules = jedis.moduleList();
 

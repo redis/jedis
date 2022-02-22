@@ -691,6 +691,94 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<CommandDocs>> COMMAND_DOCS_RESPONSE = new Builder<List<CommandDocs>>() {
+    @Override
+    public List<CommandDocs> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      List<CommandDocs> list = new ArrayList<>(rawList.size());
+
+      for (int i = 0; i < rawList.size();) {
+        String name = STRING.build(rawList.get(i++));
+        List<Object> commandData = (List<Object>) rawList.get(i++);
+        String summary = STRING.build(commandData.get(1));
+        String since = STRING.build(commandData.get(3));
+        String group = STRING.build(commandData.get(5));
+        String complexity = STRING.build(commandData.get(7));
+        List<String> history = null;
+        if (STRING.build(commandData.get(8)).equals("history")) {
+          List<List<Object>> rawHistory = (List<List<Object>>) commandData.get(9);
+          history = new ArrayList<>(rawHistory.size());
+          for (List<Object> timePoint : rawHistory) {
+            history.add(STRING.build(timePoint.get(0)) + ": " + STRING.build(timePoint.get(1)));
+          }
+        }
+
+        list.add(new CommandDocs(name, summary, since, group, complexity, history));
+      }
+
+      return list;
+    }
+  };
+
+  public static final Builder<List<KeyedFlags>> KEYS_AND_FLAGS = new Builder<List<KeyedFlags>>() {
+    @Override
+    public List<KeyedFlags> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      List<KeyedFlags> list = new ArrayList<>(rawList.size());
+
+      for (Object rawKeyInfo : rawList) {
+        List<Object> keyInfo = (List<Object>) rawKeyInfo;
+        String name = STRING.build(keyInfo.get(0));
+        List<String> flags = STRING_LIST.build(keyInfo.get(1));
+        list.add(new KeyedFlags(name, flags));
+      }
+
+      return list;
+    }
+  };
+
+  public static final Builder<List<CommandInfo>> COMMAND_INFO_RESPONSE = new Builder<List<CommandInfo>>() {
+    @Override
+    public List<CommandInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      List<CommandInfo> list = new ArrayList<>(rawList.size());
+
+      for (Object rawCommandInfo : rawList) {
+        if (rawCommandInfo == null) {
+          list.add(null);
+          break;
+        }
+
+        List<Object> commandInfo = (List<Object>) rawCommandInfo;
+        String name = STRING.build(commandInfo.get(0));
+        long arity = LONG.build(commandInfo.get(1));
+        List<String> flags = STRING_LIST.build(commandInfo.get(2));
+        long firstKey = LONG.build(commandInfo.get(3));
+        long lastKey = LONG.build(commandInfo.get(4));
+        long step = LONG.build(commandInfo.get(5));
+        List<String> aclCategories = STRING_LIST.build(commandInfo.get(6));
+        List<String> tips = STRING_LIST.build(commandInfo.get(7));
+        List<String> subcommands = STRING_LIST.build(commandInfo.get(9));
+
+        list.add(new CommandInfo(name, arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands));
+      }
+
+      return list;
+    }
+  };
+
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
     public List<Module> build(Object data) {

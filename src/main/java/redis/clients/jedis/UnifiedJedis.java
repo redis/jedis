@@ -505,6 +505,51 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long commandCount() {
+    return executeCommand(commandObjects.commandCount());
+  }
+
+  @Override
+  public List<CommandDocs> commandDocs(String... commands) {
+    return executeCommand(commandObjects.commandDocs(commands));
+  }
+
+  @Override
+  public List<String> commandGetKeys(String... command) {
+    return executeCommand(commandObjects.commandGetKeys(command));
+  }
+
+  @Override
+  public List<KeyedFlags> commandGetKeysSandFlags(String... command) {
+    return executeCommand(commandObjects.commandGetKeysSandFlags(command));
+  }
+
+  @Override
+  public List<CommandInfo> commandInfo(String... commands) {
+    return executeCommand(commandObjects.commandInfo(commands));
+  }
+
+  @Override
+  public List<String> commandList() {
+    return executeCommand(commandObjects.commandList());
+  }
+
+  @Override
+  public List<String> commandListFilterByModule(String moduleName) {
+    return executeCommand(commandObjects.commandListFilterByModule(moduleName));
+  }
+
+  @Override
+  public List<String> commandListFilterByAclcat(String category) {
+    return executeCommand(commandObjects.commandListFilterByAclcat(category));
+  }
+
+  @Override
+  public List<String> commandListFilterByPattern(String pattern) {
+    return executeCommand(commandObjects.commandListFilterByPattern(pattern));
+  }
+
+  @Override
   public ScanResult<String> scan(String cursor) {
     return executeCommand(commandObjects.scan(cursor));
   }

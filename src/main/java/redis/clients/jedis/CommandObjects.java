@@ -2811,6 +2811,45 @@ public class CommandObjects {
   }
   // Miscellaneous commands
 
+  public final CommandObject<Long> commandCount() {
+    return new CommandObject<>(commandArguments(COMMAND).add(COUNT), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<CommandDocs>> commandDocs(String... commands) {
+    return new CommandObject<>(commandArguments(COMMAND).add(DOCS).addObjects((Object[]) commands), BuilderFactory.COMMAND_DOCS_RESPONSE);
+  }
+
+  public final CommandObject<List<String>> commandGetKeys(String... command) {
+    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYS).addObjects((Object[]) command), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<KeyedFlags>> commandGetKeysSandFlags(String... command) {
+    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYSANDFLAGS).addObjects((Object[]) command), BuilderFactory.KEYS_AND_FLAGS);
+  }
+
+  public final CommandObject<List<CommandInfo>> commandInfo(String... commands) {
+    return new CommandObject<>(commandArguments(COMMAND).add(Keyword.INFO).addObjects((Object[]) commands), BuilderFactory.COMMAND_INFO_RESPONSE);
+  }
+
+  public final CommandObject<List<String>> commandList() {
+    return new CommandObject<>(commandArguments(COMMAND).add(LIST), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> commandListFilterByModule(String moduleName) {
+    return new CommandObject<>(commandArguments(COMMAND).add(LIST).add(FILTERBY).add(MODULE).add(moduleName),
+        BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> commandListFilterByAclcat(String moduleName) {
+    return new CommandObject<>(commandArguments(COMMAND).add(LIST).add(FILTERBY).add(ACLCAT).add(moduleName),
+        BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> commandListFilterByPattern(String pattern) {
+    return new CommandObject<>(commandArguments(COMMAND).add(LIST).add(FILTERBY).add(PATTERN).add(pattern),
+        BuilderFactory.STRING_LIST);
+  }
+
   // RediSearch commands
   public CommandObject<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
     CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName)

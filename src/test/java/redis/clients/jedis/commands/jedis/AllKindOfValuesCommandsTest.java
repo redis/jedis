@@ -36,6 +36,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.CommandDocs;
+import redis.clients.jedis.resps.CommandInfo;
+import redis.clients.jedis.resps.KeyedFlags;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
@@ -1055,4 +1058,71 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis.copy(bfoo1, bfoo2, true));
     assertArrayEquals(bbar1, jedis.get(bfoo2));
   }
+
+  @Test
+  public void commandCount() {
+    assertTrue(jedis.commandCount() > 100);
+  }
+
+  @Test
+  public void commandDocs() {
+    List<CommandDocs> docs = jedis.commandDocs("SORT", "SET");
+
+    CommandDocs sortDoc = docs.get(0);
+    assertEquals("sort", sortDoc.getName());
+    assertEquals("generic", sortDoc.getGroup());
+    assertEquals("Sort the elements in a list, set or sorted set", sortDoc.getSummary());
+    assertNull(sortDoc.getHistory());
+
+    CommandDocs setDoc = docs.get(1);
+    assertEquals("1.0.0", setDoc.getSince());
+    assertEquals("O(1)", setDoc.getComplexity());
+    assertEquals("2.6.12: Added the `EX`, `PX`, `NX` and `XX` options.", setDoc.getHistory().get(0));
+  }
+
+  @Test
+  public void commandGetKeys() {
+    List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
+    assertEquals(2, keys.size());
+
+    List<KeyedFlags> keySandFlags = jedis.commandGetKeysSandFlags("SET", "k1", "v1");
+    assertEquals("k1", keySandFlags.get(0).getKey());
+    assertEquals(2, keySandFlags.get(0).getFlags().size());
+  }
+
+  @Test
+  public void commandInfo() {
+    List<CommandInfo> infos = jedis.commandInfo("GET", "SET", "foo");
+
+    CommandInfo getInfo = infos.get(0);
+    assertEquals(2, getInfo.getArity());
+    assertEquals(2, getInfo.getFlags().size());
+    assertEquals(1, getInfo.getFirstKey());
+    assertEquals(1, getInfo.getLastKey());
+    assertEquals(1, getInfo.getStep());
+
+    CommandInfo setInfo = infos.get(1);
+    assertEquals("set", setInfo.getName());
+    assertEquals(3, setInfo.getAclCategories().size());
+    assertEquals(0, setInfo.getTips().size());
+    assertEquals(0, setInfo.getSubcommands().size());
+
+    assertNull(infos.get(2)); // non-existing command
+  }
+
+  @Test
+  public void commandList() {
+    List<String> commands = jedis.commandList();
+    assertTrue(commands.size() > 100);
+
+    commands = jedis.commandListFilterByModule("JSON");
+    assertEquals(0, commands.size()); // json module was not loaded
+
+    commands = jedis.commandListFilterByAclcat("admin");
+    assertTrue(commands.size() > 10);
+
+    commands = jedis.commandListFilterByPattern("a*");
+    assertTrue(commands.size() > 10);
+  }
+
 }

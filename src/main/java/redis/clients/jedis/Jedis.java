@@ -7940,6 +7940,61 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long commandCount() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, COUNT);
+    return connection.getIntegerReply();
+  }
+
+  @Override
+  public List<CommandDocs> commandDocs(String... commands) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.commandDocs(commands));
+  }
+
+  @Override
+  public List<String> commandGetKeys(String... command) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.commandGetKeys(command));
+  }
+
+  @Override
+  public List<KeyedFlags> commandGetKeysSandFlags(String... command) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.commandGetKeysSandFlags(command));
+  }
+
+  @Override
+  public List<CommandInfo> commandInfo(String... commands) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.commandInfo(commands));
+  }
+
+  @Override
+  public List<String> commandList() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.commandList());
+  }
+
+  @Override
+  public List<String> commandListFilterByModule(String moduleName) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.commandListFilterByModule(moduleName));
+  }
+
+  @Override
+  public List<String> commandListFilterByAclcat(String category) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.commandListFilterByAclcat(category));
+  }
+
+  @Override
+  public List<String> commandListFilterByPattern(String pattern) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.commandListFilterByPattern(pattern));
+  }
+
+  @Override
   public String sentinelMyId() {
     connection.sendCommand(SENTINEL, MYID);
     return connection.getBulkReply();

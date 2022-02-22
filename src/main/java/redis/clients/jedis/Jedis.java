@@ -8801,12 +8801,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String moduleLoad(String path, String... args) {
     checkIsInMultiOrPipeline();
-    String[] newArgs = new String[args.length + 2];
-    newArgs[0] = LOAD.name();
-    newArgs[1] = path;
-    System.arraycopy(args, 0, newArgs, 2, args.length);
-
-    connection.sendCommand(MODULE, newArgs);
+    connection.sendCommand(MODULE, joinParameters(LOAD.name(), path, args));
     return connection.getStatusCodeReply();
   }
 

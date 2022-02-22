@@ -8799,6 +8799,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String moduleLoad(String path, String... args) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(MODULE, joinParameters(LOAD.name(), path, args));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String moduleUnload(final String name) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(MODULE, UNLOAD.name(), name);

@@ -30,7 +30,7 @@ public class CommandInfo {
    * Command's name in lowercase
    */
   public String getName() {
-      return name;
+    return name;
   }
 
   /**
@@ -44,7 +44,7 @@ public class CommandInfo {
    * MGET's arity is -2 since the command accepts at least one argument, but possibly multiple ones: MGET _key1_ [key2] [key3] ....
    */
   public long getArity() {
-      return arity;
+    return arity;
   }
 
   /**

@@ -8807,7 +8807,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     System.arraycopy(args, 0, newArgs, 2, args.length);
 
     connection.sendCommand(MODULE, newArgs);
-    return connection.getStatusCodeReply();  }
+    return connection.getStatusCodeReply();
+  }
 
   @Override
   public String moduleUnload(final String name) {

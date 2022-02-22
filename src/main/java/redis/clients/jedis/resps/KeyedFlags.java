@@ -12,7 +12,7 @@ public class KeyedFlags {
   }
 
   public String getKey() {
-      return key;
+    return key;
   }
 
   public List<String> getFlags() {

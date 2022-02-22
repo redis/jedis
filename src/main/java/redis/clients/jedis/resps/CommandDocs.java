@@ -20,7 +20,7 @@ public class CommandDocs {
   }
 
   public String getName() {
-      return name;
+    return name;
   }
 
   public String getSummary() {

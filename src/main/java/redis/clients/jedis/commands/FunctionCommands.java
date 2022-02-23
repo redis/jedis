@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.FunctionRestorePolicy;
 import redis.clients.jedis.params.FunctionLoadParams;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
@@ -14,7 +15,6 @@ public interface FunctionCommands {
    * @param name
    * @param keys
    * @param args
-   * @return
    */
   Object fcall(String name, List<String> keys, List<String> args);
 
@@ -31,6 +31,13 @@ public interface FunctionCommands {
    * @return OK
    */
   String functionDelete(String libraryName);
+
+  /**
+   * Return the serialized payload of loaded libraries. You can restore the
+   * serialized payload later with the {@link FunctionBinaryCommands#functionRestore(byte[], FunctionRestorePolicy) FUNCTION RESTORE} command.
+   * @return the serialized payload
+   */
+  byte[] functionDump();
 
   /**
    * Deletes all the libraries, unless called with the optional mode argument, the
@@ -102,6 +109,21 @@ public interface FunctionCommands {
    * @return OK
    */
   String functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode);
+
+  /**
+   * Restore libraries from the serialized payload. Default policy is APPEND.
+   * @param serializedValue the serialized payload
+   * @return OK
+   */
+  String functionRestore(byte[] serializedValue);
+
+  /**
+   * Restore libraries from the serialized payload.
+   * @param serializedValue the serialized payload
+   * @param policy can be {@link FunctionRestorePolicy FLUSH, APPEND or REPLACE}
+   * @return OK
+   */
+  String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy);
 
   /**
    * Return information about the function that's currently running and information

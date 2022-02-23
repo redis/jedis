@@ -1,9 +1,9 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.FunctionRestorePolicy;
 import redis.clients.jedis.params.FunctionLoadParams;
-import redis.clients.jedis.resps.LibraryInfo;
 
 import java.util.List;
 
@@ -17,9 +17,19 @@ public interface FunctionPipelineBinaryCommands {
 
   Response<byte[]> functionDump();
 
-  Response<List<LibraryInfo>> functionList(byte[] libraryNamePattern);
+  Response<String> functionFlush();
 
-  Response<List<LibraryInfo>> functionListWithCode(byte[] libraryNamePattern);
+  Response<String> functionFlush(FlushMode mode);
+
+  Response<String> functionKill();
+
+  Response<List<Object>> functionListBinary();
+
+  Response<List<Object>> functionList(byte[] libraryNamePattern);
+
+  Response<List<Object>> functionListWithCodeBinary();
+
+  Response<List<Object>> functionListWithCode(byte[] libraryNamePattern);
 
   Response<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode);
 
@@ -28,5 +38,6 @@ public interface FunctionPipelineBinaryCommands {
   Response<String> functionRestore(byte[] serializedValue);
 
   Response<String> functionRestore(byte[] serializedValue, FunctionRestorePolicy policy);
-    
+
+  Response<Object> functionStatsBinary();
 }

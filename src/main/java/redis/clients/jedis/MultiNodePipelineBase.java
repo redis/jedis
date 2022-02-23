@@ -3119,11 +3119,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<LibraryInfo>> functionList(byte[] libraryNamePattern) {
-    return appendCommand(commandObjects.functionList(libraryNamePattern));
-  }
-
-  @Override
   public Response<List<LibraryInfo>> functionList(String libraryNamePattern) {
     return appendCommand(commandObjects.functionList(libraryNamePattern));
   }
@@ -3134,11 +3129,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<LibraryInfo>> functionListWithCode(byte[] libraryNamePattern) {
-    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
-  }
-
-  @Override
   public Response<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
     return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
   }
@@ -3146,6 +3136,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<List<LibraryInfo>> functionListWithCode() {
     return appendCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public Response<List<Object>> functionListBinary() {
+    return appendCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionList(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCodeBinary() {
+    return appendCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCode(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
   }
 
   @Override
@@ -3192,9 +3202,15 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   public Response<String> functionKill() {
     return appendCommand(commandObjects.functionKill());
   }
+
   @Override
   public Response<FunctionStats> functionStats() {
     return appendCommand(commandObjects.functionStats());
+  }
+
+  @Override
+  public Response<Object> functionStatsBinary() {
+    return appendCommand(commandObjects.functionStatsBinary());
   }
 
   // RediSearch commands

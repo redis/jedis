@@ -373,6 +373,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
     // check WITHCODE
     response = jedis.functionListWithCode().get(0);
+    assertEquals("myfunc", func.getName());
     assertEquals(function, response.getCode());
 
     // check with LIBRARYNAME
@@ -385,11 +386,15 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertEquals(function, response.getCode());
 
     // Binary
-    response = jedis.functionList(library.getBytes()).get(0);
-    assertEquals(library, response.getName());
+    List<Object> bresponse = (List<Object>) jedis.functionListBinary().get(0);
+    assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
 
-    response = jedis.functionListWithCode(library.getBytes()).get(0);
-    assertEquals(library, response.getName());
+    bresponse = (List<Object>) jedis.functionList(library.getBytes()).get(0);
+    assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+
+    bresponse = (List<Object>) jedis.functionListWithCode(library.getBytes()).get(0);
+    assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+    assertNotNull(bresponse.get(7));
   }
 
   @Test

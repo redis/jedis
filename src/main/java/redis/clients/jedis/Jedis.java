@@ -4379,13 +4379,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<LibraryInfo> functionList(final byte[] libraryNamePattern) {
+  public List<Object> functionListBinary() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public List<Object> functionList(final byte[] libraryNamePattern) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.functionList(libraryNamePattern));
   }
 
   @Override
-  public List<LibraryInfo> functionListWithCode(final byte[] libraryNamePattern) {
+  public List<Object> functionListWithCodeBinary() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public List<Object> functionListWithCode(final byte[] libraryNamePattern) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
   }
@@ -4412,6 +4424,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String functionRestore(final byte[] serializedValue, final FunctionRestorePolicy policy) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Object functionStatsBinary() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionStatsBinary());
   }
 
   @Override

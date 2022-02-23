@@ -1415,9 +1415,6 @@ public final class BuilderFactory {
   public static final Builder<List<LibraryInfo>> LIBRARY_LIST = new Builder<List<LibraryInfo>>() {
     @Override
     public List<LibraryInfo> build(Object data) {
-      if (data == null) {
-        return null;
-      }
       List<Object> libList = (List<Object>) data;
       List<LibraryInfo> list = new ArrayList<>(libList.size());
 

@@ -2709,6 +2709,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(FUNCTION).add(STATS), FunctionStats.FUNCTION_STATS_BUILDER);
   }
 
+  public final CommandObject<Object> functionStatsBinary() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(STATS), BuilderFactory.RAW_OBJECT);
+  }
+
   public final CommandObject<String> functionFlush() {
     return new CommandObject<>(commandArguments(FUNCTION).add(FLUSH), BuilderFactory.STRING);
   }
@@ -2746,12 +2750,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(FUNCTION).add(DUMP), BuilderFactory.BINARY);
   }
 
-  public final CommandObject<List<LibraryInfo>> functionList(byte[] libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern), BuilderFactory.LIBRARY_LIST);
+  public final CommandObject<List<Object>> functionListBinary() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST), BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<LibraryInfo>> functionListWithCode(byte[] libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+  public final CommandObject<List<Object>> functionList(byte[] libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> functionListWithCodeBinary() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> functionListWithCode(byte[] libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {

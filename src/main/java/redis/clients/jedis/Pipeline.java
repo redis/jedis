@@ -3857,11 +3857,6 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<LibraryInfo>> functionList(byte[] libraryNamePattern) {
-    return appendCommand(commandObjects.functionList(libraryNamePattern));
-  }
-
-  @Override
   public Response<List<LibraryInfo>> functionList(String libraryNamePattern) {
     return appendCommand(commandObjects.functionList(libraryNamePattern));
   }
@@ -3872,11 +3867,6 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<LibraryInfo>> functionListWithCode(byte[] libraryNamePattern) {
-    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
-  }
-
-  @Override
   public Response<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
     return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
   }
@@ -3884,6 +3874,26 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<List<LibraryInfo>> functionListWithCode() {
     return appendCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public Response<List<Object>> functionListBinary() {
+    return appendCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionList(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCodeBinary() {
+    return appendCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCode(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
   }
 
   @Override
@@ -3930,9 +3940,15 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   public Response<String> functionKill() {
     return appendCommand(commandObjects.functionKill());
   }
+
   @Override
   public Response<FunctionStats> functionStats() {
     return appendCommand(commandObjects.functionStats());
+  }
+
+  @Override
+  public Response<Object> functionStatsBinary() {
+    return appendCommand(commandObjects.functionStatsBinary());
   }
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {

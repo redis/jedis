@@ -3091,12 +3091,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<LibraryInfo> functionList(byte[] libraryNamePattern) {
+  public List<Object> functionListBinary() {
+    return executeCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public List<Object> functionList(final byte[] libraryNamePattern) {
     return executeCommand(commandObjects.functionList(libraryNamePattern));
   }
 
   @Override
-  public List<LibraryInfo> functionListWithCode(byte[] libraryNamePattern) {
+  public List<Object> functionListWithCodeBinary() {
+    return executeCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public List<Object> functionListWithCode(final byte[] libraryNamePattern) {
     return executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
   }
 
@@ -3118,6 +3128,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
     return executeCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Object functionStatsBinary() {
+    return executeCommand(commandObjects.functionStatsBinary());
   }
   // Scripting commands
 

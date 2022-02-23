@@ -2656,38 +2656,43 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
-    return executeCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  public String xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
+    return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public String xgroupSetID(String key, String groupname, StreamEntryID id) {
-    return executeCommand(commandObjects.xgroupSetID(key, groupname, id));
+  public String xgroupSetID(String key, String groupName, StreamEntryID id) {
+    return executeCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public long xgroupDestroy(String key, String groupname) {
-    return executeCommand(commandObjects.xgroupDestroy(key, groupname));
+  public long xgroupDestroy(String key, String groupName) {
+    return executeCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public long xgroupDelConsumer(String key, String groupname, String consumername) {
-    return executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumername));
+  public boolean xgroupCreateConsumer(String key, String groupName, String consumerName) {
+    return executeCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
   }
 
   @Override
-  public StreamPendingSummary xpending(String key, String groupname) {
-    return executeCommand(commandObjects.xpending(key, groupname));
+  public long xgroupDelConsumer(String key, String groupName, String consumerName) {
+    return executeCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
-    return executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  public StreamPendingSummary xpending(String key, String groupName) {
+    return executeCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params) {
-    return executeCommand(commandObjects.xpending(key, groupname, params));
+  public List<StreamPendingEntry> xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName) {
+    return executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
+  }
+
+  @Override
+  public List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params) {
+    return executeCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
@@ -2706,13 +2711,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    return executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  public List<StreamEntry> xclaim(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    return executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
@@ -2762,9 +2767,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
+  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
-    return executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+    return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -2803,23 +2808,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
-    return executeCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  public String xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
+    return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public String xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
-    return executeCommand(commandObjects.xgroupSetID(key, groupname, id));
+  public String xgroupSetID(byte[] key, byte[] groupName, byte[] id) {
+    return executeCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public long xgroupDestroy(byte[] key, byte[] groupname) {
-    return executeCommand(commandObjects.xgroupDestroy(key, groupname));
+  public long xgroupDestroy(byte[] key, byte[] groupName) {
+    return executeCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public long xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
-    return executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumerName));
+  public boolean xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return executeCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
+  }
+
+  @Override
+  public long xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return executeCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
@@ -2838,28 +2848,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Object xpending(byte[] key, byte[] groupname) {
-    return executeCommand(commandObjects.xpending(key, groupname));
+  public Object xpending(byte[] key, byte[] groupName) {
+    return executeCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
-    return executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  public List<Object> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName) {
+    return executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
   }
 
   @Override
-  public List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params) {
-    return executeCommand(commandObjects.xpending(key, groupname, params));
+  public List<Object> xpending(byte[] key, byte[] groupName, XPendingParams params) {
+    return executeCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
-  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    return executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return executeCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    return executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return executeCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
@@ -2909,8 +2919,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
-    return executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+  public List<byte[]> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
   // Stream commands
 

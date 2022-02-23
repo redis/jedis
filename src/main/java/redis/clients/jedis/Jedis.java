@@ -4560,10 +4560,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer,
+  public List<byte[]> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+    return connection.executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -4627,9 +4627,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long xgroupDelConsumer(byte[] key, byte[] consumer, byte[] consumerName) {
+  public boolean xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xgroupDelConsumer(key, consumer, consumerName));
+    return connection.executeCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
+  }
+
+  @Override
+  public long xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
@@ -4655,36 +4661,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    */
   @Override
   @Deprecated
-  public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count,
-      byte[] consumername) {
+  public List<Object> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count,
+      byte[] consumerName) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+    return connection.executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
   }
 
   @Override
-  public Object xpending(final byte[] key, final byte[] groupname) {
+  public Object xpending(final byte[] key, final byte[] groupName) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupname));
+    return connection.executeCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public List<Object> xpending(final byte[] key, final byte[] groupname, final XPendingParams params) {
+  public List<Object> xpending(final byte[] key, final byte[] groupName, final XPendingParams params) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupname, params));
+    return connection.executeCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
-  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+    return connection.executeCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime,
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime,
       XClaimParams params, byte[]... ids) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+    return connection.executeCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
@@ -8968,28 +8974,34 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String xgroupCreate(final String key, final String groupname, final StreamEntryID id,
+  public String xgroupCreate(final String key, final String groupName, final StreamEntryID id,
       final boolean makeStream) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+    return connection.executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public String xgroupSetID(final String key, final String groupname, final StreamEntryID id) {
+  public String xgroupSetID(final String key, final String groupName, final StreamEntryID id) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xgroupSetID(key, groupname, id));
+    return connection.executeCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public long xgroupDestroy(final String key, final String groupname) {
+  public long xgroupDestroy(final String key, final String groupName) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xgroupDestroy(key, groupname));
+    return connection.executeCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public long xgroupDelConsumer(final String key, final String groupname, final String consumerName) {
+  public boolean xgroupCreateConsumer(String key, String groupName, String consumerName) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumerName));
+    return connection.executeCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
+  }
+
+  @Override
+  public long xgroupDelConsumer(final String key, final String groupName, final String consumerName) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
@@ -9011,17 +9023,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(final String groupname,
+  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(final String groupName,
       final String consumer, final XReadGroupParams xReadGroupParams,
       final Map<String, StreamEntryID> streams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+    return connection.executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
-  public StreamPendingSummary xpending(final String key, final String groupname) {
+  public StreamPendingSummary xpending(final String key, final String groupName) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupname));
+    return connection.executeCommand(commandObjects.xpending(key, groupName));
   }
 
   /**
@@ -9029,30 +9041,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    */
   @Override
   @Deprecated
-  public List<StreamPendingEntry> xpending(final String key, final String groupname,
-      final StreamEntryID start, final StreamEntryID end, final int count, final String consumername) {
+  public List<StreamPendingEntry> xpending(final String key, final String groupName,
+      final StreamEntryID start, final StreamEntryID end, final int count, final String consumerName) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+    return connection.executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(final String key, final String groupname, final XPendingParams params) {
+  public List<StreamPendingEntry> xpending(final String key, final String groupName, final XPendingParams params) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupname, params));
+    return connection.executeCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
-  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime,
+  public List<StreamEntry> xclaim(String key, String group, String consumerName, long minIdleTime,
       XClaimParams params, StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+    return connection.executeCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername,
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumerName,
       long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+    return connection.executeCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override

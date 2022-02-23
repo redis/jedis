@@ -172,16 +172,16 @@ public class JedisCluster extends UnifiedJedis {
     super(clusterNodes, clientConfig, poolConfig, maxAttempts, maxTotalRetriesDuration);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodess, JedisClientConfig clientConfig) {
-    this(clusterNodess, clientConfig, DEFAULT_MAX_ATTEMPTS);
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig) {
+    this(clusterNodes, clientConfig, DEFAULT_MAX_ATTEMPTS);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodess, JedisClientConfig clientConfig, int maxAttempts) {
-    super(clusterNodess, clientConfig, maxAttempts);
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
+    super(clusterNodes, clientConfig, maxAttempts);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodess, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    super(clusterNodess, clientConfig, maxAttempts, maxTotalRetriesDuration);
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+    super(clusterNodes, clientConfig, maxAttempts, maxTotalRetriesDuration);
   }
 
   public Map<String, ConnectionPool> getClusterNodes() {

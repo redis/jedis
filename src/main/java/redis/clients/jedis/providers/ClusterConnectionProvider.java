@@ -23,13 +23,13 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   protected final JedisClusterInfoCache cache;
 
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig) {
-    this.cache = new JedisClusterInfoCache(clientConfig);
+    this.cache = new JedisClusterInfoCache(clientConfig, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this.cache = new JedisClusterInfoCache(clientConfig, poolConfig);
+    this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 

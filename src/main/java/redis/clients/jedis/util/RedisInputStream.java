@@ -22,6 +22,10 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  */
 public class RedisInputStream extends FilterInputStream {
 
+  private static final int INPUT_BUFFER_SIZE = Integer.parseInt(
+      System.getProperty("jedis.bufferSize.input",
+          System.getProperty("jedis.bufferSize", "8192")));
+
   protected final byte[] buf;
 
   protected int count, limit;
@@ -35,7 +39,7 @@ public class RedisInputStream extends FilterInputStream {
   }
 
   public RedisInputStream(InputStream in) {
-    this(in, 8192);
+    this(in, INPUT_BUFFER_SIZE);
   }
 
   public byte readByte() throws JedisConnectionException {

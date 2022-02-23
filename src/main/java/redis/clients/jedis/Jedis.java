@@ -8847,6 +8847,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String moduleLoad(String path, String... args) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(MODULE, joinParameters(LOAD.name(), path, args));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String moduleUnload(final String name) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(MODULE, UNLOAD.name(), name);
@@ -8897,6 +8904,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(MEMORY, USAGE.getRaw(), encode(key), SAMPLES.getRaw(), toByteArray(samples));
     return connection.getIntegerReply();
+  }
+
+  @Override
+  public String memoryPurge() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(MEMORY, PURGE);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public Map<String, Object> memoryStats() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(MEMORY, STATS);
+    return BuilderFactory.ENCODED_OBJECT_MAP.build(connection.getOne());
   }
 
   @Override

@@ -10,6 +10,11 @@ import java.io.OutputStream;
  * used outside Jedis
  */
 public final class RedisOutputStream extends FilterOutputStream {
+
+  private static final int OUTPUT_BUFFER_SIZE = Integer.parseInt(
+      System.getProperty("jedis.bufferSize.output",
+          System.getProperty("jedis.bufferSize", "8192")));
+
   protected final byte[] buf;
 
   protected int count;
@@ -36,7 +41,7 @@ public final class RedisOutputStream extends FilterOutputStream {
       't', 'u', 'v', 'w', 'x', 'y', 'z' };
 
   public RedisOutputStream(final OutputStream out) {
-    this(out, 8192);
+    this(out, OUTPUT_BUFFER_SIZE);
   }
 
   public RedisOutputStream(final OutputStream out, final int size) {

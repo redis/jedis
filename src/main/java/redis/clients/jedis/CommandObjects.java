@@ -2305,7 +2305,7 @@ public class CommandObjects {
         .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumername) {
+  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
         .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
   }

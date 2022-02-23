@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
@@ -360,30 +361,30 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     jedis.functionLoad(engine, library, new FunctionLoadParams().libraryDescription("test"), function);
 
     LibraryInfo response = jedis.functionList().get(0);
-    assertEquals(library, response.getName());
+    assertEquals(library, response.getLibraryName());
     assertEquals(engine, response.getEngine());
     assertEquals("test", response.getDescription());
     assertEquals(1, response.getFunctions().size());
 
     // check function info
-    LibraryInfo.FunctionInfo func = response.getFunctions().get(0);
-    assertEquals("myfunc", func.getName());
-    assertNull(func.getDescription());
-    assertTrue(func.getFlags().isEmpty());
+    Map func = response.getFunctions().get(0);
+    assertEquals("myfunc", func.get("name"));
+    assertNull(func.get("description"));
+    assertTrue(((List) func.get("flags")).isEmpty());
 
     // check WITHCODE
     response = jedis.functionListWithCode().get(0);
-    assertEquals("myfunc", func.getName());
-    assertEquals(function, response.getCode());
+    assertEquals("myfunc", func.get("name"));
+    assertEquals(function, response.getLibraryCode());
 
     // check with LIBRARYNAME
     response = jedis.functionList(library).get(0);
-    assertEquals(library, response.getName());
+    assertEquals(library, response.getLibraryName());
 
     // check with code and with LIBRARYNAME
     response = jedis.functionListWithCode(library).get(0);
-    assertEquals(library, response.getName());
-    assertEquals(function, response.getCode());
+    assertEquals(library, response.getLibraryName());
+    assertEquals(function, response.getLibraryCode());
 
     // Binary
     List<Object> bresponse = (List<Object>) jedis.functionListBinary().get(0);

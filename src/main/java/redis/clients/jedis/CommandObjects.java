@@ -2675,8 +2675,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> functionDelete(String libraryName) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName),
-        BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<LibraryInfo>> functionList() {
@@ -2742,8 +2741,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> functionDelete(byte[] libraryName) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName),
-        BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName), BuilderFactory.STRING);
   }
 
   public final CommandObject<byte[]> functionDump() {
@@ -2755,7 +2753,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Object>> functionList(byte[] libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern), BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+        .add(libraryNamePattern), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Object>> functionListWithCodeBinary() {
@@ -2763,7 +2762,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Object>> functionListWithCode(byte[] libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).
+        add(libraryNamePattern).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {

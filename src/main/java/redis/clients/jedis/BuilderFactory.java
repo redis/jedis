@@ -1415,29 +1415,8 @@ public final class BuilderFactory {
   public static final Builder<List<LibraryInfo>> LIBRARY_LIST = new Builder<List<LibraryInfo>>() {
     @Override
     public List<LibraryInfo> build(Object data) {
-      List<Object> libList = (List<Object>) data;
-      List<LibraryInfo> list = new ArrayList<>(libList.size());
-
-      for (Object libData : libList) {
-
-        List<Object> objectList = (List<Object>) libData;
-        String libname = STRING.build(objectList.get(1));
-        String engine = STRING.build(objectList.get(3));
-        String desc = STRING.build(objectList.get(5));
-        List<List<Object>> rawFunctions = (List<List<Object>>) objectList.get(7);
-        List<LibraryInfo.FunctionInfo> functions = new ArrayList<>();
-        for (List<Object> object : rawFunctions) {
-          functions.add(new LibraryInfo.FunctionInfo(STRING.build(object.get(1)), STRING.build(object.get(3)), STRING_LIST.build(object.get(5))));
-        }
-        String code = null;
-        if (objectList.size() > 8) {
-          code = STRING.build(objectList.get(9));
-        }
-
-        list.add(new LibraryInfo(libname, engine, desc, functions, code));
-      }
-
-      return list;
+      List<Object> list = (List<Object>) data;
+      return list.stream().map(o -> LibraryInfo.LIBRARY.build(o)).collect(Collectors.toList());
     }
   };
 

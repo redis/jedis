@@ -1,54 +1,36 @@
 package redis.clients.jedis.resps;
 
+import static redis.clients.jedis.BuilderFactory.STRING;
+import static redis.clients.jedis.BuilderFactory.ENCODED_OBJECT_MAP;
+
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import redis.clients.jedis.Builder;
 
 public class LibraryInfo {
 
-  public static class FunctionInfo {
+  private final String libraryName;
+  private final String engine;
+  private final String description;
+  private final List<Map<String, Object>> functions;
+  private final String libraryCode;
 
-    private final String name;
-    private final String description;
-    private final List<String> flags;
-
-    public FunctionInfo(String name, String description, List<String> flags) {
-      this.name = name;
-      this.description = description;
-      this.flags = flags;
-    }
-
-    public String getName() {
-      return this.name;
-    }
-
-    public String getDescription() {
-      return description;
-    }
-
-    public List<String> getFlags() {
-      return flags;
-    }
+  public LibraryInfo(String libraryName, String engineName, String description, List<Map<String, Object>> functions) {
+    this(libraryName, engineName, description, functions, null);
   }
 
-  private String name;
-  private String engine;
-  private String description;
-  private List<FunctionInfo> functions;
-  private String code;
-
-  public LibraryInfo(String libraryName, String engineName, String description, List<FunctionInfo> functions) {
-    this.name = libraryName;
+  public LibraryInfo(String libraryName, String engineName, String description, List<Map<String, Object>> functions, String code) {
+    this.libraryName = libraryName;
     this.engine = engineName;
     this.description = description;
     this.functions = functions;
+    this.libraryCode = code;
   }
 
-  public LibraryInfo(String libraryName, String engineName, String description, List<FunctionInfo> functions, String code) {
-    this(libraryName, engineName, description, functions);
-    this.code = code;
-  }
-
-  public String getName() {
-    return name;
+  public String getLibraryName() {
+    return libraryName;
   }
 
   public String getEngine() {
@@ -59,11 +41,29 @@ public class LibraryInfo {
     return description;
   }
 
-  public List<FunctionInfo> getFunctions() {
+  public List<Map<String, Object>> getFunctions() {
     return functions;
   }
 
-  public String getCode() {
-    return code;
+  public String getLibraryCode() {
+    return libraryCode;
   }
+
+  public static final Builder<LibraryInfo> LIBRARY = new Builder<LibraryInfo>() {
+    @Override
+    public LibraryInfo build(Object data) {
+      List<Object> objectList = (List<Object>) data;
+      String libname = STRING.build(objectList.get(1));
+      String engine = STRING.build(objectList.get(3));
+      String desc = STRING.build(objectList.get(5));
+      List<Object> rawFunctions = (List<Object>) objectList.get(7);
+      List<Map<String, Object>> functions = rawFunctions.stream().map(o -> ENCODED_OBJECT_MAP.build(o)).collect(Collectors.toList());
+      if (objectList.size() <= 8) {
+        return new LibraryInfo(libname, engine, desc, functions);
+      }
+      String code = STRING.build(objectList.get(9));
+      return new LibraryInfo(libname, engine, desc, functions, code);
+    }
+  };
+
 }

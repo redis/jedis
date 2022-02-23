@@ -2,8 +2,8 @@ package redis.clients.jedis;
 
 public class Module {
 
-  private String name;
-  private int version;
+  private final String name;
+  private final int version;
 
   public Module(String name, int version) {
     this.name = name;

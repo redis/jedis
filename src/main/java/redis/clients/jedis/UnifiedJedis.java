@@ -3006,12 +3006,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public byte[] fcall(String name, List<String> keys, List<String> args) {
+  public Object fcall(String name, List<String> keys, List<String> args) {
     return executeCommand(commandObjects.fcall(name, keys, args));
   }
 
   @Override
-  public byte[] fcallReadonly(String name, List<String> keys, List<String> args) {
+  public Object fcallReadonly(String name, List<String> keys, List<String> args) {
     return executeCommand(commandObjects.fcallReadonly(name, keys, args));
   }
 
@@ -3066,17 +3066,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public FunctionStatus functionStats() {
+  public FunctionStats functionStats() {
     return executeCommand(commandObjects.functionStats());
   }
 
   @Override
-  public byte[] fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+  public Object fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
     return executeCommand(commandObjects.fcall(name, keys, args));
   }
 
   @Override
-  public byte[] fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+  public Object fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
     return executeCommand(commandObjects.fcallReadonly(name, keys, args));
   }
 

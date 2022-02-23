@@ -9,9 +9,9 @@ import java.util.List;
 
 public interface FunctionPipelineBinaryCommands {
 
-  Response<byte[]> fcall(byte[] name, List<byte[]> keys, List<byte[]> args);
+  Response<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args);
 
-  Response<byte[]> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args);
+  Response<Object> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args);
 
   Response<String> functionDelete(byte[] libraryName);
 

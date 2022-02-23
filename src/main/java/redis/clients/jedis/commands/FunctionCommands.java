@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.FunctionLoadParams;
-import redis.clients.jedis.resps.FunctionStatus;
+import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 
 import java.util.List;
@@ -16,13 +16,13 @@ public interface FunctionCommands {
    * @param args
    * @return
    */
-  byte[] fcall(String name, List<String> keys, List<String> args);
+  Object fcall(String name, List<String> keys, List<String> args);
 
   /**
    * This is a read-only variant of the {@link FunctionCommands#fcall(String, List, List) FCALL}
    * command that cannot execute commands that modify data.
    */
-  byte[] fcallReadonly(String name, List<String> keys, List<String> args);
+  Object fcallReadonly(String name, List<String> keys, List<String> args);
 
   /**
    * This command deletes the library called library-name and all functions in it.
@@ -106,8 +106,8 @@ public interface FunctionCommands {
   /**
    * Return information about the function that's currently running and information
    * about the available execution engines.
-   * @return {@link FunctionStatus}
+   * @return {@link FunctionStats}
    */
-  FunctionStatus functionStats();
+  FunctionStats functionStats();
 
 }

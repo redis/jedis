@@ -3,16 +3,16 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.FunctionLoadParams;
-import redis.clients.jedis.resps.FunctionStatus;
+import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 
 import java.util.List;
 
 public interface FunctionPipelineCommands {
   
-  Response<byte[]> fcall(String name, List<String> keys, List<String> args);
+  Response<Object> fcall(String name, List<String> keys, List<String> args);
   
-  Response<byte[]> fcallReadonly(String name, List<String> keys, List<String> args);
+  Response<Object> fcallReadonly(String name, List<String> keys, List<String> args);
   
   Response<String> functionDelete(String libraryName);
 
@@ -34,6 +34,6 @@ public interface FunctionPipelineCommands {
 
   Response<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode);
 
-  Response<FunctionStatus> functionStats();
+  Response<FunctionStats> functionStats();
 
 }

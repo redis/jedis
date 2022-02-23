@@ -1189,7 +1189,6 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
   }
 
-
   public final CommandObject<Set<String>> sunion(String... keys) {
     return new CommandObject<>(commandArguments(SUNION).keys((Object[]) keys), BuilderFactory.STRING_SET);
   }
@@ -2659,14 +2658,20 @@ public class CommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
-  public final CommandObject<byte[]> fcall(String name, List<String> keys, List<String> args) {
-    return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size()).add(keys).add(args),
-        BuilderFactory.BINARY);
+  public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(FCALL).add(name).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
   }
 
-  public final CommandObject<byte[]> fcallReadonly(String name, List<String> keys, List<String> args) {
-    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keys.size()).add(keys).add(args),
-        BuilderFactory.BINARY);
+  public final CommandObject<Object> fcallReadonly(String name, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<String> functionDelete(String libraryName) {
@@ -2700,8 +2705,8 @@ public class CommandObjects {
         .add(libraryName).addParams(params).add(functionCode), BuilderFactory.STRING);
   }
 
-  public final CommandObject<FunctionStatus> functionStats() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(STATS), BuilderFactory.FUNCTION_STATUS);
+  public final CommandObject<FunctionStats> functionStats() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(STATS), FunctionStats.FUNCTION_STATS_BUILDER);
   }
 
   public final CommandObject<String> functionFlush() {
@@ -2716,14 +2721,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(FUNCTION).add(KILL), BuilderFactory.STRING);
   }
 
-  public final CommandObject<byte[]> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
-    return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size()).add(keys).add(args),
-        BuilderFactory.BINARY);
+  public final CommandObject<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
+    byte[][] argsArray = args.toArray(new byte[args.size()][]);
+    return new CommandObject<>(commandArguments(FCALL).add(name).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
   }
 
-  public final CommandObject<byte[]> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
-    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keys.size()).add(keys).add(args),
-        BuilderFactory.BINARY);
+  public final CommandObject<Object> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
+    byte[][] argsArray = args.toArray(new byte[args.size()][]);
+    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<String> functionDelete(byte[] libraryName) {

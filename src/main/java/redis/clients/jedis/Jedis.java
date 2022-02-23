@@ -4355,13 +4355,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public byte[] fcall(final byte[] name, final List<byte[]> keys, final List<byte[]> args) {
+  public Object fcall(final byte[] name, final List<byte[]> keys, final List<byte[]> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.fcall(name, keys, args));
   }
 
   @Override
-  public byte[] fcallReadonly(final byte[] name, final List<byte[]> keys, final List<byte[]> args) {
+  public Object fcallReadonly(final byte[] name, final List<byte[]> keys, final List<byte[]> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.fcallReadonly(name, keys, args));
   }
@@ -8678,12 +8678,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public byte[] fcall(final String name, final List<String> keys, final List<String> args) {
+  public Object fcall(final String name, final List<String> keys, final List<String> args) {
     return connection.executeCommand(commandObjects.fcall(name, keys, args));
   }
 
   @Override
-  public byte[] fcallReadonly(final String name, final List<String> keys, final List<String> args) {
+  public Object fcallReadonly(final String name, final List<String> keys, final List<String> args) {
     return connection.executeCommand(commandObjects.fcallReadonly(name, keys, args));
   }
 
@@ -8706,7 +8706,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public FunctionStatus functionStats() {
+  public FunctionStats functionStats() {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.functionStats());
   }

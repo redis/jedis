@@ -15,9 +15,9 @@ public interface FunctionBinaryCommands {
    * @param args
    * @return
    */
-  byte[] fcall(byte[] name, List<byte[]> keys, List<byte[]> args);
+  Object fcall(byte[] name, List<byte[]> keys, List<byte[]> args);
 
-  byte[] fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args);
+  Object fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args);
 
   /**
    * This command deletes the library called library-name and all functions in it.

@@ -3822,22 +3822,22 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<byte[]> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+  public Response<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
     return appendCommand(commandObjects.fcall(name, keys, args));
   }
 
   @Override
-  public Response<byte[]> fcall(String name, List<String> keys, List<String> args) {
+  public Response<Object> fcall(String name, List<String> keys, List<String> args) {
     return appendCommand(commandObjects.fcall(name, keys, args));
   }
 
   @Override
-  public Response<byte[]> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+  public Response<Object> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
     return appendCommand(commandObjects.fcallReadonly(name, keys, args));
   }
 
   @Override
-  public Response<byte[]> fcallReadonly(String name, List<String> keys, List<String> args) {
+  public Response<Object> fcallReadonly(String name, List<String> keys, List<String> args) {
     return appendCommand(commandObjects.fcallReadonly(name, keys, args));
   }
 
@@ -3931,7 +3931,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
     return appendCommand(commandObjects.functionKill());
   }
   @Override
-  public Response<FunctionStatus> functionStats() {
+  public Response<FunctionStats> functionStats() {
     return appendCommand(commandObjects.functionStats());
   }
 

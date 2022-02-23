@@ -2658,6 +2658,48 @@ public class CommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
+  public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
+        .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<String> scriptLoad(String script, String sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptFlush(String sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptFlush(String sampleKey, FlushMode flushMode) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptKill(String sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<Boolean>> scriptExists(byte[] sampleKey, byte[]... sha1s) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
+        .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<byte[]> scriptLoad(byte[] script, byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<String> scriptFlush(byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptFlush(byte[] sampleKey, FlushMode flushMode) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> scriptKill(byte[] sampleKey) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
   public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {
     String[] keysArray = keys.toArray(new String[keys.size()]);
     String[] argsArray = args.toArray(new String[args.size()]);
@@ -2683,7 +2725,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<LibraryInfo>> functionList(String libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern), BuilderFactory.LIBRARY_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+        .add(libraryNamePattern), BuilderFactory.LIBRARY_LIST);
   }
 
   public final CommandObject<List<LibraryInfo>> functionListWithCode() {
@@ -2691,7 +2734,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).add(libraryNamePattern).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+        .add(libraryNamePattern).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
   }
 
   public final CommandObject<String> functionLoad(String engineName, String libraryName, String functionCode) {
@@ -2784,48 +2828,6 @@ public class CommandObjects {
   public final CommandObject<String> functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
     return new CommandObject<>(commandArguments(FUNCTION).add(RESTORE).add(serializedValue)
         .add(policy.getRaw()), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
-        .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
-  }
-
-  public final CommandObject<String> scriptLoad(String script, String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> scriptFlush(String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).processKey(sampleKey), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> scriptFlush(String sampleKey, FlushMode flushMode) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> scriptKill(String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<List<Boolean>> scriptExists(byte[] sampleKey, byte[]... sha1s) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
-        .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
-  }
-
-  public final CommandObject<byte[]> scriptLoad(byte[] script, byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.BINARY);
-  }
-
-  public final CommandObject<String> scriptFlush(byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).processKey(sampleKey), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> scriptFlush(byte[] sampleKey, FlushMode flushMode) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> scriptKill(byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
   }
   // Scripting commands
 

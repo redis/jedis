@@ -2256,50 +2256,59 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
-  public final CommandObject<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
+  public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     CommandArguments args = commandArguments(XGROUP).add(CREATE).key(key)
-        .add(groupname).add(id == null ? "0-0" : id);
+        .add(groupName).add(id == null ? "0-0" : id);
     if (makeStream) args.add(MKSTREAM);
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> xgroupSetID(String key, String groupname, StreamEntryID id) {
+  public final CommandObject<String> xgroupSetID(String key, String groupName, StreamEntryID id) {
     return new CommandObject<>(commandArguments(XGROUP).add(SETID)
-        .key(key).add(groupname).add(id), BuilderFactory.STRING);
+        .key(key).add(groupName).add(id), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Long> xgroupDestroy(String key, String groupname) {
+  public final CommandObject<Long> xgroupDestroy(String key, String groupName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DESTROY)
-        .key(key).add(groupname), BuilderFactory.LONG);
+        .key(key).add(groupName), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
+  public final CommandObject<Boolean> xgroupCreateConsumer(String key, String groupName, String consumerName) {
+    return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
+        .key(key).add(groupName).add(consumerName), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> xgroupDelConsumer(String key, String groupName, String consumerName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
-        .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
+        .key(key).add(groupName).add(consumerName), BuilderFactory.LONG);
   }
 
-  public final CommandObject<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
+  public final CommandObject<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
     CommandArguments args = commandArguments(XGROUP).add(CREATE).key(key)
-        .add(groupname).add(id);
+        .add(groupName).add(id);
     if (makeStream) args.add(MKSTREAM);
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
+  public final CommandObject<String> xgroupSetID(byte[] key, byte[] groupName, byte[] id) {
     return new CommandObject<>(commandArguments(XGROUP).add(SETID)
-        .key(key).add(groupname).add(id), BuilderFactory.STRING);
+        .key(key).add(groupName).add(id), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Long> xgroupDestroy(byte[] key, byte[] groupname) {
+  public final CommandObject<Long> xgroupDestroy(byte[] key, byte[] groupName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DESTROY)
-        .key(key).add(groupname), BuilderFactory.LONG);
+        .key(key).add(groupName), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
+  public final CommandObject<Boolean> xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
+        .key(key).add(groupName).add(consumerName), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
-        .key(key).add(groupname).add(consumerName), BuilderFactory.LONG);
+        .key(key).add(groupName).add(consumerName), BuilderFactory.LONG);
   }
-
   public final CommandObject<Long> xdel(String key, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
@@ -2330,8 +2339,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XTRIM).key(key).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<StreamPendingSummary> xpending(String key, String groupname) {
-    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname),
+  public final CommandObject<StreamPendingSummary> xpending(String key, String groupName) {
+    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName),
         BuilderFactory.STREAM_PENDING_SUMMARY);
   }
 
@@ -2339,21 +2348,21 @@ public class CommandObjects {
    * @deprecated Use {@link CommandObjects#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated
-  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname,
-      StreamEntryID start, StreamEntryID end, int count, String consumername) {
-    CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
+  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupName,
+      StreamEntryID start, StreamEntryID end, int count, String consumerName) {
+    CommandArguments args = commandArguments(XPENDING).key(key).add(groupName)
         .add(start == null ? "-" : start).add(end == null ? "+" : end).add(count);
-    if (consumername != null) args.add(consumername);
+    if (consumerName != null) args.add(consumerName);
     return new CommandObject<>(args, BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }
 
-  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
-    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname)
+  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params) {
+    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName)
         .addParams(params), BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }
 
-  public final CommandObject<Object> xpending(byte[] key, byte[] groupname) {
-    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname),
+  public final CommandObject<Object> xpending(byte[] key, byte[] groupName) {
+    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName),
         BuilderFactory.RAW_OBJECT);
   }
 
@@ -2361,30 +2370,30 @@ public class CommandObjects {
    * @deprecated Use {@link CommandObjects#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated
-  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname,
-      byte[] start, byte[] end, int count, byte[] consumername) {
-    CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
+  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupName,
+      byte[] start, byte[] end, int count, byte[] consumerName) {
+    CommandArguments args = commandArguments(XPENDING).key(key).add(groupName)
         .add(start == null ? "-" : start).add(end == null ? "+" : end).add(count);
-    if (consumername != null) args.add(consumername);
+    if (consumerName != null) args.add(consumerName);
     return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params) {
-    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname)
+  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params) {
+    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName)
         .addParams(params), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<StreamEntry>> xclaim(String key, String group,
-      String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+      String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XCLAIM).key(key).add(group)
-        .add(consumername).add(minIdleTime).addObjects((Object[]) ids).addParams(params),
+        .add(consumerName).add(minIdleTime).addObjects((Object[]) ids).addParams(params),
         BuilderFactory.STREAM_ENTRY_LIST);
   }
 
   public final CommandObject<List<StreamEntryID>> xclaimJustId(String key, String group,
-      String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+      String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XCLAIM).key(key).add(group)
-        .add(consumername).add(minIdleTime).addObjects((Object[]) ids).addParams(params)
+        .add(consumerName).add(minIdleTime).addObjects((Object[]) ids).addParams(params)
         .add(JUSTID), BuilderFactory.STREAM_ENTRY_ID_LIST);
   }
 
@@ -2405,16 +2414,16 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<byte[]>> xclaim(byte[] key, byte[] group,
-      byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
+      byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
     return new CommandObject<>(commandArguments(XCLAIM).key(key).add(group)
-        .add(consumername).add(minIdleTime).addObjects((Object[]) ids).addParams(params),
+        .add(consumerName).add(minIdleTime).addObjects((Object[]) ids).addParams(params),
         BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<byte[]>> xclaimJustId(byte[] key, byte[] group,
-      byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
+      byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
     return new CommandObject<>(commandArguments(XCLAIM).key(key).add(group)
-        .add(consumername).add(minIdleTime).addObjects((Object[]) ids).addParams(params)
+        .add(consumerName).add(minIdleTime).addObjects((Object[]) ids).addParams(params)
         .add(JUSTID), BuilderFactory.BINARY_LIST);
   }
 
@@ -2492,10 +2501,10 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(
-      String groupname, String consumer, XReadGroupParams xReadGroupParams,
+      String groupName, String consumer, XReadGroupParams xReadGroupParams,
       Map<String, StreamEntryID> streams) {
     CommandArguments args = commandArguments(XREADGROUP)
-        .add(GROUP).add(groupname).add(consumer)
+        .add(GROUP).add(groupName).add(consumer)
         .addParams(xReadGroupParams).add(STREAMS);
     Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
     entrySet.forEach(entry -> args.key(entry.getKey()));
@@ -2514,10 +2523,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer,
+  public final CommandObject<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
-        .add(GROUP).add(groupname).add(consumer)
+        .add(GROUP).add(groupName).add(consumer)
         .addParams(xReadGroupParams).add(STREAMS);
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.key(entry.getKey());

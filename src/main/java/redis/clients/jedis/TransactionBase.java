@@ -1486,38 +1486,43 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
-    return appendCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  public Response<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
+    return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public Response<String> xgroupSetID(String key, String groupname, StreamEntryID id) {
-    return appendCommand(commandObjects.xgroupSetID(key, groupname, id));
+  public Response<String> xgroupSetID(String key, String groupName, StreamEntryID id) {
+    return appendCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public Response<Long> xgroupDestroy(String key, String groupname) {
-    return appendCommand(commandObjects.xgroupDestroy(key, groupname));
+  public Response<Long> xgroupDestroy(String key, String groupName) {
+    return appendCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public Response<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
-    return appendCommand(commandObjects.xgroupDelConsumer(key, groupname, consumername));
+  public Response<Boolean> xgroupCreateConsumer(String key, String groupName, String consumerName) {
+    return appendCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
   }
 
   @Override
-  public Response<StreamPendingSummary> xpending(String key, String groupname) {
-    return appendCommand(commandObjects.xpending(key, groupname));
+  public Response<Long> xgroupDelConsumer(String key, String groupName, String consumerName) {
+    return appendCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
-    return appendCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  public Response<StreamPendingSummary> xpending(String key, String groupName) {
+    return appendCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
-    return appendCommand(commandObjects.xpending(key, groupname, params));
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName) {
+    return appendCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
+  }
+
+  @Override
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params) {
+    return appendCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
@@ -1536,23 +1541,23 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<StreamEntry>> xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    return appendCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  public Response<List<StreamEntry>> xclaim(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    return appendCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  public Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public Response<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumername, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
-    return appendCommand(commandObjects.xautoclaim(key, group, consumername, minIdleTime, start, params));
+  public Response<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    return appendCommand(commandObjects.xautoclaim(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
-  public Response<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumername, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
-    return appendCommand(commandObjects.xautoclaimJustId(key, group, consumername, minIdleTime, start, params));
+  public Response<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    return appendCommand(commandObjects.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
@@ -1592,8 +1597,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
-    return appendCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -2874,23 +2879,28 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
-    return appendCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  public Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
+    return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
-    return appendCommand(commandObjects.xgroupSetID(key, groupname, id));
+  public Response<String> xgroupSetID(byte[] key, byte[] groupName, byte[] id) {
+    return appendCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public Response<Long> xgroupDestroy(byte[] key, byte[] groupname) {
-    return appendCommand(commandObjects.xgroupDestroy(key, groupname));
+  public Response<Long> xgroupDestroy(byte[] key, byte[] groupName) {
+    return appendCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
-    return appendCommand(commandObjects.xgroupDelConsumer(key, groupname, consumerName));
+  public Response<Boolean> xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return appendCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
+  }
+
+  @Override
+  public Response<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return appendCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
@@ -2909,28 +2919,28 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Object> xpending(byte[] key, byte[] groupname) {
-    return appendCommand(commandObjects.xpending(key, groupname));
+  public Response<Object> xpending(byte[] key, byte[] groupName) {
+    return appendCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public Response<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
-    return appendCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  public Response<List<Object>> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName) {
+    return appendCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
   }
 
   @Override
-  public Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params) {
-    return appendCommand(commandObjects.xpending(key, groupname, params));
+  public Response<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params) {
+    return appendCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
-  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    return appendCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return appendCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    return appendCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  public Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return appendCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
@@ -2980,8 +2990,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
-    return appendCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+  public Response<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override

@@ -2273,7 +2273,7 @@ public class CommandObjects {
         .key(key).add(groupname), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xgroupCreateConsumer(String key, String groupname, String consumername) {
+  public final CommandObject<Long> xgroupCreateConsumer(String key, String groupName, String consumerName) {
     return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
         .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
   }

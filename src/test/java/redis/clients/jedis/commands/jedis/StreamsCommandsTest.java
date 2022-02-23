@@ -373,8 +373,9 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.xgroupCreate("xgroup-stream", "consumer-group-name1", StreamEntryID.LAST_ENTRY, false));
 
     jedis.xgroupDestroy("xgroup-stream", "consumer-group-name");
-    assertEquals(1L, jedis.xgroupCreateConsumer("xgroup-stream", "consumer-group-name1","myconsumer1"));
     assertEquals(0L, jedis.xgroupDelConsumer("xgroup-stream", "consumer-group-name1","myconsumer1"));
+    assertTrue(jedis.xgroupCreateConsumer("xgroup-stream", "consumer-group-name1","myconsumer2"));
+    assertEquals(0L, jedis.xgroupDelConsumer("xgroup-stream", "consumer-group-name1","myconsumer2"));
   }
 
   @Test

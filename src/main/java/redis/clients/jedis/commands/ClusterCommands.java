@@ -50,6 +50,10 @@ public interface ClusterCommands {
 
   String clusterSaveConfig();
 
+  String clusterSetConfigEpoch(long configEpoch);
+
+  String clusterBumpEpoch();
+
   String clusterReplicate(String nodeId);
 
   /**

@@ -444,6 +444,19 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void testQueryParams() {
+    Schema sc = new Schema().addNumericField("numval");
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("1", "numval", "1");
+    client.hset("2", "numval", "2");
+    client.hset("3", "numval", "3");
+
+    Query query =  new Query("hello world").addParam("min", 1).addParam("max", 2);
+    assertEquals(2, client.ftSearch(index, query).getTotalResults());
+  }
+
+  @Test
   public void testSortQueryFlags() throws Exception {
     Schema sc = new Schema().addSortableTextField("title", 1.0);
 

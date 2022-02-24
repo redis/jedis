@@ -2823,7 +2823,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(COMMAND).add(GETKEYS).addObjects((Object[]) command), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<List<KeyedFlags>> commandGetKeysSandFlags(String... command) {
+  public final CommandObject<List<KeyedFlags>> commandGetKeysAndFlags(String... command) {
     return new CommandObject<>(commandArguments(COMMAND).add(GETKEYSANDFLAGS).addObjects((Object[]) command), BuilderFactory.KEYS_AND_FLAGS);
   }
 

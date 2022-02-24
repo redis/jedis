@@ -1085,7 +1085,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
     assertEquals(2, keys.size());
 
-    List<KeyedFlags> keySandFlags = jedis.commandGetKeysSandFlags("SET", "k1", "v1");
+    List<KeyedFlags> keySandFlags = jedis.commandGetKeysAndFlags("SET", "k1", "v1");
     assertEquals("k1", keySandFlags.get(0).getKey());
     assertEquals(2, keySandFlags.get(0).getFlags().size());
   }

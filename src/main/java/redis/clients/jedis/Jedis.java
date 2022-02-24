@@ -7959,9 +7959,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<KeyedFlags> commandGetKeysSandFlags(String... command) {
+  public List<KeyedFlags> commandGetKeysAndFlags(String... command) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandGetKeysSandFlags(command));
+    return connection.executeCommand(commandObjects.commandGetKeysAndFlags(command));
   }
 
   @Override

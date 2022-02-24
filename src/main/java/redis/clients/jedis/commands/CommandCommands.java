@@ -35,7 +35,7 @@ public interface CommandCommands {
    * @param command
    * @return list of {@link KeyedFlags}
    */
-  List<KeyedFlags> commandGetKeysSandFlags(String... command);
+  List<KeyedFlags> commandGetKeysAndFlags(String... command);
 
   /**
    * Return details about multiple Redis commands

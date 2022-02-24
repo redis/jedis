@@ -520,8 +520,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<KeyedFlags> commandGetKeysSandFlags(String... command) {
-    return executeCommand(commandObjects.commandGetKeysSandFlags(command));
+  public List<KeyedFlags> commandGetKeysAndFlags(String... command) {
+    return executeCommand(commandObjects.commandGetKeysAndFlags(command));
   }
 
   @Override

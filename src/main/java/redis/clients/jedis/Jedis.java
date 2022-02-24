@@ -8506,6 +8506,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long clusterCountFailureReports(final String nodeId) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, "COUNT-FAILURE-REPORTS",  nodeId);
+    return connection.getIntegerReply();  
+  }
+
+  @Override
   public long clusterCountKeysInSlot(final int slot) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.COUNTKEYSINSLOT.getRaw(), toByteArray(slot));

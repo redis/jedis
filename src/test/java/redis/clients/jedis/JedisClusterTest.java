@@ -547,6 +547,16 @@ public class JedisClusterTest {
   }
 
   @Test
+  public void testClusterEpoch() {
+    Jedis node5 = new Jedis(nodeInfo4);
+    node5.auth("cluster");
+    node5.flushAll();
+
+    assertEquals("OK", node5.clusterSetConfigEpoch(3));
+    assertEquals("STILL 3", node5.clusterBumpEpoch());
+  }
+
+  @Test
   public void testClusterCountKeysInSlot() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));

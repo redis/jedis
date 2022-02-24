@@ -501,7 +501,37 @@ public final class BuilderFactory {
     public String toString() {
       return "ZSet<Tuple>";
     }
+  };
 
+  private static final Builder<List<Tuple>> TUPLE_LIST_FROM_PAIRS = new Builder<List<Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Tuple> build(Object data) {
+      if (data == null) return null;
+      return ((List<Object>) data).stream()
+          .map(o -> (List<Object>) o).map(p -> TUPLE.build(p))
+          .collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<Tuple>";
+    }
+  };
+
+  public static final Builder<KeyedList<Tuple>> KEYED_TUPLE_LIST = new Builder<KeyedList<Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyedList<Tuple> build(Object data) {
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      return new KeyedList<>(STRING.build(l.get(0)), TUPLE_LIST_FROM_PAIRS.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyedList<String>";
+    }
   };
 
   public static final Builder<ScanResult<String>> SCAN_RESPONSE = new Builder<ScanResult<String>>() {
@@ -1425,7 +1455,6 @@ public final class BuilderFactory {
     public String toString() {
       return "Map<String, String>";
     }
-
   };
 
   public static final Builder<Class<?>> JSON_TYPE = new Builder<Class<?>>() {

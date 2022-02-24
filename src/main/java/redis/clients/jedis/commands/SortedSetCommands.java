@@ -3,11 +3,13 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import redis.clients.jedis.args.ZSetOption;
 
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.util.KeyedList;
 
 public interface SortedSetCommands {
 
@@ -781,4 +783,11 @@ public interface SortedSetCommands {
    */
   long zunionstore(String dstkey, ZParams params, String... sets);
 
+  KeyedList<Tuple> zmpop(ZSetOption option, String... keys);
+
+  KeyedList<Tuple> zmpop(ZSetOption option, int count, String... keys);
+
+  KeyedList<Tuple> bzmpop(ZSetOption option, String... keys);
+
+  KeyedList<Tuple> bzmpop(ZSetOption option, int count, String... keys);
 }

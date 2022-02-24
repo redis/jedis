@@ -1856,6 +1856,26 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
+
+  public final CommandObject<KeyedList<Tuple>> zmpop(ZSetOption option, String... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyedList<Tuple>> zmpop(ZSetOption option, int count, String... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyedList<Tuple>> bzmpop(ZSetOption option, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(keys.length)
+        .keys((Object[]) keys).add(option), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyedList<Tuple>> bzmpop(ZSetOption option, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(keys.length)
+        .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
+  }
   // Sorted Set commands
 
   // Geo commands

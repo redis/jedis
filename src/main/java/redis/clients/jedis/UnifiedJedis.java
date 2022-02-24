@@ -2289,6 +2289,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return executeCommand(commandObjects.zunionstore(dstkey, params, sets));
   }
+
+  @Override
+  public KeyedList<Tuple> zmpop(ZSetOption option, String... keys) {
+    return executeCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public KeyedList<Tuple> zmpop(ZSetOption option, int count, String... keys) {
+    return executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public KeyedList<Tuple> bzmpop(ZSetOption option, String... keys) {
+    return executeCommand(commandObjects.bzmpop(option, keys));
+  }
+
+  @Override
+  public KeyedList<Tuple> bzmpop(ZSetOption option, int count, String... keys) {
+    return executeCommand(commandObjects.bzmpop(option, count, keys));
+  }
   // Sorted Set commands
 
   // Geo commands

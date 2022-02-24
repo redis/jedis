@@ -28,13 +28,15 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Long> xack(byte[] key, byte[] group, byte[]... ids);
 
-  Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream);
+  Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream);
 
-  Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id);
+  Response<String> xgroupSetID(byte[] key, byte[] groupName, byte[] id);
 
-  Response<Long> xgroupDestroy(byte[] key, byte[] groupname);
+  Response<Long> xgroupDestroy(byte[] key, byte[] groupName);
 
-  Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName);
+  Response<Boolean> xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName);
+
+  Response<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName);
 
   Response<Long> xdel(byte[] key, byte[]... ids);
 
@@ -42,19 +44,19 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Long> xtrim(byte[] key, XTrimParams params);
 
-  Response<Object> xpending(byte[] key, byte[] groupname);
+  Response<Object> xpending(byte[] key, byte[] groupName);
 
   /**
    * @deprecated Use {@link StreamPipelineBinaryCommands#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated
-  Response<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  Response<List<Object>> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName);
 
-  Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params);
+  Response<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params);
 
-  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+  Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids);
 
-  Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+  Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids);
 
   Response<List<Object>> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params);
@@ -89,7 +91,7 @@ public interface StreamPipelineBinaryCommands {
 
   Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
-  Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
+  Response<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], byte[]>... streams);
 
 }

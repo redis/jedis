@@ -25,13 +25,15 @@ public interface StreamBinaryCommands {
 
   long xack(byte[] key, byte[] group, byte[]... ids);
 
-  String xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream);
+  String xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream);
 
-  String xgroupSetID(byte[] key, byte[] groupname, byte[] id);
+  String xgroupSetID(byte[] key, byte[] groupName, byte[] id);
 
-  long xgroupDestroy(byte[] key, byte[] groupname);
+  long xgroupDestroy(byte[] key, byte[] groupName);
 
-  long xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName);
+  boolean xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName);
+
+  long xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName);
 
   long xdel(byte[] key, byte[]... ids);
 
@@ -39,19 +41,19 @@ public interface StreamBinaryCommands {
 
   long xtrim(byte[] key, XTrimParams params);
 
-  Object xpending(byte[] key, byte[] groupname);
+  Object xpending(byte[] key, byte[] groupName);
 
   /**
    * @deprecated Use {@link StreamBinaryCommands#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated
-  List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername);
+  List<Object> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName);
 
-  List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params);
+  List<Object> xpending(byte[] key, byte[] groupName, XPendingParams params);
 
-  List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+  List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids);
 
-  List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids);
+  List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids);
 
   List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName,
       long minIdleTime, byte[] start, XAutoClaimParams params);
@@ -86,7 +88,7 @@ public interface StreamBinaryCommands {
 
   List<byte[]> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
-  List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams,
+  List<byte[]> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], byte[]>... streams);
 
 }

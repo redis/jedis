@@ -542,6 +542,11 @@ public class JedisClusterTest {
   }
 
   @Test
+  public void testClusterCountFailureReports() {
+    assertEquals(0, node1.clusterCountFailureReports(node1.clusterMyId()));
+  }
+
+  @Test
   public void testClusterCountKeysInSlot() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(new HostAndPort(nodeInfo1.getHost(), nodeInfo1.getPort()));

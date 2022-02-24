@@ -27,6 +27,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.util.KeyedList;
 import redis.clients.jedis.util.Pool;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
@@ -6896,6 +6897,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public KeyedListElement brpop(final double timeout, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.brpop(timeout, keys));
+  }
+
+  @Override
+  public KeyedList<String> lmpop(ListDirection direction, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public KeyedList<String> lmpop(ListDirection direction, int count, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public KeyedList<String> blmpop(ListDirection direction, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmpop(direction, keys));
+  }
+
+  @Override
+  public KeyedList<String> blmpop(ListDirection direction, int count, String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmpop(direction, count, keys));
   }
 
   @Override

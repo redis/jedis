@@ -36,6 +36,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.util.KeyedList;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -1171,6 +1172,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     return executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public KeyedList<String> lmpop(ListDirection direction, String... keys) {
+    return executeCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public KeyedList<String> lmpop(ListDirection direction, int count, String... keys) {
+    return executeCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public KeyedList<String> blmpop(ListDirection direction, String... keys) {
+    return executeCommand(commandObjects.blmpop(direction, keys));
+  }
+
+  @Override
+  public KeyedList<String> blmpop(ListDirection direction, int count, String... keys) {
+    return executeCommand(commandObjects.blmpop(direction, count, keys));
   }
   // List commands
 

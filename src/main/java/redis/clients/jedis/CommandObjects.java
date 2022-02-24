@@ -31,6 +31,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword;
+import redis.clients.jedis.util.KeyedList;
 
 public class CommandObjects {
 
@@ -895,6 +896,27 @@ public class CommandObjects {
   public final CommandObject<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     return new CommandObject<>(commandArguments(BLMOVE).blocking().key(srcKey)
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<KeyedList<String>> lmpop(ListDirection direction, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyedList<String>> lmpop(ListDirection direction, int count, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyedList<String>> blmpop(ListDirection direction, String... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking()
+        .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyedList<String>> blmpop(ListDirection direction, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking()
+        .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
+        BuilderFactory.KEYED_STRING_LIST);
   }
   // List commands
 

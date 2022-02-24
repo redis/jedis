@@ -17,6 +17,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.KeyedTSElements;
 import redis.clients.jedis.timeseries.TSElement;
 import redis.clients.jedis.util.JedisByteHashMap;
+import redis.clients.jedis.util.KeyedList;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
@@ -405,6 +406,21 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "KeyedListElement";
+    }
+  };
+
+  public static final Builder<KeyedList<String>> KEYED_STRING_LIST = new Builder<KeyedList<String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyedList<String> build(Object data) {
+      if (data == null) return null;
+      List<byte[]> l = (List<byte[]>) data;
+      return new KeyedList<>(STRING.build(l.get(0)), STRING_LIST.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyedList<String>";
     }
   };
 

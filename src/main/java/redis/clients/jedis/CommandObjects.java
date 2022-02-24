@@ -908,13 +908,13 @@ public class CommandObjects {
         .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_STRING_LIST);
   }
 
-  public final CommandObject<KeyedList<String>> blmpop(ListDirection direction, String... keys) {
-    return new CommandObject<>(commandArguments(BLMPOP).blocking()
+  public final CommandObject<KeyedList<String>> blmpop(long timeout, ListDirection direction, String... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
         .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_STRING_LIST);
   }
 
-  public final CommandObject<KeyedList<String>> blmpop(ListDirection direction, int count, String... keys) {
-    return new CommandObject<>(commandArguments(BLMPOP).blocking()
+  public final CommandObject<KeyedList<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
         .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
         BuilderFactory.KEYED_STRING_LIST);
   }
@@ -1867,13 +1867,13 @@ public class CommandObjects {
         .add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyedList<Tuple>> bzmpop(ZSetOption option, String... keys) {
-    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(keys.length)
+  public final CommandObject<KeyedList<Tuple>> bzmpop(long timeout, ZSetOption option, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyedList<Tuple>> bzmpop(ZSetOption option, int count, String... keys) {
-    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(keys.length)
+  public final CommandObject<KeyedList<Tuple>> bzmpop(long timeout, ZSetOption option, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
   }
   // Sorted Set commands

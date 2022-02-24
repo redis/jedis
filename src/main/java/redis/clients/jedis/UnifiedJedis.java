@@ -1185,13 +1185,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyedList<String> blmpop(ListDirection direction, String... keys) {
-    return executeCommand(commandObjects.blmpop(direction, keys));
+  public KeyedList<String> blmpop(long timeout, ListDirection direction, String... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public KeyedList<String> blmpop(ListDirection direction, int count, String... keys) {
-    return executeCommand(commandObjects.blmpop(direction, count, keys));
+  public KeyedList<String> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
   // List commands
 
@@ -2301,13 +2301,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyedList<Tuple> bzmpop(ZSetOption option, String... keys) {
-    return executeCommand(commandObjects.bzmpop(option, keys));
+  public KeyedList<Tuple> bzmpop(long timeout, ZSetOption option, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public KeyedList<Tuple> bzmpop(ZSetOption option, int count, String... keys) {
-    return executeCommand(commandObjects.bzmpop(option, count, keys));
+  public KeyedList<Tuple> bzmpop(long timeout, ZSetOption option, int count, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
   // Sorted Set commands
 

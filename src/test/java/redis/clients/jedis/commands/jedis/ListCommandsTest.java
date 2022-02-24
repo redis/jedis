@@ -911,19 +911,19 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(mylist1, "one", "two", "three", "four", "five");
     jedis.lpush(mylist2, "one", "two", "three", "four", "five");
 
-    KeyedList<String> elements = jedis.blmpop(ListDirection.LEFT, mylist1, mylist2);
+    KeyedList<String> elements = jedis.blmpop(1000L, ListDirection.LEFT, mylist1, mylist2);
     assertEquals(mylist1, elements.getKey());
     assertEquals(1, elements.getValue().size());
 
-    elements = jedis.blmpop(ListDirection.LEFT, 5, mylist1, mylist2);
+    elements = jedis.blmpop(1000L, ListDirection.LEFT, 5, mylist1, mylist2);
     assertEquals(mylist1, elements.getKey());
     assertEquals(4, elements.getValue().size());
 
-    elements = jedis.blmpop(ListDirection.RIGHT, 100, mylist1, mylist2);
+    elements = jedis.blmpop(1000L, ListDirection.RIGHT, 100, mylist1, mylist2);
     assertEquals(mylist2, elements.getKey());
     assertEquals(5, elements.getValue().size());
 
-    elements = jedis.blmpop(ListDirection.RIGHT, mylist1, mylist2);
+    elements = jedis.blmpop(1000L, ListDirection.RIGHT, mylist1, mylist2);
     assertNull(elements);
   }
 }

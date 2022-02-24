@@ -396,7 +396,7 @@ public interface ListCommands {
 
   KeyedList<String> lmpop(ListDirection direction, int count, String... keys);
 
-  KeyedList<String> blmpop(ListDirection direction, String... keys);
+  KeyedList<String> blmpop(long timeout, ListDirection direction, String... keys);
 
-  KeyedList<String> blmpop(ListDirection direction, int count, String... keys);
+  KeyedList<String> blmpop(long timeout, ListDirection direction, int count, String... keys);
 }

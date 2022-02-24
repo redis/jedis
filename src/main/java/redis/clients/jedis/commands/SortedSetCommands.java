@@ -787,7 +787,7 @@ public interface SortedSetCommands {
 
   KeyedList<Tuple> zmpop(ZSetOption option, int count, String... keys);
 
-  KeyedList<Tuple> bzmpop(ZSetOption option, String... keys);
+  KeyedList<Tuple> bzmpop(long timeout, ZSetOption option, String... keys);
 
-  KeyedList<Tuple> bzmpop(ZSetOption option, int count, String... keys);
+  KeyedList<Tuple> bzmpop(long timeout, ZSetOption option, int count, String... keys);
 }

@@ -103,71 +103,79 @@ public interface StreamPipelineCommands {
   Response<Long> xack(String key, String group, StreamEntryID... ids);
 
   /**
-   * XGROUP CREATE <key> <groupname> <id or $>
+   * XGROUP CREATE <key> <groupName> <id or $>
    *
    * @param key
-   * @param groupname
+   * @param groupName
    * @param id
    * @param makeStream
    */
-  Response<String> xgroupCreate( String key, String groupname, StreamEntryID id, boolean makeStream);
+  Response<String> xgroupCreate( String key, String groupName, StreamEntryID id, boolean makeStream);
 
   /**
-   * XGROUP SETID <key> <groupname> <id or $>
+   * XGROUP SETID <key> <groupName> <id or $>
    *
    * @param key
-   * @param groupname
+   * @param groupName
    * @param id
    */
-  Response<String> xgroupSetID( String key, String groupname, StreamEntryID id);
+  Response<String> xgroupSetID( String key, String groupName, StreamEntryID id);
 
   /**
-   * XGROUP DESTROY <key> <groupname>
+   * XGROUP DESTROY <key> <groupName>
    *
    * @param key
-   * @param groupname
+   * @param groupName
    */
-  Response<Long> xgroupDestroy(String key, String groupname);
+  Response<Long> xgroupDestroy(String key, String groupName);
 
   /**
-   * XGROUP DELCONSUMER <key> <groupname> <consumername>
+   * XGROUP CREATECONSUMER <key> <groupName> <consumerName>
    * @param key
-   * @param groupname
-   * @param consumername
+   * @param groupName
+   * @param consumerName
    */
-  Response<Long> xgroupDelConsumer( String key, String groupname, String consumername);
+  Response<Boolean> xgroupCreateConsumer( String key, String groupName, String consumerName);
+
+  /**
+   * XGROUP DELCONSUMER <key> <groupName> <consumerName>
+   * @param key
+   * @param groupName
+   * @param consumerName
+   */
+  Response<Long> xgroupDelConsumer( String key, String groupName, String consumerName);
 
   /**
    * XPENDING key group
    *
    * @param key
-   * @param groupname
+   * @param groupName
    */
-  Response<StreamPendingSummary> xpending(String key, String groupname);
+  Response<StreamPendingSummary> xpending(String key, String groupName);
 
   /**
    * XPENDING key group [start end count] [consumer]
    *
    * @param key
-   * @param groupname
+   * @param groupName
    * @param start
    * @param end
    * @param count
-   * @param consumername
+   * @param consumerName
    * @deprecated Use {@link StreamPipelineCommands#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated
-  Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start,
-      StreamEntryID end, int count, String consumername);
+  Response<List<StreamPendingEntry>> xpending(String key, String groupName, StreamEntryID start,
+      StreamEntryID end, int count, String consumerName);
 
   /**
    * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
    *
    * @param key
-   * @param groupname
+   * @param groupName
    * @param params
    */
-  Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params);
+  Response<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params);
 
   /**
    * XDEL key ID [ID ...]
@@ -196,7 +204,7 @@ public interface StreamPipelineCommands {
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE]
    */
-  Response<List<StreamEntry>> xclaim(String key, String group, String consumername, long minIdleTime,
+  Response<List<StreamEntry>> xclaim(String key, String group, String consumerName, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
 
   /**
@@ -204,7 +212,7 @@ public interface StreamPipelineCommands {
    *        [IDLE <milliseconds>] [TIME <mstime>] [RETRYCOUNT <count>]
    *        [FORCE] JUSTID
    */
-  Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername, long minIdleTime,
+  Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumerName, long minIdleTime,
       XClaimParams params, StreamEntryID... ids);
 
   /**
@@ -289,12 +297,12 @@ public interface StreamPipelineCommands {
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    *
-   * @param groupname
+   * @param groupName
    * @param consumer
    * @param xReadGroupParams
    * @param streams
    */
-  Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer,
+  Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
 }

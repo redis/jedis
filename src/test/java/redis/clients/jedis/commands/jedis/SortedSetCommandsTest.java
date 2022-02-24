@@ -1637,6 +1637,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(new Tuple("b", 10d), single.getValue().get(0));
     assertEquals(2, range.getValue().size());
+    assertNull(jedis.zmpop(ZSetOption.MAX, "foo"));
   }
 
   @Test
@@ -1646,10 +1647,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    KeyedList<Tuple> single = jedis.bzmpop(1000L, ZSetOption.MAX, "foo");
-    KeyedList<Tuple> range = jedis.bzmpop(1000L, ZSetOption.MIN, 2, "foo");
+    KeyedList<Tuple> single = jedis.bzmpop(1L, ZSetOption.MAX, "foo");
+    KeyedList<Tuple> range = jedis.bzmpop(1L, ZSetOption.MIN, 2, "foo");
 
     assertEquals(new Tuple("b", 10d), single.getValue().get(0));
     assertEquals(2, range.getValue().size());
+    assertNull(jedis.bzmpop(1L, ZSetOption.MAX, "foo"));
   }
 }

@@ -44,6 +44,8 @@ public interface ClusterCommands {
 
   long clusterKeySlot(String key);
 
+  long clusterCountFailureReports(String nodeId);
+
   long clusterCountKeysInSlot(int slot);
 
   String clusterSaveConfig();

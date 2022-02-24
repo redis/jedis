@@ -15,7 +15,7 @@ public class KeyedZSetElement extends Keyed<Tuple> {
   }
 
   public KeyedZSetElement(String key, String element, Double score) {
-    super(element, new Tuple(element, score));
+    super(key, new Tuple(element, score));
   }
 
   @Deprecated

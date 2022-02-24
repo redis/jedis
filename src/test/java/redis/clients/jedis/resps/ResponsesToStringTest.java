@@ -38,7 +38,7 @@ public class ResponsesToStringTest {
 
         // test toString
         String toStringResult = elem.toString();
-        assertThat(toStringResult, CoreMatchers.containsString("key-name"));
+        assertThat(toStringResult, CoreMatchers.containsString("key=key-name"));
         assertThat(toStringResult, CoreMatchers.containsString("elem"));
         assertThat(toStringResult, CoreMatchers.containsString("1"));
 

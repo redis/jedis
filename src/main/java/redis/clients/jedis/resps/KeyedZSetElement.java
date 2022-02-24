@@ -1,45 +1,35 @@
 package redis.clients.jedis.resps;
 
+import redis.clients.jedis.util.Keyed;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * This class is used to represent a SortedSet element when it is returned with respective key name.
+ * @deprecated Use {@link Keyed}&lt;{@link Tuple}&gt;.
  */
-public class KeyedZSetElement extends Tuple {
-
-  private final String key;
+@Deprecated
+public class KeyedZSetElement extends Keyed<Tuple> {
 
   public KeyedZSetElement(byte[] key, byte[] element, Double score) {
-    super(element, score);
-    this.key = SafeEncoder.encode(key);
+    this(SafeEncoder.encode(key), SafeEncoder.encode(element), score);
   }
 
   public KeyedZSetElement(String key, String element, Double score) {
-    super(element, score);
-    this.key = key;
+    super(element, new Tuple(element, score));
   }
 
-  public String getKey() {
-    return key;
+  @Deprecated
+  public String getElement() {
+    return getValue().getElement();
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof KeyedZSetElement)) return false;
-
-    if (!key.equals(((KeyedZSetElement) o).key)) return false;
-    return super.equals(o);
+  @Deprecated
+  public byte[] getBinaryElement() {
+    return getValue().getBinaryElement();
   }
 
-  @Override
-  public int hashCode() {
-    return 31 * key.hashCode() + super.hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return "KeyedZSetElement{" + "key=" + key + ", element='" + getElement() + "'"
-        + ", score=" + getScore() + "} ";
+  @Deprecated
+  public double getScore() {
+    return getValue().getScore();
   }
 }

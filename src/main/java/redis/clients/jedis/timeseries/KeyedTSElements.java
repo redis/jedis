@@ -1,33 +1,26 @@
 package redis.clients.jedis.timeseries;
 
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class KeyedTSElements implements Iterable<TSElement> {
+import redis.clients.jedis.util.KeyedList;
 
-  private final String key;
+public class KeyedTSElements extends KeyedList<TSElement> {
+
   private final Map<String, String> labels;
-  private final List<TSElement> elements;
   private final TSElement element;
 
   public KeyedTSElements(String key, Map<String, String> labels, List<TSElement> elements) {
-    this.key = key;
+    super(key, elements);
     this.labels = labels;
-    this.elements = elements;
     this.element = null;
   }
 
   public KeyedTSElements(String key, Map<String, String> labels, TSElement element) {
-    this.key = key;
+    super(key, element != null ? Collections.singletonList(element) : Collections.emptyList());
     this.labels = labels;
     this.element = element;
-    this.elements = element != null ? Collections.singletonList(element) : Collections.emptyList();
-  }
-
-  public String getKey() {
-    return key;
   }
 
   public Map<String, String> getLabels() {
@@ -35,7 +28,7 @@ public class KeyedTSElements implements Iterable<TSElement> {
   }
 
   public List<TSElement> getElements() {
-    return elements;
+    return getValue();
   }
 
   /**
@@ -45,10 +38,5 @@ public class KeyedTSElements implements Iterable<TSElement> {
    */
   public TSElement getElement() {
     return element;
-  }
-
-  @Override
-  public Iterator<TSElement> iterator() {
-    return elements.iterator();
   }
 }

@@ -548,12 +548,8 @@ public class JedisClusterTest {
 
   @Test
   public void testClusterEpoch() {
-    Jedis node5 = new Jedis(nodeInfo4);
-    node5.auth("cluster");
-    node5.flushAll();
-
-    assertEquals("OK", node5.clusterSetConfigEpoch(3));
-    assertEquals("STILL 3", node5.clusterBumpEpoch());
+    assertEquals("OK", node4.clusterSetConfigEpoch(3));
+    assertEquals("STILL 3", node4.clusterBumpEpoch());
   }
 
   @Test

@@ -48,6 +48,7 @@ public class JedisClusterTest {
   private static Jedis node2;
   private static Jedis node3;
   private static Jedis node4;
+  private static Jedis node5;
   private static Jedis nodeSlave2;
   private static final String LOCAL_IP = "127.0.0.1";
 
@@ -80,6 +81,10 @@ public class JedisClusterTest {
     node4 = new Jedis(nodeInfo4);
     node4.auth("cluster");
     node4.flushAll();
+
+    node5 = new Jedis(nodeInfo4);
+    node5.auth("cluster");
+    node5.flushAll();
 
     nodeSlave2 = new Jedis(nodeInfoSlave2);
     nodeSlave2.auth("cluster");
@@ -548,10 +553,6 @@ public class JedisClusterTest {
 
   @Test
   public void testClusterEpoch() {
-    Jedis node5 = new Jedis(nodeInfo4);
-    node5.auth("cluster");
-    node5.flushAll();
-
     assertEquals("OK", node5.clusterSetConfigEpoch(3));
     assertEquals("STILL 3", node5.clusterBumpEpoch());
   }

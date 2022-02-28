@@ -71,8 +71,13 @@ jobs:
         run: |
           sudo apt update -q
           sudo apt install -yq stunnel make
+      - name: get ip
+        id: get_internal_ip
+        run: |
+          IP=`ip -4 -o address show dev eth0|awk '{print $4}'|cut -d '/' -f 1-1`
+          echo "::set-output name=INTERNALIP::${IP}"
       - name: build redis
-        run: make circleci-install
+        run: make circleci-install SENTINELMASTER=${{steps.get_internal_ip.outputs.INTERNALIP}}
       - name: run tests
         run: TEST="" make test
       - name: publish snapshot

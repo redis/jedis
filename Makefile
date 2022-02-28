@@ -1,6 +1,6 @@
 PATH := ./redis-git/src:${PATH}
 STUNNEL_BIN := $(shell which stunnel)
-SENTINELMASTER := localhost
+SENTINELMASTER ?= 127.0.0.1
 
 define REDIS1_CONF
 daemonize yes
@@ -179,7 +179,7 @@ define REDIS_SENTINEL4
 port 26382
 daemonize yes
 protected-mode no
-sentinel monitor mymaster ${SENTINELMASER} 6381 1
+sentinel monitor mymaster ${SENTINELMASTER} 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1

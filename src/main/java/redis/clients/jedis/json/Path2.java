@@ -33,6 +33,10 @@ public class Path2 {
   public static Path2 of(final String path) {
     return new Path2(path);
   }
+  
+  public static Path2 ofJsonPointer(final String path) {
+    return new Path2(JsonPointer.parse(path, ROOT_PATH.str));
+  }
 
   @Override
   public boolean equals(Object obj) {

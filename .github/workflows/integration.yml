@@ -16,33 +16,33 @@ on:
 
 jobs:
 
-  test_modules:
-    runs-on: ubuntu-latest
-    name: Test Modules
-    steps:
-      - uses: addnab/docker-run-action@v3
-        with:
-          image: redislabs/redismod:edge
-          options: --name mod -p 6379:6379
-
-      - uses: actions/checkout@v2
-      - name: Set up publishing to maven central
-        uses: actions/setup-java@v2
-        with:
-          java-version: '8'
-          distribution: 'temurin'
-      - name: maven cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.m2/repository
-            /var/cache/apt/repository
-          key: jedis-${{ hashFiles('**/pom.xml') }}
-      - name: sync offline dependencies
-        run: mvn dependency:go-offline
-      - name: build and test
-        run: mvn -DmodulesDocker="mod:6379" -Dtest="redis.clients.jedis.modules.**" test
-
+#  test_modules:
+#    runs-on: ubuntu-latest
+#    name: Test Modules
+#    steps:
+#      - uses: addnab/docker-run-action@v3
+#        with:
+#          image: redislabs/redismod:edge
+#          options: --name mod -p 6379:6379
+#
+#      - uses: actions/checkout@v2
+#      - name: Set up publishing to maven central
+#        uses: actions/setup-java@v2
+#        with:
+#          java-version: '8'
+#          distribution: 'temurin'
+#      - name: maven cache
+#        uses: actions/cache@v2
+#        with:
+#          path: |
+#            ~/.m2/repository
+#            /var/cache/apt/repository
+#          key: jedis-${{ hashFiles('**/pom.xml') }}
+#      - name: sync offline dependencies
+#        run: mvn dependency:go-offline
+#      - name: build and test
+#        run: mvn -DmodulesDocker="mod:6379" -Dtest="redis.clients.jedis.modules.**" test
+#
   build:
     runs-on: ubunut-latest
     needs: [test_modules]

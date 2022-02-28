@@ -139,7 +139,7 @@ define REDIS_SENTINEL1
 port 26379
 daemonize yes
 protected-mode no
-sentinel monitor mymaster 127.0.0.1 6379 1
+sentinel monitor mymaster localhost 6379 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel failover-timeout mymaster 120000
@@ -152,7 +152,7 @@ define REDIS_SENTINEL2
 port 26380
 daemonize yes
 protected-mode no
-sentinel monitor mymaster 127.0.0.1 6381 1
+sentinel monitor mymaster localhost 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
@@ -165,7 +165,7 @@ define REDIS_SENTINEL3
 port 26381
 daemonize yes
 protected-mode no
-sentinel monitor mymasterfailover 127.0.0.1 6384 1
+sentinel monitor mymasterfailover localhost 6384 1
 sentinel auth-pass mymasterfailover foobared
 sentinel down-after-milliseconds mymasterfailover 2000
 sentinel failover-timeout mymasterfailover 120000
@@ -178,7 +178,7 @@ define REDIS_SENTINEL4
 port 26382
 daemonize yes
 protected-mode no
-sentinel monitor mymaster 127.0.0.1 6381 1
+sentinel monitor mymaster localhost 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
@@ -193,7 +193,7 @@ daemonize yes
 protected-mode no
 user default off
 user sentinel on allcommands allkeys >foobared
-sentinel monitor aclmaster 127.0.0.1 6387 1
+sentinel monitor aclmaster localhost 6387 1
 sentinel auth-user aclmaster acljedis
 sentinel auth-pass aclmaster fizzbuzz
 sentinel down-after-milliseconds aclmaster 2000
@@ -303,35 +303,35 @@ define STUNNEL_CONF
 cert = src/test/resources/private.pem
 pid = /tmp/stunnel.pid
 [redis_1]
-accept = 127.0.0.1:6390
-connect = 127.0.0.1:6379
+accept = localhost:6390
+connect = localhost:6379
 [redis_3]
-accept = 127.0.0.1:16381
-connect = 127.0.0.1:6381
+accept = localhost:16381
+connect = localhost:6381
 [redis_4]
-accept = 127.0.0.1:16382
-connect = 127.0.0.1:6382
+accept = localhost:16382
+connect = localhost:6382
 [redis_9]
-accept = 127.0.0.1:16387
-connect = 127.0.0.1:6387
+accept = localhost:16387
+connect = localhost:6387
 [redis_cluster_1]
-accept = 127.0.0.1:8379
-connect = 127.0.0.1:7379
+accept = localhost:8379
+connect = localhost:7379
 [redis_cluster_2]
-accept = 127.0.0.1:8380
+accept = localhost:8380
 connect = 127.0.001:7380
 [redis_cluster_3]
-accept = 127.0.0.1:8381
+accept = localhost:8381
 connect = 127.0.001:7381
 [redis_cluster_4]
-accept = 127.0.0.1:8382
-connect = 127.0.0.1:7382
+accept = localhost:8382
+connect = localhost:7382
 [redis_cluster_5]
-accept = 127.0.0.1:8383
-connect = 127.0.0.1:7383
+accept = localhost:8383
+connect = localhost:7383
 [redis_sentinel_5]
-accept = 127.0.0.1:36383
-connect = 127.0.0.1:26383
+accept = localhost:36383
+connect = localhost:26383
 endef
 
 export REDIS1_CONF

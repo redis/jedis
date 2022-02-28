@@ -21,7 +21,7 @@ public abstract class JedisClusterTestBase {
   protected HostAndPort nodeInfo4 = HostAndPorts.getClusterServers().get(3);
   protected HostAndPort nodeInfoSlave2 = HostAndPorts.getClusterServers().get(4);
 
-  protected static final String LOCAL_IP = "127.0.0.1";
+  protected static final String LOCAL_IP = "localhost";
 
   @Before
   public void setUp() throws InterruptedException {

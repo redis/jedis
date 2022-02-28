@@ -37,8 +37,8 @@
 //
 //    // ---- configure cluster
 //    // add nodes to cluster
-//    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-//    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
+//    node1.clusterMeet("localhost", nodeInfo2.getPort());
+//    node1.clusterMeet("localhost", nodeInfo3.getPort());
 //
 //    // split available slots across the three nodes
 //    int slotsPerNode = CLUSTER_HASHSLOTS / 3;
@@ -62,7 +62,7 @@
 //    JedisClusterTestUtil.waitForClusterReady(node1, node2, node2);
 //
 //    return new JedisCluster(Collections.singleton(
-//        new HostAndPort("127.0.0.1", nodeInfo1.getPort())), null, "cluster");
+//        new HostAndPort("localhost", nodeInfo1.getPort())), null, "cluster");
 //  }
 //
 //  static void tearClusterDown() {

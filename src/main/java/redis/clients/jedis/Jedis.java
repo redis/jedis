@@ -7953,11 +7953,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * <pre>
-   * redis 127.0.0.1:26381&gt; sentinel masters
+   * redis localhost:26381&gt; sentinel masters
    * 1)  1) "name"
    *     2) "mymaster"
    *     3) "ip"
-   *     4) "127.0.0.1"
+   *     4) "localhost"
    *     5) "port"
    *     6) "6379"
    *     7) "runid"
@@ -8003,8 +8003,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * <pre>
-   * redis 127.0.0.1:26381&gt; sentinel get-master-addr-by-name mymaster
-   * 1) "127.0.0.1"
+   * redis localhost:26381&gt; sentinel get-master-addr-by-name mymaster
+   * 1) "localhost"
    * 2) "6379"
    * </pre>
    * @param masterName
@@ -8018,7 +8018,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * <pre>
-   * redis 127.0.0.1:26381&gt; sentinel reset mymaster
+   * redis localhost:26381&gt; sentinel reset mymaster
    * (integer) 1
    * </pre>
    * @param pattern
@@ -8031,11 +8031,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * <pre>
-   * redis 127.0.0.1:26381&gt; sentinel slaves mymaster
+   * redis localhost:26381&gt; sentinel slaves mymaster
    * 1)  1) "name"
-   *     2) "127.0.0.1:6380"
+   *     2) "localhost:6380"
    *     3) "ip"
-   *     4) "127.0.0.1"
+   *     4) "localhost"
    *     5) "port"
    *     6) "6380"
    *     7) "runid"

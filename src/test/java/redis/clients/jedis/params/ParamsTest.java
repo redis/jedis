@@ -12,14 +12,14 @@ public class ParamsTest {
   public void toStringTest() {
 
     ClientKillParams clientKillParams = ClientKillParams.clientKillParams()
-        .addr("127.0.0.1", 6379)
+        .addr("localhost", 6379)
         .id("12".getBytes())
         .type(ClientType.NORMAL);
 
     String toStringResult = clientKillParams.toString();
     assertThat(toStringResult, CoreMatchers.containsString("ID, 12"));
     assertThat(toStringResult, CoreMatchers.containsString("TYPE, NORMAL"));
-    assertThat(toStringResult, CoreMatchers.containsString("127.0.0.1:6379"));
+    assertThat(toStringResult, CoreMatchers.containsString("localhost:6379"));
   }
 
 }

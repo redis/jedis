@@ -44,8 +44,8 @@ public abstract class ClusterJedisCommandsTestBase {
     // ---- configure cluster
 
     // add nodes to cluster
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
+    node1.clusterMeet("localhost", nodeInfo2.getPort());
+    node1.clusterMeet("localhost", nodeInfo3.getPort());
 
     // split available slots across the three nodes
 //    int slotsPerNode = JedisCluster.HASHSLOTS / 3;
@@ -70,7 +70,7 @@ public abstract class ClusterJedisCommandsTestBase {
 
     waitForClusterReady();
 
-    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+    jedisClusterNode.add(new HostAndPort("localhost", 7379));
 //    cluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
 //    cluster = new JedisCluster(jedisClusterNode, DefaultJedisClientConfig.builder().password("cluster").build(), 5);
     cluster = new JedisCluster(jedisClusterNode, null, "cluster");

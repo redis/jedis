@@ -22,7 +22,7 @@ public class JedisSentinelTest {
   private static final String MONITOR_MASTER_NAME = "mymastermonitor";
   private static final String REMOVE_MASTER_NAME = "mymasterremove";
   private static final String FAILOVER_MASTER_NAME = "mymasterfailover";
-  private static final String MASTER_IP = "127.0.0.1";
+  private static final String MASTER_IP = "localhost";
 
   protected static HostAndPort master = HostAndPorts.getRedisServers().get(0);
   protected static HostAndPort slave = HostAndPorts.getRedisServers().get(4);

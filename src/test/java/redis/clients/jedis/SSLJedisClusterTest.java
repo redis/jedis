@@ -25,14 +25,14 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
   private final HostAndPortMapper hostAndPortMap = (HostAndPort hostAndPort) -> {
     String host = hostAndPort.getHost();
     int port = hostAndPort.getPort();
-    if (host.equals("127.0.0.1")) {
+    if (host.equals("localhost")) {
       host = "localhost";
       port = port + 1000;
     }
     return new HostAndPort(host, port);
   };
 
-  // don't map IP addresses so that we try to connect with host 127.0.0.1
+  // don't map IP addresses so that we try to connect with host localhost
   private final HostAndPortMapper portMap = (HostAndPort hostAndPort) -> {
     if ("localhost".equals(hostAndPort.getHost())) {
       return hostAndPort;
@@ -53,9 +53,9 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 //      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+      assertTrue(clusterNodes.containsKey("localhost:7379"));
+      assertTrue(clusterNodes.containsKey("localhost:7380"));
+      assertTrue(clusterNodes.containsKey("localhost:7381"));
 
       jc.get("foo");
     }
@@ -66,9 +66,9 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 //      Map<String, JedisPool> clusterNodes = jc2.getClusterNodes();
       Map<String, ?> clusterNodes = jc2.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+      assertTrue(clusterNodes.containsKey("localhost:7379"));
+      assertTrue(clusterNodes.containsKey("localhost:7380"));
+      assertTrue(clusterNodes.containsKey("localhost:7381"));
       jc2.get("foo");
     }
   }
@@ -81,15 +81,15 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 //      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+      assertTrue(clusterNodes.containsKey("localhost:7379"));
+      assertTrue(clusterNodes.containsKey("localhost:7380"));
+      assertTrue(clusterNodes.containsKey("localhost:7381"));
     }
   }
 
   @Test
   public void connectByIpAddress() {
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 7379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 7379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -110,7 +110,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
       Assert.fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
     } catch (JedisClusterOperationException e) {
-      // initial connection to localhost works, but subsequent connections to nodes use 127.0.0.1
+      // initial connection to localhost works, but subsequent connections to nodes use localhost
       // and fail hostname verification
       assertEquals("No more cluster attempts left.", e.getMessage());
     }
@@ -134,7 +134,7 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
     final SSLParameters sslParameters = new SSLParameters();
     sslParameters.setEndpointIdentificationAlgorithm("HTTPS");
 
-    try (JedisCluster jc = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
+    try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .sslParameters(sslParameters).hostAndPortMapper(hostAndPortMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -160,12 +160,12 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
       Assert.fail("It should fail after all cluster attempts.");
 //    } catch (JedisClusterMaxAttemptsException e) {
     } catch (JedisClusterOperationException e) {
-      // initial connection made with 'localhost' but subsequent connections to nodes use 127.0.0.1
+      // initial connection made with 'localhost' but subsequent connections to nodes use localhost
       // which causes custom hostname verification to fail
       assertEquals("No more cluster attempts left.", e.getMessage());
     }
 
-    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("127.0.0.1", 8379),
+    try (JedisCluster jc2 = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().password("cluster").ssl(true)
             .hostnameVerifier(hostnameVerifier).hostAndPortMapper(portMap).build(),
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
@@ -226,16 +226,16 @@ public class SSLJedisClusterTest extends JedisClusterTestBase {
 //      Map<String, JedisPool> clusterNodes = jc.getClusterNodes();
       Map<String, ?> clusterNodes = jc.getClusterNodes();
       assertEquals(3, clusterNodes.size());
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7379"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7380"));
-      assertTrue(clusterNodes.containsKey("127.0.0.1:7381"));
+      assertTrue(clusterNodes.containsKey("localhost:7379"));
+      assertTrue(clusterNodes.containsKey("localhost:7380"));
+      assertTrue(clusterNodes.containsKey("localhost:7381"));
     }
   }
 
   public class LocalhostVerifier extends BasicHostnameVerifier {
     @Override
     public boolean verify(String hostname, SSLSession session) {
-      if (hostname.equals("127.0.0.1")) {
+      if (hostname.equals("localhost")) {
         hostname = "localhost";
       }
       return super.verify(hostname, session);

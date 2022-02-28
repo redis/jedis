@@ -27,7 +27,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class ClusterPipeliningTest {
 
-  private static final String LOCAL_IP = "127.0.0.1";
+  private static final String LOCAL_IP = "localhost";
   private static final int DEFAULT_TIMEOUT = 2000;
   private static final int DEFAULT_REDIRECTIONS = 5;
 

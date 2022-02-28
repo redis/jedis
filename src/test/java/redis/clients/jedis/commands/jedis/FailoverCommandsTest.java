@@ -88,7 +88,7 @@ public class FailoverCommandsTest {
     try (Jedis master = new Jedis(masterAddress)) {
       switching = true;
       assertEquals("OK", master.failover(FailoverParams.failoverParams()
-          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort()))));
+          .to(new HostAndPort("localhost", replicaAddress.getPort()))));
     }
   }
 
@@ -104,7 +104,7 @@ public class FailoverCommandsTest {
   public void failoverForceWithoutTimeoutFailFast() {
     try (Jedis master = new Jedis(masterAddress)) {
       assertEquals("OK", master.failover(FailoverParams.failoverParams()
-          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort())).force()));
+          .to(new HostAndPort("localhost", replicaAddress.getPort())).force()));
     }
   }
 
@@ -114,14 +114,14 @@ public class FailoverCommandsTest {
     try (Jedis master = new Jedis(masterAddress)) {
       switching = true;
       assertEquals("OK", master.failover(FailoverParams.failoverParams()
-          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort())).force().timeout(100)));
+          .to(new HostAndPort("localhost", replicaAddress.getPort())).force().timeout(100)));
     }
   }
 
   @Test
   public void failoverToWrongPort() {
     try (Jedis master = new Jedis(masterAddress)) {
-      master.failover(FailoverParams.failoverParams().to("127.0.0.1", 6300));
+      master.failover(FailoverParams.failoverParams().to("localhost", 6300));
       fail("FAILOVER target HOST and PORT is not a replica.");
     } catch(JedisDataException ex) {
       assertEquals("ERR FAILOVER target HOST and PORT is not a replica.", ex.getMessage());

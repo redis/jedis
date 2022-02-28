@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.rst'
+      - '**/*.md'
+    branches:
+      - master
+      - '[0-9].[0-9]'
+  pull_request:
+    branches:
+      - master
+      - '[0-9].[0-9]'
+
+  jobs:
+
+    test_modules:
+      runs-on: ubuntu-latest
+      name: Test Modules
+        - uses: addnab/docker-run-action@v3
+          with:
+            image: redislabs/redismod:edge
+            options: --name mod -p 6379:6379
+
+        - uses: actions/checkout@v2
+        - name: Set up publishing to maven central
+          uses: actions/setup-java@v2
+          with:
+            java-version: '8'
+            distribution: 'temurin'
+        - name: maven cache
+          uses: actions/cache@v2
+          with:
+            path: |
+              ~/.m2/repository
+              /var/cache/apt/repository
+            key: jedis-${{ hashFiles('**/pom.xml') }}
+        - name: sync offline dependencies
+          run: mvn dependency:go-offline
+        - name: build and test
+          run: mvn -DmodulesDocker="mod:6379" -Dtest="redis.clients.jedis.modules.**" test
+
+    build:
+      runs-on: ubunut-latest
+      needs: [test_modules]
+      name: Build
+      steps:
+        - uses: actions/checkout@v2
+        - name: Set up publishing to maven central
+          uses: actions/setup-java@v2
+          with:
+            java-version: '8'
+            distribution: 'temurin'
+            server-id: ossrh
+            server-username: MAVEN_USERNAME
+            server-password: MAVEN_PASSWORD
+        - name: maven cache
+          uses: actions/cache@v2
+          with:
+            path: |
+              ~/.m2/repository
+              /var/cache/apt/repository
+            key: jedis-${{ hashFiles('**/pom.xml') }}
+        - name: sync offline dependencies
+          run: mvn dependency:go-offline
+        - name: install dependencies
+          run: |
+            apt update -q
+            apt install -yq stunnel make
+        - name: build redis
+          run: make circleci-install
+        - name: run tests
+          run: TEST="" make test
+        - name: publish snapshot
+          uses: mvn --no-transfer-process --batch-mode -DskipTests deploy
+          if: github.event_name != 'pull_request'

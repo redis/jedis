@@ -69,8 +69,8 @@ jobs:
         run: mvn dependency:go-offline
       - name: install dependencies
         run: |
-          apt update -q
-          apt install -yq stunnel make
+          sudo apt update -q
+          sudo apt install -yq stunnel make
       - name: build redis
         run: make circleci-install
       - name: run tests

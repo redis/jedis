@@ -19,6 +19,7 @@ on:
     test_modules:
       runs-on: ubuntu-latest
       name: Test Modules
+      steps:
         - uses: addnab/docker-run-action@v3
           with:
             image: redislabs/redismod:edge

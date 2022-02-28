@@ -1,5 +1,6 @@
 PATH := ./redis-git/src:${PATH}
 STUNNEL_BIN := $(shell which stunnel)
+SENTINELMASTER := localhost
 
 define REDIS1_CONF
 daemonize yes
@@ -139,7 +140,7 @@ define REDIS_SENTINEL1
 port 26379
 daemonize yes
 protected-mode no
-sentinel monitor mymaster 127.0.0.1 6379 1
+sentinel monitor mymaster ${SENTINELMASTER} 6379 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel failover-timeout mymaster 120000
@@ -152,7 +153,7 @@ define REDIS_SENTINEL2
 port 26380
 daemonize yes
 protected-mode no
-sentinel monitor mymaster 127.0.0.1 6381 1
+sentinel monitor mymaster ${SENTINELMASTER} 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
@@ -165,7 +166,7 @@ define REDIS_SENTINEL3
 port 26381
 daemonize yes
 protected-mode no
-sentinel monitor mymasterfailover 127.0.0.1 6384 1
+sentinel monitor mymasterfailover ${SENTINELMASTER} 6384 1
 sentinel auth-pass mymasterfailover foobared
 sentinel down-after-milliseconds mymasterfailover 2000
 sentinel failover-timeout mymasterfailover 120000
@@ -178,7 +179,7 @@ define REDIS_SENTINEL4
 port 26382
 daemonize yes
 protected-mode no
-sentinel monitor mymaster 127.0.01 6381 1
+sentinel monitor mymaster ${SENTINELMASER} 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
@@ -193,7 +194,7 @@ daemonize yes
 protected-mode no
 user default off
 user sentinel on allcommands allkeys >foobared
-sentinel monitor aclmaster 127.0.0.1 6387 1
+sentinel monitor aclmaster ${SENTINELMASTER} 6387 1
 sentinel auth-user aclmaster acljedis
 sentinel auth-pass aclmaster fizzbuzz
 sentinel down-after-milliseconds aclmaster 2000
@@ -319,10 +320,10 @@ accept = localhost:8379
 connect = localhost:7379
 [redis_cluster_2]
 accept = localhost:8380
-connect = 127.0.001:7380
+connect = localhost:7380
 [redis_cluster_3]
 accept = localhost:8381
-connect = 127.0.001:7381
+connect = localhost:7381
 [redis_cluster_4]
 accept = localhost:8382
 connect = localhost:7382

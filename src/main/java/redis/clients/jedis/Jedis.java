@@ -8527,6 +8527,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String clusterSetConfigEpoch(long configEpoch) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, "SET-CONFIG-EPOCH", Long.toString(configEpoch));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterBumpEpoch() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.BUMPEPOCH);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String clusterReplicate(final String nodeId) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.REPLICATE.name(), nodeId);

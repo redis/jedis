@@ -139,7 +139,7 @@ define REDIS_SENTINEL1
 port 26379
 daemonize yes
 protected-mode no
-sentinel monitor mymaster localhost 6379 1
+sentinel monitor mymaster 127.0.0.1 6379 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel failover-timeout mymaster 120000
@@ -152,7 +152,7 @@ define REDIS_SENTINEL2
 port 26380
 daemonize yes
 protected-mode no
-sentinel monitor mymaster localhost 6381 1
+sentinel monitor mymaster 127.0.0.1 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
@@ -165,7 +165,7 @@ define REDIS_SENTINEL3
 port 26381
 daemonize yes
 protected-mode no
-sentinel monitor mymasterfailover localhost 6384 1
+sentinel monitor mymasterfailover 127.0.0.1 6384 1
 sentinel auth-pass mymasterfailover foobared
 sentinel down-after-milliseconds mymasterfailover 2000
 sentinel failover-timeout mymasterfailover 120000
@@ -178,7 +178,7 @@ define REDIS_SENTINEL4
 port 26382
 daemonize yes
 protected-mode no
-sentinel monitor mymaster localhost 6381 1
+sentinel monitor mymaster 127.0.01 6381 1
 sentinel auth-pass mymaster foobared
 sentinel down-after-milliseconds mymaster 2000
 sentinel parallel-syncs mymaster 1
@@ -193,7 +193,7 @@ daemonize yes
 protected-mode no
 user default off
 user sentinel on allcommands allkeys >foobared
-sentinel monitor aclmaster localhost 6387 1
+sentinel monitor aclmaster 127.0.0.1 6387 1
 sentinel auth-user aclmaster acljedis
 sentinel auth-pass aclmaster fizzbuzz
 sentinel down-after-milliseconds aclmaster 2000

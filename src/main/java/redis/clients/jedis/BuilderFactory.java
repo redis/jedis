@@ -530,7 +530,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "KeyedList<String>";
+      return "KeyedList<Tuple>";
     }
   };
 

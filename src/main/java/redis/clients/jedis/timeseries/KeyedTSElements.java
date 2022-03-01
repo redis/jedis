@@ -4,9 +4,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import redis.clients.jedis.util.Keyed;
+import redis.clients.jedis.util.KeyValue;
 
-public class KeyedTSElements extends Keyed<List<TSElement>> {
+public class KeyedTSElements extends KeyValue<String, List<TSElement>> {
 
   private final Map<String, String> labels;
   private final TSElement element;

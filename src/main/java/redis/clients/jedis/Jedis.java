@@ -27,7 +27,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
-import redis.clients.jedis.util.Keyed;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.Pool;
 
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
@@ -6900,25 +6900,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Keyed<List<String>> lmpop(ListDirection direction, String... keys) {
+  public KeyValue<String, List<String>> lmpop(ListDirection direction, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.lmpop(direction, keys));
   }
 
   @Override
-  public Keyed<List<String>> lmpop(ListDirection direction, int count, String... keys) {
+  public KeyValue<String, List<String>> lmpop(ListDirection direction, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.lmpop(direction, count, keys));
   }
 
   @Override
-  public Keyed<List<String>> blmpop(long timeout, ListDirection direction, String... keys) {
+  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public Keyed<List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
@@ -7561,25 +7561,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Keyed<List<Tuple>> zmpop(SortedSetOption option, String... keys) {
+  public KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, keys));
   }
 
   @Override
-  public Keyed<List<Tuple>> zmpop(SortedSetOption option, int count, String... keys) {
+  public KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, count, keys));
   }
 
   @Override
-  public Keyed<List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public Keyed<List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }

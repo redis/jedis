@@ -36,7 +36,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
-import redis.clients.jedis.util.Keyed;
+import redis.clients.jedis.util.KeyValue;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -1175,22 +1175,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Keyed<List<String>> lmpop(ListDirection direction, String... keys) {
+  public KeyValue<String, List<String>> lmpop(ListDirection direction, String... keys) {
     return executeCommand(commandObjects.lmpop(direction, keys));
   }
 
   @Override
-  public Keyed<List<String>> lmpop(ListDirection direction, int count, String... keys) {
+  public KeyValue<String, List<String>> lmpop(ListDirection direction, int count, String... keys) {
     return executeCommand(commandObjects.lmpop(direction, count, keys));
   }
 
   @Override
-  public Keyed<List<String>> blmpop(long timeout, ListDirection direction, String... keys) {
+  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, String... keys) {
     return executeCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public Keyed<List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
     return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
   // List commands
@@ -2291,22 +2291,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Keyed<List<Tuple>> zmpop(SortedSetOption option, String... keys) {
+  public KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, String... keys) {
     return executeCommand(commandObjects.zmpop(option, keys));
   }
 
   @Override
-  public Keyed<List<Tuple>> zmpop(SortedSetOption option, int count, String... keys) {
+  public KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, int count, String... keys) {
     return executeCommand(commandObjects.zmpop(option, count, keys));
   }
 
   @Override
-  public Keyed<List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
     return executeCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public Keyed<List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
     return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
   // Sorted Set commands

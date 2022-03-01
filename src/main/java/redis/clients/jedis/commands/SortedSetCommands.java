@@ -9,7 +9,7 @@ import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
-import redis.clients.jedis.util.KeyedList;
+import redis.clients.jedis.util.Keyed;
 
 public interface SortedSetCommands {
 
@@ -783,11 +783,11 @@ public interface SortedSetCommands {
    */
   long zunionstore(String dstkey, ZParams params, String... sets);
 
-  KeyedList<Tuple> zmpop(SortedSetOption option, String... keys);
+  Keyed<List<Tuple>> zmpop(SortedSetOption option, String... keys);
 
-  KeyedList<Tuple> zmpop(SortedSetOption option, int count, String... keys);
+  Keyed<List<Tuple>> zmpop(SortedSetOption option, int count, String... keys);
 
-  KeyedList<Tuple> bzmpop(long timeout, SortedSetOption option, String... keys);
+  Keyed<List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys);
 
-  KeyedList<Tuple> bzmpop(long timeout, SortedSetOption option, int count, String... keys);
+  Keyed<List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys);
 }

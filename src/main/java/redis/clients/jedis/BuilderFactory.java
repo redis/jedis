@@ -17,7 +17,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.KeyedTSElements;
 import redis.clients.jedis.timeseries.TSElement;
 import redis.clients.jedis.util.JedisByteHashMap;
-import redis.clients.jedis.util.KeyedList;
+import redis.clients.jedis.util.Keyed;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
@@ -409,18 +409,18 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyedList<String>> KEYED_STRING_LIST = new Builder<KeyedList<String>>() {
+  public static final Builder<Keyed<List<String>>> KEYED_STRING_LIST = new Builder<Keyed<List<String>>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedList<String> build(Object data) {
+    public Keyed<List<String>> build(Object data) {
       if (data == null) return null;
       List<byte[]> l = (List<byte[]>) data;
-      return new KeyedList<>(STRING.build(l.get(0)), STRING_LIST.build(l.get(1)));
+      return new Keyed<>(STRING.build(l.get(0)), STRING_LIST.build(l.get(1)));
     }
 
     @Override
     public String toString() {
-      return "KeyedList<String>";
+      return "Keyed<List<String>>";
     }
   };
 
@@ -519,18 +519,18 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyedList<Tuple>> KEYED_TUPLE_LIST = new Builder<KeyedList<Tuple>>() {
+  public static final Builder<Keyed<List<Tuple>>> KEYED_TUPLE_LIST = new Builder<Keyed<List<Tuple>>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedList<Tuple> build(Object data) {
+    public Keyed<List<Tuple>> build(Object data) {
       if (data == null) return null;
       List<Object> l = (List<Object>) data;
-      return new KeyedList<>(STRING.build(l.get(0)), TUPLE_LIST_FROM_PAIRS.build(l.get(1)));
+      return new Keyed<>(STRING.build(l.get(0)), TUPLE_LIST_FROM_PAIRS.build(l.get(1)));
     }
 
     @Override
     public String toString() {
-      return "KeyedList<Tuple>";
+      return "Keyed<List<Tuple>>";
     }
   };
 

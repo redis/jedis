@@ -23,7 +23,7 @@ import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
-import redis.clients.jedis.util.KeyedList;
+import redis.clients.jedis.util.Keyed;
 
 public class ListCommandsTest extends JedisCommandsTestBase {
 
@@ -886,7 +886,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(mylist1, "one", "two", "three", "four", "five");
     jedis.lpush(mylist2, "one", "two", "three", "four", "five");
 
-    KeyedList<String> elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
+    Keyed<List<String>> elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
     assertEquals(mylist1, elements.getKey());
     assertEquals(1, elements.getValue().size());
 
@@ -911,7 +911,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(mylist1, "one", "two", "three", "four", "five");
     jedis.lpush(mylist2, "one", "two", "three", "four", "five");
 
-    KeyedList<String> elements = jedis.blmpop(1L, ListDirection.LEFT, mylist1, mylist2);
+    Keyed<List<String>> elements = jedis.blmpop(1L, ListDirection.LEFT, mylist1, mylist2);
     assertEquals(mylist1, elements.getKey());
     assertEquals(1, elements.getValue().size());
 

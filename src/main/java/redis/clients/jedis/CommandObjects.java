@@ -31,7 +31,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword;
-import redis.clients.jedis.util.KeyedList;
+import redis.clients.jedis.util.Keyed;
 
 public class CommandObjects {
 
@@ -898,22 +898,22 @@ public class CommandObjects {
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY);
   }
 
-  public final CommandObject<KeyedList<String>> lmpop(ListDirection direction, String... keys) {
+  public final CommandObject<Keyed<List<String>>> lmpop(ListDirection direction, String... keys) {
     return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
         .add(direction), BuilderFactory.KEYED_STRING_LIST);
   }
 
-  public final CommandObject<KeyedList<String>> lmpop(ListDirection direction, int count, String... keys) {
+  public final CommandObject<Keyed<List<String>>> lmpop(ListDirection direction, int count, String... keys) {
     return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
         .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_STRING_LIST);
   }
 
-  public final CommandObject<KeyedList<String>> blmpop(long timeout, ListDirection direction, String... keys) {
+  public final CommandObject<Keyed<List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
     return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
         .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_STRING_LIST);
   }
 
-  public final CommandObject<KeyedList<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+  public final CommandObject<Keyed<List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
     return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
         .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
         BuilderFactory.KEYED_STRING_LIST);
@@ -1857,22 +1857,22 @@ public class CommandObjects {
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
-  public final CommandObject<KeyedList<Tuple>> zmpop(SortedSetOption option, String... keys) {
+  public final CommandObject<Keyed<List<Tuple>>> zmpop(SortedSetOption option, String... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
         .add(option), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyedList<Tuple>> zmpop(SortedSetOption option, int count, String... keys) {
+  public final CommandObject<Keyed<List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
         .add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyedList<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+  public final CommandObject<Keyed<List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyedList<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+  public final CommandObject<Keyed<List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
   }

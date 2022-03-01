@@ -6,7 +6,7 @@ import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
-import redis.clients.jedis.util.KeyedList;
+import redis.clients.jedis.util.Keyed;
 
 public interface ListCommands {
 
@@ -392,11 +392,11 @@ public interface ListCommands {
    */
   String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
 
-  KeyedList<String> lmpop(ListDirection direction, String... keys);
+  Keyed<List<String>> lmpop(ListDirection direction, String... keys);
 
-  KeyedList<String> lmpop(ListDirection direction, int count, String... keys);
+  Keyed<List<String>> lmpop(ListDirection direction, int count, String... keys);
 
-  KeyedList<String> blmpop(long timeout, ListDirection direction, String... keys);
+  Keyed<List<String>> blmpop(long timeout, ListDirection direction, String... keys);
 
-  KeyedList<String> blmpop(long timeout, ListDirection direction, int count, String... keys);
+  Keyed<List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys);
 }

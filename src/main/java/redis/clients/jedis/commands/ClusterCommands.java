@@ -50,6 +50,21 @@ public interface ClusterCommands {
 
   String clusterSaveConfig();
 
+  /**
+   * Set a specific config epoch in a fresh node. It only works when the nodes' table
+   * of the node is empty or when the node current config epoch is zero.
+   * @param configEpoch
+   * @return OK
+   */
+  String clusterSetConfigEpoch(long configEpoch);
+
+  /**
+   * Advance the cluster config epoch.
+   * @return BUMPED if the epoch was incremented, or STILL if the node already has the
+   * greatest config epoch in the cluster.
+   */
+  String clusterBumpEpoch();
+
   String clusterReplicate(String nodeId);
 
   /**

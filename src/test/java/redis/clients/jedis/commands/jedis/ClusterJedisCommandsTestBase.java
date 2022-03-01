@@ -9,14 +9,14 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public abstract class ClusterJedisCommandsTestBase {
+
   private Jedis node1;
   private static Jedis node2;
   private static Jedis node3;
@@ -25,8 +25,7 @@ public abstract class ClusterJedisCommandsTestBase {
   private HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
   private HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
   private final Set<HostAndPort> jedisClusterNode = new HashSet<>();
-//  JedisCluster jedisCluster;
-  UnifiedJedis jedisCluster;
+  JedisCluster cluster;
 
   @Before
   public void setUp() throws InterruptedException {
@@ -72,8 +71,9 @@ public abstract class ClusterJedisCommandsTestBase {
     waitForClusterReady();
 
     jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
-//    jedisCluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
-    jedisCluster = new UnifiedJedis(jedisClusterNode, DefaultJedisClientConfig.builder().password("cluster").build(), 5);
+//    cluster = new JedisCluster(jedisClusterNode, 2000, 2000, 5, "cluster", new JedisPoolConfig());
+//    cluster = new JedisCluster(jedisClusterNode, DefaultJedisClientConfig.builder().password("cluster").build(), 5);
+    cluster = new JedisCluster(jedisClusterNode, null, "cluster");
 
   }
 

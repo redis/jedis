@@ -16,9 +16,12 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
 public class ClusterCommandsTest {
+
   private static Jedis node1;
   private static Jedis node2;
 
@@ -27,7 +30,6 @@ public class ClusterCommandsTest {
 
   @Before
   public void setUp() throws Exception {
-
     node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
     node1.flushAll();
@@ -86,12 +88,12 @@ public class ClusterCommandsTest {
     String nodes = node1.clusterNodes();
     assertTrue(nodes.split("\n").length > 0);
   }
-
-  @Test
-  public void clusterMeet() {
-    String status = node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-    assertEquals("OK", status);
-  }
+//
+//  @Test
+//  public void clusterMeet() {
+//    String status = node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
+//    assertEquals("OK", status);
+//  }
 
   @Test
   public void clusterAddSlotsAndDelSlots() {
@@ -189,21 +191,38 @@ public class ClusterCommandsTest {
     List<Map<String, Object>> links = node1.clusterLinks();
     assertNotNull(links);
     assertEquals(0, links.size());
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-    // wait cluster meet success
-    Thread.sleep(300);
-    links = node1.clusterLinks();
-    assertNotNull(links);
-//    assertEquals(2, links.size()); // flaky
-    assertTrue(links.size() >= 2);
-    assertEquals(6, links.get(0).size());
-    assertEquals(6, links.get(1).size());
-    assertTrue(links.get(0).containsKey("direction"));
-    assertTrue(links.get(0).containsKey("node"));
-    assertTrue(links.get(0).containsKey("create-time"));
-    assertTrue(links.get(0).containsKey("events"));
-    assertTrue(links.get(0).containsKey("send-buffer-allocated"));
-    assertTrue(links.get(0).containsKey("send-buffer-used"));
+  }
+
+  @Test
+  public void testClusterKeySlot() {
+    // It assumes JedisClusterCRC16 is correctly implemented
+    assertEquals(JedisClusterCRC16.getSlot("{user1000}.following"),
+      node1.clusterKeySlot("{user1000}.following"));
+    assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"),
+        node1.clusterKeySlot("foo{bar}{zap}"));
+    assertEquals(JedisClusterCRC16.getSlot("foo{}{bar}"),
+        node1.clusterKeySlot("foo{}{bar}"));
+    assertEquals(JedisClusterCRC16.getSlot("foo{{bar}}zap"),
+        node1.clusterKeySlot("foo{{bar}}zap"));
+  }
+
+  @Test
+  public void clusterCountFailureReports() {
+    assertEquals(0, node1.clusterCountFailureReports(node1.clusterMyId()));
+  }
+
+  @Test
+  public void testClusterEpoch() {
+    try {
+      assertEquals("OK", node1.clusterSetConfigEpoch(1));
+    } catch (JedisDataException jde) {
+      assertEquals("ERR The user can assign a config epoch only when the node does not know any other node.", jde.getMessage());
+    }
+  }
+
+  @Test
+  public void ClusterBumpEpoch() {
+    node1.clusterBumpEpoch();
   }
 
 }

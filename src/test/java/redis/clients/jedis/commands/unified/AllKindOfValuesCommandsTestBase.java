@@ -786,21 +786,24 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   public void encodeCompleteResponse() {
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
-    jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
-    String status = jedis.xgroupCreate("mystream", "mygroup", null, false);
+    StreamEntryID entryID = jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
+    jedis.xgroupCreate("mystream", "mygroup", null, false);
 
     Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
     List encodeObj = (List) encodeObject(obj);
 
-    assertEquals(14, encodeObj.size());
-    assertEquals("length", encodeObj.get(0));
-    assertEquals(1L, encodeObj.get(1));
+    assertTrue(encodeObj.size() >= 14);
+    assertEquals(0, encodeObj.size() % 2); // must be even
+
+    assertEquals(1L, findValueFromMapAsList(encodeObj, "length"));
+    assertEquals(entryID.toString(), findValueFromMapAsList(encodeObj, "last-generated-id"));
 
     List<String> entryAsList = new ArrayList<>(2);
     entryAsList.add("foo");
     entryAsList.add("bar");
 
-    assertEquals(entryAsList, ((List) encodeObj.get(11)).get(1));
+    assertEquals(entryAsList, ((List) findValueFromMapAsList(encodeObj, "first-entry")).get(1));
+    assertEquals(entryAsList, ((List) findValueFromMapAsList(encodeObj, "last-entry")).get(1));
 
     assertEquals("PONG", encodeObject(jedis.sendCommand(PING)));
 
@@ -811,6 +814,15 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertEquals(4, encodeObj.size());
     assertTrue(encodeObj.contains("foo"));
     assertTrue(encodeObj.contains("foo2"));
+  }
+
+  private Object findValueFromMapAsList(List list, Object key) {
+    for (int i = 0; i < list.size(); i += 2) {
+      if (key.equals(list.get(i))) {
+        return list.get(i + 1);
+      }
+    }
+    return null;
   }
 
   @Test

@@ -8555,6 +8555,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long clusterCountFailureReports(final String nodeId) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, "COUNT-FAILURE-REPORTS",  nodeId);
+    return connection.getIntegerReply();  
+  }
+
+  @Override
   public long clusterCountKeysInSlot(final int slot) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.COUNTKEYSINSLOT.getRaw(), toByteArray(slot));
@@ -8565,6 +8572,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String clusterSaveConfig() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.SAVECONFIG);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterSetConfigEpoch(long configEpoch) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, "SET-CONFIG-EPOCH", Long.toString(configEpoch));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String clusterBumpEpoch() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.BUMPEPOCH);
     return connection.getStatusCodeReply();
   }
 

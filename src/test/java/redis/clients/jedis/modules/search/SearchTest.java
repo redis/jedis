@@ -452,7 +452,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     client.hset("2", "numval", "2");
     client.hset("3", "numval", "3");
 
-    Query query =  new Query("hello world").addParam("min", 1).addParam("max", 2);
+    Query query =  new Query("@numval:[$min $max]").addParam("min", 1).addParam("max", 2);
     assertEquals(2, client.ftSearch(index, query).getTotalResults());
   }
 

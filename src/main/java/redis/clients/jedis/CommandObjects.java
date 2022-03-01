@@ -1857,22 +1857,22 @@ public class CommandObjects {
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
 
-  public final CommandObject<KeyedList<Tuple>> zmpop(ZSetOption option, String... keys) {
+  public final CommandObject<KeyedList<Tuple>> zmpop(SortedSetOption option, String... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
         .add(option), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyedList<Tuple>> zmpop(ZSetOption option, int count, String... keys) {
+  public final CommandObject<KeyedList<Tuple>> zmpop(SortedSetOption option, int count, String... keys) {
     return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
         .add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyedList<Tuple>> bzmpop(long timeout, ZSetOption option, String... keys) {
+  public final CommandObject<KeyedList<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyedList<Tuple>> bzmpop(long timeout, ZSetOption option, int count, String... keys) {
+  public final CommandObject<KeyedList<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
   }

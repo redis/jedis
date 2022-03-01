@@ -2,13 +2,13 @@ package redis.clients.jedis.args;
 
 import redis.clients.jedis.util.SafeEncoder;
 
-public enum ZSetOption implements Rawable {
+public enum SortedSetOption implements Rawable {
 
   MIN, MAX;
 
   private final byte[] raw;
 
-  private ZSetOption() {
+  private SortedSetOption() {
     raw = SafeEncoder.encode(name());
   }
 

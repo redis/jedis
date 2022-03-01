@@ -20,7 +20,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.args.ZSetOption;
+import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
@@ -1632,12 +1632,12 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    KeyedList<Tuple> single = jedis.zmpop(ZSetOption.MAX, "foo");
-    KeyedList<Tuple> range = jedis.zmpop(ZSetOption.MIN, 2, "foo");
+    KeyedList<Tuple> single = jedis.zmpop(SortedSetOption.MAX, "foo");
+    KeyedList<Tuple> range = jedis.zmpop(SortedSetOption.MIN, 2, "foo");
 
     assertEquals(new Tuple("b", 10d), single.getValue().get(0));
     assertEquals(2, range.getValue().size());
-    assertNull(jedis.zmpop(ZSetOption.MAX, "foo"));
+    assertNull(jedis.zmpop(SortedSetOption.MAX, "foo"));
   }
 
   @Test
@@ -1647,11 +1647,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("foo", 0.1d, "c", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 2d, "a", ZAddParams.zAddParams().nx());
 
-    KeyedList<Tuple> single = jedis.bzmpop(1L, ZSetOption.MAX, "foo");
-    KeyedList<Tuple> range = jedis.bzmpop(1L, ZSetOption.MIN, 2, "foo");
+    KeyedList<Tuple> single = jedis.bzmpop(1L, SortedSetOption.MAX, "foo");
+    KeyedList<Tuple> range = jedis.bzmpop(1L, SortedSetOption.MIN, 2, "foo");
 
     assertEquals(new Tuple("b", 10d), single.getValue().get(0));
     assertEquals(2, range.getValue().size());
-    assertNull(jedis.bzmpop(1L, ZSetOption.MAX, "foo"));
+    assertNull(jedis.bzmpop(1L, SortedSetOption.MAX, "foo"));
   }
 }

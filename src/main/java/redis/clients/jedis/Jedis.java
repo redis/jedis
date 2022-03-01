@@ -7561,25 +7561,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedList<Tuple> zmpop(ZSetOption option, String... keys) {
+  public KeyedList<Tuple> zmpop(SortedSetOption option, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, keys));
   }
 
   @Override
-  public KeyedList<Tuple> zmpop(ZSetOption option, int count, String... keys) {
+  public KeyedList<Tuple> zmpop(SortedSetOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmpop(option, count, keys));
   }
 
   @Override
-  public KeyedList<Tuple> bzmpop(long timeout, ZSetOption option, String... keys) {
+  public KeyedList<Tuple> bzmpop(long timeout, SortedSetOption option, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public KeyedList<Tuple> bzmpop(long timeout, ZSetOption option, int count, String... keys) {
+  public KeyedList<Tuple> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }

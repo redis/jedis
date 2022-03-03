@@ -409,7 +409,8 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyValue<String, List<String>>> KEYED_STRING_LIST = new Builder<KeyValue<String, List<String>>>() {
+  public static final Builder<KeyValue<String, List<String>>> KEYED_STRING_LIST
+      = new Builder<KeyValue<String, List<String>>>() {
     @Override
     @SuppressWarnings("unchecked")
     public KeyValue<String, List<String>> build(Object data) {
@@ -421,6 +422,22 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "KeyValue<String, List<String>>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], List<byte[]>>> KEYED_BINARY_LIST
+      = new Builder<KeyValue<byte[], List<byte[]>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], List<byte[]>> build(Object data) {
+      if (data == null) return null;
+      List<byte[]> l = (List<byte[]>) data;
+      return new KeyValue<>(BINARY.build(l.get(0)), BINARY_LIST.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], List<byte[]>>";
     }
   };
 
@@ -519,7 +536,8 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyValue<String, List<Tuple>>> KEYED_TUPLE_LIST = new Builder<KeyValue<String, List<Tuple>>>() {
+  public static final Builder<KeyValue<String, List<Tuple>>> KEYED_TUPLE_LIST
+      = new Builder<KeyValue<String, List<Tuple>>>() {
     @Override
     @SuppressWarnings("unchecked")
     public KeyValue<String, List<Tuple>> build(Object data) {
@@ -531,6 +549,22 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "KeyValue<String, List<Tuple>>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], List<Tuple>>> BINARY_KEYED_TUPLE_LIST
+      = new Builder<KeyValue<byte[], List<Tuple>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], List<Tuple>> build(Object data) {
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      return new KeyValue<>(BINARY.build(l.get(0)), TUPLE_LIST_FROM_PAIRS.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], List<Tuple>>";
     }
   };
 

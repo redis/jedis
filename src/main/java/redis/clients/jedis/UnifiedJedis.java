@@ -1193,6 +1193,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
     return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, byte[]... keys) {
+    return executeCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    return executeCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
   // List commands
 
   // Hash commands
@@ -2307,6 +2327,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, byte[]... keys) {
+    return executeCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    return executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
     return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
   // Sorted Set commands

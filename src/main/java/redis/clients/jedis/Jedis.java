@@ -2572,6 +2572,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
+
+  @Override
   public List<byte[]> bzpopmax(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
@@ -3215,6 +3239,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long zremrangeByLex(final byte[] key, final byte[] min, final byte[] max) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zremrangeByLex(key, min, max));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   /**

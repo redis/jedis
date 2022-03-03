@@ -3839,22 +3839,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<KeyedTSElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public List<TSKeyedElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRange(TSMRangeParams multiRangeParams) {
+  public List<TSKeyedElements> tsMRange(TSMRangeParams multiRangeParams) {
     return executeCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public List<TSKeyedElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public List<TSKeyedElements> tsMRevRange(TSMRangeParams multiRangeParams) {
     return executeCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
@@ -3864,7 +3864,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<KeyedTSElements> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 

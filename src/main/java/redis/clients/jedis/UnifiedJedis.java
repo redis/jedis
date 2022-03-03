@@ -10,6 +10,10 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
+import redis.clients.jedis.bloom.BFInsertParams;
+import redis.clients.jedis.bloom.BFReserveParams;
+import redis.clients.jedis.bloom.CFInsertParams;
+import redis.clients.jedis.bloom.CFReserveParams;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -17,16 +21,22 @@ import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.executors.*;
-import redis.clients.jedis.json.*;
+import redis.clients.jedis.json.JsonSetParams;
+import redis.clients.jedis.json.Path;
+import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.*;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.util.KeyValue;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -217,11 +227,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long expireTime(String key) {
-    return executeCommand(commandObjects.expireTime(key));
-  }
-
-  @Override
   public long pexpire(String key, long milliseconds) {
     return executeCommand(commandObjects.pexpire(key, milliseconds));
   }
@@ -229,6 +234,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
     return executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public long expireTime(String key) {
+    return executeCommand(commandObjects.expireTime(key));
   }
 
   @Override
@@ -242,8 +252,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
   public long pexpireAt(String key, long millisecondsTimestamp) {
     return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  @Override
+  public long pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -257,11 +277,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long expireTime(byte[] key) {
-    return executeCommand(commandObjects.expireTime(key));
-  }
-
-  @Override
   public long pexpire(byte[] key, long milliseconds) {
     return executeCommand(commandObjects.pexpire(key, milliseconds));
   }
@@ -269,6 +284,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
     return executeCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public long expireTime(byte[] key) {
+    return executeCommand(commandObjects.expireTime(key));
   }
 
   @Override
@@ -282,8 +302,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
   public long pexpireAt(byte[] key, long millisecondsTimestamp) {
     return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  @Override
+  public long pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return executeCommand(commandObjects.expireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -1142,6 +1172,46 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     return executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public KeyValue<String, List<String>> lmpop(ListDirection direction, String... keys) {
+    return executeCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<String>> lmpop(ListDirection direction, int count, String... keys) {
+    return executeCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, String... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, byte[]... keys) {
+    return executeCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    return executeCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
   // List commands
 
@@ -2239,6 +2309,46 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return executeCommand(commandObjects.zunionstore(dstkey, params, sets));
   }
+
+  @Override
+  public KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, String... keys) {
+    return executeCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, int count, String... keys) {
+    return executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, byte[]... keys) {
+    return executeCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    return executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
   // Sorted Set commands
 
   // Geo commands
@@ -2627,38 +2737,43 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
-    return executeCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  public String xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
+    return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public String xgroupSetID(String key, String groupname, StreamEntryID id) {
-    return executeCommand(commandObjects.xgroupSetID(key, groupname, id));
+  public String xgroupSetID(String key, String groupName, StreamEntryID id) {
+    return executeCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public long xgroupDestroy(String key, String groupname) {
-    return executeCommand(commandObjects.xgroupDestroy(key, groupname));
+  public long xgroupDestroy(String key, String groupName) {
+    return executeCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public long xgroupDelConsumer(String key, String groupname, String consumername) {
-    return executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumername));
+  public boolean xgroupCreateConsumer(String key, String groupName, String consumerName) {
+    return executeCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
   }
 
   @Override
-  public StreamPendingSummary xpending(String key, String groupname) {
-    return executeCommand(commandObjects.xpending(key, groupname));
+  public long xgroupDelConsumer(String key, String groupName, String consumerName) {
+    return executeCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
-    return executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  public StreamPendingSummary xpending(String key, String groupName) {
+    return executeCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(String key, String groupname, XPendingParams params) {
-    return executeCommand(commandObjects.xpending(key, groupname, params));
+  public List<StreamPendingEntry> xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName) {
+    return executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
+  }
+
+  @Override
+  public List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params) {
+    return executeCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
@@ -2677,13 +2792,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamEntry> xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    return executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  public List<StreamEntry> xclaim(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<StreamEntryID> xclaimJustId(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    return executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
@@ -2733,9 +2848,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupname, String consumer,
+  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
-    return executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+    return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -2774,23 +2889,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
-    return executeCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  public String xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
+    return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public String xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
-    return executeCommand(commandObjects.xgroupSetID(key, groupname, id));
+  public String xgroupSetID(byte[] key, byte[] groupName, byte[] id) {
+    return executeCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public long xgroupDestroy(byte[] key, byte[] groupname) {
-    return executeCommand(commandObjects.xgroupDestroy(key, groupname));
+  public long xgroupDestroy(byte[] key, byte[] groupName) {
+    return executeCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public long xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
-    return executeCommand(commandObjects.xgroupDelConsumer(key, groupname, consumerName));
+  public boolean xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return executeCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
+  }
+
+  @Override
+  public long xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return executeCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
@@ -2809,28 +2929,28 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Object xpending(byte[] key, byte[] groupname) {
-    return executeCommand(commandObjects.xpending(key, groupname));
+  public Object xpending(byte[] key, byte[] groupName) {
+    return executeCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public List<Object> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
-    return executeCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  public List<Object> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName) {
+    return executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
   }
 
   @Override
-  public List<Object> xpending(byte[] key, byte[] groupname, XPendingParams params) {
-    return executeCommand(commandObjects.xpending(key, groupname, params));
+  public List<Object> xpending(byte[] key, byte[] groupName, XPendingParams params) {
+    return executeCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
-  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    return executeCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return executeCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    return executeCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return executeCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
@@ -2880,8 +3000,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
-    return executeCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+  public List<byte[]> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
   // Stream commands
 
@@ -2964,6 +3084,136 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Object evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     return executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
+  }
+
+  @Override
+  public Object fcall(String name, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Object fcallReadonly(String name, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public String functionDelete(String libraryName) {
+    return executeCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public String functionFlush() {
+    return executeCommand(commandObjects.functionFlush());
+  }
+
+  @Override
+  public String functionFlush(FlushMode mode) {
+    return executeCommand(commandObjects.functionFlush(mode));
+  }
+
+  @Override
+  public String functionKill() {
+    return executeCommand(commandObjects.functionKill());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList() {
+    return executeCommand(commandObjects.functionList());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList(String libraryNamePattern) {
+    return executeCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode() {
+    return executeCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode(String libraryNamePattern) {
+    return executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public String functionLoad(String engineName, String libraryName, String functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public String functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public FunctionStats functionStats() {
+    return executeCommand(commandObjects.functionStats());
+  }
+
+  @Override
+  public Object fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Object fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public String functionDelete(byte[] libraryName) {
+    return executeCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public byte[] functionDump() {
+    return executeCommand(commandObjects.functionDump());
+  }
+
+  @Override
+  public List<Object> functionListBinary() {
+    return executeCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public List<Object> functionList(final byte[] libraryNamePattern) {
+    return executeCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public List<Object> functionListWithCodeBinary() {
+    return executeCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public List<Object> functionListWithCode(final byte[] libraryNamePattern) {
+    return executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public String functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public String functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public String functionRestore(byte[] serializedValue) {
+    return executeCommand(commandObjects.functionRestore(serializedValue));
+  }
+
+  @Override
+  public String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
+    return executeCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Object functionStatsBinary() {
+    return executeCommand(commandObjects.functionStatsBinary());
   }
   // Scripting commands
 
@@ -3589,22 +3839,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<KeyedTSElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public List<TSKeyedElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRange(TSMRangeParams multiRangeParams) {
+  public List<TSKeyedElements> tsMRange(TSMRangeParams multiRangeParams) {
     return executeCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public List<TSKeyedElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public List<TSKeyedElements> tsMRevRange(TSMRangeParams multiRangeParams) {
     return executeCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
@@ -3614,7 +3864,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<KeyedTSElements> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 
@@ -3633,6 +3883,188 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.tsQueryIndex(filters));
   }
   // RedisTimeSeries commands
+
+  // RedisBloom commands
+  @Override
+  public String bfReserve(String key, double errorRate, long capacity) {
+    return executeCommand(commandObjects.bfReserve(key, errorRate, capacity));
+  }
+
+  @Override
+  public String bfReserve(String key, double errorRate, long capacity, BFReserveParams reserveParams) {
+    return executeCommand(commandObjects.bfReserve(key, errorRate, capacity, reserveParams));
+  }
+
+  @Override
+  public boolean bfAdd(String key, String item) {
+    return executeCommand(commandObjects.bfAdd(key, item));
+  }
+
+  @Override
+  public List<Boolean> bfMAdd(String key, String... items) {
+    return executeCommand(commandObjects.bfMAdd(key, items));
+  }
+
+  @Override
+  public List<Boolean> bfInsert(String key, String... items) {
+    return executeCommand(commandObjects.bfInsert(key, items));
+  }
+
+  @Override
+  public List<Boolean> bfInsert(String key, BFInsertParams insertParams, String... items) {
+    return executeCommand(commandObjects.bfInsert(key, insertParams, items));
+  }
+
+  @Override
+  public boolean bfExists(String key, String item) {
+    return executeCommand(commandObjects.bfExists(key, item));
+  }
+
+  @Override
+  public List<Boolean> bfMExists(String key, String... items) {
+    return executeCommand(commandObjects.bfMExists(key, items));
+  }
+
+  @Override
+  public Map<String, Object> bfInfo(String key) {
+    return executeCommand(commandObjects.bfInfo(key));
+  }
+
+  @Override
+  public String cfReserve(String key, long capacity) {
+    return executeCommand(commandObjects.cfReserve(key, capacity));
+  }
+
+  @Override
+  public String cfReserve(String key, long capacity, CFReserveParams reserveParams) {
+    return executeCommand(commandObjects.cfReserve(key, capacity, reserveParams));
+  }
+
+  @Override
+  public boolean cfAdd(String key, String item) {
+    return executeCommand(commandObjects.cfAdd(key, item));
+  }
+
+  @Override
+  public boolean cfAddNx(String key, String item) {
+    return executeCommand(commandObjects.cfAddNx(key, item));
+  }
+
+  @Override
+  public List<Boolean> cfInsert(String key, String... items) {
+    return executeCommand(commandObjects.cfInsert(key, items));
+  }
+
+  @Override
+  public List<Boolean> cfInsert(String key, CFInsertParams insertParams, String... items) {
+    return executeCommand(commandObjects.cfInsert(key, insertParams, items));
+  }
+
+  @Override
+  public List<Boolean> cfInsertNx(String key, String... items) {
+    return executeCommand(commandObjects.cfInsertNx(key, items));
+  }
+
+  @Override
+  public List<Boolean> cfInsertNx(String key, CFInsertParams insertParams, String... items) {
+    return executeCommand(commandObjects.cfInsertNx(key, insertParams, items));
+  }
+
+  @Override
+  public boolean cfExists(String key, String item) {
+    return executeCommand(commandObjects.cfExists(key, item));
+  }
+
+  @Override
+  public boolean cfDel(String key, String item) {
+    return executeCommand(commandObjects.cfDel(key, item));
+  }
+
+  @Override
+  public long cfCount(String key, String item) {
+    return executeCommand(commandObjects.cfCount(key, item));
+  }
+
+  @Override
+  public Map<String, Object> cfInfo(String key) {
+    return executeCommand(commandObjects.cfInfo(key));
+  }
+
+  @Override
+  public String cmsInitByDim(String key, long width, long depth) {
+    return executeCommand(commandObjects.cmsInitByDim(key, width, depth));
+  }
+
+  @Override
+  public String cmsInitByProb(String key, double error, double probability) {
+    return executeCommand(commandObjects.cmsInitByProb(key, error, probability));
+  }
+
+  @Override
+  public List<Long> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
+    return executeCommand(commandObjects.cmsIncrBy(key, itemIncrements));
+  }
+
+  @Override
+  public List<Long> cmsQuery(String key, String... items) {
+    return executeCommand(commandObjects.cmsQuery(key, items));
+  }
+
+  @Override
+  public String cmsMerge(String destKey, String... keys) {
+    return executeCommand(commandObjects.cmsMerge(destKey, keys));
+  }
+
+  @Override
+  public String cmsMerge(String destKey, Map<String, Long> keysAndWeights) {
+    return executeCommand(commandObjects.cmsMerge(destKey, keysAndWeights));
+  }
+
+  @Override
+  public Map<String, Object> cmsInfo(String key) {
+    return executeCommand(commandObjects.cmsInfo(key));
+  }
+
+  @Override
+  public String topkReserve(String key, long topk) {
+    return executeCommand(commandObjects.topkReserve(key, topk));
+  }
+
+  @Override
+  public String topkReserve(String key, long topk, long width, long depth, double decay) {
+    return executeCommand(commandObjects.topkReserve(key, topk, width, depth, decay));
+  }
+
+  @Override
+  public List<String> topkAdd(String key, String... items) {
+    return executeCommand(commandObjects.topkAdd(key, items));
+  }
+
+  @Override
+  public List<String> topkIncrBy(String key, Map<String, Long> itemIncrements) {
+    return executeCommand(commandObjects.topkIncrBy(key, itemIncrements));
+  }
+
+  @Override
+  public List<Boolean> topkQuery(String key, String... items) {
+    return executeCommand(commandObjects.topkQuery(key, items));
+  }
+
+  @Override
+  public List<Long> topkCount(String key, String... items) {
+    return executeCommand(commandObjects.topkCount(key, items));
+  }
+
+  @Override
+  public List<String> topkList(String key) {
+    return executeCommand(commandObjects.topkList(key));
+  }
+
+  @Override
+  public Map<String, Object> topkInfo(String key) {
+    return executeCommand(commandObjects.topkInfo(key));
+  }
+  // RedisBloom commands
 
   public Object sendCommand(ProtocolCommand cmd) {
     return executeCommand(commandObjects.commandArguments(cmd));

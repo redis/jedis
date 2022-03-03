@@ -27,17 +27,17 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams);
 
-  Response<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
+  Response<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
 
-  Response<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams);
+  Response<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams);
 
-  Response<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
+  Response<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
 
-  Response<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams);
+  Response<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams);
 
   Response<TSElement> tsGet(String key);
 
-  Response<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters);
+  Response<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters);
 
   Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket);
 

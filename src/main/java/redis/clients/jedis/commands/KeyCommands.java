@@ -133,19 +133,6 @@ public interface KeyCommands {
   long expire(String key, long seconds, ExpiryOption expiryOption);
 
   /**
-   * <b><a href="http://redis.io/commands/expireTime">ExpireTime Command</a></b>
-   * Returns the absolute Unix timestamp (since January 1, 1970) in seconds at which the given key will expire.
-   * <p>
-   * The command returns -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
-   * <p>
-   * Time complexity: O(1)
-   * @param key
-   * @return Expiration Unix timestamp in seconds, or a negative value in order to signal an error:
-   * -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
-   */
-  long expireTime(String key);
-
-  /**
    * <b><a href="http://redis.io/commands/pexpire">PExpire Command</a></b>
    * This command works exactly like {@link KeyCommands#expire(String, long) EXPIRE} but the time
    * to live of the key is specified in milliseconds instead of seconds.
@@ -169,6 +156,20 @@ public interface KeyCommands {
    */
   long pexpire(String key, long milliseconds, ExpiryOption expiryOption);
 
+
+  /**
+   * <b><a href="http://redis.io/commands/expireTime">ExpireTime Command</a></b>
+   * Returns the absolute Unix timestamp (since January 1, 1970) in seconds at which the given key will expire.
+   * <p>
+   * The command returns -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
+   * <p>
+   * Time complexity: O(1)
+   * @param key
+   * @return Expiration Unix timestamp in seconds, or a negative value in order to signal an error:
+   * -1 if the key exists but has no associated expiration time, and -2 if the key does not exist.
+   */
+  long expireTime(String key);
+
   /**
    * <b><a href="http://redis.io/commands/pexpireTime">PExpireTime Command</a></b>
    * Similar to {@link KeyCommands#expireTime(String) EXPIRETIME} but returns the absolute Unix expiration
@@ -183,7 +184,7 @@ public interface KeyCommands {
   long pexpireTime(String key);
 
   /**
-   * <b> <a href="http://redis.io/commands/expireat">ExpireAt Command</a></b>
+   * <b><a href="http://redis.io/commands/expireat">ExpireAt Command</a></b>
    * EXPIREAT works exactly like {@link KeyCommands#expire(String, long) EXPIRE} but instead to get the
    * number of seconds representing the Time To Live of the key as a second argument (that is a
    * relative way of specifying the TTL), it takes an absolute one in the form of a UNIX timestamp
@@ -203,6 +204,18 @@ public interface KeyCommands {
   long expireAt(String key, long unixTime);
 
   /**
+   * <b><a href="http://redis.io/commands/expireat">ExpireAt Command</a></b>
+   * Similar to {@link KeyCommands#expireAt(String, long) EXPIREAT} but with {@code ExpiryOption}.
+   * @see KeyCommands#expireAt(String, long)
+   * @param key
+   * @param unixTime time to expire
+   * @param expiryOption can be NX, XX, GT or LT
+   * @return 1 if the timeout was set, 0 otherwise.
+   * e.g. key doesn't exist, or operation skipped due to the provided arguments.
+   */
+  long expireAt(String key, long unixTime, ExpiryOption expiryOption);
+
+  /**
    * <b><a href="http://redis.io/commands/pexpireat">PExpireAt Command</a></b>
    * This command works exactly like {@link KeyCommands#expireAt(String, long) EXPIREAT} but
    * Unix time at which the key will expire is specified in milliseconds instead of seconds.
@@ -214,6 +227,18 @@ public interface KeyCommands {
    * e.g. key doesn't exist, or operation skipped due to the provided arguments.
    */
   long pexpireAt(String key, long millisecondsTimestamp);
+
+  /**
+   * <b><a href="http://redis.io/commands/expireat">ExpireAt Command</a></b>
+   * Similar to {@link KeyCommands#pexpireAt(String, long) PEXPIREAT} but with {@code ExpiryOption}.
+   * @see KeyCommands#pexpireAt(String, long)
+   * @param key
+   * @param millisecondsTimestamp time to expire
+   * @param expiryOption can be NX, XX, GT or LT
+   * @return 1 if the timeout was set, 0 otherwise.
+   * e.g. key doesn't exist, or operation skipped due to the provided arguments.
+   */
+  long pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption);
 
   /**
    * <b><a href="http://redis.io/commands/ttl">TTL Command</a></b>

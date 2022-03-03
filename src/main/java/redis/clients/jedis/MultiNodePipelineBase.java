@@ -7,10 +7,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
+import redis.clients.jedis.bloom.BFInsertParams;
+import redis.clients.jedis.bloom.BFReserveParams;
+import redis.clients.jedis.bloom.CFInsertParams;
+import redis.clients.jedis.bloom.CFReserveParams;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
@@ -19,10 +22,14 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.*;
+import redis.clients.jedis.search.IndexOptions;
+import redis.clients.jedis.search.Query;
+import redis.clients.jedis.search.Schema;
+import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.KeyValue;
 
 public abstract class MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
@@ -134,11 +141,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> expireTime(String key) {
-    return appendCommand(commandObjects.expireTime(key));
-  }
-
-  @Override
   public Response<Long> pexpire(String key, long milliseconds) {
     return appendCommand(commandObjects.pexpire(key, milliseconds));
   }
@@ -146,6 +148,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Long> pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
     return appendCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public Response<Long> expireTime(String key) {
+    return appendCommand(commandObjects.expireTime(key));
   }
 
   @Override
@@ -159,8 +166,18 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
   public Response<Long> pexpireAt(String key, long millisecondsTimestamp) {
     return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  @Override
+  public Response<Long> pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -626,6 +643,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
     return appendCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys) {
+    return appendCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, int count, String... keys) {
+    return appendCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
 
   @Override
@@ -1110,6 +1147,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, String... keys) {
+    return appendCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys) {
+    return appendCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
   public Response<Set<String>> zdiff(String... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
@@ -1395,38 +1452,43 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
-    return appendCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  public Response<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
+    return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public Response<String> xgroupSetID(String key, String groupname, StreamEntryID id) {
-    return appendCommand(commandObjects.xgroupSetID(key, groupname, id));
+  public Response<String> xgroupSetID(String key, String groupName, StreamEntryID id) {
+    return appendCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public Response<Long> xgroupDestroy(String key, String groupname) {
-    return appendCommand(commandObjects.xgroupDestroy(key, groupname));
+  public Response<Long> xgroupDestroy(String key, String groupName) {
+    return appendCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public Response<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
-    return appendCommand(commandObjects.xgroupDelConsumer(key, groupname, consumername));
+  public Response<Boolean> xgroupCreateConsumer(String key, String groupName, String consumerName) {
+    return appendCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
   }
 
   @Override
-  public Response<StreamPendingSummary> xpending(String key, String groupname) {
-    return appendCommand(commandObjects.xpending(key, groupname));
+  public Response<Long> xgroupDelConsumer(String key, String groupName, String consumerName) {
+    return appendCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, StreamEntryID start, StreamEntryID end, int count, String consumername) {
-    return appendCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  public Response<StreamPendingSummary> xpending(String key, String groupName) {
+    return appendCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
-    return appendCommand(commandObjects.xpending(key, groupname, params));
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName) {
+    return appendCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
+  }
+
+  @Override
+  public Response<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params) {
+    return appendCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
@@ -1445,23 +1507,23 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<StreamEntry>> xclaim(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    return appendCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  public Response<List<StreamEntry>> xclaim(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
-    return appendCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  public Response<List<StreamEntryID>> xclaimJustId(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public Response<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumername, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
-    return appendCommand(commandObjects.xautoclaim(key, group, consumername, minIdleTime, start, params));
+  public Response<Map.Entry<StreamEntryID, List<StreamEntry>>> xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    return appendCommand(commandObjects.xautoclaim(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
-  public Response<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumername, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
-    return appendCommand(commandObjects.xautoclaimJustId(key, group, consumername, minIdleTime, start, params));
+  public Response<Map.Entry<StreamEntryID, List<StreamEntryID>>> xautoclaimJustId(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+    return appendCommand(commandObjects.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
@@ -1501,8 +1563,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupname, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
-    return appendCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+  public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -1583,6 +1645,136 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<String> scriptKill(String sampleKey) {
     return appendCommand(commandObjects.scriptKill(sampleKey));
+  }
+
+  @Override
+  public Response<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcall(String name, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcallReadonly(String name, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public Response<String> functionDelete(byte[] libraryName) {
+    return appendCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public Response<String> functionDelete(String libraryName) {
+    return appendCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public Response<byte[]> functionDump() {
+    return appendCommand(commandObjects.functionDump());
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList(String libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList() {
+    return appendCommand(commandObjects.functionList());
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode() {
+    return appendCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public Response<List<Object>> functionListBinary() {
+    return appendCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionList(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCodeBinary() {
+    return appendCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCode(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(String engineName, String libraryName, String functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public Response<String> functionRestore(byte[] serializedValue) {
+    return appendCommand(commandObjects.functionRestore(serializedValue));
+  }
+
+  @Override
+  public Response<String> functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
+    return appendCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Response<String> functionFlush() {
+    return appendCommand(commandObjects.functionFlush());
+  }
+
+  @Override
+  public Response<String> functionFlush(FlushMode mode) {
+    return appendCommand(commandObjects.functionFlush(mode));
+  }
+
+  @Override
+  public Response<String> functionKill() {
+    return appendCommand(commandObjects.functionKill());
+  }
+
+  @Override
+  public Response<FunctionStats> functionStats() {
+    return appendCommand(commandObjects.functionStats());
+  }
+
+  @Override
+  public Response<Object> functionStatsBinary() {
+    return appendCommand(commandObjects.functionStatsBinary());
   }
 
   public Response<Long> publish(String channel, String message) {
@@ -1894,11 +2086,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Long> expireTime(byte[] key) {
-    return appendCommand(commandObjects.expireTime(key));
-  }
-
-  @Override
   public Response<Long> pexpire(byte[] key, long milliseconds) {
     return appendCommand(commandObjects.pexpire(key, milliseconds));
   }
@@ -1906,6 +2093,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Long> pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
     return appendCommand(commandObjects.pexpire(key, milliseconds, expiryOption));
+  }
+
+  @Override
+  public Response<Long> expireTime(byte[] key) {
+    return appendCommand(commandObjects.expireTime(key));
   }
 
   @Override
@@ -1919,8 +2111,18 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+  }
+
+  @Override
   public Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp) {
     return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp));
+  }
+
+  @Override
+  public Response<Long> pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return appendCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -2196,6 +2398,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     return appendCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, byte[]... keys) {
+    return appendCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    return appendCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
 
   public Response<Long> publish(byte[] channel, byte[] message) {
@@ -2672,6 +2894,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, byte[]... keys) {
+    return appendCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    return appendCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
   public Response<Set<byte[]>> zdiff(byte[]... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
@@ -2772,23 +3014,28 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
-    return appendCommand(commandObjects.xgroupCreate(key, groupname, id, makeStream));
+  public Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
+    return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
 
   @Override
-  public Response<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
-    return appendCommand(commandObjects.xgroupSetID(key, groupname, id));
+  public Response<String> xgroupSetID(byte[] key, byte[] groupName, byte[] id) {
+    return appendCommand(commandObjects.xgroupSetID(key, groupName, id));
   }
 
   @Override
-  public Response<Long> xgroupDestroy(byte[] key, byte[] groupname) {
-    return appendCommand(commandObjects.xgroupDestroy(key, groupname));
+  public Response<Long> xgroupDestroy(byte[] key, byte[] groupName) {
+    return appendCommand(commandObjects.xgroupDestroy(key, groupName));
   }
 
   @Override
-  public Response<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
-    return appendCommand(commandObjects.xgroupDelConsumer(key, groupname, consumerName));
+  public Response<Boolean> xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return appendCommand(commandObjects.xgroupCreateConsumer(key, groupName, consumerName));
+  }
+
+  @Override
+  public Response<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return appendCommand(commandObjects.xgroupDelConsumer(key, groupName, consumerName));
   }
 
   @Override
@@ -2807,28 +3054,28 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Object> xpending(byte[] key, byte[] groupname) {
-    return appendCommand(commandObjects.xpending(key, groupname));
+  public Response<Object> xpending(byte[] key, byte[] groupName) {
+    return appendCommand(commandObjects.xpending(key, groupName));
   }
 
   @Override
-  public Response<List<Object>> xpending(byte[] key, byte[] groupname, byte[] start, byte[] end, int count, byte[] consumername) {
-    return appendCommand(commandObjects.xpending(key, groupname, start, end, count, consumername));
+  public Response<List<Object>> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName) {
+    return appendCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
   }
 
   @Override
-  public Response<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params) {
-    return appendCommand(commandObjects.xpending(key, groupname, params));
+  public Response<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params) {
+    return appendCommand(commandObjects.xpending(key, groupName, params));
   }
 
   @Override
-  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    return appendCommand(commandObjects.xclaim(key, group, consumername, minIdleTime, params, ids));
+  public Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return appendCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
-    return appendCommand(commandObjects.xclaimJustId(key, group, consumername, minIdleTime, params, ids));
+  public Response<List<byte[]>> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
+    return appendCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
@@ -2878,8 +3125,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
-    return appendCommand(commandObjects.xreadGroup(groupname, consumer, xReadGroupParams, streams));
+  public Response<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+    return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -3478,22 +3725,22 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public Response<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public Response<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
@@ -3503,7 +3750,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public Response<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return appendCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 
@@ -3522,6 +3769,188 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.tsQueryIndex(filters));
   }
   // RedisTimeSeries commands
+
+  // RedisBloom commands
+  @Override
+  public Response<String> bfReserve(String key, double errorRate, long capacity) {
+    return appendCommand(commandObjects.bfReserve(key, errorRate, capacity));
+  }
+
+  @Override
+  public Response<String> bfReserve(String key, double errorRate, long capacity, BFReserveParams reserveParams) {
+    return appendCommand(commandObjects.bfReserve(key, errorRate, capacity, reserveParams));
+  }
+
+  @Override
+  public Response<Boolean> bfAdd(String key, String item) {
+    return appendCommand(commandObjects.bfAdd(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> bfMAdd(String key, String... items) {
+    return appendCommand(commandObjects.bfMAdd(key, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> bfInsert(String key, String... items) {
+    return appendCommand(commandObjects.bfInsert(key, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> bfInsert(String key, BFInsertParams insertParams, String... items) {
+    return appendCommand(commandObjects.bfInsert(key, insertParams, items));
+  }
+
+  @Override
+  public Response<Boolean> bfExists(String key, String item) {
+    return appendCommand(commandObjects.bfExists(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> bfMExists(String key, String... items) {
+    return appendCommand(commandObjects.bfMExists(key, items));
+  }
+
+  @Override
+  public Response<Map<String, Object>> bfInfo(String key) {
+    return appendCommand(commandObjects.bfInfo(key));
+  }
+
+  @Override
+  public Response<String> cfReserve(String key, long capacity) {
+    return appendCommand(commandObjects.cfReserve(key, capacity));
+  }
+
+  @Override
+  public Response<String> cfReserve(String key, long capacity, CFReserveParams reserveParams) {
+    return appendCommand(commandObjects.cfReserve(key, capacity, reserveParams));
+  }
+
+  @Override
+  public Response<Boolean> cfAdd(String key, String item) {
+    return appendCommand(commandObjects.cfAdd(key, item));
+  }
+
+  @Override
+  public Response<Boolean> cfAddNx(String key, String item) {
+    return appendCommand(commandObjects.cfAddNx(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfInsert(String key, String... items) {
+    return appendCommand(commandObjects.cfInsert(key, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfInsert(String key, CFInsertParams insertParams, String... items) {
+    return appendCommand(commandObjects.cfInsert(key, insertParams, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfInsertNx(String key, String... items) {
+    return appendCommand(commandObjects.cfInsertNx(key, items));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfInsertNx(String key, CFInsertParams insertParams, String... items) {
+    return appendCommand(commandObjects.cfInsertNx(key, insertParams, items));
+  }
+
+  @Override
+  public Response<Boolean> cfExists(String key, String item) {
+    return appendCommand(commandObjects.cfExists(key, item));
+  }
+
+  @Override
+  public Response<Boolean> cfDel(String key, String item) {
+    return appendCommand(commandObjects.cfDel(key, item));
+  }
+
+  @Override
+  public Response<Long> cfCount(String key, String item) {
+    return appendCommand(commandObjects.cfCount(key, item));
+  }
+
+  @Override
+  public Response<Map<String, Object>> cfInfo(String key) {
+    return appendCommand(commandObjects.cfInfo(key));
+  }
+
+  @Override
+  public Response<String> cmsInitByDim(String key, long width, long depth) {
+    return appendCommand(commandObjects.cmsInitByDim(key, width, depth));
+  }
+
+  @Override
+  public Response<String> cmsInitByProb(String key, double error, double probability) {
+    return appendCommand(commandObjects.cmsInitByProb(key, error, probability));
+  }
+
+  @Override
+  public Response<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
+    return appendCommand(commandObjects.cmsIncrBy(key, itemIncrements));
+  }
+
+  @Override
+  public Response<List<Long>> cmsQuery(String key, String... items) {
+    return appendCommand(commandObjects.cmsQuery(key, items));
+  }
+
+  @Override
+  public Response<String> cmsMerge(String destKey, String... keys) {
+    return appendCommand(commandObjects.cmsMerge(destKey, keys));
+  }
+
+  @Override
+  public Response<String> cmsMerge(String destKey, Map<String, Long> keysAndWeights) {
+    return appendCommand(commandObjects.cmsMerge(destKey, keysAndWeights));
+  }
+
+  @Override
+  public Response<Map<String, Object>> cmsInfo(String key) {
+    return appendCommand(commandObjects.cmsInfo(key));
+  }
+
+  @Override
+  public Response<String> topkReserve(String key, long topk) {
+    return appendCommand(commandObjects.topkReserve(key, topk));
+  }
+
+  @Override
+  public Response<String> topkReserve(String key, long topk, long width, long depth, double decay) {
+    return appendCommand(commandObjects.topkReserve(key, topk, width, depth, decay));
+  }
+
+  @Override
+  public Response<List<String>> topkAdd(String key, String... items) {
+    return appendCommand(commandObjects.topkAdd(key, items));
+  }
+
+  @Override
+  public Response<List<String>> topkIncrBy(String key, Map<String, Long> itemIncrements) {
+    return appendCommand(commandObjects.topkIncrBy(key, itemIncrements));
+  }
+
+  @Override
+  public Response<List<Boolean>> topkQuery(String key, String... items) {
+    return appendCommand(commandObjects.topkQuery(key, items));
+  }
+
+  @Override
+  public Response<List<Long>> topkCount(String key, String... items) {
+    return appendCommand(commandObjects.topkCount(key, items));
+  }
+
+  @Override
+  public Response<List<String>> topkList(String key) {
+    return appendCommand(commandObjects.topkList(key));
+  }
+
+  @Override
+  public Response<Map<String, Object>> topkInfo(String key) {
+    return appendCommand(commandObjects.topkInfo(key));
+  }
+  // RedisBloom commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

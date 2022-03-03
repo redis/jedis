@@ -15,6 +15,8 @@ import org.json.JSONObject;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.*;
+import redis.clients.jedis.bloom.*;
+import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
@@ -29,6 +31,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword;
+import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
@@ -115,14 +118,6 @@ public class CommandObjects {
         BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> expireTime(String key) {
-    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> expireTime(byte[] key) {
-    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
-  }
-
   public final CommandObject<Long> pexpire(String key, long milliseconds) {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), BuilderFactory.LONG);
   }
@@ -141,6 +136,14 @@ public class CommandObjects {
         BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> expireTime(String key) {
+    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> expireTime(byte[] key) {
+    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> pexpireTime(String key) {
     return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), BuilderFactory.LONG);
   }
@@ -157,12 +160,30 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> expireAt(String key, long unixTime, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> pexpireAt(String key, long millisecondsTimestamp) {
     return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> pexpireAt(byte[] key, long millisecondsTimestamp) {
     return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp).add(expiryOption),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
+    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp).add(expiryOption),
+        BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> ttl(String key) {
@@ -876,6 +897,48 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BLMOVE).blocking().key(srcKey)
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY);
   }
+
+  public final CommandObject<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<String>>> lmpop(ListDirection direction, int count, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
+        .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
+        .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
+        BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction), BuilderFactory.KEYED_BINARY_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_BINARY_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
+        .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_BINARY_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
+        .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
+        BuilderFactory.KEYED_BINARY_LIST);
+  }
   // List commands
 
   // Hash commands
@@ -1168,7 +1231,6 @@ public class CommandObjects {
   public final CommandObject<Long> sintercard(int limit, byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
   }
-
 
   public final CommandObject<Set<String>> sunion(String... keys) {
     return new CommandObject<>(commandArguments(SUNION).keys((Object[]) keys), BuilderFactory.STRING_SET);
@@ -1814,6 +1876,46 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
   }
+
+  public final CommandObject<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, String... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
+        .keys((Object[]) keys).add(option), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
+        .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option).add(COUNT).add(count), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
+        .keys((Object[]) keys).add(option), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
+        .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
+  }
   // Sorted Set commands
 
   // Geo commands
@@ -2236,50 +2338,59 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
-  public final CommandObject<String> xgroupCreate(String key, String groupname, StreamEntryID id, boolean makeStream) {
+  public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     CommandArguments args = commandArguments(XGROUP).add(CREATE).key(key)
-        .add(groupname).add(id == null ? "0-0" : id);
+        .add(groupName).add(id == null ? "0-0" : id);
     if (makeStream) args.add(MKSTREAM);
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> xgroupSetID(String key, String groupname, StreamEntryID id) {
+  public final CommandObject<String> xgroupSetID(String key, String groupName, StreamEntryID id) {
     return new CommandObject<>(commandArguments(XGROUP).add(SETID)
-        .key(key).add(groupname).add(id), BuilderFactory.STRING);
+        .key(key).add(groupName).add(id), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Long> xgroupDestroy(String key, String groupname) {
+  public final CommandObject<Long> xgroupDestroy(String key, String groupName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DESTROY)
-        .key(key).add(groupname), BuilderFactory.LONG);
+        .key(key).add(groupName), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xgroupDelConsumer(String key, String groupname, String consumername) {
+  public final CommandObject<Boolean> xgroupCreateConsumer(String key, String groupName, String consumerName) {
+    return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
+        .key(key).add(groupName).add(consumerName), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> xgroupDelConsumer(String key, String groupName, String consumerName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
-        .key(key).add(groupname).add(consumername), BuilderFactory.LONG);
+        .key(key).add(groupName).add(consumerName), BuilderFactory.LONG);
   }
 
-  public final CommandObject<String> xgroupCreate(byte[] key, byte[] groupname, byte[] id, boolean makeStream) {
+  public final CommandObject<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
     CommandArguments args = commandArguments(XGROUP).add(CREATE).key(key)
-        .add(groupname).add(id);
+        .add(groupName).add(id);
     if (makeStream) args.add(MKSTREAM);
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> xgroupSetID(byte[] key, byte[] groupname, byte[] id) {
+  public final CommandObject<String> xgroupSetID(byte[] key, byte[] groupName, byte[] id) {
     return new CommandObject<>(commandArguments(XGROUP).add(SETID)
-        .key(key).add(groupname).add(id), BuilderFactory.STRING);
+        .key(key).add(groupName).add(id), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Long> xgroupDestroy(byte[] key, byte[] groupname) {
+  public final CommandObject<Long> xgroupDestroy(byte[] key, byte[] groupName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DESTROY)
-        .key(key).add(groupname), BuilderFactory.LONG);
+        .key(key).add(groupName), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupname, byte[] consumerName) {
+  public final CommandObject<Boolean> xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
+    return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
+        .key(key).add(groupName).add(consumerName), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
-        .key(key).add(groupname).add(consumerName), BuilderFactory.LONG);
+        .key(key).add(groupName).add(consumerName), BuilderFactory.LONG);
   }
-
   public final CommandObject<Long> xdel(String key, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
@@ -2310,8 +2421,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XTRIM).key(key).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<StreamPendingSummary> xpending(String key, String groupname) {
-    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname),
+  public final CommandObject<StreamPendingSummary> xpending(String key, String groupName) {
+    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName),
         BuilderFactory.STREAM_PENDING_SUMMARY);
   }
 
@@ -2319,21 +2430,21 @@ public class CommandObjects {
    * @deprecated Use {@link CommandObjects#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated
-  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname,
-      StreamEntryID start, StreamEntryID end, int count, String consumername) {
-    CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
+  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupName,
+      StreamEntryID start, StreamEntryID end, int count, String consumerName) {
+    CommandArguments args = commandArguments(XPENDING).key(key).add(groupName)
         .add(start == null ? "-" : start).add(end == null ? "+" : end).add(count);
-    if (consumername != null) args.add(consumername);
+    if (consumerName != null) args.add(consumerName);
     return new CommandObject<>(args, BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }
 
-  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupname, XPendingParams params) {
-    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname)
+  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params) {
+    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName)
         .addParams(params), BuilderFactory.STREAM_PENDING_ENTRY_LIST);
   }
 
-  public final CommandObject<Object> xpending(byte[] key, byte[] groupname) {
-    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname),
+  public final CommandObject<Object> xpending(byte[] key, byte[] groupName) {
+    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName),
         BuilderFactory.RAW_OBJECT);
   }
 
@@ -2341,30 +2452,30 @@ public class CommandObjects {
    * @deprecated Use {@link CommandObjects#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated
-  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname,
-      byte[] start, byte[] end, int count, byte[] consumername) {
-    CommandArguments args = commandArguments(XPENDING).key(key).add(groupname)
+  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupName,
+      byte[] start, byte[] end, int count, byte[] consumerName) {
+    CommandArguments args = commandArguments(XPENDING).key(key).add(groupName)
         .add(start == null ? "-" : start).add(end == null ? "+" : end).add(count);
-    if (consumername != null) args.add(consumername);
+    if (consumerName != null) args.add(consumerName);
     return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupname, XPendingParams params) {
-    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupname)
+  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params) {
+    return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName)
         .addParams(params), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<StreamEntry>> xclaim(String key, String group,
-      String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+      String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XCLAIM).key(key).add(group)
-        .add(consumername).add(minIdleTime).addObjects((Object[]) ids).addParams(params),
+        .add(consumerName).add(minIdleTime).addObjects((Object[]) ids).addParams(params),
         BuilderFactory.STREAM_ENTRY_LIST);
   }
 
   public final CommandObject<List<StreamEntryID>> xclaimJustId(String key, String group,
-      String consumername, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
+      String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return new CommandObject<>(commandArguments(XCLAIM).key(key).add(group)
-        .add(consumername).add(minIdleTime).addObjects((Object[]) ids).addParams(params)
+        .add(consumerName).add(minIdleTime).addObjects((Object[]) ids).addParams(params)
         .add(JUSTID), BuilderFactory.STREAM_ENTRY_ID_LIST);
   }
 
@@ -2385,16 +2496,16 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<byte[]>> xclaim(byte[] key, byte[] group,
-      byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
+      byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
     return new CommandObject<>(commandArguments(XCLAIM).key(key).add(group)
-        .add(consumername).add(minIdleTime).addObjects((Object[]) ids).addParams(params),
+        .add(consumerName).add(minIdleTime).addObjects((Object[]) ids).addParams(params),
         BuilderFactory.BINARY_LIST);
   }
 
   public final CommandObject<List<byte[]>> xclaimJustId(byte[] key, byte[] group,
-      byte[] consumername, long minIdleTime, XClaimParams params, byte[]... ids) {
+      byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
     return new CommandObject<>(commandArguments(XCLAIM).key(key).add(group)
-        .add(consumername).add(minIdleTime).addObjects((Object[]) ids).addParams(params)
+        .add(consumerName).add(minIdleTime).addObjects((Object[]) ids).addParams(params)
         .add(JUSTID), BuilderFactory.BINARY_LIST);
   }
 
@@ -2472,10 +2583,10 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(
-      String groupname, String consumer, XReadGroupParams xReadGroupParams,
+      String groupName, String consumer, XReadGroupParams xReadGroupParams,
       Map<String, StreamEntryID> streams) {
     CommandArguments args = commandArguments(XREADGROUP)
-        .add(GROUP).add(groupname).add(consumer)
+        .add(GROUP).add(groupName).add(consumer)
         .addParams(xReadGroupParams).add(STREAMS);
     Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
     entrySet.forEach(entry -> args.key(entry.getKey()));
@@ -2494,10 +2605,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xreadGroup(byte[] groupname, byte[] consumer,
+  public final CommandObject<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
-        .add(GROUP).add(groupname).add(consumer)
+        .add(GROUP).add(groupName).add(consumer)
         .addParams(xReadGroupParams).add(STREAMS);
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.key(entry.getKey());
@@ -2670,6 +2781,136 @@ public class CommandObjects {
 
   public final CommandObject<String> scriptKill(byte[] sampleKey) {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(FCALL).add(name).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
+  public final CommandObject<Object> fcallReadonly(String name, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.ENCODED_OBJECT);
+  }
+
+  public final CommandObject<String> functionDelete(String libraryName) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionList() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionList(String libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+        .add(libraryNamePattern), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionListWithCode() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+        .add(libraryNamePattern).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+  }
+
+  public final CommandObject<String> functionLoad(String engineName, String libraryName, String functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
+        .add(libraryName).add(functionCode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
+        .add(libraryName).addParams(params).add(functionCode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<FunctionStats> functionStats() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(STATS), FunctionStats.FUNCTION_STATS_BUILDER);
+  }
+
+  public final CommandObject<Object> functionStatsBinary() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(STATS), BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<String> functionFlush() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(FLUSH), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionFlush(FlushMode mode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(FLUSH).add(mode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionKill() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(KILL), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
+    byte[][] argsArray = args.toArray(new byte[args.size()][]);
+    return new CommandObject<>(commandArguments(FCALL).add(name).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<Object> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
+    byte[][] argsArray = args.toArray(new byte[args.size()][]);
+    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keysArray.length)
+        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+        BuilderFactory.RAW_OBJECT);
+  }
+
+  public final CommandObject<String> functionDelete(byte[] libraryName) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> functionDump() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(DUMP), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<List<Object>> functionListBinary() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> functionList(byte[] libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+        .add(libraryNamePattern), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> functionListWithCodeBinary() {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> functionListWithCode(byte[] libraryNamePattern) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).
+        add(libraryNamePattern).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
+  }
+
+  public final CommandObject<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
+        .add(libraryName).add(functionCode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
+        .add(libraryName).addParams(params).add(functionCode), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionRestore(byte[] serializedValue) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(RESTORE).add(serializedValue),
+        BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(RESTORE).add(serializedValue)
+        .add(policy.getRaw()), BuilderFactory.STRING);
   }
   // Scripting commands
 
@@ -3178,24 +3419,24 @@ public class CommandObjects {
         .addParams(rangeParams), BuilderFactory.TIMESERIES_ELEMENT_LIST);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public final CommandObject<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
         BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public final CommandObject<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE)
         .addParams(multiRangeParams), BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public final CommandObject<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
         BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public final CommandObject<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).addParams(multiRangeParams),
         BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
   }
@@ -3204,7 +3445,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.GET).key(key), BuilderFactory.TIMESERIES_ELEMENT);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public final CommandObject<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MGET).addParams(multiGetParams)
         .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters), BuilderFactory.TIMESERIES_MGET_RESPONSE);
   }
@@ -3220,9 +3461,177 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<String>> tsQueryIndex(String... filters) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.QUERYINDEX).addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.QUERYINDEX)
+        .addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
   }
   // RedisTimeSeries commands
+
+  // RedisBloom commands
+  public final CommandObject<String> bfReserve(String key, double errorRate, long capacity) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.RESERVE).key(key)
+        .add(errorRate).add(capacity), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> bfReserve(String key, double errorRate, long capacity, BFReserveParams reserveParams) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.RESERVE).key(key)
+        .add(errorRate).add(capacity).addParams(reserveParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Boolean> bfAdd(String key, String item) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.ADD).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> bfMAdd(String key, String... items) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.MADD).key(key).
+        addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> bfInsert(String key, String... items) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.INSERT).key(key)
+        .add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_WITH_ERROR_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> bfInsert(String key, BFInsertParams insertParams, String... items) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.INSERT).key(key).addParams(insertParams)
+        .add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_WITH_ERROR_LIST);
+  }
+
+  public final CommandObject<Boolean> bfExists(String key, String item) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.EXISTS).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> bfMExists(String key, String... items) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.MEXISTS).key(key).
+        addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<Map<String, Object>> bfInfo(String key) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+
+  public final CommandObject<String> cfReserve(String key, long capacity) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.RESERVE).key(key).add(capacity), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> cfReserve(String key, long capacity, CFReserveParams reserveParams) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.RESERVE).key(key).add(capacity).addParams(reserveParams), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Boolean> cfAdd(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.ADD).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> cfAddNx(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.ADDNX).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> cfInsert(String key, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INSERT).key(key)
+        .add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> cfInsert(String key, CFInsertParams insertParams, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INSERT).key(key)
+        .addParams(insertParams).add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> cfInsertNx(String key, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INSERTNX).key(key)
+        .add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> cfInsertNx(String key, CFInsertParams insertParams, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INSERTNX).key(key)
+        .addParams(insertParams).add(RedisBloomKeyword.ITEMS).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<Boolean> cfExists(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.EXISTS).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> cfDel(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.DEL).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> cfCount(String key, String item) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.COUNT).key(key).add(item), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Map<String, Object>> cfInfo(String key) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+
+  public final CommandObject<String> cmsInitByDim(String key, long width, long depth) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYDIM).key(key).add(width).add(depth), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> cmsInitByProb(String key, double error, double probability) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error).add(probability), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
+    CommandArguments args = commandArguments(CountMinSketchCommand.INCRBY).key(key);
+    itemIncrements.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> cmsQuery(String key, String... items) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.QUERY).key(key).addObjects((Object[]) items), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<String> cmsMerge(String destKey, String... keys) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.MERGE).key(destKey)
+        .add(keys.length).keys((Object[]) keys), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> cmsMerge(String destKey, Map<String, Long> keysAndWeights) {
+    CommandArguments args = commandArguments(CountMinSketchCommand.MERGE).key(destKey);
+    args.add(keysAndWeights.size());
+    keysAndWeights.entrySet().forEach(entry -> args.key(entry.getKey()));
+    args.add(RedisBloomKeyword.WEIGHTS);
+    keysAndWeights.entrySet().forEach(entry -> args.add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, Object>> cmsInfo(String key) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+
+  public final CommandObject<String> topkReserve(String key, long topk) {
+    return new CommandObject<>(commandArguments(TopKCommand.RESERVE).key(key).add(topk), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> topkReserve(String key, long topk, long width, long depth, double decay) {
+    return new CommandObject<>(commandArguments(TopKCommand.RESERVE).key(key).add(topk)
+        .add(width).add(depth).add(decay), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<String>> topkAdd(String key, String... items) {
+    return new CommandObject<>(commandArguments(TopKCommand.ADD).key(key).addObjects((Object[]) items), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> topkIncrBy(String key, Map<String, Long> itemIncrements) {
+    CommandArguments args = commandArguments(TopKCommand.INCRBY).key(key);
+    itemIncrements.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<Boolean>> topkQuery(String key, String... items) {
+    return new CommandObject<>(commandArguments(TopKCommand.QUERY).key(key).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
+  public final CommandObject<List<Long>> topkCount(String key, String... items) {
+    return new CommandObject<>(commandArguments(TopKCommand.COUNT).key(key).addObjects((Object[]) items), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<String>> topkList(String key) {
+    return new CommandObject<>(commandArguments(TopKCommand.LIST).key(key), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<Map<String, Object>> topkInfo(String key) {
+    return new CommandObject<>(commandArguments(TopKCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+  // RedisBloom commands
 
   private static final Gson GSON = new Gson();
 

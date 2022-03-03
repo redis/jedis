@@ -5,10 +5,12 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.util.KeyValue;
 
 public interface SortedSetPipelineCommands {
 
@@ -156,4 +158,11 @@ public interface SortedSetPipelineCommands {
 
   Response<Long> zunionstore(String dstKey, ZParams params, String... sets);
 
+  Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, String... keys);
+
+  Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys);
+
+  Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys);
+
+  Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys);
 }

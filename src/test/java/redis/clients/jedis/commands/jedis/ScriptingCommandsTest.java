@@ -330,13 +330,13 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.functionLoad(engine, library, function));
     assertEquals("OK", jedis.functionLoad(engine, library, new FunctionLoadParams().replace().libraryDescription(""), function));
 
-    jedis.functionDelete(library);
+    assertEquals("OK", jedis.functionDelete(library));
 
     // Binary
     assertEquals("OK", jedis.functionLoad(engine.getBytes(), library.getBytes(), function.getBytes()));
     assertEquals("OK", jedis.functionLoad(engine.getBytes(), library.getBytes(), new FunctionLoadParams().replace(), function.getBytes()));
 
-    jedis.functionDelete(library.getBytes());
+    assertEquals("OK", jedis.functionDelete(library.getBytes()));
   }
 
   @Test
@@ -389,6 +389,10 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     // Binary
     List<Object> bresponse = (List<Object>) jedis.functionListBinary().get(0);
     assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+
+    bresponse = (List<Object>) jedis.functionListWithCodeBinary().get(0);
+    assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+    assertNotNull(bresponse.get(7));
 
     bresponse = (List<Object>) jedis.functionList(library.getBytes()).get(0);
     assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));

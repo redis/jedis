@@ -49,7 +49,7 @@ public class LibraryInfo {
     return libraryCode;
   }
 
-  public static final Builder<LibraryInfo> LIBRARY = new Builder<LibraryInfo>() {
+  public static final Builder<LibraryInfo> LIBRARY_BUILDER = new Builder<LibraryInfo>() {
     @Override
     public LibraryInfo build(Object data) {
       List<Object> objectList = (List<Object>) data;

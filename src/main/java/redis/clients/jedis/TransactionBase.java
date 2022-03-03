@@ -1682,6 +1682,136 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(commandObjects.scriptKill(sampleKey));
   }
 
+  @Override
+  public Response<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcall(String name, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcallReadonly(String name, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public Response<String> functionDelete(byte[] libraryName) {
+    return appendCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public Response<String> functionDelete(String libraryName) {
+    return appendCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public Response<byte[]> functionDump() {
+    return appendCommand(commandObjects.functionDump());
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList(String libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList() {
+    return appendCommand(commandObjects.functionList());
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode() {
+    return appendCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public Response<List<Object>> functionListBinary() {
+    return appendCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionList(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCodeBinary() {
+    return appendCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCode(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(String engineName, String libraryName, String functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public Response<String> functionRestore(byte[] serializedValue) {
+    return appendCommand(commandObjects.functionRestore(serializedValue));
+  }
+
+  @Override
+  public Response<String> functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
+    return appendCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Response<String> functionFlush() {
+    return appendCommand(commandObjects.functionFlush());
+  }
+
+  @Override
+  public Response<String> functionFlush(FlushMode mode) {
+    return appendCommand(commandObjects.functionFlush(mode));
+  }
+
+  @Override
+  public Response<String> functionKill() {
+    return appendCommand(commandObjects.functionKill());
+  }
+
+  @Override
+  public Response<FunctionStats> functionStats() {
+    return appendCommand(commandObjects.functionStats());
+  }
+
+  @Override
+  public Response<Object> functionStatsBinary() {
+    return appendCommand(commandObjects.functionStatsBinary());
+  }
+
   public Response<Long> publish(String channel, String message) {
     return appendCommand(commandObjects.publish(channel, message));
   }

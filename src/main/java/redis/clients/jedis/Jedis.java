@@ -8639,6 +8639,81 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public Object fcall(final String name, final List<String> keys, final List<String> args) {
+    return connection.executeCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Object fcallReadonly(final String name, final List<String> keys, final List<String> args) {
+    return connection.executeCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public String functionDelete(final String libraryName) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public String functionLoad(final String engineName, final String libraryName, final String functionCode) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public String functionLoad(final String engineName, final String libraryName, final FunctionLoadParams params, final String functionCode) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public FunctionStats functionStats() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionStats());
+  }
+
+  @Override
+  public String functionFlush() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionFlush());
+  }
+
+  @Override
+  public String functionFlush(final FlushMode mode) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionFlush(mode));
+  }
+
+  @Override
+  public String functionKill() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionKill());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionList());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList(final String libraryNamePattern) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionListWithCode());  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode(String libraryNamePattern) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
   public long geoadd(final String key, final double longitude, final double latitude,
       final String member) {
     checkIsInMultiOrPipeline();
@@ -9133,6 +9208,84 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
     return connection.executeCommand(commandObjects.xinfoConsumers(key, group));
+  }
+
+  @Override
+  public Object fcall(final byte[] name, final List<byte[]> keys, final List<byte[]> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Object fcallReadonly(final byte[] name, final List<byte[]> keys, final List<byte[]> args) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public String functionDelete(final byte[] libraryName) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public byte[] functionDump() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionDump());
+  }
+
+  @Override
+  public List<Object> functionListBinary() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public List<Object> functionList(final byte[] libraryNamePattern) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public List<Object> functionListWithCodeBinary() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public List<Object> functionListWithCode(final byte[] libraryNamePattern) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public String functionLoad(final byte[] engineName, final byte[] libraryName, final byte[] functionCode) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public String functionLoad(final byte[] engineName, final byte[] libraryName, final FunctionLoadParams params, final byte[] functionCode) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public String functionRestore(final byte[] serializedValue) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionRestore(serializedValue));
+  }
+
+  @Override
+  public String functionRestore(final byte[] serializedValue, final FunctionRestorePolicy policy) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Object functionStatsBinary() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.functionStatsBinary());
   }
 
   public Object sendCommand(ProtocolCommand cmd, String... args) {

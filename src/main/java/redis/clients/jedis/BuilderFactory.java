@@ -1412,6 +1412,14 @@ public final class BuilderFactory {
 
   };
 
+  public static final Builder<List<LibraryInfo>> LIBRARY_LIST = new Builder<List<LibraryInfo>>() {
+    @Override
+    public List<LibraryInfo> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return list.stream().map(o -> LibraryInfo.LIBRARY_BUILDER.build(o)).collect(Collectors.toList());
+    }
+  };
+
   public static final Builder<Class<?>> JSON_TYPE = new Builder<Class<?>>() {
     @Override
     public Class<?> build(Object data) {

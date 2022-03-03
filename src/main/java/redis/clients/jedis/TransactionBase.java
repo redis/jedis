@@ -36,6 +36,7 @@ import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.KeyValue;
 
 public abstract class TransactionBase extends Queable implements PipelineCommands,
     PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
@@ -720,6 +721,26 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys) {
+    return appendCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, int count, String... keys) {
+    return appendCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
+
+  @Override
   public Response<Long> hset(String key, String field, String value) {
     return appendCommand(commandObjects.hset(key, field, value));
   }
@@ -1198,6 +1219,26 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, String... keys) {
+    return appendCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys) {
+    return appendCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override
@@ -2435,6 +2476,26 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
 
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, byte[]... keys) {
+    return appendCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    return appendCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
+
   public Response<Long> publish(byte[] channel, byte[] message) {
     return appendCommand(commandObjects.publish(channel, message));
   }
@@ -2906,6 +2967,26 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, byte[]... keys) {
+    return appendCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    return appendCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override
@@ -3721,22 +3802,22 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public Response<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public Response<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
@@ -3746,7 +3827,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public Response<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return appendCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 

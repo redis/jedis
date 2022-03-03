@@ -14,9 +14,11 @@ import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.aggr.AggregationResult;
-import redis.clients.jedis.timeseries.KeyedTSElements;
+import redis.clients.jedis.timeseries.TSKeyedElements;
 import redis.clients.jedis.timeseries.TSElement;
+import redis.clients.jedis.timeseries.TSKeyValue;
 import redis.clients.jedis.util.JedisByteHashMap;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class BuilderFactory {
@@ -408,6 +410,38 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<KeyValue<String, List<String>>> KEYED_STRING_LIST
+      = new Builder<KeyValue<String, List<String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<String, List<String>> build(Object data) {
+      if (data == null) return null;
+      List<byte[]> l = (List<byte[]>) data;
+      return new KeyValue<>(STRING.build(l.get(0)), STRING_LIST.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<String, List<String>>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], List<byte[]>>> KEYED_BINARY_LIST
+      = new Builder<KeyValue<byte[], List<byte[]>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], List<byte[]>> build(Object data) {
+      if (data == null) return null;
+      List<byte[]> l = (List<byte[]>) data;
+      return new KeyValue<>(BINARY.build(l.get(0)), BINARY_LIST.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], List<byte[]>>";
+    }
+  };
+
   public static final Builder<Tuple> TUPLE = new Builder<Tuple>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -485,7 +519,54 @@ public final class BuilderFactory {
     public String toString() {
       return "ZSet<Tuple>";
     }
+  };
 
+  private static final Builder<List<Tuple>> TUPLE_LIST_FROM_PAIRS = new Builder<List<Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Tuple> build(Object data) {
+      if (data == null) return null;
+      return ((List<Object>) data).stream()
+          .map(o -> (List<Object>) o).map(p -> TUPLE.build(p))
+          .collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<Tuple>";
+    }
+  };
+
+  public static final Builder<KeyValue<String, List<Tuple>>> KEYED_TUPLE_LIST
+      = new Builder<KeyValue<String, List<Tuple>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<String, List<Tuple>> build(Object data) {
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      return new KeyValue<>(STRING.build(l.get(0)), TUPLE_LIST_FROM_PAIRS.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<String, List<Tuple>>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], List<Tuple>>> BINARY_KEYED_TUPLE_LIST
+      = new Builder<KeyValue<byte[], List<Tuple>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], List<Tuple>> build(Object data) {
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      return new KeyValue<>(BINARY.build(l.get(0)), TUPLE_LIST_FROM_PAIRS.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], List<Tuple>>";
+    }
   };
 
   public static final Builder<ScanResult<String>> SCAN_RESPONSE = new Builder<ScanResult<String>>() {
@@ -1409,7 +1490,6 @@ public final class BuilderFactory {
     public String toString() {
       return "Map<String, String>";
     }
-
   };
 
   public static final Builder<List<LibraryInfo>> LIBRARY_LIST = new Builder<List<LibraryInfo>>() {
@@ -1545,28 +1625,29 @@ public final class BuilderFactory {
     @Override
     public List<TSElement> build(Object data) {
       return ((List<Object>) data).stream().map((pairObject) -> (List<Object>) pairObject)
-          .map((pairList)
-              -> new TSElement(LONG.build(pairList.get(0)), DOUBLE.build(pairList.get(1))))
+          .map((pairList) -> new TSElement(LONG.build(pairList.get(0)),
+              DOUBLE.build(pairList.get(1))))
           .collect(Collectors.toList());
     }
   };
 
-  public static final Builder<List<KeyedTSElements>> TIMESERIES_MRANGE_RESPONSE = new Builder<List<KeyedTSElements>>() {
+  public static final Builder<List<TSKeyedElements>> TIMESERIES_MRANGE_RESPONSE = new Builder<List<TSKeyedElements>>() {
     @Override
-    public List<KeyedTSElements> build(Object data) {
+    public List<TSKeyedElements> build(Object data) {
       return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
-          .map((tsList) -> new KeyedTSElements(STRING.build(tsList.get(0)),
+          .map((tsList) -> new TSKeyedElements(STRING.build(tsList.get(0)),
               STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
           .collect(Collectors.toList());
     }
   };
 
-  public static final Builder<List<KeyedTSElements>> TIMESERIES_MGET_RESPONSE = new Builder<List<KeyedTSElements>>() {
+  public static final Builder<List<TSKeyValue<TSElement>>> TIMESERIES_MGET_RESPONSE
+      = new Builder<List<TSKeyValue<TSElement>>>() {
     @Override
-    public List<KeyedTSElements> build(Object data) {
+    public List<TSKeyValue<TSElement>> build(Object data) {
       return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
-          .map((tsList) -> new KeyedTSElements(STRING.build(tsList.get(0)),
+          .map((tsList) -> new TSKeyValue<>(STRING.build(tsList.get(0)),
               STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT.build(tsList.get(2))))
           .collect(Collectors.toList());

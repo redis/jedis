@@ -6,6 +6,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
+import redis.clients.jedis.util.KeyValue;
 
 public interface ListPipelineBinaryCommands {
 
@@ -61,4 +62,11 @@ public interface ListPipelineBinaryCommands {
 
   Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
 
+  Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, byte[]... keys);
+
+  Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, int count, byte[]... keys);
+
+  Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys);
+
+  Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys);
 }

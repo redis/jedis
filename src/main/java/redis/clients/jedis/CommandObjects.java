@@ -31,6 +31,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword;
+import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
@@ -895,6 +896,48 @@ public class CommandObjects {
   public final CommandObject<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     return new CommandObject<>(commandArguments(BLMOVE).blocking().key(srcKey)
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<String>>> lmpop(ListDirection direction, int count, String... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
+        .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
+        .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
+        BuilderFactory.KEYED_STRING_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction), BuilderFactory.KEYED_BINARY_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
+        .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_BINARY_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
+        .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_BINARY_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
+        .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
+        BuilderFactory.KEYED_BINARY_LIST);
   }
   // List commands
 
@@ -1832,6 +1875,46 @@ public class CommandObjects {
   public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
     return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
         .addParams(params).add(WITHSCORES), BuilderFactory.TUPLE_ZSET);
+  }
+
+  public final CommandObject<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, String... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
+        .keys((Object[]) keys).add(option), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
+        .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(ZMPOP).add(keys.length).keys((Object[]) keys)
+        .add(option).add(COUNT).add(count), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
+        .keys((Object[]) keys).add(option), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
+  }
+
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
+        .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
   }
   // Sorted Set commands
 
@@ -3336,24 +3419,24 @@ public class CommandObjects {
         .addParams(rangeParams), BuilderFactory.TIMESERIES_ELEMENT_LIST);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public final CommandObject<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
         BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public final CommandObject<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE)
         .addParams(multiRangeParams), BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public final CommandObject<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
         BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public final CommandObject<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).addParams(multiRangeParams),
         BuilderFactory.TIMESERIES_MRANGE_RESPONSE);
   }
@@ -3362,7 +3445,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.GET).key(key), BuilderFactory.TIMESERIES_ELEMENT);
   }
 
-  public final CommandObject<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public final CommandObject<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MGET).addParams(multiGetParams)
         .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters), BuilderFactory.TIMESERIES_MGET_RESPONSE);
   }

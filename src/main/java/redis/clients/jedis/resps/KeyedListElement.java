@@ -1,48 +1,28 @@
 package redis.clients.jedis.resps;
 
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * This class is used to represent a List element when it is returned with respective key name.
+ * @deprecated Use {@link KeyValue}.
  */
-public class KeyedListElement {
-
-  private final String key;
-  private final String element;
+@Deprecated
+public class KeyedListElement extends KeyValue<String, String> {
 
   public KeyedListElement(byte[] key, byte[] element) {
     this(SafeEncoder.encode(key), SafeEncoder.encode(element));
   }
 
   public KeyedListElement(String key, String element) {
-    this.key = key;
-    this.element = element;
+    super(key, element);
   }
 
-  public String getKey() {
-    return key;
-  }
-
+  /**
+   * @deprecated Use {@link java.util.Map.Entry#getValue()}.
+   */
+  @Deprecated
   public String getElement() {
-    return element;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof KeyedListElement)) return false;
-
-    KeyedListElement other = (KeyedListElement) o;
-    return key.equals(other.key) && element.equals(other.element);
-  }
-
-  @Override
-  public int hashCode() {
-    return 31 * key.hashCode() + element.hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return "KeyedListElement{" + "key=" + key + ", element='" + element + "} ";
+    return getValue();
   }
 }

@@ -29,6 +29,7 @@ import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.KeyValue;
 
 public abstract class MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
@@ -645,6 +646,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys) {
+    return appendCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, int count, String... keys) {
+    return appendCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
+
+  @Override
   public Response<Long> hset(String key, String field, String value) {
     return appendCommand(commandObjects.hset(key, field, value));
   }
@@ -1126,6 +1147,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, String... keys) {
+    return appendCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys) {
+    return appendCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
   public Response<Set<String>> zdiff(String... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
@@ -1604,6 +1645,136 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<String> scriptKill(String sampleKey) {
     return appendCommand(commandObjects.scriptKill(sampleKey));
+  }
+
+  @Override
+  public Response<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcall(String name, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return appendCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public Response<Object> fcallReadonly(String name, List<String> keys, List<String> args) {
+    return appendCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public Response<String> functionDelete(byte[] libraryName) {
+    return appendCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public Response<String> functionDelete(String libraryName) {
+    return appendCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public Response<byte[]> functionDump() {
+    return appendCommand(commandObjects.functionDump());
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList(String libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionList() {
+    return appendCommand(commandObjects.functionList());
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<LibraryInfo>> functionListWithCode() {
+    return appendCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public Response<List<Object>> functionListBinary() {
+    return appendCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionList(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCodeBinary() {
+    return appendCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public Response<List<Object>> functionListWithCode(final byte[] libraryNamePattern) {
+    return appendCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(String engineName, String libraryName, String functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public Response<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public Response<String> functionRestore(byte[] serializedValue) {
+    return appendCommand(commandObjects.functionRestore(serializedValue));
+  }
+
+  @Override
+  public Response<String> functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
+    return appendCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Response<String> functionFlush() {
+    return appendCommand(commandObjects.functionFlush());
+  }
+
+  @Override
+  public Response<String> functionFlush(FlushMode mode) {
+    return appendCommand(commandObjects.functionFlush(mode));
+  }
+
+  @Override
+  public Response<String> functionKill() {
+    return appendCommand(commandObjects.functionKill());
+  }
+
+  @Override
+  public Response<FunctionStats> functionStats() {
+    return appendCommand(commandObjects.functionStats());
+  }
+
+  @Override
+  public Response<Object> functionStatsBinary() {
+    return appendCommand(commandObjects.functionStatsBinary());
   }
 
   public Response<Long> publish(String channel, String message) {
@@ -2229,6 +2400,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
 
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, byte[]... keys) {
+    return appendCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    return appendCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
+
   public Response<Long> publish(byte[] channel, byte[] message) {
     return appendCommand(commandObjects.publish(channel, message));
   }
@@ -2700,6 +2891,26 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, byte[]... keys) {
+    return appendCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    return appendCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+    return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override
@@ -3514,22 +3725,22 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public Response<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public Response<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
@@ -3539,7 +3750,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<KeyedTSElements>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public Response<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return appendCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 

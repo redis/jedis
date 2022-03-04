@@ -118,7 +118,7 @@ public interface RedisTimeSeriesCommands {
    * @param filters
    * @return multi range elements
    */
-  List<KeyedTSElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
+  List<TSKeyedElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
 
   /**
    * {@code TS.MRANGE fromTimestamp toTimestamp
@@ -132,7 +132,7 @@ public interface RedisTimeSeriesCommands {
    * @param multiRangeParams
    * @return multi range elements
    */
-  List<KeyedTSElements> tsMRange(TSMRangeParams multiRangeParams);
+  List<TSKeyedElements> tsMRange(TSMRangeParams multiRangeParams);
 
   /**
    * {@code TS.MREVRANGE fromTimestamp toTimestamp}
@@ -142,7 +142,7 @@ public interface RedisTimeSeriesCommands {
    * @param filters
    * @return multi range elements
    */
-  List<KeyedTSElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
+  List<TSKeyedElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
 
   /**
    * {@code TS.MREVRANGE fromTimestamp toTimestamp
@@ -157,7 +157,7 @@ public interface RedisTimeSeriesCommands {
    * @param multiRangeParams
    * @return multi range elements
    */
-  List<KeyedTSElements> tsMRevRange(TSMRangeParams multiRangeParams);
+  List<TSKeyedElements> tsMRevRange(TSMRangeParams multiRangeParams);
 
   /**
    * {@code TS.GET key}
@@ -174,7 +174,7 @@ public interface RedisTimeSeriesCommands {
    * @param filters
    * @return multi get elements
    */
-  List<KeyedTSElements> tsMGet(TSMGetParams multiGetParams, String... filters);
+  List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters);
 
   /**
    * {@code TS.CREATERULE sourceKey destKey AGGREGATION aggregationType timeBucket}

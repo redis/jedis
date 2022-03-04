@@ -23,6 +23,7 @@ import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.resps.KeyedListElement;
+import redis.clients.jedis.util.KeyValue;
 
 public class ListCommandsTest extends JedisCommandsTestBase {
 
@@ -874,5 +875,55 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(b3, jedis.blmove(bfoo, bbar, ListDirection.RIGHT, ListDirection.LEFT, 0));
     assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
     assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
+  }
+
+  @Test
+  public void lmpop() {
+    String mylist1 = "mylist1";
+    String mylist2 = "mylist2";
+
+    // add elements to list
+    jedis.lpush(mylist1, "one", "two", "three", "four", "five");
+    jedis.lpush(mylist2, "one", "two", "three", "four", "five");
+
+    KeyValue<String, List<String>> elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
+    assertEquals(mylist1, elements.getKey());
+    assertEquals(1, elements.getValue().size());
+
+    elements = jedis.lmpop(ListDirection.LEFT, 5, mylist1, mylist2);
+    assertEquals(mylist1, elements.getKey());
+    assertEquals(4, elements.getValue().size());
+
+    elements = jedis.lmpop(ListDirection.RIGHT, 100, mylist1, mylist2);
+    assertEquals(mylist2, elements.getKey());
+    assertEquals(5, elements.getValue().size());
+
+    elements = jedis.lmpop(ListDirection.RIGHT, mylist1, mylist2);
+    assertNull(elements);
+  }
+
+  @Test
+  public void blmpopSimple() {
+    String mylist1 = "mylist1";
+    String mylist2 = "mylist2";
+
+    // add elements to list
+    jedis.lpush(mylist1, "one", "two", "three", "four", "five");
+    jedis.lpush(mylist2, "one", "two", "three", "four", "five");
+
+    KeyValue<String, List<String>> elements = jedis.blmpop(1L, ListDirection.LEFT, mylist1, mylist2);
+    assertEquals(mylist1, elements.getKey());
+    assertEquals(1, elements.getValue().size());
+
+    elements = jedis.blmpop(1L, ListDirection.LEFT, 5, mylist1, mylist2);
+    assertEquals(mylist1, elements.getKey());
+    assertEquals(4, elements.getValue().size());
+
+    elements = jedis.blmpop(1L, ListDirection.RIGHT, 100, mylist1, mylist2);
+    assertEquals(mylist2, elements.getKey());
+    assertEquals(5, elements.getValue().size());
+
+    elements = jedis.blmpop(1L, ListDirection.RIGHT, mylist1, mylist2);
+    assertNull(elements);
   }
 }

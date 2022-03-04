@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.util.KeyValue;
 
 public interface SortedSetBinaryCommands {
 
@@ -176,4 +178,11 @@ public interface SortedSetBinaryCommands {
 
   long zunionstore(byte[] dstkey, ZParams params, byte[]... sets);
 
+  KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, byte[]... keys);
+
+  KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, int count, byte[]... keys);
+
+  KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys);
+
+  KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys);
 }

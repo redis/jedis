@@ -36,6 +36,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.util.KeyValue;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -1217,6 +1218,46 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     return executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
+
+  @Override
+  public KeyValue<String, List<String>> lmpop(ListDirection direction, String... keys) {
+    return executeCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<String>> lmpop(ListDirection direction, int count, String... keys) {
+    return executeCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, String... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, byte[]... keys) {
+    return executeCommand(commandObjects.lmpop(direction, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, int count, byte[]... keys) {
+    return executeCommand(commandObjects.lmpop(direction, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+    return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
+  }
   // List commands
 
   // Hash commands
@@ -2313,6 +2354,46 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return executeCommand(commandObjects.zunionstore(dstkey, params, sets));
   }
+
+  @Override
+  public KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, String... keys) {
+    return executeCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, int count, String... keys) {
+    return executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, byte[]... keys) {
+    return executeCommand(commandObjects.zmpop(option, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, int count, byte[]... keys) {
+    return executeCommand(commandObjects.zmpop(option, count, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, keys));
+  }
+
+  @Override
+  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+    return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
   // Sorted Set commands
 
   // Geo commands
@@ -3049,6 +3130,136 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public Object evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
     return executeCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
+
+  @Override
+  public Object fcall(String name, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Object fcallReadonly(String name, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public String functionDelete(String libraryName) {
+    return executeCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public String functionFlush() {
+    return executeCommand(commandObjects.functionFlush());
+  }
+
+  @Override
+  public String functionFlush(FlushMode mode) {
+    return executeCommand(commandObjects.functionFlush(mode));
+  }
+
+  @Override
+  public String functionKill() {
+    return executeCommand(commandObjects.functionKill());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList() {
+    return executeCommand(commandObjects.functionList());
+  }
+
+  @Override
+  public List<LibraryInfo> functionList(String libraryNamePattern) {
+    return executeCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode() {
+    return executeCommand(commandObjects.functionListWithCode());
+  }
+
+  @Override
+  public List<LibraryInfo> functionListWithCode(String libraryNamePattern) {
+    return executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public String functionLoad(String engineName, String libraryName, String functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public String functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public FunctionStats functionStats() {
+    return executeCommand(commandObjects.functionStats());
+  }
+
+  @Override
+  public Object fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.fcall(name, keys, args));
+  }
+
+  @Override
+  public Object fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
+    return executeCommand(commandObjects.fcallReadonly(name, keys, args));
+  }
+
+  @Override
+  public String functionDelete(byte[] libraryName) {
+    return executeCommand(commandObjects.functionDelete(libraryName));
+  }
+
+  @Override
+  public byte[] functionDump() {
+    return executeCommand(commandObjects.functionDump());
+  }
+
+  @Override
+  public List<Object> functionListBinary() {
+    return executeCommand(commandObjects.functionListBinary());
+  }
+
+  @Override
+  public List<Object> functionList(final byte[] libraryNamePattern) {
+    return executeCommand(commandObjects.functionList(libraryNamePattern));
+  }
+
+  @Override
+  public List<Object> functionListWithCodeBinary() {
+    return executeCommand(commandObjects.functionListWithCodeBinary());
+  }
+
+  @Override
+  public List<Object> functionListWithCode(final byte[] libraryNamePattern) {
+    return executeCommand(commandObjects.functionListWithCode(libraryNamePattern));
+  }
+
+  @Override
+  public String functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  }
+
+  @Override
+  public String functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
+    return executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  }
+
+  @Override
+  public String functionRestore(byte[] serializedValue) {
+    return executeCommand(commandObjects.functionRestore(serializedValue));
+  }
+
+  @Override
+  public String functionRestore(byte[] serializedValue, FunctionRestorePolicy policy) {
+    return executeCommand(commandObjects.functionRestore(serializedValue, policy));
+  }
+
+  @Override
+  public Object functionStatsBinary() {
+    return executeCommand(commandObjects.functionStatsBinary());
+  }
   // Scripting commands
 
   // Other key commands
@@ -3673,22 +3884,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<KeyedTSElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public List<TSKeyedElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRange(TSMRangeParams multiRangeParams) {
+  public List<TSKeyedElements> tsMRange(TSMRangeParams multiRangeParams) {
     return executeCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public List<TSKeyedElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public List<KeyedTSElements> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public List<TSKeyedElements> tsMRevRange(TSMRangeParams multiRangeParams) {
     return executeCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
@@ -3698,7 +3909,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<KeyedTSElements> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 

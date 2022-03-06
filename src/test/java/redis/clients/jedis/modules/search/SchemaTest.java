@@ -5,7 +5,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import redis.clients.jedis.search.Schema;
 
-import java.util.HashMap;
+import java.util.Collections;
 
 public class SchemaTest {
 
@@ -26,7 +26,7 @@ public class SchemaTest {
         .addSortableNumericField(RELEASE_YEAR)
         .addSortableNumericField(RATING)
         .addSortableNumericField(VOTES)
-        .addVectorField(VECTOR, Schema.VectorField.VectorAlgo.HNSW, new HashMap<>());
+        .addVectorField(VECTOR, Schema.VectorField.VectorAlgo.HNSW, Collections.emptyMap());
 
     String schemaPrint = sc.toString();
     MatcherAssert.assertThat(schemaPrint, CoreMatchers.startsWith("Schema{fields=[TextField{name='title'"));

@@ -462,6 +462,29 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void testFlatVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    Schema sc = new Schema().addFlatVectorField("v", attr);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("a", "v", "aaaaaaaa");
+    client.hset("b", "v", "aaaabaaa");
+    client.hset("c", "v", "aaaaabaa");
+
+    Query query =  new Query("*=>[KNN 2 @v $vec]")
+        .addParam("vec", "aaaaaaaa")
+        .setSortBy("__v_score", true)
+        .returnFields("__v_score");
+    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
   public void testQueryParams() {
     Schema sc = new Schema().addNumericField("numval");
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));

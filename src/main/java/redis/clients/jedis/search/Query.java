@@ -298,7 +298,7 @@ public class Query implements IParams {
     if (_params != null && _params.size() > 0) {
       args.add(SearchKeyword.PARAMS.getRaw());
       args.add(_params.size() * 2);
-      for (Map.Entry<String, Object> entry : _params.entrySet()){
+      for (Map.Entry<String, Object> entry : _params.entrySet()) {
         args.add(entry.getKey());
         args.add(entry.getValue());
       }

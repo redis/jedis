@@ -1,7 +1,7 @@
 package redis.clients.jedis.modules.search;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import redis.clients.jedis.search.Schema;
 
@@ -29,8 +29,8 @@ public class SchemaTest {
         .addVectorField(VECTOR, Schema.VectorField.VectorAlgo.HNSW, new ArrayList<>());
 
     String schemaPrint = sc.toString();
-    Assert.assertThat(schemaPrint, CoreMatchers.startsWith("Schema{fields=[TextField{name='title'"));
-    Assert.assertThat(schemaPrint, CoreMatchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
-    Assert.assertThat(schemaPrint, CoreMatchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
+    MatcherAssert.assertThat(schemaPrint, CoreMatchers.startsWith("Schema{fields=[TextField{name='title'"));
+    MatcherAssert.assertThat(schemaPrint, CoreMatchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
+    MatcherAssert.assertThat(schemaPrint, CoreMatchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
   }
 }

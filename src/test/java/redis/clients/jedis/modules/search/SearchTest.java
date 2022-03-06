@@ -454,8 +454,10 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     client.hset("b", "v", "aaaabaaa");
     client.hset("c", "v", "aaaaabaa");
 
-    Query query =  new Query("*=>[KNN 2 @v $vec]").addParam("vec", "aaaaaaaa")
-            .setSortBy("__v_score", true).returnFields("__v_score");
+    Query query =  new Query("*=>[KNN 2 @v $vec]")
+        .addParam("vec", "aaaaaaaa")
+        .setSortBy("__v_score", true)
+        .returnFields("__v_score");
     Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));

@@ -426,6 +426,14 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<KeyValue<String, List<String>>>> LIST_KEYED_STRING_LIST = new Builder<List<KeyValue<String, List<String>>>>() {
+    @Override
+    public List<KeyValue<String, List<String>>> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return list.stream().map(KEYED_STRING_LIST::build).collect(Collectors.toList());
+    }
+  };
+
   public static final Builder<KeyValue<byte[], List<byte[]>>> KEYED_BINARY_LIST
       = new Builder<KeyValue<byte[], List<byte[]>>>() {
     @Override
@@ -772,15 +780,15 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<CommandDocs>> COMMAND_DOCS_RESPONSE = new Builder<List<CommandDocs>>() {
+  public static final Builder<Map<String, CommandDocument>> COMMAND_DOCS_RESPONSE = new Builder<Map<String, CommandDocument>>() {
     @Override
-    public List<CommandDocs> build(Object data) {
+    public Map<String, CommandDocument> build(Object data) {
       if (data == null) {
         return null;
       }
 
       List<Object> rawList = (List<Object>) data;
-      List<CommandDocs> list = new ArrayList<>(rawList.size());
+      Map<String, CommandDocument> list = new HashMap<>(rawList.size());
 
       for (int i = 0; i < rawList.size();) {
         String name = STRING.build(rawList.get(i++));
@@ -798,28 +806,7 @@ public final class BuilderFactory {
           }
         }
 
-        list.add(new CommandDocs(name, summary, since, group, complexity, history));
-      }
-
-      return list;
-    }
-  };
-
-  public static final Builder<List<KeyedFlags>> KEYS_AND_FLAGS = new Builder<List<KeyedFlags>>() {
-    @Override
-    public List<KeyedFlags> build(Object data) {
-      if (data == null) {
-        return null;
-      }
-
-      List<Object> rawList = (List<Object>) data;
-      List<KeyedFlags> list = new ArrayList<>(rawList.size());
-
-      for (Object rawKeyInfo : rawList) {
-        List<Object> keyInfo = (List<Object>) rawKeyInfo;
-        String name = STRING.build(keyInfo.get(0));
-        List<String> flags = STRING_LIST.build(keyInfo.get(1));
-        list.add(new KeyedFlags(name, flags));
+        list.put(name, new CommandDocument(summary, since, group, complexity, history));
       }
 
       return list;

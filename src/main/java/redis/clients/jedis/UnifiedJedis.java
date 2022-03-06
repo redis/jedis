@@ -511,7 +511,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<CommandDocs> commandDocs(String... commands) {
+  public Map<String, CommandDocument> commandDocs(String... commands) {
     return executeCommand(commandObjects.commandDocs(commands));
   }
 
@@ -521,7 +521,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<KeyedFlags> commandGetKeysAndFlags(String... command) {
+  public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
     return executeCommand(commandObjects.commandGetKeysAndFlags(command));
   }
 

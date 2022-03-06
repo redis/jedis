@@ -3036,7 +3036,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(COMMAND).add(COUNT), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<CommandDocs>> commandDocs(String... commands) {
+  public final CommandObject<Map<String, CommandDocument>> commandDocs(String... commands) {
     return new CommandObject<>(commandArguments(COMMAND).add(DOCS).addObjects((Object[]) commands), BuilderFactory.COMMAND_DOCS_RESPONSE);
   }
 
@@ -3044,8 +3044,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(COMMAND).add(GETKEYS).addObjects((Object[]) command), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<List<KeyedFlags>> commandGetKeysAndFlags(String... command) {
-    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYSANDFLAGS).addObjects((Object[]) command), BuilderFactory.KEYS_AND_FLAGS);
+  public final CommandObject<List<KeyValue<String, List<String>>>> commandGetKeysAndFlags(String... command) {
+    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYSANDFLAGS).addObjects((Object[]) command), BuilderFactory.LIST_KEYED_STRING_LIST);
   }
 
   public final CommandObject<List<CommandInfo>> commandInfo(String... commands) {

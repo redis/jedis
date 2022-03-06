@@ -8049,7 +8049,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<CommandDocs> commandDocs(String... commands) {
+  public Map<String, CommandDocument> commandDocs(String... commands) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandDocs(commands));
   }
@@ -8061,7 +8061,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<KeyedFlags> commandGetKeysAndFlags(String... command) {
+  public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandGetKeysAndFlags(command));
   }

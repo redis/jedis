@@ -22,13 +22,8 @@ import static redis.clients.jedis.params.SetParams.setParams;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.util.AssertUtil.assertCollectionContains;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
@@ -36,14 +31,14 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.resps.CommandDocs;
+import redis.clients.jedis.resps.CommandDocument;
 import redis.clients.jedis.resps.CommandInfo;
-import redis.clients.jedis.resps.KeyedFlags;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 
@@ -1078,15 +1073,14 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void commandDocs() {
-    List<CommandDocs> docs = jedis.commandDocs("SORT", "SET");
+    Map<String, CommandDocument> docs = jedis.commandDocs("SORT", "SET");
 
-    CommandDocs sortDoc = docs.get(0);
-    assertEquals("sort", sortDoc.getName());
+    CommandDocument sortDoc = docs.get("sort");
     assertEquals("generic", sortDoc.getGroup());
     assertEquals("Sort the elements in a list, set or sorted set", sortDoc.getSummary());
     assertNull(sortDoc.getHistory());
 
-    CommandDocs setDoc = docs.get(1);
+    CommandDocument setDoc = docs.get("set");
     assertEquals("1.0.0", setDoc.getSince());
     assertEquals("O(1)", setDoc.getComplexity());
     assertEquals("2.6.12: Added the `EX`, `PX`, `NX` and `XX` options.", setDoc.getHistory().get(0));
@@ -1097,9 +1091,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
     assertEquals(2, keys.size());
 
-    List<KeyedFlags> keySandFlags = jedis.commandGetKeysAndFlags("SET", "k1", "v1");
+    List<KeyValue<String, List<String>>> keySandFlags = jedis.commandGetKeysAndFlags("SET", "k1", "v1");
     assertEquals("k1", keySandFlags.get(0).getKey());
-    assertEquals(2, keySandFlags.get(0).getFlags().size());
+    assertEquals(2, keySandFlags.get(0).getValue().size());
   }
 
   @Test

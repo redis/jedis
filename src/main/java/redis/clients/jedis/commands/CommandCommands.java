@@ -1,10 +1,11 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.resps.CommandDocs;
+import redis.clients.jedis.resps.CommandDocument;
 import redis.clients.jedis.resps.CommandInfo;
-import redis.clients.jedis.resps.KeyedFlags;
+import redis.clients.jedis.util.KeyValue;
 
 import java.util.List;
+import java.util.Map;
 
 public interface CommandCommands {
 
@@ -18,10 +19,10 @@ public interface CommandCommands {
    * Return documentary information about commands.
    * If not specifying commands, the reply includes all the server's commands.
    * @param commands specify the names of one or more commands
-   * @return list of {@link CommandDocs}
+   * @return list of {@link CommandDocument}
    */
 
-  List<CommandDocs> commandDocs(String... commands);
+  Map<String, CommandDocument> commandDocs(String... commands);
 
   /**
    * Return list of keys from a full Redis command
@@ -33,9 +34,9 @@ public interface CommandCommands {
   /**
    * Return list of keys from a full Redis command and their usage flags
    * @param command
-   * @return list of {@link KeyedFlags}
+   * @return list of {@link KeyValue}
    */
-  List<KeyedFlags> commandGetKeysAndFlags(String... command);
+  List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command);
 
   /**
    * Return details about multiple Redis commands

@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.params.CommandListFilterByParams;
 import redis.clients.jedis.resps.CommandDocument;
 import redis.clients.jedis.resps.CommandInfo;
 import redis.clients.jedis.util.KeyValue;
@@ -43,7 +44,7 @@ public interface CommandCommands {
    * @param commands
    * @return list of {@link CommandInfo}
    */
-  List<CommandInfo> commandInfo(String... commands);
+  Map<String, CommandInfo> commandInfo(String... commands);
 
   /**
    * Return a list of the server's command names
@@ -52,23 +53,9 @@ public interface CommandCommands {
   List<String> commandList();
 
   /**
-   * Return a list of the server's command names filter by module's name
-   * @param moduleName
+   * Return a list of the server's command names filtered by module's name, ACL category or pattern
+   * @param filterByParams {@link CommandListFilterByParams}
    * @return commands list
    */
-  List<String> commandListFilterByModule(String moduleName);
-
-  /**
-   * Return a list of the server's command names filter by ACL category
-   * @param category
-   * @return commands list
-   */
-  List<String> commandListFilterByAclcat(String category);
-
-  /**
-   * Return a list of the server's command names filter by glob-like pattern
-   * @param pattern
-   * @return commands list
-   */
-  List<String> commandListFilterByPattern(String pattern);
+  List<String> commandListFilterBy(CommandListFilterByParams filterByParams);
 }

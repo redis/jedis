@@ -788,7 +788,7 @@ public final class BuilderFactory {
       }
 
       List<Object> rawList = (List<Object>) data;
-      Map<String, CommandDocument> list = new HashMap<>(rawList.size());
+      Map<String, CommandDocument> map = new HashMap<>(rawList.size());
 
       for (int i = 0; i < rawList.size();) {
         String name = STRING.build(rawList.get(i++));
@@ -806,26 +806,25 @@ public final class BuilderFactory {
           }
         }
 
-        list.put(name, new CommandDocument(summary, since, group, complexity, history));
+        map.put(name, new CommandDocument(summary, since, group, complexity, history));
       }
 
-      return list;
+      return map;
     }
   };
 
-  public static final Builder<List<CommandInfo>> COMMAND_INFO_RESPONSE = new Builder<List<CommandInfo>>() {
+  public static final Builder<Map<String, CommandInfo>> COMMAND_INFO_RESPONSE = new Builder<Map<String, CommandInfo>>() {
     @Override
-    public List<CommandInfo> build(Object data) {
+    public Map<String, CommandInfo> build(Object data) {
       if (data == null) {
         return null;
       }
 
       List<Object> rawList = (List<Object>) data;
-      List<CommandInfo> list = new ArrayList<>(rawList.size());
+      Map<String, CommandInfo> map = new HashMap<>(rawList.size());
 
       for (Object rawCommandInfo : rawList) {
         if (rawCommandInfo == null) {
-          list.add(null);
           break;
         }
 
@@ -840,10 +839,10 @@ public final class BuilderFactory {
         List<String> tips = STRING_LIST.build(commandInfo.get(7));
         List<String> subcommands = STRING_LIST.build(commandInfo.get(9));
 
-        list.add(new CommandInfo(name, arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands));
+        map.put(name, new CommandInfo(arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands));
       }
 
-      return list;
+      return map;
     }
   };
 

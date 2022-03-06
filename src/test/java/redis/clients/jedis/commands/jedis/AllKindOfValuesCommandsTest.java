@@ -29,6 +29,7 @@ import org.junit.Test;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.CommandListFilterByParams;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.CommandDocument;
@@ -1098,22 +1099,21 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void commandInfo() {
-    List<CommandInfo> infos = jedis.commandInfo("GET", "SET", "foo");
+    Map<String, CommandInfo> infos = jedis.commandInfo("GET", "SET", "foo");
 
-    CommandInfo getInfo = infos.get(0);
+    CommandInfo getInfo = infos.get("get");
     assertEquals(2, getInfo.getArity());
     assertEquals(2, getInfo.getFlags().size());
     assertEquals(1, getInfo.getFirstKey());
     assertEquals(1, getInfo.getLastKey());
     assertEquals(1, getInfo.getStep());
 
-    CommandInfo setInfo = infos.get(1);
-    assertEquals("set", setInfo.getName());
+    CommandInfo setInfo = infos.get("set");
     assertEquals(3, setInfo.getAclCategories().size());
     assertEquals(0, setInfo.getTips().size());
     assertEquals(0, setInfo.getSubcommands().size());
 
-    assertNull(infos.get(2)); // non-existing command
+    assertNull(infos.get("foo")); // non-existing command
   }
 
   @Test
@@ -1121,13 +1121,13 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     List<String> commands = jedis.commandList();
     assertTrue(commands.size() > 100);
 
-    commands = jedis.commandListFilterByModule("JSON");
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByModule("JSON"));
     assertEquals(0, commands.size()); // json module was not loaded
 
-    commands = jedis.commandListFilterByAclcat("admin");
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByAclcat("admin"));
     assertTrue(commands.size() > 10);
 
-    commands = jedis.commandListFilterByPattern("a*");
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByPattern("a*"));
     assertTrue(commands.size() > 10);
   }
 

@@ -8067,7 +8067,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<CommandInfo> commandInfo(String... commands) {
+  public Map<String, CommandInfo> commandInfo(String... commands) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandInfo(commands));
   }
@@ -8079,21 +8079,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<String> commandListFilterByModule(String moduleName) {
+  public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandListFilterByModule(moduleName));
-  }
-
-  @Override
-  public List<String> commandListFilterByAclcat(String category) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandListFilterByAclcat(category));
-  }
-
-  @Override
-  public List<String> commandListFilterByPattern(String pattern) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandListFilterByPattern(pattern));
+    return connection.executeCommand(commandObjects.commandListFilterBy(filterByParams));
   }
 
   @Override
@@ -9047,28 +9035,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String moduleLoad(final String path) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, LOAD.name(), path);
+    connection.sendCommand(Command.MODULE, LOAD.name(), path);
     return connection.getStatusCodeReply();
   }
 
   @Override
   public String moduleLoad(String path, String... args) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, joinParameters(LOAD.name(), path, args));
+    connection.sendCommand(Command.MODULE, joinParameters(LOAD.name(), path, args));
     return connection.getStatusCodeReply();
   }
 
   @Override
   public String moduleUnload(final String name) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, UNLOAD.name(), name);
+    connection.sendCommand(Command.MODULE, UNLOAD.name(), name);
     return connection.getStatusCodeReply();
   }
 
   @Override
   public List<Module> moduleList() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, LIST);
+    connection.sendCommand(Command.MODULE, LIST);
     return BuilderFactory.MODULE_LIST.build(connection.getObjectMultiBulkReply());
   }
 

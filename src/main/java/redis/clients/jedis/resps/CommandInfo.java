@@ -3,7 +3,6 @@ package redis.clients.jedis.resps;
 import java.util.List;
 
 public class CommandInfo {
-  private final String name;
   private final long arity;
   private final List<String> flags;
   private final long firstKey;
@@ -13,9 +12,8 @@ public class CommandInfo {
   private final List<String> tips;
   private final List<String> subcommands;
 
-  public CommandInfo(String name, long arity, List<String> flags, long firstKey, long lastKey, long step,
+  public CommandInfo(long arity, List<String> flags, long firstKey, long lastKey, long step,
       List<String> aclCategories, List<String> tips, List<String> subcommands) {
-    this.name = name;
     this.arity = arity;
     this.flags = flags;
     this.firstKey = firstKey;
@@ -24,13 +22,6 @@ public class CommandInfo {
     this.aclCategories = aclCategories;
     this.tips = tips;
     this.subcommands = subcommands;
-  }
-
-  /**
-   * Command's name in lowercase
-   */
-  public String getName() {
-    return name;
   }
 
   /**

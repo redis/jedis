@@ -526,7 +526,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<CommandInfo> commandInfo(String... commands) {
+  public Map<String, CommandInfo> commandInfo(String... commands) {
     return executeCommand(commandObjects.commandInfo(commands));
   }
 
@@ -536,18 +536,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> commandListFilterByModule(String moduleName) {
-    return executeCommand(commandObjects.commandListFilterByModule(moduleName));
-  }
-
-  @Override
-  public List<String> commandListFilterByAclcat(String category) {
-    return executeCommand(commandObjects.commandListFilterByAclcat(category));
-  }
-
-  @Override
-  public List<String> commandListFilterByPattern(String pattern) {
-    return executeCommand(commandObjects.commandListFilterByPattern(pattern));
+  public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
+    return executeCommand(commandObjects.commandListFilterBy(filterByParams));
   }
 
   @Override

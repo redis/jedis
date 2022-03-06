@@ -3048,7 +3048,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(COMMAND).add(GETKEYSANDFLAGS).addObjects((Object[]) command), BuilderFactory.LIST_KEYED_STRING_LIST);
   }
 
-  public final CommandObject<List<CommandInfo>> commandInfo(String... commands) {
+  public final CommandObject<Map<String, CommandInfo>> commandInfo(String... commands) {
     return new CommandObject<>(commandArguments(COMMAND).add(Keyword.INFO).addObjects((Object[]) commands), BuilderFactory.COMMAND_INFO_RESPONSE);
   }
 
@@ -3056,18 +3056,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(COMMAND).add(LIST), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<List<String>> commandListFilterByModule(String moduleName) {
-    return new CommandObject<>(commandArguments(COMMAND).add(LIST).add(FILTERBY).add(MODULE).add(moduleName),
-        BuilderFactory.STRING_LIST);
-  }
-
-  public final CommandObject<List<String>> commandListFilterByAclcat(String moduleName) {
-    return new CommandObject<>(commandArguments(COMMAND).add(LIST).add(FILTERBY).add(ACLCAT).add(moduleName),
-        BuilderFactory.STRING_LIST);
-  }
-
-  public final CommandObject<List<String>> commandListFilterByPattern(String pattern) {
-    return new CommandObject<>(commandArguments(COMMAND).add(LIST).add(FILTERBY).add(PATTERN).add(pattern),
+  public final CommandObject<List<String>> commandListFilterBy(CommandListFilterByParams filterByParams) {
+    return new CommandObject<>(commandArguments(COMMAND).add(LIST).addParams(filterByParams),
         BuilderFactory.STRING_LIST);
   }
 

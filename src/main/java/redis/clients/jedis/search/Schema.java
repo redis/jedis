@@ -2,6 +2,8 @@ package redis.clients.jedis.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
@@ -100,8 +102,18 @@ public class Schema {
     return this;
   }
 
-  public Schema addVectorField(String name, VectorField.VectorAlgo algorithm, List<String> attributes) {
+  public Schema addVectorField(String name, VectorField.VectorAlgo algorithm, Map<String, Object> attributes) {
     fields.add(new VectorField(name, algorithm, attributes));
+    return this;
+  }
+
+  public Schema addFlatVectorField(String name, Map<String, Object> attributes) {
+    fields.add(new VectorField(name, VectorField.VectorAlgo.FLAT, attributes));
+    return this;
+  }
+
+  public Schema addHNSWVectorField(String name, Map<String, Object> attributes) {
+    fields.add(new VectorField(name, VectorField.VectorAlgo.HNSW, attributes));
     return this;
   }
 
@@ -287,9 +299,9 @@ public class Schema {
     }
 
     private final VectorAlgo algorithm;
-    private final List<String> attributes;
+    private final Map<String, Object> attributes;
 
-    public VectorField(String name, VectorAlgo algorithm, List<String> attributes) {
+    public VectorField(String name, VectorAlgo algorithm, Map<String, Object> attributes) {
       super(name, FieldType.VECTOR, false, false);
       this.algorithm = algorithm;
       this.attributes = attributes;
@@ -298,8 +310,11 @@ public class Schema {
     @Override
     public void addTypeArgs(CommandArguments args) {
       args.add(algorithm);
-      args.add(attributes.size());
-      attributes.forEach(args::add);
+      args.add(attributes.size() * 2);
+      for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+        args.add(entry.getKey());
+        args.add(entry.getValue());
+      }
     }
 
     @Override

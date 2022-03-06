@@ -439,15 +439,13 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testVectorSimilarity() {
-    List<String> attr = new ArrayList<>();
-    attr.add("TYPE");
-    attr.add("FLOAT32");
-    attr.add("DIM");
-    attr.add("2");
-    attr.add("DISTANCE_METRIC");
-    attr.add("L2");
-    Schema sc = new Schema().addVectorField("v", Schema.VectorField.VectorAlgo.HNSW, attr);
+  public void testHNSWVVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    Schema sc = new Schema().addHNSWVectorField("v", attr);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
     client.hset("a", "v", "aaaaaaaa");

@@ -826,7 +826,7 @@ public final class BuilderFactory {
 
       for (Object rawCommandInfo : rawList) {
         if (rawCommandInfo == null) {
-          break;
+          continue;
         }
 
         List<Object> commandInfo = (List<Object>) rawCommandInfo;

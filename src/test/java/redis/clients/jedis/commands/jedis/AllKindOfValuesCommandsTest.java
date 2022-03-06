@@ -1099,7 +1099,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void commandInfo() {
-    Map<String, CommandInfo> infos = jedis.commandInfo("GET", "SET", "foo");
+    Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");
 
     CommandInfo getInfo = infos.get("get");
     assertEquals(2, getInfo.getArity());
@@ -1108,12 +1108,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, getInfo.getLastKey());
     assertEquals(1, getInfo.getStep());
 
+    assertNull(infos.get("foo")); // non-existing command
+
     CommandInfo setInfo = infos.get("set");
     assertEquals(3, setInfo.getAclCategories().size());
     assertEquals(0, setInfo.getTips().size());
     assertEquals(0, setInfo.getSubcommands().size());
-
-    assertNull(infos.get("foo")); // non-existing command
   }
 
   @Test

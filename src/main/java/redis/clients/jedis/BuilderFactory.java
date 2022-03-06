@@ -426,7 +426,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<KeyValue<String, List<String>>>> LIST_KEYED_STRING_LIST
+  public static final Builder<List<KeyValue<String, List<String>>>> KEYED_STRING_LIST_LIST
       = new Builder<List<KeyValue<String, List<String>>>>() {
     @Override
     public List<KeyValue<String, List<String>>> build(Object data) {

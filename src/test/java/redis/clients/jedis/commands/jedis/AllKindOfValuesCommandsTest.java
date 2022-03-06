@@ -1124,7 +1124,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByModule("JSON"));
     assertEquals(0, commands.size()); // json module was not loaded
 
-    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByAclcat("admin"));
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByAclCat("admin"));
     assertTrue(commands.size() > 10);
 
     commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByPattern("a*"));

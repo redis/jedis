@@ -21,7 +21,7 @@ public class CommandListFilterByParams implements IParams{
     return this;
   }
 
-  public CommandListFilterByParams filterByAclcat(String category) {
+  public CommandListFilterByParams filterByAclCat(String category) {
     this.category = category;
     return this;
   }

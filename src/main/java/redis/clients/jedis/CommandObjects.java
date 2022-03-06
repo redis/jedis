@@ -3045,7 +3045,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<KeyValue<String, List<String>>>> commandGetKeysAndFlags(String... command) {
-    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYSANDFLAGS).addObjects((Object[]) command), BuilderFactory.LIST_KEYED_STRING_LIST);
+    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYSANDFLAGS).addObjects((Object[]) command), BuilderFactory.KEYED_STRING_LIST_LIST);
   }
 
   public final CommandObject<Map<String, CommandInfo>> commandInfo(String... commands) {

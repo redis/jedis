@@ -8045,8 +8045,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public long commandCount() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(COMMAND, COUNT);
-    return connection.getIntegerReply();
+    return connection.executeCommand(commandObjects.commandCount());
   }
 
   @Override

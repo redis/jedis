@@ -9,7 +9,7 @@ import redis.clients.jedis.params.IParams;
  * Schema abstracts the schema definition when creating an index. Documents can contain fields not
  * mentioned in the schema, but the index will only index pre-defined fields
  */
-public class Schema{
+public class Schema {
 
   public enum FieldType {
     TAG,
@@ -300,7 +300,6 @@ public class Schema{
       args.add(algorithm);
       args.add(attributes.size());
       attributes.forEach(args::add);
-//      attributes.forEach(attr -> args.add(attr));
     }
 
     @Override

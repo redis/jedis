@@ -7,7 +7,7 @@ import static redis.clients.jedis.Protocol.Keyword.MODULE;
 import static redis.clients.jedis.Protocol.Keyword.ACLCAT;
 import static redis.clients.jedis.Protocol.Keyword.PATTERN;
 
-public class CommandListFilterByParams implements IParams{
+public class CommandListFilterByParams implements IParams {
   private String moduleName;
   private String category;
   private String pattern;

@@ -5,6 +5,8 @@ import java.security.NoSuchAlgorithmException;
 
 public interface Hashing {
   Hashing MURMUR_HASH = new MurmurHash();
+  Hashing CRC32_HASH = new CRC32Hash();
+
   ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<>();
 
   Hashing MD5 = new Hashing() {

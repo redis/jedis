@@ -47,21 +47,30 @@ public class ShardedConnectionProvider implements ConnectionProvider {
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, Hashing algo) {
+    this(shards,clientConfig,poolConfig,algo,160);
+  }
+
+  public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
+                                   GenericObjectPoolConfig<Connection> poolConfig, Hashing algo,int replicas) {
     this.clientConfig = clientConfig;
     this.poolConfig = poolConfig;
     this.algo = algo;
-    initialize(shards);
+    initialize(shards,replicas);
   }
 
-  private void initialize(List<HostAndPort> shards) {
+  private void initialize(List<HostAndPort> shards,int replicas){
     for (int i = 0; i < shards.size(); i++) {
       HostAndPort shard = shards.get(i);
-      for (int n = 0; n < 160; n++) {
+      for (int n = 0; n < replicas; n++) {
         Long hash = this.algo.hash("SHARD-" + i + "-NODE-" + n);
         nodes.put(hash, shard);
         setupNodeIfNotExist(shard);
       }
     }
+  }
+
+  private void initialize(List<HostAndPort> shards) {
+   initialize(shards,160);
   }
 
   private ConnectionPool setupNodeIfNotExist(final HostAndPort node) {

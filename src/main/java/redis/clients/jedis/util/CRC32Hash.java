@@ -2,7 +2,6 @@ package redis.clients.jedis.util;
 
 /**
  * @Author chenchen
- * @Date 2021/11/8 4:51 PM
  * @Description Customized CRC32 non-encrypted hash algorithm, compatible with Python CRC32 implementation
  **/
 public class CRC32Hash implements Hashing {

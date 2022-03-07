@@ -1,7 +1,9 @@
 package redis.clients.jedis.search;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
@@ -155,6 +157,7 @@ public class Query implements IParams {
   private boolean wantsHighlight = false;
   private boolean wantsSummarize = false;
   private String _scorer = null;
+  private Map<String, Object> _params = null;
 
   public Query() {
     this("*");
@@ -290,6 +293,15 @@ public class Query implements IParams {
       }
 //      args.set(returnCountIndex, Protocol.toByteArray(returnCount));
       returnCountObject.setRaw(Protocol.toByteArray(returnCount));
+    }
+
+    if (_params != null && _params.size() > 0) {
+      args.add(SearchKeyword.PARAMS.getRaw());
+      args.add(_params.size() * 2);
+      for (Map.Entry<String, Object> entry : _params.entrySet()) {
+        args.add(entry.getKey());
+        args.add(entry.getValue());
+      }
     }
   }
 
@@ -517,6 +529,23 @@ public class Query implements IParams {
   public Query setSortBy(String field, boolean ascending) {
     _sortBy = field;
     _sortAsc = ascending;
+    return this;
+  }
+
+  /**
+   * Parameters can be referenced in the query string by a $ , followed by the parameter name,
+   * e.g., $user , and each such reference in the search query to a parameter name is substituted
+   * by the corresponding parameter value.
+   *
+   * @param name
+   * @param value can be String, long or float
+   * @return the query object itself
+   */
+  public Query addParam(String name, Object value) {
+    if (_params == null) {
+      _params = new HashMap<>();
+    }
+    _params.put(name, value);
     return this;
   }
 }

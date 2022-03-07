@@ -3,12 +3,7 @@ package redis.clients.jedis.modules.search;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -426,7 +421,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
       assertEquals(1.0, d.getScore(), 0);
-      assertEquals(null, d.get("title"));
+      assertNull(d.get("title"));
     }
 
     // test verbatim vs. stemming
@@ -441,6 +436,65 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(50, res.getTotalResults());
     res = client.ftSearch(index, new Query("hello a world").setVerbatim().setNoStopwords());
     assertEquals(0, res.getTotalResults());
+  }
+
+  @Test
+  public void testHNSWVVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    Schema sc = new Schema().addHNSWVectorField("v", attr);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("a", "v", "aaaaaaaa");
+    client.hset("b", "v", "aaaabaaa");
+    client.hset("c", "v", "aaaaabaa");
+
+    Query query =  new Query("*=>[KNN 2 @v $vec]")
+        .addParam("vec", "aaaaaaaa")
+        .setSortBy("__v_score", true)
+        .returnFields("__v_score");
+    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  public void testFlatVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    Schema sc = new Schema().addFlatVectorField("v", attr);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("a", "v", "aaaaaaaa");
+    client.hset("b", "v", "aaaabaaa");
+    client.hset("c", "v", "aaaaabaa");
+
+    Query query =  new Query("*=>[KNN 2 @v $vec]")
+        .addParam("vec", "aaaaaaaa")
+        .setSortBy("__v_score", true)
+        .returnFields("__v_score");
+    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  public void testQueryParams() {
+    Schema sc = new Schema().addNumericField("numval");
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("1", "numval", "1");
+    client.hset("2", "numval", "2");
+    client.hset("3", "numval", "3");
+
+    Query query =  new Query("@numval:[$min $max]").addParam("min", 1).addParam("max", 2);
+    assertEquals(2, client.ftSearch(index, query).getTotalResults());
   }
 
   @Test

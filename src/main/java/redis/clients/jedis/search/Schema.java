@@ -2,11 +2,13 @@ package redis.clients.jedis.search;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
 /**
- * Schema abstracs the schema definition when creating an index. Documents can contain fields not
+ * Schema abstracts the schema definition when creating an index. Documents can contain fields not
  * mentioned in the schema, but the index will only index pre-defined fields
  */
 public class Schema {
@@ -15,7 +17,8 @@ public class Schema {
     TAG,
     TEXT,
     GEO,
-    NUMERIC;
+    NUMERIC,
+    VECTOR
   }
 
   public final List<Field> fields;
@@ -99,6 +102,21 @@ public class Schema {
     return this;
   }
 
+  public Schema addVectorField(String name, VectorField.VectorAlgo algorithm, Map<String, Object> attributes) {
+    fields.add(new VectorField(name, algorithm, attributes));
+    return this;
+  }
+
+  public Schema addFlatVectorField(String name, Map<String, Object> attributes) {
+    fields.add(new VectorField(name, VectorField.VectorAlgo.FLAT, attributes));
+    return this;
+  }
+
+  public Schema addHNSWVectorField(String name, Map<String, Object> attributes) {
+    fields.add(new VectorField(name, VectorField.VectorAlgo.HNSW, attributes));
+    return this;
+  }
+
   public Schema addField(Field field) {
     fields.add(field);
     return this;
@@ -151,12 +169,11 @@ public class Schema {
     }
 
     /**
-     * Sub-classes should override this method.
+     * Subclasses should override this method.
      *
      * @param args
      */
-    protected void addTypeArgs(CommandArguments args) {
-    }
+    protected void addTypeArgs(CommandArguments args) { }
 
     @Override
     public String toString() {
@@ -271,6 +288,38 @@ public class Schema {
     public String toString() {
       return "TagField{name='" + name + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noindex
           + ", separator='" + separator + "'}";
+    }
+  }
+
+  public static class VectorField extends Field {
+
+    public enum VectorAlgo {
+      FLAT,
+      HNSW
+    }
+
+    private final VectorAlgo algorithm;
+    private final Map<String, Object> attributes;
+
+    public VectorField(String name, VectorAlgo algorithm, Map<String, Object> attributes) {
+      super(name, FieldType.VECTOR, false, false);
+      this.algorithm = algorithm;
+      this.attributes = attributes;
+    }
+
+    @Override
+    public void addTypeArgs(CommandArguments args) {
+      args.add(algorithm);
+      args.add(attributes.size() * 2);
+      for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+        args.add(entry.getKey());
+        args.add(entry.getValue());
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "VectorField{name='" + name + "', type=" + type + ", algorithm=" + algorithm + ", attributes=" + attributes + "}";
     }
   }
 }

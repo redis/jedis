@@ -1,9 +1,11 @@
 package redis.clients.jedis.modules.search;
 
 import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 import redis.clients.jedis.search.Schema;
+
+import java.util.Collections;
 
 public class SchemaTest {
 
@@ -13,6 +15,7 @@ public class SchemaTest {
   private final static String RATING = "rating";
   private final static String RELEASE_YEAR = "release_year";
   private final static String PLOT = "plot";
+  private final static String VECTOR = "vector";
 
   @Test
   public void printSchemaTest() throws Exception {
@@ -22,10 +25,12 @@ public class SchemaTest {
         .addSortableTagField(GENRE, ",")
         .addSortableNumericField(RELEASE_YEAR)
         .addSortableNumericField(RATING)
-        .addSortableNumericField(VOTES);
+        .addSortableNumericField(VOTES)
+        .addVectorField(VECTOR, Schema.VectorField.VectorAlgo.HNSW, Collections.emptyMap());
 
     String schemaPrint = sc.toString();
-    Assert.assertThat(schemaPrint, CoreMatchers.startsWith("Schema{fields=[TextField{name='title'"));
-    Assert.assertThat(schemaPrint, CoreMatchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
+    MatcherAssert.assertThat(schemaPrint, CoreMatchers.startsWith("Schema{fields=[TextField{name='title'"));
+    MatcherAssert.assertThat(schemaPrint, CoreMatchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
+    MatcherAssert.assertThat(schemaPrint, CoreMatchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
   }
 }

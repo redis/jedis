@@ -1,13 +1,6 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
-
+import static org.junit.Assert.*;
 import static redis.clients.jedis.Protocol.Command.BLPOP;
 import static redis.clients.jedis.Protocol.Command.HGETALL;
 import static redis.clients.jedis.Protocol.Command.GET;
@@ -1128,6 +1121,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByPattern("a*"));
     assertTrue(commands.size() > 10);
+
+    try {
+      jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams());
+    } catch (Exception e) {
+      assertSame(JedisDataException.class, e.getClass());
+    }
   }
 
 }

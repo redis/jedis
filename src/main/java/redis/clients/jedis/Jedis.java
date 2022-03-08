@@ -8042,43 +8042,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
-  @Override
   public long commandCount() {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandCount());
   }
 
-  @Override
   public Map<String, CommandDocument> commandDocs(String... commands) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandDocs(commands));
   }
 
-  @Override
   public List<String> commandGetKeys(String... command) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandGetKeys(command));
   }
 
-  @Override
   public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandGetKeysAndFlags(command));
   }
 
-  @Override
   public Map<String, CommandInfo> commandInfo(String... commands) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandInfo(commands));
   }
 
-  @Override
   public List<String> commandList() {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandList());
   }
 
-  @Override
   public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.commandListFilterBy(filterByParams));

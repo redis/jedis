@@ -1,6 +1,7 @@
 package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 import static redis.clients.jedis.Protocol.Keyword.FILTERBY;
 import static redis.clients.jedis.Protocol.Keyword.MODULE;
@@ -44,6 +45,8 @@ public class CommandListFilterByParams implements IParams {
     } else if (moduleName == null && category == null && pattern != null) {
       args.add(PATTERN);
       args.add(pattern);
+    } else {
+      throw new JedisDataException("Must choose exactly one filter");
     }
   }
 }

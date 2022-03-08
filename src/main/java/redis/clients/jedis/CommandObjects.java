@@ -632,29 +632,6 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BITOP).add(op).key(destKey).keys((Object[]) srcKeys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> commandCount() {
-    return new CommandObject<>(commandArguments(COMMAND).add(COUNT), BuilderFactory.LONG);
-  }
-  public final CommandObject<Map<String, CommandDocument>> commandDocs(String... commands) {
-    return new CommandObject<>(commandArguments(COMMAND).add(DOCS).addObjects((Object[]) commands), BuilderFactory.COMMAND_DOCS_RESPONSE);
-  }
-  public final CommandObject<List<String>> commandGetKeys(String... command) {
-    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYS).addObjects((Object[]) command), BuilderFactory.STRING_LIST);
-  }
-  public final CommandObject<List<KeyValue<String, List<String>>>> commandGetKeysAndFlags(String... command) {
-    return new CommandObject<>(commandArguments(COMMAND).add(GETKEYSANDFLAGS).addObjects((Object[]) command), BuilderFactory.KEYED_STRING_LIST_LIST);
-  }
-  public final CommandObject<Map<String, CommandInfo>> commandInfo(String... commands) {
-    return new CommandObject<>(commandArguments(COMMAND).add(Keyword.INFO).addObjects((Object[]) commands), BuilderFactory.COMMAND_INFO_RESPONSE);
-  }
-  public final CommandObject<List<String>> commandList() {
-    return new CommandObject<>(commandArguments(COMMAND).add(LIST), BuilderFactory.STRING_LIST);
-  }
-  public final CommandObject<List<String>> commandListFilterBy(CommandListFilterByParams filterByParams) {
-    return new CommandObject<>(commandArguments(COMMAND).add(LIST).addParams(filterByParams),
-            BuilderFactory.STRING_LIST);
-  }
-
   /**
    * @deprecated STRALGO LCS command will be removed from Redis 7.
    * LCS can be used instead of this method.

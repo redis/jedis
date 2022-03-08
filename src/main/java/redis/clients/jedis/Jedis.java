@@ -8044,37 +8044,45 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public long commandCount() {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandCount());
+    connection.sendCommand(COMMAND, COUNT);
+    return connection.getIntegerReply();
   }
 
   public Map<String, CommandDocument> commandDocs(String... commands) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandDocs(commands));
+    connection.sendCommand(COMMAND, joinParameters(DOCS.name(), commands));
+    return BuilderFactory.COMMAND_DOCS_RESPONSE.build(connection.getOne());
   }
 
   public List<String> commandGetKeys(String... command) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandGetKeys(command));
+    connection.sendCommand(COMMAND, joinParameters(GETKEYS.name(), command));
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
   public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandGetKeysAndFlags(command));
+    connection.sendCommand(COMMAND, joinParameters(GETKEYSANDFLAGS.name(), command));
+    return BuilderFactory.KEYED_STRING_LIST_LIST.build(connection.getOne());
   }
 
   public Map<String, CommandInfo> commandInfo(String... commands) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandInfo(commands));
+    connection.sendCommand(COMMAND, joinParameters(Keyword.INFO.name(), commands));
+    return BuilderFactory.COMMAND_INFO_RESPONSE.build(connection.getOne());
   }
 
   public List<String> commandList() {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandList());
+    connection.sendCommand(COMMAND, LIST);
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
   public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.commandListFilterBy(filterByParams));
+    CommandArguments args = new CommandArguments(COMMAND).add(LIST).addParams(filterByParams);
+    connection.sendCommand(args);
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
   @Override

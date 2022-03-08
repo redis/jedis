@@ -23,7 +23,6 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 import static redis.clients.jedis.util.AssertUtil.assertCollectionContains;
 
 import java.util.*;
-
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;

@@ -506,41 +506,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long commandCount() {
-    return executeCommand(commandObjects.commandCount());
-  }
-
-  @Override
-  public Map<String, CommandDocument> commandDocs(String... commands) {
-    return executeCommand(commandObjects.commandDocs(commands));
-  }
-
-  @Override
-  public List<String> commandGetKeys(String... command) {
-    return executeCommand(commandObjects.commandGetKeys(command));
-  }
-
-  @Override
-  public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
-    return executeCommand(commandObjects.commandGetKeysAndFlags(command));
-  }
-
-  @Override
-  public Map<String, CommandInfo> commandInfo(String... commands) {
-    return executeCommand(commandObjects.commandInfo(commands));
-  }
-
-  @Override
-  public List<String> commandList() {
-    return executeCommand(commandObjects.commandList());
-  }
-
-  @Override
-  public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
-    return executeCommand(commandObjects.commandListFilterBy(filterByParams));
-  }
-
-  @Override
   public ScanResult<String> scan(String cursor) {
     return executeCommand(commandObjects.scan(cursor));
   }

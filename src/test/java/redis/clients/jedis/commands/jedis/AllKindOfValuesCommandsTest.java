@@ -1125,6 +1125,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     try {
       jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams());
+      fail();
     } catch (JedisException e) {
       assertTrue(true);
     }

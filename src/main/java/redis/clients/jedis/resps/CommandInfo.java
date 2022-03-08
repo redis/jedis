@@ -1,6 +1,11 @@
 package redis.clients.jedis.resps;
 
+import redis.clients.jedis.Builder;
+
 import java.util.List;
+
+import static redis.clients.jedis.BuilderFactory.STRING_LIST;
+import static redis.clients.jedis.BuilderFactory.LONG;
 
 public class CommandInfo {
   private final long arity;
@@ -87,4 +92,22 @@ public class CommandInfo {
   public List<String> getSubcommands() {
     return subcommands;
   }
+
+  public static final Builder<CommandInfo> COMMAND_INFO_BUILDER = new Builder<CommandInfo>() {
+    @Override
+    public CommandInfo build(Object data) {
+      List<Object> commandData = (List<Object>) data;
+
+      long arity = LONG.build(commandData.get(1));
+      List<String> flags = STRING_LIST.build(commandData.get(2));
+      long firstKey = LONG.build(commandData.get(3));
+      long lastKey = LONG.build(commandData.get(4));
+      long step = LONG.build(commandData.get(5));
+      List<String> aclCategories = STRING_LIST.build(commandData.get(6));
+      List<String> tips = STRING_LIST.build(commandData.get(7));
+      List<String> subcommands = STRING_LIST.build(commandData.get(9));
+
+      return new CommandInfo(arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands);
+    }
+  };
 }

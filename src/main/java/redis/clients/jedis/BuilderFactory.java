@@ -788,26 +788,13 @@ public final class BuilderFactory {
         return null;
       }
 
-      List<Object> rawList = (List<Object>) data;
-      Map<String, CommandDocument> map = new HashMap<>(rawList.size());
+      List<Object> list = (List<Object>) data;
+      Map<String, CommandDocument> map = new HashMap<>(list.size());
 
-      for (int i = 0; i < rawList.size();) {
-        String name = STRING.build(rawList.get(i++));
-        List<Object> commandData = (List<Object>) rawList.get(i++);
-        String summary = STRING.build(commandData.get(1));
-        String since = STRING.build(commandData.get(3));
-        String group = STRING.build(commandData.get(5));
-        String complexity = STRING.build(commandData.get(7));
-        List<String> history = null;
-        if (STRING.build(commandData.get(8)).equals("history")) {
-          List<List<Object>> rawHistory = (List<List<Object>>) commandData.get(9);
-          history = new ArrayList<>(rawHistory.size());
-          for (List<Object> timePoint : rawHistory) {
-            history.add(STRING.build(timePoint.get(0)) + ": " + STRING.build(timePoint.get(1)));
-          }
-        }
-
-        map.put(name, new CommandDocument(summary, since, group, complexity, history));
+      for (int i = 0; i < list.size();) {
+        String name = STRING.build(list.get(i++));
+        CommandDocument doc = CommandDocument.COMMAND_DOCUMENT_BUILDER.build(list.get(i++));
+        map.put(name, doc);
       }
 
       return map;
@@ -831,16 +818,8 @@ public final class BuilderFactory {
 
         List<Object> commandInfo = (List<Object>) rawCommandInfo;
         String name = STRING.build(commandInfo.get(0));
-        long arity = LONG.build(commandInfo.get(1));
-        List<String> flags = STRING_LIST.build(commandInfo.get(2));
-        long firstKey = LONG.build(commandInfo.get(3));
-        long lastKey = LONG.build(commandInfo.get(4));
-        long step = LONG.build(commandInfo.get(5));
-        List<String> aclCategories = STRING_LIST.build(commandInfo.get(6));
-        List<String> tips = STRING_LIST.build(commandInfo.get(7));
-        List<String> subcommands = STRING_LIST.build(commandInfo.get(9));
-
-        map.put(name, new CommandInfo(arity, flags, firstKey, lastKey, step, aclCategories, tips, subcommands));
+        CommandInfo info = CommandInfo.COMMAND_INFO_BUILDER.build(commandInfo);
+        map.put(name, info);
       }
 
       return map;

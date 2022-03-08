@@ -35,13 +35,13 @@ public class CommandListFilterByParams implements IParams {
   public void addParams(CommandArguments args) {
     args.add(FILTERBY);
 
-    if (moduleName != null) {
+    if (moduleName != null && category == null && pattern == null) {
       args.add(MODULE);
       args.add(moduleName);
-    } else if (category != null) {
+    } else if (moduleName == null && category != null && pattern == null) {
       args.add(ACLCAT);
       args.add(category);
-    } else if (pattern != null) {
+    } else if (moduleName == null && category == null && pattern != null) {
       args.add(PATTERN);
       args.add(pattern);
     }

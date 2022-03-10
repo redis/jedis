@@ -45,9 +45,13 @@ public class ShardedConnectionProvider implements ConnectionProvider {
     this(shards, clientConfig, new GenericObjectPoolConfig<Connection>(), algo);
   }
 
+
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, Hashing algo) {
-    this(shards,clientConfig,poolConfig,algo,160);
+                                   GenericObjectPoolConfig<Connection> poolConfig, Hashing algo) {
+    this.clientConfig = clientConfig;
+    this.poolConfig = poolConfig;
+    this.algo = algo;
+    initialize(shards);
   }
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
@@ -59,18 +63,24 @@ public class ShardedConnectionProvider implements ConnectionProvider {
   }
 
   private void initialize(List<HostAndPort> shards,int replicas){
-    for (int i = 0; i < shards.size(); i++) {
-      HostAndPort shard = shards.get(i);
+    for (HostAndPort shard : shards) {
       for (int n = 0; n < replicas; n++) {
-        Long hash = this.algo.hash("SHARD-" + i + "-NODE-" + n);
+        Long hash = this.algo.hash(shard.getName() + ":" + n);
         nodes.put(hash, shard);
         setupNodeIfNotExist(shard);
       }
     }
   }
 
-  private void initialize(List<HostAndPort> shards) {
-   initialize(shards,160);
+  private void initialize(List<HostAndPort> shards){
+    for (int i = 0; i < shards.size(); i++) {
+      HostAndPort shard = shards.get(i);
+      for (int n = 0; n < 160; n++) {
+        Long hash = this.algo.hash("SHARD-" + i + "-NODE-" + n);
+        nodes.put(hash, shard);
+        setupNodeIfNotExist(shard);
+      }
+    }
   }
 
   private ConnectionPool setupNodeIfNotExist(final HostAndPort node) {

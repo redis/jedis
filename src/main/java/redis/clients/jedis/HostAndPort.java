@@ -13,10 +13,20 @@ public class HostAndPort implements Serializable {
 
   private final String host;
   private final int port;
+  private final String name;
+
 
   public HostAndPort(String host, int port) {
     this.host = host;
     this.port = port;
+    this.name = this.toString();
+  }
+
+  public HostAndPort(String host, int port,String name) {
+    this.host = host;
+    this.port = port;
+    this.name = name;
+
   }
 
   public String getHost() {
@@ -25,6 +35,10 @@ public class HostAndPort implements Serializable {
 
   public int getPort() {
     return port;
+  }
+
+  public String getName() {
+    return name;
   }
 
   @Override

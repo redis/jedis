@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.*;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -20,11 +19,11 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-
-  @AfterClass
-  public static void tearDown() {
-//    RedisModuleCommandsTestBase.tearDown();
-  }
+//
+//  @AfterClass
+//  public static void tearDown() {
+////    RedisModuleCommandsTestBase.tearDown();
+//  }
 
   @Test
   public void testCreate() {

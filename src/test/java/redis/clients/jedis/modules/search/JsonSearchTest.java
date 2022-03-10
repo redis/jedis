@@ -3,7 +3,6 @@ package redis.clients.jedis.modules.search;
 import static org.junit.Assert.*;
 
 import org.json.JSONObject;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.BuilderFactory;
@@ -27,11 +26,11 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-
-  @AfterClass
-  public static void tearDown() {
-//    RedisModuleCommandsTestBase.tearDown();
-  }
+//
+//  @AfterClass
+//  public static void tearDown() {
+////    RedisModuleCommandsTestBase.tearDown();
+//  }
 
   private void setJson(String key, JSONObject json) {
     CommandObject command = new CommandObject<>(

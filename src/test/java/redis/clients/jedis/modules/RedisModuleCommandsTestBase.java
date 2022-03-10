@@ -4,7 +4,6 @@ import static org.junit.Assume.assumeTrue;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import redis.clients.jedis.Connection;
 
 import redis.clients.jedis.HostAndPort;
@@ -26,6 +25,7 @@ public abstract class RedisModuleCommandsTestBase {
     super();
   }
 
+  // BeforeClass
   public static void prepare() {
     try (Connection connection = new Connection(hnp)) {
       assumeTrue("No Redis running on 6479 port.", connection.ping());
@@ -36,7 +36,7 @@ public abstract class RedisModuleCommandsTestBase {
 
   @Before
   public void setUp() {
-    try (Jedis jedis = createJedis()) {
+    try (Jedis jedis = new Jedis(hnp)) {
       jedis.flushAll();
     }
     client = new UnifiedJedis(provider);
@@ -53,9 +53,5 @@ public abstract class RedisModuleCommandsTestBase {
 
   protected static Connection createConnection() {
     return new Connection(hnp);
-  }
-
-  protected static Jedis createJedis() {
-    return new Jedis(hnp);
   }
 }

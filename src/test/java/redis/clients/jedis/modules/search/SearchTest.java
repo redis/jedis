@@ -5,7 +5,6 @@ import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import java.util.*;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -23,11 +22,11 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-
-  @AfterClass
-  public static void tearDown() {
-//    RedisModuleCommandsTestBase.tearDown();
-  }
+//
+//  @AfterClass
+//  public static void tearDown() {
+////    RedisModuleCommandsTestBase.tearDown();
+//  }
 
   private void addDocument(String key, Map<String, Object> map) {
     client.hset(key, toStringMap(map));

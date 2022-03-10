@@ -8042,6 +8042,49 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
+  public long commandCount() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, COUNT);
+    return connection.getIntegerReply();
+  }
+
+  public Map<String, CommandDocument> commandDocs(String... commands) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, joinParameters(DOCS.name(), commands));
+    return BuilderFactory.COMMAND_DOCS_RESPONSE.build(connection.getOne());
+  }
+
+  public List<String> commandGetKeys(String... command) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, joinParameters(GETKEYS.name(), command));
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
+  }
+
+  public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, joinParameters(GETKEYSANDFLAGS.name(), command));
+    return BuilderFactory.KEYED_STRING_LIST_LIST.build(connection.getOne());
+  }
+
+  public Map<String, CommandInfo> commandInfo(String... commands) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, joinParameters(Keyword.INFO.name(), commands));
+    return BuilderFactory.COMMAND_INFO_RESPONSE.build(connection.getOne());
+  }
+
+  public List<String> commandList() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, LIST);
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
+  }
+
+  public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
+    checkIsInMultiOrPipeline();
+    CommandArguments args = new CommandArguments(COMMAND).add(LIST).addParams(filterByParams);
+    connection.sendCommand(args);
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
+  }
+
   @Override
   public String sentinelMyId() {
     connection.sendCommand(SENTINEL, MYID);
@@ -8993,28 +9036,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String moduleLoad(final String path) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, LOAD.name(), path);
+    connection.sendCommand(Command.MODULE, LOAD.name(), path);
     return connection.getStatusCodeReply();
   }
 
   @Override
   public String moduleLoad(String path, String... args) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, joinParameters(LOAD.name(), path, args));
+    connection.sendCommand(Command.MODULE, joinParameters(LOAD.name(), path, args));
     return connection.getStatusCodeReply();
   }
 
   @Override
   public String moduleUnload(final String name) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, UNLOAD.name(), name);
+    connection.sendCommand(Command.MODULE, UNLOAD.name(), name);
     return connection.getStatusCodeReply();
   }
 
   @Override
   public List<Module> moduleList() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, LIST);
+    connection.sendCommand(Command.MODULE, LIST);
     return BuilderFactory.MODULE_LIST.build(connection.getObjectMultiBulkReply());
   }
 

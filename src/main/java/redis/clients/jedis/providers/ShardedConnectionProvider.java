@@ -52,11 +52,11 @@ public class ShardedConnectionProvider implements ConnectionProvider {
   }
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
-                                   GenericObjectPoolConfig<Connection> poolConfig, Hashing algo,Boolean isCom) {
+                                   GenericObjectPoolConfig<Connection> poolConfig, Hashing algo,Boolean isCompatibleRedisShardAPI) {
     this.clientConfig = clientConfig;
     this.poolConfig = poolConfig;
     this.algo = algo;
-    if(isCom) initialize(shards,128);
+    if(isCompatibleRedisShardAPI) initialize(shards,128);
     else initialize(shards);
   }
 

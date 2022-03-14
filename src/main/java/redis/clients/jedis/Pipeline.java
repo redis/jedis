@@ -47,7 +47,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
     this.connection = connection;
 //    this.jedis = null;
     this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(new UnifiedJedis(this.connection));
+    this.graphCommandObjects = new GraphCommandObjects(this.connection);
   }
 
   public Pipeline(Jedis jedis) {
@@ -55,7 +55,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
     this.connection = jedis.getConnection();
 //    this.jedis = jedis;
     this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(new UnifiedJedis(this.connection));
+    this.graphCommandObjects = new GraphCommandObjects(this.connection);
   }
 
   public final <T> Response<T> appendCommand(CommandObject<T> commandObject) {

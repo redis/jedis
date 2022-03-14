@@ -45,7 +45,10 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     return provider.getConnection(nodeKey);
   }
 
+  /**
+   * This method must be called after constructor, if graph commands are going to be used.
+   */
   public void prepareGraphCommands() {
-    super.prepareGraphCommands(new UnifiedJedis(provider));
+    super.prepareGraphCommands(provider);
   }
 }

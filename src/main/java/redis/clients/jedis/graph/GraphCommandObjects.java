@@ -13,15 +13,33 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.graph.GraphProtocol.GraphCommand;
+import redis.clients.jedis.providers.ConnectionProvider;
 
 public class GraphCommandObjects {
 
   private final RedisGraphCommands graph;
+  private final Connection connection;
+  private final ConnectionProvider provider;
   private final ConcurrentHashMap<String, Builder<ResultSet>> builders = new ConcurrentHashMap<>();
 
   public GraphCommandObjects(RedisGraphCommands graphCommands) {
     this.graph = graphCommands;
+    this.connection = null;
+    this.provider = null;
+  }
+
+  public GraphCommandObjects(Connection connection) {
+    this.connection = connection;
+    this.provider = null;
+    this.graph = null;
+  }
+
+  public GraphCommandObjects(ConnectionProvider provider) {
+    this.provider = provider;
+    this.connection = null;
+    this.graph = null;
   }
 
   // RedisGraph commands
@@ -146,7 +164,7 @@ public class GraphCommandObjects {
      * Auxiliary method to parse a procedure result set and refresh the cache
      */
     private void getProcedureInfo() {
-      ResultSet resultSet = graph.graphQuery(name, query);
+      ResultSet resultSet = callProcedure();
       Iterator<Record> it = resultSet.iterator();
       List<String> newData = new ArrayList<>();
       int i = 0;
@@ -158,6 +176,25 @@ public class GraphCommandObjects {
         i++;
       }
       data.addAll(newData);
+    }
+
+    private ResultSet callProcedure() {
+
+      if (graph != null) {
+        return graph.graphQuery(name, query);
+      }
+
+      CommandObject<ResultSet> commandObject = new CommandObject(
+          new CommandArguments(GraphProtocol.GraphCommand.QUERY).key(name).add(query),
+          getBuilder(name));
+
+      if (connection != null) {
+        return connection.executeCommand(commandObject);
+      } else {
+        try (Connection provided = provider.getConnection(commandObject.getArguments())) {
+          return provided.executeCommand(commandObject);
+        }
+      }
     }
   }
 }

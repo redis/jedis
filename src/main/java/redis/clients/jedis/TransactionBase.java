@@ -61,7 +61,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public TransactionBase(Connection connection, boolean doMulti) {
     this.connection = connection;
     this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(new UnifiedJedis(this.connection));
+    this.graphCommandObjects = new GraphCommandObjects(this.connection);
     if (doMulti) multi();
   }
 

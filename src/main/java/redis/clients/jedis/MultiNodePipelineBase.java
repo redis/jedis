@@ -18,12 +18,12 @@ import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
 import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.graph.RedisGraphCommands;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Query;
@@ -51,8 +51,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     this.commandObjects = commandObjects;
   }
 
-  protected final void prepareGraphCommands(RedisGraphCommands graphCommands) {
-    this.graphCommandObjects = new GraphCommandObjects(graphCommands);
+  /**
+   * Sub-classes must call this method, if graph commands are going to be used.
+   */
+  protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
+    this.graphCommandObjects = new GraphCommandObjects(connectionProvider);
   }
 
   protected abstract HostAndPort getNodeKey(CommandArguments args);

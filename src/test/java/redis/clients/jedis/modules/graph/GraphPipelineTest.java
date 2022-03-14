@@ -65,7 +65,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     pipeline.graphQuery("social", "MATCH (n:Person) RETURN n");
     pipeline.graphDelete("g");
 //    pipeline.callProcedure("social", "db.labels");
-    pipeline.graphQuery("social", "CALL db.labels");
+    pipeline.graphQuery("social", "CALL db.labels()");
     List<Object> results = pipeline.syncAndReturnAll();
 
     // Redis set command
@@ -148,7 +148,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     pipeline.graphReadonlyQuery("social", "MATCH (n:Person) RETURN n");
     pipeline.graphDelete("g");
 //    pipeline.callProcedure("social", "db.labels");
-    pipeline.graphQuery("social", "CALL db.labels");
+    pipeline.graphQuery("social", "CALL db.labels()");
     List<Object> results = pipeline.syncAndReturnAll();
 
     // Redis set command

@@ -65,7 +65,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     transaction.graphQuery("social", "MATCH (n:Person) RETURN n");
     transaction.graphDelete("g");
 //    transaction.callProcedure("social", "db.labels");
-    transaction.graphQuery("social", "CALL db.labels");
+    transaction.graphQuery("social", "CALL db.labels()");
     List<Object> results = transaction.exec();
 
     // Redis set command
@@ -186,7 +186,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
     transaction.graphReadonlyQuery("social", "MATCH (n:Person) RETURN n");
     transaction.graphDelete("g");
 //    transaction.callProcedure("social", "db.labels");
-    transaction.graphQuery("social", "CALL db.labels");
+    transaction.graphQuery("social", "CALL db.labels()");
     List<Object> results = transaction.exec();
 
     // Redis set command

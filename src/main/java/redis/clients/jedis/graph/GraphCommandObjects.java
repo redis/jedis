@@ -185,7 +185,8 @@ public class GraphCommandObjects {
       }
 
       CommandObject<ResultSet> commandObject = new CommandObject(
-          new CommandArguments(GraphProtocol.GraphCommand.QUERY).key(name).add(query),
+          new CommandArguments(GraphProtocol.GraphCommand.QUERY).key(name).add(query)
+              .add(GraphProtocol.GraphKeyword.__COMPACT),
           getBuilder(name));
 
       if (connection != null) {

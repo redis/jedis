@@ -11,14 +11,12 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.providers.PooledConnectionProvider;
 
 public abstract class RedisModuleCommandsTestBase {
 
   protected static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
   protected static final HostAndPort hnp = HostAndPort.from(address);
 
-  private static final PooledConnectionProvider provider = new PooledConnectionProvider(hnp);
   protected UnifiedJedis client;
 
   public RedisModuleCommandsTestBase() {
@@ -39,13 +37,13 @@ public abstract class RedisModuleCommandsTestBase {
     try (Jedis jedis = new Jedis(hnp)) {
       jedis.flushAll();
     }
-    client = new UnifiedJedis(provider);
+    client = new UnifiedJedis(hnp);
   }
-//
-//  @After
-//  public void tearDown() throws Exception {
-//    client.close();
-//  }
+
+  @After
+  public void tearDown() throws Exception {
+    client.close();
+  }
 //
 //  public static void tearDown() {
 //    client.close();

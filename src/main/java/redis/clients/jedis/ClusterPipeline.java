@@ -44,4 +44,8 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   protected Connection getConnection(HostAndPort nodeKey) {
     return provider.getConnection(nodeKey);
   }
+
+  public void prepareGraphCommands() {
+    super.prepareGraphCommands(new UnifiedJedis(provider));
+  }
 }

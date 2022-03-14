@@ -26,10 +26,10 @@ public class GraphAPITest extends RedisModuleCommandsTestBase {
   }
 
   @After
-//  @Override
+  @Override
   public void tearDown() throws Exception {
     client.graphDelete("social");
-//    super.tearDown();
+    super.tearDown();
   }
 //
 //    @Test

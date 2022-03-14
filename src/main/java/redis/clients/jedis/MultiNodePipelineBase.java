@@ -17,6 +17,9 @@ import redis.clients.jedis.bloom.CFReserveParams;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.graph.GraphCommandObjects;
+import redis.clients.jedis.graph.RedisGraphCommands;
+import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -39,12 +42,17 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   private volatile boolean synced;
 
   private final CommandObjects commandObjects;
+  private GraphCommandObjects graphCommandObjects;
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
     synced = false;
     this.commandObjects = commandObjects;
+  }
+
+  protected final void prepareGraphCommands(RedisGraphCommands graphCommands) {
+    this.graphCommandObjects = new GraphCommandObjects(graphCommands);
   }
 
   protected abstract HostAndPort getNodeKey(CommandArguments args);
@@ -3951,6 +3959,53 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.topkInfo(key));
   }
   // RedisBloom commands
+
+  // RedisGraph commands
+  @Override
+  public Response<ResultSet> graphQuery(String name, String query) {
+    return appendCommand(graphCommandObjects.graphQuery(name, query));
+  }
+
+  @Override
+  public Response<ResultSet> graphReadonlyQuery(String name, String query) {
+    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query));
+  }
+
+  @Override
+  public Response<ResultSet> graphQuery(String name, String query, long timeout) {
+    return appendCommand(graphCommandObjects.graphQuery(name, query, timeout));
+  }
+
+  @Override
+  public Response<ResultSet> graphReadonlyQuery(String name, String query, long timeout) {
+    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
+  }
+
+  @Override
+  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params) {
+    return appendCommand(graphCommandObjects.graphQuery(name, query, params));
+  }
+
+  @Override
+  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
+    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
+  }
+
+  @Override
+  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
+    return appendCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
+  }
+
+  @Override
+  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
+    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
+  }
+
+  @Override
+  public Response<String> graphDelete(String name) {
+    return appendCommand(graphCommandObjects.graphDelete(name));
+  }
+  // RedisGraph commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

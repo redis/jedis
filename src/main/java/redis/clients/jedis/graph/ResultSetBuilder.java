@@ -126,10 +126,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     }
   }
 
-  /**
-   * @param rawResultSet - raw result set representation
-   * @return parsed result set
-   */
   @SuppressWarnings("unchecked")
   private List<Record> parseRecords(Header header, Object data) {
     List<List<Object>> rawResultSet = (List<List<Object>>) data;

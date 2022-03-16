@@ -50,6 +50,8 @@ public interface ConfigCommands {
    */
   String configSet(String parameter, String value);
 
+  String configSet(String... parameterValues);
+
   /**
    * Used in order to reconfigure the Redis server at run time without
    * the need to restart.
@@ -60,6 +62,8 @@ public interface ConfigCommands {
    * Otherwise, an error is returned.
    */
   String configSet(byte[] parameter, byte[] value);
+
+  String configSet(byte[]... parameterValues);
 
   /**
    * Resets the statistics reported by Redis using the INFO command.

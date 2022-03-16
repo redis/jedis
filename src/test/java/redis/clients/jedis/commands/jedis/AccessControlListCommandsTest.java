@@ -7,7 +7,9 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -20,9 +22,8 @@ import redis.clients.jedis.util.SafeEncoder;
  */
 public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
-  public static String USER_YYY = "yyy";
-  public static String USER_ZZZ = "zzz";
-  public static String USER_ZZZ_PASSWORD = "secret";
+  public static final String USER_NAME = "newuser";
+  public static final String USER_PASSWORD = "secret";
 
   @BeforeClass
   public static void prepare() throws Exception {
@@ -50,12 +51,12 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   public void addAndRemoveUser() {
     int existingUsers = jedis.aclList().size();
 
-    String status = jedis.aclSetUser(USER_ZZZ);
+    String status = jedis.aclSetUser(USER_NAME);
     assertEquals("OK", status);
     assertEquals(existingUsers + 1, jedis.aclList().size());
     assertEquals(existingUsers + 1, jedis.aclListBinary().size()); // test binary
 
-    jedis.aclDelUser(USER_ZZZ);
+    jedis.aclDelUser(USER_NAME);
     assertEquals(existingUsers, jedis.aclList().size());
     assertEquals(existingUsers, jedis.aclListBinary().size()); // test binary
   }
@@ -81,29 +82,29 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertEquals("~*", userInfo.getKeys().get(0));
 
     // create new user
-    jedis.aclDelUser(USER_ZZZ);
-    jedis.aclSetUser(USER_ZZZ);
-    userInfo = jedis.aclGetUser(USER_ZZZ);
+    jedis.aclDelUser(USER_NAME);
+    jedis.aclSetUser(USER_NAME);
+    userInfo = jedis.aclGetUser(USER_NAME);
     assertEquals(1, userInfo.getFlags().size());
     assertEquals("off", userInfo.getFlags().get(0));
     assertTrue(userInfo.getPassword().isEmpty());
     assertTrue(userInfo.getKeys().isEmpty());
 
     // reset user
-    jedis.aclSetUser(USER_ZZZ, "reset", "+@all", "~*", "-@string", "+incr", "-debug",
+    jedis.aclSetUser(USER_NAME, "reset", "+@all", "~*", "-@string", "+incr", "-debug",
       "+debug|digest");
-    userInfo = jedis.aclGetUser(USER_ZZZ);
+    userInfo = jedis.aclGetUser(USER_NAME);
     assertThat(userInfo.getCommands(), containsString("+@all"));
     assertThat(userInfo.getCommands(), containsString("-@string"));
     assertThat(userInfo.getCommands(), containsString("+debug|digest"));
 
-    jedis.aclDelUser(USER_ZZZ);
+    jedis.aclDelUser(USER_NAME);
 
   }
 
   @Test
   public void createUserAndPasswords() {
-    String status = jedis.aclSetUser(USER_ZZZ, ">" + USER_ZZZ_PASSWORD);
+    String status = jedis.aclSetUser(USER_NAME, ">" + USER_PASSWORD);
     assertEquals("OK", status);
 
     // create a new client to try to authenticate
@@ -112,7 +113,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     // the user is just created without any permission the authentication should fail
     try {
-      authResult = jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
+      authResult = jedis2.auth(USER_NAME, USER_PASSWORD);
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertNull(authResult);
@@ -120,16 +121,15 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     // now activate the user
-    authResult = jedis.aclSetUser(USER_ZZZ, "on", "+acl");
-    jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
-    String connectedUser = jedis2.aclWhoAmI();
-    assertEquals(USER_ZZZ, connectedUser);
+    authResult = jedis.aclSetUser(USER_NAME, "on", "+acl");
+    jedis2.auth(USER_NAME, USER_PASSWORD);
+    assertEquals(USER_NAME, jedis2.aclWhoAmI());
 
     // test invalid password
     jedis2.close();
 
     try {
-      authResult = jedis2.auth(USER_ZZZ, "wrong-password");
+      authResult = jedis2.auth(USER_NAME, "wrong-password");
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
@@ -137,18 +137,18 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     // remove password, and try to authenticate
-    status = jedis.aclSetUser(USER_ZZZ, "<" + USER_ZZZ_PASSWORD);
+    status = jedis.aclSetUser(USER_NAME, "<" + USER_PASSWORD);
     try {
-      authResult = jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
+      authResult = jedis2.auth(USER_NAME, USER_PASSWORD);
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
       assertTrue(e.getMessage().startsWith("WRONGPASS "));
     }
 
-    jedis.aclDelUser(USER_ZZZ); // delete the user
+    jedis.aclDelUser(USER_NAME); // delete the user
     try {
-      authResult = jedis2.auth(USER_ZZZ, "wrong-password");
+      authResult = jedis2.auth(USER_NAME, "wrong-password");
       fail("Should throw a WRONGPASS exception");
     } catch (JedisAccessControlException e) {
       assertEquals("OK", authResult);
@@ -161,40 +161,39 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void aclSetUserWithAnyPassword() {
-    jedis.aclDelUser(USER_ZZZ);
-    String status = jedis.aclSetUser(USER_ZZZ, "nopass");
+    jedis.aclDelUser(USER_NAME);
+    String status = jedis.aclSetUser(USER_NAME, "nopass");
     assertEquals("OK", status);
-    status = jedis.aclSetUser(USER_ZZZ, "on", "+acl");
+    status = jedis.aclSetUser(USER_NAME, "on", "+acl");
     assertEquals("OK", status);
 
     // connect with this new user and try to get/set keys
     Jedis jedis2 = new Jedis();
-    String authResult = jedis2.auth(USER_ZZZ, "any password");
+    String authResult = jedis2.auth(USER_NAME, "any password");
     assertEquals("OK", authResult);
 
     jedis2.close();
-    jedis.aclDelUser(USER_ZZZ);
-
+    jedis.aclDelUser(USER_NAME);
   }
 
   @Test
   public void aclExcudeSingleCommand() {
-    jedis.aclDelUser(USER_ZZZ);
-    String status = jedis.aclSetUser(USER_ZZZ, "nopass");
+    jedis.aclDelUser(USER_NAME);
+    String status = jedis.aclSetUser(USER_NAME, "nopass");
     assertEquals("OK", status);
 
-    status = jedis.aclSetUser(USER_ZZZ, "on", "+acl");
+    status = jedis.aclSetUser(USER_NAME, "on", "+acl");
     assertEquals("OK", status);
 
-    status = jedis.aclSetUser(USER_ZZZ, "allcommands", "allkeys");
+    status = jedis.aclSetUser(USER_NAME, "allcommands", "allkeys");
     assertEquals("OK", status);
 
-    status = jedis.aclSetUser(USER_ZZZ, "-ping");
+    status = jedis.aclSetUser(USER_NAME, "-ping");
     assertEquals("OK", status);
 
     // connect with this new user and try to get/set keys
     Jedis jedis2 = new Jedis();
-    String authResult = jedis2.auth(USER_ZZZ, "any password");
+    String authResult = jedis2.auth(USER_NAME, "any password");
     assertEquals("OK", authResult);
 
     jedis2.incr("mycounter");
@@ -211,16 +210,51 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     jedis2.close();
-    jedis.aclDelUser(USER_ZZZ);
+    jedis.aclDelUser(USER_NAME);
+  }
 
+  @Test
+  public void aclDryRun() {
+    jedis.aclDelUser(USER_NAME);
+
+    jedis.aclSetUser(USER_NAME, "nopass", "allkeys", "+set", "-get");
+
+    assertEquals("OK", jedis.aclDryRun(USER_NAME, "SET", "key", "value"));
+    assertEquals("This user has no permissions to run the 'get' command",
+        jedis.aclDryRun(USER_NAME, "GET", "key"));
+
+    assertEquals("OK", jedis.aclDryRun(USER_NAME,
+        new CommandArguments(Protocol.Command.SET).key("key").add("value")));
+    assertEquals("This user has no permissions to run the 'get' command", jedis.aclDryRun(USER_NAME,
+        new CommandArguments(Protocol.Command.GET).key("key")));
+
+    jedis.aclDelUser(USER_NAME);
+  }
+
+  @Test
+  public void aclDryRunBinary() {
+    byte[] username = USER_NAME.getBytes();
+    jedis.aclDelUser(username);
+
+    jedis.aclSetUser(username, "nopass".getBytes(), "allkeys".getBytes(), "+set".getBytes(), "-get".getBytes());
+
+    assertArrayEquals("OK".getBytes(), jedis.aclDryRunBinary(username, "SET".getBytes(), "key".getBytes(), "value".getBytes()));
+    assertArrayEquals("This user has no permissions to run the 'get' command".getBytes(),
+        jedis.aclDryRunBinary(username, "GET".getBytes(), "key".getBytes()));
+
+    assertArrayEquals("OK".getBytes(), jedis.aclDryRunBinary(username, new CommandArguments(Protocol.Command.SET).key("key").add("value")));
+    assertArrayEquals("This user has no permissions to run the 'get' command".getBytes(),
+        jedis.aclDryRunBinary(username, new CommandArguments(Protocol.Command.GET).key("key")));
+
+    jedis.aclDelUser(USER_NAME);
   }
 
   @Test
   public void aclDelUser() {
-    String statusSetUser = jedis.aclSetUser(USER_YYY);
+    String statusSetUser = jedis.aclSetUser(USER_NAME);
     assertEquals("OK", statusSetUser);
     int before = jedis.aclList().size();
-    assertEquals(1L, jedis.aclDelUser(USER_YYY));
+    assertEquals(1L, jedis.aclDelUser(USER_NAME));
     int after = jedis.aclList().size();
     assertEquals(before - 1, after);
   }
@@ -230,15 +264,15 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     // create a user with login permissions
 
-    jedis.aclDelUser(USER_ZZZ); // delete the user
+    jedis.aclDelUser(USER_NAME); // delete the user
 
     // users are not able to access any command
-    String status = jedis.aclSetUser(USER_ZZZ, ">" + USER_ZZZ_PASSWORD);
-    String authResult = jedis.aclSetUser(USER_ZZZ, "on", "+acl");
+    String status = jedis.aclSetUser(USER_NAME, ">" + USER_PASSWORD);
+    String authResult = jedis.aclSetUser(USER_NAME, "on", "+acl");
 
     // connect with this new user and try to get/set keys
     Jedis jedis2 = new Jedis();
-    jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
+    jedis2.auth(USER_NAME, USER_PASSWORD);
 
     String result = null;
     try {
@@ -253,10 +287,10 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
     // change permissions of the user
     // by default users are not able to access any key
-    status = jedis.aclSetUser(USER_ZZZ, "+set");
+    status = jedis.aclSetUser(USER_NAME, "+set");
 
     jedis2.close();
-    jedis2.auth(USER_ZZZ, USER_ZZZ_PASSWORD);
+    jedis2.auth(USER_NAME, USER_PASSWORD);
 
     result = null;
     try {
@@ -270,7 +304,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     // allow user to access a subset of the key
-    result = jedis.aclSetUser(USER_ZZZ, "allcommands", "~foo:*", "~bar:*"); // TODO : Define a DSL
+    result = jedis.aclSetUser(USER_NAME, "allcommands", "~foo:*", "~bar:*"); // TODO : Define a DSL
 
     // create key foo, bar and zap
     result = jedis2.set("foo:1", "a");
@@ -291,7 +325,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     // remove user
-    jedis.aclDelUser(USER_ZZZ); // delete the user
+    jedis.aclDelUser(USER_NAME); // delete the user
 
   }
 
@@ -448,23 +482,23 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void aclBinaryCommandsTest() {
-    jedis.aclSetUser(USER_ZZZ.getBytes());
-    assertNotNull(jedis.aclGetUser(USER_ZZZ));
+    jedis.aclSetUser(USER_NAME.getBytes());
+    assertNotNull(jedis.aclGetUser(USER_NAME));
 
-    assertEquals(1L, jedis.aclDelUser(USER_ZZZ.getBytes()));
+    assertEquals(1L, jedis.aclDelUser(USER_NAME.getBytes()));
 
-    jedis.aclSetUser(USER_ZZZ.getBytes(), "reset".getBytes(), "+@all".getBytes(), "~*".getBytes(),
+    jedis.aclSetUser(USER_NAME.getBytes(), "reset".getBytes(), "+@all".getBytes(), "~*".getBytes(),
       "-@string".getBytes(), "+incr".getBytes(), "-debug".getBytes(), "+debug|digest".getBytes(),
             "resetchannels".getBytes(), "&testchannel:*".getBytes());
 
-    AccessControlUser userInfo = jedis.aclGetUser(USER_ZZZ.getBytes());
+    AccessControlUser userInfo = jedis.aclGetUser(USER_NAME.getBytes());
 
     assertThat(userInfo.getCommands(), containsString("+@all"));
     assertThat(userInfo.getCommands(), containsString("-@string"));
     assertThat(userInfo.getCommands(), containsString("+debug|digest"));
     assertEquals("&testchannel:*", userInfo.getChannels().get(0));
 
-    jedis.aclDelUser(USER_ZZZ.getBytes());
+    jedis.aclDelUser(USER_NAME.getBytes());
 
     jedis.aclSetUser("TEST_USER".getBytes());
     jedis.aclSetUser("ANOTHER_TEST_USER".getBytes());

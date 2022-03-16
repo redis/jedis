@@ -8,6 +8,7 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -4293,19 +4294,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String migrate(final String host, final int port, final byte[] key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).key(key).add(destinationDb).add(timeout);
-    connection.sendCommand(args);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.migrate(host, port, key, destinationDb, timeout));
   }
 
   @Override
   public String migrate(final String host, final int port, final int destinationDB,
       final int timeout, final MigrateParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(destinationDB)
-        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys);
-    connection.sendCommand(args);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   @Override
@@ -8396,6 +8392,49 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getBulkReply();
   }
 
+  @Override
+  public String aclDryRun(String username, String command, String... args) {
+    checkIsInMultiOrPipeline();
+    String[] allArgs = new String[3 + args.length];
+    allArgs[0] = DRYRUN.name();
+    allArgs[1] = username;
+    allArgs[2] = command;
+    System.arraycopy(args, 0, allArgs, 3, args.length);
+    connection.sendCommand(ACL, allArgs);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String aclDryRun(String username, CommandArguments commandArgs) {
+    checkIsInMultiOrPipeline();
+    CommandArguments allArgs = new CommandArguments(ACL).add(DRYRUN).add(username);
+    Iterator<Rawable> it = commandArgs.iterator();
+    while (it.hasNext()) allArgs.add(it.next());
+    connection.sendCommand(allArgs);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public byte[] aclDryRunBinary(byte[] username, byte[] command, byte[]... args) {
+    checkIsInMultiOrPipeline();
+    byte[][] allArgs = new byte[3 + args.length][];
+    allArgs[0] = DRYRUN.getRaw();
+    allArgs[1] = username;
+    allArgs[2] = command;
+    System.arraycopy(args, 0, allArgs, 3, args.length);
+    connection.sendCommand(ACL, allArgs);
+    return connection.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] aclDryRunBinary(byte[] username, CommandArguments commandArgs) {
+    checkIsInMultiOrPipeline();
+    CommandArguments allArgs = new CommandArguments(ACL).add(DRYRUN).add(username);
+    Iterator<Rawable> it = commandArgs.iterator();
+    while (it.hasNext()) allArgs.add(it.next());
+    connection.sendCommand(allArgs);
+    return connection.getBinaryBulkReply();
+  }
 
   @Override
   public String clientKill(final String ipPort) {
@@ -8450,19 +8489,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String migrate(final String host, final int port, final String key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).key(key).add(destinationDb).add(timeout);
-    connection.sendCommand(args);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.migrate(host, port, key, destinationDb, timeout));
   }
 
   @Override
   public String migrate(final String host, final int port, final int destinationDB,
       final int timeout, final MigrateParams params, final String... keys) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(destinationDB)
-        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys);
-    connection.sendCommand(args);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   @Override

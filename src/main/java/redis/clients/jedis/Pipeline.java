@@ -4008,28 +4008,22 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   @Override
   public Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
-        .add(host).add(port).key(key).add(destinationDB).add(timeout), BuilderFactory.STRING));
+    return appendCommand(commandObjects.migrate(host, port, key, destinationDB, timeout));
   }
 
   @Override
   public Response<String> migrate(String host, int port, String key, int destinationDB, int timeout) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
-        .add(host).add(port).key(key).add(destinationDB).add(timeout), BuilderFactory.STRING));
+    return appendCommand(commandObjects.migrate(host, port, key, destinationDB, timeout));
   }
 
   @Override
   public Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
-        .add(host).add(port).add(new byte[0]).add(destinationDB).add(timeout).addParams(params)
-        .add(Protocol.Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING));
+    return appendCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   @Override
   public Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
-        .add(host).add(port).add(new byte[0]).add(destinationDB).add(timeout).addParams(params)
-        .add(Protocol.Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING));
+    return appendCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {

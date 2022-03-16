@@ -1,10 +1,12 @@
 package redis.clients.jedis.params;
 
+import static redis.clients.jedis.Protocol.Keyword.FORCE;
+import static redis.clients.jedis.Protocol.Keyword.TIMEOUT;
+import static redis.clients.jedis.Protocol.Keyword.TO;
+import static redis.clients.jedis.Protocol.toByteArray;
+
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.util.SafeEncoder;
 
 public class FailoverParams implements IParams {
 
@@ -44,22 +46,19 @@ public class FailoverParams implements IParams {
   public void addParams(CommandArguments args) {
 
     if (to != null) {
-      args.add(Keyword.TO.getRaw());
-      args.add(SafeEncoder.encode(to.getHost()));
-      args.add(Protocol.toByteArray(to.getPort()));
-
+      args.add(TO);
+      args.add(to.getHost()).add(toByteArray(to.getPort()));
     }
 
     if (force) {
       if (to == null || timeout == null) {
         throw new IllegalStateException("ERR FAILOVER with force option requires both a timeout and target HOST and IP.");
       }
-      args.add(Keyword.FORCE.getRaw());
+      args.add(FORCE);
     }
 
     if (timeout != null) {
-      args.add(Keyword.TIMEOUT.getRaw());
-      args.add(Protocol.toByteArray(timeout));
+      args.add(TIMEOUT).add(toByteArray(timeout));
     }
 
   }

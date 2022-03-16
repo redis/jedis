@@ -122,6 +122,11 @@ public class Schema {
     return this;
   }
 
+  public Schema as(String asName) {
+    fields.get(fields.size() - 1).as(asName);
+    return this;
+  }
+
   @Override
   public String toString() {
     return "Schema{fields=" + fields + "}";
@@ -174,6 +179,11 @@ public class Schema {
      * @param args
      */
     protected void addTypeArgs(CommandArguments args) { }
+
+    public Field as(String asName){
+      this.fieldName.as(asName);
+      return this;
+    }
 
     @Override
     public String toString() {

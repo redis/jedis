@@ -3640,6 +3640,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String configSet(final byte[]... parameterValues) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.SET.getRaw(), parameterValues));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public long strlen(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strlen(key));
@@ -7864,6 +7871,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String configSet(final String parameter, final String value) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CONFIG, Keyword.SET.name(), parameter, value);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String configSet(final String... parameterValues) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.SET.name(), parameterValues));
     return connection.getStatusCodeReply();
   }
 

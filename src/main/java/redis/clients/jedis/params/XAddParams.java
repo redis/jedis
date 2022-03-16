@@ -4,15 +4,18 @@ import static redis.clients.jedis.Protocol.Keyword.LIMIT;
 import static redis.clients.jedis.Protocol.Keyword.MAXLEN;
 import static redis.clients.jedis.Protocol.Keyword.MINID;
 import static redis.clients.jedis.Protocol.Keyword.NOMKSTREAM;
+import static redis.clients.jedis.util.SafeEncoder.encode;
 
+import java.util.Arrays;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.util.SafeEncoder;
 
 public class XAddParams implements IParams {
 
-  private StreamEntryID id = StreamEntryID.NEW_ENTRY;
+  private static final byte[] NEW_ENTRY = encode(StreamEntryID.NEW_ENTRY.toString());
+
+  private byte[] id;
 
   private Long maxLen;
 
@@ -35,13 +38,26 @@ public class XAddParams implements IParams {
     return this;
   }
 
-  public XAddParams id(StreamEntryID id) {
-    this.id = id;
+  public XAddParams id(byte[] id) {
+    this.id = Arrays.copyOf(id, id.length);
     return this;
   }
 
-  public XAddParams id(byte[] id) {
-    return id(new StreamEntryID(id));
+  public XAddParams id(String id) {
+    this.id = encode(id);
+    return this;
+  }
+
+  public XAddParams id(StreamEntryID id) {
+    return id(id.toString());
+  }
+
+  public XAddParams id(long time, long sequence) {
+    return id(time + "-" + sequence);
+  }
+
+  public XAddParams id(long time) {
+    return id(time + "-*");
   }
 
   public XAddParams maxLen(long maxLen) {
@@ -71,9 +87,11 @@ public class XAddParams implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
+
     if (nomkstream) {
       args.add(NOMKSTREAM.getRaw());
     }
+
     if (maxLen != null) {
       args.add(MAXLEN.getRaw());
 
@@ -93,7 +111,7 @@ public class XAddParams implements IParams {
         args.add(Protocol.BYTES_EQUAL);
       }
 
-      args.add(SafeEncoder.encode(minId));
+      args.add(encode(minId));
     }
 
     if (limit != null) {
@@ -101,6 +119,6 @@ public class XAddParams implements IParams {
       args.add(Protocol.toByteArray(limit));
     }
 
-    args.add(SafeEncoder.encode(id.toString()));
+    args.add(id != null ? id : NEW_ENTRY);
   }
 }

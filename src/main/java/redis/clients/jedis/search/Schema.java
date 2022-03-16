@@ -122,6 +122,10 @@ public class Schema {
     return this;
   }
 
+  /***
+   * Chain as name to the last filed added to the schema
+   * @param asName
+   */
   public Schema as(String asName) {
     fields.get(fields.size() - 1).as(asName);
     return this;

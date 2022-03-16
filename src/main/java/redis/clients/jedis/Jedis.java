@@ -8,6 +8,7 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.net.URI;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -3639,6 +3640,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String configSet(final byte[]... parameterValues) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.SET.getRaw(), parameterValues));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public long strlen(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strlen(key));
@@ -4293,19 +4301,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String migrate(final String host, final int port, final byte[] key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).key(key).add(destinationDb).add(timeout);
-    connection.sendCommand(args);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.migrate(host, port, key, destinationDb, timeout));
   }
 
   @Override
   public String migrate(final String host, final int port, final int destinationDB,
       final int timeout, final MigrateParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(destinationDB)
-        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys);
-    connection.sendCommand(args);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   @Override
@@ -7871,6 +7874,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
+  @Override
+  public String configSet(final String... parameterValues) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CONFIG, joinParameters(Keyword.SET.name(), parameterValues));
+    return connection.getStatusCodeReply();
+  }
+
   public long publish(final String channel, final String message) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(PUBLISH, channel, message);
@@ -8040,6 +8050,49 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long bitop(final BitOP op, final String destKey, final String... srcKeys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitop(op, destKey, srcKeys));
+  }
+
+  public long commandCount() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, COUNT);
+    return connection.getIntegerReply();
+  }
+
+  public Map<String, CommandDocument> commandDocs(String... commands) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, joinParameters(DOCS.name(), commands));
+    return BuilderFactory.COMMAND_DOCS_RESPONSE.build(connection.getOne());
+  }
+
+  public List<String> commandGetKeys(String... command) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, joinParameters(GETKEYS.name(), command));
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
+  }
+
+  public List<KeyValue<String, List<String>>> commandGetKeysAndFlags(String... command) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, joinParameters(GETKEYSANDFLAGS.name(), command));
+    return BuilderFactory.KEYED_STRING_LIST_LIST.build(connection.getOne());
+  }
+
+  public Map<String, CommandInfo> commandInfo(String... commands) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, joinParameters(Keyword.INFO.name(), commands));
+    return BuilderFactory.COMMAND_INFO_RESPONSE.build(connection.getOne());
+  }
+
+  public List<String> commandList() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(COMMAND, LIST);
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
+  }
+
+  public List<String> commandListFilterBy(CommandListFilterByParams filterByParams) {
+    checkIsInMultiOrPipeline();
+    CommandArguments args = new CommandArguments(COMMAND).add(LIST).addParams(filterByParams);
+    connection.sendCommand(args);
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
   @Override
@@ -8353,6 +8406,49 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getBulkReply();
   }
 
+  @Override
+  public String aclDryRun(String username, String command, String... args) {
+    checkIsInMultiOrPipeline();
+    String[] allArgs = new String[3 + args.length];
+    allArgs[0] = DRYRUN.name();
+    allArgs[1] = username;
+    allArgs[2] = command;
+    System.arraycopy(args, 0, allArgs, 3, args.length);
+    connection.sendCommand(ACL, allArgs);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String aclDryRun(String username, CommandArguments commandArgs) {
+    checkIsInMultiOrPipeline();
+    CommandArguments allArgs = new CommandArguments(ACL).add(DRYRUN).add(username);
+    Iterator<Rawable> it = commandArgs.iterator();
+    while (it.hasNext()) allArgs.add(it.next());
+    connection.sendCommand(allArgs);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public byte[] aclDryRunBinary(byte[] username, byte[] command, byte[]... args) {
+    checkIsInMultiOrPipeline();
+    byte[][] allArgs = new byte[3 + args.length][];
+    allArgs[0] = DRYRUN.getRaw();
+    allArgs[1] = username;
+    allArgs[2] = command;
+    System.arraycopy(args, 0, allArgs, 3, args.length);
+    connection.sendCommand(ACL, allArgs);
+    return connection.getBinaryBulkReply();
+  }
+
+  @Override
+  public byte[] aclDryRunBinary(byte[] username, CommandArguments commandArgs) {
+    checkIsInMultiOrPipeline();
+    CommandArguments allArgs = new CommandArguments(ACL).add(DRYRUN).add(username);
+    Iterator<Rawable> it = commandArgs.iterator();
+    while (it.hasNext()) allArgs.add(it.next());
+    connection.sendCommand(allArgs);
+    return connection.getBinaryBulkReply();
+  }
 
   @Override
   public String clientKill(final String ipPort) {
@@ -8407,19 +8503,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String migrate(final String host, final int port, final String key,
       final int destinationDb, final int timeout) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).key(key).add(destinationDb).add(timeout);
-    connection.sendCommand(args);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.migrate(host, port, key, destinationDb, timeout));
   }
 
   @Override
   public String migrate(final String host, final int port, final int destinationDB,
       final int timeout, final MigrateParams params, final String... keys) {
     checkIsInMultiOrPipeline();
-    CommandArguments args = new CommandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(destinationDB)
-        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys);
-    connection.sendCommand(args);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   @Override
@@ -8993,28 +9084,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String moduleLoad(final String path) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, LOAD.name(), path);
+    connection.sendCommand(Command.MODULE, LOAD.name(), path);
     return connection.getStatusCodeReply();
   }
 
   @Override
   public String moduleLoad(String path, String... args) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, joinParameters(LOAD.name(), path, args));
+    connection.sendCommand(Command.MODULE, joinParameters(LOAD.name(), path, args));
     return connection.getStatusCodeReply();
   }
 
   @Override
   public String moduleUnload(final String name) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, UNLOAD.name(), name);
+    connection.sendCommand(Command.MODULE, UNLOAD.name(), name);
     return connection.getStatusCodeReply();
   }
 
   @Override
   public List<Module> moduleList() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(MODULE, LIST);
+    connection.sendCommand(Command.MODULE, LIST);
     return BuilderFactory.MODULE_LIST.build(connection.getObjectMultiBulkReply());
   }
 

@@ -426,6 +426,15 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<KeyValue<String, List<String>>>> KEYED_STRING_LIST_LIST
+      = new Builder<List<KeyValue<String, List<String>>>>() {
+    @Override
+    public List<KeyValue<String, List<String>>> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return list.stream().map(KEYED_STRING_LIST::build).collect(Collectors.toList());
+    }
+  };
+
   public static final Builder<KeyValue<byte[], List<byte[]>>> KEYED_BINARY_LIST
       = new Builder<KeyValue<byte[], List<byte[]>>>() {
     @Override
@@ -769,6 +778,51 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "GeoRadiusWithParamsResult";
+    }
+  };
+
+  public static final Builder<Map<String, CommandDocument>> COMMAND_DOCS_RESPONSE = new Builder<Map<String, CommandDocument>>() {
+    @Override
+    public Map<String, CommandDocument> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> list = (List<Object>) data;
+      Map<String, CommandDocument> map = new HashMap<>(list.size());
+
+      for (int i = 0; i < list.size();) {
+        String name = STRING.build(list.get(i++));
+        CommandDocument doc = CommandDocument.COMMAND_DOCUMENT_BUILDER.build(list.get(i++));
+        map.put(name, doc);
+      }
+
+      return map;
+    }
+  };
+
+  public static final Builder<Map<String, CommandInfo>> COMMAND_INFO_RESPONSE = new Builder<Map<String, CommandInfo>>() {
+    @Override
+    public Map<String, CommandInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      Map<String, CommandInfo> map = new HashMap<>(rawList.size());
+
+      for (Object rawCommandInfo : rawList) {
+        if (rawCommandInfo == null) {
+          continue;
+        }
+
+        List<Object> commandInfo = (List<Object>) rawCommandInfo;
+        String name = STRING.build(commandInfo.get(0));
+        CommandInfo info = CommandInfo.COMMAND_INFO_BUILDER.build(commandInfo);
+        map.put(name, info);
+      }
+
+      return map;
     }
   };
 

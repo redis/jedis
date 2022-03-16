@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.resps.AccessControlUser;
 
 /**
@@ -156,4 +157,8 @@ public interface AccessControlLogBinaryCommands {
    * @return OK on success
    */
   String aclSave();
+
+  byte[] aclDryRunBinary(byte[] username, byte[] command, byte[]... args);
+
+  byte[] aclDryRunBinary(byte[] username, CommandArguments commandArgs);
 }

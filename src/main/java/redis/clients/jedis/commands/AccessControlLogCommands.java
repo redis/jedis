@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands;
 
 import java.util.List;
+import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.resps.AccessControlLogEntry;
 import redis.clients.jedis.resps.AccessControlUser;
 
@@ -158,4 +159,7 @@ public interface AccessControlLogCommands {
    */
   String aclSave();
 
+  String aclDryRun(String username, String command, String... args);
+
+  String aclDryRun(String username, CommandArguments commandArgs);
 }

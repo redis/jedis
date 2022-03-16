@@ -180,9 +180,8 @@ public class Schema {
      */
     protected void addTypeArgs(CommandArguments args) { }
 
-    public Field as(String asName){
+    public void as(String asName){
       this.fieldName.as(asName);
-      return this;
     }
 
     @Override

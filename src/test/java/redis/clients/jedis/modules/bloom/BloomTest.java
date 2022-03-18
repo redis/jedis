@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.junit.AfterClass;
@@ -214,5 +215,10 @@ public class BloomTest extends RedisModuleCommandsTestBase {
         .capacity(3).expansion(3), "a", "b", "c", "d", "e", "f", "g", "h", "j", "k", "l",
         "o", "i", "u", "y", "t", "r", "e", "w", "q");
     assertEquals(20, insert.size());
+  }
+
+  @Test
+  public void testNoItemMExists() {
+    assertEquals(Collections.emptyList(), client.bfMExists("simpleBloom"));
   }
 }

@@ -198,8 +198,8 @@ public class CuckooTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testMixedItemsMExists() {
-    client.cfInsert("cuckoo17", "foo");
-    assertEquals(Arrays.asList(true, false), client.cfMExists("cuckoo17", "foo", "bar"));
+    client.cfInsert("cuckoo18", "foo");
+    assertEquals(Arrays.asList(true, false), client.cfMExists("cuckoo18", "foo", "bar"));
   }
 
   @Test

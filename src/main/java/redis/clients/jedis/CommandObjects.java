@@ -3568,8 +3568,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Boolean>> cfMExists(String key, String... items) {
-    return new CommandObject<>(commandArguments(CuckooFilterCommand.MEXISTS).key(key).
-            addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.MEXISTS).key(key)
+        .addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
   }
 
   public final CommandObject<Boolean> cfDel(String key, String item) {

@@ -3976,6 +3976,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Boolean> cfMExists(String key, String... items) {
+    return executeCommand(commandObjects.cfMExists(key, items));
+  }
+
+  @Override
   public boolean cfDel(String key, String item) {
     return executeCommand(commandObjects.cfDel(key, item));
   }

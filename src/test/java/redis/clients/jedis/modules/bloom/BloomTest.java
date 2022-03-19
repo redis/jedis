@@ -215,4 +215,9 @@ public class BloomTest extends RedisModuleCommandsTestBase {
         "o", "i", "u", "y", "t", "r", "e", "w", "q");
     assertEquals(20, insert.size());
   }
+
+  @Test(expected = JedisDataException.class)
+  public void testNoItemMExists() {
+    client.bfMExists("simpleBloom");
+  }
 }

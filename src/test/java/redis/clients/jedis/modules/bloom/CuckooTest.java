@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -180,12 +181,25 @@ public class CuckooTest extends RedisModuleCommandsTestBase {
   @Test
   public void testExistsItemDoesntExist() {
     assertFalse(client.cfExists("cuckoo16", "foo"));
+    assertEquals(Collections.singletonList(false), client.cfMExists("cuckoo16", "foo"));
   }
 
   @Test
   public void testExistsItemExists() {
     client.cfInsert("cuckoo17", "foo");
     assertTrue(client.cfExists("cuckoo17", "foo"));
+    assertEquals(Collections.singletonList(true), client.cfMExists("cuckoo17", "foo"));
+  }
+
+  @Test(expected = JedisDataException.class)
+  public void testNoItemMExists() {
+    client.cfMExists("cuckoo17");
+  }
+
+  @Test
+  public void testMixedItemsMExists() {
+    client.cfInsert("cuckoo18", "foo");
+    assertEquals(Arrays.asList(true, false), client.cfMExists("cuckoo18", "foo", "bar"));
   }
 
   @Test

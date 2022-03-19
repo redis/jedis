@@ -36,6 +36,7 @@ public class RedisBloomProtocol {
     INSERT("CF.INSERT"), //
     INSERTNX("CF.INSERTNX"), //
     EXISTS("CF.EXISTS"), //
+    MEXISTS("CF.MEXISTS"), //
     DEL("CF.DEL"), //
     COUNT("CF.COUNT"), //
     SCANDUMP("CF.SCANDUMP"), //

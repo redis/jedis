@@ -191,9 +191,9 @@ public class CuckooTest extends RedisModuleCommandsTestBase {
     assertEquals(Collections.singletonList(true), client.cfMExists("cuckoo17", "foo"));
   }
 
-  @Test
+  @Test(expected = JedisDataException.class)
   public void testNoItemMExists() {
-    assertEquals(Collections.emptyList(), client.cfMExists("cuckoo17"));
+    client.cfMExists("cuckoo17");
   }
 
   @Test

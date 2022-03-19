@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import java.net.URI;
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -3923,9 +3922,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<Boolean> bfMExists(String key, String... items) {
-    if (items.length == 0) {
-      return Collections.emptyList();
-    }
     return executeCommand(commandObjects.bfMExists(key, items));
   }
 
@@ -3981,12 +3977,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<Boolean> cfMExists(String key, String... items) {
-    if (items.length == 0) {
-      return Collections.emptyList();
-    }
     return executeCommand(commandObjects.cfMExists(key, items));
   }
-
 
   @Override
   public boolean cfDel(String key, String item) {

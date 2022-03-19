@@ -112,7 +112,7 @@ public interface CuckooFilterCommands {
    * {@code CF.MEXISTS {key} {item ...}}
    *
    * @param key   The name of the filter
-   * @param items Items to check for
+   * @param items Items to check for (non empty sequence)
    * @return a list of booleans where false if the item certainly does not exist,
    *         true if the item may exist.
    */

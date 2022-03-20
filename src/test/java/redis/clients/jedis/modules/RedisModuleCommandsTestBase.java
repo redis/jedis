@@ -4,7 +4,6 @@ import static org.junit.Assume.assumeTrue;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import redis.clients.jedis.Connection;
 
 import redis.clients.jedis.HostAndPort;
@@ -12,20 +11,19 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.providers.PooledConnectionProvider;
 
 public abstract class RedisModuleCommandsTestBase {
 
   protected static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
   protected static final HostAndPort hnp = HostAndPort.from(address);
 
-  private static final PooledConnectionProvider provider = new PooledConnectionProvider(hnp);
   protected UnifiedJedis client;
 
   public RedisModuleCommandsTestBase() {
     super();
   }
 
+  // BeforeClass
   public static void prepare() {
     try (Connection connection = new Connection(hnp)) {
       assumeTrue("No Redis running on 6479 port.", connection.ping());
@@ -36,16 +34,16 @@ public abstract class RedisModuleCommandsTestBase {
 
   @Before
   public void setUp() {
-    try (Jedis jedis = createJedis()) {
+    try (Jedis jedis = new Jedis(hnp)) {
       jedis.flushAll();
     }
-    client = new UnifiedJedis(provider);
+    client = new UnifiedJedis(hnp);
   }
-//
-//  @After
-//  public void tearDown() throws Exception {
-//    client.close();
-//  }
+
+  @After
+  public void tearDown() throws Exception {
+    client.close();
+  }
 //
 //  public static void tearDown() {
 //    client.close();
@@ -53,9 +51,5 @@ public abstract class RedisModuleCommandsTestBase {
 
   protected static Connection createConnection() {
     return new Connection(hnp);
-  }
-
-  protected static Jedis createJedis() {
-    return new Jedis(hnp);
   }
 }

@@ -51,4 +51,11 @@ public class ShardedPipeline extends MultiNodePipelineBase {
   protected Connection getConnection(HostAndPort nodeKey) {
     return provider.getConnection(nodeKey);
   }
+
+  /**
+   * This method must be called after constructor, if graph commands are going to be used.
+   */
+  public void prepareGraphCommands() {
+    super.prepareGraphCommands(provider);
+  }
 }

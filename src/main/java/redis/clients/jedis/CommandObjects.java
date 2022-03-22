@@ -3567,6 +3567,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(CuckooFilterCommand.EXISTS).key(key).add(item), BuilderFactory.BOOLEAN);
   }
 
+  public final CommandObject<List<Boolean>> cfMExists(String key, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.MEXISTS).key(key)
+        .addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+  }
+
   public final CommandObject<Boolean> cfDel(String key, String item) {
     return new CommandObject<>(commandArguments(CuckooFilterCommand.DEL).key(key).add(item), BuilderFactory.BOOLEAN);
   }

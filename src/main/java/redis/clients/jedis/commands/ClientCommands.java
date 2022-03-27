@@ -142,4 +142,21 @@ public interface ClientCommands {
    * @return OK
    */
   String clientNoEvictOff();
+
+  /**
+   * This is the default mode in which the server returns a reply to every command.
+   *
+   * @return OK
+   */
+  String clientReplyOn();
+
+  /**
+   * In this mode the server will not reply to client commands.
+   */
+  void clientReplyOff();
+
+  /**
+   * This mode skips the reply of command immediately after it.
+   */
+  void clientReplySkip();
 }

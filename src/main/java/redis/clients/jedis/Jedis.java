@@ -4291,6 +4291,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getBulkReply();
   }
 
+  @Override
+  public String clientReplyOn() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "REPLY", "ON");
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public void clientReplyOff() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "REPLY", "OFF");
+  }
+
+  @Override
+  public void clientReplySkip() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "REPLY", "SKIP");
+  }
+
   public List<String> time() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.TIME);

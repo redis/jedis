@@ -366,6 +366,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void clientReply() {
+    assertEquals("OK", jedis.clientReplyOn());
+    jedis.clientReplyOff();
+    jedis.clientReplySkip();
+  }
+
+  @Test
   public void memoryDoctorString() {
     String memoryInfo = jedis.memoryDoctor();
     assertNotNull(memoryInfo);

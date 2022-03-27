@@ -17,7 +17,7 @@ Please add unit tests to validate your changes work, then ensure your changes pa
 
 # Jedis Test Environment
 
-Jedis unit tests run with latest [Redis unstable branch](https://github.com/redis/redis/tree/unstable).
+Jedis unit tests run with the latest [Redis unstable branch](https://github.com/redis/redis/tree/unstable).
 Please let them prepared and installed.
 
 Jedis unit tests use many Redis instances, so we use a ```Makefile``` to prepare environment. 

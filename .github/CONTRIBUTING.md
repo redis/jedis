@@ -1,8 +1,8 @@
 # How to use Jedis Github Issue
 
-* Github issues SHOULD ONLY BE USED to report bugs and for DETAILED feature requests. Everything else belongs to the [Jedis Google Group](https://groups.google.com/g/jedis_redis) or [Jedis GitHub Discussions](https://github.com/redis/jedis/discussions).
+* Github issues SHOULD BE USED to report bugs and for DETAILED feature requests. Everything else belongs in the [Jedis Google Group](https://groups.google.com/g/jedis_redis) or [Jedis GitHub Discussions](https://github.com/redis/jedis/discussions).
 
-Please post General questions to Google Group or Github discussions. It can be closed without answer when posted to Github issues.
+Please post general questions to Google Group or Github discussions. These can be closed without response when posted to Github issues.
 
 # How to contribute by Pull Request
 
@@ -11,21 +11,19 @@ Please post General questions to Google Group or Github discussions. It can be c
 3. Push to your branch (git push origin my_branch)
 4. Post a pull request on github (https://help.github.com/articles/creating-a-pull-request/)
 
-It is recommended to create branch with meaningful name, not modifying master branch directly.
+Create a branch with meaningful name, and do not modify the master branch directly.
 
-Please add unit tests in order to prove your modification works smoothly. And please make sure your modification passes all unit tests.
+Please add unit tests to validate your changes work, then ensure your changes pass all unit tests.
 
 # Jedis Test Environment
 
 Jedis unit tests run with latest [Redis unstable branch](https://github.com/redis/redis/tree/unstable).
 Please let them prepared and installed.
 
-Jedis unit tests use many Redis instances, so we use ```Makefile``` to prepare environment. 
+Jedis unit tests use many Redis instances, so we use a ```Makefile``` to prepare environment. 
 
-You can start test with ```make test```.
-You can set up test environments by ```make start```, and tear down environments by ```make stop```.
-
-If one or some of unit tests in current master branch of Jedis fails with Redis unstable branch, please post it to Github issue, and go ahead with other unit tests at your work.
+Start unit tests with ```make test```.
+Set up test environments with ```make start```, tear down those environments with ```make stop``` and clean up the environment files with ```make cleanup```.
 
 # Some rules of Jedis source code
 

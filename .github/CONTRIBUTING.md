@@ -1,15 +1,15 @@
 # How to use Jedis Github Issue
 
-* Github issues SHOULD BE USED to report bugs and for DETAILED feature requests. Everything else belongs in the [Jedis Google Group](https://groups.google.com/g/jedis_redis) or [Jedis GitHub Discussions](https://github.com/redis/jedis/discussions).
+* Github issues SHOULD BE USED to report bugs and for DETAILED feature requests. Everything else belongs in the [Jedis Google Group](https://groups.google.com/g/jedis_redis) or [Jedis Github Discussions](https://github.com/redis/jedis/discussions).
 
-Please post general questions to Google Group or Github discussions. These can be closed without response when posted to Github issues.
+Please post general questions to Google Groups or Github discussions. These can be closed without response when posted to Github issues.
 
 # How to contribute by Pull Request
 
-1. Fork Jedis on github (https://help.github.com/articles/fork-a-repo/)
-2. Create a topic branch (git checkout -b my_branch)
-3. Push to your branch (git push origin my_branch)
-4. Post a pull request on github (https://help.github.com/articles/creating-a-pull-request/)
+1. Fork Jedis repo on github ([how to fork a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo))
+2. Create a topic branch (`git checkout -b my_branch`)
+3. Push to your remote branch (`git push origin my_branch`)
+4. Create a pull request on github ([how to create a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request))
 
 Create a branch with meaningful name, and do not modify the master branch directly.
 
@@ -29,7 +29,7 @@ Set up test environments with ```make start```, tear down those environments wit
 
 ## Code Convention
 
-* Jedis uses ```HBase Formatter``` introduced by [HBASE-5961](https://issues.apache.org/jira/browse/HBASE-5961)
+* Jedis uses HBase Formatter introduced by [HBASE-5961](https://issues.apache.org/jira/browse/HBASE-5961)
 * You can import code style file (located to hbase-formatter.xml) to Eclipse, IntelliJ
   * line break by column count seems not working with IntelliJ
 * You can run ```make format``` anytime to reformat without IDEs

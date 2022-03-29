@@ -488,9 +488,15 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   @Test
   public void testDialectConfig() throws Exception{
     assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "1"));
-    assertEquals(Map.of("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
+    assertEquals(new HashMap<String, String>() {{
+      put("DEFAULT_DIALECT", "1");
+      }}
+      , client.ftConfigGet("DEFAULT_DIALECT"));
     assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "2"));
-    assertEquals(Map.of("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
+    assertEquals(new HashMap<String, String>() {{
+      put("DEFAULT_DIALECT", "2");
+      }}
+      , client.ftConfigGet("DEFAULT_DIALECT"));
     
     try {
       assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "0"));

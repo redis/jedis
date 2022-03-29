@@ -13,6 +13,14 @@
 
 Jedis is a Java client for [Redis](https://github.com/redis/redis "Redis") designed for performance and ease of use.
 
+## Contributing
+
+We'd love your contributions!
+
+**Bug reports** are always welcome! [You can open a bug report on GitHub](https://github.com/redis/jedis/issues/new).
+
+You can also **contribute documentation** -- or anything to improve Jedis. Please see [contribution guideline](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) for more details.
+
 ## Getting started
 
 To get started with Jedis, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
@@ -94,18 +102,9 @@ Hit us up on the [Redis Discord Server](http://discord.gg/redis) or [open an iss
 
 You can also find help on the [Jedis mailing list](http://groups.google.com/group/jedis_redis) or the [GitHub Discussions](https://github.com/redis/jedis/discussions).
 
-## Contributing
-
-We'd love your contributions!
-
-**Bug reports** are always welcome! [You can open a bug report on GitHub](https://github.com/redis/jedis/issues/new).
-
-You can also **contribute documentation** -- or anything to improve Jedis. Please see [CONTRIBUTING.md](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) for more details.
-
 ## License
 
 Jedis is licensed under the [MIT license](https://github.com/redis/jedis/blob/master/LICENSE.txt).
-
 
 ## Sponsorship
 

@@ -555,6 +555,13 @@ public class Query implements IParams {
     return this;
   }
 
+
+/**
+ * Set the dialect version to execute the query accordingly
+ * 
+ * @param dialect integer
+ * @return the query object itself
+ */
   public Query dialect(int dialect) {
     _dialect = dialect;
     return this;

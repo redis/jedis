@@ -305,7 +305,7 @@ public class Query implements IParams {
       }
     }
 
-    if(_dialect != 0) {
+    if (_dialect != 0) {
       args.add(SearchKeyword.DIALECT.getRaw());
       args.add(_dialect);
     }
@@ -555,13 +555,12 @@ public class Query implements IParams {
     return this;
   }
 
-
-/**
- * Set the dialect version to execute the query accordingly
- * 
- * @param dialect integer
- * @return the query object itself
- */
+  /**
+   * Set the dialect version to execute the query accordingly
+   *
+   * @param dialect integer
+   * @return the query object itself
+   */
   public Query dialect(int dialect) {
     _dialect = dialect;
     return this;

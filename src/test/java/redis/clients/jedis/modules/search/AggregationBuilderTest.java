@@ -2,7 +2,6 @@ package redis.clients.jedis.modules.search;
 
 import redis.clients.jedis.exceptions.JedisDataException;
 
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,11 +29,11 @@ public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-
-  @AfterClass
-  public static void tearDown() {
-//    RedisModuleCommandsTestBase.tearDown();
-  }
+//
+//  @AfterClass
+//  public static void tearDown() {
+////    RedisModuleCommandsTestBase.tearDown();
+//  }
 
   private void addDocument(Document doc) {
     String key = doc.getId();

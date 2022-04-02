@@ -73,11 +73,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<byte[]> dump(String key) {
-    return new CommandObject<>(commandArguments(DUMP).key(key), BuilderFactory.BINARY);
+    return new CommandObject<>(commandArguments(Command.DUMP).key(key), BuilderFactory.BINARY);
   }
 
   public final CommandObject<byte[]> dump(byte[] key) {
-    return new CommandObject<>(commandArguments(DUMP).key(key), BuilderFactory.BINARY);
+    return new CommandObject<>(commandArguments(Command.DUMP).key(key), BuilderFactory.BINARY);
   }
 
   public final CommandObject<String> restore(String key, long ttl, byte[] serializedValue) {
@@ -2872,7 +2872,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<byte[]> functionDump() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(DUMP), BuilderFactory.BINARY);
+    return new CommandObject<>(commandArguments(FUNCTION).add(Keyword.DUMP), BuilderFactory.BINARY);
   }
 
   public final CommandObject<List<Object>> functionListBinary() {
@@ -2931,18 +2931,54 @@ public class CommandObjects {
 
   public final CommandObject<Boolean> copy(String srcKey, String dstKey, int dstDB, boolean replace) {
     CommandArguments args = commandArguments(Command.COPY).key(srcKey).key(dstKey).add(DB).add(dstDB);
-    if (replace) {
-      args.add(REPLACE);
-    }
+    if (replace) args.add(REPLACE);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<Boolean> copy(byte[] srcKey, byte[] dstKey, int dstDB, boolean replace) {
     CommandArguments args = commandArguments(Command.COPY).key(srcKey).key(dstKey).add(DB).add(dstDB);
-    if (replace) {
-      args.add(REPLACE);
-    }
+    if (replace) args.add(REPLACE);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, String key, int timeout) {
+    return migrate(host, port, key, 0, timeout);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, String key, int destinationDB, int timeout) {
+    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).key(key)
+        .add(destinationDB).add(timeout), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, int timeout, MigrateParams params, String... keys) {
+    return migrate(host, port, 0, timeout, params, keys);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, int destinationDB, int timeout,
+      MigrateParams params, String... keys) {
+    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).add(new byte[0])
+        .add(destinationDB).add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys),
+        BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, byte[] key, int timeout) {
+    return migrate(host, port, key, 0, timeout);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout) {
+    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).key(key)
+        .add(destinationDB).add(timeout), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, int timeout, MigrateParams params, byte[]... keys) {
+    return migrate(host, port, 0, timeout, params, keys);
+  }
+
+  public final CommandObject<String> migrate(String host, int port, int destinationDB, int timeout,
+      MigrateParams params, byte[]... keys) {
+    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).add(new byte[0])
+        .add(destinationDB).add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys),
+        BuilderFactory.STRING);
   }
 
   public final CommandObject<Long> memoryUsage(String key) {
@@ -3003,24 +3039,6 @@ public class CommandObjects {
 
   public final CommandObject<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout) {
     return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<String> migrate(String host, int port, String key, int timeout) {
-    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).key(key).add(0).add(timeout), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> migrate(String host, int port, int timeout, MigrateParams params, String... keys) {
-    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(0)
-        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> migrate(String host, int port, byte[] key, int timeout) {
-    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).key(key).add(0).add(timeout), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> migrate(String host, int port, int timeout, MigrateParams params, byte[]... keys) {
-    return new CommandObject<>(commandArguments(MIGRATE).add(host).add(port).add(new byte[0]).add(0)
-        .add(timeout).addParams(params).add(Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING);
   }
 
   public final CommandObject<Long> publish(String channel, String message) {
@@ -3547,6 +3565,11 @@ public class CommandObjects {
 
   public final CommandObject<Boolean> cfExists(String key, String item) {
     return new CommandObject<>(commandArguments(CuckooFilterCommand.EXISTS).key(key).add(item), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<List<Boolean>> cfMExists(String key, String... items) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.MEXISTS).key(key)
+        .addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
   }
 
   public final CommandObject<Boolean> cfDel(String key, String item) {

@@ -158,6 +158,7 @@ public class Query implements IParams {
   private boolean wantsSummarize = false;
   private String _scorer = null;
   private Map<String, Object> _params = null;
+  private int _dialect = 0;
 
   public Query() {
     this("*");
@@ -302,6 +303,11 @@ public class Query implements IParams {
         args.add(entry.getKey());
         args.add(entry.getValue());
       }
+    }
+
+    if (_dialect != 0) {
+      args.add(SearchKeyword.DIALECT.getRaw());
+      args.add(_dialect);
     }
   }
 
@@ -546,6 +552,17 @@ public class Query implements IParams {
       _params = new HashMap<>();
     }
     _params.put(name, value);
+    return this;
+  }
+
+  /**
+   * Set the dialect version to execute the query accordingly
+   *
+   * @param dialect integer
+   * @return the query object itself
+   */
+  public Query dialect(int dialect) {
+    _dialect = dialect;
     return this;
   }
 }

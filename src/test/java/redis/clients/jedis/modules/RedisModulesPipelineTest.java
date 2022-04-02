@@ -71,6 +71,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<String> dropIndexDD = p.ftDropIndexDD(index);
 
     p.sync();
+    c.close();
 
     assertEquals("OK", create.get());
     assertEquals("OK", alter.get());
@@ -94,8 +95,6 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Map<String, List<String>> expected = new HashMap<>();
     expected.put("bar", Collections.singletonList("foo"));
     assertEquals(expected, synDump.get());
-
-    c.close();
   }
 
   @Test

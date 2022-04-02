@@ -109,6 +109,16 @@ public interface CuckooFilterCommands {
   boolean cfExists(String key, String item);
 
   /**
+   * {@code CF.MEXISTS {key} {item ...}}
+   *
+   * @param key   The name of the filter
+   * @param items Items to check for (non empty sequence)
+   * @return a list of booleans where false if the item certainly does not exist,
+   *         true if the item may exist.
+   */
+  List<Boolean> cfMExists(String key, String... items);
+
+  /**
    * CF.DEL Deletes an item once from the filter. If the item exists only once, it
    * will be removed from the filter. If the item was added multiple times, it
    * will still be present.

@@ -7,8 +7,8 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
-import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -26,11 +26,11 @@ public class CuckooTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
-
-  @AfterClass
-  public static void tearDown() {
-//    RedisModuleCommandsTestBase.tearDown();
-  }
+//
+//  @AfterClass
+//  public static void tearDown() {
+////    RedisModuleCommandsTestBase.tearDown();
+//  }
 
   @Test
   public void testReservationCapacityOnly() {
@@ -180,12 +180,21 @@ public class CuckooTest extends RedisModuleCommandsTestBase {
   @Test
   public void testExistsItemDoesntExist() {
     assertFalse(client.cfExists("cuckoo16", "foo"));
+    assertEquals(Collections.singletonList(false), client.cfMExists("cuckoo16", "foo"));
   }
 
   @Test
   public void testExistsItemExists() {
     client.cfInsert("cuckoo17", "foo");
     assertTrue(client.cfExists("cuckoo17", "foo"));
+    assertEquals(Collections.singletonList(true), client.cfMExists("cuckoo17", "foo"));
+  }
+
+  @Test
+  public void testMExistsMixedItems() {
+    client.cfInsert("cuckoo27", "foo");
+    assertEquals(Arrays.asList(true, false), client.cfMExists("cuckoo27", "foo", "bar"));
+    assertEquals(Arrays.asList(false, true), client.cfMExists("cuckoo27", "bar", "foo"));
   }
 
   @Test

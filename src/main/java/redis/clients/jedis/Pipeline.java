@@ -18,6 +18,8 @@ import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.graph.GraphCommandObjects;
+import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -38,12 +40,14 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   protected final Connection connection;
 //  private final Jedis jedis;
   private final CommandObjects commandObjects;
+  private final GraphCommandObjects graphCommandObjects;
 
   public Pipeline(Connection connection) {
 //    super(connection);
     this.connection = connection;
 //    this.jedis = null;
     this.commandObjects = new CommandObjects();
+    this.graphCommandObjects = new GraphCommandObjects(this.connection);
   }
 
   public Pipeline(Jedis jedis) {
@@ -51,6 +55,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
     this.connection = jedis.getConnection();
 //    this.jedis = jedis;
     this.commandObjects = new CommandObjects();
+    this.graphCommandObjects = new GraphCommandObjects(this.connection);
   }
 
   public final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
@@ -3960,6 +3965,53 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
   // RedisBloom commands
 
+  // RedisGraph commands
+  @Override
+  public Response<ResultSet> graphQuery(String name, String query) {
+    return appendCommand(graphCommandObjects.graphQuery(name, query));
+  }
+
+  @Override
+  public Response<ResultSet> graphReadonlyQuery(String name, String query) {
+    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query));
+  }
+
+  @Override
+  public Response<ResultSet> graphQuery(String name, String query, long timeout) {
+    return appendCommand(graphCommandObjects.graphQuery(name, query, timeout));
+  }
+
+  @Override
+  public Response<ResultSet> graphReadonlyQuery(String name, String query, long timeout) {
+    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
+  }
+
+  @Override
+  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params) {
+    return appendCommand(graphCommandObjects.graphQuery(name, query, params));
+  }
+
+  @Override
+  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
+    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
+  }
+
+  @Override
+  public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
+    return appendCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
+  }
+
+  @Override
+  public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
+    return appendCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
+  }
+
+  @Override
+  public Response<String> graphDelete(String name) {
+    return appendCommand(graphCommandObjects.graphDelete(name));
+  }
+  // RedisGraph commands
+
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
   }
@@ -4008,28 +4060,22 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   @Override
   public Response<String> migrate(String host, int port, byte[] key, int destinationDB, int timeout) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
-        .add(host).add(port).key(key).add(destinationDB).add(timeout), BuilderFactory.STRING));
+    return appendCommand(commandObjects.migrate(host, port, key, destinationDB, timeout));
   }
 
   @Override
   public Response<String> migrate(String host, int port, String key, int destinationDB, int timeout) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
-        .add(host).add(port).key(key).add(destinationDB).add(timeout), BuilderFactory.STRING));
+    return appendCommand(commandObjects.migrate(host, port, key, destinationDB, timeout));
   }
 
   @Override
   public Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, byte[]... keys) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
-        .add(host).add(port).add(new byte[0]).add(destinationDB).add(timeout).addParams(params)
-        .add(Protocol.Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING));
+    return appendCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   @Override
   public Response<String> migrate(String host, int port, int destinationDB, int timeout, MigrateParams params, String... keys) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MIGRATE)
-        .add(host).add(port).add(new byte[0]).add(destinationDB).add(timeout).addParams(params)
-        .add(Protocol.Keyword.KEYS).keys((Object[]) keys), BuilderFactory.STRING));
+    return appendCommand(commandObjects.migrate(host, port, destinationDB, timeout, params, keys));
   }
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {

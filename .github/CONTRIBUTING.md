@@ -1,18 +1,35 @@
 # How to use Jedis Github Issue
 
-* Github issues SHOULD ONLY BE USED to report bugs, and for DETAILED feature requests. Everything else belongs to the Jedis Google Group.
+* Github issues SHOULD BE USED to report bugs and for DETAILED feature requests. Everything else belongs in the [Jedis Google Group](https://groups.google.com/g/jedis_redis) or [Jedis Github Discussions](https://github.com/redis/jedis/discussions).
 
-Jedis Google Group address:
-  
-https://groups.google.com/forum/?fromgroups#!forum/jedis_redis
+Please post general questions to Google Groups or Github discussions. These can be closed without response when posted to Github issues.
 
-Please post General questions to Google Group. It can be closed without answer when posted to Github issue.
+# How to contribute by Pull Request
+
+1. Fork Jedis repo on github ([how to fork a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo))
+2. Create a topic branch (`git checkout -b my_branch`)
+3. Push to your remote branch (`git push origin my_branch`)
+4. Create a pull request on github ([how to create a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request))
+
+Create a branch with meaningful name, and do not modify the master branch directly.
+
+Please add unit tests to validate your changes work, then ensure your changes pass all unit tests.
+
+# Jedis Test Environment
+
+Jedis unit tests run with the latest [Redis unstable branch](https://github.com/redis/redis/tree/unstable).
+Please let them prepared and installed.
+
+Jedis unit tests use many Redis instances, so we use a ```Makefile``` to prepare environment. 
+
+Start unit tests with ```make test```.
+Set up test environments with ```make start```, tear down those environments with ```make stop``` and clean up the environment files with ```make cleanup```.
 
 # Some rules of Jedis source code
 
 ## Code Convention
 
-* Jedis uses ```HBase Formatter``` introduced by [HBASE-5961](https://issues.apache.org/jira/browse/HBASE-5961)
+* Jedis uses HBase Formatter introduced by [HBASE-5961](https://issues.apache.org/jira/browse/HBASE-5961)
 * You can import code style file (located to hbase-formatter.xml) to Eclipse, IntelliJ
   * line break by column count seems not working with IntelliJ
 * You can run ```make format``` anytime to reformat without IDEs
@@ -29,28 +46,5 @@ Please post General questions to Google Group. It can be closed without answer w
 * string <-> byte array : use SafeEncoder.encode()
   * Caution: use String.toBytes() directly will break GBK support!
 * boolean, int, long, double -> byte array : use Protocol.toByteArray()
-
-# How to contribute by Pull Request
-
-1. Fork Jedis on github (https://help.github.com/articles/fork-a-repo/)
-2. Create a topic branch (git checkout -b my_branch)
-3. Push to your branch (git push origin my_branch)
-4. Post a pull request on github (https://help.github.com/articles/creating-a-pull-request/)
-
-I recommend you to create branch with meaningful name, not modifying master branch directly.
-
-Please add unit tests in order to prove your modification works smoothly. And please make sure your modification passes all unit tests.
-
-# Jedis Test Environment
-
-Jedis unit tests run with latest [```Redis unstable branch```](https://github.com/antirez/redis).
-Please let them prepared and installed.
-
-Jedis unit tests use many Redis instances, so we use ```Makefile``` to prepare environment. 
-
-You can start test with ```make test```.
-You can set up test environments by ```make start```, and tear down environments by ```make stop```.
-
-If one or some of unit tests in current master branch of Jedis fails with Redis unstable branch, please post it to Github issue, and go ahead with other unit tests at your work.
 
 Thanks!

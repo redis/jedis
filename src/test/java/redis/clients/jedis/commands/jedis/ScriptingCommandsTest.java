@@ -347,11 +347,11 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
     String functionCode = String.format("#!%s name=%s \n %s", engine, library, function);
 
-    assertEquals("OK", jedis.functionLoad(functionCode));
+    assertEquals(library, jedis.functionLoad(functionCode));
     jedis.functionFlush();
-    assertEquals("OK", jedis.functionLoad(functionCode));
+    assertEquals(library, jedis.functionLoad(functionCode));
     jedis.functionFlush(FlushMode.ASYNC);
-    assertEquals("OK", jedis.functionLoad(functionCode));
+    assertEquals(library, jedis.functionLoad(functionCode));
     jedis.functionFlush(FlushMode.SYNC);
   }
 
@@ -365,7 +365,6 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     LibraryInfo response = jedis.functionList().get(0);
     assertEquals(library, response.getLibraryName());
     assertEquals(engine, response.getEngine());
-    assertEquals("test", response.getDescription());
     assertEquals(1, response.getFunctions().size());
 
     // check function info

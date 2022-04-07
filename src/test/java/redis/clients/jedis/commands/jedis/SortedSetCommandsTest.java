@@ -859,6 +859,13 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(expected, range);
 
+    range = jedis.zrevrangeByScore("foo", "4", "2", 0, 2);
+    expected = new ArrayList<String>();
+    expected.add("d");
+    expected.add("c");
+
+    assertEquals(expected, range);
+
     range = jedis.zrevrangeByScore("foo", "+inf", "(4");
     expected = new ArrayList<String>();
     expected.add("e");

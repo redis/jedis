@@ -1516,7 +1516,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<String>> zrevrangeByScore(String key, String max, String min, int offset, int count) {
-    return new CommandObject<>(commandArguments(ZRANGEBYSCORE).key(key).add(max).add(min)
+    return new CommandObject<>(commandArguments(ZREVRANGEBYSCORE).key(key).add(max).add(min)
         .add(LIMIT).add(offset).add(count), BuilderFactory.STRING_LIST);
   }
 

@@ -33,9 +33,9 @@ public interface FunctionPipelineCommands {
 
   Response<List<LibraryInfo>> functionListWithCode(String libraryNamePattern);
 
-  Response<String> functionLoad(String engineName, String libraryName, String functionCode);
+  Response<String> functionLoad(String functionCode);
 
-  Response<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode);
+  Response<String> functionLoadReplace(String functionCode);
 
   Response<String> functionRestore(byte[] serializedValue);
 

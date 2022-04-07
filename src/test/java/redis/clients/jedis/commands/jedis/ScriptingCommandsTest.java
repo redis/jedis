@@ -326,15 +326,16 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String engine = "Lua";
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
+    String functionCode = String.format("#!%s name=%s \n %s", engine, library, function);
 
-    assertEquals("OK", jedis.functionLoad(engine, library, function));
-    assertEquals("OK", jedis.functionLoad(engine, library, new FunctionLoadParams().replace().libraryDescription(""), function));
+    assertEquals(library, jedis.functionLoad(functionCode));
+    assertEquals(library, jedis.functionLoadReplace(functionCode));
 
     assertEquals("OK", jedis.functionDelete(library));
 
     // Binary
-    assertEquals("OK", jedis.functionLoad(engine.getBytes(), library.getBytes(), function.getBytes()));
-    assertEquals("OK", jedis.functionLoad(engine.getBytes(), library.getBytes(), new FunctionLoadParams().replace(), function.getBytes()));
+    assertEquals(library, jedis.functionLoad(functionCode.getBytes()));
+    assertEquals(library, jedis.functionLoadReplace(functionCode.getBytes()));
 
     assertEquals("OK", jedis.functionDelete(library.getBytes()));
   }
@@ -344,12 +345,13 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String engine = "Lua";
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
+    String functionCode = String.format("#!%s name=%s \n %s", engine, library, function);
 
-    assertEquals("OK", jedis.functionLoad(engine, library, function));
+    assertEquals("OK", jedis.functionLoad(functionCode));
     jedis.functionFlush();
-    assertEquals("OK", jedis.functionLoad(engine, library, function));
+    assertEquals("OK", jedis.functionLoad(functionCode));
     jedis.functionFlush(FlushMode.ASYNC);
-    assertEquals("OK", jedis.functionLoad(engine, library, function));
+    assertEquals("OK", jedis.functionLoad(functionCode));
     jedis.functionFlush(FlushMode.SYNC);
   }
 
@@ -358,7 +360,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String engine = "LUA";
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
-    jedis.functionLoad(engine, library, new FunctionLoadParams().libraryDescription("test"), function);
+    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
 
     LibraryInfo response = jedis.functionList().get(0);
     assertEquals(library, response.getLibraryName());
@@ -408,7 +410,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
 
-    jedis.functionLoad(engine, library, function);
+    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
     byte[] payload = jedis.functionDump();
     jedis.functionFlush();
     assertEquals("OK", jedis.functionRestore(payload));
@@ -427,7 +429,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
 
-    jedis.functionLoad(engine, library, function);
+    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
     FunctionStats stats = jedis.functionStats();
     assertNull(stats.getRunningScript());
     assertEquals(1, stats.getEngines().size());
@@ -438,7 +440,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 //    jedis.functionFlush();
 //    function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
 //
-//    jedis.functionLoad(engine, library, function);
+//    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
 //    jedis.fcall("myfunc", new ArrayList<>(), new ArrayList<>());
 //    stats = jedis.functionStats();
 //    assertNotNull(stats.getScript());
@@ -451,7 +453,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 //    String library = "mylib";
 //    String function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
 //
-//    jedis.functionLoad(engine, library, function);
+//    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
 //    jedis.fcall("myfunc", Collections.emptyList(), Collections.emptyList());
 //    assertEquals("OK", jedis.functionKill());
 //  }
@@ -462,7 +464,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args)\n local a = 1 while true do a = a + 1 end \nend)";
 
-    jedis.functionLoad(engine, library, function);
+    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
     try {
       jedis.functionKill();
       fail("Should get NOTBUSY error.");
@@ -477,7 +479,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args end)";
 
-    jedis.functionLoad(engine, library, function);
+    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
     List<String> args = Arrays.asList("hello");
     assertEquals(args, jedis.fcall("myfunc", Collections.emptyList(), args));
   }
@@ -488,7 +490,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
 
-    jedis.functionLoad(engine, library, function);
+    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
     List<byte[]> bargs = Arrays.asList("hello".getBytes());
     assertArrayEquals("hello".getBytes(), (byte[]) jedis.fcall("myfunc".getBytes(), Collections.emptyList(), bargs));
   }
@@ -498,7 +500,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String engine = "Lua";
     String library = "mylib";
     String function = "redis.register_function{function_name='noop', callback=function() return 1 end, flags={ 'no-writes' }}";
-    jedis.functionLoad(engine, library, function);
+    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
 
     assertEquals(Long.valueOf(1), jedis.fcallReadonly("noop", Collections.emptyList(), Collections.emptyList()));
 

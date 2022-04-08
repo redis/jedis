@@ -51,10 +51,10 @@ public class LibraryInfo {
       String engine = STRING.build(objectList.get(3));
       List<Object> rawFunctions = (List<Object>) objectList.get(5);
       List<Map<String, Object>> functions = rawFunctions.stream().map(o -> ENCODED_OBJECT_MAP.build(o)).collect(Collectors.toList());
-      if (objectList.size() <= 8) {
+      if (objectList.size() <= 6) {
         return new LibraryInfo(libname, engine, functions);
       }
-      String code = STRING.build(objectList.get(9));
+      String code = STRING.build(objectList.get(7));
       return new LibraryInfo(libname, engine, functions, code);
     }
   };

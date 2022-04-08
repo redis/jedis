@@ -359,7 +359,8 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String engine = "LUA";
     String library = "mylib";
     String function = "redis.register_function('myfunc', function(keys, args) return args[1] end)";
-    jedis.functionLoad(String.format("#!%s name=%s \n %s", engine, library, function));
+    String functionCode = String.format("#!%s name=%s \n %s", engine, library, function);
+    jedis.functionLoad(functionCode);
 
     LibraryInfo response = jedis.functionList().get(0);
     assertEquals(library, response.getLibraryName());
@@ -375,7 +376,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     // check WITHCODE
     response = jedis.functionListWithCode().get(0);
     assertEquals("myfunc", func.get("name"));
-    assertEquals(function, response.getLibraryCode());
+    assertEquals(functionCode, response.getLibraryCode());
 
     // check with LIBRARYNAME
     response = jedis.functionList(library).get(0);
@@ -384,7 +385,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     // check with code and with LIBRARYNAME
     response = jedis.functionListWithCode(library).get(0);
     assertEquals(library, response.getLibraryName());
-    assertEquals(function, response.getLibraryCode());
+    assertEquals(functionCode, response.getLibraryCode());
 
     // Binary
     List<Object> bresponse = (List<Object>) jedis.functionListBinary().get(0);

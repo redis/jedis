@@ -84,7 +84,7 @@ public interface FunctionBinaryCommands {
    * @param libraryNamePattern a pattern for matching library names
    * @return {@link LibraryInfo}
    */
-  List<Object> functionListWithCode(byte[] functionCode);
+  List<Object> functionListWithCode(byte[] libraryNamePattern);
 
   /**
    * Load a library to Redis.

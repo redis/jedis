@@ -3,7 +3,6 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.FunctionRestorePolicy;
-import redis.clients.jedis.params.FunctionLoadParams;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 
@@ -33,9 +32,9 @@ public interface FunctionPipelineCommands {
 
   Response<List<LibraryInfo>> functionListWithCode(String libraryNamePattern);
 
-  Response<String> functionLoad(String engineName, String libraryName, String functionCode);
+  Response<String> functionLoad(String functionCode);
 
-  Response<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode);
+  Response<String> functionLoadReplace(String functionCode);
 
   Response<String> functionRestore(byte[] serializedValue);
 

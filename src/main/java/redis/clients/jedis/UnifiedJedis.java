@@ -3140,13 +3140,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String functionLoad(String engineName, String libraryName, String functionCode) {
-    return executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  public String functionLoad(String functionCode) {
+    return executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
-  public String functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
-    return executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  public String functionLoadReplace(String functionCode) {
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
@@ -3195,13 +3195,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
-    return executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  public String functionLoad(byte[] functionCode) {
+    return executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
-  public String functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
-    return executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  public String functionLoadReplace(byte[] functionCode) {
+    return executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override

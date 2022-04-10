@@ -2821,14 +2821,12 @@ public class CommandObjects {
         .add(libraryNamePattern).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
   }
 
-  public final CommandObject<String> functionLoad(String engineName, String libraryName, String functionCode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
-        .add(libraryName).add(functionCode), BuilderFactory.STRING);
+  public final CommandObject<String> functionLoad(String functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(functionCode), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
-        .add(libraryName).addParams(params).add(functionCode), BuilderFactory.STRING);
+  public final CommandObject<String> functionLoadReplace(String functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(REPLACE).add(functionCode), BuilderFactory.STRING);
   }
 
   public final CommandObject<FunctionStats> functionStats() {
@@ -2893,14 +2891,12 @@ public class CommandObjects {
         add(libraryNamePattern).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
-        .add(libraryName).add(functionCode), BuilderFactory.STRING);
+  public final CommandObject<String> functionLoad(byte[] functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(functionCode), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(engineName)
-        .add(libraryName).addParams(params).add(functionCode), BuilderFactory.STRING);
+  public final CommandObject<String> functionLoadReplace(byte[] functionCode) {
+    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(REPLACE).add(functionCode), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> functionRestore(byte[] serializedValue) {

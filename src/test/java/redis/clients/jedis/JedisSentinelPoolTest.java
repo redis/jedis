@@ -197,18 +197,18 @@ public class JedisSentinelPoolTest {
   }
 */
 
-  @Test
-  public void ensureSafeTwiceFailover() throws InterruptedException {
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
-        new GenericObjectPoolConfig<Jedis>(), 1000, "foobared", 2, "twice-failover-client");
-
-    forceFailover(pool);
-    // after failover sentinel needs a bit of time to stabilize before a new failover
-    Thread.sleep(10000);
-    forceFailover(pool);
-
-    // you can test failover as much as possible
-  }
+//  @Test
+//  public void ensureSafeTwiceFailover() throws InterruptedException {
+//    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
+//        new GenericObjectPoolConfig<Jedis>(), 1000, "foobared", 2, "twice-failover-client");
+//
+//    forceFailover(pool);
+//    // after failover sentinel needs a bit of time to stabilize before a new failover
+//    Thread.sleep(10000);
+//    forceFailover(pool);
+//
+//    // you can test failover as much as possible
+//  }
 
   private void forceFailover(JedisSentinelPool pool) throws InterruptedException {
     HostAndPort oldMaster = pool.getCurrentHostMaster();

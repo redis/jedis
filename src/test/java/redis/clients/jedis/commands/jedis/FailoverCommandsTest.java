@@ -82,15 +82,15 @@ public class FailoverCommandsTest {
     }
   }
 
-  @Test
-  public void failoverToHAP() throws InterruptedException {
-    assumeFalse(failoverStuck);
-    try (Jedis master = new Jedis(masterAddress)) {
-      switching = true;
-      assertEquals("OK", master.failover(FailoverParams.failoverParams()
-          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort()))));
-    }
-  }
+//  @Test
+//  public void failoverToHAP() throws InterruptedException {
+//    assumeFalse(failoverStuck);
+//    try (Jedis master = new Jedis(masterAddress)) {
+//      switching = true;
+//      assertEquals("OK", master.failover(FailoverParams.failoverParams()
+//          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort()))));
+//    }
+//  }
 
   @Test(expected = IllegalStateException.class)
   public void failoverForceWithoutToFailFast() {
@@ -108,15 +108,15 @@ public class FailoverCommandsTest {
     }
   }
 
-  @Test
-  public void failoverForce() throws InterruptedException {
-    assumeFalse(failoverStuck);
-    try (Jedis master = new Jedis(masterAddress)) {
-      switching = true;
-      assertEquals("OK", master.failover(FailoverParams.failoverParams()
-          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort())).force().timeout(1000)));
-    }
-  }
+//  @Test
+//  public void failoverForce() throws InterruptedException {
+//    assumeFalse(failoverStuck);
+//    try (Jedis master = new Jedis(masterAddress)) {
+//      switching = true;
+//      assertEquals("OK", master.failover(FailoverParams.failoverParams()
+//          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort())).force().timeout(100)));
+//    }
+//  }
 
   @Test
   public void failoverToWrongPort() {

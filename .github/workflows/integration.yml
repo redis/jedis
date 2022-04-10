@@ -28,8 +28,8 @@ jobs:
           distribution: 'temurin'
       - name: stunnel
         run: |
-          apt-get update
-          apt-get install -y stunnel make
+          sudo apt-get update
+          sudo apt-get install -y stunnel make
           make circleci-install
       - name: Cache dependencies
         uses: actions/cache@v2

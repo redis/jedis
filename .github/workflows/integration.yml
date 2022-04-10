@@ -44,6 +44,9 @@ jobs:
       - name: run tests
         run: |
           TEST="" make test
+        env:
+          JVM_OPTS: -Xmx3200m
+          TERM: dumb
       - name: redismod docker
         run: docker run --name mod -p 52567:6379 -d redislabs/redismod:edge
       - name: run tests

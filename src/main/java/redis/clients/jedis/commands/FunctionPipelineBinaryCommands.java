@@ -3,7 +3,6 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.FunctionRestorePolicy;
-import redis.clients.jedis.params.FunctionLoadParams;
 
 import java.util.List;
 
@@ -31,9 +30,9 @@ public interface FunctionPipelineBinaryCommands {
 
   Response<List<Object>> functionListWithCode(byte[] libraryNamePattern);
 
-  Response<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode);
+  Response<String> functionLoad(byte[] functionCode);
 
-  Response<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode);
+  Response<String> functionLoadReplace(byte[] functionCode);
 
   Response<String> functionRestore(byte[] serializedValue);
 

@@ -114,7 +114,7 @@ public class FailoverCommandsTest {
     try (Jedis master = new Jedis(masterAddress)) {
       switching = true;
       assertEquals("OK", master.failover(FailoverParams.failoverParams()
-          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort())).force().timeout(100)));
+          .to(new HostAndPort("127.0.0.1", replicaAddress.getPort())).force().timeout(1000)));
     }
   }
 

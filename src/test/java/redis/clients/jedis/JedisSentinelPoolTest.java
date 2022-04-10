@@ -204,7 +204,7 @@ public class JedisSentinelPoolTest {
 
     forceFailover(pool);
     // after failover sentinel needs a bit of time to stabilize before a new failover
-    Thread.sleep(4000);
+    Thread.sleep(10000);
     forceFailover(pool);
 
     // you can test failover as much as possible

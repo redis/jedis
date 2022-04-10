@@ -1,0 +1,47 @@
+---
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.rst'
+    branches:
+      - master
+      - '[0-9].[0-9]'
+  pull_request:
+    branches:
+      - master
+      - '[0-9].[0-9]'
+
+jobs:
+
+  redismod:
+    name: Test modules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up publishing to maven central
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: stunnel
+        run: |
+          apt-get update
+          apt-get install -y stunnel make
+          make circleci-install
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+      - name: mvn offline
+        run: |
+          mvn dependency:go-offline
+      - name: redismod docker
+        run: docker run --name mod -p 6379:6379 -d redislabs/redismod:edge
+      - name: run tests
+        run: mvn -DmodulesDocker="mod:6379" -Dtest="redis.clients.jedis.modules.**" test

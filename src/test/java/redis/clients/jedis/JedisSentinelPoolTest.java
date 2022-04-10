@@ -194,7 +194,8 @@ public class JedisSentinelPoolTest {
         assertEquals("bar", obj2.get("foo"));
       }
     }
-*/  }
+  }
+*/
 
   @Test
   public void ensureSafeTwiceFailover() throws InterruptedException {

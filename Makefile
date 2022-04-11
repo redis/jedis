@@ -463,9 +463,7 @@ release:
 	mvn release:perform -DskipTests
 	make stop
 
-travis-install:
-	sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-	sudo apt-get -y update
+system-setup:
 	sudo apt-get install -y gcc-8 g++-8
 	cd /usr/bin ;\
 	sudo ln -sf gcc-8 gcc ;\
@@ -473,15 +471,6 @@ travis-install:
 	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git
-	
-circleci-install:
-	sudo apt-get install -y gcc-8 g++-8
-	cd /usr/bin ;\
-	sudo ln -sf gcc-8 gcc ;\
-	sudo ln -sf g++-8 g++
-	[ ! -e redis-git ] && git clone https://github.com/antirez/redis.git --branch unstable --single-branch redis-git || true
-	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git	
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

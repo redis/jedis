@@ -105,6 +105,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(Protocol.Keyword.SET.getRaw(), (byte[]) args.get(1));
     assertArrayEquals(SafeEncoder.encode(SLOWLOG_TIME_PARAM), (byte[]) args.get(2));
     assertArrayEquals(Protocol.toByteArray(0), (byte[]) args.get(3));
+    System.out.println(SafeEncoder.encode((byte[]) log.get(4)));
     assertTrue(SafeEncoder.encode((byte[]) log.get(4)).startsWith("127.0.0.1:"));
     assertArrayEquals(clientName, (byte[]) log.get(5));
   }

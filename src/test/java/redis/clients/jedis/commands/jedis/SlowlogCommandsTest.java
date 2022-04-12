@@ -81,9 +81,8 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     assertEquals(SafeEncoder.encode(Protocol.Keyword.SET.getRaw()), log.getArgs().get(1));
     assertEquals(SLOWLOG_TIME_PARAM, log.getArgs().get(2));
     assertEquals(ZERO, log.getArgs().get(3));
-    System.out.println(log.getClientIpPort());
-//    assertEquals("127.0.0.1", log.getClientIpPort().getHost());
-//    assertTrue(log.getClientIpPort().getPort() > 0);
+    assertEquals("127.0.0.1", log.getClientIpPort().getHost());
+    assertTrue(log.getClientIpPort().getPort() > 0);
     assertEquals(clientName, log.getClientName());
   }
 
@@ -106,8 +105,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(Protocol.Keyword.SET.getRaw(), (byte[]) args.get(1));
     assertArrayEquals(SafeEncoder.encode(SLOWLOG_TIME_PARAM), (byte[]) args.get(2));
     assertArrayEquals(Protocol.toByteArray(0), (byte[]) args.get(3));
-    System.out.println(SafeEncoder.encode((byte[]) log.get(4)));
-//    assertTrue(SafeEncoder.encode((byte[]) log.get(4)).startsWith("127.0.0.1:"));
+    assertTrue(SafeEncoder.encode((byte[]) log.get(4)).startsWith("127.0.0.1:"));
     assertArrayEquals(clientName, (byte[]) log.get(5));
   }
 }

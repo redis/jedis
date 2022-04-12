@@ -45,7 +45,7 @@ jobs:
           mvn -q dependency:go-offline
       - name: run tests
         run: |
-          TEST="SlowlogCommandsTest" make test
+          TEST="" make test
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb

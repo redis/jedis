@@ -2,7 +2,6 @@ package redis.clients.jedis.commands;
 
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.FunctionRestorePolicy;
-import redis.clients.jedis.params.FunctionLoadParams;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 
@@ -89,22 +88,21 @@ public interface FunctionBinaryCommands {
 
   /**
    * Load a library to Redis.
-   * @param engineName the name of the execution engine for the library
-   * @param libraryName the unique name of the library
-   * @param functionCode the source code
-   * @return OK
+   * @param functionCode the source code. The library payload must start
+   *                     with Shebang statement that provides a metadata
+   *                     about the library (like the engine to use and the library name).
+   *                     Shebang format: #!<engine name> name=<library name>.
+   *                     Currently engine name must be lua.
+   * @return The library name that was loaded
    */
-  String functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode);
+  String functionLoad(byte[] functionCode);
 
   /**
-   * Load a library to Redis.
-   * @param engineName the name of the execution engine for the library
-   * @param libraryName the unique name of the library
-   * @param params {@link FunctionLoadParams}
+   * Load a library to Redis. Will replace the current library if it already exists.
    * @param functionCode the source code
-   * @return OK
+   * @return The library name that was loaded
    */
-  String functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode);
+  String functionLoadReplace(byte[] functionCode);
 
   /**
    * Restore libraries from the serialized payload. Default policy is APPEND.

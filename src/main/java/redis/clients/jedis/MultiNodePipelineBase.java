@@ -1734,23 +1734,23 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, byte[] functionCode) {
-    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  public Response<String> functionLoad(byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
-  public Response<String> functionLoad(String engineName, String libraryName, String functionCode) {
-    return appendCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+  public Response<String> functionLoad(String functionCode) {
+    return appendCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
-  public Response<String> functionLoad(byte[] engineName, byte[] libraryName, FunctionLoadParams params, byte[] functionCode) {
-    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  public Response<String> functionLoadReplace(byte[] functionCode) {
+    return appendCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
-  public Response<String> functionLoad(String engineName, String libraryName, FunctionLoadParams params, String functionCode) {
-    return appendCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+  public Response<String> functionLoadReplace(String functionCode) {
+    return appendCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override

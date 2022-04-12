@@ -8843,15 +8843,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String functionLoad(final String engineName, final String libraryName, final String functionCode) {
+  public String functionLoad(final String functionCode) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+    return connection.executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
-  public String functionLoad(final String engineName, final String libraryName, final FunctionLoadParams params, final String functionCode) {
+  public String functionLoadReplace(final String functionCode) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+    return connection.executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
@@ -9447,15 +9447,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String functionLoad(final byte[] engineName, final byte[] libraryName, final byte[] functionCode) {
+  public String functionLoad(final byte[] functionCode) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.functionLoad(engineName, libraryName, functionCode));
+    return connection.executeCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
-  public String functionLoad(final byte[] engineName, final byte[] libraryName, final FunctionLoadParams params, final byte[] functionCode) {
+  public String functionLoadReplace(final byte[] functionCode) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.functionLoad(engineName, libraryName, params, functionCode));
+    return connection.executeCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override

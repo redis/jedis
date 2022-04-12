@@ -1,11 +1,13 @@
 package redis.clients.jedis.util;
 
 import java.util.concurrent.atomic.AtomicReference;
+import org.junit.Assert;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.FailoverAbortedException;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 public class JedisSentinelTestUtil {
 
@@ -30,7 +32,11 @@ public class JedisSentinelTestUtil {
 
       @Override
       public void onPSubscribe(String pattern, int subscribedChannels) {
-        commandJedis.sentinelFailover(masterName);
+        try {
+          commandJedis.sentinelFailover(masterName);
+        } catch (JedisDataException je) {
+          Assert.assertEquals("INPROG Failover already in progress", je.getMessage());
+        }
       }
     }, "*");
 

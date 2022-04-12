@@ -37,6 +37,7 @@ public class ACLJedisSentinelPoolTest {
 
   @Before
   public void setUp() throws Exception {
+    sentinels.clear();
     sentinels.add(sentinel1);
   }
 

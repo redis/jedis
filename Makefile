@@ -192,7 +192,7 @@ port 26383
 daemonize yes
 protected-mode no
 user default off
-user sentinel on allcommands allkeys >foobared
+user sentinel on allcommands allkeys allchannels >foobared
 sentinel monitor aclmaster 127.0.0.1 6387 1
 sentinel auth-user aclmaster acljedis
 sentinel auth-pass aclmaster fizzbuzz

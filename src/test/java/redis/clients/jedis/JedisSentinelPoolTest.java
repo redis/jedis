@@ -30,10 +30,12 @@ public class JedisSentinelPoolTest {
   protected static Jedis sentinelJedis1;
   protected static Jedis sentinelJedis2;
 
-  protected Set<String> sentinels = new HashSet<String>();
+  protected Set<String> sentinels = new HashSet<>();
 
   @Before
   public void setUp() throws Exception {
+    sentinels.clear();
+
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
 

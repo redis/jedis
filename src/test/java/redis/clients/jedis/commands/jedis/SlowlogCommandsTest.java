@@ -81,31 +81,33 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     assertEquals(SafeEncoder.encode(Protocol.Keyword.SET.getRaw()), log.getArgs().get(1));
     assertEquals(SLOWLOG_TIME_PARAM, log.getArgs().get(2));
     assertEquals(ZERO, log.getArgs().get(3));
+    System.out.println(log.getClientIpPort());
 //    assertEquals("127.0.0.1", log.getClientIpPort().getHost());
 //    assertTrue(log.getClientIpPort().getPort() > 0);
     assertEquals(clientName, log.getClientName());
   }
 
-//  @Test
-//  public void slowlogBinaryDetails() {
-//    final byte[] clientName = SafeEncoder.encode("slowlog-binary-client");
-//    jedis.clientSetname(clientName);
-//    jedis.slowlogReset();
-//    jedis.configSet(SafeEncoder.encode(SLOWLOG_TIME_PARAM), SafeEncoder.encode(ZERO));
-//
-//    List<Object> logs = jedis.slowlogGetBinary(); // Get only 'CONFIG SET'
-//    assertEquals(1, logs.size());
-//    List<Object> log = (List<Object>) logs.get(0);
-//    assertTrue((Long) log.get(0) > 0);
-//    assertTrue((Long) log.get(1) > 0);
-//    assertTrue((Long) log.get(2) > 0);
-//    List<Object> args = (List<Object>) log.get(3);
-//    assertEquals(4, args.size());
-//    assertArrayEquals(Protocol.Command.CONFIG.getRaw(), (byte[]) args.get(0));
-//    assertArrayEquals(Protocol.Keyword.SET.getRaw(), (byte[]) args.get(1));
-//    assertArrayEquals(SafeEncoder.encode(SLOWLOG_TIME_PARAM), (byte[]) args.get(2));
-//    assertArrayEquals(Protocol.toByteArray(0), (byte[]) args.get(3));
+  @Test
+  public void slowlogBinaryDetails() {
+    final byte[] clientName = SafeEncoder.encode("slowlog-binary-client");
+    jedis.clientSetname(clientName);
+    jedis.slowlogReset();
+    jedis.configSet(SafeEncoder.encode(SLOWLOG_TIME_PARAM), SafeEncoder.encode(ZERO));
+
+    List<Object> logs = jedis.slowlogGetBinary(); // Get only 'CONFIG SET'
+    assertEquals(1, logs.size());
+    List<Object> log = (List<Object>) logs.get(0);
+    assertTrue((Long) log.get(0) > 0);
+    assertTrue((Long) log.get(1) > 0);
+    assertTrue((Long) log.get(2) > 0);
+    List<Object> args = (List<Object>) log.get(3);
+    assertEquals(4, args.size());
+    assertArrayEquals(Protocol.Command.CONFIG.getRaw(), (byte[]) args.get(0));
+    assertArrayEquals(Protocol.Keyword.SET.getRaw(), (byte[]) args.get(1));
+    assertArrayEquals(SafeEncoder.encode(SLOWLOG_TIME_PARAM), (byte[]) args.get(2));
+    assertArrayEquals(Protocol.toByteArray(0), (byte[]) args.get(3));
+    System.out.println(SafeEncoder.encode((byte[]) log.get(4)));
 //    assertTrue(SafeEncoder.encode((byte[]) log.get(4)).startsWith("127.0.0.1:"));
-//    assertArrayEquals(clientName, (byte[]) log.get(5));
-//  }
+    assertArrayEquals(clientName, (byte[]) log.get(5));
+  }
 }

@@ -663,7 +663,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, jedis.pexpire("foo2", 200000000000L));
     assertEquals(0, jedis.pexpire("foo2", 10000000, ExpiryOption.NX));
     assertEquals(1, jedis.pexpire("foo2", 10000000, ExpiryOption.XX));
-    assertEquals(0, jedis.pexpire("foo2", 10000000, ExpiryOption.GT));
+    assertEquals(0, jedis.pexpire("foo2", 10000, ExpiryOption.GT));
     assertEquals(1, jedis.pexpire("foo2", 10000, ExpiryOption.LT));
 
     long pttl = jedis.pttl("foo2");

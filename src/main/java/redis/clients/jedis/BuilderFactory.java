@@ -1315,7 +1315,7 @@ public final class BuilderFactory {
       tempMappingFunctions.put(StreamConsumerFullInfo.NAME, STRING);
       tempMappingFunctions.put(StreamConsumerFullInfo.SEEN_TIME, LONG);
       tempMappingFunctions.put(StreamConsumerFullInfo.PEL_COUNT, LONG);
-      tempMappingFunctions.put(StreamConsumerFullInfo.PENDING, LONG_LIST);
+      tempMappingFunctions.put(StreamConsumerFullInfo.PENDING, ENCODED_OBJECT_LIST);
 
       return tempMappingFunctions;
     }
@@ -1354,7 +1354,7 @@ public final class BuilderFactory {
       Map<String, Builder> tempMappingFunctions = new HashMap<>();
       tempMappingFunctions.put(StreamGroupFullInfo.NAME, STRING);
       tempMappingFunctions.put(StreamGroupFullInfo.CONSUMERS, STREAM_CONSUMER_FULL_INFO_LIST);
-      tempMappingFunctions.put(StreamGroupFullInfo.PENDING, STRING_LIST);
+      tempMappingFunctions.put(StreamGroupFullInfo.PENDING, ENCODED_OBJECT_LIST);
       tempMappingFunctions.put(StreamGroupFullInfo.LAST_DELIVERED, STREAM_ENTRY_ID);
       tempMappingFunctions.put(StreamGroupFullInfo.PEL_COUNT, LONG);
 

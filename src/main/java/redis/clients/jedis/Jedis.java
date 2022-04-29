@@ -8582,13 +8582,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String clusterReplicas(final String nodeId) {
-    checkIsInMultiOrPipeline();
-    connection.sendCommand(CLUSTER, ClusterKeyword.REPLICAS.name(), nodeId);
-    return connection.getBulkReply();
-  }
-
-  @Override
   public String clusterMeet(final String ip, final int port) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.MEET.name(), ip, Integer.toString(port));
@@ -8740,6 +8733,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<String> clusterSlaves(final String nodeId) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.SLAVES.name(), nodeId);
+    return connection.getMultiBulkReply();
+  }
+
+  @Override
+  public List<String> clusterReplicas(final String nodeId) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.REPLICAS.name(), nodeId);
     return connection.getMultiBulkReply();
   }
 

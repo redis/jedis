@@ -3877,10 +3877,10 @@ public class Jedis extends BinaryJedis implements JedisCommands, MultiKeyCommand
   }
 
   @Override
-  public String clusterReplicas(final String nodeId) {
+  public List<String> clusterReplicas(final String nodeId) {
     checkIsInMultiOrPipeline();
     client.clusterReplicas(nodeId);
-    return client.getBulkReply();
+    return client.getMultiBulkReply();
   }
 
   @Override

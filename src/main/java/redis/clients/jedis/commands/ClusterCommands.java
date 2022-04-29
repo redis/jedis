@@ -14,7 +14,7 @@ public interface ClusterCommands {
 
   String clusterNodes();
 
-  String clusterReplicas(String nodeId);
+  List<String> clusterReplicas(String nodeId);
 
   String clusterMeet(String ip, int port);
 

@@ -21,7 +21,7 @@ public class StreamGroupFullInfo implements Serializable {
 
   private final String name;
   private final List<StreamConsumerFullInfo> consumers;
-  private final List<String> pending;
+  private final List<List<Object>> pending;
   private final Long pelCount;
   private final StreamEntryID lastDeliveredId;
   private final Map<String, Object> groupFullInfo;
@@ -35,10 +35,11 @@ public class StreamGroupFullInfo implements Serializable {
     groupFullInfo = map;
     name = (String) map.get(NAME);
     consumers = (List<StreamConsumerFullInfo>) map.get(CONSUMERS);
-    pending = (List<String>) map.get(PENDING);
+    pending = (List<List<Object>>) map.get(PENDING);
     lastDeliveredId = (StreamEntryID) map.get(LAST_DELIVERED);
     pelCount = (Long) map.get(PEL_COUNT);
 
+    pending.stream().forEach(entry -> entry.set(0, new StreamEntryID((String) entry.get(0))));
   }
 
   public String getName() {
@@ -49,7 +50,7 @@ public class StreamGroupFullInfo implements Serializable {
     return consumers;
   }
 
-  public List<String> getPending() {
+  public List<List<Object>> getPending() {
     return pending;
   }
 

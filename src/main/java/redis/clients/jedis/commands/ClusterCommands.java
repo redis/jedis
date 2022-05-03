@@ -16,8 +16,6 @@ public interface ClusterCommands {
 
   String clusterNodes();
 
-  String clusterReplicas(String nodeId);
-
   String clusterMeet(String ip, int port);
 
   String clusterAddSlots(int... slots);
@@ -74,6 +72,8 @@ public interface ClusterCommands {
    */
   @Deprecated
   List<String> clusterSlaves(String nodeId);
+
+  List<String> clusterReplicas(String nodeId);
 
   String clusterFailover();
 

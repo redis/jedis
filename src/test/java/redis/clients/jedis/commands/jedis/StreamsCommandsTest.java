@@ -837,7 +837,38 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     } catch (JedisException e) {
       assertEquals("ERR no such key", e.getMessage());
     }
+  }
 
+  @Test
+  public void xinfoStreamFullWithPending() {
+
+    Map<String, String> map = singletonMap("f1", "v1");
+    StreamEntryID id1 = jedis.xadd("streamfull2", (StreamEntryID) null, map);
+    StreamEntryID id2 = jedis.xadd("streamfull2", (StreamEntryID) null, map);
+    jedis.xgroupCreate("streamfull2", "xreadGroup-group", null, false);
+
+    Map<String, StreamEntryID> streamQeury1 = singletonMap("streamfull2", StreamEntryID.UNRECEIVED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
+        XReadGroupParams.xReadGroupParams().count(1), streamQeury1);
+    assertEquals(1, range.size());
+    assertEquals(1, range.get(0).getValue().size());
+
+    StreamFullInfo full = jedis.xinfoStreamFull("streamfull2");
+    assertEquals(1, full.getGroups().size());
+    StreamGroupFullInfo group = full.getGroups().get(0);
+    assertEquals("xreadGroup-group", group.getName());
+
+    assertEquals(1, group.getPending().size());
+    List<Object> groupPendingEntry = group.getPending().get(0);
+    assertEquals(id1, groupPendingEntry.get(0));
+    assertEquals("xreadGroup-consumer", groupPendingEntry.get(1));
+
+    assertEquals(1, group.getConsumers().size());
+    StreamConsumerFullInfo consumer = group.getConsumers().get(0);
+    assertEquals("xreadGroup-consumer", consumer.getName());
+    assertEquals(1, consumer.getPending().size());
+    List<Object> consumerPendingEntry = consumer.getPending().get(0);
+    assertEquals(id1, consumerPendingEntry.get(0));
   }
 
   @Test

@@ -32,7 +32,7 @@ Set up test environments with ```make start```, tear down those environments wit
 * Jedis uses HBase Formatter introduced by [HBASE-5961](https://issues.apache.org/jira/browse/HBASE-5961)
 * You can import code style file (located to hbase-formatter.xml) to Eclipse, IntelliJ
   * line break by column count seems not working with IntelliJ
-* You can run ```make format``` anytime to reformat without IDEs
+* <strike>You can run ```make format``` anytime to reformat without IDEs</strike>
 
 ## Adding commands
 

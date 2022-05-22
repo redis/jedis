@@ -40,7 +40,7 @@ Next, you'll need to connect to Redis. For many applications, it's best to use a
 JedisPool pool = new JedisPool("localhost", 6379);
 ```
 
-Once you have a `JedisPool` instance, you can use a
+With a `JedisPool` instance, you can use a
 [try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html)
 block to get a connection and run Redis commands.
 
@@ -54,7 +54,7 @@ try (Jedis jedis = pool.getResource()) {
 
 `Jedis` instances implement most Redis commands. See the
 [Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/redis/clients/jedis/Jedis.html)
-for a complete list of supported commands.
+for the complete list of supported commands.
 
 ### Easier way of using connection pool
 

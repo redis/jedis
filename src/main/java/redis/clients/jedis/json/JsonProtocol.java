@@ -20,7 +20,8 @@ public class JsonProtocol {
     ARRPOP("JSON.ARRPOP"),
     ARRTRIM("JSON.ARRTRIM"),
     CLEAR("JSON.CLEAR"),
-    TOGGLE("JSON.TOGGLE");
+    TOGGLE("JSON.TOGGLE"),
+    DEBUG("JSON.DEBUG");
 
     private final byte[] raw;
 

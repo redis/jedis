@@ -383,6 +383,19 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals(singletonList(6L), client.jsonStrLen("str", ROOT_PATH));
   }
 
+  @Test
+  public void debugMemory() {
+    assertEquals(0L, client.jsonDebugMemory("json"));
+    assertEquals(emptyList(), client.jsonDebugMemory("json", ROOT_PATH));
+
+    client.jsonSet("json", new JSONObject("{ foo: 'bar', bar: { foo: 10 }}"));
+    // it is okay as long as any 'long' is returned
+    client.jsonDebugMemory("json");
+    assertEquals(1, client.jsonDebugMemory("json", ROOT_PATH).size());
+    assertEquals(2, client.jsonDebugMemory("json", Path2.of("$..foo")).size());
+    assertEquals(1, client.jsonDebugMemory("json", Path2.of("$..bar")).size());
+  }
+
   private void assertJsonArrayEquals(JSONArray a, Object _b) {
     if (!(_b instanceof JSONArray)) {
       fail("Actual value is not JSONArray.");

@@ -3783,6 +3783,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public Long jsonArrTrim(String key, Path path, int start, int stop) {
     return executeCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
+
+  @Override
+  public long jsonDebugMemory(String key) {
+    return executeCommand(commandObjects.jsonDebugMemory(key));
+  }
+
+  @Override
+  public List<Long> jsonDebugMemory(String key, Path2 path) {
+    return executeCommand(commandObjects.jsonDebugMemory(key, path));
+  }
+
+  @Override
+  public long jsonDebugMemory(String key, Path path) {
+    return executeCommand(commandObjects.jsonDebugMemory(key, path));
+  }
   // RedisJSON commands
 
   // RedisTimeSeries commands

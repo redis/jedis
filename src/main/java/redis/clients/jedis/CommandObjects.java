@@ -3378,6 +3378,18 @@ public class CommandObjects {
   public final CommandObject<Long> jsonArrTrim(String key, Path path, int start, int stop) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
+
+  public final CommandObject<Long> jsonDebugMemory(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<Long>> jsonDebugMemory(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<Long> jsonDebugMemory(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG);
+  }
   // RedisJSON commands
 
   // RedisTimeSeries commands

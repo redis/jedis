@@ -21,6 +21,7 @@ public class Schema {
     VECTOR
   }
 
+  @Deprecated // TODO: this should be private
   public final List<Field> fields;
 
   public Schema() {
@@ -97,8 +98,28 @@ public class Schema {
     return this;
   }
 
+  public Schema addTagField(String name, boolean caseSensitive) {
+    fields.add(new TagField(name, caseSensitive, false));
+    return this;
+  }
+
+  public Schema addTagField(String name, String separator, boolean caseSensitive) {
+    fields.add(new TagField(name, separator, caseSensitive, false));
+    return this;
+  }
+
   public Schema addSortableTagField(String name, String separator) {
     fields.add(new TagField(name, separator, true));
+    return this;
+  }
+
+  public Schema addSortableTagField(String name, boolean caseSensitive) {
+    fields.add(new TagField(name, caseSensitive, true));
+    return this;
+  }
+
+  public Schema addSortableTagField(String name, String separator, boolean caseSensitive) {
+    fields.add(new TagField(name, separator, caseSensitive, true));
     return this;
   }
 
@@ -143,7 +164,11 @@ public class Schema {
     @Deprecated public final String name;
     @Deprecated public final FieldType type;
     @Deprecated public final boolean sortable;
-    @Deprecated public final boolean noindex;
+    @Deprecated public final boolean noIndex;
+
+    public Field(String name, FieldType type) {
+      this(name, type, false, false);
+    }
 
     public Field(String name, FieldType type, boolean sortable) {
       this(name, type, sortable, false);
@@ -162,7 +187,7 @@ public class Schema {
       this.name = this.fieldName.getName();
       this.type = type;
       this.sortable = sortable;
-      this.noindex = noIndex;
+      this.noIndex = noIndex;
     }
 
     public void as(String attribute){
@@ -177,7 +202,7 @@ public class Schema {
       if (sortable) {
         args.add("SORTABLE");
       }
-      if (noindex) {
+      if (noIndex) {
         args.add("NOINDEX");
       }
     }
@@ -191,7 +216,7 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "Field{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noindex + "}";
+      return "Field{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex + "}";
     }
   }
 
@@ -259,7 +284,7 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "TextField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noindex
+      return "TextField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
           + ", weight=" + weight + ", nostem=" + nostem + ", phonetic='" + phonetic + "'}";
     }
   }
@@ -267,6 +292,7 @@ public class Schema {
   public static class TagField extends Field {
 
     private final String separator;
+    private final boolean caseSensitive;
 
     public TagField(String name) {
       this(name, null);
@@ -281,13 +307,27 @@ public class Schema {
     }
 
     public TagField(String name, String separator, boolean sortable) {
+      this(name, separator, false, sortable);
+    }
+
+    public TagField(String name, boolean caseSensitive, boolean sortable) {
+      this(name, null, caseSensitive, sortable);
+    }
+
+    public TagField(String name, String separator, boolean caseSensitive, boolean sortable) {
       super(name, FieldType.TAG, sortable);
       this.separator = separator;
+      this.caseSensitive = caseSensitive;
     }
 
     public TagField(FieldName name, String separator, boolean sortable) {
+      this(name, separator, false, sortable);
+    }
+
+    public TagField(FieldName name, String separator, boolean caseSensitive, boolean sortable) {
       super(name, FieldType.TAG, sortable, false);
       this.separator = separator;
+      this.caseSensitive = caseSensitive;
     }
 
     @Override
@@ -296,12 +336,15 @@ public class Schema {
         args.add("SEPARATOR");
         args.add(separator);
       }
+      if (caseSensitive) {
+        args.add("CASESENSITIVE");
+      }
     }
 
     @Override
     public String toString() {
-      return "TagField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noindex
-          + ", separator='" + separator + "'}";
+      return "TagField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
+          + ", separator='" + separator + ", caseSensitive='" + caseSensitive + "'}";
     }
   }
 
@@ -316,7 +359,7 @@ public class Schema {
     private final Map<String, Object> attributes;
 
     public VectorField(String name, VectorAlgo algorithm, Map<String, Object> attributes) {
-      super(name, FieldType.VECTOR, false, false);
+      super(name, FieldType.VECTOR);
       this.algorithm = algorithm;
       this.attributes = attributes;
     }

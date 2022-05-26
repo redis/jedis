@@ -143,6 +143,16 @@ public class Schema {
     return this;
   }
 
+  /***
+   * Chain as name to the last filed added to the schema
+   * @param attribute
+   */
+  // TODO: Not sure about this pattern. May consider removing later.
+  public Schema as(String attribute) {
+    fields.get(fields.size() - 1).as(attribute);
+    return this;
+  }
+
   @Override
   public String toString() {
     return "Schema{fields=" + fields + "}";
@@ -150,11 +160,11 @@ public class Schema {
 
   public static class Field implements IParams {
 
-    private final FieldName fieldName;
-    public final String name;
-    public final FieldType type;
-    public final boolean sortable;
-    public final boolean noIndex;
+    protected final FieldName fieldName;
+    @Deprecated public final String name;
+    @Deprecated public final FieldType type;
+    @Deprecated public final boolean sortable;
+    @Deprecated public final boolean noIndex;
 
     public Field(String name, FieldType type) {
       this(name, type, false, false);
@@ -180,6 +190,10 @@ public class Schema {
       this.noIndex = noIndex;
     }
 
+    public void as(String attribute){
+      this.fieldName.as(attribute);
+    }
+
     @Override
     public final void addParams(CommandArguments args) {
       this.fieldName.addParams(args);
@@ -202,7 +216,7 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "Field{name='" + name + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex + "}";
+      return "Field{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex + "}";
     }
   }
 
@@ -270,7 +284,7 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "TextField{name='" + name + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
+      return "TextField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
           + ", weight=" + weight + ", nostem=" + nostem + ", phonetic='" + phonetic + "'}";
     }
   }
@@ -329,7 +343,7 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "TagField{name='" + name + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
+      return "TagField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
           + ", separator='" + separator + ", caseSensitive='" + caseSensitive + "'}";
     }
   }
@@ -362,7 +376,7 @@ public class Schema {
 
     @Override
     public String toString() {
-      return "VectorField{name='" + name + "', type=" + type + ", algorithm=" + algorithm + ", attributes=" + attributes + "}";
+      return "VectorField{name='" + fieldName + "', type=" + type + ", algorithm=" + algorithm + ", attributes=" + attributes + "}";
     }
   }
 }

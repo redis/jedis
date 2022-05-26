@@ -10,6 +10,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.Schema.*;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
@@ -711,6 +712,35 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     }
     res = client.ftSearch(index, new Query("title"));
     assertEquals(1, res.getTotalResults());
+  }
+
+  @Test
+  public void testJsonWithAlias() {
+    Schema sc = new Schema()
+            .addTextField("$.name", 1.0).as("name")
+            .addNumericField("$.num").as("num");
+
+    IndexDefinition definition = new IndexDefinition(IndexDefinition.Type.JSON).setPrefixes("king:");
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(definition), sc));
+
+    Map<String, Object> king1 = new HashMap<>();
+    king1.put("name", "henry");
+    king1.put("num", 42);
+    client.jsonSet("king:1", Path.ROOT_PATH, king1);
+
+    Map<String, Object> king2 = new HashMap<>();
+    king2.put("name", "james");
+    king2.put("num", 3.14);
+    client.jsonSet("king:2", Path.ROOT_PATH, king2);
+
+    SearchResult res = client.ftSearch(index, new Query("@name:henry"));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("king:1", res.getDocuments().get(0).getId());
+
+    res = client.ftSearch(index, new Query("@num:[0 10]"));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("king:2", res.getDocuments().get(0).getId());
   }
 
   @Test

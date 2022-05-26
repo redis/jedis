@@ -24,6 +24,11 @@ public class FieldName implements IParams {
     this.attribute = attribute;
   }
 
+  public FieldName as(String attribute) {
+    this.attribute = attribute;
+    return this;
+  }
+
   public int addCommandEncodedArguments(List<String> args) {
     args.add(name);
     if (attribute == null) {
@@ -62,6 +67,7 @@ public class FieldName implements IParams {
     addCommandArguments(args);
   }
 
+  @Deprecated // TODO: remove?
   String getName() {
     return name;
   }
@@ -73,11 +79,6 @@ public class FieldName implements IParams {
 
   public static FieldName of(String name) {
     return new FieldName(name);
-  }
-
-  public FieldName as(String attribute) {
-    this.attribute = attribute;
-    return this;
   }
 
   public static FieldName[] convert(String... names) {

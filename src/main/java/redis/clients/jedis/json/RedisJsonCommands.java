@@ -2,7 +2,6 @@ package redis.clients.jedis.json;
 
 import java.util.List;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 public interface RedisJsonCommands {
 
@@ -141,4 +140,10 @@ public interface RedisJsonCommands {
   List<Long> jsonArrTrim(String key, Path2 path, int start, int stop);
 
   Long jsonArrTrim(String key, Path path, int start, int stop);
+
+  long jsonDebugMemory(String key);
+
+  List<Long> jsonDebugMemory(String key, Path2 path);
+
+  long jsonDebugMemory(String key, Path path);
 }

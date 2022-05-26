@@ -1288,6 +1288,26 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\,purple}")).getTotalResults());
     assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
   }
+
+  @Test
+  public void caseSensitiveTagField() {
+    Schema sc = new Schema()
+        .addTextField("title", 1.0)
+        .addTagField("category", true /*casesensitive*/);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    Map<String, Object> fields1 = new HashMap<>();
+    fields1.put("title", "hello world");
+    fields1.put("category", "RedX");
+    addDocument("foo", fields1);
+
+    assertEquals(0, client.ftSearch(index, new Query("@category:{redx}")).getTotalResults());
+    assertEquals(0, client.ftSearch(index, new Query("@category:{redX}")).getTotalResults());
+    assertEquals(0, client.ftSearch(index, new Query("@category:{Redx}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{RedX}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("hello")).getTotalResults());
+  }
 //
 //  @Test
 //  public void testMultiDocuments() {

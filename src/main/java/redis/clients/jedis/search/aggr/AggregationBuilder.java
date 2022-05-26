@@ -36,6 +36,12 @@ public class AggregationBuilder {
     return this;
   }
 
+  public AggregationBuilder loadAll() {
+    args.add("LOAD");
+    args.add("*");
+    return this;
+  }
+
   public AggregationBuilder limit(int offset, int count) {
     Limit limit = new Limit(offset, count);
     limit.addArgs(args);

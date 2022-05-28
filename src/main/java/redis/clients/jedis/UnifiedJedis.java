@@ -3540,6 +3540,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String jsonSetWithPlainString(String key, Path path, String string) {
+    return executeCommand(commandObjects.jsonSetWithPlainString(key, path, string));
+  }
+
+  @Override
   public String jsonSet(String key, Path2 path, Object pojo, JsonSetParams params) {
     return executeCommand(commandObjects.jsonSet(key, path, pojo, params));
   }
@@ -3572,6 +3577,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Object jsonGet(String key, Path... paths) {
     return executeCommand(commandObjects.jsonGet(key, paths));
+  }
+
+  @Override
+  public String jsonGetAsPlainString(String key, Path path) {
+    return executeCommand(commandObjects.jsonGetAsPlainString(key, path));
   }
 
   @Override

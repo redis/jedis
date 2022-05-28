@@ -3265,6 +3265,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG);
   }
 
+  public final CommandObject<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
+    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.JSON_ARRAY);
+  }
+
+  public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {
+    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
+  }
+
   public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object object : objects) {

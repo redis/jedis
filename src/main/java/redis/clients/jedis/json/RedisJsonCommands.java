@@ -97,6 +97,10 @@ public interface RedisJsonCommands {
 
   Long jsonStrLen(String key, Path path);
 
+  JSONArray jsonNumIncrBy(String key, Path2 path, double value);
+
+  double jsonNumIncrBy(String key, Path path, double value);
+
   List<Long> jsonArrAppend(String key, Path2 path, Object... objects);
 
   List<Long> jsonArrAppendWithEscape(String key, Path2 path, Object... objects);

@@ -437,4 +437,11 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     client.jsonDebugMemory("json", ROOT_PATH);
     client.jsonDebugMemory("json", Path.of(".bar"));
   }
+
+  @Test
+  public void plainString() {
+    String json = "{\"foo\":\"bar\",\"bar\":{\"foo\":10}}";
+    assertEquals("OK", client.jsonSetWithPlainString("plain", ROOT_PATH, json));
+    assertEquals(json, client.jsonGetAsPlainString("plain", ROOT_PATH));
+  }
 }

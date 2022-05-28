@@ -3157,6 +3157,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GSON.toJson(pojo)), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> jsonSetWithPlainString(String key, Path path, String string) {
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(string), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> jsonSet(String key, Path2 path, Object object, JsonSetParams params) {
     return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(object).addParams(params), BuilderFactory.STRING);
   }
@@ -3183,6 +3187,10 @@ public class CommandObjects {
 
   public final CommandObject<Object> jsonGet(String key, Path... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new GsonObjectBuilder<>(Object.class));
+  }
+
+  public final CommandObject<String> jsonGetAsPlainString(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).add(path), BuilderFactory.STRING);
   }
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz, Path... paths) {

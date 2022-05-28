@@ -35,6 +35,8 @@ public interface RedisJsonCommands {
 
   String jsonSet(String key, Path path, Object pojo);
 
+  String jsonSetWithPlainString(String key, Path path, String string);
+
   String jsonSet(String key, Path2 path, Object object, JsonSetParams params);
 
   String jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params);
@@ -48,6 +50,8 @@ public interface RedisJsonCommands {
   Object jsonGet(String key, Path2... paths);
 
   Object jsonGet(String key, Path... paths);
+
+  String jsonGetAsPlainString(String key, Path path);
 
   <T> T jsonGet(String key, Class<T> clazz, Path... paths);
 

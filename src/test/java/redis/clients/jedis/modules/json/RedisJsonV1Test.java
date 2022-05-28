@@ -419,6 +419,12 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void numIncrBy() {
+    client.jsonSetLegacy("doc", gson.fromJson("{a:3}", JsonObject.class));
+    assertEquals(5d, client.jsonNumIncrBy("doc", Path.of(".a"), 2), 0d);
+  }
+
+  @Test
   public void debugMemory() {
     assertEquals(0L, client.jsonDebugMemory("json"));
     assertEquals(0L, client.jsonDebugMemory("json", ROOT_PATH));

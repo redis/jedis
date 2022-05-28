@@ -384,6 +384,16 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void numIncrBy() {
+    client.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
+    assertJsonArrayEquals(singletonJSONArray(null), client.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
+    assertJsonArrayEquals(new JSONArray(new Object[]{null, 4, 7, null}),
+        client.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
+    assertJsonArrayEquals(singletonJSONArray(null), client.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
+    assertJsonArrayEquals(new JSONArray(), client.jsonNumIncrBy("doc", Path2.of("..c"), 0d));
+  }
+
+  @Test
   public void debugMemory() {
     assertEquals(0L, client.jsonDebugMemory("json"));
     assertEquals(emptyList(), client.jsonDebugMemory("json", ROOT_PATH));
@@ -414,6 +424,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
         assertJsonArrayEquals((JSONArray) ia, ib);
       } else if (ia instanceof JSONObject) {
         assertJsonObjectEquals((JSONObject) ia, ib);
+      } else if (ia instanceof Number && ib instanceof Number) {
+        assertEquals(index + "'th element mismatch", ((Number) ia).doubleValue(), ((Number) ib).doubleValue(), 0d);
       } else {
         assertEquals(index + "'th element mismatch", ia, ib);
       }

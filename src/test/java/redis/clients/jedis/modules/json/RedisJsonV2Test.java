@@ -7,7 +7,6 @@ import static redis.clients.jedis.json.Path2.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.*;
 
 import com.google.gson.Gson;
-import java.util.Arrays;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,7 +33,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     // naive set with a path
 //    client.jsonSet("null", null, ROOT_PATH);
     client.jsonSetWithEscape("null", ROOT_PATH, (Object) null);
-    assertJsonArrayEquals(singletonJSONArray(null), client.jsonGet("null", ROOT_PATH));
+    assertJsonArrayEquals(jsonArray((Object) null), client.jsonGet("null", ROOT_PATH));
 
     // real scalar value and no path
     client.jsonSetWithEscape("str", "strong");
@@ -49,7 +48,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     // check an update
     Path2 p = Path2.of(".str");
     client.jsonSet("obj", p, gson.toJson("strung"));
-    assertJsonArrayEquals(singletonJSONArray("strung"), client.jsonGet("obj", p));
+    assertJsonArrayEquals(jsonArray("strung"), client.jsonGet("obj", p));
   }
 
   @Test
@@ -57,7 +56,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSetWithEscape("obj", new IRLObject());
     Path2 p = Path2.of(".str");
     client.jsonSetWithEscape("obj", p, "strangle", JsonSetParams.jsonSetParams().xx());
-    assertJsonArrayEquals(singletonJSONArray("strangle"), client.jsonGet("obj", p));
+    assertJsonArrayEquals(jsonArray("strangle"), client.jsonGet("obj", p));
   }
 
   @Test
@@ -65,7 +64,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("obj", gson.toJson(new IRLObject()));
     Path2 p = Path2.of(".none");
     client.jsonSet("obj", p, gson.toJson("strangle"), JsonSetParams.jsonSetParams().nx());
-    assertJsonArrayEquals(singletonJSONArray("strangle"), client.jsonGet("obj", p));
+    assertJsonArrayEquals(jsonArray("strangle"), client.jsonGet("obj", p));
   }
 
   @Test
@@ -74,7 +73,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("obj1", new JSONObject(objStr));
 //    client.jsonSet("obj1", "strangle", JsonSetParams.jsonSetParams().xx());
     client.jsonSetWithEscape("obj1", (Object) "strangle", JsonSetParams.jsonSetParams().xx());
-    assertJsonArrayEquals(singletonJSONArray("strangle"), client.jsonGet("obj1", ROOT_PATH));
+    assertJsonArrayEquals(jsonArray("strangle"), client.jsonGet("obj1", ROOT_PATH));
   }
 
   @Test
@@ -103,8 +102,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     IRLObject obj = new IRLObject();
     client.jsonSetWithEscape("obj", obj);
     JSONObject result = (JSONObject) client.jsonGet("obj", Path2.of("bool"), Path2.of("str"));
-    assertJsonArrayEquals(singletonJSONArray(true), result.get("$.bool"));
-    assertJsonArrayEquals(singletonJSONArray("string"), result.get("$.str"));
+    assertJsonArrayEquals(jsonArray(true), result.get("$.bool"));
+    assertJsonArrayEquals(jsonArray("string"), result.get("$.str"));
   }
 
   @Test
@@ -115,8 +114,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     inner.put("foo", "Jane");
     obj.put("bar", inner);
     client.jsonSet("multi", obj);
-    assertJsonArrayEquals(new JSONArray(new String[]{"John", "Jane"}),
-        client.jsonGet("multi", new Path2("..foo")));
+    assertJsonArrayEquals(jsonArray("John", "Jane"), client.jsonGet("multi", new Path2("..foo")));
   }
 
   @Test
@@ -127,26 +125,26 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
     Path2 pbool = Path2.of(".bool");
     // check initial value
-    assertJsonArrayEquals(singletonJSONArray(true), client.jsonGet("obj", pbool));
+    assertJsonArrayEquals(jsonArray(true), client.jsonGet("obj", pbool));
 
     // true -> false
     client.jsonToggle("obj", pbool);
-    assertJsonArrayEquals(singletonJSONArray(false), client.jsonGet("obj", pbool));
+    assertJsonArrayEquals(jsonArray(false), client.jsonGet("obj", pbool));
 
     // false -> true
     client.jsonToggle("obj", pbool);
-    assertJsonArrayEquals(singletonJSONArray(true), client.jsonGet("obj", pbool));
+    assertJsonArrayEquals(jsonArray(true), client.jsonGet("obj", pbool));
 
     // ignore non-boolean field
     Path2 pstr = Path2.of(".str");
     assertEquals(singletonList(null), client.jsonToggle("obj", pstr));
-    assertJsonArrayEquals(singletonJSONArray("string"), client.jsonGet("obj", pstr));
+    assertJsonArrayEquals(jsonArray("string"), client.jsonGet("obj", pstr));
   }
 
   @Test
-  public void getException() {
+  public void getAbsent() {
     client.jsonSetWithEscape("test", ROOT_PATH, "foo");
-    assertJsonArrayEquals(new JSONArray(), client.jsonGet("test", Path2.of(".bar")));
+    assertJsonArrayEquals(jsonArray(), client.jsonGet("test", Path2.of(".bar")));
   }
 
   @Test
@@ -192,8 +190,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
     List<JSONArray> list = client.jsonMGet(Path2.of("baz"), "qux1", "qux2");
     assertEquals(2, list.size());
-    assertJsonArrayEquals(singletonJSONArray(new JSONObject(gson.toJson(baz1))), list.get(0));
-    assertJsonArrayEquals(singletonJSONArray(new JSONObject(gson.toJson(baz2))), list.get(1));
+    assertJsonArrayEquals(jsonArray(new JSONObject(gson.toJson(baz1))), list.get(0));
+    assertJsonArrayEquals(jsonArray(new JSONObject(gson.toJson(baz2))), list.get(1));
   }
 
   @Test
@@ -233,7 +231,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     // ignore non-array
     Path2 strPath = Path2.of(".foo");
     assertEquals(0L, client.jsonClear("foobar", strPath));
-    assertJsonArrayEquals(singletonJSONArray("bar"), client.jsonGet("foobar", strPath));
+    assertJsonArrayEquals(jsonArray("bar"), client.jsonGet("foobar", strPath));
   }
 
   @Test
@@ -247,7 +245,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
     assertEquals(1L, client.jsonClear("qux", objPath));
 //    assertEquals(new Baz(null, null, null), client.jsonGet("qux", objPath));
-    assertJsonArrayEquals(singletonJSONArray(new JSONObject()), client.jsonGet("qux", objPath));
+    assertJsonArrayEquals(jsonArray(new JSONObject()), client.jsonGet("qux", objPath));
   }
 
   @Test
@@ -256,8 +254,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(6L), client.jsonArrAppend("test_arrappend", Path2.of(".b"), 4, 5, 6));
 
-    assertJsonArrayEquals(singletonJSONArray(new JSONArray(new Integer[]{1, 2, 3, 4, 5, 6})),
-        client.jsonGet("test_arrappend", Path2.of(".b")));
+    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3, 4, 5, 6)), client.jsonGet("test_arrappend", Path2.of(".b")));
   }
 
   @Test
@@ -269,8 +266,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(6L), client.jsonArrAppend("test_arrappend", Path2.of(".b"), fooObject, trueObject, nullObject));
 
-    assertJsonArrayEquals(singletonJSONArray(new JSONArray(new Object[]{1, 2, 3, "foo", true, null})),
-        client.jsonGet("test_arrappend", Path2.of(".b")));
+    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3, "foo", true, null)), client.jsonGet("test_arrappend", Path2.of(".b")));
   }
 
   @Test
@@ -279,8 +275,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(4L), client.jsonArrAppendWithEscape("test_arrappend", Path2.of(".c.d"), "foo", true, null));
 
-    assertJsonArrayEquals(singletonJSONArray(new JSONArray(new Object[]{"ello", "foo", true, null})),
-        client.jsonGet("test_arrappend", Path2.of(".c.d")));
+    assertJsonArrayEquals(jsonArray(jsonArray("ello", "foo", true, null)), client.jsonGet("test_arrappend", Path2.of(".c.d")));
   }
 
   @Test
@@ -289,8 +284,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(3L), client.jsonArrAppendWithEscape("test_arrappend", Path2.of(".c.d"), "a", "b", "c"));
 
-    assertJsonArrayEquals(singletonJSONArray(new JSONArray(new String[]{"a", "b", "c"})),
-        client.jsonGet("test_arrappend", Path2.of(".c.d")));
+    assertJsonArrayEquals(jsonArray(jsonArray("a", "b", "c")), client.jsonGet("test_arrappend", Path2.of(".c.d")));
   }
 
   @Test
@@ -338,7 +332,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("test_arrinsert", ROOT_PATH, new JSONArray(json));
     assertEquals(singletonList(8L), client.jsonArrInsertWithEscape("test_arrinsert", ROOT_PATH, 1, "foo"));
 
-    assertJsonArrayEquals(singletonJSONArray(new JSONArray(new Object[]{"hello", "foo", "world", true, 1, 3, null, false})),
+    assertJsonArrayEquals(jsonArray(jsonArray("hello", "foo", "world", true, 1, 3, null, false)),
         client.jsonGet("test_arrinsert", ROOT_PATH));
   }
 
@@ -348,7 +342,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("test_arrinsert", ROOT_PATH, new JSONArray(json));
     assertEquals(singletonList(8L), client.jsonArrInsertWithEscape("test_arrinsert", ROOT_PATH, -1, "foo"));
 
-    assertJsonArrayEquals(singletonJSONArray(new JSONArray(Arrays.asList("hello", "world", true, 1, 3, null, "foo", false))),
+    assertJsonArrayEquals(jsonArray(jsonArray("hello", "world", true, 1, 3, null, "foo", false)),
         client.jsonGet("test_arrinsert", ROOT_PATH));
   }
 
@@ -363,10 +357,10 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   @Test
   public void arrTrim() {
 //    client.jsonSet("arr", ROOT_PATH, new int[]{0, 1, 2, 3, 4});
-    client.jsonSet("arr", ROOT_PATH, new JSONArray(Arrays.asList(0, 1, 2, 3, 4)));
+    client.jsonSet("arr", ROOT_PATH, new JSONArray(new int[]{0, 1, 2, 3, 4}));
     assertEquals(singletonList(3L), client.jsonArrTrim("arr", ROOT_PATH, 1, 3));
 //    assertArrayEquals(new Integer[]{1, 2, 3}, client.jsonGet("arr", Integer[].class, ROOT_PATH));
-    assertJsonArrayEquals(singletonJSONArray(new JSONArray(new int[]{1, 2, 3})), client.jsonGet("arr", ROOT_PATH));
+    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3)), client.jsonGet("arr", ROOT_PATH));
   }
 
   @Test
@@ -386,11 +380,10 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   @Test
   public void numIncrBy() {
     client.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
-    assertJsonArrayEquals(singletonJSONArray(null), client.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
-    assertJsonArrayEquals(new JSONArray(new Object[]{null, 4, 7, null}),
-        client.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
-    assertJsonArrayEquals(singletonJSONArray(null), client.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
-    assertJsonArrayEquals(new JSONArray(), client.jsonNumIncrBy("doc", Path2.of("..c"), 0d));
+    assertJsonArrayEquals(jsonArray((Object) null), client.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
+    assertJsonArrayEquals(jsonArray(null, 4, 7, null), client.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
+    assertJsonArrayEquals(jsonArray((Object) null), client.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
+    assertJsonArrayEquals(jsonArray(), client.jsonNumIncrBy("doc", Path2.of("..c"), 0d));
   }
 
   @Test
@@ -456,9 +449,11 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     }
   }
 
-  private static JSONArray singletonJSONArray(Object o) {
+  private static JSONArray jsonArray(Object... objects) {
     JSONArray arr = new JSONArray();
-    arr.put(o);
+    for (Object o : objects) {
+      arr.put(o);
+    }
     return arr;
   }
 }

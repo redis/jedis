@@ -142,7 +142,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   }
 
   @Test(expected = JedisDataException.class)
-  public void getException() {
+  public void getAbsent() {
     client.jsonSet("test", ROOT_PATH, "foo");
     client.jsonGet("test", String.class, Path.of(".bar"));
   }

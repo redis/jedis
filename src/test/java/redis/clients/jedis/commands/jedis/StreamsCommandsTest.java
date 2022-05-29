@@ -245,6 +245,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     List<StreamEntry> range8 = jedis.xrange("xrange-stream", (StreamEntryID) null, (StreamEntryID) null);
     assertEquals(3, range8.size());
+    range8 = jedis.xrange("xrange-stream", StreamEntryID.MINIMUM_ID, StreamEntryID.MAXIMUM_ID);
+    assertEquals(3, range8.size());
   }
 
   @Test
@@ -380,6 +382,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, range7.size());
 
     List<StreamEntry> range8 = jedis.xrevrange("xrevrange-stream", (StreamEntryID) null, (StreamEntryID) null);
+    assertEquals(3, range8.size());
+    range8 = jedis.xrevrange("xrevrange-stream", StreamEntryID.MAXIMUM_ID, StreamEntryID.MINIMUM_ID);
     assertEquals(3, range8.size());
   }
 
@@ -532,6 +536,14 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     List<StreamPendingEntry> response = jedis.xpending("xpendeing-stream", "xpendeing-group",
         XPendingParams.xPendingParams("(0", "+", 5));
+    assertEquals(2, response.size());
+    assertEquals(m1, response.get(0).getID());
+    assertEquals("consumer1", response.get(0).getConsumerName());
+    assertEquals(m2, response.get(1).getID());
+    assertEquals("consumer2", response.get(1).getConsumerName());
+
+    response = jedis.xpending("xpendeing-stream", "xpendeing-group",
+        XPendingParams.xPendingParams(StreamEntryID.MINIMUM_ID, StreamEntryID.MAXIMUM_ID, 5));
     assertEquals(2, response.size());
     assertEquals(m1, response.get(0).getID());
     assertEquals("consumer1", response.get(0).getConsumerName());

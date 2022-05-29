@@ -22,7 +22,6 @@ import static org.junit.Assert.*;
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class ShardedJedisPoolWithCompleteCredentialsTest {
-  private static HostAndPort hnp = HostAndPortUtil.getRedisServers().get(0);
   private static HostAndPort redis1 = HostAndPortUtil.getRedisServers().get(0);
   private static HostAndPort redis2 = HostAndPortUtil.getRedisServers().get(1);
 
@@ -76,8 +75,7 @@ public class ShardedJedisPoolWithCompleteCredentialsTest {
 
   @Test
   public void checkConnectionWithDefaultPort() {
-    ShardedJedisPool pool = new ShardedJedisPool(new GenericObjectPoolConfig<ShardedJedis>(),
-        shards);
+    ShardedJedisPool pool = new ShardedJedisPool(new ShardedJedisPoolConfig(), shards);
     ShardedJedis jedis = pool.getResource();
     jedis.set("foo", "bar");
     assertEquals("bar", jedis.get("foo"));

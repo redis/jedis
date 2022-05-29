@@ -164,12 +164,12 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
           jedis.quit();
         }
       } catch (RuntimeException e) {
-        logger.warn("Error while QUIT", e);
+        logger.debug("Error while QUIT", e);
       }
       try {
         jedis.close();
       } catch (RuntimeException e) {
-        logger.warn("Error while close", e);
+        logger.debug("Error while close", e);
       }
     }
   }
@@ -186,12 +186,12 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
         try {
           jedis.quit();
         } catch (RuntimeException e) {
-          logger.warn("Error while QUIT", e);
+          logger.debug("Error while QUIT", e);
         }
         try {
           jedis.close();
         } catch (RuntimeException e) {
-          logger.warn("Error while close", e);
+          logger.debug("Error while close", e);
         }
       }
       throw je;

@@ -2,14 +2,9 @@ package redis.clients.jedis;
 
 import java.io.Serializable;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class HostAndPort implements Serializable {
 
   private static final long serialVersionUID = -519876229978427751L;
-
-  protected static Logger log = LoggerFactory.getLogger(HostAndPort.class);
 
   private final String host;
   private final int port;
@@ -32,9 +27,7 @@ public class HostAndPort implements Serializable {
     if (obj == null) return false;
     if (obj == this) return true;
     if (!(obj instanceof HostAndPort)) return false;
-
     HostAndPort other = (HostAndPort) obj;
-
     return this.port == other.port && this.host.equals(other.host);
   }
 

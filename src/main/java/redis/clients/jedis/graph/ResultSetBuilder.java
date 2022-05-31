@@ -256,7 +256,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
       case BOOLEAN:
         return Boolean.parseBoolean(SafeEncoder.encode((byte[]) obj));
       case DOUBLE:
-        return Double.parseDouble(SafeEncoder.encode((byte[]) obj));
+        return BuilderFactory.DOUBLE.build(obj);
       case INTEGER:
         return (Long) obj;
       case STRING:

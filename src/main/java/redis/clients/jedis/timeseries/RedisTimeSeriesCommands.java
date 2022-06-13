@@ -1,6 +1,7 @@
 package redis.clients.jedis.timeseries;
 
 import java.util.List;
+import java.util.Map;
 
 public interface RedisTimeSeriesCommands {
 
@@ -67,6 +68,14 @@ public interface RedisTimeSeriesCommands {
    * @return timestamp
    */
   long tsAdd(String key, long timestamp, double value, TSCreateParams createParams);
+
+  /**
+   * {@code TS.MADD key timestamp value [key timestamp value ...]}
+   *
+   * @param entries key, timestamp, value
+   * @return timestamps
+   */
+  List<Long> tsMAdd(Map.Entry<String, TSElement>... entries);
 
   /**
    * {@code TS.RANGE key fromTimestamp toTimestamp}

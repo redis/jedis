@@ -1,6 +1,7 @@
 package redis.clients.jedis.timeseries;
 
 import java.util.List;
+import java.util.Map;
 import redis.clients.jedis.Response;
 
 public interface RedisTimeSeriesPipelineCommands {
@@ -18,6 +19,8 @@ public interface RedisTimeSeriesPipelineCommands {
   Response<Long> tsAdd(String key, long timestamp, double value);
 
   Response<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams);
+
+  Response<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries);
 
   Response<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp);
 

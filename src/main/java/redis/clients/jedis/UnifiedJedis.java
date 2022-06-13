@@ -3857,6 +3857,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Long> tsMAdd(Map.Entry<String, TSElement>... entries) {
+    return executeCommand(commandObjects.tsMAdd(entries));
+  }
+
+  @Override
   public List<TSElement> tsRange(String key, long fromTimestamp, long toTimestamp) {
     return executeCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp));
   }

@@ -3441,6 +3441,14 @@ public class CommandObjects {
         .add(timestamp).add(value).addParams(createParams), BuilderFactory.LONG);
   }
 
+  public final CommandObject<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries) {
+    CommandArguments args = commandArguments(TimeSeriesCommand.MADD);
+    for (Map.Entry<String, TSElement> entry : entries) {
+      args.key(entry.getKey()).add(entry.getValue().getTimestamp()).add(entry.getValue().getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+  }
+
   public final CommandObject<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.RANGE).key(key)
         .add(fromTimestamp).add(toTimestamp), BuilderFactory.TIMESERIES_ELEMENT_LIST);

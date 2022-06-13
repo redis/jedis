@@ -18,16 +18,10 @@ public class BuilderTest {
     assertEquals(Double.valueOf(Double.POSITIVE_INFINITY), build);
     build = BuilderFactory.DOUBLE.build("-inf".getBytes());
     assertEquals(Double.valueOf(Double.NEGATIVE_INFINITY), build);
-  }
 
-  @Test
-  public void testBuild() {
     try {
-      Double build = DOUBLE.build("".getBytes());
-      build = DOUBLE.build("inf".getBytes());
-      build = DOUBLE.build("+inf".getBytes());
-      build = DOUBLE.build("-inf".getBytes());
-      Assert.fail("testBuild should have thrown NumberFormatException");
+      build = DOUBLE.build("".getBytes());
+      Assert.fail("testDouble should have thrown NumberFormatException");
     } catch (NumberFormatException expected) {
       Assert.assertEquals("empty String", expected.getMessage());
     }

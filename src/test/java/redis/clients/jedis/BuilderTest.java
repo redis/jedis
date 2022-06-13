@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class BuilderTest {
@@ -16,5 +17,12 @@ public class BuilderTest {
     assertEquals(Double.valueOf(Double.POSITIVE_INFINITY), build);
     build = BuilderFactory.DOUBLE.build("-inf".getBytes());
     assertEquals(Double.valueOf(Double.NEGATIVE_INFINITY), build);
+
+    try {
+      BuilderFactory.DOUBLE.build("".getBytes());
+      Assert.fail("Empty String should throw NumberFormatException.");
+    } catch (NumberFormatException expected) {
+      Assert.assertEquals("empty String", expected.getMessage());
+    }
   }
 }

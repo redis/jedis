@@ -3716,6 +3716,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries) {
+    return appendCommand(commandObjects.tsMAdd(entries));
+  }
+
+  @Override
   public Response<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
     return appendCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp));
   }

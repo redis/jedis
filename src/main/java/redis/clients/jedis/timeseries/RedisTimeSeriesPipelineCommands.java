@@ -22,6 +22,14 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries);
 
+  Response<Long> tsIncrBy(String key, double value);
+
+  Response<Long> tsIncrBy(String key, double value, long timestamp);
+
+  Response<Long> tsDecrBy(String key, double value);
+
+  Response<Long> tsDecrBy(String key, double value, long timestamp);
+
   Response<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp);
 
   Response<List<TSElement>> tsRange(String key, TSRangeParams rangeParams);

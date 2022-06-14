@@ -355,29 +355,26 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(3.2, values2.get(0).getValue(), 0.001);
     assertEquals(54.2, values2.get(1).getValue(), 0.001);
   }
-//
-//  @Test
-//  public void testIncrByDecrBy() throws InterruptedException {
-//    assertEquals("OK", client.tsCreate("seriesIncDec", 100 * 1000 /*100sec retentionTime*/));
-//    assertEquals(1L, client.tsAdd("seriesIncDec", 1L, 1, 10000, null), 0);
-//    assertEquals(2L, client.incrBy("seriesIncDec", 3, 2L), 0);
-//    assertEquals(3L, client.decrBy("seriesIncDec", 2, 3L), 0);
-//    List<TSElement> values = client.tsRange("seriesIncDec", 1L, 3L);
-//    assertEquals(3, values.size());
-//    assertEquals(2, values[2].getValue(), 0);
-//    if (moduleVersion >= 10400) {
-//      assertEquals(3L, client.decrBy("seriesIncDec", 2, 3L), 0);
-//      values = client.tsRange("seriesIncDec", 1L, Long.MAX_VALUE);
-//      assertEquals(3, values.size());
-//    } else {
-//      try {
-//        client.incrBy("seriesIncDec", 3, 0L);
-//        fail();
-//      } catch (JedisDataException e) {
-//        // Error on incrby in the past
-//      }
-//    }
-//  }
+
+  @Test
+  public void testIncrByDecrBy() throws InterruptedException {
+    assertEquals("OK", client.tsCreate("seriesIncDec",
+        TSCreateParams.createParams().retention(100 * 1000 /*100 sec*/)));
+
+    assertEquals(1L, client.tsAdd("seriesIncDec", 1L, 1), 0);
+    assertEquals(2L, client.tsIncrBy("seriesIncDec", 3, 2L), 0);
+    assertEquals(3L, client.tsDecrBy("seriesIncDec", 2, 3L), 0);
+    List<TSElement> values = client.tsRange("seriesIncDec", 1L, 3L);
+    assertEquals(3, values.size());
+    assertEquals(2, values.get(2).getValue(), 0);
+
+    assertEquals(3L, client.tsDecrBy("seriesIncDec", 2, 3L), 0);
+    values = client.tsRange("seriesIncDec", 1L, Long.MAX_VALUE);
+    assertEquals(3, values.size());
+
+    client.tsIncrBy("seriesIncDec", 100);
+    client.tsDecrBy("seriesIncDec", 33);
+  }
 
   @Test
   public void align() {

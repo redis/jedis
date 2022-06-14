@@ -3791,6 +3791,26 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Long> tsIncrBy(String key, double value) {
+    return appendCommand(commandObjects.tsIncrBy(key, value));
+  }
+
+  @Override
+  public Response<Long> tsIncrBy(String key, double value, long timestamp) {
+    return appendCommand(commandObjects.tsIncrBy(key, value, timestamp));
+  }
+
+  @Override
+  public Response<Long> tsDecrBy(String key, double value) {
+    return appendCommand(commandObjects.tsDecrBy(key, value));
+  }
+
+  @Override
+  public Response<Long> tsDecrBy(String key, double value, long timestamp) {
+    return appendCommand(commandObjects.tsDecrBy(key, value, timestamp));
+  }
+
+  @Override
   public Response<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
     return appendCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp));
   }

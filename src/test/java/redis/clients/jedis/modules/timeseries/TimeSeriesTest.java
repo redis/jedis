@@ -9,9 +9,11 @@ import static org.junit.Assert.fail;
 import java.util.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.KeyValue;
 
 public class TimeSeriesTest extends RedisModuleCommandsTestBase {
 
@@ -321,62 +323,58 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     List<TSElement> values = client.tsRange("seriesAdd2", startTime, add3);
     assertEquals(3, values.size());
   }
-//
-//  @Test
-//  public void testMadd() {
-//    Map<String, String> labels = new HashMap<>();
-//    labels.put("l1", "v1");
-//    labels.put("l2", "v2");
-//    assertEquals("OK", client.tsCreate("seriesAdd1", TSCreateParams.createParams().retention(10000L).labels(labels)));
-//    assertEquals("OK", client.tsCreate("seriesAdd2", TSCreateParams.createParams().retention(10000L).labels(labels)));
-//
-//    long now = System.currentTimeMillis();
-//    List<Object> result =
-//        client.tsMadd(
-//            new Measurement("seriesAdd1", 0L, 1.1), // System time
-//            new Measurement("seriesAdd2", 2000L, 3.2),
-//            new Measurement("seriesAdd1", 1500L, 2.67), // Should return an error
-//            new Measurement("seriesAdd2", 3200L, 54.2),
-//            new Measurement("seriesAdd2", 4300L, 21.2));
-//
-//    assertTrue(now <= (Long) result.get(0) && now + 5 > (Long) result.get(0));
-//    assertEquals(2000L, result.get(1));
-//    assertTrue(result.get(2) instanceof JedisDataException);
-//    assertEquals(3200L, result.get(3));
-//    assertEquals(4300L, result.get(4));
-//
-//    List<TSElement> values1 = client.tsRange("seriesAdd1", 0, Long.MAX_VALUE);
-//    assertEquals(1, values1.size());
-//    assertEquals(1.1, values1.get(0).getValue(), 0.001);
-//
-//    List<TSElement> values2 = client.tsRange("seriesAdd2", TSRangeParams.rangeParams(0, Long.MAX_VALUE).count(2));
-//    assertEquals(2, values2.size());
-//    assertEquals(3.2, values2.get(0).getValue(), 0.001);
-//    assertEquals(54.2, values2.get(1).getValue(), 0.001);
-//  }
-//
-//  @Test
-//  public void testIncrByDecrBy() throws InterruptedException {
-//    assertEquals("OK", client.tsCreate("seriesIncDec", 100 * 1000 /*100sec retentionTime*/));
-//    assertEquals(1L, client.tsAdd("seriesIncDec", 1L, 1, 10000, null), 0);
-//    assertEquals(2L, client.incrBy("seriesIncDec", 3, 2L), 0);
-//    assertEquals(3L, client.decrBy("seriesIncDec", 2, 3L), 0);
-//    List<TSElement> values = client.tsRange("seriesIncDec", 1L, 3L);
-//    assertEquals(3, values.size());
-//    assertEquals(2, values[2].getValue(), 0);
-//    if (moduleVersion >= 10400) {
-//      assertEquals(3L, client.decrBy("seriesIncDec", 2, 3L), 0);
-//      values = client.tsRange("seriesIncDec", 1L, Long.MAX_VALUE);
-//      assertEquals(3, values.size());
-//    } else {
-//      try {
-//        client.incrBy("seriesIncDec", 3, 0L);
-//        fail();
-//      } catch (JedisDataException e) {
-//        // Error on incrby in the past
-//      }
-//    }
-//  }
+
+  @Test
+  public void testMadd() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK", client.tsCreate("seriesAdd1", TSCreateParams.createParams().retention(10000L).labels(labels)));
+    assertEquals("OK", client.tsCreate("seriesAdd2", TSCreateParams.createParams().retention(10000L).labels(labels)));
+
+    List<Long> result = client.tsMAdd(
+        new KeyValue<>("seriesAdd1", new TSElement(1000L, 1.1)),
+        new KeyValue<>("seriesAdd2", new TSElement(2000L, 3.2)),
+        new KeyValue<>("seriesAdd1", new TSElement(1500L, 2.67)),
+        new KeyValue<>("seriesAdd2", new TSElement(3200L, 54.2)),
+        new KeyValue<>("seriesAdd2", new TSElement(4300L, 21.2)));
+
+    assertEquals(1000L, result.get(0).longValue());
+    assertEquals(2000L, result.get(1).longValue());
+    assertEquals(1500L, result.get(2).longValue());
+    assertEquals(3200L, result.get(3).longValue());
+    assertEquals(4300L, result.get(4).longValue());
+
+    List<TSElement> values1 = client.tsRange("seriesAdd1", 0, Long.MAX_VALUE);
+    assertEquals(2, values1.size());
+    assertEquals(1.1, values1.get(0).getValue(), 0.001);
+    assertEquals(2.67, values1.get(1).getValue(), 0.001);
+
+    List<TSElement> values2 = client.tsRange("seriesAdd2", TSRangeParams.rangeParams(0, Long.MAX_VALUE).count(2));
+    assertEquals(2, values2.size());
+    assertEquals(3.2, values2.get(0).getValue(), 0.001);
+    assertEquals(54.2, values2.get(1).getValue(), 0.001);
+  }
+
+  @Test
+  public void testIncrByDecrBy() throws InterruptedException {
+    assertEquals("OK", client.tsCreate("seriesIncDec",
+        TSCreateParams.createParams().retention(100 * 1000 /*100 sec*/)));
+
+    assertEquals(1L, client.tsAdd("seriesIncDec", 1L, 1), 0);
+    assertEquals(2L, client.tsIncrBy("seriesIncDec", 3, 2L), 0);
+    assertEquals(3L, client.tsDecrBy("seriesIncDec", 2, 3L), 0);
+    List<TSElement> values = client.tsRange("seriesIncDec", 1L, 3L);
+    assertEquals(3, values.size());
+    assertEquals(2, values.get(2).getValue(), 0);
+
+    assertEquals(3L, client.tsDecrBy("seriesIncDec", 2, 3L), 0);
+    values = client.tsRange("seriesIncDec", 1L, Long.MAX_VALUE);
+    assertEquals(3, values.size());
+
+    client.tsIncrBy("seriesIncDec", 100);
+    client.tsDecrBy("seriesIncDec", 33);
+  }
 
   @Test
   public void align() {

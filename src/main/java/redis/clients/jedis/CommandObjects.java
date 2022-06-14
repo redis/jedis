@@ -3427,18 +3427,42 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> tsAdd(String key, double value) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
-        .add(Protocol.BYTES_ASTERISK).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(Protocol.BYTES_ASTERISK).add(value), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> tsAdd(String key, long timestamp, double value) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
-        .add(timestamp).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(timestamp).add(value), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
         .add(timestamp).add(value).addParams(createParams), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries) {
+    CommandArguments args = commandArguments(TimeSeriesCommand.MADD);
+    for (Map.Entry<String, TSElement> entry : entries) {
+      args.key(entry.getKey()).add(entry.getValue().getTimestamp()).add(entry.getValue().getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<Long> tsIncrBy(String key, double value) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.INCRBY).key(key).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsIncrBy(String key, double value, long timestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.INCRBY).key(key).add(value)
+        .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsDecrBy(String key, double value) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsDecrBy(String key, double value, long timestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(value)
+        .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {

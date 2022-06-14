@@ -77,6 +77,14 @@ public interface RedisTimeSeriesCommands {
    */
   List<Long> tsMAdd(Map.Entry<String, TSElement>... entries);
 
+  long tsIncrBy(String key, double value);
+
+  long tsIncrBy(String key, double value, long timestamp);
+
+  long tsDecrBy(String key, double value);
+
+  long tsDecrBy(String key, double value, long timestamp);
+
   /**
    * {@code TS.RANGE key fromTimestamp toTimestamp}
    *

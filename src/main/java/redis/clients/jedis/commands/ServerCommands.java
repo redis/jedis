@@ -221,4 +221,6 @@ public interface ServerCommands {
   String lolwut();
 
   String lolwut(LolwutParams lolwutParams);
+
+  String reset();
 }

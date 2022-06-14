@@ -9177,6 +9177,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String reset() {
+    connection.sendCommand(Command.RESET);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xadd(key, id, hash));

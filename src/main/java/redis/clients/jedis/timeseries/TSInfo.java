@@ -86,11 +86,8 @@ public class TSInfo {
               for (Object ruleData : rulesDataList) {
                 List<Object> encodedRule = (List<Object>) SafeEncoder.encodeObject(ruleData);
                 rulesValueList.add(encodedRule);
-                try {
-                  rules.put((String) encodedRule.get(0),
-                      new Rule((String) encodedRule.get(0), (Long) encodedRule.get(1),
-                          AggregationType.safeValueOf((String) encodedRule.get(2)), (Long) encodedRule.get(3)));
-                } catch (Exception e) { }
+                rules.put((String) encodedRule.get(0), new Rule((String) encodedRule.get(0), (Long) encodedRule.get(1),
+                    AggregationType.safeValueOf((String) encodedRule.get(2)), (Long) encodedRule.get(3)));
               }
               value = rulesValueList;
               break;
@@ -101,14 +98,10 @@ public class TSInfo {
               for (Object chunkData : chunksDataList) {
                 Map<String, Object> chunk = BuilderFactory.ENCODED_OBJECT_MAP.build(chunkData);
                 chunksValueList.add(new HashMap<>(chunk));
-
                 if (chunk.containsKey(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)) {
-                  try {
-                    chunk.put(CHUNKS_BYTES_PER_SAMPLE_PROPERTY,
-                        DoublePrecision.parseFloatingPointNumber((String) chunk.get(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)));
-                  } catch (Exception e) { }
+                  chunk.put(CHUNKS_BYTES_PER_SAMPLE_PROPERTY,
+                      DoublePrecision.parseFloatingPointNumber((String) chunk.get(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)));
                 }
-                System.out.println(chunk);
                 chunks.add(chunk);
               }
               value = chunksValueList;

@@ -445,7 +445,8 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
   public void hrandfield() {
     assertNull(jedis.hrandfield("foo"));
     assertEquals(Collections.emptyList(), jedis.hrandfield("foo", 1));
-    assertEquals(Collections.emptyMap(), jedis.hrandfieldWithValues("foo", 1));
+    assertEquals(Collections.emptyList(), jedis.hrandfieldWithValues("foo", 1));
+    assertEquals(Collections.emptyList(), jedis.hrandfieldWithValues("foo", -1));
 
     Map<String, String> hash = new LinkedHashMap<>();
     hash.put("bar", "bar");
@@ -457,16 +458,23 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     assertTrue(hash.containsKey(jedis.hrandfield("foo")));
     assertEquals(2, jedis.hrandfield("foo", 2).size());
 
-    Map<String, String> actual = jedis.hrandfieldWithValues("foo", 2);
+    List<Map.Entry<String, String>> actual = jedis.hrandfieldWithValues("foo", 2);
     assertNotNull(actual);
     assertEquals(2, actual.size());
-    Map.Entry entry = actual.entrySet().iterator().next();
+    Map.Entry entry = actual.get(0);
+    assertEquals(hash.get(entry.getKey()), entry.getValue());
+
+    actual = jedis.hrandfieldWithValues("foo", -2);
+    assertNotNull(actual);
+    assertEquals(2, actual.size());
+    entry = actual.get(0);
     assertEquals(hash.get(entry.getKey()), entry.getValue());
 
     // binary
     assertNull(jedis.hrandfield(bfoo));
     assertEquals(Collections.emptyList(), jedis.hrandfield(bfoo, 1));
-    assertEquals(Collections.emptyMap(), jedis.hrandfieldWithValues(bfoo, 1));
+    assertEquals(Collections.emptyList(), jedis.hrandfieldWithValues(bfoo, 1));
+    assertEquals(Collections.emptyList(), jedis.hrandfieldWithValues(bfoo, -1));
 
     Map<byte[], byte[]> bhash = new JedisByteHashMap();
     bhash.put(bbar, bbar);
@@ -478,10 +486,16 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     assertTrue(bhash.containsKey(jedis.hrandfield(bfoo)));
     assertEquals(2, jedis.hrandfield(bfoo, 2).size());
 
-    Map<byte[], byte[]> bactual = jedis.hrandfieldWithValues(bfoo, 2);
+    List<Map.Entry<byte[], byte[]>> bactual = jedis.hrandfieldWithValues(bfoo, 2);
     assertNotNull(bactual);
     assertEquals(2, bactual.size());
-    Map.Entry bentry = bactual.entrySet().iterator().next();
+    Map.Entry bentry = bactual.get(0);
+    assertArrayEquals(bhash.get(bentry.getKey()), (byte[]) bentry.getValue());
+
+    bactual = jedis.hrandfieldWithValues(bfoo, -2);
+    assertNotNull(bactual);
+    assertEquals(2, bactual.size());
+    bentry = bactual.get(0);
     assertArrayEquals(bhash.get(bentry.getKey()), (byte[]) bentry.getValue());
   }
 }

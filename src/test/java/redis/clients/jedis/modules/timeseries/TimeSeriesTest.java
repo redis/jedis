@@ -1,6 +1,7 @@
 package redis.clients.jedis.modules.timeseries;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -623,11 +624,12 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     labels.remove("l2");
     assertEquals("OK", client.tsAlter("seriesAlter", TSAlterParams.alterParams()
         .retentionTime(324 /*324ms retentionTime*/).labels(labels)));
-//    Info info = client.info("seriesAlter");
-//    assertEquals((Long) 324L, info.getProperty("retentionTime"));
-//    assertEquals("v11", info.getLabel("l1"));
-//    assertNull(info.getLabel("l2"));
-//    assertEquals("v33", info.getLabel("l3"));
+
+    TSInfo info = client.tsInfo("seriesAlter");
+    assertEquals((Long) 324L, info.getProperty("retentionTime"));
+    assertEquals("v11", info.getLabel("l1"));
+    assertNull(info.getLabel("l2"));
+    assertEquals("v33", info.getLabel("l3"));
   }
 
   @Test
@@ -648,38 +650,62 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList("seriesQueryIndex1", "seriesQueryIndex2"), client.tsQueryIndex("l1=v1"));
     assertEquals(Arrays.asList("seriesQueryIndex2"), client.tsQueryIndex("l2=v22"));
   }
-//
-//  @Test
-//  public void testInfo() {
-//    Map<String, String> labels = new HashMap<>();
-//    labels.put("l1", "v1");
-//    labels.put("l2", "v2");
-//    assertEquals("OK", client.tsCreate("source", 10000L /*retentionTime*/, labels));
-//    assertEquals("OK", client.tsCreate("dest", 20000L /*retentionTime*/));
-//    assertEquals("OK", client.tsCreateRule("source", "dest", AggregationType.AVG, 100));
-//
-//    Info info = client.info("source");
-//    assertEquals((Long) 10000L, info.getProperty("retentionTime"));
-//    if (moduleVersion >= 10400) {
-//      assertEquals((Long) 4096L, info.getProperty("chunkSize"));
-//    } else {
-//      assertEquals((Long) 256L, info.getProperty("maxSamplesPerChunk"));
-//    }
-//    assertEquals("v1", info.getLabel("l1"));
-//    assertEquals("v2", info.getLabel("l2"));
-//    assertNull(info.getLabel("l3"));
-//
-//    Rule rule = info.getRule("dest");
-//    assertEquals("dest", rule.getTarget());
-//    assertEquals(100L, rule.getValue());
-//    assertEquals(AggregationType.AVG, rule.getAggregation());
-//    try {
-//      client.info("seriesInfo1");
-//      fail();
-//    } catch (JedisDataException e) {
-//      // Error on info on none existing series
-//    }
-//  }
+
+  @Test
+  public void testInfo() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK", client.tsCreate("source", TSCreateParams.createParams().retention(10000L).labels(labels)));
+    assertEquals("OK", client.tsCreate("dest", TSCreateParams.createParams().retention(20000L)));
+    assertEquals("OK", client.tsCreateRule("source", "dest", AggregationType.AVG, 100));
+
+    TSInfo info = client.tsInfo("source");
+    assertEquals((Long) 10000L, info.getProperty("retentionTime"));
+    assertEquals((Long) 4096L, info.getProperty("chunkSize"));
+    assertEquals("v1", info.getLabel("l1"));
+    assertEquals("v2", info.getLabel("l2"));
+    assertNull(info.getLabel("l3"));
+
+    assertEquals(1, info.getRules().size());
+    TSInfo.Rule rule = info.getRule("dest");
+    assertEquals("dest", rule.getCompactionKey());
+    assertEquals(100L, rule.getBucketDuration());
+    assertEquals(AggregationType.AVG, rule.getAggregator());
+
+    try {
+      client.tsInfo("none");
+      fail();
+    } catch (JedisDataException e) {
+      // Error on info on none existing series
+    }
+  }
+
+  @Test
+  public void testInfoDebug() {
+    assertEquals("OK", client.tsCreate("source", TSCreateParams.createParams()));
+
+    TSInfo info = client.tsInfoDebug("source");
+    assertEquals((Long) 0L, info.getProperty("retentionTime"));
+    assertEquals(0, info.getLabels().size());
+    assertEquals(0, info.getRules().size());
+
+    List<Map<String, Object>> chunks = info.getChunks();
+    assertEquals(1, chunks.size());
+    Map<String, Object> chunk = chunks.get(0);
+    assertEquals(0L, chunk.get("startTimestamp"));
+    assertEquals(0L, chunk.get("endTimestamp"));
+    assertEquals(0L, chunk.get("samples"));
+    assertEquals(4096L, chunk.get("size"));
+    assertEquals(Double.POSITIVE_INFINITY, chunk.get("bytesPerSample"));
+
+    try {
+      client.tsInfoDebug("none");
+      fail();
+    } catch (JedisDataException e) {
+      // Error on info on none existing series
+    }
+  }
 
   @Test
   public void testRevRange() {

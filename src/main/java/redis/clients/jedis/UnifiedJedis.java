@@ -3945,6 +3945,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public List<String> tsQueryIndex(String... filters) {
     return executeCommand(commandObjects.tsQueryIndex(filters));
   }
+
+  @Override
+  public TSInfo tsInfo(String key) {
+    return executor.executeCommand(commandObjects.tsInfo(key));
+  }
+
+  @Override
+  public TSInfo tsInfoDebug(String key) {
+    return executeCommand(commandObjects.tsInfoDebug(key));
+  }
   // RedisTimeSeries commands
 
   // RedisBloom commands

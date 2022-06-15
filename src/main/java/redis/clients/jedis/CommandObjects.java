@@ -3530,6 +3530,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.QUERYINDEX)
         .addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
   }
+
+  public final CommandObject<TSInfo> tsInfo(String key) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.INFO).key(key), TSInfo.TIMESERIES_INFO);
+  }
+
+  public final CommandObject<TSInfo> tsInfoDebug(String key) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.INFO).key(key).add(TimeSeriesKeyword.DEBUG), TSInfo.TIMESERIES_INFO);
+  }
   // RedisTimeSeries commands
 
   // RedisBloom commands

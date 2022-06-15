@@ -3571,6 +3571,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
+    return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
+  }
+
+  @Override
+  public Response<Double> jsonNumIncrBy(String key, Path path, double value) {
+    return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
+  }
+
+  @Override
   public Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) {
     return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
   }

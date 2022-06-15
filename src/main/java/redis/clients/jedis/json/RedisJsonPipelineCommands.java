@@ -103,6 +103,10 @@ public interface RedisJsonPipelineCommands {
 
   Response<Long> jsonStrLen(String key, Path path);
 
+  Response<JSONArray> jsonNumIncrBy(String key, Path2 path, double value);
+
+  Response<Double> jsonNumIncrBy(String key, Path path, double value);
+
   Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects);
 
   Response<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects);

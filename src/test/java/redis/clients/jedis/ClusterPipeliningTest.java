@@ -579,8 +579,9 @@ public class ClusterPipeliningTest {
     Response<List<String>> r12 = p.hmget("myhash", "field1", "field2");
     Response<String> r13 = p.hrandfield("myotherhash");
     Response<List<String>> r14 = p.hrandfield("myotherhash", 2);
-    Response<Map<String, String>> r15 = p.hrandfieldWithValues("myotherhash", 2);
+    Response<List<Map.Entry<String, String>>> r15 = p.hrandfieldWithValues("myotherhash", 2);
     Response<Long> r16 = p.hstrlen("myhash", "field1");
+    Response<List<Map.Entry<String, String>>> r17 = p.hrandfieldWithValues("myotherhash", -2);
 
     p.sync();
     Assert.assertEquals(Long.valueOf(1), r1.get());
@@ -597,8 +598,9 @@ public class ClusterPipeliningTest {
     Assert.assertEquals(vals2, r12.get());
     Assert.assertTrue(hm.keySet().contains(r13.get()));
     Assert.assertEquals(2, r14.get().size());
-    Assert.assertTrue(r15.get().containsKey("field3") && r15.get().containsValue("5"));
+    Assert.assertTrue(r15.get().contains(new AbstractMap.SimpleEntry<>("field3", "5")));
     Assert.assertEquals(Long.valueOf(5), r16.get());
+    Assert.assertTrue(r17.get().contains(new AbstractMap.SimpleEntry<>("field3", "5")) || r17.get().contains(new AbstractMap.SimpleEntry<>("field2", "2")));
   }
 
   @Test

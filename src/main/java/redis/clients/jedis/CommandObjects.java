@@ -1058,8 +1058,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Map<String, String>> hrandfieldWithValues(String key, long count) {
-    return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES), BuilderFactory.STRING_MAP);
+  public final CommandObject<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count) {
+    return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES), BuilderFactory.STRING_PAIR_LIST);
   }
 
   public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
@@ -1074,8 +1074,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count) {
-    return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES), BuilderFactory.BINARY_MAP);
+  public final CommandObject<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count) {
+    return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES), BuilderFactory.BINARY_PAIR_LIST);
   }
 
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {

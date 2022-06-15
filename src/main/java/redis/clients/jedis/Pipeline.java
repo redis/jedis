@@ -760,7 +760,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Map<String, String>> hrandfieldWithValues(String key, long count) {
+  public Response<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count) {
     return appendCommand(commandObjects.hrandfieldWithValues(key, count));
   }
 
@@ -2019,7 +2019,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count) {
+  public Response<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count) {
     return appendCommand(commandObjects.hrandfieldWithValues(key, count));
   }
 

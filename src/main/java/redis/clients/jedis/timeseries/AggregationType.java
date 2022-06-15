@@ -24,4 +24,12 @@ public enum AggregationType implements Rawable {
   public byte[] getRaw() {
     return raw;
   }
+
+  public static AggregationType safeValueOf(String str) {
+    try {
+      return AggregationType.valueOf(str.replace('.', '_'));
+    } catch (IllegalArgumentException iae) {
+      return null;
+    }
+  }
 }

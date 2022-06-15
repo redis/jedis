@@ -17,6 +17,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.timeseries.TSKeyedElements;
 import redis.clients.jedis.timeseries.TSElement;
 import redis.clients.jedis.timeseries.TSKeyValue;
+import redis.clients.jedis.util.DoublePrecision;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
@@ -117,15 +118,7 @@ public final class BuilderFactory {
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {
-      String string = STRING.build(data);
-      if (string == null) return null;
-      try {
-        return Double.valueOf(string);
-      } catch (NumberFormatException e) {
-        if (string.equals("inf") || string.equals("+inf")) return Double.POSITIVE_INFINITY;
-        if (string.equals("-inf")) return Double.NEGATIVE_INFINITY;
-        throw e;
-      }
+      return DoublePrecision.parseFloatingPointNumber(STRING.build(data));
     }
 
     @Override

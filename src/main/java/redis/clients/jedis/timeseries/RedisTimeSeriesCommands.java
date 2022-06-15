@@ -218,4 +218,8 @@ public interface RedisTimeSeriesCommands {
    * @return list of timeseries keys
    */
   List<String> tsQueryIndex(String... filters);
+
+  TSInfo tsInfo(String key);
+
+  TSInfo tsInfoDebug(String key);
 }

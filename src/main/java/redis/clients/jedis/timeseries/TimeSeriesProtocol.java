@@ -62,7 +62,8 @@ public class TimeSeriesProtocol {
     FILTER_BY_TS,
     FILTER_BY_VALUE,
     GROUPBY,
-    REDUCE;
+    REDUCE,
+    DEBUG;
 
     private final byte[] raw;
 

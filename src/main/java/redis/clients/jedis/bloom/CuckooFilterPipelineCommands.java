@@ -28,5 +28,9 @@ public interface CuckooFilterPipelineCommands {
 
   Response<Long> cfCount(String key, String item);
 
+  Response<Map.Entry<Long, byte[]>> cfScanDump(String key, long iterator);
+
+  Response<String> cfLoadChunk(String key, long iterator, byte[] data);
+
   Response<Map<String, Object>> cfInfo(String key);
 }

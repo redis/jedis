@@ -3579,6 +3579,14 @@ public class CommandObjects {
         addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
   }
 
+  public final CommandObject<Map.Entry<Long, byte[]>> bfScanDump(String key, long iterator) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.SCANDUMP).key(key).add(iterator), BuilderFactory.BLOOM_SCANDUMP_RESPONSE);
+  }
+
+  public final CommandObject<String> bfLoadChunk(String key, long iterator, byte[] data) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.LOADCHUNK).key(key).add(iterator).add(data), BuilderFactory.STRING);
+  }
+
   public final CommandObject<Map<String, Object>> bfInfo(String key) {
     return new CommandObject<>(commandArguments(BloomFilterCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }
@@ -3634,6 +3642,14 @@ public class CommandObjects {
 
   public final CommandObject<Long> cfCount(String key, String item) {
     return new CommandObject<>(commandArguments(CuckooFilterCommand.COUNT).key(key).add(item), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Map.Entry<Long, byte[]>> cfScanDump(String key, long iterator) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.SCANDUMP).key(key).add(iterator), BuilderFactory.BLOOM_SCANDUMP_RESPONSE);
+  }
+
+  public final CommandObject<String> cfLoadChunk(String key, long iterator, byte[] data) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.LOADCHUNK).key(key).add(iterator).add(data), BuilderFactory.STRING);
   }
 
   public final CommandObject<Map<String, Object>> cfInfo(String key) {

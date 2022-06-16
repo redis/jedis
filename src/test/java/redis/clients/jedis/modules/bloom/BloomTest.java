@@ -214,4 +214,22 @@ public class BloomTest extends RedisModuleCommandsTestBase {
         "o", "i", "u", "y", "t", "r", "e", "w", "q");
     assertEquals(20, insert.size());
   }
+
+  @Test(timeout = 2000L)
+  public void testScanDumpAndLoadChunk() {
+    client.bfAdd("bloom-dump", "a");
+
+    long iterator = 0;
+    while (true) {
+      Map.Entry<Long, byte[]> chunkData = client.bfScanDump("bloom-dump", iterator);
+      iterator = chunkData.getKey();
+      if (iterator == 0L) break;
+      assertEquals("OK", client.bfLoadChunk("bloom-load", iterator, chunkData.getValue()));
+    }
+
+    // check for properties
+    assertEquals(client.bfInfo("bloom-dump"), client.bfInfo("bloom-load"));
+    // check for existing items
+    assertTrue(client.bfExists("bloom-load", "a"));
+  }
 }

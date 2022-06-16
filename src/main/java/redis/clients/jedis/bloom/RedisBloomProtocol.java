@@ -14,6 +14,8 @@ public class RedisBloomProtocol {
     EXISTS("BF.EXISTS"),
     MEXISTS("BF.MEXISTS"),
     INSERT("BF.INSERT"),
+    SCANDUMP("BF.SCANDUMP"),
+    LOADCHUNK("BF.LOADCHUNK"),
     INFO("BF.INFO");
 
     private final byte[] raw;

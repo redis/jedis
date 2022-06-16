@@ -137,21 +137,21 @@ public interface CuckooFilterCommands {
    * @return The number of times the item exists in the filter
    */
   long cfCount(String key, String item);
-//
-//  /**
-//   * CF.SCANDUMP Begins an incremental save of the cuckoo filter. This is useful
-//   * for large cuckoo filters which cannot fit into the normal SAVE and RESTORE
-//   * model.
-//   *
-//   * The Iterator is passed as input to the next invocation of SCANDUMP . If
-//   * Iterator is 0, the iteration has completed.
-//   *
-//   * @param key      Name of the filter
-//   * @param iterator This is either 0, or the iterator from a previous invocation
-//   *                 of this command
-//   * @return a Map.Entry containing the Iterator and Data.
-//   */
-//  Map.Entry<Long, byte[]> cfScanDump(String key, long iterator);
+
+  /**
+   * CF.SCANDUMP Begins an incremental save of the cuckoo filter. This is useful
+   * for large cuckoo filters which cannot fit into the normal SAVE and RESTORE
+   * model.
+   *
+   * The Iterator is passed as input to the next invocation of SCANDUMP . If
+   * Iterator is 0, the iteration has completed.
+   *
+   * @param key      Name of the filter
+   * @param iterator This is either 0, or the iterator from a previous invocation
+   *                 of this command
+   * @return a Map.Entry containing the Iterator and Data.
+   */
+  Map.Entry<Long, byte[]> cfScanDump(String key, long iterator);
 //
 //  /**
 //   * CF.SCANDUMP Begins an incremental save of the cuckoo filter. This is useful
@@ -177,6 +177,16 @@ public interface CuckooFilterCommands {
 //   * @return A sequential Stream of Pair of iterator and data
 //   */
 //  Stream<Map.Entry<Long, byte[]>> cfScanDumpStream(String key);
+
+  /**
+   * CF.LOADCHUNK Restores a filter previously saved using SCANDUMP.
+   *
+   * @param key       Name of the filter to restore
+   * @param iterator Iterator from CF.SCANDUMP
+   * @param data     Data from CF.SCANDUMP
+   * @return OK
+   */
+  String cfLoadChunk(String key, long iterator, byte[] data);
 //
 //  /**
 //   * CF.LOADCHUNK Restores a filter previously saved using SCANDUMP . See the

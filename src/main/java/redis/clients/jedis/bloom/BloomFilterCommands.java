@@ -77,8 +77,24 @@ public interface BloomFilterCommands {
    */
   List<Boolean> bfMExists(String key, String... items);
 
-  // BF.SCANDUMP {key} {iter}
-  // BF.LOADCHUNK {key} {iter} {data}
+  /**
+   * {@code BF.SCANDUMP {key} {iterator}}
+   *
+   * @param key
+   * @param iterator
+   * @return Pair of next iterator and current data
+   */
+  Map.Entry<Long, byte[]> bfScanDump(String key, long iterator);
+
+  /**
+   * {@code BF.LOADCHUNK {key} {iterator} {data}}
+   *
+   * @param key
+   * @param iterator
+   * @param data
+   * @return OK
+   */
+  String bfLoadChunk(String key, long iterator, byte[] data);
 
   Map<String, Object> bfInfo(String key);
 }

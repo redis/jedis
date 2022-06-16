@@ -3928,6 +3928,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Map.Entry<Long, byte[]>> bfScanDump(String key, long iterator) {
+    return appendCommand(commandObjects.bfScanDump(key, iterator));
+  }
+
+  @Override
+  public Response<String> bfLoadChunk(String key, long iterator, byte[] data) {
+    return appendCommand(commandObjects.bfLoadChunk(key, iterator, data));
+  }
+
+  @Override
   public Response<Map<String, Object>> bfInfo(String key) {
     return appendCommand(commandObjects.bfInfo(key));
   }
@@ -3985,6 +3995,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Long> cfCount(String key, String item) {
     return appendCommand(commandObjects.cfCount(key, item));
+  }
+
+  @Override
+  public Response<Map.Entry<Long, byte[]>> cfScanDump(String key, long iterator) {
+    return appendCommand(commandObjects.cfScanDump(key, iterator));
+  }
+
+  @Override
+  public Response<String> cfLoadChunk(String key, long iterator, byte[] data) {
+    return appendCommand(commandObjects.cfLoadChunk(key, iterator, data));
   }
 
   @Override

@@ -1701,6 +1701,14 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map.Entry<Long, byte[]>> BLOOM_SCANDUMP_RESPONSE = new Builder<Map.Entry<Long, byte[]>>() {
+    @Override
+    public Map.Entry<Long, byte[]> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return new KeyValue<>(LONG.build(list.get(0)), BINARY.build(list.get(1)));
+    }
+  };
+
   /**
    * A decorator to implement Set from List. Assume that given List do not contains duplicated
    * values. The resulting set displays the same ordering, concurrency, and performance

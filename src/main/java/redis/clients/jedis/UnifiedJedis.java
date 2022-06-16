@@ -3999,6 +3999,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map.Entry<Long, byte[]> bfScanDump(String key, long iterator) {
+    return executeCommand(commandObjects.bfScanDump(key, iterator));
+  }
+
+  @Override
+  public String bfLoadChunk(String key, long iterator, byte[] data) {
+    return executeCommand(commandObjects.bfLoadChunk(key, iterator, data));
+  }
+
+  @Override
   public Map<String, Object> bfInfo(String key) {
     return executeCommand(commandObjects.bfInfo(key));
   }
@@ -4061,6 +4071,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long cfCount(String key, String item) {
     return executeCommand(commandObjects.cfCount(key, item));
+  }
+
+  @Override
+  public Map.Entry<Long, byte[]> cfScanDump(String key, long iterator) {
+    return executeCommand(commandObjects.cfScanDump(key, iterator));
+  }
+
+  @Override
+  public String cfLoadChunk(String key, long iterator, byte[] data) {
+    return executeCommand(commandObjects.cfLoadChunk(key, iterator, data));
   }
 
   @Override

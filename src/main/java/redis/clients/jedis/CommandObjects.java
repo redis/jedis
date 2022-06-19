@@ -3142,6 +3142,45 @@ public class CommandObjects {
   public CommandObject<String> ftConfigSet(String indexName, String option, String value) {
     return ftConfigSet(option, value);
   }
+
+  public final CommandObject<Long> ftSugAdd(String key, String string, double score) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGADD).key(key).add(string).add(score), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ftSugAddIncr(String key, String string, double score) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGADD).key(key).add(string).add(score).add(SearchKeyword.INCR), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<String>> ftSugGet(String key, String prefix) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGGET).key(key).add(prefix), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> ftSugGet(String key, String prefix, boolean fuzzy, int max) {
+    CommandArguments args = commandArguments(SearchCommand.SUGGET).key(key).add(prefix);
+    if (fuzzy) args.add(SearchKeyword.FUZZY);
+    args.add(SearchKeyword.MAX).add(max);
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> ftSugGetWithScores(String key, String prefix) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGGET).key(key).add(prefix).add(SearchKeyword.WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max) {
+    CommandArguments args = commandArguments(SearchCommand.SUGGET).key(key).add(prefix);
+    if (fuzzy) args.add(SearchKeyword.FUZZY);
+    args.add(SearchKeyword.MAX).add(max);
+    args.add(SearchKeyword.WITHSCORES);
+    return new CommandObject<>(args, BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<Boolean> ftSugDel(String key, String string) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGDEL).key(key).add(string), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> ftSugLen(String key) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGLEN).key(key), BuilderFactory.LONG);
+  }
   // RediSearch commands
 
   // RedisJSON commands

@@ -3405,6 +3405,46 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   public Response<String> ftConfigSet(String indexName, String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
+
+  @Override
+  public Response<Long> ftSugAdd(String key, String string, double score) {
+    return appendCommand(commandObjects.ftSugAdd(key, string, score));
+  }
+
+  @Override
+  public Response<Long> ftSugAddIncr(String key, String string, double score) {
+    return appendCommand(commandObjects.ftSugAddIncr(key, string, score));
+  }
+
+  @Override
+  public Response<List<String>> ftSugGet(String key, String prefix) {
+    return appendCommand(commandObjects.ftSugGet(key, prefix));
+  }
+
+  @Override
+  public Response<List<String>> ftSugGet(String key, String prefix, boolean fuzzy, int max) {
+    return appendCommand(commandObjects.ftSugGet(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> ftSugGetWithScores(String key, String prefix) {
+    return appendCommand(commandObjects.ftSugGetWithScores(key, prefix));
+  }
+
+  @Override
+  public Response<List<Tuple>> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max) {
+    return appendCommand(commandObjects.ftSugGetWithScores(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public Response<Boolean> ftSugDel(String key, String string) {
+    return appendCommand(commandObjects.ftSugDel(key, string));
+  }
+
+  @Override
+  public Response<Long> ftSugLen(String key) {
+    return appendCommand(commandObjects.ftSugLen(key));
+  }
   // RediSearch commands
 
   // RedisJSON commands

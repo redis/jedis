@@ -1,11 +1,12 @@
 package redis.clients.jedis.search;
 
-import redis.clients.jedis.Response;
-import redis.clients.jedis.search.aggr.AggregationBuilder;
-import redis.clients.jedis.search.aggr.AggregationResult;
-
 import java.util.List;
 import java.util.Map;
+
+import redis.clients.jedis.Response;
+import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.search.aggr.AggregationBuilder;
+import redis.clients.jedis.search.aggr.AggregationResult;
 
 public interface RediSearchPipelineCommands {
 
@@ -54,4 +55,20 @@ public interface RediSearchPipelineCommands {
   Response<String> ftConfigSet(String option, String value);
 
   Response<String> ftConfigSet(String indexName, String option, String value);
+
+  Response<Long> ftSugAdd(String key, String string, double score);
+
+  Response<Long> ftSugAddIncr(String key, String string, double score);
+
+  Response<List<String>> ftSugGet(String key, String prefix);
+
+  Response<List<String>> ftSugGet(String key, String prefix, boolean fuzzy, int max);
+
+  Response<List<Tuple>> ftSugGetWithScores(String key, String prefix);
+
+  Response<List<Tuple>> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max);
+
+  Response<Boolean> ftSugDel(String key, String string);
+
+  Response<Long> ftSugLen(String key);
 }

@@ -22,10 +22,10 @@ public class SearchProtocol {
     ALIASDEL("FT.ALIASDEL"),
     SYNUPDATE("FT.SYNUPDATE"),
     SYNDUMP("FT.SYNDUMP"),
-//    SUGADD("FT.SUGADD"),
-//    SUGGET("FT.SUGGET"),
-//    SUGDEL("FT.SUGDEL"),
-//    SUGLEN("FT.SUGLEN"),
+    SUGADD("FT.SUGADD"),
+    SUGGET("FT.SUGGET"),
+    SUGDEL("FT.SUGDEL"),
+    SUGLEN("FT.SUGLEN"),
     DROPINDEX("FT.DROPINDEX");
 
     private final byte[] raw;

@@ -2,6 +2,7 @@ package redis.clients.jedis.search;
 
 import java.util.List;
 import java.util.Map;
+import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 
@@ -52,4 +53,20 @@ public interface RediSearchCommands {
   String ftConfigSet(String option, String value);
 
   String ftConfigSet(String indexName, String option, String value);
+
+  long ftSugAdd(String key, String string, double score);
+
+  long ftSugAddIncr(String key, String string, double score);
+
+  List<String> ftSugGet(String key, String prefix);
+
+  List<String> ftSugGet(String key, String prefix, boolean fuzzy, int max);
+
+  List<Tuple> ftSugGetWithScores(String key, String prefix);
+
+  List<Tuple> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max);
+
+  boolean ftSugDel(String key, String string);
+
+  long ftSugLen(String key);
 }

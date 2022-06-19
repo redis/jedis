@@ -3521,6 +3521,46 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public String ftConfigSet(String indexName, String option, String value) {
     return executeCommand(commandObjects.ftConfigSet(indexName, option, value));
   }
+
+  @Override
+  public long ftSugAdd(String key, String string, double score) {
+    return executeCommand(commandObjects.ftSugAdd(key, string, score));
+  }
+
+  @Override
+  public long ftSugAddIncr(String key, String string, double score) {
+    return executeCommand(commandObjects.ftSugAddIncr(key, string, score));
+  }
+
+  @Override
+  public List<String> ftSugGet(String key, String prefix) {
+    return executeCommand(commandObjects.ftSugGet(key, prefix));
+  }
+
+  @Override
+  public List<String> ftSugGet(String key, String prefix, boolean fuzzy, int max) {
+    return executeCommand(commandObjects.ftSugGet(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public List<Tuple> ftSugGetWithScores(String key, String prefix) {
+    return executeCommand(commandObjects.ftSugGetWithScores(key, prefix));
+  }
+
+  @Override
+  public List<Tuple> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max) {
+    return executeCommand(commandObjects.ftSugGetWithScores(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public boolean ftSugDel(String key, String string) {
+    return executeCommand(commandObjects.ftSugDel(key, string));
+  }
+
+  @Override
+  public long ftSugLen(String key) {
+    return executeCommand(commandObjects.ftSugLen(key));
+  }
   // RediSearch commands
 
   // RedisJSON commands

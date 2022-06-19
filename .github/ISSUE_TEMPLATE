@@ -1,5 +1,5 @@
 <!--
-Github issues SHOULD BE USED to report bugs and for DETAILED feature requests. 
+Github issues should be used to report bugs and for detailed feature requests. 
 Everything else belongs in the [Jedis Google Group](https://groups.google.com/g/jedis_redis) 
 or [Jedis Github Discussions](https://github.com/redis/jedis/discussions).
 

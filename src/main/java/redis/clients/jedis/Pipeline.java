@@ -3374,6 +3374,36 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Long> ftDictAdd(String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictAdd(dictionary, terms));
+  }
+
+  @Override
+  public Response<Long> ftDictDel(String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictDel(dictionary, terms));
+  }
+
+  @Override
+  public Response<Set<String>> ftDictDump(String dictionary) {
+    return appendCommand(commandObjects.ftDictDump(dictionary));
+  }
+
+  @Override
+  public Response<Long> ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictAddBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public Response<Long> ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictDelBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public Response<Set<String>> ftDictDumpBySampleKey(String indexName, String dictionary) {
+    return appendCommand(commandObjects.ftDictDumpBySampleKey(indexName, dictionary));
+  }
+
+  @Override
   public Response<Map<String, Object>> ftInfo(String indexName) {
     return appendCommand(commandObjects.ftInfo(indexName));
   }

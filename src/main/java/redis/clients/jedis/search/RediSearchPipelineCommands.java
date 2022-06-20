@@ -2,6 +2,7 @@ package redis.clients.jedis.search;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.resps.Tuple;
@@ -41,6 +42,8 @@ public interface RediSearchPipelineCommands {
   Response<Map<String, List<String>>> ftSynDump(String indexName);
 
   Response<Map<String, Object>> ftInfo(String indexName);
+
+  Response<Set<String>> ftTagVals(String indexName, String fieldName);
 
   Response<String> ftAliasAdd(String aliasName, String indexName);
 

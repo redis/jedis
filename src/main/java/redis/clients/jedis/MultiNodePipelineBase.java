@@ -3372,6 +3372,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Set<String>> ftTagVals(String indexName, String fieldName) {
+    return appendCommand(commandObjects.ftTagVals(indexName, fieldName));
+  }
+
+  @Override
   public Response<String> ftAliasAdd(String aliasName, String indexName) {
     return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }

@@ -3488,6 +3488,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Set<String> ftTagVals(String indexName, String fieldName) {
+    return executeCommand(commandObjects.ftTagVals(indexName, fieldName));
+  }
+
+  @Override
   public String ftAliasAdd(String aliasName, String indexName) {
     return executeCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }

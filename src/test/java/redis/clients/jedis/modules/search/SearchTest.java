@@ -1094,6 +1094,9 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
     assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\;purple}")).getTotalResults());
     assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
+
+    assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange;purple")),
+        client.ftTagVals(index, "category"));
   }
 
   @Test
@@ -1132,6 +1135,9 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
     assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\,purple}")).getTotalResults());
     assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
+
+    assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange,purple")),
+        client.ftTagVals(index, "category"));
   }
 
   @Test

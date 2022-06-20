@@ -2,6 +2,7 @@ package redis.clients.jedis.search;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
@@ -39,6 +40,8 @@ public interface RediSearchCommands {
   Map<String, List<String>> ftSynDump(String indexName);
 
   Map<String, Object> ftInfo(String indexName);
+
+  Set<String> ftTagVals(String indexName, String fieldName);
 
   String ftAliasAdd(String aliasName, String indexName);
 

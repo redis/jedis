@@ -26,7 +26,8 @@ public class SearchProtocol {
     SUGGET("FT.SUGGET"),
     SUGDEL("FT.SUGDEL"),
     SUGLEN("FT.SUGLEN"),
-    DROPINDEX("FT.DROPINDEX");
+    DROPINDEX("FT.DROPINDEX"),
+    TAGVALS("FT.TAGVALS");
 
     private final byte[] raw;
 

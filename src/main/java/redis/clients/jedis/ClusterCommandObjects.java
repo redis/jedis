@@ -190,6 +190,11 @@ public class ClusterCommandObjects extends CommandObjects {
   }
 
   @Override
+  public CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
+    return processSearchCommand(indexName, super.ftTagVals(indexName, fieldName));
+  }
+
+  @Override
   public CommandObject<String> ftAliasAdd(String aliasName, String indexName) {
 //    CommandObject<String> command = super.ftAliasAdd(aliasName, indexName);
 //    if (searchLite) command.getArguments().processKey(aliasName).processKey(indexName);

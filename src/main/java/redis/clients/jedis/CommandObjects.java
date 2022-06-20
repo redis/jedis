@@ -3115,6 +3115,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.INFO).add(indexName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
 
+  public CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
+    return new CommandObject<>(commandArguments(SearchCommand.TAGVALS).add(indexName).add(fieldName), BuilderFactory.STRING_SET);
+  }
+
   public CommandObject<String> ftAliasAdd(String aliasName, String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.ALIASADD).add(aliasName).add(indexName), BuilderFactory.STRING);
   }

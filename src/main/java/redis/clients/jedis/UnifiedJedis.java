@@ -3483,6 +3483,36 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long ftDictAdd(String dictionary, String... terms) {
+    return executeCommand(commandObjects.ftDictAdd(dictionary, terms));
+  }
+
+  @Override
+  public long ftDictDel(String dictionary, String... terms) {
+    return executeCommand(commandObjects.ftDictDel(dictionary, terms));
+  }
+
+  @Override
+  public Set<String> ftDictDump(String dictionary) {
+    return executeCommand(commandObjects.ftDictDump(dictionary));
+  }
+
+  @Override
+  public long ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
+    return executeCommand(commandObjects.ftDictAddBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public long ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
+    return executeCommand(commandObjects.ftDictDelBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public Set<String> ftDictDumpBySampleKey(String indexName, String dictionary) {
+    return executeCommand(commandObjects.ftDictDumpBySampleKey(indexName, dictionary));
+  }
+
+  @Override
   public Map<String, Object> ftInfo(String indexName) {
     return executeCommand(commandObjects.ftInfo(indexName));
   }

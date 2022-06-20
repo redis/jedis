@@ -3111,6 +3111,30 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.SYNDUMP).add(indexName), BuilderFactory.SEARCH_SYNONYM_GROUPS);
   }
 
+  public final CommandObject<Long> ftDictAdd(String dictionary, String... terms) {
+    return new CommandObject<>(commandArguments(SearchCommand.DICTADD).add(dictionary).addObjects((Object[]) terms), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ftDictDel(String dictionary, String... terms) {
+    return new CommandObject<>(commandArguments(SearchCommand.DICTDEL).add(dictionary).addObjects((Object[]) terms), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Set<String>> ftDictDump(String dictionary) {
+    return new CommandObject<>(commandArguments(SearchCommand.DICTDUMP).add(dictionary), BuilderFactory.STRING_SET);
+  }
+
+  public final CommandObject<Long> ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
+    return addProcessKey(ftDictAdd(dictionary, terms), indexName);
+  }
+
+  public final CommandObject<Long> ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
+    return addProcessKey(ftDictDel(dictionary, terms), indexName);
+  }
+
+  public final CommandObject<Set<String>> ftDictDumpBySampleKey(String indexName, String dictionary) {
+    return addProcessKey(ftDictDump(dictionary), indexName);
+  }
+
   public CommandObject<Map<String, Object>> ftInfo(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.INFO).add(indexName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
@@ -3843,5 +3867,10 @@ public class CommandObjects {
       args.add(entry.getKey());
     }
     return args;
+  }
+
+  private <T> CommandObject<T> addProcessKey(CommandObject<T> object, String sampleKey) {
+    object.getArguments().processKey(sampleKey);
+    return object;
   }
 }

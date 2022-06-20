@@ -41,6 +41,18 @@ public interface RediSearchPipelineCommands {
 
   Response<Map<String, List<String>>> ftSynDump(String indexName);
 
+  Response<Long> ftDictAdd(String dictionary, String... terms);
+
+  Response<Long> ftDictDel(String dictionary, String... terms);
+
+  Response<Set<String>> ftDictDump(String dictionary);
+
+  Response<Long> ftDictAddBySampleKey(String indexName, String dictionary, String... terms);
+
+  Response<Long> ftDictDelBySampleKey(String indexName, String dictionary, String... terms);
+
+  Response<Set<String>> ftDictDumpBySampleKey(String indexName, String dictionary);
+
   Response<Map<String, Object>> ftInfo(String indexName);
 
   Response<Set<String>> ftTagVals(String indexName, String fieldName);

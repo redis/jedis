@@ -27,6 +27,9 @@ public class SearchProtocol {
     SUGDEL("FT.SUGDEL"),
     SUGLEN("FT.SUGLEN"),
     DROPINDEX("FT.DROPINDEX"),
+    DICTADD("FT.DICTADD"),
+    DICTDEL("FT.DICTDEL"),
+    DICTDUMP("FT.DICTDUMP"),
     TAGVALS("FT.TAGVALS");
 
     private final byte[] raw;

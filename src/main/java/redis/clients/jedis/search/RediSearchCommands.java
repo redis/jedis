@@ -39,6 +39,18 @@ public interface RediSearchCommands {
 
   Map<String, List<String>> ftSynDump(String indexName);
 
+  long ftDictAdd(String dictionary, String... terms);
+
+  long ftDictDel(String dictionary, String... terms);
+
+  Set<String> ftDictDump(String dictionary);
+
+  long ftDictAddBySampleKey(String indexName, String dictionary, String... terms);
+
+  long ftDictDelBySampleKey(String indexName, String dictionary, String... terms);
+
+  Set<String> ftDictDumpBySampleKey(String indexName, String dictionary);
+
   Map<String, Object> ftInfo(String indexName);
 
   Set<String> ftTagVals(String indexName, String fieldName);

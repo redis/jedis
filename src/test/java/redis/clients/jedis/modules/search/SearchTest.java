@@ -1,11 +1,8 @@
 package redis.clients.jedis.modules.search;
 
-import static java.util.Collections.singletonMap;
 import static org.junit.Assert.*;
-import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import java.util.*;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -31,7 +28,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 //  }
 
   private void addDocument(String key, Map<String, Object> map) {
-    client.hset(key, toStringMap(map));
+    client.hset(key, RediSearchUtil.toStringMap(map));
   }
 
   private static Map<String, Object> toMap(Object... values) {
@@ -490,10 +487,10 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   @Test
   public void testDialectConfig() {
     // confirm default
-    assertEquals(singletonMap("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
+    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
 
     assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "2"));
-    assertEquals(singletonMap("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
+    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
 
     try {
       client.ftConfigSet("DEFAULT_DIALECT", "0");
@@ -1282,7 +1279,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   @Test
   public void configOnTimeout() throws Exception {
     assertEquals("OK", client.ftConfigSet("ON_TIMEOUT", "fail"));
-    assertEquals(singletonMap("ON_TIMEOUT", "fail"), client.ftConfigGet("ON_TIMEOUT"));
+    assertEquals(Collections.singletonMap("ON_TIMEOUT", "fail"), client.ftConfigGet("ON_TIMEOUT"));
 
     try {
       client.ftConfigSet("ON_TIMEOUT", "null");
@@ -1327,7 +1324,23 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void syn() throws Exception {
+  public void dictionary() {
+    assertEquals(3L, client.ftDictAdd("dict", "foo", "bar", "hello world"));
+    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDump("dict"));
+    assertEquals(3L, client.ftDictDel("dict", "foo", "bar", "hello world"));
+    assertEquals(Collections.emptySet(), client.ftDictDump("dict"));
+  }
+
+  @Test
+  public void dictionaryBySampleKey() {
+    assertEquals(3L, client.ftDictAddBySampleKey(index, "dict", "foo", "bar", "hello world"));
+    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDumpBySampleKey(index, "dict"));
+    assertEquals(3L, client.ftDictDelBySampleKey(index, "dict", "foo", "bar", "hello world"));
+    assertEquals(Collections.emptySet(), client.ftDictDumpBySampleKey(index, "dict"));
+  }
+
+  @Test
+  public void synonym() {
     Schema sc = new Schema().addTextField("name", 1.0).addTextField("addr", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 

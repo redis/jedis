@@ -346,7 +346,7 @@ public class JedisPooled extends UnifiedJedis {
         JedisURIHelper.isRedisSSLScheme(uri), sslSocketFactory, sslParameters, hostnameVerifier, null));
   }
 
-  public JedisPooled(HostAndPort hostAndPort) {
+  public JedisPooled(final HostAndPort hostAndPort) {
     this(new PooledConnectionProvider(hostAndPort));
   }
 
@@ -354,7 +354,7 @@ public class JedisPooled extends UnifiedJedis {
     this(new PooledConnectionProvider(hostAndPort, clientConfig));
   }
 
-  public JedisPooled(HostAndPort hostAndPort, GenericObjectPoolConfig<Connection> poolConfig) {
+  public JedisPooled(final HostAndPort hostAndPort, final GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort), poolConfig);
   }
 
@@ -363,12 +363,13 @@ public class JedisPooled extends UnifiedJedis {
     this(hostAndPort, clientConfig, poolConfig);
   }
 
-  public JedisPooled(HostAndPort hostAndPort, JedisClientConfig clientConfig, GenericObjectPoolConfig<Connection> poolConfig) {
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
+      final GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
   }
 
-  public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig, final JedisSocketFactory jedisSocketFactory,
-      final JedisClientConfig clientConfig) {
+  public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig,
+      final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     this(new ConnectionFactory(jedisSocketFactory, clientConfig), poolConfig);
   }
 

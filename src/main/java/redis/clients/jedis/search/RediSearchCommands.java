@@ -2,6 +2,8 @@ package redis.clients.jedis.search;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 
@@ -37,7 +39,21 @@ public interface RediSearchCommands {
 
   Map<String, List<String>> ftSynDump(String indexName);
 
+  long ftDictAdd(String dictionary, String... terms);
+
+  long ftDictDel(String dictionary, String... terms);
+
+  Set<String> ftDictDump(String dictionary);
+
+  long ftDictAddBySampleKey(String indexName, String dictionary, String... terms);
+
+  long ftDictDelBySampleKey(String indexName, String dictionary, String... terms);
+
+  Set<String> ftDictDumpBySampleKey(String indexName, String dictionary);
+
   Map<String, Object> ftInfo(String indexName);
+
+  Set<String> ftTagVals(String indexName, String fieldName);
 
   String ftAliasAdd(String aliasName, String indexName);
 
@@ -52,4 +68,20 @@ public interface RediSearchCommands {
   String ftConfigSet(String option, String value);
 
   String ftConfigSet(String indexName, String option, String value);
+
+  long ftSugAdd(String key, String string, double score);
+
+  long ftSugAddIncr(String key, String string, double score);
+
+  List<String> ftSugGet(String key, String prefix);
+
+  List<String> ftSugGet(String key, String prefix, boolean fuzzy, int max);
+
+  List<Tuple> ftSugGetWithScores(String key, String prefix);
+
+  List<Tuple> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max);
+
+  boolean ftSugDel(String key, String string);
+
+  long ftSugLen(String key);
 }

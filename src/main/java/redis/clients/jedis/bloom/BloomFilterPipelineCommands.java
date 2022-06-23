@@ -22,5 +22,9 @@ public interface BloomFilterPipelineCommands {
 
   Response<List<Boolean>> bfMExists(String key, String... items);
 
+  Response<Map.Entry<Long, byte[]>> bfScanDump(String key, long iterator);
+
+  Response<String> bfLoadChunk(String key, long iterator, byte[] data);
+
   Response<Map<String, Object>> bfInfo(String key);
 }

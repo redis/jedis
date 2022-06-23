@@ -3483,8 +3483,43 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long ftDictAdd(String dictionary, String... terms) {
+    return executeCommand(commandObjects.ftDictAdd(dictionary, terms));
+  }
+
+  @Override
+  public long ftDictDel(String dictionary, String... terms) {
+    return executeCommand(commandObjects.ftDictDel(dictionary, terms));
+  }
+
+  @Override
+  public Set<String> ftDictDump(String dictionary) {
+    return executeCommand(commandObjects.ftDictDump(dictionary));
+  }
+
+  @Override
+  public long ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
+    return executeCommand(commandObjects.ftDictAddBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public long ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
+    return executeCommand(commandObjects.ftDictDelBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public Set<String> ftDictDumpBySampleKey(String indexName, String dictionary) {
+    return executeCommand(commandObjects.ftDictDumpBySampleKey(indexName, dictionary));
+  }
+
+  @Override
   public Map<String, Object> ftInfo(String indexName) {
     return executeCommand(commandObjects.ftInfo(indexName));
+  }
+
+  @Override
+  public Set<String> ftTagVals(String indexName, String fieldName) {
+    return executeCommand(commandObjects.ftTagVals(indexName, fieldName));
   }
 
   @Override
@@ -3520,6 +3555,46 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String ftConfigSet(String indexName, String option, String value) {
     return executeCommand(commandObjects.ftConfigSet(indexName, option, value));
+  }
+
+  @Override
+  public long ftSugAdd(String key, String string, double score) {
+    return executeCommand(commandObjects.ftSugAdd(key, string, score));
+  }
+
+  @Override
+  public long ftSugAddIncr(String key, String string, double score) {
+    return executeCommand(commandObjects.ftSugAddIncr(key, string, score));
+  }
+
+  @Override
+  public List<String> ftSugGet(String key, String prefix) {
+    return executeCommand(commandObjects.ftSugGet(key, prefix));
+  }
+
+  @Override
+  public List<String> ftSugGet(String key, String prefix, boolean fuzzy, int max) {
+    return executeCommand(commandObjects.ftSugGet(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public List<Tuple> ftSugGetWithScores(String key, String prefix) {
+    return executeCommand(commandObjects.ftSugGetWithScores(key, prefix));
+  }
+
+  @Override
+  public List<Tuple> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max) {
+    return executeCommand(commandObjects.ftSugGetWithScores(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public boolean ftSugDel(String key, String string) {
+    return executeCommand(commandObjects.ftSugDel(key, string));
+  }
+
+  @Override
+  public long ftSugLen(String key) {
+    return executeCommand(commandObjects.ftSugLen(key));
   }
   // RediSearch commands
 
@@ -3999,6 +4074,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map.Entry<Long, byte[]> bfScanDump(String key, long iterator) {
+    return executeCommand(commandObjects.bfScanDump(key, iterator));
+  }
+
+  @Override
+  public String bfLoadChunk(String key, long iterator, byte[] data) {
+    return executeCommand(commandObjects.bfLoadChunk(key, iterator, data));
+  }
+
+  @Override
   public Map<String, Object> bfInfo(String key) {
     return executeCommand(commandObjects.bfInfo(key));
   }
@@ -4061,6 +4146,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long cfCount(String key, String item) {
     return executeCommand(commandObjects.cfCount(key, item));
+  }
+
+  @Override
+  public Map.Entry<Long, byte[]> cfScanDump(String key, long iterator) {
+    return executeCommand(commandObjects.cfScanDump(key, iterator));
+  }
+
+  @Override
+  public String cfLoadChunk(String key, long iterator, byte[] data) {
+    return executeCommand(commandObjects.cfLoadChunk(key, iterator, data));
   }
 
   @Override

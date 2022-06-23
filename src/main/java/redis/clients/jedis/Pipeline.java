@@ -3374,8 +3374,43 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Long> ftDictAdd(String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictAdd(dictionary, terms));
+  }
+
+  @Override
+  public Response<Long> ftDictDel(String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictDel(dictionary, terms));
+  }
+
+  @Override
+  public Response<Set<String>> ftDictDump(String dictionary) {
+    return appendCommand(commandObjects.ftDictDump(dictionary));
+  }
+
+  @Override
+  public Response<Long> ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictAddBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public Response<Long> ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictDelBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public Response<Set<String>> ftDictDumpBySampleKey(String indexName, String dictionary) {
+    return appendCommand(commandObjects.ftDictDumpBySampleKey(indexName, dictionary));
+  }
+
+  @Override
   public Response<Map<String, Object>> ftInfo(String indexName) {
     return appendCommand(commandObjects.ftInfo(indexName));
+  }
+
+  @Override
+  public Response<Set<String>> ftTagVals(String indexName, String fieldName) {
+    return appendCommand(commandObjects.ftTagVals(indexName, fieldName));
   }
 
   @Override
@@ -3411,6 +3446,46 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<String> ftConfigSet(String indexName, String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
+  }
+
+  @Override
+  public Response<Long> ftSugAdd(String key, String string, double score) {
+    return appendCommand(commandObjects.ftSugAdd(key, string, score));
+  }
+
+  @Override
+  public Response<Long> ftSugAddIncr(String key, String string, double score) {
+    return appendCommand(commandObjects.ftSugAddIncr(key, string, score));
+  }
+
+  @Override
+  public Response<List<String>> ftSugGet(String key, String prefix) {
+    return appendCommand(commandObjects.ftSugGet(key, prefix));
+  }
+
+  @Override
+  public Response<List<String>> ftSugGet(String key, String prefix, boolean fuzzy, int max) {
+    return appendCommand(commandObjects.ftSugGet(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> ftSugGetWithScores(String key, String prefix) {
+    return appendCommand(commandObjects.ftSugGetWithScores(key, prefix));
+  }
+
+  @Override
+  public Response<List<Tuple>> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max) {
+    return appendCommand(commandObjects.ftSugGetWithScores(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public Response<Boolean> ftSugDel(String key, String string) {
+    return appendCommand(commandObjects.ftSugDel(key, string));
+  }
+
+  @Override
+  public Response<Long> ftSugLen(String key) {
+    return appendCommand(commandObjects.ftSugLen(key));
   }
   // RediSearch commands
 
@@ -3860,6 +3935,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Map.Entry<Long, byte[]>> bfScanDump(String key, long iterator) {
+    return appendCommand(commandObjects.bfScanDump(key, iterator));
+  }
+
+  @Override
+  public Response<String> bfLoadChunk(String key, long iterator, byte[] data) {
+    return appendCommand(commandObjects.bfLoadChunk(key, iterator, data));
+  }
+
+  @Override
   public Response<Map<String, Object>> bfInfo(String key) {
     return appendCommand(commandObjects.bfInfo(key));
   }
@@ -3917,6 +4002,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<Long> cfCount(String key, String item) {
     return appendCommand(commandObjects.cfCount(key, item));
+  }
+
+  @Override
+  public Response<Map.Entry<Long, byte[]>> cfScanDump(String key, long iterator) {
+    return appendCommand(commandObjects.cfScanDump(key, iterator));
+  }
+
+  @Override
+  public Response<String> cfLoadChunk(String key, long iterator, byte[] data) {
+    return appendCommand(commandObjects.cfLoadChunk(key, iterator, data));
   }
 
   @Override

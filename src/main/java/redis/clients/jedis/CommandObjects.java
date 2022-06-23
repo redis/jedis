@@ -3111,8 +3111,36 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.SYNDUMP).add(indexName), BuilderFactory.SEARCH_SYNONYM_GROUPS);
   }
 
+  public final CommandObject<Long> ftDictAdd(String dictionary, String... terms) {
+    return new CommandObject<>(commandArguments(SearchCommand.DICTADD).add(dictionary).addObjects((Object[]) terms), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ftDictDel(String dictionary, String... terms) {
+    return new CommandObject<>(commandArguments(SearchCommand.DICTDEL).add(dictionary).addObjects((Object[]) terms), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Set<String>> ftDictDump(String dictionary) {
+    return new CommandObject<>(commandArguments(SearchCommand.DICTDUMP).add(dictionary), BuilderFactory.STRING_SET);
+  }
+
+  public final CommandObject<Long> ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
+    return addProcessKey(ftDictAdd(dictionary, terms), indexName);
+  }
+
+  public final CommandObject<Long> ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
+    return addProcessKey(ftDictDel(dictionary, terms), indexName);
+  }
+
+  public final CommandObject<Set<String>> ftDictDumpBySampleKey(String indexName, String dictionary) {
+    return addProcessKey(ftDictDump(dictionary), indexName);
+  }
+
   public CommandObject<Map<String, Object>> ftInfo(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.INFO).add(indexName), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+
+  public CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
+    return new CommandObject<>(commandArguments(SearchCommand.TAGVALS).add(indexName).add(fieldName), BuilderFactory.STRING_SET);
   }
 
   public CommandObject<String> ftAliasAdd(String aliasName, String indexName) {
@@ -3141,6 +3169,45 @@ public class CommandObjects {
 
   public CommandObject<String> ftConfigSet(String indexName, String option, String value) {
     return ftConfigSet(option, value);
+  }
+
+  public final CommandObject<Long> ftSugAdd(String key, String string, double score) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGADD).key(key).add(string).add(score), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ftSugAddIncr(String key, String string, double score) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGADD).key(key).add(string).add(score).add(SearchKeyword.INCR), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<String>> ftSugGet(String key, String prefix) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGGET).key(key).add(prefix), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> ftSugGet(String key, String prefix, boolean fuzzy, int max) {
+    CommandArguments args = commandArguments(SearchCommand.SUGGET).key(key).add(prefix);
+    if (fuzzy) args.add(SearchKeyword.FUZZY);
+    args.add(SearchKeyword.MAX).add(max);
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> ftSugGetWithScores(String key, String prefix) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGGET).key(key).add(prefix).add(SearchKeyword.WITHSCORES), BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<List<Tuple>> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max) {
+    CommandArguments args = commandArguments(SearchCommand.SUGGET).key(key).add(prefix);
+    if (fuzzy) args.add(SearchKeyword.FUZZY);
+    args.add(SearchKeyword.MAX).add(max);
+    args.add(SearchKeyword.WITHSCORES);
+    return new CommandObject<>(args, BuilderFactory.TUPLE_LIST);
+  }
+
+  public final CommandObject<Boolean> ftSugDel(String key, String string) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGDEL).key(key).add(string), BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Long> ftSugLen(String key) {
+    return new CommandObject<>(commandArguments(SearchCommand.SUGLEN).key(key), BuilderFactory.LONG);
   }
   // RediSearch commands
 
@@ -3579,6 +3646,14 @@ public class CommandObjects {
         addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
   }
 
+  public final CommandObject<Map.Entry<Long, byte[]>> bfScanDump(String key, long iterator) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.SCANDUMP).key(key).add(iterator), BuilderFactory.BLOOM_SCANDUMP_RESPONSE);
+  }
+
+  public final CommandObject<String> bfLoadChunk(String key, long iterator, byte[] data) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.LOADCHUNK).key(key).add(iterator).add(data), BuilderFactory.STRING);
+  }
+
   public final CommandObject<Map<String, Object>> bfInfo(String key) {
     return new CommandObject<>(commandArguments(BloomFilterCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }
@@ -3634,6 +3709,14 @@ public class CommandObjects {
 
   public final CommandObject<Long> cfCount(String key, String item) {
     return new CommandObject<>(commandArguments(CuckooFilterCommand.COUNT).key(key).add(item), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Map.Entry<Long, byte[]>> cfScanDump(String key, long iterator) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.SCANDUMP).key(key).add(iterator), BuilderFactory.BLOOM_SCANDUMP_RESPONSE);
+  }
+
+  public final CommandObject<String> cfLoadChunk(String key, long iterator, byte[] data) {
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.LOADCHUNK).key(key).add(iterator).add(data), BuilderFactory.STRING);
   }
 
   public final CommandObject<Map<String, Object>> cfInfo(String key) {
@@ -3784,5 +3867,10 @@ public class CommandObjects {
       args.add(entry.getKey());
     }
     return args;
+  }
+
+  private <T> CommandObject<T> addProcessKey(CommandObject<T> object, String sampleKey) {
+    object.getArguments().processKey(sampleKey);
+    return object;
   }
 }

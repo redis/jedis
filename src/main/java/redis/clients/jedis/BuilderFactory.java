@@ -302,6 +302,26 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<Map.Entry<byte[], byte[]>>> BINARY_PAIR_LIST = new Builder<List<Map.Entry<byte[], byte[]>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map.Entry<byte[], byte[]>> build(Object data) {
+      final List<byte[]> flatHash = (List<byte[]>) data;
+      final List<Map.Entry<byte[], byte[]>> pairList = new ArrayList<>();
+      final Iterator<byte[]> iterator = flatHash.iterator();
+      while (iterator.hasNext()) {
+        pairList.add(new AbstractMap.SimpleEntry<>(iterator.next(), iterator.next()));
+      }
+
+      return pairList;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Map.Entry<byte[], byte[]>>";
+    }
+  };
+
   public static final Builder<String> STRING = new Builder<String>() {
     @Override
     public String build(Object data) {
@@ -384,6 +404,27 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "Map<String, String>";
+    }
+
+  };
+
+  public static final Builder<List<Map.Entry<String, String>>> STRING_PAIR_LIST = new Builder<List<Map.Entry<String, String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map.Entry<String, String>> build(Object data) {
+      final List<byte[]> flatHash = (List<byte[]>) data;
+      final List<Map.Entry<String, String>> pairList = new ArrayList<>();
+      final Iterator<byte[]> iterator = flatHash.iterator();
+      while (iterator.hasNext()) {
+        pairList.add(new AbstractMap.SimpleEntry<>(STRING.build(iterator.next()), STRING.build(iterator.next())));
+      }
+
+      return pairList;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Map.Entry<String, String>>";
     }
 
   };

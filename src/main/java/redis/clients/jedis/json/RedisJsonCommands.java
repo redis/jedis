@@ -149,9 +149,21 @@ public interface RedisJsonCommands {
 
   Long jsonArrTrim(String key, Path path, int start, int stop);
 
+  Long jsonObjLen(String key);
+
+  Long jsonObjLen(String key, Path path);
+
+  List<Long> jsonObjLen(String key, Path2 path);
+
+  List<String> jsonObjKeys(String key);
+
+  List<String> jsonObjKeys(String key, Path path);
+
+  List<List<String>> jsonObjKeys(String key, Path2 path);
+
   long jsonDebugMemory(String key);
 
-  List<Long> jsonDebugMemory(String key, Path2 path);
-
   long jsonDebugMemory(String key, Path path);
+
+  List<Long> jsonDebugMemory(String key, Path2 path);
 }

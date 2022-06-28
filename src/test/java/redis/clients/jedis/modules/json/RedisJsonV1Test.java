@@ -7,6 +7,7 @@ import static redis.clients.jedis.modules.json.JsonObjects.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.BeforeClass;
@@ -422,6 +423,21 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   public void numIncrBy() {
     client.jsonSetLegacy("doc", gson.fromJson("{a:3}", JsonObject.class));
     assertEquals(5d, client.jsonNumIncrBy("doc", Path.of(".a"), 2), 0d);
+  }
+
+  @Test
+  public void obj() {
+    assertNull(client.jsonObjLen("doc"));
+    assertNull(client.jsonObjKeys("doc"));
+    assertNull(client.jsonObjLen("doc", ROOT_PATH));
+    assertNull(client.jsonObjKeys("doc", ROOT_PATH));
+
+    String json = "{\"a\":[3], \"nested\": {\"a\": {\"b\":2, \"c\": 1}}}";
+    client.jsonSetWithPlainString("doc", ROOT_PATH, json);
+    assertEquals(Long.valueOf(2), client.jsonObjLen("doc"));
+    assertEquals(Arrays.asList("a", "nested"), client.jsonObjKeys("doc"));
+    assertEquals(Long.valueOf(2), client.jsonObjLen("doc", Path.of(".nested.a")));
+    assertEquals(Arrays.asList("b", "c"), client.jsonObjKeys("doc", Path.of(".nested.a")));
   }
 
   @Test

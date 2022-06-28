@@ -312,59 +312,34 @@ public final class BuilderFactory {
     public String toString() {
       return "String";
     }
-
   };
 
   public static final Builder<List<String>> STRING_LIST = new Builder<List<String>>() {
     @Override
     @SuppressWarnings("unchecked")
     public List<String> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<byte[]> l = (List<byte[]>) data;
-      final ArrayList<String> result = new ArrayList<>(l.size());
-      for (final byte[] barray : l) {
-        if (barray == null) {
-          result.add(null);
-        } else {
-          result.add(SafeEncoder.encode(barray));
-        }
-      }
-      return result;
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(STRING::build).collect(Collectors.toList());
     }
 
     @Override
     public String toString() {
       return "List<String>";
     }
-
   };
 
   public static final Builder<Set<String>> STRING_SET = new Builder<Set<String>>() {
     @Override
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<byte[]> l = (List<byte[]>) data;
-      final Set<String> result = new HashSet<>(l.size(), 1);
-      for (final byte[] barray : l) {
-        if (barray == null) {
-          result.add(null);
-        } else {
-          result.add(SafeEncoder.encode(barray));
-        }
-      }
-      return result;
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(STRING::build).collect(Collectors.toSet());
     }
 
     @Override
     public String toString() {
       return "Set<String>";
     }
-
   };
 
   public static final Builder<Map<String, String>> STRING_MAP = new Builder<Map<String, String>>() {
@@ -385,7 +360,20 @@ public final class BuilderFactory {
     public String toString() {
       return "Map<String, String>";
     }
+  };
 
+  public static final Builder<List<List<String>>> STRING_LIST_LIST = new Builder<List<List<String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<List<String>> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(STRING_LIST::build).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<List<String>>";
+    }
   };
 
   public static final Builder<KeyedListElement> KEYED_LIST_ELEMENT = new Builder<KeyedListElement>() {

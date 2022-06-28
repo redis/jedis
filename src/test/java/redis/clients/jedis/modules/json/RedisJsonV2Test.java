@@ -7,6 +7,7 @@ import static redis.clients.jedis.json.Path2.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.*;
 
 import com.google.gson.Gson;
+import java.util.Arrays;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -387,8 +388,17 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void obj() {
+    String json = "{\"a\":[3], \"nested\": {\"a\": {\"b\":2, \"c\": 1}}}";
+    client.jsonSet("doc", ROOT_PATH, json);
+    assertEquals(Arrays.asList(2L), client.jsonObjLen("doc", ROOT_PATH));
+    assertEquals(Arrays.asList(Arrays.asList("a", "nested")), client.jsonObjKeys("doc", ROOT_PATH));
+    assertEquals(Arrays.asList(null, 2L), client.jsonObjLen("doc", Path2.of("..a")));
+    assertEquals(Arrays.asList(null, Arrays.asList("b", "c")), client.jsonObjKeys("doc", Path2.of("..a")));
+  }
+
+  @Test
   public void debugMemory() {
-    assertEquals(0L, client.jsonDebugMemory("json"));
     assertEquals(emptyList(), client.jsonDebugMemory("json", ROOT_PATH));
 
     client.jsonSet("json", new JSONObject("{ foo: 'bar', bar: { foo: 10 }}"));

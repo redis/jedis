@@ -3880,17 +3880,47 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Long jsonObjLen(String key) {
+    return executeCommand(commandObjects.jsonObjLen(key));
+  }
+
+  @Override
+  public Long jsonObjLen(String key, Path path) {
+    return executeCommand(commandObjects.jsonObjLen(key, path));
+  }
+
+  @Override
+  public List<Long> jsonObjLen(String key, Path2 path) {
+    return executeCommand(commandObjects.jsonObjLen(key, path));
+  }
+
+  @Override
+  public List<String> jsonObjKeys(String key) {
+    return executeCommand(commandObjects.jsonObjKeys(key));
+  }
+
+  @Override
+  public List<String> jsonObjKeys(String key, Path path) {
+    return executeCommand(commandObjects.jsonObjKeys(key, path));
+  }
+
+  @Override
+  public List<List<String>> jsonObjKeys(String key, Path2 path) {
+    return executeCommand(commandObjects.jsonObjKeys(key, path));
+  }
+
+  @Override
   public long jsonDebugMemory(String key) {
     return executeCommand(commandObjects.jsonDebugMemory(key));
   }
 
   @Override
-  public List<Long> jsonDebugMemory(String key, Path2 path) {
+  public long jsonDebugMemory(String key, Path path) {
     return executeCommand(commandObjects.jsonDebugMemory(key, path));
   }
 
   @Override
-  public long jsonDebugMemory(String key, Path path) {
+  public List<Long> jsonDebugMemory(String key, Path2 path) {
     return executeCommand(commandObjects.jsonDebugMemory(key, path));
   }
   // RedisJSON commands

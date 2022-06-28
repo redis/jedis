@@ -3462,16 +3462,40 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> jsonObjLen(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonObjLen(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<Long>> jsonObjLen(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<String>> jsonObjKeys(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJKEYS).key(key), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> jsonObjKeys(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJKEYS).key(key).add(path), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<List<String>>> jsonObjKeys(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJKEYS).key(key).add(path), BuilderFactory.STRING_LIST_LIST);
+  }
+
   public final CommandObject<Long> jsonDebugMemory(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<Long>> jsonDebugMemory(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG_LIST);
-  }
-
   public final CommandObject<Long> jsonDebugMemory(String key, Path path) {
     return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<Long>> jsonDebugMemory(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG_LIST);
   }
   // RedisJSON commands
 

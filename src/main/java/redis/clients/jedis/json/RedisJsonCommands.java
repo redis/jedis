@@ -166,4 +166,10 @@ public interface RedisJsonCommands {
   long jsonDebugMemory(String key, Path path);
 
   List<Long> jsonDebugMemory(String key, Path2 path);
+
+  List<Object> jsonResp(String key);
+
+  List<Object> jsonResp(String key, Path path);
+
+  List<List<Object>> jsonResp(String key, Path2 path);
 }

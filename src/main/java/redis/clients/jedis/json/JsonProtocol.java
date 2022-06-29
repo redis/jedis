@@ -22,7 +22,10 @@ public class JsonProtocol {
     ARRTRIM("JSON.ARRTRIM"),
     CLEAR("JSON.CLEAR"),
     TOGGLE("JSON.TOGGLE"),
-    DEBUG("JSON.DEBUG");
+    OBJKEYS("JSON.OBJKEYS"),
+    OBJLEN("JSON.OBJLEN"),
+    DEBUG("JSON.DEBUG"),
+    RESP("JSON.RESP");
 
     private final byte[] raw;
 

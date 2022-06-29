@@ -7,6 +7,7 @@ import static redis.clients.jedis.modules.json.JsonObjects.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.BeforeClass;
@@ -425,6 +426,21 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void obj() {
+    assertNull(client.jsonObjLen("doc"));
+    assertNull(client.jsonObjKeys("doc"));
+    assertNull(client.jsonObjLen("doc", ROOT_PATH));
+    assertNull(client.jsonObjKeys("doc", ROOT_PATH));
+
+    String json = "{\"a\":[3], \"nested\": {\"a\": {\"b\":2, \"c\": 1}}}";
+    client.jsonSetWithPlainString("doc", ROOT_PATH, json);
+    assertEquals(Long.valueOf(2), client.jsonObjLen("doc"));
+    assertEquals(Arrays.asList("a", "nested"), client.jsonObjKeys("doc"));
+    assertEquals(Long.valueOf(2), client.jsonObjLen("doc", Path.of(".nested.a")));
+    assertEquals(Arrays.asList("b", "c"), client.jsonObjKeys("doc", Path.of(".nested.a")));
+  }
+
+  @Test
   public void debugMemory() {
     assertEquals(0L, client.jsonDebugMemory("json"));
     assertEquals(0L, client.jsonDebugMemory("json", ROOT_PATH));
@@ -443,5 +459,35 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     String json = "{\"foo\":\"bar\",\"bar\":{\"foo\":10}}";
     assertEquals("OK", client.jsonSetWithPlainString("plain", ROOT_PATH, json));
     assertEquals(json, client.jsonGetAsPlainString("plain", ROOT_PATH));
+  }
+
+  @Test
+  public void resp() {
+    assertNull(client.jsonResp("resp"));
+    assertNull(client.jsonResp("resp", ROOT_PATH));
+
+    String json = "{\"foo\": {\"hello\":\"world\"}, \"bar\": [null, 3, 2.5, true]}";
+    client.jsonSetWithPlainString("resp", ROOT_PATH, json);
+
+    List<Object> resp = client.jsonResp("resp");
+    assertEquals("{", resp.get(0));
+
+    assertEquals("foo", resp.get(1));
+    assertEquals(Arrays.asList("{", "hello", "world"), resp.get(2));
+
+    assertEquals("bar", resp.get(3));
+    List<Object> arr = (List<Object>) resp.get(4);
+    assertEquals("[", arr.get(0));
+    assertNull(arr.get(1));
+    assertEquals(Long.valueOf(3), arr.get(2));
+    assertEquals("2.5", arr.get(3));
+    assertEquals("true", arr.get(4));
+
+    arr = client.jsonResp("resp", Path.of(".bar"));
+    assertEquals("[", arr.get(0));
+    assertNull(arr.get(1));
+    assertEquals(Long.valueOf(3), arr.get(2));
+    assertEquals("2.5", arr.get(3));
+    assertEquals("true", arr.get(4));
   }
 }

@@ -1,5 +1,6 @@
 package redis.clients.jedis.graph;
 
+import java.util.List;
 import java.util.Map;
 
 public interface RedisGraphCommands {
@@ -92,4 +93,29 @@ public interface RedisGraphCommands {
    */
   String graphDelete(String name);
 
+  /**
+   * Lists all graph keys in the keyspace.
+   * @return graph keys
+   */
+  List<String> graphList();
+
+  /**
+   * Executes a query and produces an execution plan augmented with metrics for each operation's execution.
+   */
+  List<String> graphProfile(String graphName, String query);
+
+  /**
+   * Constructs a query execution plan but does not run it. Inspect this execution plan to better understand how your
+   * query will get executed.
+   */
+  List<String> graphExplain(String graphName, String query);
+
+  /**
+   * Returns a list containing up to 10 of the slowest queries issued against the given graph ID.
+   */
+  List<List<String>> graphSlowlog(String graphName);
+
+  String graphConfigSet(String configName, Object value);
+
+  Map<String, Object> graphConfigGet(String configName);
 }

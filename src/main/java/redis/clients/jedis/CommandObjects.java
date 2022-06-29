@@ -18,6 +18,8 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.graph.GraphProtocol.GraphCommand;
+import redis.clients.jedis.graph.GraphProtocol.GraphKeyword;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.params.*;
@@ -3462,16 +3464,52 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> jsonObjLen(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonObjLen(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<Long>> jsonObjLen(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<String>> jsonObjKeys(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJKEYS).key(key), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> jsonObjKeys(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJKEYS).key(key).add(path), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<List<String>>> jsonObjKeys(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.OBJKEYS).key(key).add(path), BuilderFactory.STRING_LIST_LIST);
+  }
+
   public final CommandObject<Long> jsonDebugMemory(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> jsonDebugMemory(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> jsonDebugMemory(String key, Path2 path) {
     return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<Long> jsonDebugMemory(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG);
+  public final CommandObject<List<Object>> jsonResp(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key), BuilderFactory.ENCODED_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<Object>> jsonResp(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key).add(path), BuilderFactory.ENCODED_OBJECT_LIST);
+  }
+
+  public final CommandObject<List<List<Object>>> jsonResp(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key).add(path), BuilderFactory.ENCODED_OBJECT_LIST_LIST);
   }
   // RedisJSON commands
 
@@ -3794,6 +3832,32 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TopKCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }
   // RedisBloom commands
+
+  // RedisGraph commands
+  public final CommandObject<List<String>> graphList() {
+    return new CommandObject<>(commandArguments(GraphCommand.LIST), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> graphProfile(String graphName, String query) {
+    return new CommandObject<>(commandArguments(GraphCommand.PROFILE).key(graphName).add(query), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> graphExplain(String graphName, String query) {
+    return new CommandObject<>(commandArguments(GraphCommand.EXPLAIN).key(graphName).add(query), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<List<String>>> graphSlowlog(String graphName) {
+    return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.STRING_LIST_LIST);
+  }
+
+  public final CommandObject<String> graphConfigSet(String configName, Object value) {
+    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.SET).add(configName).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
+    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+  // RedisGraph commands
 
   private static final Gson GSON = new Gson();
 

@@ -10,7 +10,12 @@ public class GraphProtocol {
 
     QUERY,
     RO_QUERY,
-    DELETE;
+    DELETE,
+    LIST,
+    PROFILE,
+    EXPLAIN,
+    SLOWLOG,
+    CONFIG;
 
     private final byte[] raw;
 
@@ -28,6 +33,8 @@ public class GraphProtocol {
 
     CYPHER,
     TIMEOUT,
+    SET,
+    GET,
     __COMPACT("--COMPACT");
 
     private final byte[] raw;

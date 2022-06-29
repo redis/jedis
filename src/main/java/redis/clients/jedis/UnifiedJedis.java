@@ -3880,8 +3880,43 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Long jsonObjLen(String key) {
+    return executeCommand(commandObjects.jsonObjLen(key));
+  }
+
+  @Override
+  public Long jsonObjLen(String key, Path path) {
+    return executeCommand(commandObjects.jsonObjLen(key, path));
+  }
+
+  @Override
+  public List<Long> jsonObjLen(String key, Path2 path) {
+    return executeCommand(commandObjects.jsonObjLen(key, path));
+  }
+
+  @Override
+  public List<String> jsonObjKeys(String key) {
+    return executeCommand(commandObjects.jsonObjKeys(key));
+  }
+
+  @Override
+  public List<String> jsonObjKeys(String key, Path path) {
+    return executeCommand(commandObjects.jsonObjKeys(key, path));
+  }
+
+  @Override
+  public List<List<String>> jsonObjKeys(String key, Path2 path) {
+    return executeCommand(commandObjects.jsonObjKeys(key, path));
+  }
+
+  @Override
   public long jsonDebugMemory(String key) {
     return executeCommand(commandObjects.jsonDebugMemory(key));
+  }
+
+  @Override
+  public long jsonDebugMemory(String key, Path path) {
+    return executeCommand(commandObjects.jsonDebugMemory(key, path));
   }
 
   @Override
@@ -3890,8 +3925,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long jsonDebugMemory(String key, Path path) {
-    return executeCommand(commandObjects.jsonDebugMemory(key, path));
+  public List<Object> jsonResp(String key) {
+    return executeCommand(commandObjects.jsonResp(key));
+  }
+
+  @Override
+  public List<Object> jsonResp(String key, Path path) {
+    return executeCommand(commandObjects.jsonResp(key, path));
+  }
+
+  @Override
+  public List<List<Object>> jsonResp(String key, Path2 path) {
+    return executeCommand(commandObjects.jsonResp(key, path));
   }
   // RedisJSON commands
 
@@ -4283,6 +4328,36 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String graphDelete(String name) {
     return executeCommand(graphCommandObjects.graphDelete(name));
+  }
+
+  @Override
+  public List<String> graphList() {
+    return executeCommand(commandObjects.graphList());
+  }
+
+  @Override
+  public List<String> graphProfile(String graphName, String query) {
+    return executeCommand(commandObjects.graphProfile(graphName, query));
+  }
+
+  @Override
+  public List<String> graphExplain(String graphName, String query) {
+    return executeCommand(commandObjects.graphExplain(graphName, query));
+  }
+
+  @Override
+  public List<List<String>> graphSlowlog(String graphName) {
+    return executeCommand(commandObjects.graphSlowlog(graphName));
+  }
+
+  @Override
+  public String graphConfigSet(String configName, Object value) {
+    return executeCommand(commandObjects.graphConfigSet(configName, value));
+  }
+
+  @Override
+  public Map<String, Object> graphConfigGet(String configName) {
+    return executeCommand(commandObjects.graphConfigGet(configName));
   }
   // RedisGraph commands
 

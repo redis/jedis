@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.util.*;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.graph.Header;
@@ -747,4 +748,59 @@ public class GraphAPITest extends RedisModuleCommandsTestBase {
         Record r = rsRo.iterator().next();
         assertEquals(Long.valueOf(30), r.getValue(0));
     }
+
+  @Test
+  public void profile() {
+    assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
+    assertNotNull(client.graphQuery("social", "CREATE (:person{name:'amit',age:30})"));
+
+    List<String> profile = client.graphProfile("social",
+        "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(b)");
+    assertFalse(profile.isEmpty());
+    profile.forEach(Assert::assertNotNull);
+  }
+
+  @Test
+  public void explain() {
+    assertNotNull(client.graphProfile("social", "CREATE (:person{name:'roi',age:32})"));
+    assertNotNull(client.graphProfile("social", "CREATE (:person{name:'amit',age:30})"));
+
+    List<String> explain = client.graphExplain("social",
+        "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(b)");
+    assertFalse(explain.isEmpty());
+    explain.forEach(Assert::assertNotNull);
+  }
+
+  @Test
+  public void slowlog() {
+    assertNotNull(client.graphProfile("social", "CREATE (:person{name:'roi',age:32})"));
+    assertNotNull(client.graphProfile("social", "CREATE (:person{name:'amit',age:30})"));
+
+    List<List<String>> slowlogs = client.graphSlowlog("social");
+    assertEquals(2, slowlogs.size());
+    slowlogs.forEach(sl -> assertFalse(sl.isEmpty()));
+    slowlogs.forEach(sl -> sl.forEach(Assert::assertNotNull));
+  }
+
+  @Test
+  public void list() {
+    assertEquals(Collections.emptyList(), client.graphList());
+
+    client.graphQuery("social", "CREATE (:person{name:'filipe',age:30})");
+
+    assertEquals(Collections.singletonList("social"), client.graphList());
+  }
+
+  @Test
+  public void config() {
+    client.graphQuery("social", "CREATE (:person{name:'filipe',age:30})");
+
+    final String name = "RESULTSET_SIZE";
+    final Object existingValue = client.graphConfigGet(name).get(name);
+
+    assertEquals("OK", client.graphConfigSet(name, 250L));
+    assertEquals(Collections.singletonMap(name, 250L), client.graphConfigGet(name));
+
+    client.graphConfigSet(name, existingValue != null ? existingValue : -1);
+  }
 }

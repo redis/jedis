@@ -4208,6 +4208,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<String> graphDelete(String name) {
     return appendCommand(graphCommandObjects.graphDelete(name));
   }
+
+  @Override
+  public Response<List<String>> graphProfile(String graphName, String query) {
+    return appendCommand(commandObjects.graphProfile(graphName, query));
+  }
   // RedisGraph commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {

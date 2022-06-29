@@ -1,5 +1,6 @@
 package redis.clients.jedis.graph;
 
+import java.util.List;
 import java.util.Map;
 import redis.clients.jedis.Response;
 
@@ -23,4 +24,5 @@ public interface RedisGraphPipelineCommands {
 
   Response<String> graphDelete(String name);
 
+  Response<List<String>> graphProfile(String graphName, String query);
 }

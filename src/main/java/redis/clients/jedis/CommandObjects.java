@@ -18,6 +18,8 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.graph.GraphProtocol.GraphCommand;
+import redis.clients.jedis.graph.GraphProtocol.GraphKeyword;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.params.*;
@@ -3830,6 +3832,32 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TopKCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }
   // RedisBloom commands
+
+  // RedisGraph commands
+  public final CommandObject<List<String>> graphList() {
+    return new CommandObject<>(commandArguments(GraphCommand.LIST), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> graphProfile(String graphName, String query) {
+    return new CommandObject<>(commandArguments(GraphCommand.PROFILE).key(graphName).add(query), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> graphExplain(String graphName, String query) {
+    return new CommandObject<>(commandArguments(GraphCommand.EXPLAIN).key(graphName).add(query), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<List<String>>> graphSlowlog(String graphName) {
+    return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.STRING_LIST_LIST);
+  }
+
+  public final CommandObject<String> graphConfigSet(String configName, Object value) {
+    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.SET).add(configName).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
+    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+  // RedisGraph commands
 
   private static final Gson GSON = new Gson();
 

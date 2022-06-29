@@ -217,8 +217,8 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
   public void testWaitReplicas() {
     Pipeline pipeline = new Pipeline(c);
     pipeline.set("x", "1");
-    pipeline.graphQuery("social", "CREATE (:Person {name:'a'})");
-    pipeline.graphQuery("g", "CREATE (:Person {name:'a'})");
+    pipeline.graphProfile("social", "CREATE (:Person {name:'a'})");
+    pipeline.graphProfile("g", "CREATE (:Person {name:'a'})");
     pipeline.waitReplicas(0, 100L);
     List<Object> results = pipeline.syncAndReturnAll();
     assertEquals(Long.valueOf(0), results.get(3));

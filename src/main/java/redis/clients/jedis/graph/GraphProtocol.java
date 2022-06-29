@@ -10,7 +10,11 @@ public class GraphProtocol {
 
     QUERY,
     RO_QUERY,
-    DELETE;
+    DELETE,
+    LIST,
+    PROFILE,
+    EXPLAIN,
+    SLOWLOG;
 
     private final byte[] raw;
 

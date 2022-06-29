@@ -4329,6 +4329,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public String graphDelete(String name) {
     return executeCommand(graphCommandObjects.graphDelete(name));
   }
+
+  @Override
+  public List<String> graphList() {
+    return executeCommand(commandObjects.graphList());
+  }
+
+  @Override
+  public List<String> graphProfile(String graphName, String query) {
+    return executeCommand(commandObjects.graphProfile(graphName, query));
+  }
+
+  @Override
+  public List<String> graphExplain(String graphName, String query) {
+    return executeCommand(commandObjects.graphExplain(graphName, query));
+  }
+
+  @Override
+  public List<List<String>> graphSlowlog(String graphName) {
+    return executeCommand(commandObjects.graphSlowlog(graphName));
+  }
   // RedisGraph commands
 
   public Object sendCommand(ProtocolCommand cmd) {

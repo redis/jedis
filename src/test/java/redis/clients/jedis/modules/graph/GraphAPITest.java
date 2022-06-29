@@ -9,6 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.util.*;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.graph.Header;
@@ -374,6 +375,31 @@ public class GraphAPITest extends RedisModuleCommandsTestBase {
         assertEquals(Arrays.asList("a", "r"), record.keys());
         assertEquals(Arrays.asList(expectedNode, expectedEdge), record.values());
     }
+
+  @Test
+  public void nonQueryCommands() {
+    assertEquals(Collections.emptyList(), client.graphList());
+
+    assertNotNull(client.graphProfile("social", "CREATE (:person{name:'roi',age:32})"));
+    assertNotNull(client.graphProfile("social", "CREATE (:person{name:'amit',age:30})"));
+
+    List<String> profile = client.graphProfile("social",
+        "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(b)");
+    assertFalse(profile.isEmpty());
+    profile.forEach(Assert::assertNotNull);
+
+    List<String> explain = client.graphExplain("social",
+        "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(b)");
+    assertFalse(explain.isEmpty());
+    explain.forEach(Assert::assertNotNull);
+
+    List<List<String>> slowlogs = client.graphSlowlog("social");
+    assertEquals(3, slowlogs.size());
+    slowlogs.forEach(sl -> assertFalse(sl.isEmpty()));
+    slowlogs.forEach(sl -> sl.forEach(Assert::assertNotNull));
+
+    assertEquals(Collections.singletonList("social"), client.graphList());
+  }
 
     @Test
     public void testEscapedQuery() {

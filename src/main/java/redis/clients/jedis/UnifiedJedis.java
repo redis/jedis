@@ -4349,6 +4349,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public List<List<String>> graphSlowlog(String graphName) {
     return executeCommand(commandObjects.graphSlowlog(graphName));
   }
+
+  @Override
+  public String graphConfigSet(String configName, Object value) {
+    return executeCommand(commandObjects.graphConfigSet(configName, value));
+  }
+
+  @Override
+  public Map<String, Object> graphConfigGet(String configName) {
+    return executeCommand(commandObjects.graphConfigGet(configName));
+  }
   // RedisGraph commands
 
   public Object sendCommand(ProtocolCommand cmd) {

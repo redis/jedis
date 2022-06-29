@@ -19,6 +19,7 @@ import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.graph.GraphProtocol.GraphCommand;
+import redis.clients.jedis.graph.GraphProtocol.GraphKeyword;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.params.*;
@@ -3847,6 +3848,14 @@ public class CommandObjects {
 
   public final CommandObject<List<List<String>>> graphSlowlog(String graphName) {
     return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.STRING_LIST_LIST);
+  }
+
+  public final CommandObject<String> graphConfigSet(String configName, Object value) {
+    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.SET).add(configName).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
+    return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
   // RedisGraph commands
 

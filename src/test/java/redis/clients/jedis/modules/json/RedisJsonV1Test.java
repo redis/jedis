@@ -460,4 +460,34 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertEquals("OK", client.jsonSetWithPlainString("plain", ROOT_PATH, json));
     assertEquals(json, client.jsonGetAsPlainString("plain", ROOT_PATH));
   }
+
+  @Test
+  public void resp() {
+    assertNull(client.jsonResp("resp"));
+    assertNull(client.jsonResp("resp", ROOT_PATH));
+
+    String json = "{\"foo\": {\"hello\":\"world\"}, \"bar\": [null, 3, 2.5, true]}";
+    client.jsonSetWithPlainString("resp", ROOT_PATH, json);
+
+    List<Object> resp = client.jsonResp("resp");
+    assertEquals("{", resp.get(0));
+
+    assertEquals("foo", resp.get(1));
+    assertEquals(Arrays.asList("{", "hello", "world"), resp.get(2));
+
+    assertEquals("bar", resp.get(3));
+    List<Object> arr = (List<Object>) resp.get(4);
+    assertEquals("[", arr.get(0));
+    assertNull(arr.get(1));
+    assertEquals(Long.valueOf(3), arr.get(2));
+    assertEquals("2.5", arr.get(3));
+    assertEquals("true", arr.get(4));
+
+    arr = client.jsonResp("resp", Path.of(".bar"));
+    assertEquals("[", arr.get(0));
+    assertNull(arr.get(1));
+    assertEquals(Long.valueOf(3), arr.get(2));
+    assertEquals("2.5", arr.get(3));
+    assertEquals("true", arr.get(4));
+  }
 }

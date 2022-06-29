@@ -24,7 +24,8 @@ public class JsonProtocol {
     TOGGLE("JSON.TOGGLE"),
     OBJKEYS("JSON.OBJKEYS"),
     OBJLEN("JSON.OBJLEN"),
-    DEBUG("JSON.DEBUG");
+    DEBUG("JSON.DEBUG"),
+    RESP("JSON.RESP");
 
     private final byte[] raw;
 

@@ -362,20 +362,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<List<String>>> STRING_LIST_LIST = new Builder<List<List<String>>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<List<String>> build(Object data) {
-      if (null == data) return null;
-      return ((List<Object>) data).stream().map(STRING_LIST::build).collect(Collectors.toList());
-    }
-
-    @Override
-    public String toString() {
-      return "List<List<String>>";
-    }
-  };
-
   public static final Builder<KeyedListElement> KEYED_LIST_ELEMENT = new Builder<KeyedListElement>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -1617,6 +1603,34 @@ public final class BuilderFactory {
       if (data == null) return null;
       List<Object> list = (List<Object>) data;
       return list.stream().map(o -> JSON_ARRAY.build(o)).collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<List<List<String>>> STRING_LIST_LIST = new Builder<List<List<String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<List<String>> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(STRING_LIST::build).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<List<String>>";
+    }
+  };
+
+  public static final Builder<List<List<Object>>> ENCODED_OBJECT_LIST_LIST = new Builder<List<List<Object>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<List<Object>> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(ENCODED_OBJECT_LIST::build).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<List<Object>>";
     }
   };
 

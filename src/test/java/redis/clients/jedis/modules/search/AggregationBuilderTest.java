@@ -16,6 +16,7 @@ import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.aggr.Params;
 import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 import redis.clients.jedis.search.aggr.SortedField;
@@ -83,6 +84,17 @@ public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
     assertNotNull(r2);
     assertEquals("abc", r2.getString("name"));
     assertEquals(10, r2.getLong("sum"));
+
+    r = new AggregationBuilder()
+        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .verbatim()
+        .timeout(1000)
+        .params(new Params("@name", "abc"))
+        .dialect(2);
+
+    // actual search
+    res = client.ftAggregate(index, r);
+    assertEquals(2, res.totalResults);
   }
 
   @Test

@@ -149,4 +149,36 @@ public class AggregationBuilder {
   public boolean isWithCursor() {
     return isWithCursor;
   }
+
+  public AggregationBuilder verbatim() {
+    args.add(1, "VERBATIM");
+    return this;
+  }
+
+  public AggregationBuilder timeout(long timeout) {
+    if (timeout > 0) {
+      args.add("TIMEOUT");
+      args.add(Long.toString(timeout));
+    }
+    return this;
+  }
+
+  public AggregationBuilder params(Params... params) {
+    if (params.length >= 1) {
+      args.add("PARAMS");
+      args.add(Long.toString(params.length * 2));
+      for (Params param : params) {
+        args.add(param.getName());
+        args.add(String.valueOf(param.getValue()));
+      }
+    }
+
+    return this;
+  }
+
+  public AggregationBuilder dialect(int dialect) {
+    args.add("DIALECT");
+    args.add(Integer.toString(dialect));
+    return this;
+  }
 }

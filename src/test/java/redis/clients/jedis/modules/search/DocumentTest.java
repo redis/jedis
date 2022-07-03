@@ -40,7 +40,7 @@ public class DocumentTest {
     assertEquals(id, read.getId());
     assertEquals(score, read.getScore(), 0d);
     assertArrayEquals(payload, read.getPayload());
-    String exp = String.format("id:%s, score: %.1f, payload:%s, properties:%s",
+    String exp = String.format("id:%s, score: %.1f, payload:%s, sortKey:null, explainScore:null, properties:%s",
             id, score, SafeEncoder.encode(payload), "[string=c, float=12.0]") ;
     assertEquals(exp, read.toString());
     assertEquals("c", read.getString("string"));

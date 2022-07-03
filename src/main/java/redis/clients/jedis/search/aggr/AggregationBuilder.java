@@ -166,7 +166,7 @@ public class AggregationBuilder {
   public AggregationBuilder params(Params... params) {
     if (params.length >= 1) {
       args.add("PARAMS");
-      args.add(Long.toString(params.length * 2));
+      args.add(Integer.toString(params.length * 2));
       for (Params param : params) {
         args.add(param.getName());
         args.add(String.valueOf(param.getValue()));

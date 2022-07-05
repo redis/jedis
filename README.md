@@ -13,6 +13,8 @@
 
 Jedis is a Java client for [Redis](https://github.com/redis/redis "Redis") designed for performance and ease of use.
 
+Are you looking for a high-level library to handle object mapping? See [redis-om-spring](https://github.com/redis/redis-om-spring)!
+
 ## Contributing
 
 We'd love your contributions!
@@ -33,8 +35,6 @@ To get started with Jedis, first add it as a dependency in your Java project. If
     <version>4.2.0</version>
 </dependency>
 ```
-
-Looking for a high-level library to handle object mapping? See [redis-om-spring](https://github.com/redis/redis-om-spring)!
 
 Next, you'll need to connect to Redis. For many applications, it's best to use a connection pool. You can instantiate a Jedis connection pool like so:
 

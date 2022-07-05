@@ -34,6 +34,8 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 </dependency>
 ```
 
+Looking for a high-level library to handle object mapping? See [redis-om-spring](https://github.com/redis/redis-om-spring)!
+
 Next, you'll need to connect to Redis. For many applications, it's best to use a connection pool. You can instantiate a Jedis connection pool like so:
 
 ```java

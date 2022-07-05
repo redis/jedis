@@ -140,7 +140,6 @@ public class Query implements IParams {
   private boolean _noStopwords = false;
   private boolean _withScores = false;
   private boolean _withPayloads = false;
-  private boolean _withSortKeys = false;
   private String _language = null;
   private String[] _fields = null;
   private String[] _keys = null;
@@ -164,7 +163,6 @@ public class Query implements IParams {
   private long _timeout = -1;
   private boolean _inOrder = false;
   private String _expander = null;
-  private boolean _explainScore = false;
 
   public Query() {
     this("*");
@@ -197,9 +195,6 @@ public class Query implements IParams {
     }
     if (_withPayloads) {
       args.add(SearchKeyword.WITHPAYLOADS.getRaw());
-    }
-    if (_withSortKeys) {
-      args.add(SearchKeyword.WITHSORTKEYS.getRaw());
     }
     if (_language != null) {
       args.add(SearchKeyword.LANGUAGE.getRaw());
@@ -337,10 +332,6 @@ public class Query implements IParams {
       args.add(SearchKeyword.EXPANDER.getRaw());
       args.add(SafeEncoder.encode(_expander));
     }
-
-    if (_explainScore) {
-      args.add(SearchKeyword.EXPLAINSCORE.getRaw());
-    }
   }
 
   private static class DelayedRawable implements Rawable {
@@ -448,21 +439,6 @@ public class Query implements IParams {
    */
   public Query setWithPayload() {
     this._withPayloads = true;
-    return this;
-  }
-
-  public boolean getWithSortKeys() {
-    return _withSortKeys;
-  }
-
-  /**
-   * Set the query to returns the value of the sorting key, right after the id and score and /or payload if requested
-   *
-   * @return the query object itself
-   *
-   */
-  public Query setWithSortKeys() {
-    this._withSortKeys = true;
     return this;
   }
 
@@ -654,19 +630,5 @@ public class Query implements IParams {
   public Query setExpander(String field) {
     _expander = field;
     return this;
-  }
-
-  /**
-   * Set the query to return a textual description of how the scores were calculated
-   *
-   * @return the query object
-   */
-  public Query setExplainScore() {
-    this._explainScore = true;
-    return this;
-  }
-
-  public boolean getExplainScore() {
-    return _explainScore;
   }
 }

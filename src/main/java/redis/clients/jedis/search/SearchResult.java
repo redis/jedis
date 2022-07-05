@@ -33,16 +33,12 @@ public class SearchResult {
     private final boolean hasContent;
     private final boolean hasScores;
     private final boolean hasPayloads;
-    private final boolean hasSortKeys;
-    private final boolean hasExplainScore;
     private final boolean decode;
 
-    public SearchResultBuilder(boolean hasContent, boolean hasScores, boolean hasPayloads, boolean hasSortKeys, boolean hasExplainScore, boolean decode) {
+    public SearchResultBuilder(boolean hasContent, boolean hasScores, boolean hasPayloads, boolean decode) {
       this.hasContent = hasContent;
       this.hasScores = hasScores;
       this.hasPayloads = hasPayloads;
-      this.hasSortKeys = hasSortKeys;
-      this.hasExplainScore = hasExplainScore;
       this.decode = decode;
     }
 
@@ -67,10 +63,6 @@ public class SearchResult {
           contentOffset += 1;
         }
       }
-      if (hasSortKeys) {
-        step += 1;
-        contentOffset += 1;
-      }
 
       // the first element is always the number of results
       long totalResults = (Long) resp.get(0);
@@ -78,14 +70,12 @@ public class SearchResult {
 
       for (int i = 1; i < resp.size(); i += step) {
 
-        double score = hasScores ? (hasExplainScore ? BuilderFactory.DOUBLE.build(((List<Object>) resp.get(i + scoreOffset)).get(0)) : BuilderFactory.DOUBLE.build(resp.get(i + scoreOffset))) : 1.0;
-        List<byte[]> explainScore = hasExplainScore ? (List<byte[]>) ((List<Object>) resp.get(i + scoreOffset)).get(1) : null;
+        double score = hasScores ? BuilderFactory.DOUBLE.build(resp.get(i + scoreOffset)) : 1.0;
         byte[] payload = hasPayloads ? (byte[]) resp.get(i + payloadOffset) : null;
-        String sortKey = hasSortKeys ? new String((byte[]) resp.get(i + payloadOffset + 1)) : null;
         List<byte[]> fields = hasContent ? (List<byte[]>) resp.get(i + contentOffset) : null;
         String id = new String((byte[]) resp.get(i));
 
-        documents.add(Document.load(id, score, payload, sortKey, explainScore, fields, decode));
+        documents.add(Document.load(id, score, payload, fields, decode));
       }
 
       return new SearchResult(totalResults, documents);

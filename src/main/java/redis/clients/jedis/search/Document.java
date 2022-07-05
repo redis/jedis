@@ -17,8 +17,6 @@ public class Document implements Serializable {
   private final String id;
   private double score;
   private byte[] payload;
-  private String sortKey;
-  private List<byte[]> explainScore;
   private final Map<String, Object> properties;
 
   public Document(String id, double score) {
@@ -38,35 +36,23 @@ public class Document implements Serializable {
   }
 
   public Document(String id, Map<String, Object> fields, double score, byte[] payload) {
-    this(id, fields, score, payload, null);
-  }
-
-  public Document(String id, Map<String, Object> fields, double score, byte[] payload, String sortKey) {
-    this(id, fields, score, payload, sortKey, null);
-  }
-
-  public Document(String id, Map<String, Object> fields, double score, byte[] payload, String sortKey, List<byte[]> explainScore) {
     this.id = id;
     this.properties = new HashMap<>(fields);
     this.score = score;
     this.payload = payload;
-    this.sortKey = sortKey;
-    this.explainScore = explainScore;
   }
 
   public Iterable<Map.Entry<String, Object>> getProperties() {
     return properties.entrySet();
   }
 
-  public static Document load(String id, double score, byte[] payload, String sortKey, List<byte[]> explainScore, List<byte[]> fields) {
-    return Document.load(id, score, payload, sortKey, explainScore, fields, true);
+  public static Document load(String id, double score, byte[] payload, List<byte[]> fields) {
+    return Document.load(id, score, payload, fields, true);
   }
 
-  public static Document load(String id, double score, byte[] payload, String sortKey, List<byte[]> explainScore, List<byte[]> fields, boolean decode) {
+  public static Document load(String id, double score, byte[] payload, List<byte[]> fields, boolean decode) {
     Document ret = new Document(id, score);
     ret.payload = payload;
-    ret.sortKey = sortKey;
-    ret.explainScore = explainScore;
     if (fields != null) {
       for (int i = 0; i < fields.size(); i += 2) {
         ret.set(SafeEncoder.encode(fields.get(i)), decode ? SafeEncoder.encode(fields.get(i + 1)) : fields.get(i + 1));
@@ -117,14 +103,6 @@ public class Document implements Serializable {
     return payload;
   }
 
-  public String getSortKey() {
-    return sortKey;
-  }
-
-  public List<byte[]> getExplainScore() {
-    return explainScore;
-  }
-
   /**
    * Set the document's score
    *
@@ -151,8 +129,6 @@ public class Document implements Serializable {
   public String toString() {
     return "id:" + this.getId() + ", score: " + this.getScore() +
             ", payload:" + SafeEncoder.encode(this.getPayload()) +
-            ", sortKey:" + this.getSortKey() +
-            ", explainScore:" + SafeEncoder.encodeObject(this.getExplainScore()) +
             ", properties:" + this.getProperties();
   }
 }

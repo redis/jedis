@@ -163,13 +163,13 @@ public class AggregationBuilder {
     return this;
   }
 
-  public AggregationBuilder params(Params... params) {
-    if (params.length >= 1) {
+  public AggregationBuilder params(Map<String, Object> params) {
+    if (params.size() >= 1) {
       args.add("PARAMS");
-      args.add(Integer.toString(params.length * 2));
-      for (Params param : params) {
-        args.add(param.getName());
-        args.add(String.valueOf(param.getValue()));
+      args.add(Integer.toString(params.size() * 2));
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
+        args.add(entry.getKey());
+        args.add(String.valueOf(entry.getValue()));
       }
     }
 

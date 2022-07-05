@@ -1362,46 +1362,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void sortKeys() {
-    Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-
-    addDocument("doc1", doc);
-    addDocument("doc2", doc);
-
-    SearchResult res = client.ftSearch(index, new Query("value").setSortBy("field1", true).setWithSortKeys());
-    assertEquals(2, res.getTotalResults());
-    assertEquals("doc1", res.getDocuments().get(0).getId());
-    assertEquals("value", res.getDocuments().get(0).get("field1"));
-    assertEquals("$value", res.getDocuments().get(0).getSortKey());
-    assertEquals("doc2", res.getDocuments().get(1).getId());
-    assertEquals("not", res.getDocuments().get(1).get("field2"));
-    assertEquals("$value", res.getDocuments().get(1).getSortKey());
-
-    res = client.ftSearch(index, new Query("value").setSortBy("field2", true).setWithPayload().setWithSortKeys());
-    assertEquals(2, res.getTotalResults());
-    assertEquals("doc1", res.getDocuments().get(0).getId());
-    assertEquals("value", res.getDocuments().get(0).get("field1"));
-    assertEquals("$not", res.getDocuments().get(0).getSortKey());
-    assertEquals("doc2", res.getDocuments().get(1).getId());
-    assertEquals("not", res.getDocuments().get(1).get("field2"));
-    assertEquals("$not", res.getDocuments().get(1).getSortKey());
-
-    res = client.ftSearch(index, new Query("value").setSortBy("field1", true).setWithScores().setWithPayload().setWithSortKeys());
-    assertEquals(2, res.getTotalResults());
-    assertEquals("doc1", res.getDocuments().get(0).getId());
-    assertEquals("value", res.getDocuments().get(0).get("field1"));
-    assertEquals("$value", res.getDocuments().get(0).getSortKey());
-    assertEquals("doc2", res.getDocuments().get(1).getId());
-    assertEquals("not", res.getDocuments().get(1).get("field2"));
-    assertEquals("$value", res.getDocuments().get(1).getSortKey());
-  }
-
-  @Test
   public void dialect() {
     Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -1485,24 +1445,5 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals("doc2", res.getDocuments().get(0).getId());
     assertEquals("value", res.getDocuments().get(0).get("field1"));
     assertEquals("not", res.getDocuments().get(0).get("field2"));
-  }
-
-  @Test
-  public void explainScore() {
-    Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-
-    addDocument("doc1", doc);
-
-    SearchResult res = client.ftSearch(index, new Query("value").setWithScores().setExplainScore());
-    assertEquals(1, res.getTotalResults());
-    assertEquals("doc1", res.getDocuments().get(0).getId());
-    assertEquals("value", res.getDocuments().get(0).get("field1"));
-    assertEquals("not", res.getDocuments().get(0).get("field2"));
-    assertEquals(2.0, res.getDocuments().get(0).getScore(), 0);
   }
 }

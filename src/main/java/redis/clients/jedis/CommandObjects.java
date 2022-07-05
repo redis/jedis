@@ -3065,12 +3065,12 @@ public class CommandObjects {
 
   public CommandObject<SearchResult> ftSearch(String indexName, Query query) {
     return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
-        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), query.getWithSortKeys(), query.getExplainScore(), true));
+        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));
   }
 
   public CommandObject<SearchResult> ftSearch(byte[] indexName, Query query) {
     return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
-        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), query.getWithSortKeys(), query.getExplainScore(), false));
+        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
   }
 
   public CommandObject<String> ftExplain(String indexName, Query query) {

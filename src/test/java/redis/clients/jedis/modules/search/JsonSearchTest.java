@@ -232,26 +232,6 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void sortKeys() {
-    Schema schema = new Schema()
-            .addField(new TextField(FieldName.of("$.first").as("first")))
-            .addField(new TextField(FieldName.of("$.last")))
-            .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
-    IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
-
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), schema));
-
-    String id = "student:1111";
-    JSONObject json = toJson("first", "Joe", "last", "Dod", "age", 18);
-    setJson(id, json);
-
-    SearchResult sr = client.ftSearch(index, new Query().returnFields(FieldName.of("$.first").as("first"),
-            FieldName.of("$.last").as("last"), FieldName.of("$.age")).setSortBy("first", true).setWithSortKeys());
-    assertEquals(1, sr.getTotalResults());
-    assertEquals("$Joe", sr.getDocuments().get(0).getSortKey());
-  }
-
-  @Test
   public void dialect() {
     Schema schema = new Schema()
             .addField(new TextField(FieldName.of("$.first").as("first")))
@@ -318,31 +298,5 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
     SearchResult sr = client.ftSearch(index, new Query().setInOrder());
     assertEquals(3, sr.getTotalResults());
     assertEquals("student:1112", sr.getDocuments().get(0).getId());
-  }
-
-  @Test
-  public void explainScore() {
-    Schema schema = new Schema()
-            .addField(new TextField(FieldName.of("$.first").as("first")))
-            .addField(new TextField(FieldName.of("$.last")))
-            .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
-    IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
-
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), schema));
-
-    String id = "student:1112";
-    JSONObject json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age", 18);
-    setJson(id, json);
-    id = "student:1113";
-    json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age", 18);
-    setJson(id, json);
-    id = "student:1111";
-    json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age", 18);
-    setJson(id, json);
-
-    SearchResult sr = client.ftSearch(index, new Query().setWithScores().setExplainScore());
-    assertEquals(3, sr.getTotalResults());
-    assertEquals("student:1112", sr.getDocuments().get(0).getId());
-    assertEquals(0.5, sr.getDocuments().get(0).getScore(), 0);
   }
 }

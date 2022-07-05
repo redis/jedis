@@ -1362,36 +1362,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void dialect() {
-    Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-
-    addDocument("doc1", doc);
-
-    SearchResult res = client.ftSearch(index, new Query("value"));
-    assertEquals(1, res.getTotalResults());
-    assertEquals("doc1", res.getDocuments().get(0).getId());
-    assertEquals("value", res.getDocuments().get(0).get("field1"));
-    assertEquals("not", res.getDocuments().get(0).get("field2"));
-
-    res = client.ftSearch(index, new Query("value").dialect(1));
-    assertEquals(1, res.getTotalResults());
-    assertEquals("doc1", res.getDocuments().get(0).getId());
-    assertEquals("value", res.getDocuments().get(0).get("field1"));
-    assertEquals("not", res.getDocuments().get(0).get("field2"));
-
-    res = client.ftSearch(index, new Query("value").dialect(2));
-    assertEquals(1, res.getTotalResults());
-    assertEquals("doc1", res.getDocuments().get(0).getId());
-    assertEquals("value", res.getDocuments().get(0).get("field1"));
-    assertEquals("not", res.getDocuments().get(0).get("field2"));
-  }
-
-  @Test
   public void slop() {
     Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));

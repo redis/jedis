@@ -276,6 +276,25 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void timeout() {
+    Schema schema = new Schema()
+            .addField(new TextField(FieldName.of("$.first").as("first")))
+            .addField(new TextField(FieldName.of("$.last")))
+            .addField(new Field(FieldName.of("$.age").as("age"), FieldType.NUMERIC));
+    IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), schema));
+
+    String id = "student:1111";
+    JSONObject json = toJson("first", "Joe is first ok", "last", "Dod will be first next", "age", 18);
+    setJson(id, json);
+
+    SearchResult sr = client.ftSearch(index, new Query("Dod next").returnFields(FieldName.of("$.first").as("first"),
+            FieldName.of("$.last").as("last"), FieldName.of("$.age")).timeout(2000));
+    assertEquals(1, sr.getTotalResults());
+  }
+
+  @Test
   public void inOrder() {
     Schema schema = new Schema()
             .addField(new TextField(FieldName.of("$.first").as("first")))

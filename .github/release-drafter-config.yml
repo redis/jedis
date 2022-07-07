@@ -1,16 +1,16 @@
 name-template: '$NEXT_MAJOR_VERSION'
 tag-template: 'v$NEXT_MAJOR_VERSION'
 autolabeler:
-  - label: 'chore'
+  - label: 'maintenance'
     files:
       - '*.md'
       - '.github/*'
   - label: 'bug'
     branch:
       - '/bug-.+'
-  - label: 'chore'
+  - label: 'maintenance'
     branch:
-      - '/chore-.+'
+      - '/maintenance-.+'
   - label: 'feature'
     branch:
       - '/feature-.+'
@@ -29,7 +29,7 @@ categories:
       - 'bug'
       - 'BUG'
   - title: '🧰 Maintenance'
-    label: 'chore'
+    label: 'maintenance'
 change-template: '- $TITLE (#$NUMBER)'
 exclude-labels:
   - 'skip-changelog'

@@ -156,7 +156,7 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder timeout(long timeout) {
-    if (timeout > 0) {
+    if (timeout >= 0) {
       args.add("TIMEOUT");
       args.add(Long.toString(timeout));
     }

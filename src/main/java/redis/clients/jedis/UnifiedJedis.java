@@ -3470,6 +3470,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public SearchResult ftSearch(String indexName, String query) {
+    return executeCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public SearchResult ftSearch(String indexName, String query, FTSearchParams searchParams) {
+    return executeCommand(commandObjects.ftSearch(indexName, query, searchParams));
+  }
+
+  @Override
   public SearchResult ftSearch(String indexName, Query query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3480,8 +3490,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String ftExplain(String indexName, String query) {
+    return executeCommand(commandObjects.ftExplain(indexName, query));
+  }
+
+  @Override
   public String ftExplain(String indexName, Query query) {
     return executeCommand(commandObjects.ftExplain(indexName, query));
+  }
+
+  @Override
+  public List<String> ftExplainCLI(String indexName, String query) {
+    return executeCommand(commandObjects.ftExplainCLI(indexName, query));
   }
 
   @Override

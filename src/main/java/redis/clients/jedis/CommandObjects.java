@@ -3089,6 +3089,16 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
+  public CommandObject<SearchResult> ftSearch(String indexName, String query) {
+    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query),
+        new SearchResultBuilder(true, false, false, true));
+  }
+
+  public CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams searchParams) {
+    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query).addParams(searchParams),
+        new SearchResultBuilder(!searchParams.getNoContent(), searchParams.getWithScores(), searchParams.getWithPayloads(), true));
+  }
+
   public CommandObject<SearchResult> ftSearch(String indexName, Query query) {
     return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));
@@ -3099,8 +3109,16 @@ public class CommandObjects {
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
   }
 
+  public CommandObject<String> ftExplain(String indexName, String query) {
+    return new CommandObject<>(commandArguments(SearchCommand.EXPLAIN).add(indexName).add(query), BuilderFactory.STRING);
+  }
+
   public CommandObject<String> ftExplain(String indexName, Query query) {
     return new CommandObject<>(commandArguments(SearchCommand.EXPLAIN).add(indexName).addParams(query), BuilderFactory.STRING);
+  }
+
+  public CommandObject<List<String>> ftExplainCLI(String indexName, String query) {
+    return new CommandObject<>(commandArguments(SearchCommand.EXPLAINCLI).add(indexName).add(query), BuilderFactory.STRING_LIST);
   }
 
   public CommandObject<List<String>> ftExplainCLI(String indexName, Query query) {

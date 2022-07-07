@@ -3335,6 +3335,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<SearchResult> ftSearch(String indexName, String query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, String query, FTSearchParams searchParams) {
+    return appendCommand(commandObjects.ftSearch(indexName, query, searchParams));
+  }
+
+  @Override
   public Response<SearchResult> ftSearch(String indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3345,8 +3355,18 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<String> ftExplain(String indexName, String query) {
+    return appendCommand(commandObjects.ftExplain(indexName, query));
+  }
+
+  @Override
   public Response<String> ftExplain(String indexName, Query query) {
     return appendCommand(commandObjects.ftExplain(indexName, query));
+  }
+
+  @Override
+  public Response<List<String>> ftExplainCLI(String indexName, String query) {
+    return appendCommand(commandObjects.ftExplainCLI(indexName, query));
   }
 
   @Override

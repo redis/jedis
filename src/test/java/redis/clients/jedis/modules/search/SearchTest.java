@@ -141,7 +141,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     for (int i = 0; i < 100; i++) {
       addDocument(String.format("doc%d", i), fields);
     }
-
     SearchResult res = client.ftSearch(index, new Query("hello world"));
     assertEquals(100, res.getTotalResults());
 
@@ -330,6 +329,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     fields.put("loc", new redis.clients.jedis.GeoCoordinate(-0.441, 51.458));
 //    assertTrue(client.addDocument("doc1", fields));
     addDocument("doc1", fields);
+
     fields.put("loc", new redis.clients.jedis.GeoCoordinate(-0.1, 51.2));
 //    assertTrue(client.addDocument("doc2", fields));
     addDocument("doc2", fields);
@@ -730,7 +730,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
     assertEquals("is often referred as a <u>data</u> structures server. What this means is that Redis provides... What this means is that Redis provides access to mutable <u>data</u> structures via a set of commands, which are sent using a... So different processes can query and modify the same <u>data</u> structures in a shared... ",
         res.getDocuments().get(0).get("text"));
-
   }
 
   @Test

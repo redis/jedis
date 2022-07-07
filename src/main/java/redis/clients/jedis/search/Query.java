@@ -319,7 +319,7 @@ public class Query implements IParams {
       args.add(_slop);
     }
 
-    if (_timeout > 0) {
+    if (_timeout >= 0) {
       args.add(SearchKeyword.TIMEOUT.getRaw());
       args.add(_timeout);
     }

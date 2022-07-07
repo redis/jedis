@@ -151,7 +151,7 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder verbatim() {
-    args.add(1, "VERBATIM");
+    args.add("VERBATIM");
     return this;
   }
 

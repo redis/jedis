@@ -128,28 +128,6 @@ public class AggregationBuilder {
     return this;
   }
 
-  public List<String> getArgs() {
-    return Collections.unmodifiableList(args);
-  }
-
-  public void serializeRedisArgs(List<byte[]> redisArgs) {
-    for (String s : getArgs()) {
-      redisArgs.add(SafeEncoder.encode(s));
-    }
-  }
-
-  public String getArgsString() {
-    StringJoiner sj = new StringJoiner(" ");
-    for (String s : getArgs()) {
-      sj.add(s);
-    }
-    return sj.toString();
-  }
-
-  public boolean isWithCursor() {
-    return isWithCursor;
-  }
-
   public AggregationBuilder verbatim() {
     args.add("VERBATIM");
     return this;
@@ -180,5 +158,27 @@ public class AggregationBuilder {
     args.add("DIALECT");
     args.add(Integer.toString(dialect));
     return this;
+  }
+
+  public List<String> getArgs() {
+    return Collections.unmodifiableList(args);
+  }
+
+  public void serializeRedisArgs(List<byte[]> redisArgs) {
+    for (String s : getArgs()) {
+      redisArgs.add(SafeEncoder.encode(s));
+    }
+  }
+
+  public String getArgsString() {
+    StringJoiner sj = new StringJoiner(" ");
+    for (String s : getArgs()) {
+      sj.add(s);
+    }
+    return sj.toString();
+  }
+
+  public boolean isWithCursor() {
+    return isWithCursor;
   }
 }

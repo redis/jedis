@@ -115,4 +115,29 @@ public class RedisBloomProtocol {
       return raw;
     }
   }
+
+  public enum TDIGESTCOMMAND implements ProtocolCommand {
+
+    CREATE("TDIGEST.CREATE"),
+    INFO("TDIGEST.INFO"),
+    RESET("TDIGEST.RESET"),
+    ADD("TDIGEST.ADD"),
+    MAX("TDIGEST.MAX"),
+    MIN("TDIGEST.MIN"),
+    MERGE("TDIGEST.MERGE"),
+    CDF("TDIGEST.CDF"),
+    QUANTILE("TDIGEST.QUANTILE"),
+    TRIMMED_MEAN("TDIGEST.TRIMMED_MEAN");
+
+    private final byte[] raw;
+
+    private TDIGESTCOMMAND(String alt) {
+      raw = SafeEncoder.encode(alt);
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+  }
 }

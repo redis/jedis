@@ -4093,6 +4093,56 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   public Response<Map<String, Object>> topkInfo(String key) {
     return appendCommand(commandObjects.topkInfo(key));
   }
+
+  @Override
+  public Response<String> tdigestCreate(String key, long compression) {
+    return appendCommand(commandObjects.tdigestCreate(key, compression));
+  }
+
+  @Override
+  public Response<Map<String, Object>> tdigestInfo(String key) {
+    return appendCommand(commandObjects.tdigestInfo(key));
+  }
+
+  @Override
+  public Response<String> tdigestReset(String key) {
+    return appendCommand(commandObjects.tdigestReset(key));
+  }
+
+  @Override
+  public Response<String> tdigestAdd(String key, Map<Double, Double> valueWeight) {
+    return appendCommand(commandObjects.tdigestAdd(key, valueWeight));
+  }
+
+  @Override
+  public Response<String> tdigestMax(String key) {
+    return appendCommand(commandObjects.tdigestMax(key));
+  }
+
+  @Override
+  public Response<String> tdigestMin(String key) {
+    return appendCommand(commandObjects.tdigestMin(key));
+  }
+
+  @Override
+  public Response<String> tdigestMerge(String to, String from) {
+    return appendCommand(commandObjects.tdigestMerge(to, from));
+  }
+
+  @Override
+  public Response<String> tdigestCdf(String key, double value) {
+    return appendCommand(commandObjects.tdigestCdf(key, value));
+  }
+
+  @Override
+  public Response<Map<String, String>> tdigestQuantile(String key, double... quantile) {
+    return appendCommand(commandObjects.tdigestQuantile(key, quantile));
+  }
+
+  @Override
+  public Response<String> tdigestTrimmedMean(String key, double low, double high) {
+    return appendCommand(commandObjects.tdigestTrimmedMean(key, low, high));
+  }
   // RedisBloom commands
 
   // RedisGraph commands

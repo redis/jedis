@@ -4282,6 +4282,56 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public Map<String, Object> topkInfo(String key) {
     return executeCommand(commandObjects.topkInfo(key));
   }
+
+  @Override
+  public String tdigestCreate(String key, long compresstion) {
+    return executeCommand(commandObjects.tdigestCreate(key, compresstion));
+  }
+
+  @Override
+  public Map<String, Object> tdigestInfo(String key) {
+    return executeCommand(commandObjects.tdigestInfo(key));
+  }
+
+  @Override
+  public String tdigestReset(String key) {
+    return executeCommand(commandObjects.tdigestReset(key));
+  }
+
+  @Override
+  public String tdigestAdd(String key, Map<Double, Double> valueWeight) {
+    return executeCommand(commandObjects.tdigestAdd(key, valueWeight));
+  }
+
+  @Override
+  public String tdigestMax(String key) {
+    return executeCommand(commandObjects.tdigestMax(key));
+  }
+
+  @Override
+  public String tdigestMin(String key) {
+    return executeCommand(commandObjects.tdigestMin(key));
+  }
+
+  @Override
+  public String tdigestMerge(String to, String from) {
+    return executeCommand(commandObjects.tdigestMerge(to, from));
+  }
+
+  @Override
+  public String tdigestCdf(String key, double value) {
+    return executeCommand(commandObjects.tdigestCdf(key, value));
+  }
+
+  @Override
+  public Map<String, String> tdigestQuantile(String key, double... quantile) {
+    return executeCommand(commandObjects.tdigestQuantile(key, quantile));
+  }
+
+  @Override
+  public String tdigestTrimmedMean(String key, double low, double high) {
+    return executeCommand(commandObjects.tdigestTrimmedMean(key, low, high));
+  }
   // RedisBloom commands
 
   // RedisGraph commands

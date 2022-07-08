@@ -3831,6 +3831,48 @@ public class CommandObjects {
   public final CommandObject<Map<String, Object>> topkInfo(String key) {
     return new CommandObject<>(commandArguments(TopKCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }
+
+  public final CommandObject<String> tdigestCreate(String key, long compression) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.CREATE).key(key).add(compression), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, Object>> tdigestInfo(String key) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
+  }
+
+  public final CommandObject<String> tdigestReset(String key) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.RESET).key(key), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tdigestAdd(String key, Map<Double, Double> valueWeight) {
+    CommandArguments args = commandArguments(TDIGESTCOMMAND.ADD).key(key);
+    valueWeight.forEach((k, v) -> args.add(k).add(v));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tdigestMax(String key) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.MAX).key(key), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tdigestMin(String key) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.MIN).key(key), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tdigestMerge(String to, String from) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.MERGE).key(to).add(from), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tdigestCdf(String key, double value) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.CDF).key(key).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Map<String, String>> tdigestQuantile(String key, double... quantile) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.QUANTILE).key(key).addObjects(quantile), BuilderFactory.STRING_MAP);
+  }
+
+  public final CommandObject<String> tdigestTrimmedMean(String key, double low, double high) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.TRIMMED_MEAN).key(key).add(low).add(high), BuilderFactory.STRING);
+  }
   // RedisBloom commands
 
   // RedisGraph commands

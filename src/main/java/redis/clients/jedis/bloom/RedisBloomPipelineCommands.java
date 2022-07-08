@@ -4,6 +4,7 @@ public interface RedisBloomPipelineCommands extends
     BloomFilterPipelineCommands,
     CuckooFilterPipelineCommands,
     CountMinSketchPipelineCommands,
-    TopKFilterPipelineCommands {
+    TopKFilterPipelineCommands,
+    TDIGESTPipelineCommands {
 
 }

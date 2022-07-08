@@ -66,6 +66,13 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
+  public CommandArguments addObjects(double[] doubles) {
+    for (double i : doubles) {
+      add(i);
+    }
+    return this;
+  }
+
   public CommandArguments key(Object key) {
     if (key instanceof Rawable) {
       Rawable raw = (Rawable) key;

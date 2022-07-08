@@ -464,13 +464,14 @@ release:
 	make stop
 
 system-setup:
-	sudo apt-get install -y gcc-8 g++-8
+	sudo apt install -y gcc-8 g++-8 ninja-build libunwind-dev libboost-fiber-dev libssl-dev autoconf-archive libtool
 	cd /usr/bin ;\
 	sudo ln -sf gcc-8 gcc ;\
 	sudo ln -sf g++-8 g++
-	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch unstable --single-branch redis-git || true
-	$(MAKE) -C redis-git clean
-	$(MAKE) -C redis-git
+	cd /usr/bin ;\
+	[ ! -e dragonfly-git ] && git clone https://github.com/dragonflydb/dragonfly.git --recursive --branch main --single-branch dragonfly-git || true
+	./helio/blaze.sh -release ;\
+	cd dragonfly-git/build-opt && ninja dragonfly ;\
 
 compile-module:
 	gcc -shared -o /tmp/testmodule.so -fPIC src/test/resources/testmodule.c

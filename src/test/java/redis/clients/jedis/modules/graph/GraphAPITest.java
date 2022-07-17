@@ -8,13 +8,16 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.*;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import redis.clients.jedis.graph.Header;
 import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
+import redis.clients.jedis.graph.Statistics;
 import redis.clients.jedis.graph.entities.*;
 
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
@@ -32,106 +35,140 @@ public class GraphAPITest extends RedisModuleCommandsTestBase {
     client.graphDelete("social");
     super.tearDown();
   }
-//
-//    @Test
-//    public void testCreateNode() {
-//        // Create a node
-//        ResultSet resultSet = client.graphQuery("social", "CREATE ({name:'roi',age:32})");
-//
-//        assertEquals(1, resultSet.getStatistics().nodesCreated());
-//        assertEquals(0, resultSet.getStatistics().nodesDeleted());
-//        assertEquals(0, resultSet.getStatistics().relationshipsCreated());
-//        assertEquals(0, resultSet.getStatistics().relationshipsDeleted());
-//        assertEquals(2, resultSet.getStatistics().propertiesSet());
-//        assertTrue(resultSet.getStatistics().queryIntervalExecutionTime() > 0);
-//
-//        assertFalse(resultSet.hasNext());
-//
-//        try {
-//            resultSet.iterator().next();
-//            fail();
-//        } catch (NoSuchElementException ignored) {
-//        }
-//    }
-//
-//    @Test
-//    public void testCreateLabeledNode() {
-//        // Create a node with a label
-//        ResultSet resultSet = client.graphQuery("social", "CREATE (:human{name:'danny',age:12})");
-//        assertFalse(resultSet.hasNext());
-//        assertEquals("1", resultSet.getStatistics().getStringValue(Label.NODES_CREATED));
-//        assertEquals("2", resultSet.getStatistics().getStringValue(Label.PROPERTIES_SET));
-//        assertNotNull(resultSet.getStatistics().getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
-//    }
-//
-//    @Test
-//    public void testConnectNodes() {
-//        // Create both source and destination nodes
-//        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
-//        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'amit',age:30})"));
-//
-//        // Connect source and destination nodes.
-//        ResultSet resultSet = client.graphQuery("social",
-//                "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(b)");
-//
-//        assertFalse(resultSet.hasNext());
-//        assertNull(resultSet.getStatistics().getStringValue(Label.NODES_CREATED));
-//        assertNull(resultSet.getStatistics().getStringValue(Label.PROPERTIES_SET));
-//        assertEquals(1, resultSet.getStatistics().relationshipsCreated());
-//        assertEquals(0, resultSet.getStatistics().relationshipsDeleted());
-//        assertNotNull(resultSet.getStatistics().getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
-//    }
-//
-//    @Test
-//    public void testDeleteNodes() {
-//        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
-//        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'amit',age:30})"));
-//        ResultSet deleteResult = client.graphQuery("social", "MATCH (a:person) WHERE (a.name = 'roi') DELETE a");
-//
-//        assertFalse(deleteResult.hasNext());
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.NODES_CREATED));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.PROPERTIES_SET));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.NODES_CREATED));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.RELATIONSHIPS_CREATED));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.RELATIONSHIPS_DELETED));
-//        assertEquals(1, deleteResult.getStatistics().nodesDeleted());
-//        assertNotNull(deleteResult.getStatistics().getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
-//
-//        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
-//        assertNotNull(client.graphQuery("social",
-//                "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(a)"));
-//        deleteResult = client.graphQuery("social", "MATCH (a:person) WHERE (a.name = 'roi') DELETE a");
-//
-//        assertFalse(deleteResult.hasNext());
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.NODES_CREATED));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.PROPERTIES_SET));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.NODES_CREATED));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.RELATIONSHIPS_CREATED));
-//        assertEquals(1, deleteResult.getStatistics().relationshipsDeleted());
-//        assertEquals(1, deleteResult.getStatistics().nodesDeleted());
-//
-//        assertNotNull(deleteResult.getStatistics().getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
-//    }
-//
-//    @Test
-//    public void testDeleteRelationship() {
-//
-//        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
-//        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'amit',age:30})"));
-//        assertNotNull(client.graphQuery("social",
-//                "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(a)"));
-//        ResultSet deleteResult = client.graphQuery("social", "MATCH (a:person)-[e]->() WHERE (a.name = 'roi') DELETE e");
-//
-//        assertFalse(deleteResult.hasNext());
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.NODES_CREATED));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.PROPERTIES_SET));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.NODES_CREATED));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.RELATIONSHIPS_CREATED));
-//        assertNull(deleteResult.getStatistics().getStringValue(Label.NODES_DELETED));
-//        assertEquals(1, deleteResult.getStatistics().relationshipsDeleted());
-//
-//        assertNotNull(deleteResult.getStatistics().getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
-//    }
+
+    @Test
+    public void testCreateNode() {
+        // Create a node
+        ResultSet resultSet = client.graphQuery("social", "CREATE ({name:'roi',age:32})");
+
+        Statistics stats = resultSet.getStatistics();
+        assertEquals(1, stats.nodesCreated());
+        assertEquals(0, stats.nodesDeleted());
+        assertEquals(0, stats.relationshipsCreated());
+        assertEquals(0, stats.relationshipsDeleted());
+        assertEquals(2, stats.propertiesSet());
+        assertNotNull(stats.queryIntervalExecutionTime());
+
+        assertEquals(0, resultSet.size());
+
+        assertFalse(resultSet.iterator().hasNext());
+
+        try {
+            resultSet.iterator().next();
+            fail();
+        } catch (NoSuchElementException ignored) {
+        }
+    }
+
+    @Test
+    public void testCreateLabeledNode() {
+        // Create a node with a label
+        ResultSet resultSet = client.graphQuery("social", "CREATE (:human{name:'danny',age:12})");
+
+        Statistics stats = resultSet.getStatistics();
+//        assertEquals("1", stats.getStringValue(Label.NODES_CREATED));
+        assertEquals(1, stats.nodesCreated());
+//        assertEquals("2", stats.getStringValue(Label.PROPERTIES_SET));
+        assertEquals(2, stats.propertiesSet());
+//        assertNotNull(stats.getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
+        assertNotNull(stats.queryIntervalExecutionTime());
+
+        assertEquals(0, resultSet.size());
+        assertFalse(resultSet.iterator().hasNext());
+    }
+
+    @Test
+    public void testConnectNodes() {
+        // Create both source and destination nodes
+        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
+        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'amit',age:30})"));
+
+        // Connect source and destination nodes.
+        ResultSet resultSet = client.graphQuery("social",
+                "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(b)");
+
+        Statistics stats = resultSet.getStatistics();
+//        assertNull(stats.getStringValue(Label.NODES_CREATED));
+        assertEquals(0, stats.nodesCreated());
+        assertEquals(1, stats.relationshipsCreated());
+        assertEquals(0, stats.relationshipsDeleted());
+//        assertNull(stats.getStringValue(Label.PROPERTIES_SET));
+        assertEquals(0, stats.propertiesSet());
+//        assertNotNull(stats.getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
+        assertNotNull(stats.queryIntervalExecutionTime());
+
+        assertEquals(0, resultSet.size());
+        assertFalse(resultSet.iterator().hasNext());
+    }
+
+    @Test
+    public void testDeleteNodes() {
+        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
+        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'amit',age:30})"));
+
+        ResultSet deleteResult = client.graphQuery("social", "MATCH (a:person) WHERE (a.name = 'roi') DELETE a");
+
+        Statistics delStats = deleteResult.getStatistics();
+//        assertNull(delStats.getStringValue(Label.NODES_CREATED));
+        assertEquals(0, delStats.nodesCreated());
+        assertEquals(1, delStats.nodesDeleted());
+//        assertNull(delStats.getStringValue(Label.RELATIONSHIPS_CREATED));
+        assertEquals(0, delStats.relationshipsCreated());
+//        assertNull(delStats.getStringValue(Label.RELATIONSHIPS_DELETED));
+        assertEquals(0, delStats.relationshipsDeleted());
+//        assertNull(delStats.getStringValue(Label.PROPERTIES_SET));
+        assertEquals(0, delStats.propertiesSet());
+//        assertNotNull(delStats.getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
+        assertNotNull(delStats.queryIntervalExecutionTime());
+        assertEquals(0, deleteResult.size());
+        assertFalse(deleteResult.iterator().hasNext());
+
+        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
+        assertNotNull(client.graphQuery("social",
+                "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(a)"));
+
+        deleteResult = client.graphQuery("social", "MATCH (a:person) WHERE (a.name = 'roi') DELETE a");
+
+//        assertNull(delStats.getStringValue(Label.NODES_CREATED));
+        assertEquals(0, delStats.nodesCreated());
+        assertEquals(1, delStats.nodesDeleted());
+//        assertNull(delStats.getStringValue(Label.RELATIONSHIPS_CREATED));
+        assertEquals(0, delStats.relationshipsCreated());
+        // assertEquals(1, delStats.relationshipsDeleted());
+        assertEquals(0, delStats.relationshipsDeleted());
+//        assertNull(delStats.getStringValue(Label.PROPERTIES_SET));
+        assertEquals(0, delStats.propertiesSet());
+//        assertNotNull(delStats.getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
+        assertNotNull(delStats.queryIntervalExecutionTime());
+        assertEquals(0, deleteResult.size());
+        assertFalse(deleteResult.iterator().hasNext());
+    }
+
+    @Test
+    public void testDeleteRelationship() {
+        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'roi',age:32})"));
+        assertNotNull(client.graphQuery("social", "CREATE (:person{name:'amit',age:30})"));
+        assertNotNull(client.graphQuery("social",
+                "MATCH (a:person), (b:person) WHERE (a.name = 'roi' AND b.name='amit')  CREATE (a)-[:knows]->(a)"));
+
+        ResultSet deleteResult = client.graphQuery("social",
+                "MATCH (a:person)-[e]->() WHERE (a.name = 'roi') DELETE e");
+
+        Statistics delStats = deleteResult.getStatistics();
+//        assertNull(delStats.getStringValue(Label.NODES_CREATED));
+        assertEquals(0, delStats.nodesCreated());
+//        assertNull(delStats.getStringValue(Label.NODES_DELETED));
+        assertEquals(0, delStats.nodesDeleted());
+//        assertNull(delStats.getStringValue(Label.RELATIONSHIPS_CREATED));
+        assertEquals(0, delStats.relationshipsCreated());
+        assertEquals(1, delStats.relationshipsDeleted());
+//        assertNull(delStats.getStringValue(Label.PROPERTIES_SET));
+        assertEquals(0, delStats.propertiesSet());
+//        assertNotNull(delStats.getStringValue(Label.QUERY_INTERNAL_EXECUTION_TIME));
+        assertNotNull(delStats.queryIntervalExecutionTime());
+        assertEquals(0, deleteResult.size());
+        assertFalse(deleteResult.iterator().hasNext());
+    }
 
     @Test
     public void testIndex() {
@@ -250,14 +287,15 @@ public class GraphAPITest extends RedisModuleCommandsTestBase {
                 "r.place, r.since, r.doubleValue, r.boolValue");
         assertNotNull(resultSet);
 
-        assertEquals(0, resultSet.getStatistics().nodesCreated());
-        assertEquals(0, resultSet.getStatistics().nodesDeleted());
-        assertEquals(0, resultSet.getStatistics().labelsAdded());
-        assertEquals(0, resultSet.getStatistics().propertiesSet());
-        assertEquals(0, resultSet.getStatistics().relationshipsCreated());
-        assertEquals(0, resultSet.getStatistics().relationshipsDeleted());
-        assertNotNull(resultSet.getStatistics().queryIntervalExecutionTime());
-        assertFalse(resultSet.getStatistics().queryIntervalExecutionTime().isEmpty());
+        Statistics stats = resultSet.getStatistics();
+        assertEquals(0, stats.nodesCreated());
+        assertEquals(0, stats.nodesDeleted());
+        assertEquals(0, stats.labelsAdded());
+        assertEquals(0, stats.propertiesSet());
+        assertEquals(0, stats.relationshipsCreated());
+        assertEquals(0, stats.relationshipsDeleted());
+        assertNotNull(stats.queryIntervalExecutionTime());
+        assertFalse(stats.queryIntervalExecutionTime().isEmpty());
 
         assertEquals(1, resultSet.size());
         Iterator<Record> iterator = resultSet.iterator();

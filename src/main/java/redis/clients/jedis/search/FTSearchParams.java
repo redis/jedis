@@ -7,7 +7,7 @@ import java.util.*;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.GeoUnit;
-import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.args.LazyRaw;
 import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.params.IParams;
 
@@ -84,7 +84,7 @@ public class FTSearchParams implements IParams {
 
     if (returnFieldNames != null && !returnFieldNames.isEmpty()) {
       args.add(RETURN);
-      DelayedRawable returnCountObject = new DelayedRawable();
+      LazyRaw returnCountObject = new LazyRaw();
       args.add(returnCountObject); // holding a place for setting the total count later.
       int returnCount = 0;
       for (FieldName fn : returnFieldNames) {
@@ -157,20 +157,6 @@ public class FTSearchParams implements IParams {
 
     if (dialect != null) {
       args.add(DIALECT).add(dialect);
-    }
-  }
-
-  private static class DelayedRawable implements Rawable {
-
-    private byte[] raw = null;
-
-    public void setRaw(byte[] raw) {
-      this.raw = raw;
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return raw;
     }
   }
 

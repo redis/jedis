@@ -46,7 +46,7 @@ public interface RediSearchCommands {
 
   SearchResult ftSearch(String indexName, String query);
 
-  SearchResult ftSearch(String indexName, String query, FTSearchParams searchParams);
+  SearchResult ftSearch(String indexName, String query, FTSearchParams params);
 
   SearchResult ftSearch(String indexName, Query query);
 
@@ -59,6 +59,12 @@ public interface RediSearchCommands {
   List<String> ftExplainCLI(String indexName, String query);
 
   List<String> ftExplainCLI(String indexName, Query query);
+
+  default AggregationResult ftAggregate(String indexName, FTAggregateParams params) {
+    return ftAggregate(indexName, "*", params);
+  }
+
+  AggregationResult ftAggregate(String indexName, String query, FTAggregateParams params);
 
   AggregationResult ftAggregate(String indexName, AggregationBuilder aggr);
 

@@ -3094,9 +3094,9 @@ public class CommandObjects {
         new SearchResultBuilder(true, false, false, true));
   }
 
-  public CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams searchParams) {
-    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query).addParams(searchParams),
-        new SearchResultBuilder(!searchParams.getNoContent(), searchParams.getWithScores(), searchParams.getWithPayloads(), true));
+  public CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
+    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query).addParams(params),
+        new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), params.getWithPayloads(), true));
   }
 
   public CommandObject<SearchResult> ftSearch(String indexName, Query query) {
@@ -3123,6 +3123,11 @@ public class CommandObjects {
 
   public CommandObject<List<String>> ftExplainCLI(String indexName, Query query) {
     return new CommandObject<>(commandArguments(SearchCommand.EXPLAINCLI).add(indexName).addParams(query), BuilderFactory.STRING_LIST);
+  }
+
+  public CommandObject<AggregationResult> ftAggregate(String indexName, String query, FTAggregateParams params) {
+    return new CommandObject<>(commandArguments(SearchCommand.AGGREGATE).add(indexName).add(query).addParams(params),
+        !params.isWithCursor() ? BuilderFactory.SEARCH_AGGREGATION_RESULT : BuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
   public CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {

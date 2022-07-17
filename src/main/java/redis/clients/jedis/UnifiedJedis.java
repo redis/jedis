@@ -3475,8 +3475,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public SearchResult ftSearch(String indexName, String query, FTSearchParams searchParams) {
-    return executeCommand(commandObjects.ftSearch(indexName, query, searchParams));
+  public SearchResult ftSearch(String indexName, String query, FTSearchParams params) {
+    return executeCommand(commandObjects.ftSearch(indexName, query, params));
   }
 
   @Override
@@ -3507,6 +3507,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<String> ftExplainCLI(String indexName, Query query) {
     return executeCommand(commandObjects.ftExplainCLI(indexName, query));
+  }
+
+  @Override
+  public AggregationResult ftAggregate(String indexName, String query, FTAggregateParams params) {
+    return executeCommand(commandObjects.ftAggregate(indexName, query, params));
   }
 
   @Override

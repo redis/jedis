@@ -12,10 +12,15 @@ import java.util.Map;
  */
 public class AggregationResult {
 
+  /**
+   * @deprecated Use {@link AggregationResult#getTotalResults()}.
+   */
+  @Deprecated
   public final long totalResults;
 
-  private long cursorId = -1;
   private final List<Map<String, Object>> results = new ArrayList<>();
+
+  private long cursorId = -1;
 
   public AggregationResult(Object resp, long cursorId) {
     this(resp);
@@ -39,6 +44,10 @@ public class AggregationResult {
       }
       results.add(cur);
     }
+  }
+
+  public long getTotalResults() {
+    return totalResults;
   }
 
   public List<Map<String, Object>> getResults() {

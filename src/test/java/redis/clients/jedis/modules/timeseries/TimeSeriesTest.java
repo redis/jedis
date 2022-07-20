@@ -937,4 +937,18 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(5, client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.VAR_S, 10)
         .bucketTimestamp("~").filter("l=v")).get(0).getValue().get(0).getTimestamp());
   }
+
+  @Test
+  public void alignTimestamp() {
+    client.tsCreate("ts1");
+    client.tsCreate("ts2");
+    client.tsCreate("ts3");
+    client.tsCreateRule("ts1", "ts2", AggregationType.COUNT, 10, 0);
+    client.tsCreateRule("ts1", "ts3", AggregationType.COUNT, 10, 1);
+    client.tsAdd("ts1", 1, 1);
+    client.tsAdd("ts1", 10, 3);
+    client.tsAdd("ts1", 21, 7);
+    assertEquals(2, client.tsRange("ts2", TSRangeParams.rangeParams().aggregation(AggregationType.COUNT, 10)).size());
+    assertEquals(1, client.tsRange("ts3", TSRangeParams.rangeParams().aggregation(AggregationType.COUNT, 10)).size());
+  }
 }

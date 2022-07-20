@@ -13,18 +13,23 @@ public class TSMRangeParams implements IParams {
   private Long fromTimestamp;
   private Long toTimestamp;
 
+  private boolean latest;
+
   private long[] filterByTimestamps;
   private double[] filterByValues;
+
+  private boolean withLabels;
+  private String[] selectedLabels;
 
   private Integer count;
 
   private byte[] align;
 
   private AggregationType aggregationType;
-  private long timeBucket;
+  private long bucketDuration;
+  private Long bucketTimestamp;
 
-  private boolean withLabels;
-  private String[] selectedLabels;
+  private boolean empty;
 
   private String[] filters;
 
@@ -57,6 +62,11 @@ public class TSMRangeParams implements IParams {
     return this;
   }
 
+  public TSMRangeParams latest() {
+    this.latest = true;
+    return this;
+  }
+
   public TSMRangeParams filterByTS(long... timestamps) {
     this.filterByTimestamps = timestamps;
     return this;
@@ -64,34 +74,6 @@ public class TSMRangeParams implements IParams {
 
   public TSMRangeParams filterByValues(double min, double max) {
     this.filterByValues = new double[] {min, max};
-    return this;
-  }
-
-  public TSMRangeParams count(int count) {
-    this.count = count;
-    return this;
-  }
-
-  private TSMRangeParams align(byte[] raw) {
-    this.align = raw;
-    return this;
-  }
-
-  public TSMRangeParams align(long timestamp) {
-    return align(toByteArray(timestamp));
-  }
-
-  public TSMRangeParams alignStart() {
-    return align(MINUS);
-  }
-
-  public TSMRangeParams alignEnd() {
-    return align(PLUS);
-  }
-
-  public TSMRangeParams aggregation(AggregationType aggregationType, long timeBucket) {
-    this.aggregationType = aggregationType;
-    this.timeBucket = timeBucket;
     return this;
   }
 
@@ -106,6 +88,58 @@ public class TSMRangeParams implements IParams {
 
   public TSMRangeParams selectedLabels(String... labels) {
     this.selectedLabels = labels;
+    return this;
+  }
+
+  public TSMRangeParams count(int count) {
+    this.count = count;
+    return this;
+  }
+
+  private TSMRangeParams align(byte[] raw) {
+    this.align = raw;
+    return this;
+  }
+
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSMRangeParams align(long timestamp) {
+    return align(toByteArray(timestamp));
+  }
+
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSMRangeParams alignStart() {
+    return align(MINUS);
+  }
+
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSMRangeParams alignEnd() {
+    return align(PLUS);
+  }
+
+  public TSMRangeParams aggregation(AggregationType aggregationType, long bucketDuration) {
+    this.aggregationType = aggregationType;
+    this.bucketDuration = bucketDuration;
+    return this;
+  }
+
+  public TSMRangeParams aggregation(AggregationType aggregationType, long bucketDuration, long bucketTimestamp) {
+    this.aggregationType = aggregationType;
+    this.bucketDuration = bucketDuration;
+    this.bucketTimestamp = bucketTimestamp;
+    return this;
+  }
+
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSMRangeParams empty() {
+    this.empty = true;
     return this;
   }
 
@@ -139,6 +173,10 @@ public class TSMRangeParams implements IParams {
       args.add(toByteArray(toTimestamp));
     }
 
+    if (latest) {
+      args.add(LATEST);
+    }
+
     if (filterByTimestamps != null) {
       args.add(FILTER_BY_TS);
       for (long ts : filterByTimestamps) {
@@ -166,12 +204,21 @@ public class TSMRangeParams implements IParams {
       args.add(COUNT).add(toByteArray(count));
     }
 
-    if (align != null) {
-      args.add(ALIGN).add(align);
-    }
-
     if (aggregationType != null) {
-      args.add(AGGREGATION).add(aggregationType).add(toByteArray(timeBucket));
+
+      if (align != null) {
+        args.add(ALIGN).add(align);
+      }
+
+      args.add(AGGREGATION).add(aggregationType).add(toByteArray(bucketDuration));
+
+      if (bucketTimestamp != null) {
+        args.add(BUCKETTIMESTAMP).add(toByteArray(bucketTimestamp));
+      }
+
+      if (empty) {
+        args.add(EMPTY);
+      }
     }
 
     args.add(FILTER);

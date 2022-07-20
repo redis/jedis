@@ -3,11 +3,7 @@ package redis.clients.jedis.timeseries;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.MINUS;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.PLUS;
-import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.AGGREGATION;
-import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.ALIGN;
-import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.COUNT;
-import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.FILTER_BY_TS;
-import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.FILTER_BY_VALUE;
+import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.*;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
@@ -17,6 +13,8 @@ public class TSRangeParams implements IParams {
   private Long fromTimestamp;
   private Long toTimestamp;
 
+  private boolean latest;
+
   private long[] filterByTimestamps;
   private double[] filterByValues;
 
@@ -25,7 +23,10 @@ public class TSRangeParams implements IParams {
   private byte[] align;
 
   private AggregationType aggregationType;
-  private long timeBucket;
+  private long bucketDuration;
+  private Long bucketTimestamp;
+
+  private boolean empty;
 
   public TSRangeParams(long fromTimestamp, long toTimestamp) {
     this.fromTimestamp = fromTimestamp;
@@ -53,6 +54,11 @@ public class TSRangeParams implements IParams {
     return this;
   }
 
+  public TSRangeParams latest() {
+    this.latest = true;
+    return this;
+  }
+
   public TSRangeParams filterByTS(long... timestamps) {
     this.filterByTimestamps = timestamps;
     return this;
@@ -73,21 +79,46 @@ public class TSRangeParams implements IParams {
     return this;
   }
 
+  /**
+   * This requires AGGREGATION.
+   */
   public TSRangeParams align(long timestamp) {
     return align(toByteArray(timestamp));
   }
 
+  /**
+   * This requires AGGREGATION.
+   */
   public TSRangeParams alignStart() {
     return align(MINUS);
   }
 
+  /**
+   * This requires AGGREGATION.
+   */
   public TSRangeParams alignEnd() {
     return align(PLUS);
   }
 
-  public TSRangeParams aggregation(AggregationType aggregationType, long timeBucket) {
+  public TSRangeParams aggregation(AggregationType aggregationType, long bucketDuration) {
     this.aggregationType = aggregationType;
-    this.timeBucket = timeBucket;
+    this.bucketDuration = bucketDuration;
+    this.bucketTimestamp = null;
+    return this;
+  }
+
+  public TSRangeParams aggregation(AggregationType aggregationType, long bucketDuration, long bucketTimestamp) {
+    this.aggregationType = aggregationType;
+    this.bucketDuration = bucketDuration;
+    this.bucketTimestamp = bucketTimestamp;
+    return this;
+  }
+
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSRangeParams empty() {
+    this.empty = true;
     return this;
   }
 
@@ -104,6 +135,10 @@ public class TSRangeParams implements IParams {
       args.add(PLUS);
     } else {
       args.add(toByteArray(toTimestamp));
+    }
+
+    if (latest) {
+      args.add(LATEST);
     }
 
     if (filterByTimestamps != null) {
@@ -124,12 +159,21 @@ public class TSRangeParams implements IParams {
       args.add(COUNT).add(toByteArray(count));
     }
 
-    if (align != null) {
-      args.add(ALIGN).add(align);
-    }
-
     if (aggregationType != null) {
-      args.add(AGGREGATION).add(aggregationType).add(toByteArray(timeBucket));
+
+      if (align != null) {
+        args.add(ALIGN).add(align);
+      }
+
+      args.add(AGGREGATION).add(aggregationType).add(toByteArray(bucketDuration));
+
+      if (bucketTimestamp != null) {
+        args.add(BUCKETTIMESTAMP).add(toByteArray(bucketTimestamp));
+      }
+
+      if (empty) {
+        args.add(EMPTY);
+      }
     }
   }
 }

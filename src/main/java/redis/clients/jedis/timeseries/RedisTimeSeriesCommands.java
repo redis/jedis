@@ -184,6 +184,8 @@ public interface RedisTimeSeriesCommands {
    */
   TSElement tsGet(String key);
 
+  TSElement tsGet(String key, TSGetParams getParams);
+
   /**
    * {@code TS.MGET [WITHLABELS | SELECTED_LABELS label1 ..] FILTER filter...}
    *
@@ -202,6 +204,8 @@ public interface RedisTimeSeriesCommands {
    * @param timeBucket
    */
   String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket);
+
+  String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration, long alignTimestamp);
 
   /**
    * {@code TS.DELETERULE sourceKey destKey}

@@ -2,6 +2,7 @@ package redis.clients.jedis.modules.timeseries;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -863,5 +864,46 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
 
     assertEquals(Arrays.asList(new TSKeyedElements("ts2", null, Arrays.asList(latest, compact))),
         client.tsMRevRange(TSMRangeParams.multiRangeParams().latest().filter("compact=true")));
+  }
+
+  @Test
+  public void empty() {
+    client.tsCreate("ts", TSCreateParams.createParams().label("l", "v"));
+    client.tsAdd("ts", 1, 1);
+    client.tsAdd("ts", 2, 3);
+    client.tsAdd("ts", 11, 7);
+    client.tsAdd("ts", 13, 1);
+
+    // range
+    List<TSElement> range = client.tsRange("ts", TSRangeParams.rangeParams().aggregation(AggregationType.MAX, 5));
+    assertEquals(2, range.size());
+    range = client.tsRange("ts", TSRangeParams.rangeParams().aggregation(AggregationType.MAX, 5).empty());
+    assertEquals(3, range.size());
+    assertNotNull(range.get(1).getValue()); // any parsable value
+
+    // revrange
+    range = client.tsRevRange("ts", TSRangeParams.rangeParams().aggregation(AggregationType.MIN, 5));
+    assertEquals(2, range.size());
+    range = client.tsRevRange("ts", TSRangeParams.rangeParams().aggregation(AggregationType.MIN, 5).empty());
+    assertEquals(3, range.size());
+    assertNotNull(range.get(1).getValue()); // any parsable value
+
+    // mrange
+    List<TSKeyedElements> mrange = client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.MAX, 5).filter("l=v"));
+    assertEquals(1, mrange.size());
+    assertEquals(2, mrange.get(0).getValue().size());
+    mrange = client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.MAX, 5).empty().filter("l=v"));
+    assertEquals(1, mrange.size());
+    assertEquals(3, mrange.get(0).getValue().size());
+    assertNotNull(mrange.get(0).getValue().get(1).getValue()); // any parsable value
+
+    // mrevrange
+    mrange = client.tsMRevRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.MAX, 5).filter("l=v"));
+    assertEquals(1, mrange.size());
+    assertEquals(2, mrange.get(0).getValue().size());
+    mrange = client.tsMRevRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.MAX, 5).empty().filter("l=v"));
+    assertEquals(1, mrange.size());
+    assertEquals(3, mrange.get(0).getValue().size());
+    assertNotNull(mrange.get(0).getValue().get(1).getValue()); // any parsable value
   }
 }

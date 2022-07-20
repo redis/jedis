@@ -1,9 +1,11 @@
 package redis.clients.jedis.timeseries;
 
+import static redis.clients.jedis.Protocol.BYTES_TILDE;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.MINUS;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.PLUS;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.*;
+import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
@@ -24,7 +26,7 @@ public class TSRangeParams implements IParams {
 
   private AggregationType aggregationType;
   private long bucketDuration;
-  private Long bucketTimestamp;
+  private byte[] bucketTimestamp;
 
   private boolean empty;
 
@@ -103,14 +105,38 @@ public class TSRangeParams implements IParams {
   public TSRangeParams aggregation(AggregationType aggregationType, long bucketDuration) {
     this.aggregationType = aggregationType;
     this.bucketDuration = bucketDuration;
-    this.bucketTimestamp = null;
     return this;
   }
 
-  public TSRangeParams aggregation(AggregationType aggregationType, long bucketDuration, long bucketTimestamp) {
-    this.aggregationType = aggregationType;
-    this.bucketDuration = bucketDuration;
-    this.bucketTimestamp = bucketTimestamp;
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSRangeParams bucketTimestamp(String bucketTimestamp) {
+    this.bucketTimestamp = encode(bucketTimestamp);
+    return this;
+  }
+
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSRangeParams bucketTimestampLow() {
+    this.bucketTimestamp = MINUS;
+    return this;
+  }
+
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSRangeParams bucketTimestampHigh() {
+    this.bucketTimestamp = PLUS;
+    return this;
+  }
+
+  /**
+   * This requires AGGREGATION.
+   */
+  public TSRangeParams bucketTimestampMid() {
+    this.bucketTimestamp = BYTES_TILDE;
     return this;
   }
 
@@ -168,7 +194,7 @@ public class TSRangeParams implements IParams {
       args.add(AGGREGATION).add(aggregationType).add(toByteArray(bucketDuration));
 
       if (bucketTimestamp != null) {
-        args.add(BUCKETTIMESTAMP).add(toByteArray(bucketTimestamp));
+        args.add(BUCKETTIMESTAMP).add(bucketTimestamp);
       }
 
       if (empty) {

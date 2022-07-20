@@ -889,10 +889,10 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertNotNull(range.get(1).getValue()); // any parsable value
 
     // mrange
-    List<TSKeyedElements> mrange = client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.MAX, 5).filter("l=v"));
+    List<TSKeyedElements> mrange = client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.MIN, 5).filter("l=v"));
     assertEquals(1, mrange.size());
     assertEquals(2, mrange.get(0).getValue().size());
-    mrange = client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.MAX, 5).empty().filter("l=v"));
+    mrange = client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.MIN, 5).empty().filter("l=v"));
     assertEquals(1, mrange.size());
     assertEquals(3, mrange.get(0).getValue().size());
     assertNotNull(mrange.get(0).getValue().get(1).getValue()); // any parsable value
@@ -905,5 +905,36 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(1, mrange.size());
     assertEquals(3, mrange.get(0).getValue().size());
     assertNotNull(mrange.get(0).getValue().get(1).getValue()); // any parsable value
+  }
+
+  @Test
+  public void bucketTimestamp() {
+    client.tsCreate("ts", TSCreateParams.createParams().label("l", "v"));
+    client.tsAdd("ts", 1, 1);
+    client.tsAdd("ts", 2, 3);
+
+    // range / revrange
+    assertEquals(0, client.tsRange("ts", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.FIRST, 10).bucketTimestampLow()).get(0).getTimestamp());
+    assertEquals(10, client.tsRange("ts", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.LAST, 10).bucketTimestampHigh()).get(0).getTimestamp());
+    assertEquals(5, client.tsRange("ts", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.RANGE, 10).bucketTimestampMid()).get(0).getTimestamp());
+    assertEquals(5, client.tsRevRange("ts", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.TWA, 10).bucketTimestampMid()).get(0).getTimestamp());
+    assertEquals(5, client.tsRevRange("ts", TSRangeParams.rangeParams()
+        .aggregation(AggregationType.TWA, 10).bucketTimestamp("mid")).get(0).getTimestamp());
+
+    // mrange / mrevrange
+    assertEquals(0, client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.STD_P, 10)
+        .bucketTimestampLow().filter("l=v")).get(0).getValue().get(0).getTimestamp());
+    assertEquals(10, client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.STD_S, 10)
+        .bucketTimestampHigh().filter("l=v")).get(0).getValue().get(0).getTimestamp());
+    assertEquals(5, client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.TWA, 10)
+        .bucketTimestampMid().filter("l=v")).get(0).getValue().get(0).getTimestamp());
+    assertEquals(5, client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.VAR_P, 10)
+        .bucketTimestampMid().filter("l=v")).get(0).getValue().get(0).getTimestamp());
+    assertEquals(5, client.tsMRange(TSMRangeParams.multiRangeParams().aggregation(AggregationType.VAR_S, 10)
+        .bucketTimestamp("~").filter("l=v")).get(0).getValue().get(0).getTimestamp());
   }
 }

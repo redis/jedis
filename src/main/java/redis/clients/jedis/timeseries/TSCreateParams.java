@@ -3,7 +3,9 @@ package redis.clients.jedis.timeseries;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.*;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
+
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
@@ -50,6 +52,14 @@ public class TSCreateParams implements IParams {
 
   public TSCreateParams labels(Map<String, String> labels) {
     this.labels = labels;
+    return this;
+  }
+
+  public TSCreateParams label(String label, String value) {
+    if (this.labels == null) {
+      this.labels = new LinkedHashMap<>();
+    }
+    this.labels.put(label, value);
     return this;
   }
 

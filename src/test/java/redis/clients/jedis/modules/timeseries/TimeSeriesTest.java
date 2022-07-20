@@ -1,7 +1,6 @@
 package redis.clients.jedis.modules.timeseries;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -693,11 +692,12 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     List<Map<String, Object>> chunks = info.getChunks();
     assertEquals(1, chunks.size());
     Map<String, Object> chunk = chunks.get(0);
-    assertEquals(0L, chunk.get("startTimestamp"));
-    assertEquals(0L, chunk.get("endTimestamp"));
     assertEquals(0L, chunk.get("samples"));
-    assertEquals(4096L, chunk.get("size"));
-    assertEquals(Double.POSITIVE_INFINITY, chunk.get("bytesPerSample"));
+    // Don't care what the values are as long as the values are parsed according to types
+    assertTrue(chunk.get("size") instanceof Long);
+    assertTrue(chunk.get("startTimestamp") instanceof Long);
+    assertTrue(chunk.get("endTimestamp") instanceof Long);
+    assertTrue(chunk.get("bytesPerSample") instanceof Double);
 
     try {
       client.tsInfoDebug("none");
@@ -795,5 +795,73 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList(new TSElement(2000L, 3.1), new TSElement(1000L, 1.1)), ranges3.get(0).getValue());
     assertEquals(labels3, ranges3.get(1).getLabels());
     assertEquals(Arrays.asList(new TSElement(3000L, -33.0), new TSElement(2000L, 0.0)), ranges3.get(1).getValue());
+  }
+
+  @Test
+  public void latest() {
+    client.tsCreate("ts1");
+    client.tsCreate("ts2");
+    client.tsCreateRule("ts1", "ts2", AggregationType.SUM, 10);
+    client.tsAdd("ts1", 1, 1);
+    client.tsAdd("ts1", 2, 3);
+    client.tsAdd("ts1", 11, 7);
+    client.tsAdd("ts1", 13, 1);
+    List<TSElement> range = client.tsRange("ts1", 0, 20);
+    assertEquals(4, range.size());
+
+    final TSElement compact = new TSElement(0, 4);
+    final TSElement latest = new TSElement(10, 8);
+
+    // get
+    assertEquals(compact, client.tsGet("ts2", TSGetParams.getParams()));
+
+    assertEquals(latest, client.tsGet("ts2", TSGetParams.getParams().latest()));
+
+    // range
+    assertEquals(Arrays.asList(compact), client.tsRange("ts2", TSRangeParams.rangeParams(0, 10)));
+
+    assertEquals(Arrays.asList(compact, latest), client.tsRange("ts2", TSRangeParams.rangeParams(0, 10).latest()));
+
+    // revrange
+    assertEquals(Arrays.asList(compact), client.tsRevRange("ts2", TSRangeParams.rangeParams(0, 10)));
+
+    assertEquals(Arrays.asList(latest, compact), client.tsRevRange("ts2", TSRangeParams.rangeParams(0, 10).latest()));
+  }
+
+  @Test
+  public void latestMulti() {
+    client.tsCreate("ts1");
+    client.tsCreate("ts2", TSCreateParams.createParams().label("compact", "true"));
+    client.tsCreateRule("ts1", "ts2", AggregationType.SUM, 10);
+    client.tsAdd("ts1", 1, 1);
+    client.tsAdd("ts1", 2, 3);
+    client.tsAdd("ts1", 11, 7);
+    client.tsAdd("ts1", 13, 1);
+    List<TSElement> range = client.tsRange("ts1", 0, 20);
+    assertEquals(4, range.size());
+
+    final TSElement compact = new TSElement(0, 4);
+    final TSElement latest = new TSElement(10, 8);
+
+    // mget
+    assertEquals(Arrays.asList(new TSKeyValue<>("ts2", null, compact)),
+        client.tsMGet(TSMGetParams.multiGetParams(), "compact=true"));
+
+    assertEquals(Arrays.asList(new TSKeyValue<>("ts2", null, latest)),
+        client.tsMGet(TSMGetParams.multiGetParams().latest(), "compact=true"));
+
+    // mrange
+    assertEquals(Arrays.asList(new TSKeyedElements("ts2", null, Arrays.asList(compact))),
+        client.tsMRange(TSMRangeParams.multiRangeParams().filter("compact=true")));
+
+    assertEquals(Arrays.asList(new TSKeyedElements("ts2", null, Arrays.asList(compact, latest))),
+        client.tsMRange(TSMRangeParams.multiRangeParams().latest().filter("compact=true")));
+
+    // mrevrange
+    assertEquals(Arrays.asList(new TSKeyedElements("ts2", null, Arrays.asList(compact))),
+        client.tsMRevRange(TSMRangeParams.multiRangeParams().filter("compact=true")));
+
+    assertEquals(Arrays.asList(new TSKeyedElements("ts2", null, Arrays.asList(latest, compact))),
+        client.tsMRevRange(TSMRangeParams.multiRangeParams().latest().filter("compact=true")));
   }
 }

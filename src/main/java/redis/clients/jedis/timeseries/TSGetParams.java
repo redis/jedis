@@ -5,6 +5,9 @@ import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeywor
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
+/**
+ * Represents optional arguments of TS.GET command.
+ */
 public class TSGetParams implements IParams {
 
   private boolean latest;

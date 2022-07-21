@@ -179,18 +179,25 @@ public interface RedisTimeSeriesCommands {
   /**
    * {@code TS.GET key}
    *
-   * @param key
+   * @param key the key
    * @return the element
    */
   TSElement tsGet(String key);
 
+  /**
+   * {@code TS.GET key [LATEST]}
+   *
+   * @param key the key
+   * @param getParams optional arguments
+   * @return the element
+   */
   TSElement tsGet(String key, TSGetParams getParams);
 
   /**
    * {@code TS.MGET [WITHLABELS | SELECTED_LABELS label1 ..] FILTER filter...}
    *
-   * @param multiGetParams
-   * @param filters
+   * @param multiGetParams optional arguments
+   * @param filters secondary indexes
    * @return multi get elements
    */
   List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters);
@@ -205,6 +212,15 @@ public interface RedisTimeSeriesCommands {
    */
   String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket);
 
+  /**
+   * {@code TS.CREATERULE sourceKey destKey AGGREGATION aggregationType bucketDuration [alignTimestamp]}
+   *
+   * @param sourceKey
+   * @param destKey
+   * @param aggregationType
+   * @param bucketDuration
+   * @param alignTimestamp
+   */
   String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration, long alignTimestamp);
 
   /**

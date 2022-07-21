@@ -10,6 +10,9 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
+/**
+ * Represents optional arguments of TS.RANGE and TS.REVRANGE commands.
+ */
 public class TSRangeParams implements IParams {
 
   private Long fromTimestamp;

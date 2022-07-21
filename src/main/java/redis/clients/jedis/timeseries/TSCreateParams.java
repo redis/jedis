@@ -9,6 +9,9 @@ import java.util.Map;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
+/**
+ * Represents optional arguments of TS.CREATE command.
+ */
 public class TSCreateParams implements IParams {
 
   private Long retentionTime;
@@ -50,11 +53,20 @@ public class TSCreateParams implements IParams {
     return this;
   }
 
+  /**
+   * Set label-value pairs
+   *
+   * @param labels label-value pairs
+   * @return the object itself
+   */
   public TSCreateParams labels(Map<String, String> labels) {
     this.labels = labels;
     return this;
   }
 
+  /**
+   * Add label-value pair. Multiple pairs can be added through chaining.
+   */
   public TSCreateParams label(String label, String value) {
     if (this.labels == null) {
       this.labels = new LinkedHashMap<>();

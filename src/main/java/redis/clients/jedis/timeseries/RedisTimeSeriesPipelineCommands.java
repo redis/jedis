@@ -48,9 +48,13 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<TSElement> tsGet(String key);
 
+  Response<TSElement> tsGet(String key, TSGetParams getParams);
+
   Response<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters);
 
   Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket);
+
+  Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration, long alignTimestamp);
 
   Response<String> tsDeleteRule(String sourceKey, String destKey);
 

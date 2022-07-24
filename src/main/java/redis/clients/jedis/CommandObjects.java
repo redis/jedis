@@ -1753,7 +1753,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Set<String>> zdiff(String... keys) {
-    return new CommandObject<>(commandArguments(ZDIFF).add(keys.length).keys((Object[]) keys), BuilderFactory.STRING_SET);
+    return new CommandObject<>(commandArguments(ZDIFF).add(keys.length).keys((Object[]) keys), BuilderFactory.STRING_ORDERED_SET);
   }
 
   public final CommandObject<Set<Tuple>> zdiffWithScores(String... keys) {
@@ -1791,7 +1791,7 @@ public class CommandObjects {
 
   public final CommandObject<Set<String>> zinter(ZParams params, String... keys) {
     return new CommandObject<>(commandArguments(ZINTER).add(keys.length).keys((Object[]) keys)
-        .addParams(params), BuilderFactory.STRING_SET);
+        .addParams(params), BuilderFactory.STRING_ORDERED_SET);
   }
 
   public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
@@ -1851,7 +1851,7 @@ public class CommandObjects {
 
   public final CommandObject<Set<String>> zunion(ZParams params, String... keys) {
     return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
-        .addParams(params), BuilderFactory.STRING_SET);
+        .addParams(params), BuilderFactory.STRING_ORDERED_SET);
   }
 
   public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {

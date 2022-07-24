@@ -342,6 +342,20 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Set<String>> STRING_ORDERED_SET = new Builder<Set<String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<String> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(STRING::build).collect(Collectors.toCollection(LinkedHashSet::new));
+    }
+
+    @Override
+    public String toString() {
+      return "Set<String>";
+    }
+  };
+
   public static final Builder<Map<String, String>> STRING_MAP = new Builder<Map<String, String>>() {
     @Override
     @SuppressWarnings("unchecked")

@@ -129,41 +129,42 @@ class ResultSetBuilder extends Builder<ResultSet> {
   @SuppressWarnings("unchecked")
   private List<Record> parseRecords(Header header, Object data) {
     List<List<Object>> rawResultSet = (List<List<Object>>) data;
-    List<Record> results = new ArrayList<>();
+    
     if (rawResultSet == null || rawResultSet.isEmpty()) {
-      return results;
-    } else {
-      // go over each raw result
-      for (List<Object> row : rawResultSet) {
+      return new ArrayList<>(0);
+    } 
+    
+    // go over each raw result
+    List<Record> results = new ArrayList<>(rawResultSet.size());
+    for (List<Object> row : rawResultSet) {
 
-        List<Object> parsedRow = new ArrayList<>(row.size());
-        // go over each object in the result
-        for (int i = 0; i < row.size(); i++) {
-          // get raw representation of the object
-          List<Object> obj = (List<Object>) row.get(i);
-          // get object type
-          ResultSet.ColumnType objType = header.getSchemaTypes().get(i);
-          // deserialize according to type and
-          switch (objType) {
-            case NODE:
-              parsedRow.add(deserializeNode(obj));
-              break;
-            case RELATION:
-              parsedRow.add(deserializeEdge(obj));
-              break;
-            case SCALAR:
-              parsedRow.add(deserializeScalar(obj));
-              break;
-            default:
-              parsedRow.add(null);
-              break;
-          }
-
+      List<Object> parsedRow = new ArrayList<>(row.size());
+      // go over each object in the result
+      for (int i = 0; i < row.size(); i++) {
+        // get raw representation of the object
+        List<Object> obj = (List<Object>) row.get(i);
+        // get object type
+        ResultSet.ColumnType objType = header.getSchemaTypes().get(i);
+        // deserialize according to type and
+        switch (objType) {
+          case NODE:
+            parsedRow.add(deserializeNode(obj));
+            break;
+          case RELATION:
+            parsedRow.add(deserializeEdge(obj));
+            break;
+          case SCALAR:
+            parsedRow.add(deserializeScalar(obj));
+            break;
+          default:
+            parsedRow.add(null);
+            break;
         }
-        // create new record from deserialized objects
-        Record record = new RecordImpl(header.getSchemaNames(), parsedRow);
-        results.add(record);
+
       }
+      // create new record from deserialized objects
+      Record record = new RecordImpl(header.getSchemaNames(), parsedRow);
+      results.add(record);
     }
     return results;
   }

@@ -9,11 +9,19 @@ import java.util.Objects;
 public class Edge extends GraphEntity {
 
     //members
-    private  String relationshipType;
+    private String relationshipType;
     private long source;
     private long destination;
 
-
+    public Edge() {
+    	super();
+    }
+    
+    public Edge(int propertiesCapacity) {
+    	super(propertiesCapacity);
+    }
+    
+    
     //getters & setters
 
     /**

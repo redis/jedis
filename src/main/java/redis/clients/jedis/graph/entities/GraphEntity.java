@@ -9,7 +9,15 @@ import java.util.*;
 public abstract class GraphEntity {
 
   protected long id;
-  protected final Map<String, Property<?>> propertyMap = new HashMap<>();
+  protected final Map<String, Property<?>> propertyMap;
+  
+  GraphEntity(){
+	  propertyMap = new HashMap<>();
+  }
+  
+  GraphEntity(int propertiesCapacity){
+	  propertyMap = new HashMap<>(propertiesCapacity);
+  }
 
   /**
    * @return entity id

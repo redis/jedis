@@ -295,8 +295,11 @@ class ResultSetBuilder extends Builder<ResultSet> {
   @SuppressWarnings("unchecked")
   private Map<String, Object> deserializeMap(Object rawScalarData) {
     List<Object> keyTypeValueEntries = (List<Object>) rawScalarData;
-    Map<String, Object> map = new HashMap<>();
-    for (int i = 0; i < keyTypeValueEntries.size(); i += 2) {
+    
+    int size = keyTypeValueEntries.size();
+    Map<String, Object> map = new HashMap<>(size >> 1); // set the capacity to half of the list
+    
+    for (int i = 0; i < size; i += 2) {
       String key = SafeEncoder.encode((byte[]) keyTypeValueEntries.get(i));
       Object value = deserializeScalar((List<Object>) keyTypeValueEntries.get(i + 1));
       map.put(key, value);

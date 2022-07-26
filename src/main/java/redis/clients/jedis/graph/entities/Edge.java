@@ -17,6 +17,11 @@ public class Edge extends GraphEntity {
     	super();
     }
     
+    /**
+     * Use this constructor to reduce memory allocations 
+     * when properties are added to the edge
+     * @param propertiesCapacity preallocate the capacity for the properties
+     */
     public Edge(int propertiesCapacity) {
     	super(propertiesCapacity);
     }

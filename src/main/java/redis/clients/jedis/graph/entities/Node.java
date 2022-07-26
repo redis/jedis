@@ -19,8 +19,9 @@ public class Node extends GraphEntity {
     
     /**
      * Use this constructor to reduce memory allocations 
-     * when labels are added to the node
+     * when labels or properties are added to the node
      * @param labelsCapacity preallocate the capacity for the node labels
+     * @param propertiesCapacity preallocate the capacity for the properties
      */
     public Node(int labelsCapacity, int propertiesCapacity) {
     	super(propertiesCapacity);

@@ -215,7 +215,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
 
     List<List<Object>> rawProperties = (List<List<Object>>) rawEdgeData.get(4);
 
-    Edge edge = new Edge(properties.size());
+    Edge edge = new Edge(rawProperties.size());
     deserializeGraphEntityId(edge, (Long) rawEdgeData.get(0));
 
     String relationshipType = graphCache.getRelationshipType(((Long) rawEdgeData.get(1)).intValue());

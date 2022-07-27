@@ -189,6 +189,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
       String label = graphCache.getLabel(labelIndex.intValue());
       node.addLabel(label);
     }
+
     deserializeGraphEntityProperties(node, rawProperties);
 
     return node;

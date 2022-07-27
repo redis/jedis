@@ -213,7 +213,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
   @SuppressWarnings("unchecked")
   private Edge deserializeEdge(List<Object> rawEdgeData) {
 
-    List<List<Object>> properties = (List<List<Object>>) rawEdgeData.get(4);
+    List<List<Object>> rawProperties = (List<List<Object>>) rawEdgeData.get(4);
 
     Edge edge = new Edge(properties.size());
     deserializeGraphEntityId(edge, (Long) rawEdgeData.get(0));
@@ -224,7 +224,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
     edge.setSource((long) rawEdgeData.get(2));
     edge.setDestination((long) rawEdgeData.get(3));
 
-    deserializeGraphEntityProperties(edge, properties);
+    deserializeGraphEntityProperties(edge, rawProperties);
 
     return edge;
   }

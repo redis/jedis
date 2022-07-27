@@ -13,7 +13,7 @@ public class Node extends GraphEntity {
     private final List<String> labels;
 
     public Node() {
-        super(0);
+        super();
         labels = new ArrayList<>();
     }
 

@@ -11,12 +11,12 @@ public class Node extends GraphEntity {
 
     //members
     private final List<String> labels;
-    
+
     public Node() {
-    	super(0);
-    	labels = new ArrayList<>();
-    }    
-    
+        super(0);
+        labels = new ArrayList<>();
+    }
+
     /**
      * Use this constructor to reduce memory allocations 
      * when labels or properties are added to the node
@@ -24,10 +24,10 @@ public class Node extends GraphEntity {
      * @param propertiesCapacity preallocate the capacity for the properties
      */
     public Node(int labelsCapacity, int propertiesCapacity) {
-    	super(propertiesCapacity);
-    	this.labels = new ArrayList<>(labelsCapacity);
+        super(propertiesCapacity);
+        this.labels = new ArrayList<>(labelsCapacity);
     }
-    
+
 
     /**
      * @param label - a label to be add

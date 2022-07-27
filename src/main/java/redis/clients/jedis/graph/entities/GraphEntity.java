@@ -10,18 +10,18 @@ public abstract class GraphEntity {
 
   protected long id;
   protected final Map<String, Property<?>> propertyMap;
-  
-  GraphEntity(){
-	  propertyMap = new HashMap<>();
+
+  public GraphEntity() {
+      propertyMap = new HashMap<>();
   }
-  
+
   /**
    * Use this constructor to reduce memory allocations 
    * when properties are added to the edge
    * @param propertiesCapacity preallocate the capacity for the properties
    */
-  GraphEntity(int propertiesCapacity){
-	  propertyMap = new HashMap<>(propertiesCapacity);
+  public GraphEntity(int propertiesCapacity) {
+      propertyMap = new HashMap<>(propertiesCapacity);
   }
 
   /**

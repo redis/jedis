@@ -178,15 +178,15 @@ class ResultSetBuilder extends Builder<ResultSet> {
    */
   @SuppressWarnings("unchecked")
   private Node deserializeNode(List<Object> rawNodeData) {
-    
-	List<Long> labelsIndices = (List<Long>) rawNodeData.get(1);  
-    long id = (Long)rawNodeData.get(0);
+
+    List<Long> labelsIndices = (List<Long>) rawNodeData.get(1);
+    long id = (Long) rawNodeData.get(0);
     List<List<Object>> rawProperties = (List<List<Object>>) rawNodeData.get(2);
-    
-	Node node = new Node(labelsIndices.size(), rawProperties.size());  
-	
+
+    Node node = new Node(labelsIndices.size(), rawProperties.size());
+
     deserializeGraphEntityId(node, id);
-    
+
     for (Long labelIndex : labelsIndices) {
       String label = graphCache.getLabel(labelIndex.intValue());
       node.addLabel(label);
@@ -213,9 +213,9 @@ class ResultSetBuilder extends Builder<ResultSet> {
    */
   @SuppressWarnings("unchecked")
   private Edge deserializeEdge(List<Object> rawEdgeData) {
-	  
-	List<List<Object>> properties = (List<List<Object>>) rawEdgeData.get(4);
-	  
+
+    List<List<Object>> properties = (List<List<Object>>) rawEdgeData.get(4);
+
     Edge edge = new Edge(properties.size());
     deserializeGraphEntityId(edge, (Long)rawEdgeData.get(0));
 
@@ -295,10 +295,10 @@ class ResultSetBuilder extends Builder<ResultSet> {
   @SuppressWarnings("unchecked")
   private Map<String, Object> deserializeMap(Object rawScalarData) {
     List<Object> keyTypeValueEntries = (List<Object>) rawScalarData;
-    
+
     int size = keyTypeValueEntries.size();
     Map<String, Object> map = new HashMap<>(size >> 1); // set the capacity to half of the list
-    
+
     for (int i = 0; i < size; i += 2) {
       String key = SafeEncoder.encode((byte[]) keyTypeValueEntries.get(i));
       Object value = deserializeScalar((List<Object>) keyTypeValueEntries.get(i + 1));

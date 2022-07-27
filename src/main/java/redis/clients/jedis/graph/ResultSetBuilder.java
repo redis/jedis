@@ -179,12 +179,11 @@ class ResultSetBuilder extends Builder<ResultSet> {
   @SuppressWarnings("unchecked")
   private Node deserializeNode(List<Object> rawNodeData) {
 
-    Long id = (Long) rawNodeData.get(0);
     List<Long> labelsIndices = (List<Long>) rawNodeData.get(1);
     List<List<Object>> rawProperties = (List<List<Object>>) rawNodeData.get(2);
 
     Node node = new Node(labelsIndices.size(), rawProperties.size());
-    deserializeGraphEntityId(node, id);
+    deserializeGraphEntityId(node, (Long) rawNodeData.get(0));
 
     for (Long labelIndex : labelsIndices) {
       String label = graphCache.getLabel(labelIndex.intValue());

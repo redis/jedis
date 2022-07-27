@@ -9,11 +9,22 @@ import java.util.Objects;
 public class Edge extends GraphEntity {
 
     //members
-    private  String relationshipType;
+    private String relationshipType;
     private long source;
     private long destination;
 
+    public Edge() {
+        super();
+    }
 
+    /**
+     * Use this constructor to reduce memory allocations
+     * when properties are added to the edge
+     * @param propertiesCapacity preallocate the capacity for the properties
+     */
+    public Edge(int propertiesCapacity) {
+        super(propertiesCapacity);
+    }
     //getters & setters
 
     /**

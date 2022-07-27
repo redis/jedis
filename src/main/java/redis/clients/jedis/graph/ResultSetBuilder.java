@@ -178,14 +178,19 @@ class ResultSetBuilder extends Builder<ResultSet> {
    */
   @SuppressWarnings("unchecked")
   private Node deserializeNode(List<Object> rawNodeData) {
-    Node node = new Node();
-    deserializeGraphEntityId(node, rawNodeData.get(0));
+
     List<Long> labelsIndices = (List<Long>) rawNodeData.get(1);
+    List<List<Object>> rawProperties = (List<List<Object>>) rawNodeData.get(2);
+
+    Node node = new Node(labelsIndices.size(), rawProperties.size());
+    deserializeGraphEntityId(node, (Long) rawNodeData.get(0));
+
     for (Long labelIndex : labelsIndices) {
       String label = graphCache.getLabel(labelIndex.intValue());
       node.addLabel(label);
     }
-    deserializeGraphEntityProperties(node, (List<List<Object>>) rawNodeData.get(2));
+
+    deserializeGraphEntityProperties(node, rawProperties);
 
     return node;
 
@@ -193,10 +198,9 @@ class ResultSetBuilder extends Builder<ResultSet> {
 
   /**
    * @param graphEntity graph entity
-   * @param rawEntityId raw representation of entity id to be set to the graph entity
+   * @param id entity id to be set to the graph entity
    */
-  private void deserializeGraphEntityId(GraphEntity graphEntity, Object rawEntityId) {
-    long id = (Long) rawEntityId;
+  private void deserializeGraphEntityId(GraphEntity graphEntity, long id) {
     graphEntity.setId(id);
   }
 
@@ -208,8 +212,11 @@ class ResultSetBuilder extends Builder<ResultSet> {
    */
   @SuppressWarnings("unchecked")
   private Edge deserializeEdge(List<Object> rawEdgeData) {
-    Edge edge = new Edge();
-    deserializeGraphEntityId(edge, rawEdgeData.get(0));
+
+    List<List<Object>> rawProperties = (List<List<Object>>) rawEdgeData.get(4);
+
+    Edge edge = new Edge(rawProperties.size());
+    deserializeGraphEntityId(edge, (Long) rawEdgeData.get(0));
 
     String relationshipType = graphCache.getRelationshipType(((Long) rawEdgeData.get(1)).intValue());
     edge.setRelationshipType(relationshipType);
@@ -217,7 +224,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
     edge.setSource((long) rawEdgeData.get(2));
     edge.setDestination((long) rawEdgeData.get(3));
 
-    deserializeGraphEntityProperties(edge, (List<List<Object>>) rawEdgeData.get(4));
+    deserializeGraphEntityProperties(edge, rawProperties);
 
     return edge;
   }
@@ -287,8 +294,11 @@ class ResultSetBuilder extends Builder<ResultSet> {
   @SuppressWarnings("unchecked")
   private Map<String, Object> deserializeMap(Object rawScalarData) {
     List<Object> keyTypeValueEntries = (List<Object>) rawScalarData;
-    Map<String, Object> map = new HashMap<>();
-    for (int i = 0; i < keyTypeValueEntries.size(); i += 2) {
+
+    int size = keyTypeValueEntries.size();
+    Map<String, Object> map = new HashMap<>(size >> 1); // set the capacity to half of the list
+
+    for (int i = 0; i < size; i += 2) {
       String key = SafeEncoder.encode((byte[]) keyTypeValueEntries.get(i));
       Object value = deserializeScalar((List<Object>) keyTypeValueEntries.get(i + 1));
       map.put(key, value);

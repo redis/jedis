@@ -1753,7 +1753,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Set<String>> zdiff(String... keys) {
-    return new CommandObject<>(commandArguments(ZDIFF).add(keys.length).keys((Object[]) keys), BuilderFactory.STRING_SET);
+    return new CommandObject<>(commandArguments(ZDIFF).add(keys.length).keys((Object[]) keys), BuilderFactory.STRING_ORDERED_SET);
   }
 
   public final CommandObject<Set<Tuple>> zdiffWithScores(String... keys) {
@@ -1791,7 +1791,7 @@ public class CommandObjects {
 
   public final CommandObject<Set<String>> zinter(ZParams params, String... keys) {
     return new CommandObject<>(commandArguments(ZINTER).add(keys.length).keys((Object[]) keys)
-        .addParams(params), BuilderFactory.STRING_SET);
+        .addParams(params), BuilderFactory.STRING_ORDERED_SET);
   }
 
   public final CommandObject<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
@@ -1851,7 +1851,7 @@ public class CommandObjects {
 
   public final CommandObject<Set<String>> zunion(ZParams params, String... keys) {
     return new CommandObject<>(commandArguments(ZUNION).add(keys.length).keys((Object[]) keys)
-        .addParams(params), BuilderFactory.STRING_SET);
+        .addParams(params), BuilderFactory.STRING_ORDERED_SET);
   }
 
   public final CommandObject<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
@@ -3616,15 +3616,25 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.GET).key(key), BuilderFactory.TIMESERIES_ELEMENT);
   }
 
+  public final CommandObject<TSElement> tsGet(String key, TSGetParams getParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.GET).key(key).addParams(getParams), BuilderFactory.TIMESERIES_ELEMENT);
+  }
+
   public final CommandObject<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MGET).addParams(multiGetParams)
         .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters), BuilderFactory.TIMESERIES_MGET_RESPONSE);
   }
 
-  public final CommandObject<String> tsCreateRule(String sourceKey, String destKey,
-      AggregationType aggregationType, long timeBucket) {
+  public final CommandObject<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
+      long timeBucket) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.CREATERULE).key(sourceKey).key(destKey)
         .add(TimeSeriesKeyword.AGGREGATION).add(aggregationType).add(timeBucket), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
+      long bucketDuration, long alignTimestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.CREATERULE).key(sourceKey).key(destKey)
+        .add(TimeSeriesKeyword.AGGREGATION).add(aggregationType).add(bucketDuration).add(alignTimestamp), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> tsDeleteRule(String sourceKey, String destKey) {

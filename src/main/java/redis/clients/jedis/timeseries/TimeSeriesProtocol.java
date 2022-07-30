@@ -63,7 +63,10 @@ public class TimeSeriesProtocol {
     FILTER_BY_VALUE,
     GROUPBY,
     REDUCE,
-    DEBUG;
+    DEBUG,
+    LATEST,
+    EMPTY,
+    BUCKETTIMESTAMP;
 
     private final byte[] raw;
 

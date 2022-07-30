@@ -92,7 +92,7 @@ jedis.sadd("planets", "Mars");
 
 ## Using Redis modules
 
-Jedis provides support for some of the [Redis modules](https://redis.io/docs/modules/), most notably
+Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
 [RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
 
 See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.

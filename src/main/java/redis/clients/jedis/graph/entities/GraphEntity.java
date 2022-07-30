@@ -9,7 +9,20 @@ import java.util.*;
 public abstract class GraphEntity {
 
   protected long id;
-  protected final Map<String, Property<?>> propertyMap = new HashMap<>();
+  protected final Map<String, Property<?>> propertyMap;
+
+  public GraphEntity() {
+      propertyMap = new HashMap<>();
+  }
+
+  /**
+   * Use this constructor to reduce memory allocations 
+   * when properties are added to the edge
+   * @param propertiesCapacity preallocate the capacity for the properties
+   */
+  public GraphEntity(int propertiesCapacity) {
+      propertyMap = new HashMap<>(propertiesCapacity);
+  }
 
   /**
    * @return entity id

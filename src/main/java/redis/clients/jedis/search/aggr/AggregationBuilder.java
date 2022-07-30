@@ -128,6 +128,38 @@ public class AggregationBuilder {
     return this;
   }
 
+  public AggregationBuilder verbatim() {
+    args.add("VERBATIM");
+    return this;
+  }
+
+  public AggregationBuilder timeout(long timeout) {
+    if (timeout >= 0) {
+      args.add("TIMEOUT");
+      args.add(Long.toString(timeout));
+    }
+    return this;
+  }
+
+  public AggregationBuilder params(Map<String, Object> params) {
+    if (params.size() >= 1) {
+      args.add("PARAMS");
+      args.add(Integer.toString(params.size() * 2));
+      for (Map.Entry<String, Object> entry : params.entrySet()) {
+        args.add(entry.getKey());
+        args.add(String.valueOf(entry.getValue()));
+      }
+    }
+
+    return this;
+  }
+
+  public AggregationBuilder dialect(int dialect) {
+    args.add("DIALECT");
+    args.add(Integer.toString(dialect));
+    return this;
+  }
+
   public List<String> getArgs() {
     return Collections.unmodifiableList(args);
   }

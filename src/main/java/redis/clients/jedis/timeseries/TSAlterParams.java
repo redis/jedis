@@ -10,6 +10,9 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.IParams;
 
+/**
+ * Represents optional arguments of TS.ALTER command.
+ */
 public class TSAlterParams implements IParams {
 
   private Long retentionTime;

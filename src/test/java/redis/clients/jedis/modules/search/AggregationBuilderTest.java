@@ -86,6 +86,70 @@ public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void testAggregationBuilderVerbatim() {
+    Schema sc = new Schema();
+    sc.addSortableTextField("name", 1.0);
+    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+    addDocument(new Document("data1").set("name", "hello kitty"));
+
+    AggregationBuilder r = new AggregationBuilder("kitti");
+
+    AggregationResult res = client.ftAggregate(index, r);
+    assertEquals(1, res.totalResults);
+
+    r = new AggregationBuilder("kitti")
+            .verbatim();
+
+    res = client.ftAggregate(index, r);
+    assertEquals(0, res.totalResults);
+  }
+
+  @Test
+  public void testAggregationBuilderTimeout() {
+    Schema sc = new Schema();
+    sc.addSortableTextField("name", 1.0);
+    sc.addSortableNumericField("count");
+    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+    addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    addDocument(new Document("data2").set("name", "def").set("count", 5));
+    addDocument(new Document("data3").set("name", "def").set("count", 25));
+
+    AggregationBuilder r = new AggregationBuilder()
+            .groupBy("@name", Reducers.sum("@count").as("sum"))
+            .timeout(5000);
+
+    AggregationResult res = client.ftAggregate(index, r);
+    assertEquals(2, res.totalResults);
+  }
+
+  @Test
+  public void testAggregationBuilderParamsDialect() {
+    Schema sc = new Schema();
+    sc.addSortableTextField("name", 1.0);
+    sc.addSortableNumericField("count");
+    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+    addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    addDocument(new Document("data2").set("name", "def").set("count", 5));
+    addDocument(new Document("data3").set("name", "def").set("count", 25));
+
+    Map<String, Object> params = new HashMap<>();
+    params.put("name", "abc");
+
+    AggregationBuilder r = new AggregationBuilder("$name")
+            .groupBy("@name", Reducers.sum("@count").as("sum"))
+            .params(params)
+            .dialect(2); // From documentation - To use PARAMS, DIALECT must be set to 2
+
+    AggregationResult res = client.ftAggregate(index, r);
+    assertEquals(1, res.totalResults);
+
+    Row r1 = res.getRow(0);
+    assertNotNull(r1);
+    assertEquals("abc", r1.getString("name"));
+    assertEquals(10, r1.getLong("sum"));
+  }
+
+  @Test
   public void testApplyAndFilterAggregations() {
     Schema sc = new Schema();
     sc.addSortableTextField("name", 1.0);

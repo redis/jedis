@@ -4,7 +4,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -26,6 +28,9 @@ public class TDIGESTTest extends RedisModuleCommandsTestBase {
         assertEquals("OK", res);
 
         res = client.tdigestCreate("bob", 200);
+        assertEquals("OK", res);
+
+        res = client.tdigestCreate("alicebob");
         assertEquals("OK", res);
     }
 
@@ -179,5 +184,35 @@ public class TDIGESTTest extends RedisModuleCommandsTestBase {
 
         res = client.tdigestTrimmedMean("alice", 0.1, 0.2);
         assertEquals("42", res);
+    }
+
+    @Test
+    public void mergeStore() {
+        client.tdigestCreate("alice", 200);
+
+        HashMap<Double, Double> map = new HashMap<>();
+        map.put(42.0, 1.0);
+        map.put(194.0, 0.3);
+        client.tdigestAdd("alice", map);
+
+        client.tdigestCreate("bob", 100);
+
+        map = new HashMap<>();
+        map.put(4.0, 0.1);
+        map.put(14.0, 0.3);
+        client.tdigestAdd("bob", map);
+
+        client.tdigestCreate("alicebob1", 100);
+        client.tdigestCreate("alicebob2");
+
+        List<String> from = new ArrayList<>();
+        from.add("alice");
+        from.add("bob");
+
+        String res = client.tdigestMergeStore("alicebob", from);
+        assertEquals("OK", res);
+
+        res = client.tdigestMergeStore("alicebob", from, 200);
+        assertEquals("OK", res);
     }
 }

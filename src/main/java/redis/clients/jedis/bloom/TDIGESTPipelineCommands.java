@@ -2,18 +2,27 @@ package redis.clients.jedis.bloom;
 
 import redis.clients.jedis.Response;
 
+import java.util.List;
 import java.util.Map;
 
 public interface TDIGESTPipelineCommands {
 
     /**
+     * {@code TDIGEST.CREATE {key}}
+     *
+     * @param key The name of the sketch
+     * @return OK
+     */
+    Response<String> tdigestCreate(String key);
+
+    /**
      * {@code TDIGEST.CREATE {key} {compression}}
      *
      * @param key The name of the sketch
-     * @param compresstion The compression parameter
+     * @param compression The compression parameter
      * @return OK
      */
-    Response<String> tdigestCreate(String key, long compresstion);
+    Response<String> tdigestCreate(String key, long compression);
 
     /**
      * {@code TDIGEST.INFO {key}}
@@ -92,4 +101,23 @@ public interface TDIGESTPipelineCommands {
      * @return Estimation of the mean value. Will return DBL_MAX if the sketch is empty.
      */
     Response<String> tdigestTrimmedMean(String key, double low, double high);
+
+    /**
+     * {@code TDIGEST.MERGESTORE {to-key} {numkeys} {from-key ...}}
+     *
+     * @param to Sketch to copy observation values to
+     * @param from Sketch to copy observation values from
+     * @return OK on success, error otherwise
+     */
+    Response<String> tdigestMergeStore(String to, List<String> from);
+
+    /**
+     * {@code TDIGEST.MERGESTORE {to-key} {numkeys} {from-key ...} [{compression}]}
+     *
+     * @param to Sketch to copy observation values to
+     * @param from Sketch to copy observation values from
+     * @param compression The compression parameter
+     * @return OK on success, error otherwise
+     */
+    Response<String> tdigestMergeStore(String to, List<String> from, long compression);
 }

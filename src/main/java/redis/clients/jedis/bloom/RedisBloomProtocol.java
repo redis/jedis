@@ -127,7 +127,8 @@ public class RedisBloomProtocol {
     MERGE("TDIGEST.MERGE"),
     CDF("TDIGEST.CDF"),
     QUANTILE("TDIGEST.QUANTILE"),
-    TRIMMED_MEAN("TDIGEST.TRIMMED_MEAN");
+    TRIMMED_MEAN("TDIGEST.TRIMMED_MEAN"),
+    MERGESTORE("TDIGEST.MERGESTORE");
 
     private final byte[] raw;
 

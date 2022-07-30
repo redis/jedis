@@ -4095,6 +4095,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<String> tdigestCreate(String key) {
+    return appendCommand(commandObjects.tdigestCreate(key));
+  }
+
+  @Override
   public Response<String> tdigestCreate(String key, long compression) {
     return appendCommand(commandObjects.tdigestCreate(key, compression));
   }
@@ -4142,6 +4147,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<String> tdigestTrimmedMean(String key, double low, double high) {
     return appendCommand(commandObjects.tdigestTrimmedMean(key, low, high));
+  }
+
+  @Override
+  public Response<String> tdigestMergeStore(String to, List<String> from) {
+    return appendCommand(commandObjects.tdigestMergeStore(to, from));
+  }
+
+  @Override
+  public Response<String> tdigestMergeStore(String to, List<String> from, long compression) {
+    return appendCommand(commandObjects.tdigestMergeStore(to, from, compression));
   }
   // RedisBloom commands
 

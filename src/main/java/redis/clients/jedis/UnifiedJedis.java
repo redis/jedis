@@ -4284,8 +4284,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String tdigestCreate(String key, long compresstion) {
-    return executeCommand(commandObjects.tdigestCreate(key, compresstion));
+  public String tdigestCreate(String key) {
+    return executeCommand(commandObjects.tdigestCreate(key));
+  }
+
+  @Override
+  public String tdigestCreate(String key, long compression) {
+    return executeCommand(commandObjects.tdigestCreate(key, compression));
   }
 
   @Override
@@ -4331,6 +4336,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String tdigestTrimmedMean(String key, double low, double high) {
     return executeCommand(commandObjects.tdigestTrimmedMean(key, low, high));
+  }
+
+  @Override
+  public String tdigestMergeStore(String to, List<String> from) {
+    return executeCommand(commandObjects.tdigestMergeStore(to, from));
+  }
+
+  @Override
+  public String tdigestMergeStore(String to, List<String> from, long compression) {
+    return executeCommand(commandObjects.tdigestMergeStore(to, from, compression));
   }
   // RedisBloom commands
 

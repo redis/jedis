@@ -3832,6 +3832,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TopKCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }
 
+  public final CommandObject<String> tdigestCreate(String key) {
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.CREATE).key(key), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> tdigestCreate(String key, long compression) {
     return new CommandObject<>(commandArguments(TDIGESTCOMMAND.CREATE).key(key).add(compression), BuilderFactory.STRING);
   }
@@ -3872,6 +3876,18 @@ public class CommandObjects {
 
   public final CommandObject<String> tdigestTrimmedMean(String key, double low, double high) {
     return new CommandObject<>(commandArguments(TDIGESTCOMMAND.TRIMMED_MEAN).key(key).add(low).add(high), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tdigestMergeStore(String to, List<String> from) {
+    String[] fromArray = from.toArray(new String[from.size()]);
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.MERGESTORE).add(to).add(fromArray.length)
+        .addObjects((Object[]) fromArray), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tdigestMergeStore(String to, List<String> from, long compression) {
+    String[] fromArray = from.toArray(new String[from.size()]);
+    return new CommandObject<>(commandArguments(TDIGESTCOMMAND.MERGESTORE).add(to).add(fromArray.length)
+        .addObjects((Object[]) fromArray).add(compression), BuilderFactory.STRING);
   }
   // RedisBloom commands
 

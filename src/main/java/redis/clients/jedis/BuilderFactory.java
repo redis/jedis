@@ -1044,6 +1044,10 @@ public final class BuilderFactory {
         String entryIdString = SafeEncoder.encode((byte[]) res.get(0));
         StreamEntryID entryID = new StreamEntryID(entryIdString);
         List<byte[]> hash = (List<byte[]>) res.get(1);
+        if (hash == null) {
+          responses.add(new StreamEntry(entryID, null));
+          continue;
+        }
 
         Iterator<byte[]> hashIterator = hash.iterator();
         Map<String, String> map = new HashMap<>(hash.size() / 2);

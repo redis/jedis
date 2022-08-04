@@ -461,6 +461,45 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void xreadGroupWithParamsWhenPendingMessageIsDiscarded() {
+    // Add two message to stream
+    Map<String, String> map1 = new HashMap<>();
+    map1.put("f1", "v1");
+
+    Map<String, String> map2 = new HashMap<>();
+    map2.put("f2", "v2");
+
+    XAddParams xAddParams = XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY).maxLen(2);
+    StreamEntryID firstMessageEntryId = jedis.xadd("xreadGroup-discard-stream1", xAddParams, map1);
+    jedis.xadd("xreadGroup-discard-stream1", xAddParams, map2);
+
+    jedis.xgroupCreate("xreadGroup-discard-stream1", "xreadGroup-group", null, false);
+    Map<String, StreamEntryID> streamQuery1 = singletonMap("xreadGroup-discard-stream1", StreamEntryID.UNRECEIVED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
+            XReadGroupParams.xReadGroupParams().count(1), streamQuery1);
+    assertEquals(1, range.size());
+    assertEquals(1, range.get(0).getValue().size());
+
+    assertEquals(firstMessageEntryId, range.get(0).getValue().get(0).getID());
+    assertEquals(map1, range.get(0).getValue().get(0).getFields());
+
+    // Add third message, the fields of pending message1 will be discarded by redis-server
+    Map<String, String> map3 = new HashMap<>();
+    map3.put("f3", "v3");
+    jedis.xadd("xreadGroup-discard-stream1", xAddParams, map3);
+
+    Map<String, StreamEntryID> streamQueryPending = singletonMap("xreadGroup-discard-stream1", new StreamEntryID());
+    List<Entry<String, List<StreamEntry>>> pendingMessages = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
+            XReadGroupParams.xReadGroupParams().count(1).noAck(), streamQueryPending);
+
+    assertEquals(1, pendingMessages.size());
+    assertEquals(1, pendingMessages.get(0).getValue().size());
+
+    assertEquals(firstMessageEntryId, pendingMessages.get(0).getValue().get(0).getID());
+    assertNull(pendingMessages.get(0).getValue().get(0).getFields());
+  }
+
+  @Test
   public void xack() {
     Map<String, String> map = new HashMap<String, String>();
     map.put("f1", "v1");

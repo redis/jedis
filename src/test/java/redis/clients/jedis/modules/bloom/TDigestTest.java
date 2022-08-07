@@ -145,7 +145,7 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
 
     client.tdigestCreate(key, 100);
     assertEquals(Double.MAX_VALUE, client.tdigestMin(key), 0d);
-    assertEquals(Double.MIN_NORMAL, client.tdigestMax(key), 0d);
+    assertEquals(-Double.MAX_VALUE, client.tdigestMax(key), 0d);
 
     client.tdigestAdd(key, definedValueWeight(2, 1));
     client.tdigestAdd(key, definedValueWeight(5, 1));

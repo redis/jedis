@@ -28,9 +28,6 @@ public final class DoublePrecision {
         case "nan":
           return Double.NaN;
 
-        case "DBL_MAX":
-          return Double.MAX_VALUE;
-
         default:
           throw e;
       }

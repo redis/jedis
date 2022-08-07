@@ -568,50 +568,6 @@ public class GraphAPITest extends RedisModuleCommandsTestBase {
     }
 
     @Test
-    public void testParameters() {
-        Object[] parameters = { 1, 2.3, true, false, null, "str", 'a', "b", Arrays.asList(1, 2, 3),
-                new Integer[] { 1, 2, 3 } };
-        Object[] expected_anwsers = { 1L, 2.3, true, false, null, "str", "a", "b", Arrays.asList(1L, 2L, 3L),
-                new Long[] { 1L, 2L, 3L } };
-        Map<String, Object> params = new HashMap<>();
-        for (int i = 0; i < parameters.length; i++) {
-            Object param = parameters[i];
-            params.put("param", param);
-            ResultSet resultSet = client.graphQuery("social", "RETURN $param", params);
-            assertEquals(1, resultSet.size());
-            Record r = resultSet.iterator().next();
-            Object o = r.getValue(0);
-            Object expected = expected_anwsers[i];
-            if (i == parameters.length - 1) {
-                expected = Arrays.asList((Object[]) expected);
-            }
-            assertEquals(expected, o);
-        }
-    }
-
-    @Test
-    public void testParametersReadOnly() {
-        Object[] parameters = { 1, 2.3, true, false, null, "str", 'a', "b", Arrays.asList(1, 2, 3),
-                new Integer[] { 1, 2, 3 } };
-        Object[] expected_anwsers = { 1L, 2.3, true, false, null, "str", "a", "b", Arrays.asList(1L, 2L, 3L),
-                new Long[] { 1L, 2L, 3L } };
-        Map<String, Object> params = new HashMap<>();
-        for (int i = 0; i < parameters.length; i++) {
-            Object param = parameters[i];
-            params.put("param", param);
-            ResultSet resultSetRo =   client.graphReadonlyQuery("social", "RETURN $param", params);
-            assertEquals(1, resultSetRo.size());
-            Record rRo = resultSetRo.iterator().next();
-            Object oRo = rRo.getValue(0);
-            Object expected = expected_anwsers[i];
-            if (i == parameters.length - 1) {
-                expected = Arrays.asList((Object[]) expected);
-            }
-            assertEquals(expected, oRo);
-        }
-    }
-
-    @Test
     public void testNullGraphEntities() {
         // Create two nodes connected by a single outgoing edge.
         assertNotNull(client.graphQuery("social", "CREATE (:L)-[:E]->(:L2)"));

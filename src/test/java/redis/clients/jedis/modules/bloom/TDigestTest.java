@@ -33,23 +33,21 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void createAndInfo() {
-    for (int i = 100; i < 1000; i += 100) {
-      String key = "td-" + i;
-      client.tdigestCreate(key, i);
+  public void createSimple() {
+    assertEquals("OK", client.tdigestCreate("td-simple"));
 
-      Map<String, Object> info = client.tdigestInfo(key);
-      assertEquals(Long.valueOf(i), info.get("Compression"));
-    }
+    Map<String, Object> info = client.tdigestInfo("td-simple");
+    assertEquals(Long.valueOf(100), info.get("Compression"));
   }
 
   @Test
-  public void infoNone() {
-    try {
-      client.tdigestInfo("none");
-      fail("key does not exist");
-    } catch (JedisDataException jde) {
-      assertEquals("ERR T-Digest: key does not exist", jde.getMessage());
+  public void createAndInfo() {
+    for (int i = 100; i < 1000; i += 100) {
+      String key = "td-" + i;
+      assertEquals("OK", client.tdigestCreate(key, i));
+
+      Map<String, Object> info = client.tdigestInfo(key);
+      assertEquals(Long.valueOf(i), info.get("Compression"));
     }
   }
 
@@ -59,13 +57,13 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     assertMergedUnmergedNodes("reset", 0, 0);
 
     // on empty
-    client.tdigestReset("reset");
+    assertEquals("OK", client.tdigestReset("reset"));
     assertMergedUnmergedNodes("reset", 0, 0);
 
-    client.tdigestAdd("reset", randomAddParam(), randomAddParam(), randomAddParam());
+    client.tdigestAdd("reset", randomValueWeight(), randomValueWeight(), randomValueWeight());
     assertMergedUnmergedNodes("reset", 0, 3);
 
-    client.tdigestReset("reset");
+    assertEquals("OK", client.tdigestReset("reset"));
     assertMergedUnmergedNodes("reset", 0, 0);
   }
 
@@ -73,23 +71,11 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
   public void add() {
     client.tdigestCreate("tdadd", 100);
 
-    client.tdigestAdd("tdadd", randomAddParam());
+    assertEquals("OK", client.tdigestAdd("tdadd", randomValueWeight()));
     assertMergedUnmergedNodes("tdadd", 0, 1);
 
-    client.tdigestAdd("tdadd", randomAddParam(), randomAddParam(), randomAddParam(), randomAddParam());
+    assertEquals("OK", client.tdigestAdd("tdadd", randomValueWeight(), randomValueWeight(), randomValueWeight(), randomValueWeight()));
     assertMergedUnmergedNodes("tdadd", 0, 5);
-  }
-
-  @Test
-  public void addNone() {
-    client.tdigestCreate("tdadd", 100);
-
-    try {
-      client.tdigestAdd("tdadd");
-      fail("wrong number of arguments");
-    } catch (JedisDataException jde) {
-      assertEquals("ERR wrong number of arguments for 'TDIGEST.ADD' command", jde.getMessage());
-    }
   }
 
   @Test
@@ -97,36 +83,14 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     client.tdigestCreate("td2", 100);
     client.tdigestCreate("td4m", 100);
 
-    client.tdigestMerge("td2", "td4m");
+    assertEquals("OK", client.tdigestMerge("td2", "td4m"));
     assertMergedUnmergedNodes("td2", 0, 0);
 
-    client.tdigestAdd("td2", definedAddParam(1, 1), definedAddParam(1, 1), definedAddParam(1, 1));
-    client.tdigestAdd("td4m", definedAddParam(1, 100), definedAddParam(1, 100));
+    client.tdigestAdd("td2", definedValueWeight(1, 1), definedValueWeight(1, 1), definedValueWeight(1, 1));
+    client.tdigestAdd("td4m", definedValueWeight(1, 100), definedValueWeight(1, 100));
 
-    client.tdigestMerge("td2", "td4m");
+    assertEquals("OK", client.tdigestMerge("td2", "td4m"));
     assertMergedUnmergedNodes("td2", 3, 2);
-  }
-
-  @Test
-  public void mergeFromNone() {
-    client.tdigestCreate("td2", 100);
-    try {
-      client.tdigestMerge("td2", "td4m");
-      fail("key does not exist");
-    } catch (JedisDataException jde) {
-      assertEquals("ERR T-Digest: key does not exist", jde.getMessage());
-    }
-  }
-
-  @Test
-  public void mergeToNone() {
-    client.tdigestCreate("td4m", 100);
-    try {
-      client.tdigestMerge("td2", "td4m");
-      fail("key does not exist");
-    } catch (JedisDataException jde) {
-      assertEquals("ERR T-Digest: key does not exist", jde.getMessage());
-    }
   }
 
   @Test
@@ -141,8 +105,8 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     client.tdigestCreate("tdcdf", 100);
     assertEquals(Double.NaN, client.tdigestCDF("tdcdf", 50), 0d);
 
-    client.tdigestAdd("tdcdf", definedAddParam(1, 1), definedAddParam(1, 1), definedAddParam(1, 1));
-    client.tdigestAdd("tdcdf", definedAddParam(100, 1), definedAddParam(100, 1));
+    client.tdigestAdd("tdcdf", definedValueWeight(1, 1), definedValueWeight(1, 1), definedValueWeight(1, 1));
+    client.tdigestAdd("tdcdf", definedValueWeight(100, 1), definedValueWeight(100, 1));
     assertEquals(0.6, client.tdigestCDF("tdcdf", 50), 0.01);
   }
 
@@ -158,8 +122,8 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     client.tdigestCreate("tdqnt", 100);
     assertEquals(Collections.singletonMap(0.5, Double.NaN), client.tdigestQuantile("tdqnt", 0.5));
 
-    client.tdigestAdd("tdqnt", definedAddParam(1, 1), definedAddParam(1, 1), definedAddParam(1, 1));
-    client.tdigestAdd("tdqnt", definedAddParam(100, 1), definedAddParam(100, 1));
+    client.tdigestAdd("tdqnt", definedValueWeight(1, 1), definedValueWeight(1, 1), definedValueWeight(1, 1));
+    client.tdigestAdd("tdqnt", definedValueWeight(100, 1), definedValueWeight(100, 1));
     assertEquals(Collections.singletonMap(0.5, 1.0), client.tdigestQuantile("tdqnt", 0.5));
   }
 
@@ -183,17 +147,17 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     assertEquals(Double.MAX_VALUE, client.tdigestMin(key), 0d);
     assertEquals(Double.MIN_NORMAL, client.tdigestMax(key), 0d);
 
-    client.tdigestAdd(key, definedAddParam(2, 1));
-    client.tdigestAdd(key, definedAddParam(5, 1));
+    client.tdigestAdd(key, definedValueWeight(2, 1));
+    client.tdigestAdd(key, definedValueWeight(5, 1));
     assertEquals(2d, client.tdigestMin(key), 0.01);
     assertEquals(5d, client.tdigestMax(key), 0.01);
   }
 
-  private static KeyValue<Double, Double> randomAddParam() {
+  private static KeyValue<Double, Double> randomValueWeight() {
     return new KeyValue<>(random.nextDouble() * 10000, random.nextDouble() * 500 + 1);
   }
 
-  private static KeyValue<Double, Double> definedAddParam(double value, double weight) {
+  private static KeyValue<Double, Double> definedValueWeight(double value, double weight) {
     return new KeyValue<>(value, weight);
   }
 }

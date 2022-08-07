@@ -4334,6 +4334,71 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public Map<String, Object> topkInfo(String key) {
     return executeCommand(commandObjects.topkInfo(key));
   }
+
+  @Override
+  public String tdigestCreate(String key) {
+    return executeCommand(commandObjects.tdigestCreate(key));
+  }
+
+  @Override
+  public String tdigestCreate(String key, int compression) {
+    return executeCommand(commandObjects.tdigestCreate(key, compression));
+  }
+
+  @Override
+  public String tdigestReset(String key) {
+    return executeCommand(commandObjects.tdigestReset(key));
+  }
+
+  @Override
+  public String tdigestMerge(String destinationKey, String... sourceKeys) {
+    return executeCommand(commandObjects.tdigestMerge(destinationKey, sourceKeys));
+  }
+
+  @Override
+  public String tdigestMergeStore(String destinationKey, String... sourceKeys) {
+    return executeCommand(commandObjects.tdigestMergeStore(destinationKey, sourceKeys));
+  }
+
+  @Override
+  public String tdigestMergeStore(long compression, String destinationKey, String... sourceKeys) {
+    return executeCommand(commandObjects.tdigestMergeStore(compression, destinationKey, sourceKeys));
+  }
+
+  @Override
+  public Map<String, Object> tdigestInfo(String key) {
+    return executeCommand(commandObjects.tdigestInfo(key));
+  }
+
+  @Override
+  public String tdigestAdd(String key, Map.Entry<Double, Double>... valueWeights) {
+    return executeCommand(commandObjects.tdigestAdd(key, valueWeights));
+  }
+
+  @Override
+  public double tdigestCDF(String key, double value) {
+    return executeCommand(commandObjects.tdigestCDF(key, value));
+  }
+
+  @Override
+  public Map<Double, Double> tdigestQuantile(String key, double... quantiles) {
+    return executeCommand(commandObjects.tdigestQuantile(key, quantiles));
+  }
+
+  @Override
+  public double tdigestMin(String key) {
+    return executeCommand(commandObjects.tdigestMin(key));
+  }
+
+  @Override
+  public double tdigestMax(String key) {
+    return executeCommand(commandObjects.tdigestMax(key));
+  }
+
+  @Override
+  public double tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
+    return executeCommand(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
+  }
   // RedisBloom commands
 
   // RedisGraph commands

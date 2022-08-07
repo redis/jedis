@@ -100,9 +100,25 @@ public class RedisBloomProtocol {
     }
   }
 
+  public enum TDigestCommand implements ProtocolCommand {
+
+    CREATE, INFO, ADD, RESET, MERGE, MERGESTORE, CDF, QUANTILE, MIN, MAX, TRIMMED_MEAN;
+
+    private final byte[] raw;
+
+    private TDigestCommand() {
+      raw = SafeEncoder.encode("TDIGEST." + name());
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+  }
+
   public enum RedisBloomKeyword implements Rawable {
 
-    CAPACITY, ERROR, NOCREATE, EXPANSION, NONSCALING, BUCKETSIZE, MAXITERATIONS, ITEMS, WEIGHTS;
+    CAPACITY, ERROR, NOCREATE, EXPANSION, NONSCALING, BUCKETSIZE, MAXITERATIONS, ITEMS, WEIGHTS, COMPRESSION;
 
     private final byte[] raw;
 

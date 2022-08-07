@@ -53,12 +53,11 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public CommandArguments addObjects(Collection args) {
-    for (Object arg : args) {
-      add(arg);
-    }
+    args.forEach(arg -> add(arg));
     return this;
   }
 
+  @Deprecated
   public CommandArguments addObjects(int[] ints) {
     for (int i : ints) {
       add(i);

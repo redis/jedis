@@ -3880,9 +3880,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TDigestCommand.RESET).key(key), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> tdigestMerge(String destinationKey, String... sourceKeys) {
-    return new CommandObject<>(commandArguments(TDigestCommand.MERGE).key(destinationKey)
-        .addObjects((Object[]) sourceKeys), BuilderFactory.STRING);
+  public final CommandObject<String> tdigestMerge(String destinationKey, String sourceKey) {
+    return new CommandObject<>(commandArguments(TDigestCommand.MERGE).key(destinationKey).add(sourceKey),
+        BuilderFactory.STRING);
   }
 
   public final CommandObject<String> tdigestMergeStore(String destinationKey, String... sourceKeys) {
@@ -3928,7 +3928,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<Double> tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
-    return new CommandObject<>(commandArguments(TDigestCommand.TRIMMED_MEAN).key(key).add(lowCutQuantile).add(highCutQuantile), BuilderFactory.DOUBLE);
+    return new CommandObject<>(commandArguments(TDigestCommand.TRIMMED_MEAN).key(key).add(lowCutQuantile)
+        .add(highCutQuantile), BuilderFactory.DOUBLE);
   }
   // RedisBloom commands
 

@@ -4351,8 +4351,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String tdigestMerge(String destinationKey, String... sourceKeys) {
-    return executeCommand(commandObjects.tdigestMerge(destinationKey, sourceKeys));
+  public String tdigestMerge(String destinationKey, String sourceKey) {
+    return executeCommand(commandObjects.tdigestMerge(destinationKey, sourceKey));
   }
 
   @Override

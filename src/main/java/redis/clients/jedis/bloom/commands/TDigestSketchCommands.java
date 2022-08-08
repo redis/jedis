@@ -10,7 +10,7 @@ public interface TDigestSketchCommands {
 
   String tdigestReset(String key);
 
-  String tdigestMerge(String destinationKey, String... sourceKeys);
+  String tdigestMerge(String destinationKey, String sourceKey);
 
   String tdigestMergeStore(String destinationKey, String... sourceKeys);
 

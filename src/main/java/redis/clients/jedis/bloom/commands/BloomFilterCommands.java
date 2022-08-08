@@ -1,7 +1,9 @@
-package redis.clients.jedis.bloom;
+package redis.clients.jedis.bloom.commands;
 
 import java.util.List;
 import java.util.Map;
+import redis.clients.jedis.bloom.BFInsertParams;
+import redis.clients.jedis.bloom.BFReserveParams;
 
 public interface BloomFilterCommands {
 

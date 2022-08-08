@@ -1,4 +1,4 @@
-package redis.clients.jedis.bloom;
+package redis.clients.jedis.bloom.commands;
 
 import java.util.List;
 import java.util.Map;

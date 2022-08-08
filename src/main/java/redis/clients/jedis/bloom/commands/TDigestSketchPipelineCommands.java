@@ -1,8 +1,9 @@
-package redis.clients.jedis.bloom;
+package redis.clients.jedis.bloom.commands;
 
 import java.util.List;
 import java.util.Map;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.bloom.TDigestMergeParams;
 
 public interface TDigestSketchPipelineCommands {
 

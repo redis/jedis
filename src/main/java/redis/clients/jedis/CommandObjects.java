@@ -3886,12 +3886,12 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> tdigestMergeStore(String destinationKey, String... sourceKeys) {
-    return new CommandObject<>(commandArguments(TDigestCommand.MERGESTORE).key(destinationKey)
+    return new CommandObject<>(commandArguments(TDigestCommand.MERGESTORE).key(destinationKey).add(sourceKeys.length)
         .keys((Object[]) sourceKeys), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> tdigestMergeStore(int compression, String destinationKey, String... sourceKeys) {
-    return new CommandObject<>(commandArguments(TDigestCommand.MERGESTORE).key(destinationKey)
+    return new CommandObject<>(commandArguments(TDigestCommand.MERGESTORE).key(destinationKey).add(sourceKeys.length)
         .keys((Object[]) sourceKeys).add(RedisBloomKeyword.COMPRESSION).add(compression), BuilderFactory.STRING);
   }
 

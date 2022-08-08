@@ -28,8 +28,9 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
 //  }
 
   private void assertMergedUnmergedNodes(String key, int mergedNodes, int unmergedNodes) {
-    assertEquals(Long.valueOf(mergedNodes), client.tdigestInfo(key).get("Merged nodes"));
-    assertEquals(Long.valueOf(unmergedNodes), client.tdigestInfo(key).get("Unmerged nodes"));
+    Map<String, Object> info = client.tdigestInfo(key);
+    assertEquals(Long.valueOf(mergedNodes), info.get("Merged nodes"));
+    assertEquals(Long.valueOf(unmergedNodes), info.get("Unmerged nodes"));
   }
 
   @Test

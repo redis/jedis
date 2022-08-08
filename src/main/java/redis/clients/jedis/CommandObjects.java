@@ -3881,18 +3881,18 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> tdigestMerge(String destinationKey, String sourceKey) {
-    return new CommandObject<>(commandArguments(TDigestCommand.MERGE).key(destinationKey).add(sourceKey),
+    return new CommandObject<>(commandArguments(TDigestCommand.MERGE).key(destinationKey).key(sourceKey),
         BuilderFactory.STRING);
   }
 
   public final CommandObject<String> tdigestMergeStore(String destinationKey, String... sourceKeys) {
     return new CommandObject<>(commandArguments(TDigestCommand.MERGESTORE).key(destinationKey)
-        .addObjects((Object[]) sourceKeys), BuilderFactory.STRING);
+        .keys((Object[]) sourceKeys), BuilderFactory.STRING);
   }
 
-  public final CommandObject<String> tdigestMergeStore(long compression, String destinationKey, String... sourceKeys) {
+  public final CommandObject<String> tdigestMergeStore(int compression, String destinationKey, String... sourceKeys) {
     return new CommandObject<>(commandArguments(TDigestCommand.MERGESTORE).key(destinationKey)
-        .addObjects((Object[]) sourceKeys).add(RedisBloomKeyword.COMPRESSION).add(compression), BuilderFactory.STRING);
+        .keys((Object[]) sourceKeys).add(RedisBloomKeyword.COMPRESSION).add(compression), BuilderFactory.STRING);
   }
 
   public final CommandObject<Map<String, Object>> tdigestInfo(String key) {

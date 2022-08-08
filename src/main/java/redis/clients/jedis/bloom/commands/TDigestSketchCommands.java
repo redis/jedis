@@ -14,7 +14,7 @@ public interface TDigestSketchCommands {
 
   String tdigestMergeStore(String destinationKey, String... sourceKeys);
 
-  String tdigestMergeStore(long compression, String destinationKey, String... sourceKeys);
+  String tdigestMergeStore(int compression, String destinationKey, String... sourceKeys);
 
   Map<String, Object> tdigestInfo(String key);
 

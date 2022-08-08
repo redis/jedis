@@ -4361,7 +4361,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String tdigestMergeStore(long compression, String destinationKey, String... sourceKeys) {
+  public String tdigestMergeStore(int compression, String destinationKey, String... sourceKeys) {
     return executeCommand(commandObjects.tdigestMergeStore(compression, destinationKey, sourceKeys));
   }
 

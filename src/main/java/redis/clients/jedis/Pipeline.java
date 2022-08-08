@@ -4121,6 +4121,71 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   public Response<Map<String, Object>> topkInfo(String key) {
     return appendCommand(commandObjects.topkInfo(key));
   }
+
+  @Override
+  public Response<String> tdigestCreate(String key) {
+    return appendCommand(commandObjects.tdigestCreate(key));
+  }
+
+  @Override
+  public Response<String> tdigestCreate(String key, int compression) {
+    return appendCommand(commandObjects.tdigestCreate(key, compression));
+  }
+
+  @Override
+  public Response<String> tdigestReset(String key) {
+    return appendCommand(commandObjects.tdigestReset(key));
+  }
+
+  @Override
+  public Response<String> tdigestMerge(String destinationKey, String sourceKey) {
+    return appendCommand(commandObjects.tdigestMerge(destinationKey, sourceKey));
+  }
+
+  @Override
+  public Response<String> tdigestMergeStore(String destinationKey, String... sourceKeys) {
+    return appendCommand(commandObjects.tdigestMergeStore(destinationKey, sourceKeys));
+  }
+
+  @Override
+  public Response<String> tdigestMergeStore(int compression, String destinationKey, String... sourceKeys) {
+    return appendCommand(commandObjects.tdigestMergeStore(compression, destinationKey, sourceKeys));
+  }
+
+  @Override
+  public Response<Map<String, Object>> tdigestInfo(String key) {
+    return appendCommand(commandObjects.tdigestInfo(key));
+  }
+
+  @Override
+  public Response<String> tdigestAdd(String key, Map.Entry<Double, Double>... valueWeights) {
+    return appendCommand(commandObjects.tdigestAdd(key, valueWeights));
+  }
+
+  @Override
+  public Response<Double> tdigestCDF(String key, double value) {
+    return appendCommand(commandObjects.tdigestCDF(key, value));
+  }
+
+  @Override
+  public Response<Map<Double, Double>> tdigestQuantile(String key, double... quantiles) {
+    return appendCommand(commandObjects.tdigestQuantile(key, quantiles));
+  }
+
+  @Override
+  public Response<Double> tdigestMin(String key) {
+    return appendCommand(commandObjects.tdigestMin(key));
+  }
+
+  @Override
+  public Response<Double> tdigestMax(String key) {
+    return appendCommand(commandObjects.tdigestMax(key));
+  }
+
+  @Override
+  public Response<Double> tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
+    return appendCommand(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
+  }
   // RedisBloom commands
 
   // RedisGraph commands

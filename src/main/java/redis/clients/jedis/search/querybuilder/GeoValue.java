@@ -21,12 +21,7 @@ public class GeoValue extends Value {
 
   @Override
   public String toString() {
-    return new StringBuilder("[")
-        .append(lon).append(" ")
-        .append(lat).append(" ")
-        .append(radius).append(" ")
-        .append(unit)
-        .append("]").toString();
+    return "[" + lon + " " + lat + " " + radius + " " + unit + "]";
   }
 
   @Override

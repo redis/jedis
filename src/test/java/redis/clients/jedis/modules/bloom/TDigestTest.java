@@ -154,6 +154,21 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     assertEquals(5d, client.tdigestMax(key), 0.01);
   }
 
+  @Test
+  public void trimmedMean() {
+    final String key = "trimmed_mean";
+    client.tdigestCreate(key, 500);
+
+    for (int i = 0; i < 20; i++) {
+      client.tdigestAdd(key, KeyValue.of(Double.valueOf(i), 1d));
+    }
+
+    assertEquals(9.5, client.tdigestTrimmedMean(key, 0.1, 0.9), 0.01);
+    assertEquals(9.5, client.tdigestTrimmedMean(key, 0.0, 1.0), 0.01);
+    assertEquals(4.5, client.tdigestTrimmedMean(key, 0.0, 0.5), 0.01);
+    assertEquals(14.5, client.tdigestTrimmedMean(key, 0.5, 1.0), 0.01);
+  }
+
   private static KeyValue<Double, Double> randomValueWeight() {
     return new KeyValue<>(random.nextDouble() * 10000, random.nextDouble() * 500 + 1);
   }

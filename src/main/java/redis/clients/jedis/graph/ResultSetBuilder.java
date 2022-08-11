@@ -9,15 +9,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.graph.entities.Edge;
-import redis.clients.jedis.graph.entities.GraphEntity;
-import redis.clients.jedis.graph.entities.Node;
-import redis.clients.jedis.graph.entities.Path;
-import redis.clients.jedis.graph.entities.Point;
+import redis.clients.jedis.graph.entities.*;
 import redis.clients.jedis.util.SafeEncoder;
 
 class ResultSetBuilder extends Builder<ResultSet> {
@@ -129,13 +126,13 @@ class ResultSetBuilder extends Builder<ResultSet> {
   @SuppressWarnings("unchecked")
   private List<Record> parseRecords(Header header, Object data) {
     List<List<Object>> rawResultSet = (List<List<Object>>) data;
-    
+
     if (rawResultSet == null || rawResultSet.isEmpty()) {
       return new ArrayList<>(0);
-    } 
-    
-    // go over each raw result
+    }
+
     List<Record> results = new ArrayList<>(rawResultSet.size());
+    // go over each raw result
     for (List<Object> row : rawResultSet) {
 
       List<Object> parsedRow = new ArrayList<>(row.size());
@@ -160,12 +157,13 @@ class ResultSetBuilder extends Builder<ResultSet> {
             parsedRow.add(null);
             break;
         }
-
       }
+
       // create new record from deserialized objects
       Record record = new RecordImpl(header.getSchemaNames(), parsedRow);
       results.add(record);
     }
+
     return results;
   }
 
@@ -193,7 +191,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
     deserializeGraphEntityProperties(node, rawProperties);
 
     return node;
-
   }
 
   /**
@@ -245,7 +242,6 @@ class ResultSetBuilder extends Builder<ResultSet> {
 
       entity.addProperty(name, deserializeScalar(propertyScalar));
     }
-
   }
 
   /**

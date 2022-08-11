@@ -3911,12 +3911,12 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TDigestCommand.CDF).key(key).add(value), BuilderFactory.DOUBLE);
   }
 
-  public final CommandObject<Map<Double, Double>> tdigestQuantile(String key, double... quantiles) {
+  public final CommandObject<List<Double>> tdigestQuantile(String key, double... quantiles) {
     CommandArguments args = commandArguments(TDigestCommand.QUANTILE).key(key);
     for (double quantile : quantiles) {
       args.add(quantile);
     }
-    return new CommandObject<>(args, BuilderFactory.TDIGEST_QUANTILE_RESPONSE);
+    return new CommandObject<>(args, BuilderFactory.DOUBLE_LIST);
   }
 
   public final CommandObject<Double> tdigestMin(String key) {

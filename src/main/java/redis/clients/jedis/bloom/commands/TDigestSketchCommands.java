@@ -1,5 +1,6 @@
 package redis.clients.jedis.bloom.commands;
 
+import java.util.List;
 import java.util.Map;
 
 public interface TDigestSketchCommands {
@@ -90,7 +91,7 @@ public interface TDigestSketchCommands {
    * @param quantiles The desired fraction(s) (between 0 and 1 inclusively)
    * @return results
    */
-  Map<Double, Double> tdigestQuantile(String key, double... quantiles);
+  List<Double> tdigestQuantile(String key, double... quantiles);
 
   /**
    * {@code TDIGEST.MIN key}

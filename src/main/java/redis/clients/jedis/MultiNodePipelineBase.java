@@ -4166,7 +4166,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<Map<Double, Double>> tdigestQuantile(String key, double... quantiles) {
+  public Response<List<Double>> tdigestQuantile(String key, double... quantiles) {
     return appendCommand(commandObjects.tdigestQuantile(key, quantiles));
   }
 

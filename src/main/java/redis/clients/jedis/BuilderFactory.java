@@ -1729,19 +1729,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<Double, Double>> TDIGEST_QUANTILE_RESPONSE = new Builder<Map<Double, Double>>() {
-    @Override
-    public Map<Double, Double> build(Object data) {
-      List<Object> flatMap = (List<Object>) data;
-      Iterator<Object> iterator = flatMap.iterator();
-      Map<Double, Double> linkedMap = new LinkedHashMap<>(flatMap.size() / 2, 1f);
-      while (iterator.hasNext()) {
-        linkedMap.put(DOUBLE.build(iterator.next()), DOUBLE.build(iterator.next()));
-      }
-      return linkedMap;
-    }
-  };
-
   /**
    * A decorator to implement Set from List. Assume that given List do not contains duplicated
    * values. The resulting set displays the same ordering, concurrency, and performance

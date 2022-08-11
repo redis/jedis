@@ -1,5 +1,6 @@
 package redis.clients.jedis.bloom.commands;
 
+import java.util.List;
 import java.util.Map;
 import redis.clients.jedis.Response;
 
@@ -23,7 +24,7 @@ public interface TDigestSketchPipelineCommands {
 
   Response<Double> tdigestCDF(String key, double value);
 
-  Response<Map<Double, Double>> tdigestQuantile(String key, double... quantiles);
+  Response<List<Double>> tdigestQuantile(String key, double... quantiles);
 
   Response<Double> tdigestMin(String key);
 

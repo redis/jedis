@@ -4381,7 +4381,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Map<Double, Double> tdigestQuantile(String key, double... quantiles) {
+  public List<Double> tdigestQuantile(String key, double... quantiles) {
     return executeCommand(commandObjects.tdigestQuantile(key, quantiles));
   }
 

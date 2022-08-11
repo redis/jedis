@@ -1,7 +1,6 @@
 package redis.clients.jedis.modules.bloom;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Random;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.KeyValue;
 
@@ -117,13 +115,6 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void cdf() {
-    try {
-      client.tdigestCDF("tdcdf", 50);
-      fail("key does not exist");
-    } catch (JedisDataException jde) {
-      assertEquals("ERR T-Digest: key does not exist", jde.getMessage());
-    }
-
     client.tdigestCreate("tdcdf", 100);
     assertEquals(Double.NaN, client.tdigestCDF("tdcdf", 50), 0d);
 
@@ -134,37 +125,17 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void quantile() {
-    try {
-      client.tdigestQuantile("tdqnt", 0.5);
-      fail("key does not exist");
-    } catch (JedisDataException jde) {
-      assertEquals("ERR T-Digest: key does not exist", jde.getMessage());
-    }
-
     client.tdigestCreate("tdqnt", 100);
-    assertEquals(Collections.singletonMap(0.5, Double.NaN), client.tdigestQuantile("tdqnt", 0.5));
+    assertEquals(Collections.singletonList(Double.NaN), client.tdigestQuantile("tdqnt", 0.5));
 
     client.tdigestAdd("tdqnt", definedValueWeight(1, 1), definedValueWeight(1, 1), definedValueWeight(1, 1));
     client.tdigestAdd("tdqnt", definedValueWeight(100, 1), definedValueWeight(100, 1));
-    assertEquals(Collections.singletonMap(0.5, 1.0), client.tdigestQuantile("tdqnt", 0.5));
+    assertEquals(Collections.singletonList(1.0), client.tdigestQuantile("tdqnt", 0.5));
   }
 
   @Test
   public void minAndMax() {
     final String key = "tdmnmx";
-    try {
-      client.tdigestMin(key);
-      fail("key does not exist");
-    } catch (JedisDataException jde) {
-      assertEquals("ERR T-Digest: key does not exist", jde.getMessage());
-    }
-    try {
-      client.tdigestMax(key);
-      fail("key does not exist");
-    } catch (JedisDataException jde) {
-      assertEquals("ERR T-Digest: key does not exist", jde.getMessage());
-    }
-
     client.tdigestCreate(key, 100);
     assertEquals(Double.MAX_VALUE, client.tdigestMin(key), 0d);
     assertEquals(-Double.MAX_VALUE, client.tdigestMax(key), 0d);

@@ -3873,7 +3873,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> tdigestCreate(String key, int compression) {
-    return new CommandObject<>(commandArguments(TDigestCommand.CREATE).key(key).add(compression), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(TDigestCommand.CREATE).key(key).add(RedisBloomKeyword.COMPRESSION)
+        .add(compression), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> tdigestReset(String key) {

@@ -46,4 +46,33 @@ public class DocumentTest {
     assertEquals("c", read.getString("string"));
     assertEquals(Double.valueOf(12d), read.get("float"));
   }
+
+  @Test
+  public void toStringTest() {
+    String id = "9f";
+    double score = 10d;
+    Map<String, Object> map = new HashMap<>();
+    map.put("string", "c");
+    map.put("float", 12d);
+    byte[] payload = "1a".getBytes();
+    Document document = new Document(id, map, score, payload);
+
+    String expected = String.format("id:%s, score: %.1f, payload:%s, properties:%s",
+            id, score, SafeEncoder.encode(payload), "[string=c, float=12.0]") ;
+    assertEquals(expected, document.toString());
+  }
+
+  @Test
+  public void toStringWithoutPayload() {
+    String id = "9f";
+    double score = 10d;
+    Map<String, Object> map = new HashMap<>();
+    map.put("string", "c");
+    map.put("float", 12d);
+    Document document = new Document(id, map, score);
+
+    String expected = String.format("id:%s, score: %.1f, payload:%s, properties:%s",
+            id, score, null, "[string=c, float=12.0]") ;
+    assertEquals(expected, document.toString());
+  }
 }

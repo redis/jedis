@@ -128,7 +128,7 @@ public class Document implements Serializable {
   @Override
   public String toString() {
     return "id:" + this.getId() + ", score: " + this.getScore() +
-            ", payload:" + SafeEncoder.encode(this.getPayload()) +
+            ", payload:" + (this.getPayload() == null ? "null" : SafeEncoder.encode(this.getPayload())) +
             ", properties:" + this.getProperties();
   }
 }

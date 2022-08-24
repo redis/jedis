@@ -18,7 +18,6 @@ categories:
   - title: 'Breaking Changes'
     labels:
       - 'breakingchange'
-
   - title: '🧪 Experimental Features'
     labels:
       - 'experimental'

@@ -5,7 +5,6 @@ import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeywor
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
@@ -14,7 +13,7 @@ import redis.clients.jedis.params.IParams;
  */
 public class TSCreateParams implements IParams {
 
-  private Long retentionTime;
+  private Long retentionPeriod;
   private boolean uncompressed;
   private boolean compressed;
   private Long chunkSize;
@@ -28,8 +27,8 @@ public class TSCreateParams implements IParams {
     return new TSCreateParams();
   }
 
-  public TSCreateParams retention(long retentionTime) {
-    this.retentionTime = retentionTime;
+  public TSCreateParams retention(long retentionPeriod) {
+    this.retentionPeriod = retentionPeriod;
     return this;
   }
 
@@ -78,8 +77,8 @@ public class TSCreateParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
 
-    if (retentionTime != null) {
-      args.add(RETENTION).add(toByteArray(retentionTime));
+    if (retentionPeriod != null) {
+      args.add(RETENTION).add(toByteArray(retentionPeriod));
     }
 
     if (uncompressed) {

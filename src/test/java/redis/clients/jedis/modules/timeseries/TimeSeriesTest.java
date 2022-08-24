@@ -91,6 +91,29 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void testAlter() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK", client.tsCreate("seriesAlter", TSCreateParams.createParams().retention(60000).labels(labels)));
+    assertEquals(Collections.emptyList(), client.tsQueryIndex("l2=v22"));
+
+    labels.put("l1", "v11");
+    labels.remove("l2");
+    labels.put("l3", "v33");
+    assertEquals("OK", client.tsAlter("seriesAlter", TSAlterParams.alterParams().retention(15000).chunkSize(8192)
+        .duplicatePolicy(DuplicatePolicy.SUM).labels(labels)));
+
+    TSInfo info = client.tsInfo("seriesAlter");
+    assertEquals(Long.valueOf(15000), info.getProperty("retentionTime"));
+    assertEquals(Long.valueOf(8192), info.getProperty("chunkSize"));
+    assertEquals(DuplicatePolicy.SUM, info.getProperty("duplicatePolicy"));
+    assertEquals("v11", info.getLabel("l1"));
+    assertNull(info.getLabel("l2"));
+    assertEquals("v33", info.getLabel("l3"));
+  }
+
+  @Test
   public void testRule() {
     assertEquals("OK", client.tsCreate("source"));
     assertEquals("OK", client.tsCreate("dest", TSCreateParams.createParams().retention(10)));
@@ -599,37 +622,6 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(Collections.emptyMap(), ranges3.get(1).getLabels());
     assertEquals(new TSElement(1500, 1.3), ranges3.get(0).getValue());
     assertNull(ranges3.get(1).getValue());
-  }
-
-  @Test
-  public void testAlter() {
-
-    Map<String, String> labels = new HashMap<>();
-    labels.put("l1", "v1");
-    labels.put("l2", "v2");
-    assertEquals("OK", client.tsCreate("seriesAlter", TSCreateParams.createParams()
-        .retention(57 * 1000 /*57sec retentionTime*/).labels(labels)));
-    assertEquals(Collections.emptyList(), client.tsQueryIndex("l2=v22"));
-
-    // Test alter labels
-    labels.remove("l1");
-    labels.put("l2", "v22");
-    labels.put("l3", "v33");
-    assertEquals("OK", client.tsAlter("seriesAlter", TSAlterParams.alterParams().labels(labels)));
-    assertEquals(Collections.singletonList("seriesAlter"), client.tsQueryIndex("l2=v22", "l3=v33"));
-    assertEquals(Collections.emptyList(), client.tsQueryIndex("l1=v1"));
-
-    // Test alter labels and retention time
-    labels.put("l1", "v11");
-    labels.remove("l2");
-    assertEquals("OK", client.tsAlter("seriesAlter", TSAlterParams.alterParams()
-        .retentionTime(324 /*324ms retentionTime*/).labels(labels)));
-
-    TSInfo info = client.tsInfo("seriesAlter");
-    assertEquals((Long) 324L, info.getProperty("retentionTime"));
-    assertEquals("v11", info.getLabel("l1"));
-    assertNull(info.getLabel("l2"));
-    assertEquals("v33", info.getLabel("l3"));
   }
 
   @Test

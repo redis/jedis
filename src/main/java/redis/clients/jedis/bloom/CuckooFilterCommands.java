@@ -1,9 +1,7 @@
-package redis.clients.jedis.bloom.commands;
+package redis.clients.jedis.bloom;
 
 import java.util.List;
 import java.util.Map;
-import redis.clients.jedis.bloom.CFInsertParams;
-import redis.clients.jedis.bloom.CFReserveParams;
 
 /**
  * Interface for RedisBloom Cuckoo Filter Commands

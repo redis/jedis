@@ -2,6 +2,7 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -141,7 +142,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
       throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
     }
 
-    return millisLeft / (attemptsLeft * (attemptsLeft + 1));
+    long maxBackOff = millisLeft / (attemptsLeft * (attemptsLeft + 1));
+    return ThreadLocalRandom.current().nextLong(maxBackOff + 1);
   }
 
   protected void sleep(long sleepMillis) {

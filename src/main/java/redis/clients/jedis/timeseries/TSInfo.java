@@ -12,6 +12,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class TSInfo {
 
+  private static final String DUPLICATE_POLICY_PROPERTY = "duplicatePolicy";
   private static final String LABELS_PROPERTY = "labels";
   private static final String RULES_PROPERTY = "rules";
   private static final String CHUNKS_PROPERTY = "Chunks";
@@ -109,6 +110,13 @@ public class TSInfo {
             default:
               value = SafeEncoder.encodeObject(value);
               break;
+          }
+        } else if (value instanceof byte[]) {
+          value = SafeEncoder.encode((byte[]) value);
+          if (DUPLICATE_POLICY_PROPERTY.equals(prop)) {
+            try {
+              value = DuplicatePolicy.valueOf(((String) value).toUpperCase());
+            } catch (Exception e) { }
           }
         }
         properties.put(prop, value);

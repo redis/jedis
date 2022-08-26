@@ -3,19 +3,29 @@ package redis.clients.jedis.search;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.schemafields.SchemaField;
 
 public interface RediSearchCommands {
 
   String ftCreate(String indexName, IndexOptions indexOptions, Schema schema);
+
+  default String ftCreate(String indexName, SchemaField... schemaFields) {
+    return ftCreate(indexName, FTCreateParams.createParams(), schemaFields);
+  }
+
+  String ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields);
 
   default String ftAlter(String indexName, Schema.Field... fields) {
     return ftAlter(indexName, Schema.from(fields));
   }
 
   String ftAlter(String indexName, Schema schema);
+
+  String ftAlter(String indexName, SchemaField... schemaFields);
 
   SearchResult ftSearch(String indexName, Query query);
 

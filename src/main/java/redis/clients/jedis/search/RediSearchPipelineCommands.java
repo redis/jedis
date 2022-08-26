@@ -8,16 +8,25 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.schemafields.SchemaField;
 
 public interface RediSearchPipelineCommands {
 
   Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema);
+
+  default Response<String> ftCreate(String indexName, SchemaField... schemaFields) {
+    return ftCreate(indexName, FTCreateParams.createParams(), schemaFields);
+  }
+
+  Response<String> ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields);
 
   default Response<String> ftAlter(String indexName, Schema.Field... fields) {
     return ftAlter(indexName, Schema.from(fields));
   }
 
   Response<String> ftAlter(String indexName, Schema schema);
+
+  Response<String> ftAlter(String indexName, SchemaField... schemaFields);
 
   Response<SearchResult> ftSearch(String indexName, Query query);
 

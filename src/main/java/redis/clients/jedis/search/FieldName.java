@@ -16,7 +16,7 @@ public class FieldName implements IParams {
   private String attribute;
 
   public FieldName(String name) {
-    this(name, null);
+    this.name = name;
   }
 
   public FieldName(String name, String attribute) {

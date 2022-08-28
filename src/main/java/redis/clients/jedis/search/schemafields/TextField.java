@@ -23,11 +23,11 @@ public class TextField extends SchemaField {
     super(fieldName);
   }
 
-  public static TextField textField(String fieldName) {
+  public static TextField of(String fieldName) {
     return new TextField(fieldName);
   }
 
-  public static TextField textField(FieldName fieldName) {
+  public static TextField of(FieldName fieldName) {
     return new TextField(fieldName);
   }
 

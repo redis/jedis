@@ -52,7 +52,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         FTCreateParams.createParams()
             .filter("@age>16")
             .prefix("student:", "pupil:"),
-        TextField.textField("first"), TextField.textField("last"), NumericField.numericField("age")));
+        TextField.of("first"), TextField.of("last"), NumericField.of("age")));
 
     client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
     client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
@@ -78,9 +78,9 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void createNoParams() {
     assertOK(client.ftCreate(index,
-        TextField.textField("first").weight(1),
-        TextField.textField("last").weight(1),
-        NumericField.numericField("age")));
+        TextField.of("first").weight(1),
+        TextField.of("last").weight(1),
+        NumericField.of("age")));
 
     addDocument("student:1111", toMap("first", "Joe", "last", "Dod", "age", 18));
     addDocument("student:3333", toMap("first", "El", "last", "Mark", "age", 17));
@@ -105,8 +105,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertOK(client.ftCreate(index,
         FTCreateParams.createParams()
             .addPrefix("student:").addPrefix("pupil:"),
-        TextField.textField("first").as("given"),
-        TextField.textField(FieldName.of("last").as("family"))));
+        TextField.of("first").as("given"),
+        TextField.of(FieldName.of("last").as("family"))));
 
     client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
     client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
@@ -134,7 +134,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void alterAdd() {
-    assertOK(client.ftCreate(index, TextField.textField("title")));
+    assertOK(client.ftCreate(index, TextField.of("title")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -145,8 +145,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(100, res.getTotalResults());
 
     assertOK(client.ftAlter(index,
-        TagField.tagField("tags"),
-        TextField.textField("name").weight(0.5)));
+        TagField.of("tags"),
+        TextField.of("name").weight(0.5)));
 
     for (int i = 0; i < 100; i++) {
       Map<String, Object> fields2 = new HashMap<>();
@@ -166,7 +166,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void search() {
     assertOK(client.ftCreate(index, FTCreateParams.createParams(),
-        TextField.textField("title"), TextField.textField("body")));
+        TextField.of("title"), TextField.of("body")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -198,7 +198,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void numericFilter() {
-    assertOK(client.ftCreate(index, TextField.textField("title"), NumericField.numericField("price")));
+    assertOK(client.ftCreate(index, TextField.of("title"), NumericField.of("price")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -254,7 +254,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertOK(client.ftCreate(index,
         FTCreateParams.createParams()
             .stopwords("foo", "bar", "baz"),
-        TextField.textField("title")));
+        TextField.of("title")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world foo bar");
@@ -269,7 +269,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void noStopwords() {
     assertOK(client.ftCreate(index,
         FTCreateParams.createParams().noStopwords(),
-        TextField.textField("title")));
+        TextField.of("title")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world foo bar");
@@ -283,7 +283,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void geoFilter() {
-    assertOK(client.ftCreate(index, TextField.textField("title"), GeoField.geoField("loc")));
+    assertOK(client.ftCreate(index, TextField.of("title"), GeoField.of("loc")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -310,7 +310,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void geoFilterAndGeoCoordinateObject() {
-    assertOK(client.ftCreate(index, TextField.textField("title"), GeoField.geoField("loc")));
+    assertOK(client.ftCreate(index, TextField.of("title"), GeoField.of("loc")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -331,7 +331,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void getTagField() {
-    assertOK(client.ftCreate(index, TextField.textField("title"), TagField.tagField("category")));
+    assertOK(client.ftCreate(index, TextField.of("title"), TagField.of("category")));
 
     Map<String, Object> fields1 = new HashMap<>();
     fields1.put("title", "hello world");
@@ -369,8 +369,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testGetTagFieldWithNonDefaultSeparator() {
     assertOK(client.ftCreate(index,
-        TextField.textField("title"),
-        TagField.tagField("category").separator(';')));
+        TextField.of("title"),
+        TagField.of("category").separator(';')));
 
     Map<String, Object> fields1 = new HashMap<>();
     fields1.put("title", "hello world");
@@ -408,8 +408,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void caseSensitiveTagField() {
     assertOK(client.ftCreate(index,
-        TextField.textField("title"),
-        TagField.tagField("category").caseSensitive()));
+        TextField.of("title"),
+        TagField.of("category").caseSensitive()));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");

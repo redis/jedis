@@ -23,11 +23,11 @@ public class TagField extends SchemaField {
     super(fieldName);
   }
 
-  public static TagField tagField(String fieldName) {
+  public static TagField of(String fieldName) {
     return new TagField(fieldName);
   }
 
-  public static TagField tagField(FieldName fieldName) {
+  public static TagField of(FieldName fieldName) {
     return new TagField(fieldName);
   }
 

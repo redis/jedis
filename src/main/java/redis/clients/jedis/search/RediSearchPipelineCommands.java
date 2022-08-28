@@ -16,7 +16,7 @@ public interface RediSearchPipelineCommands {
   Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema);
 
   default Response<String> ftCreate(String indexName, SchemaField... schemaFields) {
-    return ftCreate(indexName, FTCreateParams.createParams(), schemaFields);
+    return ftCreate(indexName, Arrays.asList(schemaFields));
   }
 
   default Response<String> ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {

@@ -15,7 +15,7 @@ public interface RediSearchCommands {
   String ftCreate(String indexName, IndexOptions indexOptions, Schema schema);
 
   default String ftCreate(String indexName, SchemaField... schemaFields) {
-    return ftCreate(indexName, FTCreateParams.createParams(), schemaFields);
+    return ftCreate(indexName, Arrays.asList(schemaFields));
   }
 
   default String ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {

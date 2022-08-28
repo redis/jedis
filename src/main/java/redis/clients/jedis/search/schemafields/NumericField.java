@@ -20,11 +20,11 @@ public class NumericField extends SchemaField {
     super(fieldName);
   }
 
-  public static NumericField numericField(String fieldName) {
+  public static NumericField of(String fieldName) {
     return new NumericField(fieldName);
   }
 
-  public static NumericField numericField(FieldName fieldName) {
+  public static NumericField of(FieldName fieldName) {
     return new NumericField(fieldName);
   }
 

@@ -15,11 +15,11 @@ public class GeoField extends SchemaField {
     super(fieldName);
   }
 
-  public static GeoField geoField(String fieldName) {
+  public static GeoField of(String fieldName) {
     return new GeoField(fieldName);
   }
 
-  public static GeoField geoField(FieldName fieldName) {
+  public static GeoField of(FieldName fieldName) {
     return new GeoField(fieldName);
   }
 

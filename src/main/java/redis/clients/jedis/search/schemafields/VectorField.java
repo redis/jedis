@@ -1,6 +1,5 @@
 package redis.clients.jedis.search.schemafields;
 
-import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.NOINDEX;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.VECTOR;
 
 import java.util.LinkedHashMap;
@@ -15,17 +14,8 @@ public class VectorField extends SchemaField {
     HNSW
   }
 
-  private boolean noIndex;
   private final VectorAlgorithm algorithm;
   private final Map<String, Object> attributes;
-
-  public VectorField(String fieldName, VectorAlgorithm algorithm) {
-    this(fieldName, algorithm, new LinkedHashMap<>());
-  }
-
-  public VectorField(FieldName fieldName, VectorAlgorithm algorithm) {
-    this(fieldName, algorithm, new LinkedHashMap<>());
-  }
 
   public VectorField(String fieldName, VectorAlgorithm algorithm, Map<String, Object> attributes) {
     super(fieldName);
@@ -39,25 +29,9 @@ public class VectorField extends SchemaField {
     this.attributes = attributes;
   }
 
-  public static VectorField vectorField(String fieldName, VectorAlgorithm algorithm) {
-    return new VectorField(fieldName, algorithm);
-  }
-
-  public static VectorField vectorField(FieldName fieldName, VectorAlgorithm algorithm) {
-    return new VectorField(fieldName, algorithm);
-  }
-
   @Override
   public VectorField as(String attribute) {
     super.as(attribute);
-    return this;
-  }
-
-  /**
-   * Avoid indexing.
-   */
-  public VectorField noIndex() {
-    this.noIndex = true;
     return this;
   }
 
@@ -71,12 +45,62 @@ public class VectorField extends SchemaField {
     args.addParams(fieldName);
     args.add(VECTOR);
 
-    if (noIndex) {
-      args.add(NOINDEX);
-    }
-
     args.add(algorithm);
     args.add(attributes.size() * 2);
     attributes.forEach((name, value) -> args.add(name).add(value));
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+
+    private FieldName fieldName;
+    private VectorAlgorithm algorithm;
+    private Map<String, Object> attributes;
+
+    private Builder() {
+    }
+
+    public VectorField build() {
+      if (fieldName == null || algorithm == null || attributes == null || attributes.isEmpty()) {
+        throw new IllegalArgumentException("All required VectorField parameters are not set.");
+      }
+      return new VectorField(fieldName, algorithm, attributes);
+    }
+
+    public Builder fieldName(String fieldName) {
+      this.fieldName = FieldName.of(fieldName);
+      return this;
+    }
+
+    public Builder fieldName(FieldName fieldName) {
+      this.fieldName = fieldName;
+      return this;
+    }
+
+    public Builder as(String attribute) {
+      this.fieldName.as(attribute);
+      return this;
+    }
+
+    public Builder algorithm(VectorAlgorithm algorithm) {
+      this.algorithm = algorithm;
+      return this;
+    }
+
+    public Builder attributes(Map<String, Object> attributes) {
+      this.attributes = attributes;
+      return this;
+    }
+
+    public Builder addAttribute(String name, Object value) {
+      if (this.attributes == null) {
+        this.attributes = new LinkedHashMap<>();
+      }
+      this.attributes.put(name, value);
+      return this;
+    }
   }
 }

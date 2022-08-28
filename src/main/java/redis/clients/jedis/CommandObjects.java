@@ -3057,10 +3057,11 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {
-    CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName).addParams(createParams)
-        .add(SearchKeyword.SCHEMA);
-    Arrays.stream(schemaFields).forEach(field -> args.addParams(field));
+  public CommandObject<String> ftCreate(String indexName, FTCreateParams createParams,
+      Iterable<SchemaField> schemaFields) {
+    CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName)
+        .addParams(createParams).add(SearchKeyword.SCHEMA);
+    schemaFields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
@@ -3071,10 +3072,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftAlter(String indexName, SchemaField... schemaFields) {
-    CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName).add(SearchKeyword.SCHEMA)
-        .add(SearchKeyword.ADD);
-    Arrays.stream(schemaFields).forEach(field -> args.addParams(field));
+  public CommandObject<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
+    CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName)
+        .add(SearchKeyword.SCHEMA).add(SearchKeyword.ADD);
+    schemaFields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 

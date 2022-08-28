@@ -204,7 +204,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testNumericFilter() throws Exception {
+  public void numericFilter() throws Exception {
     Schema sc = new Schema().addTextField("title", 1.0).addNumericField("price");
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -292,7 +292,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testGeoFilter() throws Exception {
+  public void geoFilter() throws Exception {
     Schema sc = new Schema().addTextField("title", 1.0).addGeoField("loc");
 
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -342,26 +342,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
         new Query.GeoFilter("loc", -0.44, 51.45, 100, Query.GeoFilter.KILOMETERS)));
     assertEquals(2, res.getTotalResults());
   }
-//
-//  // TODO: This test was broken in master branch
-//  @Test
-//  public void testPayloads() throws Exception {
-//    Schema sc = new Schema().addTextField("title", 1.0);
-//
-//    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-//
-//    Map<String, Object> fields = new HashMap<>();
-//    fields.put("title", "hello world");
-//    String payload = "foo bar";
-////    assertTrue(client.addDocument("doc1", 1.0, fields, false, false, payload.getBytes()));
-//    addDocument("doc1", fields);
-//
-//    SearchResult res = client.ftSearch(index, new Query("hello world").setWithPayload());
-//    assertEquals(1, res.getTotalResults());
-//    assertEquals(1, res.getDocuments().size());
-//
-//    assertEquals(payload, new String(res.getDocuments().get(0).getPayload()));
-//  }
 
   @Test
   public void testQueryFlags() throws Exception {
@@ -408,177 +388,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(50, res.getTotalResults());
     res = client.ftSearch(index, new Query("hello a world").setVerbatim().setNoStopwords());
     assertEquals(0, res.getTotalResults());
-  }
-
-  @Test
-  public void testHNSWVVectorSimilarity() {
-    Map<String, Object> attr = new HashMap<>();
-    attr.put("TYPE", "FLOAT32");
-    attr.put("DIM", 2);
-    attr.put("DISTANCE_METRIC", "L2");
-
-    Schema sc = new Schema().addHNSWVectorField("v", attr);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    client.hset("a", "v", "aaaaaaaa");
-    client.hset("b", "v", "aaaabaaa");
-    client.hset("c", "v", "aaaaabaa");
-
-    Query query = new Query("*=>[KNN 2 @v $vec]")
-        .addParam("vec", "aaaaaaaa")
-        .setSortBy("__v_score", true)
-        .returnFields("__v_score")
-        .dialect(2);
-    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
-    assertEquals("a", doc1.getId());
-    assertEquals("0", doc1.get("__v_score"));
-  }
-
-  @Test
-  public void testFlatVectorSimilarity() {
-    Map<String, Object> attr = new HashMap<>();
-    attr.put("TYPE", "FLOAT32");
-    attr.put("DIM", 2);
-    attr.put("DISTANCE_METRIC", "L2");
-
-    Schema sc = new Schema().addFlatVectorField("v", attr);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    client.hset("a", "v", "aaaaaaaa");
-    client.hset("b", "v", "aaaabaaa");
-    client.hset("c", "v", "aaaaabaa");
-
-    Query query = new Query("*=>[KNN 2 @v $vec]")
-        .addParam("vec", "aaaaaaaa")
-        .setSortBy("__v_score", true)
-        .returnFields("__v_score")
-        .dialect(2);
-    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
-    assertEquals("a", doc1.getId());
-    assertEquals("0", doc1.get("__v_score"));
-  }
-
-  @Test
-  public void testDialectConfig() {
-    // confirm default
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
-
-    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "2"));
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
-
-    try {
-      client.ftConfigSet("DEFAULT_DIALECT", "0");
-      fail();
-    } catch (JedisDataException ex) {
-    }
-
-    try {
-      client.ftConfigSet("DEFAULT_DIALECT", "3");
-      fail();
-    } catch (JedisDataException ex) {
-    }
-
-    // Restore to default
-    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "1"));
-  }
-
-  @Test
-  public void testDialectsWithFTExplain() throws Exception {
-    Map<String, Object> attr = new HashMap<>();
-    attr.put("TYPE", "FLOAT32");
-    attr.put("DIM", 2);
-    attr.put("DISTANCE_METRIC", "L2");
-
-    Schema sc = new Schema()
-        .addFlatVectorField("v", attr)
-        .addTagField("title")
-        .addTextField("t1", 1.0)
-        .addTextField("t2", 1.0)
-        .addNumericField("num");
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    client.hset("1", "t1", "hello");
-
-    String q = "(*)";
-    Query query = new Query(q).dialect(1);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-    query = new Query(q).dialect(2);
-    assertTrue("Should contain 'WILDCARD'", client.ftExplain(index, query).contains("WILDCARD"));
-
-    q = "$hello";
-    query = new Query(q).dialect(1);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-    query = new Query(q).dialect(2).addParam("hello", "hello");
-    assertTrue("Should contain 'UNION {\n  hello\n  +hello(expanded)\n}\n'",
-        client.ftExplain(index, query).contains("UNION {\n  hello\n  +hello(expanded)\n}\n"));
-
-    q = "@title:(@num:[0 10])";
-    query = new Query(q).dialect(1);
-    assertTrue("Should contain 'NUMERIC {0.000000 <= @num <= 10.000000}'",
-        client.ftExplain(index, query).contains("NUMERIC {0.000000 <= @num <= 10.000000}"));
-    query = new Query(q).dialect(2);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-
-    q = "@t1:@t2:@t3:hello";
-    query = new Query(q).dialect(1);
-    assertTrue("Should contain '@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n'",
-        client.ftExplain(index, query).contains("@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n"));
-    query = new Query(q).dialect(2);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-
-    q = "@title:{foo}}}}}";
-    query = new Query(q).dialect(1);
-    assertTrue("Should contain 'TAG:@title {\n  foo\n}\n'",
-        client.ftExplain(index, query).contains("TAG:@title {\n  foo\n}\n"));
-    query = new Query(q).dialect(2);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-
-    q = "*=>[KNN 10 @v $BLOB]";
-    query = new Query(q).addParam("BLOB", "aaaa").dialect(1);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-    query = new Query(q).addParam("BLOB", "aaaa").dialect(2);
-    assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
-
-    q = "*=>[knn $K @vec_field $BLOB as score]";
-    query = new Query(q).addParam("BLOB", "aaaa").addParam("K", "10").dialect(1);
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-    query = new Query(q).addParam("BLOB", "aaaa").addParam("K", "10").dialect(2);
-    assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
   }
 
   @Test
@@ -1261,5 +1070,176 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals("doc2", res.getDocuments().get(0).getId());
     assertEquals("value", res.getDocuments().get(0).get("field1"));
     assertEquals("not", res.getDocuments().get(0).get("field2"));
+  }
+
+  @Test
+  public void testDialectConfig() {
+    // confirm default
+    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
+
+    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "2"));
+    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
+
+    try {
+      client.ftConfigSet("DEFAULT_DIALECT", "0");
+      fail();
+    } catch (JedisDataException ex) {
+    }
+
+    try {
+      client.ftConfigSet("DEFAULT_DIALECT", "3");
+      fail();
+    } catch (JedisDataException ex) {
+    }
+
+    // Restore to default
+    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "1"));
+  }
+
+  @Test
+  public void testDialectsWithFTExplain() throws Exception {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    Schema sc = new Schema()
+        .addFlatVectorField("v", attr)
+        .addTagField("title")
+        .addTextField("t1", 1.0)
+        .addTextField("t2", 1.0)
+        .addNumericField("num");
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("1", "t1", "hello");
+
+    String q = "(*)";
+    Query query = new Query(q).dialect(1);
+    try {
+      client.ftExplain(index, query);
+      fail();
+    } catch (JedisDataException e) {
+      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
+    }
+    query = new Query(q).dialect(2);
+    assertTrue("Should contain 'WILDCARD'", client.ftExplain(index, query).contains("WILDCARD"));
+
+    q = "$hello";
+    query = new Query(q).dialect(1);
+    try {
+      client.ftExplain(index, query);
+      fail();
+    } catch (JedisDataException e) {
+      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
+    }
+    query = new Query(q).dialect(2).addParam("hello", "hello");
+    assertTrue("Should contain 'UNION {\n  hello\n  +hello(expanded)\n}\n'",
+        client.ftExplain(index, query).contains("UNION {\n  hello\n  +hello(expanded)\n}\n"));
+
+    q = "@title:(@num:[0 10])";
+    query = new Query(q).dialect(1);
+    assertTrue("Should contain 'NUMERIC {0.000000 <= @num <= 10.000000}'",
+        client.ftExplain(index, query).contains("NUMERIC {0.000000 <= @num <= 10.000000}"));
+    query = new Query(q).dialect(2);
+    try {
+      client.ftExplain(index, query);
+      fail();
+    } catch (JedisDataException e) {
+      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
+    }
+
+    q = "@t1:@t2:@t3:hello";
+    query = new Query(q).dialect(1);
+    assertTrue("Should contain '@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n'",
+        client.ftExplain(index, query).contains("@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n"));
+    query = new Query(q).dialect(2);
+    try {
+      client.ftExplain(index, query);
+      fail();
+    } catch (JedisDataException e) {
+      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
+    }
+
+    q = "@title:{foo}}}}}";
+    query = new Query(q).dialect(1);
+    assertTrue("Should contain 'TAG:@title {\n  foo\n}\n'",
+        client.ftExplain(index, query).contains("TAG:@title {\n  foo\n}\n"));
+    query = new Query(q).dialect(2);
+    try {
+      client.ftExplain(index, query);
+      fail();
+    } catch (JedisDataException e) {
+      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
+    }
+
+    q = "*=>[KNN 10 @v $BLOB]";
+    query = new Query(q).addParam("BLOB", "aaaa").dialect(1);
+    try {
+      client.ftExplain(index, query);
+      fail();
+    } catch (JedisDataException e) {
+      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
+    }
+    query = new Query(q).addParam("BLOB", "aaaa").dialect(2);
+    assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
+
+    q = "*=>[knn $K @vec_field $BLOB as score]";
+    query = new Query(q).addParam("BLOB", "aaaa").addParam("K", "10").dialect(1);
+    try {
+      client.ftExplain(index, query);
+      fail();
+    } catch (JedisDataException e) {
+      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
+    }
+    query = new Query(q).addParam("BLOB", "aaaa").addParam("K", "10").dialect(2);
+    assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
+  }
+
+  @Test
+  public void testHNSWVVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    Schema sc = new Schema().addHNSWVectorField("v", attr);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("a", "v", "aaaaaaaa");
+    client.hset("b", "v", "aaaabaaa");
+    client.hset("c", "v", "aaaaabaa");
+
+    Query query = new Query("*=>[KNN 2 @v $vec]")
+        .addParam("vec", "aaaaaaaa")
+        .setSortBy("__v_score", true)
+        .returnFields("__v_score")
+        .dialect(2);
+    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  public void testFlatVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    Schema sc = new Schema().addFlatVectorField("v", attr);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    client.hset("a", "v", "aaaaaaaa");
+    client.hset("b", "v", "aaaabaaa");
+    client.hset("c", "v", "aaaaabaa");
+
+    Query query = new Query("*=>[KNN 2 @v $vec]")
+        .addParam("vec", "aaaaaaaa")
+        .setSortBy("__v_score", true)
+        .returnFields("__v_score")
+        .dialect(2);
+    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
   }
 }

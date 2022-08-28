@@ -3379,7 +3379,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<String> ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {
+  public Response<String> ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
     return appendCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
   }
 
@@ -3389,7 +3389,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<String> ftAlter(String indexName, SchemaField... schemaFields) {
+  public Response<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
     return appendCommand(commandObjects.ftAlter(indexName, schemaFields));
   }
 

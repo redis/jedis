@@ -1,5 +1,6 @@
 package redis.clients.jedis.search;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +19,15 @@ public interface RediSearchPipelineCommands {
     return ftCreate(indexName, FTCreateParams.createParams(), schemaFields);
   }
 
-  Response<String> ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields);
+  default Response<String> ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {
+    return ftCreate(indexName, createParams, Arrays.asList(schemaFields));
+  }
+
+  default Response<String> ftCreate(String indexName, Iterable<SchemaField> schemaFields) {
+    return ftCreate(indexName, FTCreateParams.createParams(), schemaFields);
+  }
+
+  Response<String> ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields);
 
   default Response<String> ftAlter(String indexName, Schema.Field... fields) {
     return ftAlter(indexName, Schema.from(fields));
@@ -26,7 +35,11 @@ public interface RediSearchPipelineCommands {
 
   Response<String> ftAlter(String indexName, Schema schema);
 
-  Response<String> ftAlter(String indexName, SchemaField... schemaFields);
+  default Response<String> ftAlter(String indexName, SchemaField... schemaFields) {
+    return ftAlter(indexName, Arrays.asList(schemaFields));
+  }
+
+  Response<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields);
 
   Response<SearchResult> ftSearch(String indexName, Query query);
 

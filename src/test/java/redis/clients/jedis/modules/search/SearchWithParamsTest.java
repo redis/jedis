@@ -197,6 +197,59 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void numericFilter() {
+    assertOK(client.ftCreate(index, TextField.textField("title"), NumericField.numericField("price")));
+
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("title", "hello world");
+
+    for (int i = 0; i < 100; i++) {
+      fields.put("price", i);
+      addDocument(String.format("doc%d", i), fields);
+    }
+
+    SearchResult res = client.ftSearch(index, new Query("hello world").
+        addFilter(new Query.NumericFilter("price", 0, 49)));
+    assertEquals(50, res.getTotalResults());
+    assertEquals(10, res.getDocuments().size());
+    for (Document d : res.getDocuments()) {
+      long price = Long.valueOf((String) d.get("price"));
+      assertTrue(price >= 0);
+      assertTrue(price <= 49);
+    }
+
+    res = client.ftSearch(index, new Query("hello world").
+        addFilter(new Query.NumericFilter("price", 0, true, 49, true)));
+    assertEquals(48, res.getTotalResults());
+    assertEquals(10, res.getDocuments().size());
+    for (Document d : res.getDocuments()) {
+      long price = Long.valueOf((String) d.get("price"));
+      assertTrue(price > 0);
+      assertTrue(price < 49);
+    }
+    res = client.ftSearch(index, new Query("hello world").
+        addFilter(new Query.NumericFilter("price", 50, 100)));
+    assertEquals(50, res.getTotalResults());
+    assertEquals(10, res.getDocuments().size());
+    for (Document d : res.getDocuments()) {
+      long price = Long.valueOf((String) d.get("price"));
+      assertTrue(price >= 50);
+      assertTrue(price <= 100);
+    }
+
+    res = client.ftSearch(index, new Query("hello world").
+        addFilter(new Query.NumericFilter("price", 20, Double.POSITIVE_INFINITY)));
+    assertEquals(80, res.getTotalResults());
+    assertEquals(10, res.getDocuments().size());
+
+    res = client.ftSearch(index, new Query("hello world").
+        addFilter(new Query.NumericFilter("price", Double.NEGATIVE_INFINITY, 10)));
+    assertEquals(11, res.getTotalResults());
+    assertEquals(10, res.getDocuments().size());
+
+  }
+
+  @Test
   public void stopwords() {
     assertOK(client.ftCreate(index,
         FTCreateParams.createParams()
@@ -229,6 +282,130 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void geoFilter() {
+    assertOK(client.ftCreate(index, TextField.textField("title"), GeoField.geoField("loc")));
+
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("title", "hello world");
+    fields.put("loc", "-0.441,51.458");
+    addDocument("doc1", fields);
+
+    fields.put("loc", "-0.1,51.2");
+    addDocument("doc2", fields);
+
+    SearchResult res = client.ftSearch(index, new Query("hello world").
+        addFilter(
+            new Query.GeoFilter("loc", -0.44, 51.45,
+                10, Query.GeoFilter.KILOMETERS)
+        ));
+
+    assertEquals(1, res.getTotalResults());
+    res = client.ftSearch(index, new Query("hello world").
+        addFilter(
+            new Query.GeoFilter("loc", -0.44, 51.45,
+                100, Query.GeoFilter.KILOMETERS)
+        ));
+    assertEquals(2, res.getTotalResults());
+  }
+
+  @Test
+  public void geoFilterAndGeoCoordinateObject() {
+    assertOK(client.ftCreate(index, TextField.textField("title"), GeoField.geoField("loc")));
+
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("title", "hello world");
+    fields.put("loc", new redis.clients.jedis.GeoCoordinate(-0.441, 51.458));
+    addDocument("doc1", fields);
+
+    fields.put("loc", new redis.clients.jedis.GeoCoordinate(-0.1, 51.2));
+    addDocument("doc2", fields);
+
+    SearchResult res = client.ftSearch(index, new Query("hello world").addFilter(
+        new Query.GeoFilter("loc", -0.44, 51.45, 10, Query.GeoFilter.KILOMETERS)));
+    assertEquals(1, res.getTotalResults());
+
+    res = client.ftSearch(index, new Query("hello world").addFilter(
+        new Query.GeoFilter("loc", -0.44, 51.45, 100, Query.GeoFilter.KILOMETERS)));
+    assertEquals(2, res.getTotalResults());
+  }
+
+  @Test
+  public void getTagField() {
+    assertOK(client.ftCreate(index, TextField.textField("title"), TagField.tagField("category")));
+
+    Map<String, Object> fields1 = new HashMap<>();
+    fields1.put("title", "hello world");
+    fields1.put("category", "red");
+    addDocument("foo", fields1);
+
+    Map<String, Object> fields2 = new HashMap<>();
+    fields2.put("title", "hello world");
+    fields2.put("category", "blue");
+    addDocument("bar", fields2);
+
+    Map<String, Object> fields3 = new HashMap<>();
+    fields3.put("title", "hello world");
+    fields3.put("category", "green,yellow");
+    addDocument("baz", fields3);
+
+    Map<String, Object> fields4 = new HashMap<>();
+    fields4.put("title", "hello world");
+    fields4.put("category", "orange;purple");
+    addDocument("qux", fields4);
+
+    assertEquals(1, client.ftSearch(index, new Query("@category:{red}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{blue}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("hello @category:{red}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("hello @category:{blue}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{yellow}")).getTotalResults());
+    assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\;purple}")).getTotalResults());
+    assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
+
+    assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange;purple")),
+        client.ftTagVals(index, "category"));
+  }
+
+  @Test
+  public void testGetTagFieldWithNonDefaultSeparator() {
+    assertOK(client.ftCreate(index,
+        TextField.textField("title"),
+        TagField.tagField("category").separator(';')));
+
+    Map<String, Object> fields1 = new HashMap<>();
+    fields1.put("title", "hello world");
+    fields1.put("category", "red");
+    addDocument("foo", fields1);
+
+    Map<String, Object> fields2 = new HashMap<>();
+    fields2.put("title", "hello world");
+    fields2.put("category", "blue");
+    addDocument("bar", fields2);
+
+    Map<String, Object> fields3 = new HashMap<>();
+    fields3.put("title", "hello world");
+    fields3.put("category", "green;yellow");
+    addDocument("baz", fields3);
+
+    Map<String, Object> fields4 = new HashMap<>();
+    fields4.put("title", "hello world");
+    fields4.put("category", "orange,purple");
+    addDocument("qux", fields4);
+
+    assertEquals(1, client.ftSearch(index, new Query("@category:{red}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{blue}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("hello @category:{red}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("hello @category:{blue}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("hello @category:{yellow}")).getTotalResults());
+    assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\,purple}")).getTotalResults());
+    assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
+
+    assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange,purple")),
+        client.ftTagVals(index, "category"));
+  }
+
+  @Test
   public void caseSensitiveTagField() {
     assertOK(client.ftCreate(index,
         TextField.textField("title"),
@@ -244,5 +421,59 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(0, client.ftSearch(index, new Query("@category:{Redx}")).getTotalResults());
     assertEquals(1, client.ftSearch(index, new Query("@category:{RedX}")).getTotalResults());
     assertEquals(1, client.ftSearch(index, new Query("hello")).getTotalResults());
+  }
+
+  @Test
+  public void testHNSWVVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    assertOK(client.ftCreate(index, VectorField.builder().fieldName("v")
+        .algorithm(VectorField.VectorAlgorithm.HNSW).attributes(attr).build()));
+
+    client.hset("a", "v", "aaaaaaaa");
+    client.hset("b", "v", "aaaabaaa");
+    client.hset("c", "v", "aaaaabaa");
+
+    Query query = new Query("*=>[KNN 2 @v $vec]")
+        .addParam("vec", "aaaaaaaa")
+        .setSortBy("__v_score", true)
+        .returnFields("__v_score")
+        .dialect(2);
+    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  public void testFlatVectorSimilarity() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    assertOK(client.ftCreate(index,
+        VectorField.builder().fieldName("v")
+            .algorithm(VectorField.VectorAlgorithm.FLAT)
+            .addAttribute("TYPE", "FLOAT32")
+            .addAttribute("DIM", 2)
+            .addAttribute("DISTANCE_METRIC", "L2")
+            .build()
+    ));
+
+    client.hset("a", "v", "aaaaaaaa");
+    client.hset("b", "v", "aaaabaaa");
+    client.hset("c", "v", "aaaaabaa");
+
+    Query query = new Query("*=>[KNN 2 @v $vec]")
+        .addParam("vec", "aaaaaaaa")
+        .setSortBy("__v_score", true)
+        .returnFields("__v_score")
+        .dialect(2);
+    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
   }
 }

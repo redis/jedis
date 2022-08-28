@@ -3445,7 +3445,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {
+  public String ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
     return executeCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
   }
 
@@ -3455,7 +3455,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String ftAlter(String indexName, SchemaField... schemaFields) {
+  public String ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
     return executeCommand(commandObjects.ftAlter(indexName, schemaFields));
   }
 

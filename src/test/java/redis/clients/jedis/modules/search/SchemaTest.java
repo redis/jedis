@@ -1,11 +1,13 @@
 package redis.clients.jedis.modules.search;
 
+import static org.junit.Assert.assertThrows;
+
+import java.util.Collections;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Test;
+import redis.clients.jedis.search.FieldName;
 import redis.clients.jedis.search.Schema;
-
-import java.util.Collections;
 
 public class SchemaTest {
 
@@ -32,5 +34,16 @@ public class SchemaTest {
     MatcherAssert.assertThat(schemaPrint, CoreMatchers.startsWith("Schema{fields=[TextField{name='title'"));
     MatcherAssert.assertThat(schemaPrint, CoreMatchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
     MatcherAssert.assertThat(schemaPrint, CoreMatchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
+  }
+
+  @Test
+  public void fieldAttributeNull() {
+    assertThrows(IllegalArgumentException.class, () -> FieldName.of("identifier").as(null));
+  }
+
+  @Test
+  public void fieldAttributeMultiple() {
+    assertThrows(IllegalStateException.class, () -> FieldName.of("identifier").as("attribute").as("attribute"));
+    assertThrows(IllegalStateException.class, () -> new FieldName("identifier", "attribute").as("attribute"));
   }
 }

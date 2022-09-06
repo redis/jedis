@@ -13,6 +13,10 @@ import org.junit.ComparisonFailure;
 
 public class AssertUtil {
 
+  public static void assertOK(String str) {
+    assertEquals("OK", str);
+  }
+
   public static boolean assertCollectionContains(Collection<byte[]> array, byte[] expected) {
     for (byte[] bytes : array) {
       if (Arrays.equals(bytes, expected)) {

@@ -30,6 +30,7 @@ import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword;
@@ -3052,14 +3053,29 @@ public class CommandObjects {
   public CommandObject<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
     CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName)
         .addParams(indexOptions).add(SearchKeyword.SCHEMA);
-    schema.fields.forEach(field -> field.addParams(args));
+    schema.fields.forEach(field -> args.addParams(field));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public CommandObject<String> ftCreate(String indexName, FTCreateParams createParams,
+      Iterable<SchemaField> schemaFields) {
+    CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName)
+        .addParams(createParams).add(SearchKeyword.SCHEMA);
+    schemaFields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
   public CommandObject<String> ftAlter(String indexName, Schema schema) {
     CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName)
         .add(SearchKeyword.SCHEMA).add(SearchKeyword.ADD);
-    schema.fields.forEach(field -> field.addParams(args));
+    schema.fields.forEach(field -> args.addParams(field));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public CommandObject<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
+    CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName)
+        .add(SearchKeyword.SCHEMA).add(SearchKeyword.ADD);
+    schemaFields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 

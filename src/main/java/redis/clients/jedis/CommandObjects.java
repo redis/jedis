@@ -3051,8 +3051,8 @@ public class CommandObjects {
 
   // RediSearch commands
   public CommandObject<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
-    CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName).addParams(indexOptions)
-        .add(SearchKeyword.SCHEMA);
+    CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName)
+        .addParams(indexOptions).add(SearchKeyword.SCHEMA);
     schema.fields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
@@ -3066,8 +3066,8 @@ public class CommandObjects {
   }
 
   public CommandObject<String> ftAlter(String indexName, Schema schema) {
-    CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName).add(SearchKeyword.SCHEMA)
-        .add(SearchKeyword.ADD);
+    CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName)
+        .add(SearchKeyword.SCHEMA).add(SearchKeyword.ADD);
     schema.fields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }

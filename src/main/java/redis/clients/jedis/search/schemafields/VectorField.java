@@ -35,11 +35,6 @@ public class VectorField extends SchemaField {
     return this;
   }
 
-  public VectorField addAttribute(String name, Object value) {
-    this.attributes.put(name, value);
-    return this;
-  }
-
   @Override
   public void addParams(CommandArguments args) {
     args.addParams(fieldName);

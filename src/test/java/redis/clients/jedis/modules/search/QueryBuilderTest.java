@@ -1,7 +1,7 @@
 package redis.clients.jedis.modules.search;
 
 import static org.junit.Assert.assertEquals;
-import static redis.clients.jedis.search.querybuilder.QueryBuilder.*;
+import static redis.clients.jedis.search.querybuilder.QueryBuilders.*;
 import static redis.clients.jedis.search.querybuilder.Values.*;
 
 import java.util.Arrays;

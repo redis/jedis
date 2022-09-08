@@ -10,9 +10,8 @@ import static redis.clients.jedis.search.querybuilder.Values.value;
  * This class contains methods to construct query nodes. These query nodes can be added to parent
  * query nodes (building a chain) or used as the root query node.
  */
-public class QueryBuilder {
-
-  private QueryBuilder() {
+public class QueryBuilders {
+  private QueryBuilders() {
     throw new InstantiationError("Must not instantiate this class");
   }
 

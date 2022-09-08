@@ -8,5 +8,6 @@ public abstract class Value {
     return false;
   }
 
+  @Override
   public abstract String toString();
 }

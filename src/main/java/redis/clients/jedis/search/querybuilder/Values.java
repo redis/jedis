@@ -10,6 +10,7 @@ import java.util.StringJoiner;
  */
 public class Values {
   private Values() {
+    throw new InstantiationError("Must not instantiate this class");
   }
 
   private abstract static class ScalableValue extends Value {
@@ -80,8 +81,7 @@ public class Values {
     return gt(d).inclusiveMin(true);
   }
 
-
-  public static Value tags(String ...tags) {
+  public static Value tags(String... tags) {
     if (tags.length == 0) {
       throw new IllegalArgumentException("Must have at least one tag");
     }

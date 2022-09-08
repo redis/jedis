@@ -4,6 +4,7 @@ package redis.clients.jedis.search.querybuilder;
  * @author mnunberg on 2/23/18.
  */
 public class DoubleRangeValue extends RangeValue {
+
   private final double from;
   private final double to;
 

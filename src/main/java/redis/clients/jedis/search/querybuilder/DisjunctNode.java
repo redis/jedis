@@ -1,8 +1,9 @@
 package redis.clients.jedis.search.querybuilder;
 
 /**
- * A disjunct node. evaluates to true if any of its children are false. Conversely, this node evaluates to false
- * only iff <b>all</b> of its children are true, making it the exact inverse of {@link IntersectNode}
+ * A disjunct node. evaluates to true if any of its children are false. Conversely, this node
+ * evaluates to false only iff <b>all</b> of its children are true, making it the exact inverse of
+ * {@link IntersectNode}
  *
  * In RS, it looks like:
  *
@@ -12,10 +13,10 @@ package redis.clients.jedis.search.querybuilder;
  */
 public class DisjunctNode extends IntersectNode {
   @Override
-  public String toString(ParenMode mode) {
-    String ret = super.toString(ParenMode.NEVER);
-    if (shouldUseParens(mode)) {
-      return "-("  + ret + ")";
+  public String toString(Parenthesize mode) {
+    String ret = super.toString(Parenthesize.NEVER);
+    if (shouldParenthesize(mode)) {
+      return "-(" + ret + ")";
     } else {
       return "-" + ret;
     }

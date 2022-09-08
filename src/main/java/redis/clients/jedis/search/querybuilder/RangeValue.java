@@ -4,6 +4,7 @@ package redis.clients.jedis.search.querybuilder;
  * @author mnunberg on 2/23/18.
  */
 public abstract class RangeValue extends Value {
+
   private boolean inclusiveMin = true;
   private boolean inclusiveMax = true;
 
@@ -13,6 +14,7 @@ public abstract class RangeValue extends Value {
   }
 
   protected abstract void appendFrom(StringBuilder sb, boolean inclusive);
+
   protected abstract void appendTo(StringBuilder sb, boolean inclusive);
 
   @Override
@@ -30,6 +32,7 @@ public abstract class RangeValue extends Value {
     inclusiveMin = val;
     return this;
   }
+
   public RangeValue inclusiveMax(boolean val) {
     inclusiveMax = val;
     return this;

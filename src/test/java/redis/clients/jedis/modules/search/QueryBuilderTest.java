@@ -1,7 +1,11 @@
 package redis.clients.jedis.modules.search;
 
+import static org.junit.Assert.assertEquals;
+import static redis.clients.jedis.search.querybuilder.QueryBuilder.*;
+import static redis.clients.jedis.search.querybuilder.Values.*;
+
+import java.util.Arrays;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.args.GeoUnit;
@@ -9,15 +13,11 @@ import redis.clients.jedis.search.querybuilder.Node;
 import redis.clients.jedis.search.querybuilder.Value;
 import redis.clients.jedis.search.querybuilder.Values;
 
-import static redis.clients.jedis.search.querybuilder.Values.*;
-import static redis.clients.jedis.search.querybuilder.QueryBuilder.*;
-import java.util.Arrays;
-
-
 /**
  * Created by mnunberg on 2/23/18.
  */
 public class QueryBuilderTest {
+
   @Test
   public void testTag() {
     Value v = tags("foo");

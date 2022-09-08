@@ -1,6 +1,7 @@
 package redis.clients.jedis.search.querybuilder;
 
 public class LongRangeValue extends RangeValue {
+
   private final long from;
   private final long to;
 

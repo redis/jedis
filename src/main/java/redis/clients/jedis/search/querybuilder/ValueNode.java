@@ -6,6 +6,7 @@ import java.util.StringJoiner;
  * Created by mnunberg on 2/23/18.
  */
 public class ValueNode implements Node {
+
   private final Value[] values;
   private final String field;
   private final String joinString;
@@ -24,7 +25,7 @@ public class ValueNode implements Node {
     return objs;
   }
 
-  public ValueNode(String field, String joinstr, String ...values) {
+  public ValueNode(String field, String joinstr, String... values) {
     this(field, joinstr, fromStrings(values));
   }
 
@@ -35,9 +36,9 @@ public class ValueNode implements Node {
     return '@' + field + ':';
   }
 
-  private String toStringCombinable(ParenMode mode) {
+  private String toStringCombinable(Parenthesize mode) {
     StringBuilder sb = new StringBuilder(formatField());
-    if (values.length > 1 || mode == ParenMode.ALWAYS) {
+    if (values.length > 1 || mode == Parenthesize.ALWAYS) {
       sb.append('(');
     }
     StringJoiner sj = new StringJoiner(joinString);
@@ -45,16 +46,16 @@ public class ValueNode implements Node {
       sj.add(v.toString());
     }
     sb.append(sj.toString());
-    if (values.length > 1 || mode == ParenMode.ALWAYS) {
+    if (values.length > 1 || mode == Parenthesize.ALWAYS) {
       sb.append(')');
     }
     return sb.toString();
   }
 
-  private String toStringDefault(ParenMode mode) {
-    boolean useParen = mode == ParenMode.ALWAYS;
+  private String toStringDefault(Parenthesize mode) {
+    boolean useParen = mode == Parenthesize.ALWAYS;
     if (!useParen) {
-      useParen = mode != ParenMode.NEVER && values.length > 1;
+      useParen = mode != Parenthesize.NEVER && values.length > 1;
     }
     StringBuilder sb = new StringBuilder();
     if (useParen) {
@@ -72,7 +73,7 @@ public class ValueNode implements Node {
   }
 
   @Override
-  public String toString(ParenMode mode) {
+  public String toString(Parenthesize mode) {
     if (values[0].isCombinable()) {
       return toStringCombinable(mode);
     }

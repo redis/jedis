@@ -1,9 +1,7 @@
 package redis.clients.jedis.params;
 
 import static redis.clients.jedis.Protocol.Keyword.ALPHA;
-import static redis.clients.jedis.Protocol.Keyword.ASC;
 import static redis.clients.jedis.Protocol.Keyword.BY;
-import static redis.clients.jedis.Protocol.Keyword.DESC;
 import static redis.clients.jedis.Protocol.Keyword.GET;
 import static redis.clients.jedis.Protocol.Keyword.LIMIT;
 import static redis.clients.jedis.Protocol.Keyword.NOSORT;
@@ -15,12 +13,14 @@ import java.util.List;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Builder Class for {@code SORT} command parameters.
  */
 public class SortingParams implements IParams {
+
   private final List<byte[]> params = new ArrayList<>();
 
   /**
@@ -79,8 +79,7 @@ public class SortingParams implements IParams {
    * @return the sortingParams Object
    */
   public SortingParams desc() {
-    params.add(DESC.getRaw());
-    return this;
+    return sortingOrder(SortingOrder.DESC);
   }
 
   /**
@@ -88,7 +87,16 @@ public class SortingParams implements IParams {
    * @return the SortingParams Object
    */
   public SortingParams asc() {
-    params.add(ASC.getRaw());
+    return sortingOrder(SortingOrder.ASC);
+  }
+
+  /**
+   * Get by the Sorting Order.
+   * @param order the Sorting order
+   * @return the SortingParams object
+   */
+  public SortingParams sortingOrder(SortingOrder order) {
+    params.add(order.getRaw());
     return this;
   }
 

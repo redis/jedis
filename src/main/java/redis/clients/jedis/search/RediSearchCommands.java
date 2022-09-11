@@ -60,12 +60,6 @@ public interface RediSearchCommands {
 
   List<String> ftExplainCLI(String indexName, Query query);
 
-  default AggregationResult ftAggregate(String indexName, FTAggregateParams params) {
-    return ftAggregate(indexName, "*", params);
-  }
-
-  AggregationResult ftAggregate(String indexName, String query, FTAggregateParams params);
-
   AggregationResult ftAggregate(String indexName, AggregationBuilder aggr);
 
   AggregationResult ftCursorRead(String indexName, long cursorId, int count);

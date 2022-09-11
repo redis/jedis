@@ -3510,11 +3510,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public AggregationResult ftAggregate(String indexName, String query, FTAggregateParams params) {
-    return executeCommand(commandObjects.ftAggregate(indexName, query, params));
-  }
-
-  @Override
   public AggregationResult ftAggregate(String indexName, AggregationBuilder aggr) {
     return executeCommand(commandObjects.ftAggregate(indexName, aggr));
   }

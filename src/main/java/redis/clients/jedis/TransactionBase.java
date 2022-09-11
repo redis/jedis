@@ -3444,11 +3444,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<AggregationResult> ftAggregate(String indexName, String query, FTAggregateParams params) {
-    return appendCommand(commandObjects.ftAggregate(indexName, query, params));
-  }
-
-  @Override
   public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return appendCommand(commandObjects.ftAggregate(indexName, aggr));
   }

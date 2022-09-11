@@ -3125,11 +3125,6 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.EXPLAINCLI).add(indexName).addParams(query), BuilderFactory.STRING_LIST);
   }
 
-  public CommandObject<AggregationResult> ftAggregate(String indexName, String query, FTAggregateParams params) {
-    return new CommandObject<>(commandArguments(SearchCommand.AGGREGATE).add(indexName).add(query).addParams(params),
-        !params.isWithCursor() ? BuilderFactory.SEARCH_AGGREGATION_RESULT : BuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
-  }
-
   public CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return new CommandObject<>(commandArguments(SearchCommand.AGGREGATE).add(indexName).addObjects(aggr.getArgs()),
         !aggr.isWithCursor() ? BuilderFactory.SEARCH_AGGREGATION_RESULT : BuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);

@@ -179,7 +179,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       addDocument(String.format("doc%d", i), fields);
     }
 
-    SearchResult res = client.ftSearch(index, "hello world", FTSearchParams.searchParams().limit(0, 5).withScores());
+    SearchResult res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().limit(0, 5).withScores());
     assertEquals(100, res.getTotalResults());
     assertEquals(5, res.getDocuments().size());
     for (Document d : res.getDocuments()) {
@@ -212,7 +213,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       addDocument(String.format("doc%d", i), fields);
     }
 
-    SearchResult res = client.ftSearch(index, "hello world", FTSearchParams.searchParams().filter("price", 0, 49));
+    SearchResult res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().filter("price", 0, 49));
     assertEquals(50, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
     for (Document d : res.getDocuments()) {
@@ -221,7 +223,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertTrue(price <= 49);
     }
 
-    res = client.ftSearch(index, "hello world", FTSearchParams.searchParams().filter("price", 0, true, 49, true));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().filter("price", 0, true, 49, true));
     assertEquals(48, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
     for (Document d : res.getDocuments()) {
@@ -229,7 +232,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertTrue(price > 0);
       assertTrue(price < 49);
     }
-    res = client.ftSearch(index, "hello world", FTSearchParams.searchParams().filter("price", 50, 100));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().filter("price", 50, 100));
     assertEquals(50, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
     for (Document d : res.getDocuments()) {
@@ -238,13 +242,15 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertTrue(price <= 100);
     }
 
-    res = client.ftSearch(index, "hello world", FTSearchParams.searchParams()
-        .filter("price", 20, Double.POSITIVE_INFINITY));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams()
+            .filter("price", 20, Double.POSITIVE_INFINITY));
     assertEquals(80, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
 
-    res = client.ftSearch(index, "hello world", FTSearchParams.searchParams()
-        .filter("price", Double.NEGATIVE_INFINITY, 10));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams()
+            .filter("price", Double.NEGATIVE_INFINITY, 10));
     assertEquals(11, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
 
@@ -294,12 +300,14 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     fields.put("loc", "-0.1,51.2");
     addDocument("doc2", fields);
 
-    SearchResult res = client.ftSearch(index, "hello world", FTSearchParams.searchParams().
-        geoFilter("loc", -0.44, 51.45, 10, GeoUnit.KM));
+    SearchResult res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().
+            geoFilter("loc", -0.44, 51.45, 10, GeoUnit.KM));
     assertEquals(1, res.getTotalResults());
 
-    res = client.ftSearch(index, "hello world", FTSearchParams.searchParams().
-        geoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().
+            geoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM));
     assertEquals(2, res.getTotalResults());
   }
 
@@ -315,12 +323,14 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     fields.put("loc", new GeoCoordinate(-0.1, 51.2));
     addDocument("doc2", fields);
 
-    SearchResult res = client.ftSearch(index, "hello world", FTSearchParams.searchParams()
-        .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 10, GeoUnit.KM)));
+    SearchResult res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams()
+            .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 10, GeoUnit.KM)));
     assertEquals(1, res.getTotalResults());
 
-    res = client.ftSearch(index, "hello world", FTSearchParams.searchParams()
-        .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM)));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams()
+            .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM)));
     assertEquals(2, res.getTotalResults());
   }
 
@@ -405,7 +415,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 //    client.addDocument("doc3", 1.0, fields, false, true, null);
     addDocument("doc3", fields);
 
-    SearchResult res = client.ftSearch(index, "title", FTSearchParams.searchParams().sortBy("title", SortingOrder.ASC));
+    SearchResult res = client.ftSearch(index, "title",
+        FTSearchParams.searchParams().sortBy("title", SortingOrder.ASC));
 
     assertEquals(3, res.getTotalResults());
     Document doc1 = res.getDocuments().get(0);
@@ -667,13 +678,15 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     Document[] docs = new Document[2];
 
-    res = client.ftSearch(index, "@f2:Mark*", FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
+    res = client.ftSearch(index, "@f2:Mark*",
+        FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
     assertEquals(2, res.getTotalResults());
 
     res.getDocuments().toArray(docs);
     assertEquals("doc1", docs[0].getId());
 
-    res = client.ftSearch(index, "@f2:Mark*", FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
+    res = client.ftSearch(index, "@f2:Mark*",
+        FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
     res.getDocuments().toArray(docs);
     assertEquals("doc2", docs[0].getId());
   }
@@ -703,13 +716,15 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     Document[] docs = new Document[2];
 
-    res = client.ftSearch(index, "@f2:Mark*", FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
+    res = client.ftSearch(index, "@f2:Mark*",
+        FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
     assertEquals(2, res.getTotalResults());
 
     res.getDocuments().toArray(docs);
     assertEquals("doc1", docs[0].getId());
 
-    res = client.ftSearch(index, "@f2:Mark*", FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
+    res = client.ftSearch(index, "@f2:Mark*",
+        FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
     res.getDocuments().toArray(docs);
     assertEquals("doc2", docs[0].getId());
   }
@@ -733,19 +748,27 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
 
     Map<String, Object> doc = new HashMap<>();
-    doc.put("text", "Redis is often referred as a data structures server. What this means is that Redis provides access to mutable data structures via a set of commands, which are sent using a server-client model with TCP sockets and a simple protocol. So different processes can query and modify the same data structures in a shared way");
+    doc.put("text", "Redis is often referred as a data structures server. What this means is that "
+        + "Redis provides access to mutable data structures via a set of commands, which are sent "
+        + "using a server-client model with TCP sockets and a simple protocol. So different "
+        + "processes can query and modify the same data structures in a shared way");
     // Add a document
-//    client.addDocument("foo", 1.0, doc);
     addDocument("foo", doc);
 
     SearchResult res = client.ftSearch(index, "data", FTSearchParams.searchParams().highlight().summarize());
-    assertEquals("is often referred as a <b>data</b> structures server. What this means is that Redis provides... What this means is that Redis provides access to mutable <b>data</b> structures via a set of commands, which are sent using a... So different processes can query and modify the same <b>data</b> structures in a shared... ",
+    assertEquals("is often referred as a <b>data</b> structures server. What this means is that "
+        + "Redis provides... What this means is that Redis provides access to mutable <b>data</b> "
+        + "structures via a set of commands, which are sent using a... So different processes can "
+        + "query and modify the same <b>data</b> structures in a shared... ",
         res.getDocuments().get(0).get("text"));
 
     res = client.ftSearch(index, "data", FTSearchParams.searchParams()
         .highlight(FTSearchParams.highlightParams().tags("<u>", "</u>"))
         .summarize());
-    assertEquals("is often referred as a <u>data</u> structures server. What this means is that Redis provides... What this means is that Redis provides access to mutable <u>data</u> structures via a set of commands, which are sent using a... So different processes can query and modify the same <u>data</u> structures in a shared... ",
+    assertEquals("is often referred as a <u>data</u> structures server. What this means is that "
+        + "Redis provides... What this means is that Redis provides access to mutable <u>data</u> "
+        + "structures via a set of commands, which are sent using a... So different processes can "
+        + "query and modify the same <u>data</u> structures in a shared... ",
         res.getDocuments().get(0).get("text"));
   }
 
@@ -856,7 +879,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     addDocument("doc", doc);
 
     // Query
-    SearchResult res = client.ftSearch(index, "*", FTSearchParams.searchParams().returnFields("field1"));
+    SearchResult res = client.ftSearch(index, "*",
+        FTSearchParams.searchParams().returnFields("field1"));
     assertEquals(1, res.getTotalResults());
     assertEquals("value1", res.getDocuments().get(0).get("field1"));
     assertNull(res.getDocuments().get(0).get("field2"));
@@ -962,12 +986,14 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     addDocument("doc1", doc);
 
     assertEquals("OK", client.ftAliasAdd("ALIAS1", index));
-    SearchResult res1 = client.ftSearch("ALIAS1", "*", FTSearchParams.searchParams().returnFields("field1"));
+    SearchResult res1 = client.ftSearch("ALIAS1", "*",
+        FTSearchParams.searchParams().returnFields("field1"));
     assertEquals(1, res1.getTotalResults());
     assertEquals("value", res1.getDocuments().get(0).get("field1"));
 
     assertEquals("OK", client.ftAliasUpdate("ALIAS2", index));
-    SearchResult res2 = client.ftSearch("ALIAS2", "*", FTSearchParams.searchParams().returnFields("field1"));
+    SearchResult res2 = client.ftSearch("ALIAS2", "*",
+        FTSearchParams.searchParams().returnFields("field1"));
     assertEquals(1, res2.getTotalResults());
     assertEquals("value", res2.getDocuments().get(0).get("field1"));
 

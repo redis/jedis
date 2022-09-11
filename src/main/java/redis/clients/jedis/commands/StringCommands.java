@@ -49,6 +49,11 @@ public interface StringCommands {
   String get(String key);
 
   /**
+   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
+   */
+  String setGet(String key, String value, SetParams params);
+
+  /**
    * <b><a href="http://redis.io/commands/getdel">GetDel Command</a></b>
    * Get the value of key and delete the key. This command is similar to GET, except for the fact
    * that it also deletes the key on success (if and only if the key's value type is a string).

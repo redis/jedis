@@ -399,6 +399,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.GET).key(key), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> setGet(String key, String value, SetParams params) {
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params)
+        .add(Keyword.GET), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> getDel(String key) {
     return new CommandObject<>(commandArguments(Command.GETDEL).key(key), BuilderFactory.STRING);
   }
@@ -409,6 +414,11 @@ public class CommandObjects {
 
   public final CommandObject<byte[]> get(byte[] key) {
     return new CommandObject<>(commandArguments(Command.GET).key(key), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params)
+        .add(Keyword.GET), BuilderFactory.BINARY);
   }
 
   public final CommandObject<byte[]> getDel(byte[] key) {

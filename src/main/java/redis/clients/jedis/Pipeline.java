@@ -342,6 +342,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<String> setGet(String key, String value, SetParams params) {
+    return appendCommand(commandObjects.setGet(key, value, params));
+  }
+
+  @Override
   public Response<String> getDel(String key) {
     return appendCommand(commandObjects.getDel(key));
   }
@@ -3153,6 +3158,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<byte[]> get(byte[] key) {
     return appendCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public Response<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
+    return appendCommand(commandObjects.setGet(key, value, params));
   }
 
   @Override

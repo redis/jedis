@@ -20,6 +20,11 @@ public interface StringPipelineCommands {
 
   Response<String> get(String key);
 
+  /**
+   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
+   */
+  Response<String> setGet(String key, String value, SetParams params);
+
   Response<String> getDel(String key);
 
   Response<String> getEx(String key, GetExParams params);

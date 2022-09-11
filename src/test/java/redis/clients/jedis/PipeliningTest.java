@@ -25,6 +25,7 @@ import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
+import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class PipeliningTest extends JedisCommandsTestBase {
@@ -409,6 +410,36 @@ public class PipeliningTest extends JedisCommandsTestBase {
       j.auth("foobared");
       assertEquals("replicas", j.get("wait"));
     }
+  }
+
+  @Test
+  public void setGet() {
+    Pipeline p = jedis.pipelined();
+    Response<String> _ok = p.set("hello", "world");
+    Response<String> _world = p.setGet("hello", "jedis", SetParams.setParams());
+    Response<String> _jedis = p.get("hello");
+    Response<String> _null = p.setGet("key", "value", SetParams.setParams());
+    p.sync();
+
+    assertEquals("OK", _ok.get());
+    assertEquals("world", _world.get());
+    assertEquals("jedis", _jedis.get());
+    assertNull(_null.get());
+  }
+
+  @Test
+  public void setGetBinary() {
+    Pipeline p = jedis.pipelined();
+    Response<String> _ok = p.set("hello".getBytes(), "world".getBytes());
+    Response<byte[]> _world = p.setGet("hello".getBytes(), "jedis".getBytes(), SetParams.setParams());
+    Response<byte[]> _jedis = p.get("hello".getBytes());
+    Response<byte[]> _null = p.setGet("key".getBytes(), "value".getBytes(), SetParams.setParams());
+    p.sync();
+
+    assertEquals("OK", _ok.get());
+    assertArrayEquals("world".getBytes(), _world.get());
+    assertArrayEquals("jedis".getBytes(), _jedis.get());
+    assertNull(_null.get());
   }
 
   @Test

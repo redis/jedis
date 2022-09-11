@@ -340,6 +340,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<String> setGet(String key, String value, SetParams params) {
+    return appendCommand(commandObjects.setGet(key, value, params));
+  }
+
+  @Override
   public Response<String> getDel(String key) {
     return appendCommand(commandObjects.getDel(key));
   }
@@ -3151,6 +3156,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<byte[]> get(byte[] key) {
     return appendCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public Response<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
+    return appendCommand(commandObjects.setGet(key, value, params));
   }
 
   @Override

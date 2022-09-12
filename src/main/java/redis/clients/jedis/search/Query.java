@@ -7,7 +7,6 @@ import java.util.Map;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.util.SafeEncoder;
@@ -289,7 +288,7 @@ public class Query implements IParams {
     } else if (returnFieldNames != null && returnFieldNames.length > 0) {
       args.add(SearchKeyword.RETURN.getRaw());
 //      final int returnCountIndex = args.size();
-      DelayedRawable returnCountObject = new DelayedRawable();
+      LazyRawable returnCountObject = new LazyRawable();
 //      args.add(null); // holding a place for setting the total count later.
       args.add(returnCountObject); // holding a place for setting the total count later.
       int returnCount = 0;
@@ -331,20 +330,6 @@ public class Query implements IParams {
     if (_expander != null) {
       args.add(SearchKeyword.EXPANDER.getRaw());
       args.add(SafeEncoder.encode(_expander));
-    }
-  }
-
-  private static class DelayedRawable implements Rawable {
-
-    private byte[] raw = null;
-
-    public void setRaw(byte[] raw) {
-      this.raw = raw;
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return raw;
     }
   }
 

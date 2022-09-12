@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Test;
 
@@ -39,5 +41,13 @@ public class ConnectionTest {
     client = new Connection("localhost", 6379);
     client.connect();
     client.close();
+  }
+
+  @Test
+  public void socketString() {
+    client = new Connection("127.0.0.1", 6379);
+    String socketString = client.getSocketString();
+    MatcherAssert.assertThat(socketString, CoreMatchers.containsString("127.0.0.1"));
+    MatcherAssert.assertThat(socketString, CoreMatchers.endsWith(":6379"));
   }
 }

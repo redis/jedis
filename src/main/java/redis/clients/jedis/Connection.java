@@ -211,6 +211,18 @@ public class Connection implements Closeable {
     }
   }
 
+  /**
+   * This method simply returns {@link java.net.InetAddress} and port.
+   *
+   * @return 'address:port'
+   * @see Socket#getInetAddress()
+   * @see Socket#getPort()
+   */
+  public String getSocketString() {
+    connect();
+    return "" + this.socket.getInetAddress() + ':' + this.socket.getPort();
+  }
+
   public void disconnect() {
     if (isConnected()) {
       try {

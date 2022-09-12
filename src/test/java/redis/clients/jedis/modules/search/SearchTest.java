@@ -570,15 +570,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testDropMissing() throws Exception {
-    try {
-      client.ftDropIndex(index);
-      fail();
-    } catch (JedisDataException ex) {
-    }
-  }
-
-  @Test
   public void noStem() throws Exception {
     Schema sc = new Schema().addTextField("stemmed", 1.0).addField(new Schema.TextField("notStemmed", 1.0, false, true));
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -651,7 +642,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
     Map<String, Object> info = client.ftInfo(index);
     assertEquals(index, info.get("index_name"));
-
     assertEquals(6, ((List) info.get("attributes")).size());
     assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
     assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
@@ -947,6 +937,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   public void alias() throws Exception {
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "value");
 //    assertTrue(client.addDocument("doc1", doc));
@@ -1022,7 +1013,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "ok hi jedis");
-
     addDocument("doc1", doc);
 
     SearchResult res = client.ftSearch(index, new Query("ok jedis").slop(0));
@@ -1042,7 +1032,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "value");
     doc.put("field2", "not");
-
     addDocument("doc1", doc);
 
     SearchResult res = client.ftSearch(index, new Query("value").timeout(1000));
@@ -1060,7 +1049,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "value");
     doc.put("field2", "not");
-
     addDocument("doc2", doc);
     addDocument("doc1", doc);
 

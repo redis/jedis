@@ -53,11 +53,7 @@ public interface RediSearchPipelineCommands {
 
   Response<SearchResult> ftSearch(byte[] indexName, Query query);
 
-  Response<String> ftExplain(String indexName, String query);
-
   Response<String> ftExplain(String indexName, Query query);
-
-  Response<List<String>> ftExplainCLI(String indexName, String query);
 
   Response<List<String>> ftExplainCLI(String indexName, Query query);
 

@@ -336,28 +336,26 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testQueryFlags() {
-    Schema sc = new Schema().addTextField("title", 1.0);
+    assertOK(client.ftCreate(index, TextField.of("title")));
 
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
     Map<String, Object> fields = new HashMap<>();
-
     for (int i = 0; i < 100; i++) {
       fields.put("title", i % 2 != 0 ? "hello worlds" : "hello world");
-//      assertTrue(client.addDocument(String.format("doc%d", i), (double) i / 100.0, fields));
       addDocument(String.format("doc%d", i), fields);
     }
 
-    SearchResult res = client.ftSearch(index, "hello", FTSearchParams.searchParams().withScores());
+    SearchResult res = client.ftSearch(index, "hello",
+        FTSearchParams.searchParams().withScores());
     assertEquals(100, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
 
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
-//      assertNotEquals(1.0, d.getScore());
       assertTrue(((String) d.get("title")).startsWith("hello world"));
     }
 
-    res = client.ftSearch(index, "hello", FTSearchParams.searchParams().noContent());
+    res = client.ftSearch(index, "hello",
+        FTSearchParams.searchParams().noContent());
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
       assertEquals(1.0, d.getScore(), 0);
@@ -379,40 +377,37 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testQueryParams() {
-    Schema sc = new Schema().addNumericField("numval");
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, NumericField.of("numval")));
 
     client.hset("1", "numval", "1");
     client.hset("2", "numval", "2");
     client.hset("3", "numval", "3");
 
     assertEquals(2, client.ftSearch(index, "@numval:[$min $max]",
-        FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2).dialect(2)).getTotalResults());
+        FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2)
+            .dialect(2)).getTotalResults());
 
     Map<String, Object> paramValues = new HashMap<>();
     paramValues.put("min", 1);
     paramValues.put("max", 2);
     assertEquals(2, client.ftSearch(index, "@numval:[$min $max]",
-        FTSearchParams.searchParams().params(paramValues).dialect(2)).getTotalResults());
+        FTSearchParams.searchParams().params(paramValues)
+            .dialect(2)).getTotalResults());
   }
 
   @Test
   public void testSortQueryFlags() {
-    Schema sc = new Schema().addSortableTextField("title", 1.0);
+    assertOK(client.ftCreate(index, TextField.of("title").sortable()));
 
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
     Map<String, Object> fields = new HashMap<>();
 
     fields.put("title", "b title");
-//    client.addDocument("doc1", 1.0, fields, false, true, null);
     addDocument("doc1", fields);
 
     fields.put("title", "a title");
-//    client.addDocument("doc2", 1.0, fields, false, true, null);
     addDocument("doc2", fields);
 
     fields.put("title", "c title");
-//    client.addDocument("doc3", 1.0, fields, false, true, null);
     addDocument("doc3", fields);
 
     SearchResult res = client.ftSearch(index, "title",
@@ -430,72 +425,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testNullField() {
-    Schema sc = new Schema()
-        .addTextField("title", 1.0)
-        .addTextField("genre", 1.0)
-        .addTextField("plot", 1.0)
-        .addSortableNumericField("release_year")
-        .addTagField("tag")
-        .addGeoField("loc");
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    // create a document with a field set to null
-    Map<String, Object> fields = new HashMap<>();
-    fields.put("title", "another test with title ");
-    fields.put("genre", "Comedy");
-    fields.put("plot", "this is the plot for the test");
-    fields.put("tag", "fun");
-    fields.put("release_year", 2019);
-    fields.put("loc", "-0.1,51.2");
-
-//    client.addDocument("doc1", fields);
-    addDocument("doc1", fields);
-    SearchResult res = client.ftSearch(index, "title");
-    assertEquals(1, res.getTotalResults());
-
-    fields = new HashMap<>();
-    fields.put("title", "another title another test");
-    fields.put("genre", "Action");
-    fields.put("plot", null);
-    fields.put("tag", null);
-
-    try {
-//      client.addDocument("doc2", fields);
-      addDocument("doc2", fields);
-      fail("Should throw NullPointerException.");
-    } catch (NullPointerException e) {
-//      assertEquals("Document attribute 'tag' is null. (Remove it, or set a value)", e.getMessage());
-    }
-
-    res = client.ftSearch(index, "title");
-    assertEquals(1, res.getTotalResults());
-
-    // Testing with numerical value
-    fields = new HashMap<>();
-    fields.put("title", "another title another test");
-    fields.put("genre", "Action");
-    fields.put("release_year", null);
-    try {
-//      client.addDocument("doc2", fields);
-      addDocument("doc2", fields);
-      fail("Should throw NullPointerException.");
-    } catch (NullPointerException e) {
-//      assertEquals("Document attribute 'release_year' is null. (Remove it, or set a value)", e.getMessage());
-    }
-    res = client.ftSearch(index, "title");
-    assertEquals(1, res.getTotalResults());
-  }
-
-  @Test
   public void testJsonWithAlias() {
-    Schema sc = new Schema()
-            .addTextField("$.name", 1.0).as("name")
-            .addNumericField("$.num").as("num");
-
-    IndexDefinition definition = new IndexDefinition(IndexDefinition.Type.JSON).setPrefixes("king:");
-
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(definition), sc));
+    assertOK(client.ftCreate(index,
+        TextField.of("$.name").as("name"),
+        NumericField.of("$.num").as("name")));
 
     Map<String, Object> king1 = new HashMap<>();
     king1.put("name", "henry");
@@ -518,8 +451,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void dropIndex() {
-    Schema sc = new Schema().addTextField("title", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("title")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -543,8 +475,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void dropIndexDD() {
-    Schema sc = new Schema().addTextField("title", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("title")));
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
@@ -563,24 +494,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testDropMissing() {
-    try {
-      client.ftDropIndex(index);
-      fail();
-    } catch (JedisDataException ex) {
-    }
-  }
-
-  @Test
   public void noStem() {
-    Schema sc = new Schema().addTextField("stemmed", 1.0).addField(new Schema.TextField("notStemmed", 1.0, false, true));
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, new TextField("stemmed").weight(1.0),
+        new TextField("notStemmed").weight(1.0).noStem()));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("stemmed", "located");
     doc.put("notStemmed", "located");
-    // Store it
-//    assertTrue(client.addDocument("doc", doc));
     addDocument("doc", doc);
 
     // Query
@@ -593,18 +513,12 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void phoneticMatch() {
-    Schema sc = new Schema()
-        .addTextField("noPhonetic", 1.0)
-        .addField(new Schema.TextField("withPhonetic", 1.0, false, false, false, "dm:en"));
-
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, new TextField("noPhonetic").weight(1.0),
+        new TextField("withPhonetic").weight(1.0).phonetic("dm:en")));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("noPhonetic", "morfix");
     doc.put("withPhonetic", "morfix");
-
-    // Store it
-//    assertTrue(client.addDocument("doc", doc));
     addDocument("doc", doc);
 
     // Query
@@ -623,51 +537,36 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void info() {
-    String MOVIE_ID = "movie_id";
-    String TITLE = "title";
-    String GENRE = "genre";
-    String VOTES = "votes";
-    String RATING = "rating";
-    String RELEASE_YEAR = "release_year";
-    String PLOT = "plot";
-    String POSTER = "poster";
+    Collection<SchemaField> sc = new ArrayList<>();
+    sc.add(TextField.of("title").weight(5));
+    sc.add(TextField.of("plot").sortable());
+    sc.add(TagField.of("genre").separator(',').sortable());
+    sc.add(NumericField.of("release_year").sortable());
+    sc.add(NumericField.of("rating").sortable());
+    sc.add(NumericField.of("votes").sortable());
 
-    Schema sc = new Schema()
-        .addTextField(TITLE, 5.0)
-        .addSortableTextField(PLOT, 1.0)
-        .addSortableTagField(GENRE, ",")
-        .addSortableNumericField(RELEASE_YEAR)
-        .addSortableNumericField(RATING)
-        .addSortableNumericField(VOTES);
-
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, sc));
 
     Map<String, Object> info = client.ftInfo(index);
     assertEquals(index, info.get("index_name"));
-
     assertEquals(6, ((List) info.get("attributes")).size());
     assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
     assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
   }
 
   @Test
-  public void noIndex() {
-    Schema sc = new Schema()
-        .addField(new Schema.TextField("f1", 1.0, true, false, true))
-        .addField(new Schema.TextField("f2", 1.0));
-    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+  public void noIndexAndSortBy() {
+    assertOK(client.ftCreate(index, TextField.of("f1").sortable().noIndex(), TextField.of("f2")));
 
     Map<String, Object> mm = new HashMap<>();
 
     mm.put("f1", "MarkZZ");
     mm.put("f2", "MarkZZ");
-//    client.addDocument("doc1", mm);
     addDocument("doc1", mm);
 
     mm.clear();
     mm.put("f1", "MarkAA");
     mm.put("f2", "MarkBB");
-//    client.addDocument("doc2", mm);
     addDocument("doc2", mm);
 
     SearchResult res = client.ftSearch(index, "@f1:Mark*");
@@ -676,76 +575,20 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     res = client.ftSearch(index, "@f2:Mark*");
     assertEquals(2, res.getTotalResults());
 
-    Document[] docs = new Document[2];
-
     res = client.ftSearch(index, "@f2:Mark*",
         FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
     assertEquals(2, res.getTotalResults());
 
-    res.getDocuments().toArray(docs);
-    assertEquals("doc1", docs[0].getId());
+    assertEquals("doc1", res.getDocuments().get(0).getId());
 
     res = client.ftSearch(index, "@f2:Mark*",
         FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
-    res.getDocuments().toArray(docs);
-    assertEquals("doc2", docs[0].getId());
-  }
-
-  @Test
-  public void sortBy() {
-    Schema sc = new Schema()
-        .addField(new Schema.TextField("f1", 1.0, true, false, true))
-        .addField(new Schema.TextField("f2", 1.0));
-    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
-
-    Map<String, Object> mm = new HashMap<>();
-
-    mm.put("f1", "MarkZZ");
-    mm.put("f2", "MarkZZ");
-//    client.addDocument("doc1", mm);
-    addDocument("doc1", mm);
-
-    mm.clear();
-    mm.put("f1", "MarkAA");
-    mm.put("f2", "MarkBB");
-//    client.addDocument("doc2", mm);
-    addDocument("doc2", mm);
-
-    SearchResult res = client.ftSearch(index, "@f2:Mark*");
-    assertEquals(2, res.getTotalResults());
-
-    Document[] docs = new Document[2];
-
-    res = client.ftSearch(index, "@f2:Mark*",
-        FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
-    assertEquals(2, res.getTotalResults());
-
-    res.getDocuments().toArray(docs);
-    assertEquals("doc1", docs[0].getId());
-
-    res = client.ftSearch(index, "@f2:Mark*",
-        FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
-    res.getDocuments().toArray(docs);
-    assertEquals("doc2", docs[0].getId());
-  }
-
-  @Test
-  public void testExplain() {
-    Schema sc = new Schema()
-        .addTextField("f1", 1.0)
-        .addTextField("f2", 1.0)
-        .addTextField("f3", 1.0);
-    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
-
-    String res = client.ftExplain(index, "@f3:f3_val @f2:f2_val @f1:f1_val");
-    assertNotNull(res);
-    assertFalse(res.isEmpty());
+    assertEquals("doc2", res.getDocuments().get(0).getId());
   }
 
   @Test
   public void testHighlightSummarize() {
-    Schema sc = new Schema().addTextField("text", 1.0);
-    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+    assertOK(client.ftCreate(index, TextField.of("text").weight(1)));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("text", "Redis is often referred as a data structures server. What this means is that "
@@ -868,39 +711,36 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testReturnFields() {
-    Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "value1");
     doc.put("field2", "value2");
-    // Store it
-//    assertTrue(client.addDocument("doc", doc));
     addDocument("doc", doc);
 
     // Query
     SearchResult res = client.ftSearch(index, "*",
         FTSearchParams.searchParams().returnFields("field1"));
     assertEquals(1, res.getTotalResults());
-    assertEquals("value1", res.getDocuments().get(0).get("field1"));
-    assertNull(res.getDocuments().get(0).get("field2"));
+    Document ret = res.getDocuments().get(0);
+    assertEquals("value1", ret.get("field1"));
+    assertNull(ret.get("field2"));
   }
 
   @Test
   public void returnWithFieldNames() {
-    Schema sc = new Schema().addTextField("a", 1).addTextField("b", 1).addTextField("c", 1);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("a"), TextField.of("b"), TextField.of("c")));
 
     Map<String, Object> map = new HashMap<>();
     map.put("a", "value1");
     map.put("b", "value2");
     map.put("c", "value3");
-//    assertTrue(client.addDocument("doc", map));
     addDocument("doc", map);
 
     // Query
     SearchResult res = client.ftSearch(index, "*",
-        FTSearchParams.searchParams().returnFields(FieldName.of("a"), FieldName.of("b").as("d")));
+        FTSearchParams.searchParams().returnFields(
+            FieldName.of("a"), FieldName.of("b").as("d")));
     assertEquals(1, res.getTotalResults());
     Document doc = res.getDocuments().get(0);
     assertEquals("value1", doc.get("a"));
@@ -911,78 +751,49 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void inKeys() {
-    Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "value");
     doc.put("field2", "not");
-
     // Store it
-//    assertTrue(client.addDocument("doc1", doc));
     addDocument("doc1", doc);
-//    assertTrue(client.addDocument("doc2", doc));
     addDocument("doc2", doc);
 
     // Query
-    SearchResult res = client.ftSearch(index, "value", FTSearchParams.searchParams().inKeys("doc1"));
+    SearchResult res = client.ftSearch(index, "value",
+        FTSearchParams.searchParams().inKeys("doc1"));
     assertEquals(1, res.getTotalResults());
     assertEquals("doc1", res.getDocuments().get(0).getId());
     assertEquals("value", res.getDocuments().get(0).get("field1"));
     assertEquals(null, res.getDocuments().get(0).get("value"));
   }
-
-  @Test
-  public void blobField() {
-    Schema sc = new Schema().addTextField("field1", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    byte[] blob = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", blob);
-
-    // Store it
-//    assertTrue(client.addDocument("doc1", doc));
-    addDocument("doc1", doc);
-
-    // Query
-//    SearchResult res = client.ftSearch(index, new Query("value"), false);
-//    SearchResult res = client.ftSearch(SafeEncoder.encode(index), new Query("value"));
+//
+//  @Test
+//  public void blobField() {
+//    assertOK(client.ftCreate(index, TextField.of("field1")));
+//
+//    byte[] blob = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+//
+//    Map<String, Object> doc = new HashMap<>();
+//    doc.put("field1", "value");
+//    doc.put("field2", blob);
+//    addDocument("doc1", doc);
+//
+//    // Query
+//    SearchResult res = client.ftSearch(SafeEncoder.encode(index), "value", FTSearchParams.searchParams());
 //    assertEquals(1, res.getTotalResults());
 //    assertEquals("doc1", res.getDocuments().get(0).getId());
 //    assertEquals("value", res.getDocuments().get(0).getString("field1"));
 //    assertArrayEquals(blob, (byte[]) res.getDocuments().get(0).get("field2"));
-  }
-
-  @Test
-  public void config() {
-    assertEquals("OK", client.ftConfigSet("timeout", "100"));
-    Map<String, String> configMap = client.ftConfigGet("*");
-    assertEquals("100", configMap.get("TIMEOUT"));
-  }
-
-  @Test
-  public void configOnTimeout() {
-    assertEquals("OK", client.ftConfigSet("ON_TIMEOUT", "fail"));
-    assertEquals(Collections.singletonMap("ON_TIMEOUT", "fail"), client.ftConfigGet("ON_TIMEOUT"));
-
-    try {
-      client.ftConfigSet("ON_TIMEOUT", "null");
-      fail("null is not valid value for ON_TIMEOUT");
-    } catch (JedisDataException e) {
-      // Should throw an exception after RediSearch 2.2
-    }
-  }
+//  }
 
   @Test
   public void alias() {
-    Schema sc = new Schema().addTextField("field1", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("field1")));
+
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "value");
-//    assertTrue(client.addDocument("doc1", doc));
     addDocument("doc1", doc);
 
     assertEquals("OK", client.ftAliasAdd("ALIAS1", index));
@@ -1013,25 +824,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void dictionary() {
-    assertEquals(3L, client.ftDictAdd("dict", "foo", "bar", "hello world"));
-    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDump("dict"));
-    assertEquals(3L, client.ftDictDel("dict", "foo", "bar", "hello world"));
-    assertEquals(Collections.emptySet(), client.ftDictDump("dict"));
-  }
-
-  @Test
-  public void dictionaryBySampleKey() {
-    assertEquals(3L, client.ftDictAddBySampleKey(index, "dict", "foo", "bar", "hello world"));
-    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDumpBySampleKey(index, "dict"));
-    assertEquals(3L, client.ftDictDelBySampleKey(index, "dict", "foo", "bar", "hello world"));
-    assertEquals(Collections.emptySet(), client.ftDictDumpBySampleKey(index, "dict"));
-  }
-
-  @Test
   public void synonym() {
-    Schema sc = new Schema().addTextField("name", 1.0).addTextField("addr", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("name").weight(1), TextField.of("addr").weight(1)));
 
     long group1 = 345L;
     long group2 = 789L;
@@ -1052,12 +846,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void slop() {
-    Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "ok hi jedis");
-
     addDocument("doc1", doc);
 
     SearchResult res = client.ftSearch(index, "ok jedis", FTSearchParams.searchParams().slop(0));
@@ -1071,13 +863,11 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void timeout() {
-    Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "value");
     doc.put("field2", "not");
-
     addDocument("doc1", doc);
 
     SearchResult res = client.ftSearch(index, "value", FTSearchParams.searchParams().timeout(1000));
@@ -1089,13 +879,11 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void inOrder() {
-    Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
     Map<String, Object> doc = new HashMap<>();
     doc.put("field1", "value");
     doc.put("field2", "not");
-
     addDocument("doc2", doc);
     addDocument("doc1", doc);
 
@@ -1104,127 +892,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals("doc2", res.getDocuments().get(0).getId());
     assertEquals("value", res.getDocuments().get(0).get("field1"));
     assertEquals("not", res.getDocuments().get(0).get("field2"));
-  }
-
-  @Test
-  public void testDialectConfig() {
-    // confirm default
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
-
-    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "2"));
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
-
-    try {
-      client.ftConfigSet("DEFAULT_DIALECT", "0");
-      fail();
-    } catch (JedisDataException ex) {
-    }
-
-    try {
-      client.ftConfigSet("DEFAULT_DIALECT", "3");
-      fail();
-    } catch (JedisDataException ex) {
-    }
-
-    // Restore to default
-    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "1"));
-  }
-
-  @Test
-  public void testDialectsWithFTExplain() {
-    Map<String, Object> attr = new HashMap<>();
-    attr.put("TYPE", "FLOAT32");
-    attr.put("DIM", 2);
-    attr.put("DISTANCE_METRIC", "L2");
-
-    Schema sc = new Schema()
-        .addFlatVectorField("v", attr)
-        .addTagField("title")
-        .addTextField("t1", 1.0)
-        .addTextField("t2", 1.0)
-        .addNumericField("num");
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    client.hset("1", "t1", "hello");
-
-    String query = "(*)";
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-//    query = new Query(q).dialect(2);
-//    assertTrue("Should contain 'WILDCARD'", client.ftExplain(index, query).contains("WILDCARD"));
-
-    query = "$hello";
-    try {
-      client.ftExplain(index, query);
-      fail();
-    } catch (JedisDataException e) {
-      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-    }
-//    query = new Query(query).dialect(2).addParam("hello", "hello");
-//    assertTrue("Should contain 'UNION {\n  hello\n  +hello(expanded)\n}\n'",
-//        client.ftExplain(index, query).contains("UNION {\n  hello\n  +hello(expanded)\n}\n"));
-//
-//    query = "@title:(@num:[0 10])";
-//    query = new Query(query).dialect(1);
-//    assertTrue("Should contain 'NUMERIC {0.000000 <= @num <= 10.000000}'",
-//        client.ftExplain(index, query).contains("NUMERIC {0.000000 <= @num <= 10.000000}"));
-//    query = new Query(query).dialect(2);
-//    try {
-//      client.ftExplain(index, query);
-//      fail();
-//    } catch (JedisDataException e) {
-//      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-//    }
-//
-//    query = "@t1:@t2:@t3:hello";
-//    query = new Query(query).dialect(1);
-//    assertTrue("Should contain '@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n'",
-//        client.ftExplain(index, query).contains("@NULL:UNION {\n  @NULL:hello\n  @NULL:+hello(expanded)\n}\n"));
-//    query = new Query(query).dialect(2);
-//    try {
-//      client.ftExplain(index, query);
-//      fail();
-//    } catch (JedisDataException e) {
-//      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-//    }
-//
-//    query = "@title:{foo}}}}}";
-//    query = new Query(query).dialect(1);
-//    assertTrue("Should contain 'TAG:@title {\n  foo\n}\n'",
-//        client.ftExplain(index, query).contains("TAG:@title {\n  foo\n}\n"));
-//    query = new Query(query).dialect(2);
-//    try {
-//      client.ftExplain(index, query);
-//      fail();
-//    } catch (JedisDataException e) {
-//      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-//    }
-//
-//    query = "*=>[KNN 10 @v $BLOB]";
-//    query = new Query(query).addParam("BLOB", "aaaa").dialect(1);
-//    try {
-//      client.ftExplain(index, query);
-//      fail();
-//    } catch (JedisDataException e) {
-//      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-//    }
-//    query = new Query(query).addParam("BLOB", "aaaa").dialect(2);
-//    assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
-//
-//    query = "*=>[knn $K @vec_field $BLOB as score]";
-//    query = new Query(query).addParam("BLOB", "aaaa").addParam("K", "10").dialect(1);
-//    try {
-//      client.ftExplain(index, query);
-//      fail();
-//    } catch (JedisDataException e) {
-//      assertTrue("Should contain 'Syntax error'", e.getMessage().contains("Syntax error"));
-//    }
-//    query = new Query(query).addParam("BLOB", "aaaa").addParam("K", "10").dialect(2);
-//    assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
   }
 
   @Test

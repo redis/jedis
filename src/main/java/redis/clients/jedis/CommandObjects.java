@@ -3109,16 +3109,8 @@ public class CommandObjects {
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
   }
 
-  public CommandObject<String> ftExplain(String indexName, String query) {
-    return new CommandObject<>(commandArguments(SearchCommand.EXPLAIN).add(indexName).add(query), BuilderFactory.STRING);
-  }
-
   public CommandObject<String> ftExplain(String indexName, Query query) {
     return new CommandObject<>(commandArguments(SearchCommand.EXPLAIN).add(indexName).addParams(query), BuilderFactory.STRING);
-  }
-
-  public CommandObject<List<String>> ftExplainCLI(String indexName, String query) {
-    return new CommandObject<>(commandArguments(SearchCommand.EXPLAINCLI).add(indexName).add(query), BuilderFactory.STRING_LIST);
   }
 
   public CommandObject<List<String>> ftExplainCLI(String indexName, Query query) {

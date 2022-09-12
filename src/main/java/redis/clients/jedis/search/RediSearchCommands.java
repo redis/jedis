@@ -52,11 +52,7 @@ public interface RediSearchCommands {
 
   SearchResult ftSearch(byte[] indexName, Query query);
 
-  String ftExplain(String indexName, String query);
-
   String ftExplain(String indexName, Query query);
-
-  List<String> ftExplainCLI(String indexName, String query);
 
   List<String> ftExplainCLI(String indexName, Query query);
 

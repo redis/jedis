@@ -3355,18 +3355,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<String> ftExplain(String indexName, String query) {
-    return appendCommand(commandObjects.ftExplain(indexName, query));
-  }
-
-  @Override
   public Response<String> ftExplain(String indexName, Query query) {
     return appendCommand(commandObjects.ftExplain(indexName, query));
-  }
-
-  @Override
-  public Response<List<String>> ftExplainCLI(String indexName, String query) {
-    return appendCommand(commandObjects.ftExplainCLI(indexName, query));
   }
 
   @Override

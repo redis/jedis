@@ -427,6 +427,9 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void testJsonWithAlias() {
     assertOK(client.ftCreate(index,
+        FTCreateParams.createParams()
+            .on(IndexDataType.JSON)
+            .prefix("king:"),
         TextField.of("$.name").as("name"),
         NumericField.of("$.num").as("num")));
 

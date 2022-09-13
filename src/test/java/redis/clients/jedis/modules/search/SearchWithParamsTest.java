@@ -771,25 +771,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals("value", res.getDocuments().get(0).get("field1"));
     assertEquals(null, res.getDocuments().get(0).get("value"));
   }
-//
-//  @Test
-//  public void blobField() {
-//    assertOK(client.ftCreate(index, TextField.of("field1")));
-//
-//    byte[] blob = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
-//
-//    Map<String, Object> doc = new HashMap<>();
-//    doc.put("field1", "value");
-//    doc.put("field2", blob);
-//    addDocument("doc1", doc);
-//
-//    // Query
-//    SearchResult res = client.ftSearch(SafeEncoder.encode(index), "value", FTSearchParams.searchParams());
-//    assertEquals(1, res.getTotalResults());
-//    assertEquals("doc1", res.getDocuments().get(0).getId());
-//    assertEquals("value", res.getDocuments().get(0).getString("field1"));
-//    assertArrayEquals(blob, (byte[]) res.getDocuments().get(0).get("field2"));
-//  }
 
   @Test
   public void alias() {

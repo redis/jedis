@@ -102,6 +102,10 @@ public class TagField extends SchemaField {
     args.addParams(fieldName);
     args.add(TAG);
 
+    if (separator != null) {
+      args.add(SEPARATOR).add(separator);
+    }
+
     if (sortableUNF) {
       args.add(SORTABLE).add(UNF);
     } else if (sortable) {
@@ -110,10 +114,6 @@ public class TagField extends SchemaField {
 
     if (noIndex) {
       args.add(NOINDEX);
-    }
-
-    if (separator != null) {
-      args.add(SEPARATOR).add(separator);
     }
 
     if (caseSensitive) {

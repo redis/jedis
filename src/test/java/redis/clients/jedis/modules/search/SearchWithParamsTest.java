@@ -428,7 +428,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void testJsonWithAlias() {
     assertOK(client.ftCreate(index,
         TextField.of("$.name").as("name"),
-        NumericField.of("$.num").as("name")));
+        NumericField.of("$.num").as("num")));
 
     Map<String, Object> king1 = new HashMap<>();
     king1.put("name", "henry");

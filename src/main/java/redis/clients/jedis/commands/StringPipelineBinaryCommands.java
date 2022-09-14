@@ -20,6 +20,11 @@ public interface StringPipelineBinaryCommands {
 
   Response<byte[]> get(byte[] key);
 
+  /**
+   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
+   */
+  Response<byte[]> setGet(byte[] key, byte[] value, SetParams params);
+
   Response<byte[]> getDel(byte[] key);
 
   Response<byte[]> getEx(byte[] key, GetExParams params);

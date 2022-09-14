@@ -19,6 +19,11 @@ public interface StringBinaryCommands {
 
   byte[] get(byte[] key);
 
+  /**
+   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
+   */
+  byte[] setGet(byte[] key, byte[] value, SetParams params);
+
   byte[] getDel(byte[] key);
 
   byte[] getEx(byte[] key, GetExParams params);

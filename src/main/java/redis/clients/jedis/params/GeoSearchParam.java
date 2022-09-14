@@ -1,11 +1,9 @@
 package redis.clients.jedis.params;
 
 import static redis.clients.jedis.Protocol.Keyword.ANY;
-import static redis.clients.jedis.Protocol.Keyword.ASC;
 import static redis.clients.jedis.Protocol.Keyword.BYBOX;
 import static redis.clients.jedis.Protocol.Keyword.BYRADIUS;
 import static redis.clients.jedis.Protocol.Keyword.COUNT;
-import static redis.clients.jedis.Protocol.Keyword.DESC;
 import static redis.clients.jedis.Protocol.Keyword.WITHCOORD;
 import static redis.clients.jedis.Protocol.Keyword.WITHDIST;
 import static redis.clients.jedis.Protocol.Keyword.WITHHASH;
@@ -15,8 +13,10 @@ import static redis.clients.jedis.Protocol.Keyword.FROMLONLAT;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.args.SortingOrder;
 
 public class GeoSearchParam implements IParams {
+
   private boolean fromMember = false;
   private boolean fromLonLat = false;
   private String member;
@@ -35,8 +35,7 @@ public class GeoSearchParam implements IParams {
 
   private Integer count = null;
   private boolean any = false;
-  private boolean asc = false;
-  private boolean desc = false;
+  private SortingOrder sortingOrder = null;
 
   public GeoSearchParam() { }
 
@@ -92,12 +91,15 @@ public class GeoSearchParam implements IParams {
   }
 
   public GeoSearchParam asc() {
-    asc = true;
-    return this;
+    return sortingOrder(SortingOrder.ASC);
   }
 
   public GeoSearchParam desc() {
-    desc = true;
+    return sortingOrder(SortingOrder.DESC);
+  }
+
+  public GeoSearchParam sortingOrder(SortingOrder order) {
+    sortingOrder = order;
     return this;
   }
 
@@ -154,10 +156,8 @@ public class GeoSearchParam implements IParams {
       }
     }
 
-    if (asc) {
-      args.add(ASC);
-    } else if (desc) {
-      args.add(DESC);
+    if (sortingOrder != null) {
+      args.add(sortingOrder);
     }
   }
 }

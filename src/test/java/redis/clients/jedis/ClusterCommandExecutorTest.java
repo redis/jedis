@@ -6,7 +6,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
@@ -32,38 +36,23 @@ public class ClusterCommandExecutorTest {
 
   @Test
   public void runSuccessfulExecute() {
-    ClusterCommandArguments commandArguments = mock(ClusterCommandArguments.class);
-    CommandObject<String> commandObject = mock(CommandObject.class);
-    when(commandObject.getArguments()).thenReturn(commandArguments);
-
-    Connection connection = mock(Connection.class);
-    when(connection.executeCommand(commandObject)).thenReturn("foo");
-
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
-    when(connectionHandler.getConnection(commandArguments)).thenReturn(connection);
-
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10,
-        Duration.ZERO) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        return (T) "foo";
+      }
       @Override
       protected void sleep(long ignored) {
         throw new RuntimeException("This test should never sleep");
       }
     };
-    assertEquals("foo", testMe.executeCommand(commandObject));
+    assertEquals("foo", testMe.executeCommand(STR_COM_OBJECT));
   }
 
   @Test
   public void runFailOnFirstExecSuccessOnSecondExec() {
-    ClusterCommandArguments commandArguments = mock(ClusterCommandArguments.class);
-    CommandObject<String> commandObject = mock(CommandObject.class);
-    when(commandObject.getArguments()).thenReturn(commandArguments);
-
-    Connection connection = mock(Connection.class);
-    when(connection.executeCommand(commandObject)).thenReturn("foo");
-
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
-    when(connectionHandler.getConnection(commandArguments)).thenReturn(connection);
-
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND) {
       boolean isFirstCall = true;
 
@@ -74,7 +63,7 @@ public class ClusterCommandExecutorTest {
           throw new JedisConnectionException("Borkenz");
         }
 
-        return super.execute(connection, commandObject);
+        return (T) "foo";
       }
 
       @Override
@@ -83,7 +72,7 @@ public class ClusterCommandExecutorTest {
       }
     };
 
-    assertEquals("foo", testMe.executeCommand(commandObject));
+    assertEquals("foo", testMe.executeCommand(STR_COM_OBJECT));
   }
 
   @Test
@@ -314,8 +303,7 @@ public class ClusterCommandExecutorTest {
     when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenThrow(
       JedisClusterOperationException.class);
 
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10,
-        Duration.ZERO) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         return null;

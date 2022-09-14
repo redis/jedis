@@ -324,6 +324,19 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void setGet() {
+    assertEquals("OK", jedis.set(bfoo, bbar));
+
+    // GET old value
+    assertArrayEquals(bbar, jedis.setGet(bfoo, binaryValue, setParams()));
+
+    assertArrayEquals(binaryValue, jedis.get(bfoo));
+
+    // GET null value
+    assertNull(jedis.setGet(bbar, bfoo, setParams()));
+  }
+
+  @Test
   public void sendCommandTest() {
     Object obj = jedis.sendCommand(SET, "x".getBytes(), "1".getBytes());
     String returnValue = SafeEncoder.encode((byte[]) obj);

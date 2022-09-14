@@ -92,7 +92,9 @@ public class SetParams extends Params implements IParams {
   /**
    * Return the old value stored at key, or nil when key did not exist.
    * @return SetParams
+   * @deprecated Use {@code setGet} method (without setting {@link SetParams#get()}.
    */
+  @Deprecated
   public SetParams get() {
     addParam(GET);
     return this;

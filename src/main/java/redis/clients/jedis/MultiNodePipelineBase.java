@@ -25,12 +25,10 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.IndexOptions;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.Schema;
-import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
 
@@ -339,6 +337,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<String> get(String key) {
     return appendCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public Response<String> setGet(String key, String value, SetParams params) {
+    return appendCommand(commandObjects.setGet(key, value, params));
   }
 
   @Override
@@ -3156,6 +3159,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
+    return appendCommand(commandObjects.setGet(key, value, params));
+  }
+
+  @Override
   public Response<byte[]> getDel(byte[] key) {
     return appendCommand(commandObjects.getDel(key));
   }
@@ -3307,8 +3315,23 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   // RediSearch commands
   @Override
+  public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+    return appendCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+  }
+
+  @Override
+  public Response<String> ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
+    return appendCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
+  }
+
+  @Override
   public Response<String> ftAlter(String indexName, Schema schema) {
     return appendCommand(commandObjects.ftAlter(indexName, schema));
+  }
+
+  @Override
+  public Response<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
+    return appendCommand(commandObjects.ftAlter(indexName, schemaFields));
   }
 
   @Override
@@ -3756,11 +3779,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Object> jsonArrPop(String key, Path path) {
     return appendCommand(commandObjects.jsonArrPop(key, path));
-  }
-
-  @Override
-  public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
-    return appendCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
   }
   // RedisJSON commands
 

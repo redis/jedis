@@ -1,21 +1,44 @@
 package redis.clients.jedis.search;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.schemafields.SchemaField;
 
 public interface RediSearchCommands {
 
   String ftCreate(String indexName, IndexOptions indexOptions, Schema schema);
+
+  default String ftCreate(String indexName, SchemaField... schemaFields) {
+    return ftCreate(indexName, Arrays.asList(schemaFields));
+  }
+
+  default String ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {
+    return ftCreate(indexName, createParams, Arrays.asList(schemaFields));
+  }
+
+  default String ftCreate(String indexName, Iterable<SchemaField> schemaFields) {
+    return ftCreate(indexName, FTCreateParams.createParams(), schemaFields);
+  }
+
+  String ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields);
 
   default String ftAlter(String indexName, Schema.Field... fields) {
     return ftAlter(indexName, Schema.from(fields));
   }
 
   String ftAlter(String indexName, Schema schema);
+
+  default String ftAlter(String indexName, SchemaField... schemaFields) {
+    return ftAlter(indexName, Arrays.asList(schemaFields));
+  }
+
+  String ftAlter(String indexName, Iterable<SchemaField> schemaFields);
 
   SearchResult ftSearch(String indexName, Query query);
 

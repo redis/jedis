@@ -86,9 +86,12 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public void close() {
-    sync();
-    for (Connection connection : connections.values()) {
-      IOUtils.closeQuietly(connection);
+    try {
+      sync();
+    } finally {
+      for (Connection connection : connections.values()) {
+        IOUtils.closeQuietly(connection);
+      }
     }
   }
 

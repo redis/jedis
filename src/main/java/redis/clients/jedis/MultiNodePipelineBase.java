@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +18,7 @@ import redis.clients.jedis.bloom.CFReserveParams;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
@@ -30,6 +32,7 @@ import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 
 public abstract class MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
@@ -85,7 +88,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   public void close() {
     sync();
     for (Connection connection : connections.values()) {
-      connection.close();
+      IOUtils.closeQuietly(connection);
     }
   }
 
@@ -93,12 +96,24 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     if (synced) {
       return;
     }
-    for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
+
+    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
+        = pipelinedResponses.entrySet().iterator();
+    while (pipelinedResponsesIterator.hasNext()) {
+      Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
-      List<Object> unformatted = connections.get(nodeKey).getMany(queue.size());
-      for (Object o : unformatted) {
-        queue.poll().set(o);
+      Connection connection = connections.get(nodeKey);
+      try {
+        List<Object> unformatted = connection.getMany(queue.size());
+        for (Object o : unformatted) {
+          queue.poll().set(o);
+        }
+      } catch (JedisConnectionException jce) {
+        // cleanup the connection
+        pipelinedResponsesIterator.remove();
+        connections.remove(nodeKey);
+        IOUtils.closeQuietly(connection);
       }
     }
     synced = true;

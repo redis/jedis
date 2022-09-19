@@ -19,7 +19,6 @@ public class FTSearchParams implements IParams {
   private boolean verbatim = false;
   private boolean noStopwords = false;
   private boolean withScores = false;
-  private boolean withPayloads = false;
   private final List<IParams> filters = new LinkedList<>();
   private Collection<String> inKeys;
   private Collection<String> inFields;
@@ -35,8 +34,7 @@ public class FTSearchParams implements IParams {
   private String language;
   private String expander;
   private String scorer;
-  private boolean explainScore;
-  private byte[] payload;
+  // private boolean explainScore; // TODO
   private String sortBy;
   private SortingOrder sortOrder;
   private int[] limit;
@@ -64,9 +62,6 @@ public class FTSearchParams implements IParams {
     }
     if (withScores) {
       args.add(WITHSCORES);
-    }
-    if (withPayloads) {
-      args.add(WITHPAYLOADS);
     }
 
     if (!filters.isEmpty()) {
@@ -129,14 +124,10 @@ public class FTSearchParams implements IParams {
     if (scorer != null) {
       args.add(SCORER).add(scorer);
     }
-
-    if (explainScore) {
-      args.add(EXPLAINSCORE);
-    }
-
-    if (payload != null) {
-      args.add(PAYLOAD).add(payload);
-    }
+//
+//    if (explainScore) {
+//      args.add(EXPLAINSCORE);
+//    }
 
     if (sortBy != null) {
       args.add(SORTBY).add(sortBy);
@@ -197,17 +188,6 @@ public class FTSearchParams implements IParams {
    */
   public FTSearchParams withScores() {
     this.withScores = true;
-    return this;
-  }
-
-  /**
-   * Set the query to return object payloads, if any were given
-   *
-   * @return the query object itself
-   *
-   */
-  public FTSearchParams withPayloads() {
-    this.withPayloads = true;
     return this;
   }
 
@@ -340,10 +320,15 @@ public class FTSearchParams implements IParams {
    *
    * @return the query object itself
    */
-  public FTSearchParams setScorer(String scorer) {
+  public FTSearchParams scorer(String scorer) {
     this.scorer = scorer;
     return this;
   }
+//
+//  public FTSearchParams explainScore() {
+//    this.explainScore = true;
+//    return this;
+//  }
 
   public FTSearchParams slop(int slop) {
     this.slop = slop;
@@ -369,26 +354,9 @@ public class FTSearchParams implements IParams {
    *
    * @return the query object itself
    */
-  public FTSearchParams setLanguage(String language) {
+  public FTSearchParams language(String language) {
     this.language = language;
     return this;
-  }
-
-  /* Set the query payload to be evaluated by the scoring function */
-  public FTSearchParams setPayload(byte[] payload) {
-    this.payload = Arrays.copyOf(payload, payload.length);
-    return this;
-  }
-
-  /**
-   * Set the query to be sorted by a Sortable field defined in the schema
-   *
-   * @param field the sorting field's name
-   * @param ascending if set to true, the sorting order is ascending, else descending
-   * @return the query object itself
-   */
-  public FTSearchParams setSortBy(String field, boolean ascending) {
-    return sortBy(field, ascending ? SortingOrder.ASC : SortingOrder.DESC);
   }
 
   /**
@@ -459,10 +427,6 @@ public class FTSearchParams implements IParams {
 
   public boolean getWithScores() {
     return withScores;
-  }
-
-  public boolean getWithPayloads() {
-    return withPayloads;
   }
 
   /**
@@ -563,10 +527,6 @@ public class FTSearchParams implements IParams {
 
     @Override
     public void addParams(CommandArguments args) {
-//      if (fields == null && fragsNum == null && fragSize == null && separator == null) {
-//        throw new IllegalArgumentException("No optional argument(s) set for SUMMARIZE argument.");
-//      }
-
       args.add(SUMMARIZE);
 
       if (fields != null) {
@@ -612,10 +572,6 @@ public class FTSearchParams implements IParams {
 
     @Override
     public void addParams(CommandArguments args) {
-//      if (fields == null && tags == null) {
-//        throw new IllegalArgumentException("No optional argument(s) set for HIGHLIGHT argument.");
-//      }
-
       args.add(HIGHLIGHT);
 
       if (fields != null) {

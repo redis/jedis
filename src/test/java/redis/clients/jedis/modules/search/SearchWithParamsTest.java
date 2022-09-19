@@ -353,6 +353,16 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertTrue(d.getId().startsWith("doc"));
       assertTrue(((String) d.get("title")).startsWith("hello world"));
     }
+//
+//    res = client.ftSearch(index, "hello",
+//        FTSearchParams.searchParams().withScores().explainScore());
+//    assertEquals(100, res.getTotalResults());
+//    assertEquals(10, res.getDocuments().size());
+//
+//    for (Document d : res.getDocuments()) {
+//      assertTrue(d.getId().startsWith("doc"));
+//      assertTrue(((String) d.get("title")).startsWith("hello world"));
+//    }
 
     res = client.ftSearch(index, "hello",
         FTSearchParams.searchParams().noContent());
@@ -894,7 +904,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     FTSearchParams searchParams = FTSearchParams.searchParams()
         .addParam("vec", "aaaaaaaa")
-        .setSortBy("__v_score", true)
+        .sortBy("__v_score", SortingOrder.ASC)
         .returnFields("__v_score")
         .dialect(2);
     Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
@@ -919,7 +929,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     FTSearchParams searchParams = FTSearchParams.searchParams()
         .addParam("vec", "aaaaaaaa")
-        .setSortBy("__v_score", true)
+        .sortBy("__v_score", SortingOrder.ASC)
         .returnFields("__v_score")
         .dialect(2);
 

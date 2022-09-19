@@ -357,7 +357,13 @@ public class Query implements IParams {
     return this;
   }
 
-  /* Set the query payload to be evaluated by the scoring function */
+  /**
+   * Set the query payload to be evaluated by the scoring function
+   *
+   * @return the query object itself
+   * @deprecated Since RediSearch 2.0.0, PAYLOAD option is deprecated.
+   */
+  @Deprecated
   public Query setPayload(byte[] payload) {
     _payload = payload;
     return this;
@@ -420,8 +426,9 @@ public class Query implements IParams {
    * Set the query to return object payloads, if any were given
    *
    * @return the query object itself
-   *
+   * @deprecated Since RediSearch 2.0.0, WITHPAYLOADS option is deprecated.
    */
+  @Deprecated
   public Query setWithPayload() {
     this._withPayloads = true;
     return this;

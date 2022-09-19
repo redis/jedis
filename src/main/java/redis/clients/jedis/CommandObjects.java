@@ -3096,7 +3096,7 @@ public class CommandObjects {
 
   public CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
     return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query).addParams(params),
-        new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), params.getWithPayloads(), true));
+        new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
   }
 
   public CommandObject<SearchResult> ftSearch(String indexName, Query query) {

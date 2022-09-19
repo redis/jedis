@@ -31,32 +31,24 @@ public interface TDigestSketchCommands {
   String tdigestReset(String key);
 
   /**
-   * {@code TDIGEST.MERGE destination-key source-key}
-   *
-   * @param destinationKey Sketch to copy observation values to (a t-digest data structure)
-   * @param sourceKey Sketch to copy observation values from (a t-digest data structure)
-   * @return OK
-   */
-  String tdigestMerge(String destinationKey, String sourceKey);
-
-  /**
-   * {@code TDIGEST.MERGESTORE destination-key numkeys source-key [source-key ...]}
+   * {@code TDIGEST.MERGE destination-key numkeys source-key [source-key ...]}
    *
    * @param destinationKey Sketch to copy observation values to (a t-digest data structure)
    * @param sourceKeys Sketch(es) to copy observation values from (a t-digest data structure)
    * @return OK
    */
-  String tdigestMergeStore(String destinationKey, String... sourceKeys);
+  String tdigestMerge(String destinationKey, String... sourceKeys);
 
   /**
-   * {@code TDIGEST.MERGESTORE destination-key numkeys source-key [source-key ...] [ COMPRESSION compression]}
+   * {@code TDIGEST.MERGE destination-key numkeys source-key [source-key ...]
+   * [COMPRESSION compression] [OVERRIDE]}
    *
-   * @param compression The compression parameter. 100 is a common value for normal uses. 1000 is extremely large.
+   * @param mergeParams compression and override options
    * @param destinationKey Sketch to copy observation values to (a t-digest data structure)
    * @param sourceKeys Sketch(es) to copy observation values from (a t-digest data structure)
    * @return OK
    */
-  String tdigestMergeStore(int compression, String destinationKey, String... sourceKeys);
+  String tdigestMerge(TDigestMergeParams mergeParams, String destinationKey, String... sourceKeys);
 
   /**
    * {@code TDIGEST.INFO key}

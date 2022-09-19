@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Random;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import redis.clients.jedis.bloom.TDigestMergeParams;
 
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.KeyValue;
@@ -99,18 +100,19 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void mergeStore() {
+  public void mergeMultiAndParams() {
     client.tdigestCreate("from1", 100);
     client.tdigestCreate("from2", 200);
 
     client.tdigestAdd("from1", KeyValue.of(1d, 1l));
     client.tdigestAdd("from2", KeyValue.of(1d, 10l));
 
-    assertEquals("OK", client.tdigestMergeStore("to", "from1", "from2"));
+    assertEquals("OK", client.tdigestMerge("to", "from1", "from2"));
     assertTotalWeight("to", 11d);
 
-    assertEquals("OK", client.tdigestMergeStore(50, "to50", "from1", "from2"));
-    assertEquals(Long.valueOf(50), client.tdigestInfo("to50").get("Compression"));
+    assertEquals("OK", client.tdigestMerge(TDigestMergeParams.mergeParams()
+        .compression(50).override(), "to", "from1", "from2"));
+    assertEquals(Long.valueOf(50), client.tdigestInfo("to").get("Compression"));
   }
 
   @Test

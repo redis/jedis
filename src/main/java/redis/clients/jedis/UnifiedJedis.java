@@ -10,10 +10,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.bloom.BFInsertParams;
-import redis.clients.jedis.bloom.BFReserveParams;
-import redis.clients.jedis.bloom.CFInsertParams;
-import redis.clients.jedis.bloom.CFReserveParams;
+import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -4351,18 +4348,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String tdigestMerge(String destinationKey, String sourceKey) {
-    return executeCommand(commandObjects.tdigestMerge(destinationKey, sourceKey));
+  public String tdigestMerge(String destinationKey, String... sourceKeys) {
+    return executeCommand(commandObjects.tdigestMerge(destinationKey, sourceKeys));
   }
 
   @Override
-  public String tdigestMergeStore(String destinationKey, String... sourceKeys) {
-    return executeCommand(commandObjects.tdigestMergeStore(destinationKey, sourceKeys));
-  }
-
-  @Override
-  public String tdigestMergeStore(int compression, String destinationKey, String... sourceKeys) {
-    return executeCommand(commandObjects.tdigestMergeStore(compression, destinationKey, sourceKeys));
+  public String tdigestMerge(TDigestMergeParams mergeParams, String destinationKey, String... sourceKeys) {
+    return executeCommand(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKeys));
   }
 
   @Override

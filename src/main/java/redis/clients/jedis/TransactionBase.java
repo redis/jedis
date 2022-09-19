@@ -14,10 +14,7 @@ import java.util.Set;
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.bloom.BFInsertParams;
-import redis.clients.jedis.bloom.BFReserveParams;
-import redis.clients.jedis.bloom.CFInsertParams;
-import redis.clients.jedis.bloom.CFReserveParams;
+import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -4206,18 +4203,13 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<String> tdigestMerge(String destinationKey, String sourceKey) {
-    return appendCommand(commandObjects.tdigestMerge(destinationKey, sourceKey));
+  public Response<String> tdigestMerge(String destinationKey, String... sourceKeys) {
+    return appendCommand(commandObjects.tdigestMerge(destinationKey, sourceKeys));
   }
 
   @Override
-  public Response<String> tdigestMergeStore(String destinationKey, String... sourceKeys) {
-    return appendCommand(commandObjects.tdigestMergeStore(destinationKey, sourceKeys));
-  }
-
-  @Override
-  public Response<String> tdigestMergeStore(int compression, String destinationKey, String... sourceKeys) {
-    return appendCommand(commandObjects.tdigestMergeStore(compression, destinationKey, sourceKeys));
+  public Response<String> tdigestMerge(TDigestMergeParams mergeParams, String destinationKey, String... sourceKeys) {
+    return appendCommand(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKeys));
   }
 
   @Override

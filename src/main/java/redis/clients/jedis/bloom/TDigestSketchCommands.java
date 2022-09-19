@@ -73,16 +73,16 @@ public interface TDigestSketchCommands {
    * @param valueWeights Pairs of value and respective weight of observations
    * @return OK
    */
-  String tdigestAdd(String key, Map.Entry<Double, Double>... valueWeights);
+  String tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights);
 
   /**
-   * {@code TDIGEST.CDF key value}
+   * {@code TDIGEST.CDF key value [value ...]}
    *
    * @param key The name of the sketch (a t-digest data structure)
-   * @param value upper limit of observation value, for which the fraction of all observations added which are &le; value
+   * @param values upper limit of observation value, for which the fraction of all observations added which are &le; value
    * @return estimation of the fraction of all observations added which are &le; value
    */
-  double tdigestCDF(String key, double value);
+  List<Double> tdigestCDF(String key, double... values);
 
   /**
    * {@code TDIGEST.QUANTILE key quantile [quantile ...]}

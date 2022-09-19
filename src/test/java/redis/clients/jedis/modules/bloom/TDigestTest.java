@@ -1,8 +1,8 @@
 package redis.clients.jedis.modules.bloom;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
 
-import java.util.Collections;
 import java.util.Map;
 import java.util.Random;
 import org.junit.BeforeClass;
@@ -103,8 +103,8 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     client.tdigestCreate("from1", 100);
     client.tdigestCreate("from2", 200);
 
-    client.tdigestAdd("from1", KeyValue.of(1d, 1d));
-    client.tdigestAdd("from2", KeyValue.of(1d, 10d));
+    client.tdigestAdd("from1", KeyValue.of(1d, 1l));
+    client.tdigestAdd("from2", KeyValue.of(1d, 10l));
 
     assertEquals("OK", client.tdigestMergeStore("to", "from1", "from2"));
     assertTotalWeight("to", 11d);
@@ -116,29 +116,30 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
   @Test
   public void cdf() {
     client.tdigestCreate("tdcdf", 100);
-    assertEquals(Double.NaN, client.tdigestCDF("tdcdf", 50), 0d);
+    assertEquals(singletonList(Double.NaN), client.tdigestCDF("tdcdf", 50));
 
     client.tdigestAdd("tdcdf", definedValueWeight(1, 1), definedValueWeight(1, 1), definedValueWeight(1, 1));
     client.tdigestAdd("tdcdf", definedValueWeight(100, 1), definedValueWeight(100, 1));
-    assertEquals(0.6, client.tdigestCDF("tdcdf", 50), 0.01);
+    assertEquals(singletonList(0.6), client.tdigestCDF("tdcdf", 50));
+    client.tdigestCDF("tdcdf", 25, 50, 75);
   }
 
   @Test
   public void quantile() {
     client.tdigestCreate("tdqnt", 100);
-    assertEquals(Collections.singletonList(Double.NaN), client.tdigestQuantile("tdqnt", 0.5));
+    assertEquals(singletonList(Double.NaN), client.tdigestQuantile("tdqnt", 0.5));
 
     client.tdigestAdd("tdqnt", definedValueWeight(1, 1), definedValueWeight(1, 1), definedValueWeight(1, 1));
     client.tdigestAdd("tdqnt", definedValueWeight(100, 1), definedValueWeight(100, 1));
-    assertEquals(Collections.singletonList(1.0), client.tdigestQuantile("tdqnt", 0.5));
+    assertEquals(singletonList(1.0), client.tdigestQuantile("tdqnt", 0.5));
   }
 
   @Test
   public void minAndMax() {
     final String key = "tdmnmx";
     client.tdigestCreate(key, 100);
-    assertEquals(Double.MAX_VALUE, client.tdigestMin(key), 0d);
-    assertEquals(-Double.MAX_VALUE, client.tdigestMax(key), 0d);
+    assertEquals(Double.NaN, client.tdigestMin(key), 0d);
+    assertEquals(Double.NaN, client.tdigestMax(key), 0d);
 
     client.tdigestAdd(key, definedValueWeight(2, 1));
     client.tdigestAdd(key, definedValueWeight(5, 1));
@@ -152,7 +153,7 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     client.tdigestCreate(key, 500);
 
     for (int i = 0; i < 20; i++) {
-      client.tdigestAdd(key, KeyValue.of(Double.valueOf(i), 1d));
+      client.tdigestAdd(key, KeyValue.of(Double.valueOf(i), 1l));
     }
 
     assertEquals(9.5, client.tdigestTrimmedMean(key, 0.1, 0.9), 0.01);
@@ -161,11 +162,11 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     assertEquals(14.5, client.tdigestTrimmedMean(key, 0.5, 1.0), 0.01);
   }
 
-  private static KeyValue<Double, Double> randomValueWeight() {
-    return new KeyValue<>(random.nextDouble() * 10000, random.nextDouble() * 500 + 1);
+  private static KeyValue<Double, Long> randomValueWeight() {
+    return new KeyValue<>(random.nextDouble() * 10000, Math.abs(random.nextInt()) + 1l);
   }
 
-  private static KeyValue<Double, Double> definedValueWeight(double value, double weight) {
+  private static KeyValue<Double, Long> definedValueWeight(double value, long weight) {
     return new KeyValue<>(value, weight);
   }
 }

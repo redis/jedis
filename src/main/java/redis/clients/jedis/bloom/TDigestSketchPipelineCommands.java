@@ -20,9 +20,9 @@ public interface TDigestSketchPipelineCommands {
 
   Response<Map<String, Object>> tdigestInfo(String key);
 
-  Response<String> tdigestAdd(String key, Map.Entry<Double, Double>... valueWeights);
+  Response<String> tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights);
 
-  Response<Double> tdigestCDF(String key, double value);
+  Response<List<Double>> tdigestCDF(String key, double... values);
 
   Response<List<Double>> tdigestQuantile(String key, double... quantiles);
 

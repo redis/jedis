@@ -4158,13 +4158,13 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<String> tdigestAdd(String key, Map.Entry<Double, Double>... valueWeights) {
+  public Response<String> tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights) {
     return appendCommand(commandObjects.tdigestAdd(key, valueWeights));
   }
 
   @Override
-  public Response<Double> tdigestCDF(String key, double value) {
-    return appendCommand(commandObjects.tdigestCDF(key, value));
+  public Response<List<Double>> tdigestCDF(String key, double... values) {
+    return appendCommand(commandObjects.tdigestCDF(key, values));
   }
 
   @Override

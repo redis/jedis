@@ -3900,16 +3900,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TDigestCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }
 
-  public final CommandObject<String> tdigestAdd(String key, Map.Entry<Double, Double>... valueWeights) {
+  public final CommandObject<String> tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights) {
     CommandArguments args = commandArguments(TDigestCommand.ADD).key(key);
-    for (Map.Entry<Double, Double> vw : valueWeights) {
+    for (Map.Entry<Double, Long> vw : valueWeights) {
       args.add(vw.getKey()).add(vw.getValue());
     }
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public final CommandObject<Double> tdigestCDF(String key, double value) {
-    return new CommandObject<>(commandArguments(TDigestCommand.CDF).key(key).add(value), BuilderFactory.DOUBLE);
+  public final CommandObject<List<Double>> tdigestCDF(String key, double... values) {
+    CommandArguments args = commandArguments(TDigestCommand.CDF).key(key);
+    for (double value : values) {
+      args.add(value);
+    }
+    return new CommandObject<>(args, BuilderFactory.DOUBLE_LIST);
   }
 
   public final CommandObject<List<Double>> tdigestQuantile(String key, double... quantiles) {

@@ -4371,13 +4371,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String tdigestAdd(String key, Map.Entry<Double, Double>... valueWeights) {
+  public String tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights) {
     return executeCommand(commandObjects.tdigestAdd(key, valueWeights));
   }
 
   @Override
-  public double tdigestCDF(String key, double value) {
-    return executeCommand(commandObjects.tdigestCDF(key, value));
+  public List<Double> tdigestCDF(String key, double... values) {
+    return executeCommand(commandObjects.tdigestCDF(key, values));
   }
 
   @Override

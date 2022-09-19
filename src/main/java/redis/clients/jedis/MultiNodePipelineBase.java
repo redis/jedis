@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.BFInsertParams;
@@ -37,6 +39,8 @@ import redis.clients.jedis.util.KeyValue;
 
 public abstract class MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
+
+  private final Logger log = LoggerFactory.getLogger(getClass());
 
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
@@ -113,6 +117,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
           queue.poll().set(o);
         }
       } catch (JedisConnectionException jce) {
+        log.error("Error with connection to " + nodeKey, jce);
         // cleanup the connection
         pipelinedResponsesIterator.remove();
         connections.remove(nodeKey);

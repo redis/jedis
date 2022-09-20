@@ -1,4 +1,4 @@
-name-template: '$NEXT_MAJOR_VERSION'
+name-template: '$NEXT_MINOR_VERSION'
 tag-template: 'v$NEXT_MINOR_VERSION'
 autolabeler:
   - label: 'maintenance'

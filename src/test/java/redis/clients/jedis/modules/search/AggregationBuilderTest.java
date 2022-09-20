@@ -217,7 +217,6 @@ public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
     sc.addSortableNumericField("subj1");
     sc.addSortableNumericField("subj2");
     client.ftCreate(index, IndexOptions.defaultOptions(), sc);
-
     addDocument(new Document("data1").set("name", "abc").set("subj1", 20).set("subj2", 70));
     addDocument(new Document("data2").set("name", "def").set("subj1", 60).set("subj2", 40));
 

@@ -40,6 +40,14 @@ public interface RediSearchCommands {
 
   String ftAlter(String indexName, Iterable<SchemaField> schemaFields);
 
+  default SearchResult ftSearch(String indexName) {
+    return ftSearch(indexName, "*");
+  }
+
+  SearchResult ftSearch(String indexName, String query);
+
+  SearchResult ftSearch(String indexName, String query, FTSearchParams params);
+
   SearchResult ftSearch(String indexName, Query query);
 
   SearchResult ftSearch(byte[] indexName, Query query);

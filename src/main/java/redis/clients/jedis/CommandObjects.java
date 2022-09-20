@@ -3089,6 +3089,16 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
+  public CommandObject<SearchResult> ftSearch(String indexName, String query) {
+    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query),
+        new SearchResultBuilder(true, false, false, true));
+  }
+
+  public CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
+    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query).addParams(params),
+        new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
+  }
+
   public CommandObject<SearchResult> ftSearch(String indexName, Query query) {
     return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));

@@ -19,7 +19,6 @@ public class FTCreateParams implements IParams {
   private String languageField;
   private Double score;
   private String scoreField;
-  private byte[] payloadField;
   private boolean maxTextFields;
   private boolean noOffsets;
   private Long temporary;
@@ -107,15 +106,6 @@ public class FTCreateParams implements IParams {
    */
   public FTCreateParams scoreField(String scoreField) {
     this.scoreField = scoreField;
-    return this;
-  }
-
-  /**
-   * Document attribute that you use as a binary safe payload string to the document that can be
-   * evaluated at query time by a custom scoring function or retrieved to the client.
-   */
-  public FTCreateParams payloadField(byte[] payloadAttribute) {
-    this.payloadField = Arrays.copyOf(payloadAttribute, payloadAttribute.length);
     return this;
   }
 
@@ -228,10 +218,6 @@ public class FTCreateParams implements IParams {
     }
     if (scoreField != null) {
       args.add(SCORE_FIELD).add(scoreField);
-    }
-
-    if (payloadField != null) {
-      args.add(PAYLOAD_FIELD).add(payloadField);
     }
 
     if (maxTextFields) {

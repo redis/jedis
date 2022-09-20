@@ -41,6 +41,14 @@ public interface RediSearchPipelineCommands {
 
   Response<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields);
 
+  default Response<SearchResult> ftSearch(String indexName) {
+    return ftSearch(indexName, "*");
+  }
+
+  Response<SearchResult> ftSearch(String indexName, String query);
+
+  Response<SearchResult> ftSearch(String indexName, String query, FTSearchParams searchParams);
+
   Response<SearchResult> ftSearch(String indexName, Query query);
 
   Response<SearchResult> ftSearch(byte[] indexName, Query query);

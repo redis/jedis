@@ -104,6 +104,10 @@ public class IndexDefinition implements IParams {
     return payloadField;
   }
 
+  /**
+   * @deprecated Since RediSearch 2.0.0, PAYLOAD_FIELD option is deprecated.
+   */
+  @Deprecated
   public IndexDefinition setPayloadField(String payloadField) {
     this.payloadField = payloadField;
     return this;

@@ -7,7 +7,11 @@ import java.util.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.args.GeoUnit;
+import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
@@ -62,16 +66,16 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
     client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
 
-    SearchResult noFilters = client.ftSearch(index, new Query());
+    SearchResult noFilters = client.ftSearch(index);
     assertEquals(4, noFilters.getTotalResults());
 
-    SearchResult res1 = client.ftSearch(index, new Query("@first:Jo*"));
+    SearchResult res1 = client.ftSearch(index, "@first:Jo*");
     assertEquals(2, res1.getTotalResults());
 
-    SearchResult res2 = client.ftSearch(index, new Query("@first:Pat"));
+    SearchResult res2 = client.ftSearch(index, "@first:Pat");
     assertEquals(1, res2.getTotalResults());
 
-    SearchResult res3 = client.ftSearch(index, new Query("@last:Rod"));
+    SearchResult res3 = client.ftSearch(index, "@last:Rod");
     assertEquals(0, res3.getTotalResults());
   }
 
@@ -87,16 +91,16 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     addDocument("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", 21));
     addDocument("student:5555", toMap("first", "Joen", "last", "Ko", "age", 20));
 
-    SearchResult noFilters = client.ftSearch(index, new Query());
+    SearchResult noFilters = client.ftSearch(index);
     assertEquals(4, noFilters.getTotalResults());
 
-    SearchResult res1 = client.ftSearch(index, new Query("@first:Jo*"));
+    SearchResult res1 = client.ftSearch(index, "@first:Jo*");
     assertEquals(2, res1.getTotalResults());
 
-    SearchResult res2 = client.ftSearch(index, new Query("@first:Pat"));
+    SearchResult res2 = client.ftSearch(index, "@first:Pat");
     assertEquals(1, res2.getTotalResults());
 
-    SearchResult res3 = client.ftSearch(index, new Query("@last:Rod"));
+    SearchResult res3 = client.ftSearch(index, "@last:Rod");
     assertEquals(0, res3.getTotalResults());
   }
 
@@ -116,19 +120,19 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
     client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
 
-    SearchResult noFilters = client.ftSearch(index, new Query());
+    SearchResult noFilters = client.ftSearch(index);
     assertEquals(5, noFilters.getTotalResults());
 
-    SearchResult asFirst = client.ftSearch(index, new Query("@first:Jo*"));
+    SearchResult asFirst = client.ftSearch(index, "@first:Jo*");
     assertEquals(0, asFirst.getTotalResults());
 
-    SearchResult asGiven = client.ftSearch(index, new Query("@given:Jo*"));
+    SearchResult asGiven = client.ftSearch(index, "@given:Jo*");
     assertEquals(2, asGiven.getTotalResults());
 
-    SearchResult nonLast = client.ftSearch(index, new Query("@last:Rod"));
+    SearchResult nonLast = client.ftSearch(index, "@last:Rod");
     assertEquals(0, nonLast.getTotalResults());
 
-    SearchResult asFamily = client.ftSearch(index, new Query("@family:Rod"));
+    SearchResult asFamily = client.ftSearch(index, "@family:Rod");
     assertEquals(1, asFamily.getTotalResults());
   }
 
@@ -141,7 +145,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     for (int i = 0; i < 100; i++) {
       addDocument(String.format("doc%d", i), fields);
     }
-    SearchResult res = client.ftSearch(index, new Query("hello world"));
+    SearchResult res = client.ftSearch(index, "hello world");
     assertEquals(100, res.getTotalResults());
 
     assertOK(client.ftAlter(index,
@@ -154,7 +158,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       fields2.put("tags", String.format("tagA,tagB,tag%d", i));
       addDocument(String.format("doc%d", i), fields2);
     }
-    SearchResult res2 = client.ftSearch(index, new Query("@tags:{tagA}"));
+    SearchResult res2 = client.ftSearch(index, "@tags:{tagA}");
     assertEquals(100, res2.getTotalResults());
 
     Map<String, Object> info = client.ftInfo(index);
@@ -175,7 +179,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       addDocument(String.format("doc%d", i), fields);
     }
 
-    SearchResult res = client.ftSearch(index, new Query("hello world").limit(0, 5).setWithScores());
+    SearchResult res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().limit(0, 5).withScores());
     assertEquals(100, res.getTotalResults());
     assertEquals(5, res.getDocuments().size());
     for (Document d : res.getDocuments()) {
@@ -185,12 +190,12 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     client.del("doc0");
 
-    res = client.ftSearch(index, new Query("hello world"));
+    res = client.ftSearch(index, "hello world");
     assertEquals(99, res.getTotalResults());
 
     assertEquals("OK", client.ftDropIndex(index));
     try {
-      client.ftSearch(index, new Query("hello world"));
+      client.ftSearch(index, "hello world");
       fail();
     } catch (JedisDataException e) {
     }
@@ -208,8 +213,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       addDocument(String.format("doc%d", i), fields);
     }
 
-    SearchResult res = client.ftSearch(index, new Query("hello world").
-        addFilter(new Query.NumericFilter("price", 0, 49)));
+    SearchResult res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().filter("price", 0, 49));
     assertEquals(50, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
     for (Document d : res.getDocuments()) {
@@ -218,8 +223,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertTrue(price <= 49);
     }
 
-    res = client.ftSearch(index, new Query("hello world").
-        addFilter(new Query.NumericFilter("price", 0, true, 49, true)));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().filter("price", 0, true, 49, true));
     assertEquals(48, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
     for (Document d : res.getDocuments()) {
@@ -227,8 +232,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertTrue(price > 0);
       assertTrue(price < 49);
     }
-    res = client.ftSearch(index, new Query("hello world").
-        addFilter(new Query.NumericFilter("price", 50, 100)));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().filter("price", 50, 100));
     assertEquals(50, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
     for (Document d : res.getDocuments()) {
@@ -237,13 +242,15 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertTrue(price <= 100);
     }
 
-    res = client.ftSearch(index, new Query("hello world").
-        addFilter(new Query.NumericFilter("price", 20, Double.POSITIVE_INFINITY)));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams()
+            .filter("price", 20, Double.POSITIVE_INFINITY));
     assertEquals(80, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
 
-    res = client.ftSearch(index, new Query("hello world").
-        addFilter(new Query.NumericFilter("price", Double.NEGATIVE_INFINITY, 10)));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams()
+            .filter("price", Double.NEGATIVE_INFINITY, 10));
     assertEquals(11, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
 
@@ -259,9 +266,9 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world foo bar");
     addDocument("doc1", fields);
-    SearchResult res = client.ftSearch(index, new Query("hello world"));
+    SearchResult res = client.ftSearch(index, "hello world");
     assertEquals(1, res.getTotalResults());
-    res = client.ftSearch(index, new Query("foo bar"));
+    res = client.ftSearch(index, "foo bar");
     assertEquals(0, res.getTotalResults());
   }
 
@@ -276,9 +283,9 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     fields.put("title", "hello world foo bar to be or not to be");
     addDocument("doc1", fields);
 
-    assertEquals(1, client.ftSearch(index, new Query("hello world")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("foo bar")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("to be or not to be")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, "hello world").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "foo bar").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "to be or not to be").getTotalResults());
   }
 
   @Test
@@ -293,18 +300,14 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     fields.put("loc", "-0.1,51.2");
     addDocument("doc2", fields);
 
-    SearchResult res = client.ftSearch(index, new Query("hello world").
-        addFilter(
-            new Query.GeoFilter("loc", -0.44, 51.45,
-                10, Query.GeoFilter.KILOMETERS)
-        ));
-
+    SearchResult res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().
+            geoFilter("loc", -0.44, 51.45, 10, GeoUnit.KM));
     assertEquals(1, res.getTotalResults());
-    res = client.ftSearch(index, new Query("hello world").
-        addFilter(
-            new Query.GeoFilter("loc", -0.44, 51.45,
-                100, Query.GeoFilter.KILOMETERS)
-        ));
+
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams().
+            geoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM));
     assertEquals(2, res.getTotalResults());
   }
 
@@ -314,19 +317,315 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     Map<String, Object> fields = new HashMap<>();
     fields.put("title", "hello world");
-    fields.put("loc", new redis.clients.jedis.GeoCoordinate(-0.441, 51.458));
+    fields.put("loc", new GeoCoordinate(-0.441, 51.458));
     addDocument("doc1", fields);
 
-    fields.put("loc", new redis.clients.jedis.GeoCoordinate(-0.1, 51.2));
+    fields.put("loc", new GeoCoordinate(-0.1, 51.2));
     addDocument("doc2", fields);
 
-    SearchResult res = client.ftSearch(index, new Query("hello world").addFilter(
-        new Query.GeoFilter("loc", -0.44, 51.45, 10, Query.GeoFilter.KILOMETERS)));
+    SearchResult res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams()
+            .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 10, GeoUnit.KM)));
     assertEquals(1, res.getTotalResults());
 
-    res = client.ftSearch(index, new Query("hello world").addFilter(
-        new Query.GeoFilter("loc", -0.44, 51.45, 100, Query.GeoFilter.KILOMETERS)));
+    res = client.ftSearch(index, "hello world",
+        FTSearchParams.searchParams()
+            .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM)));
     assertEquals(2, res.getTotalResults());
+  }
+
+  @Test
+  public void testQueryFlags() {
+    assertOK(client.ftCreate(index, TextField.of("title")));
+
+    Map<String, Object> fields = new HashMap<>();
+    for (int i = 0; i < 100; i++) {
+      fields.put("title", i % 2 != 0 ? "hello worlds" : "hello world");
+      addDocument(String.format("doc%d", i), fields);
+    }
+
+    SearchResult res = client.ftSearch(index, "hello",
+        FTSearchParams.searchParams().withScores());
+    assertEquals(100, res.getTotalResults());
+    assertEquals(10, res.getDocuments().size());
+
+    for (Document d : res.getDocuments()) {
+      assertTrue(d.getId().startsWith("doc"));
+      assertTrue(((String) d.get("title")).startsWith("hello world"));
+    }
+//
+//    res = client.ftSearch(index, "hello",
+//        FTSearchParams.searchParams().withScores().explainScore());
+//    assertEquals(100, res.getTotalResults());
+//    assertEquals(10, res.getDocuments().size());
+//
+//    for (Document d : res.getDocuments()) {
+//      assertTrue(d.getId().startsWith("doc"));
+//      assertTrue(((String) d.get("title")).startsWith("hello world"));
+//    }
+
+    res = client.ftSearch(index, "hello",
+        FTSearchParams.searchParams().noContent());
+    for (Document d : res.getDocuments()) {
+      assertTrue(d.getId().startsWith("doc"));
+      assertEquals(1.0, d.getScore(), 0);
+      assertNull(d.get("title"));
+    }
+
+    // test verbatim vs. stemming
+    res = client.ftSearch(index, "hello worlds");
+    assertEquals(100, res.getTotalResults());
+    res = client.ftSearch(index, "hello worlds", FTSearchParams.searchParams().verbatim());
+    assertEquals(50, res.getTotalResults());
+    res = client.ftSearch(index, "hello a world", FTSearchParams.searchParams().verbatim());
+    assertEquals(50, res.getTotalResults());
+    res = client.ftSearch(index, "hello a worlds", FTSearchParams.searchParams().verbatim());
+    assertEquals(50, res.getTotalResults());
+    res = client.ftSearch(index, "hello a world", FTSearchParams.searchParams().verbatim().noStopwords());
+    assertEquals(0, res.getTotalResults());
+  }
+
+  @Test
+  public void testQueryParams() {
+    assertOK(client.ftCreate(index, NumericField.of("numval")));
+
+    client.hset("1", "numval", "1");
+    client.hset("2", "numval", "2");
+    client.hset("3", "numval", "3");
+
+    assertEquals(2, client.ftSearch(index, "@numval:[$min $max]",
+        FTSearchParams.searchParams().addParam("min", 1).addParam("max", 2)
+            .dialect(2)).getTotalResults());
+
+    Map<String, Object> paramValues = new HashMap<>();
+    paramValues.put("min", 1);
+    paramValues.put("max", 2);
+    assertEquals(2, client.ftSearch(index, "@numval:[$min $max]",
+        FTSearchParams.searchParams().params(paramValues)
+            .dialect(2)).getTotalResults());
+  }
+
+  @Test
+  public void testSortQueryFlags() {
+    assertOK(client.ftCreate(index, TextField.of("title").sortable()));
+
+    Map<String, Object> fields = new HashMap<>();
+
+    fields.put("title", "b title");
+    addDocument("doc1", fields);
+
+    fields.put("title", "a title");
+    addDocument("doc2", fields);
+
+    fields.put("title", "c title");
+    addDocument("doc3", fields);
+
+    SearchResult res = client.ftSearch(index, "title",
+        FTSearchParams.searchParams().sortBy("title", SortingOrder.ASC));
+
+    assertEquals(3, res.getTotalResults());
+    Document doc1 = res.getDocuments().get(0);
+    assertEquals("a title", doc1.get("title"));
+
+    doc1 = res.getDocuments().get(1);
+    assertEquals("b title", doc1.get("title"));
+
+    doc1 = res.getDocuments().get(2);
+    assertEquals("c title", doc1.get("title"));
+  }
+
+  @Test
+  public void testJsonWithAlias() {
+    assertOK(client.ftCreate(index,
+        FTCreateParams.createParams()
+            .on(IndexDataType.JSON)
+            .prefix("king:"),
+        TextField.of("$.name").as("name"),
+        NumericField.of("$.num").as("num")));
+
+    Map<String, Object> king1 = new HashMap<>();
+    king1.put("name", "henry");
+    king1.put("num", 42);
+    client.jsonSet("king:1", Path.ROOT_PATH, king1);
+
+    Map<String, Object> king2 = new HashMap<>();
+    king2.put("name", "james");
+    king2.put("num", 3.14);
+    client.jsonSet("king:2", Path.ROOT_PATH, king2);
+
+    SearchResult res = client.ftSearch(index, "@name:henry");
+    assertEquals(1, res.getTotalResults());
+    assertEquals("king:1", res.getDocuments().get(0).getId());
+
+    res = client.ftSearch(index, "@num:[0 10]");
+    assertEquals(1, res.getTotalResults());
+    assertEquals("king:2", res.getDocuments().get(0).getId());
+  }
+
+  @Test
+  public void dropIndex() {
+    assertOK(client.ftCreate(index, TextField.of("title")));
+
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("title", "hello world");
+    for (int i = 0; i < 100; i++) {
+      addDocument(String.format("doc%d", i), fields);
+    }
+
+    SearchResult res = client.ftSearch(index, "hello world");
+    assertEquals(100, res.getTotalResults());
+
+    assertEquals("OK", client.ftDropIndex(index));
+
+    try {
+      client.ftSearch(index, "hello world");
+      fail("Index should not exist.");
+    } catch (JedisDataException de) {
+      assertTrue(de.getMessage().contains("no such index"));
+    }
+    assertEquals(100, client.dbSize());
+  }
+
+  @Test
+  public void dropIndexDD() {
+    assertOK(client.ftCreate(index, TextField.of("title")));
+
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("title", "hello world");
+    for (int i = 0; i < 100; i++) {
+      addDocument(String.format("doc%d", i), fields);
+    }
+
+    SearchResult res = client.ftSearch(index, "hello world");
+    assertEquals(100, res.getTotalResults());
+
+    assertEquals("OK", client.ftDropIndexDD(index));
+
+    Set<String> keys = client.keys("*");
+    assertTrue(keys.isEmpty());
+    assertEquals(0, client.dbSize());
+  }
+
+  @Test
+  public void noStem() {
+    assertOK(client.ftCreate(index, new TextField("stemmed").weight(1.0),
+        new TextField("notStemmed").weight(1.0).noStem()));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("stemmed", "located");
+    doc.put("notStemmed", "located");
+    addDocument("doc", doc);
+
+    // Query
+    SearchResult res = client.ftSearch(index, "@stemmed:location");
+    assertEquals(1, res.getTotalResults());
+
+    res = client.ftSearch(index, "@notStemmed:location");
+    assertEquals(0, res.getTotalResults());
+  }
+
+  @Test
+  public void phoneticMatch() {
+    assertOK(client.ftCreate(index, new TextField("noPhonetic").weight(1.0),
+        new TextField("withPhonetic").weight(1.0).phonetic("dm:en")));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("noPhonetic", "morfix");
+    doc.put("withPhonetic", "morfix");
+    addDocument("doc", doc);
+
+    // Query
+    SearchResult res = client.ftSearch(index, "@withPhonetic:morphix=>{$phonetic:true}");
+    assertEquals(1, res.getTotalResults());
+
+    try {
+      client.ftSearch(index, "@noPhonetic:morphix=>{$phonetic:true}");
+      fail();
+    } catch (JedisDataException e) {/*field does not support phonetics*/
+    }
+
+    SearchResult res3 = client.ftSearch(index, "@withPhonetic:morphix=>{$phonetic:false}");
+    assertEquals(0, res3.getTotalResults());
+  }
+
+  @Test
+  public void info() {
+    Collection<SchemaField> sc = new ArrayList<>();
+    sc.add(TextField.of("title").weight(5));
+    sc.add(TextField.of("plot").sortable());
+    sc.add(TagField.of("genre").separator(',').sortable());
+    sc.add(NumericField.of("release_year").sortable());
+    sc.add(NumericField.of("rating").sortable());
+    sc.add(NumericField.of("votes").sortable());
+
+    assertOK(client.ftCreate(index, sc));
+
+    Map<String, Object> info = client.ftInfo(index);
+    assertEquals(index, info.get("index_name"));
+    assertEquals(6, ((List) info.get("attributes")).size());
+    assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
+    assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
+  }
+
+  @Test
+  public void noIndexAndSortBy() {
+    assertOK(client.ftCreate(index, TextField.of("f1").sortable().noIndex(), TextField.of("f2")));
+
+    Map<String, Object> mm = new HashMap<>();
+
+    mm.put("f1", "MarkZZ");
+    mm.put("f2", "MarkZZ");
+    addDocument("doc1", mm);
+
+    mm.clear();
+    mm.put("f1", "MarkAA");
+    mm.put("f2", "MarkBB");
+    addDocument("doc2", mm);
+
+    SearchResult res = client.ftSearch(index, "@f1:Mark*");
+    assertEquals(0, res.getTotalResults());
+
+    res = client.ftSearch(index, "@f2:Mark*");
+    assertEquals(2, res.getTotalResults());
+
+    res = client.ftSearch(index, "@f2:Mark*",
+        FTSearchParams.searchParams().sortBy("f1", SortingOrder.DESC));
+    assertEquals(2, res.getTotalResults());
+
+    assertEquals("doc1", res.getDocuments().get(0).getId());
+
+    res = client.ftSearch(index, "@f2:Mark*",
+        FTSearchParams.searchParams().sortBy("f1", SortingOrder.ASC));
+    assertEquals("doc2", res.getDocuments().get(0).getId());
+  }
+
+  @Test
+  public void testHighlightSummarize() {
+    assertOK(client.ftCreate(index, TextField.of("text").weight(1)));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("text", "Redis is often referred as a data structures server. What this means is that "
+        + "Redis provides access to mutable data structures via a set of commands, which are sent "
+        + "using a server-client model with TCP sockets and a simple protocol. So different "
+        + "processes can query and modify the same data structures in a shared way");
+    // Add a document
+    addDocument("foo", doc);
+
+    SearchResult res = client.ftSearch(index, "data", FTSearchParams.searchParams().highlight().summarize());
+    assertEquals("is often referred as a <b>data</b> structures server. What this means is that "
+        + "Redis provides... What this means is that Redis provides access to mutable <b>data</b> "
+        + "structures via a set of commands, which are sent using a... So different processes can "
+        + "query and modify the same <b>data</b> structures in a shared... ",
+        res.getDocuments().get(0).get("text"));
+
+    res = client.ftSearch(index, "data", FTSearchParams.searchParams()
+        .highlight(FTSearchParams.highlightParams().tags("<u>", "</u>"))
+        .summarize());
+    assertEquals("is often referred as a <u>data</u> structures server. What this means is that "
+        + "Redis provides... What this means is that Redis provides access to mutable <u>data</u> "
+        + "structures via a set of commands, which are sent using a... So different processes can "
+        + "query and modify the same <u>data</u> structures in a shared... ",
+        res.getDocuments().get(0).get("text"));
   }
 
   @Test
@@ -353,14 +652,14 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     fields4.put("category", "orange;purple");
     addDocument("qux", fields4);
 
-    assertEquals(1, client.ftSearch(index, new Query("@category:{red}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("@category:{blue}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("hello @category:{red}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("hello @category:{blue}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("@category:{yellow}")).getTotalResults());
-    assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\;purple}")).getTotalResults());
-    assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{red}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{blue}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "hello @category:{red}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "hello @category:{blue}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{yellow}").getTotalResults());
+    assertEquals(0, client.ftSearch(index, "@category:{purple}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{orange\\;purple}").getTotalResults());
+    assertEquals(4, client.ftSearch(index, "hello").getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange;purple")),
         client.ftTagVals(index, "category"));
@@ -392,14 +691,14 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     fields4.put("category", "orange,purple");
     addDocument("qux", fields4);
 
-    assertEquals(1, client.ftSearch(index, new Query("@category:{red}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("@category:{blue}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("hello @category:{red}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("hello @category:{blue}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("hello @category:{yellow}")).getTotalResults());
-    assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\,purple}")).getTotalResults());
-    assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{red}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{blue}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "hello @category:{red}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "hello @category:{blue}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "hello @category:{yellow}").getTotalResults());
+    assertEquals(0, client.ftSearch(index, "@category:{purple}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{orange\\,purple}").getTotalResults());
+    assertEquals(4, client.ftSearch(index, "hello").getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange,purple")),
         client.ftTagVals(index, "category"));
@@ -416,11 +715,177 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     fields.put("category", "RedX");
     addDocument("foo", fields);
 
-    assertEquals(0, client.ftSearch(index, new Query("@category:{redx}")).getTotalResults());
-    assertEquals(0, client.ftSearch(index, new Query("@category:{redX}")).getTotalResults());
-    assertEquals(0, client.ftSearch(index, new Query("@category:{Redx}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("@category:{RedX}")).getTotalResults());
-    assertEquals(1, client.ftSearch(index, new Query("hello")).getTotalResults());
+    assertEquals(0, client.ftSearch(index, "@category:{redx}").getTotalResults());
+    assertEquals(0, client.ftSearch(index, "@category:{redX}").getTotalResults());
+    assertEquals(0, client.ftSearch(index, "@category:{Redx}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{RedX}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "hello").getTotalResults());
+  }
+
+  @Test
+  public void testReturnFields() {
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("field1", "value1");
+    doc.put("field2", "value2");
+    addDocument("doc", doc);
+
+    // Query
+    SearchResult res = client.ftSearch(index, "*",
+        FTSearchParams.searchParams().returnFields("field1"));
+    assertEquals(1, res.getTotalResults());
+    Document ret = res.getDocuments().get(0);
+    assertEquals("value1", ret.get("field1"));
+    assertNull(ret.get("field2"));
+  }
+
+  @Test
+  public void returnWithFieldNames() {
+    assertOK(client.ftCreate(index, TextField.of("a"), TextField.of("b"), TextField.of("c")));
+
+    Map<String, Object> map = new HashMap<>();
+    map.put("a", "value1");
+    map.put("b", "value2");
+    map.put("c", "value3");
+    addDocument("doc", map);
+
+    // Query
+    SearchResult res = client.ftSearch(index, "*",
+        FTSearchParams.searchParams().returnFields(
+            FieldName.of("a"), FieldName.of("b").as("d")));
+    assertEquals(1, res.getTotalResults());
+    Document doc = res.getDocuments().get(0);
+    assertEquals("value1", doc.get("a"));
+    assertNull(doc.get("b"));
+    assertEquals("value2", doc.get("d"));
+    assertNull(doc.get("c"));
+  }
+
+  @Test
+  public void inKeys() {
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("field1", "value");
+    doc.put("field2", "not");
+    // Store it
+    addDocument("doc1", doc);
+    addDocument("doc2", doc);
+
+    // Query
+    SearchResult res = client.ftSearch(index, "value",
+        FTSearchParams.searchParams().inKeys("doc1"));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("doc1", res.getDocuments().get(0).getId());
+    assertEquals("value", res.getDocuments().get(0).get("field1"));
+    assertEquals(null, res.getDocuments().get(0).get("value"));
+  }
+
+  @Test
+  public void alias() {
+    assertOK(client.ftCreate(index, TextField.of("field1")));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("field1", "value");
+    addDocument("doc1", doc);
+
+    assertEquals("OK", client.ftAliasAdd("ALIAS1", index));
+    SearchResult res1 = client.ftSearch("ALIAS1", "*",
+        FTSearchParams.searchParams().returnFields("field1"));
+    assertEquals(1, res1.getTotalResults());
+    assertEquals("value", res1.getDocuments().get(0).get("field1"));
+
+    assertEquals("OK", client.ftAliasUpdate("ALIAS2", index));
+    SearchResult res2 = client.ftSearch("ALIAS2", "*",
+        FTSearchParams.searchParams().returnFields("field1"));
+    assertEquals(1, res2.getTotalResults());
+    assertEquals("value", res2.getDocuments().get(0).get("field1"));
+
+    try {
+      client.ftAliasDel("ALIAS3");
+      fail("Should throw JedisDataException");
+    } catch (JedisDataException e) {
+      // Alias does not exist
+    }
+    assertEquals("OK", client.ftAliasDel("ALIAS2"));
+    try {
+      client.ftAliasDel("ALIAS2");
+      fail("Should throw JedisDataException");
+    } catch (JedisDataException e) {
+      // Alias does not exist
+    }
+  }
+
+  @Test
+  public void synonym() {
+    assertOK(client.ftCreate(index, TextField.of("name").weight(1), TextField.of("addr").weight(1)));
+
+    long group1 = 345L;
+    long group2 = 789L;
+    String group1_str = Long.toString(group1);
+    String group2_str = Long.toString(group2);
+    assertEquals("OK", client.ftSynUpdate(index, group1_str, "girl", "baby"));
+    assertEquals("OK", client.ftSynUpdate(index, group1_str, "child"));
+    assertEquals("OK", client.ftSynUpdate(index, group2_str, "child"));
+
+    Map<String, List<String>> dump = client.ftSynDump(index);
+
+    Map<String, List<String>> expected = new HashMap<>();
+    expected.put("girl", Arrays.asList(group1_str));
+    expected.put("baby", Arrays.asList(group1_str));
+    expected.put("child", Arrays.asList(group1_str, group2_str));
+    assertEquals(expected, dump);
+  }
+
+  @Test
+  public void slop() {
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("field1", "ok hi jedis");
+    addDocument("doc1", doc);
+
+    SearchResult res = client.ftSearch(index, "ok jedis", FTSearchParams.searchParams().slop(0));
+    assertEquals(0, res.getTotalResults());
+
+    res = client.ftSearch(index, "ok jedis", FTSearchParams.searchParams().slop(1));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("doc1", res.getDocuments().get(0).getId());
+    assertEquals("ok hi jedis", res.getDocuments().get(0).get("field1"));
+  }
+
+  @Test
+  public void timeout() {
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("field1", "value");
+    doc.put("field2", "not");
+    addDocument("doc1", doc);
+
+    SearchResult res = client.ftSearch(index, "value", FTSearchParams.searchParams().timeout(1000));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("doc1", res.getDocuments().get(0).getId());
+    assertEquals("value", res.getDocuments().get(0).get("field1"));
+    assertEquals("not", res.getDocuments().get(0).get("field2"));
+  }
+
+  @Test
+  public void inOrder() {
+    assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
+
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("field1", "value");
+    doc.put("field2", "not");
+    addDocument("doc2", doc);
+    addDocument("doc1", doc);
+
+    SearchResult res = client.ftSearch(index, "value", FTSearchParams.searchParams().inOrder());
+    assertEquals(2, res.getTotalResults());
+    assertEquals("doc2", res.getDocuments().get(0).getId());
+    assertEquals("value", res.getDocuments().get(0).get("field1"));
+    assertEquals("not", res.getDocuments().get(0).get("field2"));
   }
 
   @Test
@@ -437,23 +902,18 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.hset("b", "v", "aaaabaaa");
     client.hset("c", "v", "aaaaabaa");
 
-    Query query = new Query("*=>[KNN 2 @v $vec]")
+    FTSearchParams searchParams = FTSearchParams.searchParams()
         .addParam("vec", "aaaaaaaa")
-        .setSortBy("__v_score", true)
+        .sortBy("__v_score", SortingOrder.ASC)
         .returnFields("__v_score")
         .dialect(2);
-    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+    Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
   }
 
   @Test
   public void testFlatVectorSimilarity() {
-    Map<String, Object> attr = new HashMap<>();
-    attr.put("TYPE", "FLOAT32");
-    attr.put("DIM", 2);
-    attr.put("DISTANCE_METRIC", "L2");
-
     assertOK(client.ftCreate(index,
         VectorField.builder().fieldName("v")
             .algorithm(VectorField.VectorAlgorithm.FLAT)
@@ -467,12 +927,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.hset("b", "v", "aaaabaaa");
     client.hset("c", "v", "aaaaabaa");
 
-    Query query = new Query("*=>[KNN 2 @v $vec]")
+    FTSearchParams searchParams = FTSearchParams.searchParams()
         .addParam("vec", "aaaaaaaa")
-        .setSortBy("__v_score", true)
+        .sortBy("__v_score", SortingOrder.ASC)
         .returnFields("__v_score")
         .dialect(2);
-    Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
+
+    Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
   }

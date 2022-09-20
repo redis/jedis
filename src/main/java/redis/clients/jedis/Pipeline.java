@@ -3337,6 +3337,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<SearchResult> ftSearch(String indexName, String query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, String query, FTSearchParams searchParams) {
+    return appendCommand(commandObjects.ftSearch(indexName, query, searchParams));
+  }
+
+  @Override
   public Response<SearchResult> ftSearch(String indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }

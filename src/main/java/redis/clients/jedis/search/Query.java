@@ -7,7 +7,6 @@ import java.util.Map;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.util.SafeEncoder;
@@ -289,7 +288,7 @@ public class Query implements IParams {
     } else if (returnFieldNames != null && returnFieldNames.length > 0) {
       args.add(SearchKeyword.RETURN.getRaw());
 //      final int returnCountIndex = args.size();
-      DelayedRawable returnCountObject = new DelayedRawable();
+      LazyRawable returnCountObject = new LazyRawable();
 //      args.add(null); // holding a place for setting the total count later.
       args.add(returnCountObject); // holding a place for setting the total count later.
       int returnCount = 0;
@@ -334,20 +333,6 @@ public class Query implements IParams {
     }
   }
 
-  private static class DelayedRawable implements Rawable {
-
-    private byte[] raw = null;
-
-    public void setRaw(byte[] raw) {
-      this.raw = raw;
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return raw;
-    }
-  }
-
   /**
    * Limit the results to a certain offset and limit
    *
@@ -372,7 +357,13 @@ public class Query implements IParams {
     return this;
   }
 
-  /* Set the query payload to be evaluated by the scoring function */
+  /**
+   * Set the query payload to be evaluated by the scoring function
+   *
+   * @return the query object itself
+   * @deprecated Since RediSearch 2.0.0, PAYLOAD option is deprecated.
+   */
+  @Deprecated
   public Query setPayload(byte[] payload) {
     _payload = payload;
     return this;
@@ -435,8 +426,9 @@ public class Query implements IParams {
    * Set the query to return object payloads, if any were given
    *
    * @return the query object itself
-   *
+   * @deprecated Since RediSearch 2.0.0, WITHPAYLOADS option is deprecated.
    */
+  @Deprecated
   public Query setWithPayload() {
     this._withPayloads = true;
     return this;

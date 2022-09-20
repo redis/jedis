@@ -3404,6 +3404,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<SearchResult> ftSearch(String indexName, String query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, String query, FTSearchParams searchParams) {
+    return appendCommand(commandObjects.ftSearch(indexName, query, searchParams));
+  }
+
+  @Override
   public Response<SearchResult> ftSearch(String indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }

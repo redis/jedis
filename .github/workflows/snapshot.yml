@@ -3,9 +3,7 @@
 name: Publish Snapshot
 
 on:
-  workflow_run:
-    workflows: [Integration]
-    types: [completed]
+  push:
     branches:
       - master
       - '[0-9].[0-9]'

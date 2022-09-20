@@ -149,7 +149,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
       throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
     }
 
-    long maxBackOff = millisLeft / (attemptsLeft * (attemptsLeft + 1));
+    long maxBackOff = millisLeft / (attemptsLeft * attemptsLeft);
     return ThreadLocalRandom.current().nextLong(maxBackOff + 1);
   }
 

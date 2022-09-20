@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Random;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.bloom.TDigestMergeParams;
 
+import redis.clients.jedis.bloom.TDigestMergeParams;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.KeyValue;
 

@@ -10,10 +10,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.bloom.BFInsertParams;
-import redis.clients.jedis.bloom.BFReserveParams;
-import redis.clients.jedis.bloom.CFInsertParams;
-import redis.clients.jedis.bloom.CFReserveParams;
+import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -4343,6 +4340,66 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Map<String, Object> topkInfo(String key) {
     return executeCommand(commandObjects.topkInfo(key));
+  }
+
+  @Override
+  public String tdigestCreate(String key) {
+    return executeCommand(commandObjects.tdigestCreate(key));
+  }
+
+  @Override
+  public String tdigestCreate(String key, int compression) {
+    return executeCommand(commandObjects.tdigestCreate(key, compression));
+  }
+
+  @Override
+  public String tdigestReset(String key) {
+    return executeCommand(commandObjects.tdigestReset(key));
+  }
+
+  @Override
+  public String tdigestMerge(String destinationKey, String... sourceKeys) {
+    return executeCommand(commandObjects.tdigestMerge(destinationKey, sourceKeys));
+  }
+
+  @Override
+  public String tdigestMerge(TDigestMergeParams mergeParams, String destinationKey, String... sourceKeys) {
+    return executeCommand(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKeys));
+  }
+
+  @Override
+  public Map<String, Object> tdigestInfo(String key) {
+    return executeCommand(commandObjects.tdigestInfo(key));
+  }
+
+  @Override
+  public String tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights) {
+    return executeCommand(commandObjects.tdigestAdd(key, valueWeights));
+  }
+
+  @Override
+  public List<Double> tdigestCDF(String key, double... values) {
+    return executeCommand(commandObjects.tdigestCDF(key, values));
+  }
+
+  @Override
+  public List<Double> tdigestQuantile(String key, double... quantiles) {
+    return executeCommand(commandObjects.tdigestQuantile(key, quantiles));
+  }
+
+  @Override
+  public double tdigestMin(String key) {
+    return executeCommand(commandObjects.tdigestMin(key));
+  }
+
+  @Override
+  public double tdigestMax(String key) {
+    return executeCommand(commandObjects.tdigestMax(key));
+  }
+
+  @Override
+  public double tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
+    return executeCommand(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
   }
   // RedisBloom commands
 

@@ -76,7 +76,7 @@ public final class BuilderFactory {
     @Override
     public Map<String, Object> build(Object data) {
       final List list = (List) data;
-      final Map<String, Object> map = new HashMap<>(list.size() / 2, 1);
+      final Map<String, Object> map = new HashMap<>(list.size() / 2, 1f);
       final Iterator iterator = list.iterator();
       while (iterator.hasNext()) {
         map.put(STRING.build(iterator.next()), ENCODED_OBJECT.build(iterator.next()));
@@ -361,7 +361,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
       final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<String, String> hash = new HashMap<>(flatHash.size() / 2, 1);
+      final Map<String, String> hash = new HashMap<>(flatHash.size() / 2, 1f);
       final Iterator<byte[]> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next()));
@@ -660,7 +660,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Map<String, Long> build(Object data) {
       final List<Object> flatHash = (List<Object>) data;
-      final Map<String, Long> hash = new HashMap<>(flatHash.size() / 2, 1);
+      final Map<String, Long> hash = new HashMap<>(flatHash.size() / 2, 1f);
       final Iterator<Object> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
         hash.put(SafeEncoder.encode((byte[]) iterator.next()), (Long) iterator.next());
@@ -770,7 +770,7 @@ public final class BuilderFactory {
       }
 
       List<Object> list = (List<Object>) data;
-      Map<String, CommandDocument> map = new HashMap<>(list.size());
+      Map<String, CommandDocument> map = new HashMap<>(list.size() / 2, 1f);
 
       for (int i = 0; i < list.size();) {
         String name = STRING.build(list.get(i++));
@@ -1009,7 +1009,7 @@ public final class BuilderFactory {
       List<byte[]> hash = (List<byte[]>) objectList.get(1);
 
       Iterator<byte[]> hashIterator = hash.iterator();
-      Map<String, String> map = new HashMap<>(hash.size() / 2);
+      Map<String, String> map = new HashMap<>(hash.size() / 2, 1f);
       while (hashIterator.hasNext()) {
         map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
       }
@@ -1050,7 +1050,7 @@ public final class BuilderFactory {
         }
 
         Iterator<byte[]> hashIterator = hash.iterator();
-        Map<String, String> map = new HashMap<>(hash.size() / 2);
+        Map<String, String> map = new HashMap<>(hash.size() / 2, 1f);
         while (hashIterator.hasNext()) {
           map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
         }
@@ -1671,7 +1671,7 @@ public final class BuilderFactory {
     @Override
     public Map<String, List<String>> build(Object data) {
       List<Object> list = (List<Object>) data;
-      Map<String, List<String>> dump = new HashMap<>(list.size() / 2);
+      Map<String, List<String>> dump = new HashMap<>(list.size() / 2, 1f);
       for (int i = 0; i < list.size(); i += 2) {
         dump.put(STRING.build(list.get(i)), STRING_LIST.build(list.get(i + 1)));
       }

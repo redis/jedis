@@ -13,10 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.bloom.BFInsertParams;
-import redis.clients.jedis.bloom.BFReserveParams;
-import redis.clients.jedis.bloom.CFInsertParams;
-import redis.clients.jedis.bloom.CFReserveParams;
+import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
@@ -4151,6 +4148,66 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Map<String, Object>> topkInfo(String key) {
     return appendCommand(commandObjects.topkInfo(key));
+  }
+
+  @Override
+  public Response<String> tdigestCreate(String key) {
+    return appendCommand(commandObjects.tdigestCreate(key));
+  }
+
+  @Override
+  public Response<String> tdigestCreate(String key, int compression) {
+    return appendCommand(commandObjects.tdigestCreate(key, compression));
+  }
+
+  @Override
+  public Response<String> tdigestReset(String key) {
+    return appendCommand(commandObjects.tdigestReset(key));
+  }
+
+  @Override
+  public Response<String> tdigestMerge(String destinationKey, String... sourceKeys) {
+    return appendCommand(commandObjects.tdigestMerge(destinationKey, sourceKeys));
+  }
+
+  @Override
+  public Response<String> tdigestMerge(TDigestMergeParams mergeParams, String destinationKey, String... sourceKeys) {
+    return appendCommand(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKeys));
+  }
+
+  @Override
+  public Response<Map<String, Object>> tdigestInfo(String key) {
+    return appendCommand(commandObjects.tdigestInfo(key));
+  }
+
+  @Override
+  public Response<String> tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights) {
+    return appendCommand(commandObjects.tdigestAdd(key, valueWeights));
+  }
+
+  @Override
+  public Response<List<Double>> tdigestCDF(String key, double... values) {
+    return appendCommand(commandObjects.tdigestCDF(key, values));
+  }
+
+  @Override
+  public Response<List<Double>> tdigestQuantile(String key, double... quantiles) {
+    return appendCommand(commandObjects.tdigestQuantile(key, quantiles));
+  }
+
+  @Override
+  public Response<Double> tdigestMin(String key) {
+    return appendCommand(commandObjects.tdigestMin(key));
+  }
+
+  @Override
+  public Response<Double> tdigestMax(String key) {
+    return appendCommand(commandObjects.tdigestMax(key));
+  }
+
+  @Override
+  public Response<Double> tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
+    return appendCommand(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
   }
   // RedisBloom commands
 

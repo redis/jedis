@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.*;
 
 import java.util.List;
@@ -72,11 +73,10 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void aclGetUser() {
-
     // get default user information
     AccessControlUser userInfo = jedis.aclGetUser("default");
 
-    assertEquals(1, userInfo.getFlags().size());
+    assertThat(userInfo.getFlags().size(), greaterThanOrEqualTo(1));
     assertEquals(1, userInfo.getPassword().size());
     assertEquals("+@all", userInfo.getCommands());
     assertEquals("~*", userInfo.getKeys().get(0));
@@ -85,7 +85,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis.aclDelUser(USER_NAME);
     jedis.aclSetUser(USER_NAME);
     userInfo = jedis.aclGetUser(USER_NAME);
-    assertEquals(1, userInfo.getFlags().size());
+    assertThat(userInfo.getFlags().size(), greaterThanOrEqualTo(1));
     assertEquals("off", userInfo.getFlags().get(0));
     assertTrue(userInfo.getPassword().isEmpty());
     assertTrue(userInfo.getKeys().isEmpty());
@@ -99,7 +99,6 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertThat(userInfo.getCommands(), containsString("+debug|digest"));
 
     jedis.aclDelUser(USER_NAME);
-
   }
 
   @Test
@@ -156,7 +155,6 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     jedis2.close();
-
   }
 
   @Test

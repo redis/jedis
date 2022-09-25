@@ -9,16 +9,11 @@ import com.google.gson.GsonBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.search.*;
-import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 public class JsonSearchWithGsonTest extends RedisModuleCommandsTestBase {
 
-  public static final String JSON_ROOT = ".";
-
   private static final String index = "gson-index";
-
-  private static final Gson gson = new GsonBuilder().serializeNulls().create();
 
   @BeforeClass
   public static void prepare() {
@@ -45,6 +40,7 @@ public class JsonSearchWithGsonTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void returnNullField() {
+    Gson nullGson = new GsonBuilder().serializeNulls().create();
 
     assertOK(client.ftCreate(index, FTCreateParams.createParams().on(IndexDataType.JSON),
         redis.clients.jedis.search.schemafields.TextField.of(FieldName.of("$.name").as("name")),
@@ -52,7 +48,7 @@ public class JsonSearchWithGsonTest extends RedisModuleCommandsTestBase {
         redis.clients.jedis.search.schemafields.NumericField.of(FieldName.of("$.age").as("age"))));
 
     Account object = new Account("Jane", null, null);
-    String jsonString = gson.toJson(object);
+    String jsonString = nullGson.toJson(object);
     client.jsonSet("account:2", jsonString);
 
     SearchResult sr = client.ftSearch(index, "*",

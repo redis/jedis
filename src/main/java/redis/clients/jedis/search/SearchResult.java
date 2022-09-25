@@ -70,10 +70,10 @@ public class SearchResult {
 
       for (int i = 1; i < resp.size(); i += step) {
 
+        String id = BuilderFactory.STRING.build(resp.get(i));
         double score = hasScores ? BuilderFactory.DOUBLE.build(resp.get(i + scoreOffset)) : 1.0;
         byte[] payload = hasPayloads ? (byte[]) resp.get(i + payloadOffset) : null;
         List<byte[]> fields = hasContent ? (List<byte[]>) resp.get(i + contentOffset) : null;
-        String id = new String((byte[]) resp.get(i));
 
         documents.add(Document.load(id, score, payload, fields, decode));
       }

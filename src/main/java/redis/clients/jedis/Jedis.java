@@ -387,8 +387,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * GB).
    * @param key
    * @param value
-   * @param params
-   * @return OK
+   * @param params NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the
+   *          key if it already exists. EX|PX, expire time units: EX = seconds; PX = milliseconds
+   * @return simple-string-reply {@code OK} if {@code SET} was executed correctly, or {@code null}
+   * if the {@code SET} operation was not performed because the user specified the NX or XX option
+   * but the condition was not met.
    */
   @Override
   public String set(final byte[] key, final byte[] value, final SetParams params) {
@@ -4884,7 +4887,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param value
    * @param params NX|XX, NX -- Only set the key if it does not already exist. XX -- Only set the
    *          key if it already exists. EX|PX, expire time units: EX = seconds; PX = milliseconds
-   * @return OK
+   * @return simple-string-reply {@code OK} if {@code SET} was executed correctly, or {@code null}
+   * if the {@code SET} operation was not performed because the user specified the NX or XX option
+   * but the condition was not met.
    */
   @Override
   public String set(final String key, final String value, final SetParams params) {

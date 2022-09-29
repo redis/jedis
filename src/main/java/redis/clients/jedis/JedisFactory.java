@@ -207,8 +207,18 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   public boolean validateObject(PooledObject<Jedis> pooledJedis) {
     final Jedis jedis = pooledJedis.getObject();
     try {
-      // check HostAndPort ??
-      return jedis.getConnection().isConnected() && jedis.ping().equals("PONG");
+      boolean targetHasNotChanged = true;
+      if (jedisSocketFactory instanceof DefaultJedisSocketFactory) {
+        HostAndPort targetAddress = ((DefaultJedisSocketFactory) jedisSocketFactory).getHostAndPort();
+        HostAndPort objectAddress = jedis.getConnection().getHostAndPort();
+
+        targetHasNotChanged = targetAddress.getHost().equals(objectAddress.getHost())
+            && targetAddress.getPort() == objectAddress.getPort();
+      }
+
+      return targetHasNotChanged
+          && jedis.getConnection().isConnected()
+          && jedis.ping().equals("PONG");
     } catch (final Exception e) {
       logger.error("Error while validating pooled Jedis object.", e);
       return false;

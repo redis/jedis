@@ -16,6 +16,4 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public interface JedisSocketFactory {
 
   Socket createSocket() throws JedisConnectionException;
-
-  HostAndPort getHostAndPort();
 }

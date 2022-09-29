@@ -39,5 +39,10 @@ public class UdsTest {
         throw new JedisConnectionException("Failed to create UDS connection.", ioe);
       }
     }
+
+    @Override
+    public HostAndPort getHostAndPort() {
+      return new HostAndPort(UDS_SOCKET.toString(), 0);
+    }
   }
 }

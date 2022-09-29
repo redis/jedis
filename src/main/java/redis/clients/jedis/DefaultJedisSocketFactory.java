@@ -122,6 +122,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     this.hostAndPort = hostAndPort;
   }
 
+  @Override
   public HostAndPort getHostAndPort() {
     return this.hostAndPort;
   }

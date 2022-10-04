@@ -3934,14 +3934,14 @@ public class CommandObjects {
         .add(highCutQuantile), BuilderFactory.DOUBLE);
   }
 
-  public final CommandObject<List<Double>> tdigestRank(String key, double... values) {
+  public final CommandObject<List<Long>> tdigestRank(String key, double... values) {
     return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.RANK).key(key),
-        values), BuilderFactory.DOUBLE_LIST);
+        values), BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<List<Double>> tdigestRevRank(String key, double... values) {
+  public final CommandObject<List<Long>> tdigestRevRank(String key, double... values) {
     return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.REVRANK).key(key),
-        values), BuilderFactory.DOUBLE_LIST);
+        values), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<List<Double>> tdigestByRank(String key, long... ranks) {

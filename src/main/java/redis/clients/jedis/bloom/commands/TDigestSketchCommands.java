@@ -112,9 +112,9 @@ public interface TDigestSketchCommands {
    */
   double tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile);
 
-  List<Double> tdigestRank(String key, double... values);
+  List<Long> tdigestRank(String key, double... values);
 
-  List<Double> tdigestRevRank(String key, double... values);
+  List<Long> tdigestRevRank(String key, double... values);
 
   List<Double> tdigestByRank(String key, long... ranks);
 

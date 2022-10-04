@@ -4403,12 +4403,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Double> tdigestRank(String key, double... values) {
+  public List<Long> tdigestRank(String key, double... values) {
     return executeCommand(commandObjects.tdigestRank(key, values));
   }
 
   @Override
-  public List<Double> tdigestRevRank(String key, double... values) {
+  public List<Long> tdigestRevRank(String key, double... values) {
     return executeCommand(commandObjects.tdigestRevRank(key, values));
   }
 

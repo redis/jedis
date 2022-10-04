@@ -63,10 +63,10 @@ public interface TDigestSketchCommands {
    * {@code TDIGEST.ADD key value weight [ value weight ...]}
    *
    * @param key The name of the sketch (a t-digest data structure)
-   * @param valueWeights Pairs of value and respective weight of observations
+   * @param values The value of the observation (floating-point)
    * @return OK
    */
-  String tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights);
+  String tdigestAdd(String key, double... values);
 
   /**
    * {@code TDIGEST.CDF key value [value ...]}

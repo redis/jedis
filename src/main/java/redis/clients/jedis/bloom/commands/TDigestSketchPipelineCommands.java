@@ -30,4 +30,12 @@ public interface TDigestSketchPipelineCommands {
   Response<Double> tdigestMax(String key);
 
   Response<Double> tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile);
+
+  Response<List<Long>> tdigestRank(String key, double... values);
+
+  Response<List<Long>> tdigestRevRank(String key, double... values);
+
+  Response<List<Double>> tdigestByRank(String key, long... ranks);
+
+  Response<List<Double>> tdigestByRevRank(String key, long... ranks);
 }

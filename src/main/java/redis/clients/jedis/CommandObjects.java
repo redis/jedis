@@ -3906,10 +3906,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TDigestCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }
 
-  public final CommandObject<String> tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights) {
+  public final CommandObject<String> tdigestAdd(String key, double... values) {
     CommandArguments args = commandArguments(TDigestCommand.ADD).key(key);
-    for (Map.Entry<Double, Long> vw : valueWeights) {
-      args.add(vw.getKey()).add(vw.getValue());
+    for (double value : values) {
+      args.add(value);
     }
     return new CommandObject<>(args, BuilderFactory.STRING);
   }

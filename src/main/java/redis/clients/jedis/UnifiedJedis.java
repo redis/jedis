@@ -4373,8 +4373,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String tdigestAdd(String key, Map.Entry<Double, Long>... valueWeights) {
-    return executeCommand(commandObjects.tdigestAdd(key, valueWeights));
+  public String tdigestAdd(String key, double... values) {
+    return executeCommand(commandObjects.tdigestAdd(key, values));
   }
 
   @Override

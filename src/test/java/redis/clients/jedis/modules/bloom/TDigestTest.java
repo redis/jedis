@@ -177,6 +177,17 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     assertEquals(4.5, client.tdigestTrimmedMean(key, 0.0, 0.5), 0.01);
     assertEquals(14.5, client.tdigestTrimmedMean(key, 0.5, 1.0), 0.01);
   }
+
+  @Test
+  public void rankCommands() {
+    final String key = "ranks";
+    client.tdigestCreate(key);
+    client.tdigestAdd(key, 2d, 3d, 5d);
+    assertEquals(Arrays.asList(1l, 2l), client.tdigestRank(key, 2d, 4d));
+    assertEquals(Arrays.asList(0l, 1l), client.tdigestRevRank(key, 5d, 4d));
+    assertEquals(Arrays.asList(2d, 3d), client.tdigestByRank(key, 0l, 1l));
+    assertEquals(Arrays.asList(5d, 3d), client.tdigestByRevRank(key, 1l, 2l));
+  }
 //
 //  private static KeyValue<Double, Long> randomValueWeight() {
 //    return new KeyValue<>(random.nextDouble() * 10000, Math.abs(random.nextInt()) + 1l);

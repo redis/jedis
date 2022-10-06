@@ -3907,27 +3907,18 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> tdigestAdd(String key, double... values) {
-    CommandArguments args = commandArguments(TDigestCommand.ADD).key(key);
-    for (double value : values) {
-      args.add(value);
-    }
-    return new CommandObject<>(args, BuilderFactory.STRING);
+    return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.ADD).key(key), values),
+        BuilderFactory.STRING);
   }
 
   public final CommandObject<List<Double>> tdigestCDF(String key, double... values) {
-    CommandArguments args = commandArguments(TDigestCommand.CDF).key(key);
-    for (double value : values) {
-      args.add(value);
-    }
-    return new CommandObject<>(args, BuilderFactory.DOUBLE_LIST);
+    return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.CDF).key(key), values),
+        BuilderFactory.DOUBLE_LIST);
   }
 
   public final CommandObject<List<Double>> tdigestQuantile(String key, double... quantiles) {
-    CommandArguments args = commandArguments(TDigestCommand.QUANTILE).key(key);
-    for (double quantile : quantiles) {
-      args.add(quantile);
-    }
-    return new CommandObject<>(args, BuilderFactory.DOUBLE_LIST);
+    return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.QUANTILE).key(key),
+        quantiles), BuilderFactory.DOUBLE_LIST);
   }
 
   public final CommandObject<Double> tdigestMin(String key) {
@@ -3941,6 +3932,26 @@ public class CommandObjects {
   public final CommandObject<Double> tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
     return new CommandObject<>(commandArguments(TDigestCommand.TRIMMED_MEAN).key(key).add(lowCutQuantile)
         .add(highCutQuantile), BuilderFactory.DOUBLE);
+  }
+
+  public final CommandObject<List<Long>> tdigestRank(String key, double... values) {
+    return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.RANK).key(key),
+        values), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> tdigestRevRank(String key, double... values) {
+    return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.REVRANK).key(key),
+        values), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Double>> tdigestByRank(String key, long... ranks) {
+    return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.BYRANK).key(key),
+        ranks), BuilderFactory.DOUBLE_LIST);
+  }
+
+  public final CommandObject<List<Double>> tdigestByRevRank(String key, long... ranks) {
+    return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.BYREVRANK).key(key),
+        ranks), BuilderFactory.DOUBLE_LIST);
   }
   // RedisBloom commands
 
@@ -4002,6 +4013,20 @@ public class CommandObjects {
       List<String> list = BuilderFactory.STRING_LIST.build(data);
       return list.stream().map(s -> GSON.fromJson(s, clazz)).collect(Collectors.toList());
     }
+  }
+
+  private CommandArguments addFlatArgs(CommandArguments args, long... values) {
+    for (long value : values) {
+      args.add(value);
+    }
+    return args;
+  }
+
+  private CommandArguments addFlatArgs(CommandArguments args, double... values) {
+    for (double value : values) {
+      args.add(value);
+    }
+    return args;
   }
 
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, String... keyvalues) {

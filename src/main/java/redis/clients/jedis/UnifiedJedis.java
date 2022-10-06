@@ -4401,6 +4401,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public double tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
     return executeCommand(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
   }
+
+  @Override
+  public List<Long> tdigestRank(String key, double... values) {
+    return executeCommand(commandObjects.tdigestRank(key, values));
+  }
+
+  @Override
+  public List<Long> tdigestRevRank(String key, double... values) {
+    return executeCommand(commandObjects.tdigestRevRank(key, values));
+  }
+
+  @Override
+  public List<Double> tdigestByRank(String key, long... ranks) {
+    return executeCommand(commandObjects.tdigestByRank(key, ranks));
+  }
+
+  @Override
+  public List<Double> tdigestByRevRank(String key, long... ranks) {
+    return executeCommand(commandObjects.tdigestByRevRank(key, ranks));
+  }
   // RedisBloom commands
 
   // RedisGraph commands

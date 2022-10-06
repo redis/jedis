@@ -4256,6 +4256,26 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<Double> tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
     return appendCommand(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
   }
+
+  @Override
+  public Response<List<Long>> tdigestRank(String key, double... values) {
+    return appendCommand(commandObjects.tdigestRank(key, values));
+  }
+
+  @Override
+  public Response<List<Long>> tdigestRevRank(String key, double... values) {
+    return appendCommand(commandObjects.tdigestRevRank(key, values));
+  }
+
+  @Override
+  public Response<List<Double>> tdigestByRank(String key, long... ranks) {
+    return appendCommand(commandObjects.tdigestByRank(key, ranks));
+  }
+
+  @Override
+  public Response<List<Double>> tdigestByRevRank(String key, long... ranks) {
+    return appendCommand(commandObjects.tdigestByRevRank(key, ranks));
+  }
   // RedisBloom commands
 
   // RedisGraph commands

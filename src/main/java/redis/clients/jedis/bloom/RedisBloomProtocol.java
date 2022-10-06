@@ -102,7 +102,8 @@ public class RedisBloomProtocol {
 
   public enum TDigestCommand implements ProtocolCommand {
 
-    CREATE, INFO, ADD, RESET, MERGE, CDF, QUANTILE, MIN, MAX, TRIMMED_MEAN;
+    CREATE, INFO, ADD, RESET, MERGE, CDF, QUANTILE, MIN, MAX, TRIMMED_MEAN,
+    RANK, REVRANK, BYRANK, BYREVRANK;
 
     private final byte[] raw;
 

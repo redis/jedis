@@ -46,7 +46,7 @@
 
 	<properties>
 		<github.global.server>github</github.global.server>
-		<slf4j.version>1.7.32</slf4j.version>
+		<slf4j.version>1.7.36</slf4j.version>
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 	</properties>
 

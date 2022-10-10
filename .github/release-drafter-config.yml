@@ -1,14 +1,38 @@
-name-template: '$NEXT_MAJOR_VERSION'
-tag-template: 'jedis-$NEXT_MAJOR_VERSION'
+name-template: '$NEXT_MINOR_VERSION'
+tag-template: 'v$NEXT_MINOR_VERSION'
+autolabeler:
+  - label: 'maintenance'
+    files:
+      - '*.md'
+      - '.github/*'
+  - label: 'bug'
+    branch:
+      - '/bug-.+'
+  - label: 'maintenance'
+    branch:
+      - '/maintenance-.+'
+  - label: 'feature'
+    branch:
+      - '/feature-.+'
 categories:
-  - title: 'Features'
+  - title: 'Breaking Changes'
     labels:
-      - 'ENHANCEMENT'
-  - title: 'Bug Fixes'
+      - 'breakingchange'
+  - title: '🧪 Experimental Features'
     labels:
+      - 'experimental'
+  - title: '🚀 New Features'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
       - 'BUG'
-  - title: 'Maintenance'
-    label: 'chore'
+  - title: '🧰 Maintenance'
+    label: 'maintenance'
 change-template: '- $TITLE (#$NUMBER)'
 exclude-labels:
   - 'skip-changelog'
@@ -19,5 +43,6 @@ template: |
 
   ## Contributors
   We'd like to thank all the contributors who worked on this release!
-  
+
   $CONTRIBUTORS
+

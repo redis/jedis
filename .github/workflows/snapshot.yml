@@ -1,0 +1,42 @@
+---
+
+name: Publish Snapshot
+
+on:
+  push:
+    branches:
+      - master
+      - '[0-9].[0-9]'
+
+jobs:
+
+  snapshot:
+    name: Deploy Snapshot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up publishing to maven central
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          server-id: ossrh
+          server-username: MAVEN_USERNAME
+          server-password: MAVEN_PASSWORD
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+      - name: mvn offline
+        run: |
+          mvn -q dependency:go-offline
+      - name: deploy
+        run: |
+          mvn --no-transfer-progress \
+            -DskipTests deploy
+        env:
+          MAVEN_USERNAME: ${{secrets.OSSH_USERNAME}}
+          MAVEN_PASSWORD: ${{secrets.OSSH_TOKEN}}

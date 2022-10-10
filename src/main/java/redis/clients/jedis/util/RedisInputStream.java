@@ -13,7 +13,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
@@ -22,6 +21,10 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  * a byte that if that byte is not there it is a stream error.
  */
 public class RedisInputStream extends FilterInputStream {
+
+  private static final int INPUT_BUFFER_SIZE = Integer.parseInt(
+      System.getProperty("jedis.bufferSize.input",
+          System.getProperty("jedis.bufferSize", "8192")));
 
   protected final byte[] buf;
 
@@ -36,7 +39,7 @@ public class RedisInputStream extends FilterInputStream {
   }
 
   public RedisInputStream(InputStream in) {
-    this(in, 8192);
+    this(in, INPUT_BUFFER_SIZE);
   }
 
   public byte readByte() throws JedisConnectionException {

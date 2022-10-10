@@ -1,4 +1,4 @@
-/*
- * This package contains the classes that represent different Redis responses.
+/**
+ * This package contains custom responses of core Redis commands.
  */
 package redis.clients.jedis.resps;

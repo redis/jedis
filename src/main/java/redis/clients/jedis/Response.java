@@ -1,8 +1,9 @@
 package redis.clients.jedis;
 
+import java.util.function.Supplier;
 import redis.clients.jedis.exceptions.JedisDataException;
 
-public class Response<T> {
+public class Response<T> implements Supplier<T> {
   protected T response = null;
   protected JedisDataException exception = null;
 
@@ -23,6 +24,7 @@ public class Response<T> {
     set = true;
   }
 
+  @Override
   public T get() {
     // if response has dependency response and dependency is not built, build it first and no more!!
     if (dependency != null && dependency.set && !dependency.built) {

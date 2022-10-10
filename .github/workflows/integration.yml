@@ -1,0 +1,60 @@
+---
+
+name: Integration
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.rst'
+    branches:
+      - master
+      - '[0-9].[0-9]'
+  pull_request:
+    branches:
+      - master
+      - '[0-9].[0-9]'
+  schedule:
+    - cron: '0 1 * * *' # nightly build
+
+jobs:
+
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up publishing to maven central
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: stunnel
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y stunnel make
+          make system-setup
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+      - name: mvn offline
+        run: |
+          mvn -q dependency:go-offline
+      - name: run tests
+        run: |
+          TEST="" make test
+        env:
+          JVM_OPTS: -Xmx3200m
+          TERM: dumb
+      - name: redismod docker
+        run: docker run -p 52567:6379 -d redislabs/redismod:edge
+      - name: run tests
+        run: mvn -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
+      - name: codecov
+        run: |
+          bash <(curl -s https://codecov.io/bash)

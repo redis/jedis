@@ -185,7 +185,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   private static Set<HostAndPort> parseHostAndPorts(Set<String> strings) {
-    return strings.stream().map(HostAndPort::parseString).collect(Collectors.toSet());
+    return strings.stream().map(HostAndPort::from).collect(Collectors.toSet());
   }
 
   @Override
@@ -289,8 +289,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
       // get a reference because it can change concurrently
       final HostAndPort master = currentHostMaster;
-      final HostAndPort connection = new HostAndPort(jedis.getClient().getHost(), jedis.getClient()
-          .getPort());
+      final HostAndPort connection = jedis.getClient().getHostAndPort();
 
       if (master.equals(connection)) {
         // connected to the correct master

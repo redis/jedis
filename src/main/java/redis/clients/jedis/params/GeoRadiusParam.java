@@ -1,19 +1,23 @@
 package redis.clients.jedis.params;
 
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.util.SafeEncoder;
+import static redis.clients.jedis.Protocol.Keyword.COUNT;
+import static redis.clients.jedis.Protocol.Keyword.WITHCOORD;
+import static redis.clients.jedis.Protocol.Keyword.WITHDIST;
+import static redis.clients.jedis.Protocol.Keyword.WITHHASH;
+import static redis.clients.jedis.Protocol.Keyword.ANY;
 
-import java.util.ArrayList;
-import java.util.Collections;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.args.SortingOrder;
 
-public class GeoRadiusParam extends Params {
-  private static final String WITHCOORD = "withcoord";
-  private static final String WITHDIST = "withdist";
-  private static final String WITHHASH = "withhash";
+public class GeoRadiusParam implements IParams {
 
-  private static final String ASC = "asc";
-  private static final String DESC = "desc";
-  private static final String COUNT = "count";
+  private boolean withCoord = false;
+  private boolean withDist = false;
+  private boolean withHash = false;
+
+  private Integer count = null;
+  private boolean any = false;
+  private SortingOrder sortingOrder = null;
 
   public GeoRadiusParam() {
   }
@@ -23,62 +27,73 @@ public class GeoRadiusParam extends Params {
   }
 
   public GeoRadiusParam withCoord() {
-    addParam(WITHCOORD);
+    withCoord = true;
     return this;
   }
 
   public GeoRadiusParam withDist() {
-    addParam(WITHDIST);
+    withDist = true;
     return this;
   }
 
   public GeoRadiusParam withHash() {
-    addParam(WITHHASH);
+    withHash = true;
     return this;
   }
 
   public GeoRadiusParam sortAscending() {
-    addParam(ASC);
-    return this;
+    return sortingOrder(SortingOrder.ASC);
   }
 
   public GeoRadiusParam sortDescending() {
-    addParam(DESC);
+    return sortingOrder(SortingOrder.DESC);
+  }
+
+  public GeoRadiusParam sortingOrder(SortingOrder order) {
+    this.sortingOrder = order;
     return this;
   }
 
   public GeoRadiusParam count(int count) {
     if (count > 0) {
-      addParam(COUNT, count);
+      this.count = count;
     }
     return this;
   }
 
-  public byte[][] getByteParams(byte[]... args) {
-    ArrayList<byte[]> byteParams = new ArrayList<>();
-    Collections.addAll(byteParams, args);
+  public GeoRadiusParam count(int count, boolean any) {
+    if (count > 0) {
+      this.count = count;
 
-    if (contains(WITHCOORD)) {
-      byteParams.add(SafeEncoder.encode(WITHCOORD));
+      if (any) {
+        this.any = true;
+      }
     }
-    if (contains(WITHDIST)) {
-      byteParams.add(SafeEncoder.encode(WITHDIST));
+    return this;
+  }
+
+  @Override
+  public void addParams(CommandArguments args) {
+
+    if (withCoord) {
+      args.add(WITHCOORD);
     }
-    if (contains(WITHHASH)) {
-      byteParams.add(SafeEncoder.encode(WITHHASH));
+    if (withDist) {
+      args.add(WITHDIST);
+    }
+    if (withHash) {
+      args.add(WITHHASH);
     }
 
-    if (contains(COUNT)) {
-      byteParams.add(SafeEncoder.encode(COUNT));
-      byteParams.add(Protocol.toByteArray((int) getParam(COUNT)));
+    if (count != null) {
+      args.add(COUNT).add(count);
+      if (any) {
+        args.add(ANY);
+      }
     }
 
-    if (contains(ASC)) {
-      byteParams.add(SafeEncoder.encode(ASC));
-    } else if (contains(DESC)) {
-      byteParams.add(SafeEncoder.encode(DESC));
+    if (sortingOrder != null) {
+      args.add(sortingOrder);
     }
-
-    return byteParams.toArray(new byte[byteParams.size()][]);
   }
 }

@@ -4327,6 +4327,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.topkQuery(key, items));
   }
 
+  @Deprecated
   @Override
   public List<Long> topkCount(String key, String... items) {
     return executeCommand(commandObjects.topkCount(key, items));

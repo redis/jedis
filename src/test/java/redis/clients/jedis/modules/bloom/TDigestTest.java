@@ -32,10 +32,10 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     assertEquals(Long.valueOf(unmergedNodes), info.get("Unmerged nodes"));
   }
 
-  private void assertTotalWeight(String key, double totalWeight) {
+  private void assertTotalWeight(String key, long totalWeight) {
     Map<String, Object> info = client.tdigestInfo(key);
-    assertEquals(totalWeight, Double.parseDouble((String) info.get("Merged weight"))
-        + Double.parseDouble((String) info.get("Unmerged weight")), 0.01);
+    assertEquals(totalWeight, (Long) info.get("Merged weight")
+        + (Long) info.get("Unmerged weight"));
   }
 
   @Test
@@ -115,7 +115,7 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     client.tdigestAdd("from2", weightedValue(1d, 10));
 
     assertEquals("OK", client.tdigestMerge("to", "from1", "from2"));
-    assertTotalWeight("to", 11d);
+    assertTotalWeight("to", 11l);
 
     assertEquals("OK", client.tdigestMerge(TDigestMergeParams.mergeParams()
         .compression(50).override(), "to", "from1", "from2"));

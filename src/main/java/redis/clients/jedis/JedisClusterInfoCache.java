@@ -14,7 +14,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -112,7 +111,7 @@ public class JedisClusterInfoCache {
             try (Connection j = new Connection(hostAndPort, clientConfig)) {
               discoverClusterSlots(j);
               return;
-            } catch (JedisConnectionException e) {
+            } catch (JedisException e) {
               // try next nodes
             }
           }
@@ -127,7 +126,7 @@ public class JedisClusterInfoCache {
             }
             discoverClusterSlots(j);
             return;
-          } catch (JedisConnectionException e) {
+          } catch (JedisException e) {
             // try next nodes
           }
         }

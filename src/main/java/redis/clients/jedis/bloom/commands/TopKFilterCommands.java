@@ -59,7 +59,9 @@ public interface TopKFilterCommands {
    * @param key
    * @param items
    * @return count for item
+   * @deprecated As of RedisBloom 2.4, this command is regarded as deprecated.
    */
+  @Deprecated
   List<Long> topkCount(String key, String... items);
 
   /**

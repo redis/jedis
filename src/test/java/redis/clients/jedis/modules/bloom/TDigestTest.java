@@ -186,7 +186,7 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList(1l, 2l), client.tdigestRank(key, 2d, 4d));
     assertEquals(Arrays.asList(0l, 1l), client.tdigestRevRank(key, 5d, 4d));
     assertEquals(Arrays.asList(2d, 3d), client.tdigestByRank(key, 0l, 1l));
-    assertEquals(Arrays.asList(5d, 3d), client.tdigestByRevRank(key, 1l, 2l));
+    assertEquals(Arrays.asList(5d, 3d), client.tdigestByRevRank(key, 0l, 1l));
   }
 //
 //  private static KeyValue<Double, Long> randomValueWeight() {

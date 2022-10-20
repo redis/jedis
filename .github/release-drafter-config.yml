@@ -37,7 +37,7 @@ change-template: '- $TITLE (#$NUMBER)'
 exclude-labels:
   - 'skip-changelog'
 template: |
-  ## Changes
+  # Changes
 
   $CHANGES
 

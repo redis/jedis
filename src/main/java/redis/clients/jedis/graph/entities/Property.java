@@ -48,7 +48,7 @@ public class Property<T> {
   /**
    * Default toString implementation
    *
-   * @return
+   * @return the String
    */
   @Override
   public String toString() {

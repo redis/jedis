@@ -35,7 +35,7 @@ public interface CountMinSketchCommands {
    *                    of 0.1% (1 in 1000), error_rate should be set to 0.001.
    *                    The closer this number is to zero, the greater the memory
    *                    consumption per item and the more CPU usage per operation.
-   * @return 
+   * @return OK
    */
   String cmsInitByProb(String key, double error, double probability);
 

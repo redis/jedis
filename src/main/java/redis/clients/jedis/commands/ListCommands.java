@@ -261,8 +261,9 @@ public interface ListCommands {
   long linsert(String key, ListPosition where, String pivot, String value);
 
   /**
-   * Inserts specified values at the head of the list stored at key. In contrary to {@link ListBinaryCommands#lpush(byte[], byte[]...) LPUSH},
-   * no operation will be performed when key does not yet exist.
+   * Inserts specified values at the head of the list stored at key. In contrary to
+   * {@link ListCommands#lpush(String, String...) LPUSH}, no operation will be performed when key
+   * does not yet exist.
    * @param key
    * @param strings the strings to push
    * @return The length of the list after the push operation
@@ -270,8 +271,9 @@ public interface ListCommands {
   long lpushx(String key, String... strings);
 
   /**
-   * Inserts specified values at the tail of the list stored at key. In contrary to {@link ListBinaryCommands#rpush(byte[], byte[]...) RPUSH},
-   * no operation will be performed when key does not yet exist.
+   * Inserts specified values at the tail of the list stored at key. In contrary to
+   * {@link ListCommands#rpush(String, String...) RPUSH}, no operation will be performed when key
+   * does not yet exist.
    * @param key
    * @param strings the strings to push
    * @return The length of the list after the push operation

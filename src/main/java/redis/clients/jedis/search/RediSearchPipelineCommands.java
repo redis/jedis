@@ -83,6 +83,10 @@ public interface RediSearchPipelineCommands {
 
   Response<Set<String>> ftDictDumpBySampleKey(String indexName, String dictionary);
 
+  Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query);
+
+  Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query, FTSpellCheckParams spellCheckParams);
+
   Response<Map<String, Object>> ftInfo(String indexName);
 
   Response<Set<String>> ftTagVals(String indexName, String fieldName);

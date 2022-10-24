@@ -3173,6 +3173,17 @@ public class CommandObjects {
     return addProcessKey(ftDictDump(dictionary), indexName);
   }
 
+  public final CommandObject<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query) {
+    return new CommandObject<>(commandArguments(SearchCommand.SPELLCHECK).key(index).add(query),
+        BuilderFactory.SEARCH_SPELLCHECK_RESPONSE);
+  }
+
+  public final CommandObject<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query,
+      FTSpellCheckParams spellCheckParams) {
+    return new CommandObject<>(commandArguments(SearchCommand.SPELLCHECK).key(index).add(query)
+        .addParams(spellCheckParams), BuilderFactory.SEARCH_SPELLCHECK_RESPONSE);
+  }
+
   public CommandObject<Map<String, Object>> ftInfo(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.INFO).add(indexName), BuilderFactory.ENCODED_OBJECT_MAP);
   }

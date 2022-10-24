@@ -3450,6 +3450,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query) {
+    return appendCommand(commandObjects.ftSpellCheck(index, query));
+  }
+
+  @Override
+  public Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query, FTSpellCheckParams spellCheckParams) {
+    return appendCommand(commandObjects.ftSpellCheck(index, query, spellCheckParams));
+  }
+
+  @Override
   public Response<Map<String, Object>> ftInfo(String indexName) {
     return appendCommand(commandObjects.ftInfo(indexName));
   }

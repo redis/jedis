@@ -969,22 +969,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void dictionary() {
-    assertEquals(3L, client.ftDictAdd("dict", "foo", "bar", "hello world"));
-    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDump("dict"));
-    assertEquals(3L, client.ftDictDel("dict", "foo", "bar", "hello world"));
-    assertEquals(Collections.emptySet(), client.ftDictDump("dict"));
-  }
-
-  @Test
-  public void dictionaryBySampleKey() {
-    assertEquals(3L, client.ftDictAddBySampleKey(index, "dict", "foo", "bar", "hello world"));
-    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDumpBySampleKey(index, "dict"));
-    assertEquals(3L, client.ftDictDelBySampleKey(index, "dict", "foo", "bar", "hello world"));
-    assertEquals(Collections.emptySet(), client.ftDictDumpBySampleKey(index, "dict"));
-  }
-
-  @Test
   public void synonym() {
     Schema sc = new Schema().addTextField("name", 1.0).addTextField("addr", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));

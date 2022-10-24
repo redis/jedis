@@ -82,6 +82,10 @@ public interface RediSearchCommands {
 
   Set<String> ftDictDumpBySampleKey(String indexName, String dictionary);
 
+  Map<String, Map<String, Double>> ftSpellCheck(String index, String query);
+
+  Map<String, Map<String, Double>> ftSpellCheck(String index, String query, FTSpellCheckParams spellCheckParams);
+
   Map<String, Object> ftInfo(String indexName);
 
   Set<String> ftTagVals(String indexName, String fieldName);

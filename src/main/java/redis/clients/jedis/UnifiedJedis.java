@@ -3562,6 +3562,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map<String, Map<String, Double>> ftSpellCheck(String index, String query) {
+    return executeCommand(commandObjects.ftSpellCheck(index, query));
+  }
+
+  @Override
+  public Map<String, Map<String, Double>> ftSpellCheck(String index, String query, FTSpellCheckParams spellCheckParams) {
+    return executeCommand(commandObjects.ftSpellCheck(index, query, spellCheckParams));
+  }
+
+  @Override
   public Map<String, Object> ftInfo(String indexName) {
     return executeCommand(commandObjects.ftInfo(indexName));
   }

@@ -1679,6 +1679,35 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, Map<String, Double>>> SEARCH_SPELLCHECK_RESPONSE
+      = new Builder<Map<String, Map<String, Double>>>() {
+
+    private final String TERM = "TERM";
+
+    @Override
+    public Map<String, Map<String, Double>> build(Object data) {
+      List<Object> rawTerms = (List<Object>) data;
+      Map<String, Map<String, Double>> returnTerms = new LinkedHashMap<>(rawTerms.size());
+
+      for (Object rawTerm : rawTerms) {
+        List<Object> rawElements = (List<Object>) rawTerm;
+
+        String header = STRING.build(rawElements.get(0));
+        if (!TERM.equals(header)) {
+          throw new IllegalStateException("Unrecognized header: " + header);
+        }
+        String term = STRING.build(rawElements.get(1));
+
+        List<List<Object>> list = (List<List<Object>>) rawElements.get(2);
+        Map<String, Double> entries = new LinkedHashMap<>(list.size());
+        list.forEach(entry -> entries.put(STRING.build(entry.get(1)), DOUBLE.build(entry.get(0))));
+
+        returnTerms.put(term, entries);
+      }
+      return returnTerms;
+    }
+  };
+
   public static final Builder<TSElement> TIMESERIES_ELEMENT = new Builder<TSElement>() {
     @Override
     public TSElement build(Object data) {

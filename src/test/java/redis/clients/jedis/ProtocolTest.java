@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.FragmentedByteArrayInputStream;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -138,5 +139,22 @@ public class ProtocolTest {
       return;
     }
     fail("Expected a JedisBusyException to be thrown.");
+  }
+
+  @Test
+  public void nonAnsiErrMessageReply() {
+    final String nonAnsiErrMessage = "ERR 配置错误。";
+    final InputStream is = new ByteArrayInputStream(('-' + nonAnsiErrMessage + "\r\n").getBytes());
+    boolean flag = Protocol.IS_SUPPORTED_NON_ANSI_ERR_MESSAGE;
+    try {
+      Protocol.IS_SUPPORTED_NON_ANSI_ERR_MESSAGE = true;
+      Protocol.read(new RedisInputStream(is));
+    } catch (final JedisDataException e) {
+      assertEquals(nonAnsiErrMessage, e.getMessage());
+      return;
+    } finally {
+      Protocol.IS_SUPPORTED_NON_ANSI_ERR_MESSAGE = flag;
+    }
+    fail("Expected a " + nonAnsiErrMessage + " to be thrown.");
   }
 }

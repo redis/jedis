@@ -48,6 +48,9 @@ public final class Protocol {
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
 
+  public static boolean IS_SUPPORTED_NON_ANSI_ERR_MESSAGE
+          = Boolean.parseBoolean(System.getProperty("IS_SUPPORTED_NON_ANSI_ERR_MESSAGE","false"));
+
   private Protocol() {
     // this prevent the class from instantiation
   }
@@ -69,7 +72,7 @@ public final class Protocol {
   }
 
   private static void processError(final RedisInputStream is) {
-    String message = is.readLine();
+    String message = IS_SUPPORTED_NON_ANSI_ERR_MESSAGE ? new String(is.readLineBytes()) : is.readLine();
     // TODO: I'm not sure if this is the best way to do this.
     // Maybe Read only first 5 bytes instead?
     if (message.startsWith(MOVED_PREFIX)) {

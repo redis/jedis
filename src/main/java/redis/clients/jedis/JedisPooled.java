@@ -49,22 +49,35 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   public JedisPooled(final String host, final int port) {
-    this(new GenericObjectPoolConfig<Connection>(), host, port);
+    this(new HostAndPort(host, port));
+  }
+
+  public JedisPooled(final HostAndPort hostAndPort) {
+    this(new PooledConnectionProvider(hostAndPort));
   }
 
   public JedisPooled(final String host, final int port, final boolean ssl) {
-    this(new GenericObjectPoolConfig<Connection>(), host, port, ssl);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl).build());
   }
 
   public JedisPooled(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(new GenericObjectPoolConfig<Connection>(), host, port, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl)
+        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).build());
   }
 
   public JedisPooled(final String host, final int port, final String user, final String password) {
-    this(new GenericObjectPoolConfig<Connection>(), host, port, user, password);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().user(user).password(password).build());
+  }
+
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
+    this(new PooledConnectionProvider(hostAndPort, clientConfig));
+  }
+
+  public JedisPooled(PooledObjectFactory<Connection> factory) {
+    this(new PooledConnectionProvider(factory));
   }
 
   public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig) {
@@ -345,14 +358,6 @@ public class JedisPooled extends UnifiedJedis {
         JedisURIHelper.getPassword(uri), JedisURIHelper.getDBIndex(uri), null,
         JedisURIHelper.isRedisSSLScheme(uri), sslSocketFactory, sslParameters, hostnameVerifier,
         null), poolConfig);
-  }
-
-  public JedisPooled(final HostAndPort hostAndPort) {
-    this(new PooledConnectionProvider(hostAndPort));
-  }
-
-  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this(new PooledConnectionProvider(hostAndPort, clientConfig));
   }
 
   public JedisPooled(final HostAndPort hostAndPort, final GenericObjectPoolConfig<Connection> poolConfig) {

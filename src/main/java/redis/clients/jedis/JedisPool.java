@@ -54,22 +54,31 @@ public class JedisPool extends Pool<Jedis> {
   }
 
   public JedisPool(final String host, final int port) {
-    this(new GenericObjectPoolConfig<Jedis>(), host, port);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().build());
   }
 
   public JedisPool(final String host, final int port, final boolean ssl) {
-    this(new GenericObjectPoolConfig<Jedis>(), host, port, ssl);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl).build());
   }
 
   public JedisPool(final String host, final int port, final boolean ssl,
       final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
       final HostnameVerifier hostnameVerifier) {
-    this(new GenericObjectPoolConfig<Jedis>(), host, port, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().ssl(ssl)
+        .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
+        .hostnameVerifier(hostnameVerifier).build());
   }
 
   public JedisPool(final String host, int port, String user, final String password) {
-    this(new GenericObjectPoolConfig<Jedis>(), host, port, user, password);
+    this(new HostAndPort(host, port), DefaultJedisClientConfig.builder().user(user).password(password).build());
+  }
+
+  public JedisPool(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
+    this(new JedisFactory(hostAndPort, clientConfig));
+  }
+
+  public JedisPool(PooledObjectFactory<Jedis> factory) {
+    super(factory);
   }
 
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig) {
@@ -350,17 +359,13 @@ public class JedisPool extends Pool<Jedis> {
         sslSocketFactory, sslParameters, hostnameVerifier));
   }
 
-  public JedisPool(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this(new GenericObjectPoolConfig<Jedis>(), hostAndPort, clientConfig);
-  }
-
   public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final HostAndPort hostAndPort,
       final JedisClientConfig clientConfig) {
     this(poolConfig, new JedisFactory(hostAndPort, clientConfig));
   }
 
-  public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig, final JedisSocketFactory jedisSocketFactory,
-      final JedisClientConfig clientConfig) {
+  public JedisPool(final GenericObjectPoolConfig<Jedis> poolConfig,
+      final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     this(poolConfig, new JedisFactory(jedisSocketFactory, clientConfig));
   }
 

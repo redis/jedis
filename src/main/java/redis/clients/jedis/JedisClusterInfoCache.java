@@ -46,7 +46,7 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, new GenericObjectPoolConfig<Connection>(), startNodes);
+    this(clientConfig, null, startNodes);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
@@ -204,7 +204,8 @@ public class JedisClusterInfoCache {
       ConnectionPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      ConnectionPool nodePool = new ConnectionPool(node, clientConfig, poolConfig);
+      ConnectionPool nodePool = poolConfig == null ? new ConnectionPool(node, clientConfig)
+          : new ConnectionPool(node, clientConfig, poolConfig);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {

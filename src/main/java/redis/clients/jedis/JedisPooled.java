@@ -355,7 +355,7 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   public JedisPooled(final HostAndPort hostAndPort, final GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort), poolConfig);
+    this(hostAndPort, DefaultJedisClientConfig.builder().build(), poolConfig);
   }
 
   public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig, final HostAndPort hostAndPort,
@@ -365,7 +365,7 @@ public class JedisPooled extends UnifiedJedis {
 
   public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
+    this(new PooledConnectionProvider(hostAndPort, clientConfig, poolConfig));
   }
 
   public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig,

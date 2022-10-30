@@ -30,6 +30,11 @@ public class JedisSentinelPool extends Pool<Jedis> {
   
   private final Object initPoolLock = new Object();
 
+  public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
+      final JedisClientConfig masteClientConfig, final JedisClientConfig sentinelClientConfig) {
+    this(masterName, sentinels, new JedisFactory(masteClientConfig), sentinelClientConfig);
+  }
+
   public JedisSentinelPool(String masterName, Set<String> sentinels,
       final GenericObjectPoolConfig<Jedis> poolConfig) {
     this(masterName, sentinels, poolConfig, Protocol.DEFAULT_TIMEOUT, null,
@@ -162,14 +167,20 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
-      final JedisClientConfig masteClientConfig, final JedisClientConfig sentinelClientConfig) {
-    this(masterName, sentinels, new GenericObjectPoolConfig<Jedis>(), masteClientConfig, sentinelClientConfig);
-  }
-
-  public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
       final GenericObjectPoolConfig<Jedis> poolConfig, final JedisClientConfig masteClientConfig,
       final JedisClientConfig sentinelClientConfig) {
     this(masterName, sentinels, poolConfig, new JedisFactory(masteClientConfig), sentinelClientConfig);
+  }
+
+  public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
+      final JedisFactory factory, final JedisClientConfig sentinelClientConfig) {
+    super(factory);
+
+    this.factory = factory;
+    this.sentinelClientConfig = sentinelClientConfig;
+
+    HostAndPort master = initSentinels(sentinels, masterName);
+    initMaster(master);
   }
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,

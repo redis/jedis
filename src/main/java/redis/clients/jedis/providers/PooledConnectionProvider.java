@@ -20,7 +20,7 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(hostAndPort, clientConfig, new GenericObjectPoolConfig<>());
+    this(new ConnectionPool(hostAndPort, clientConfig));
   }
 
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
@@ -29,7 +29,7 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory) {
-    this(factory, new GenericObjectPoolConfig<>());
+    this(new ConnectionPool(factory));
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory,

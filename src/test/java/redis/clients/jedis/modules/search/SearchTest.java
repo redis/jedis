@@ -914,26 +914,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void config() throws Exception {
-    assertEquals("OK", client.ftConfigSet("timeout", "100"));
-    Map<String, String> configMap = client.ftConfigGet("*");
-    assertEquals("100", configMap.get("TIMEOUT"));
-  }
-
-  @Test
-  public void configOnTimeout() throws Exception {
-    assertEquals("OK", client.ftConfigSet("ON_TIMEOUT", "fail"));
-    assertEquals(Collections.singletonMap("ON_TIMEOUT", "fail"), client.ftConfigGet("ON_TIMEOUT"));
-
-    try {
-      client.ftConfigSet("ON_TIMEOUT", "null");
-      fail("null is not valid value for ON_TIMEOUT");
-    } catch (JedisDataException e) {
-      // Should throw an exception after RediSearch 2.2
-    }
-  }
-
-  @Test
   public void alias() throws Exception {
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -1041,30 +1021,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals("doc2", res.getDocuments().get(0).getId());
     assertEquals("value", res.getDocuments().get(0).get("field1"));
     assertEquals("not", res.getDocuments().get(0).get("field2"));
-  }
-
-  @Test
-  public void testDialectConfig() {
-    // confirm default
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
-
-    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "2"));
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
-
-    try {
-      client.ftConfigSet("DEFAULT_DIALECT", "0");
-      fail();
-    } catch (JedisDataException ex) {
-    }
-
-    try {
-      client.ftConfigSet("DEFAULT_DIALECT", "3");
-      fail();
-    } catch (JedisDataException ex) {
-    }
-
-    // Restore to default
-    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "1"));
   }
 
   @Test

@@ -280,7 +280,7 @@ public class JedisPooled extends UnifiedJedis {
       final HostnameVerifier hostnameVerifier) {
     this(new HostAndPort(host, port), DefaultJedisClientConfig.create(connectionTimeout, soTimeout,
         infiniteSoTimeout, user, password, database, clientName, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier, null));
+        hostnameVerifier, null), poolConfig);
   }
 
   public JedisPooled(final URI uri) {
@@ -343,7 +343,8 @@ public class JedisPooled extends UnifiedJedis {
     this(new HostAndPort(uri.getHost(), uri.getPort()), DefaultJedisClientConfig.create(
         connectionTimeout, soTimeout, infiniteSoTimeout, JedisURIHelper.getUser(uri),
         JedisURIHelper.getPassword(uri), JedisURIHelper.getDBIndex(uri), null,
-        JedisURIHelper.isRedisSSLScheme(uri), sslSocketFactory, sslParameters, hostnameVerifier, null));
+        JedisURIHelper.isRedisSSLScheme(uri), sslSocketFactory, sslParameters, hostnameVerifier,
+        null), poolConfig);
   }
 
   public JedisPooled(final HostAndPort hostAndPort) {

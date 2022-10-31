@@ -1,6 +1,5 @@
 package redis.clients.jedis.modules.search;
 
-import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.*;
 
 import java.util.*;
@@ -1042,7 +1041,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals("foo", iteratorsProfile.get("Term"));
     assertEquals(1L, iteratorsProfile.get("Counter"));
     assertEquals(1L, iteratorsProfile.get("Size"));
-    assertThat((Double) iteratorsProfile.get("Time"), isA(Double.class));
+    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
   }
 
   @Test

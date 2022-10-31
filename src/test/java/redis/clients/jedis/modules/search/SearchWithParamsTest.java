@@ -1,5 +1,6 @@
 package redis.clients.jedis.modules.search;
 
+import static org.hamcrest.CoreMatchers.isA;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
@@ -859,10 +860,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void timeout() {
     assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-    addDocument("doc1", doc);
+    Map<String, String> map = new HashMap<>();
+    map.put("field1", "value");
+    map.put("field2", "not");
+    client.hset("doc1", map);
 
     SearchResult res = client.ftSearch(index, "value", FTSearchParams.searchParams().timeout(1000));
     assertEquals(1, res.getTotalResults());
@@ -875,17 +876,37 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void inOrder() {
     assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-    addDocument("doc2", doc);
-    addDocument("doc1", doc);
+    Map<String, String> map = new HashMap<>();
+    map.put("field1", "value");
+    map.put("field2", "not");
+    client.hset("doc2", map);
+    client.hset("doc1", map);
 
     SearchResult res = client.ftSearch(index, "value", FTSearchParams.searchParams().inOrder());
     assertEquals(2, res.getTotalResults());
     assertEquals("doc2", res.getDocuments().get(0).getId());
     assertEquals("value", res.getDocuments().get(0).get("field1"));
     assertEquals("not", res.getDocuments().get(0).get("field2"));
+  }
+
+  @Test
+  public void profileSearch() {
+    assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
+
+    Map<String, String> map = new HashMap<>();
+    map.put("t1", "foo");
+    map.put("t2", "bar");
+    client.hset("doc1", map);
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "foo", FTSearchParams.searchParams());
+    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("TEXT", iteratorsProfile.get("Type"));
+    assertEquals("foo", iteratorsProfile.get("Term"));
+    assertEquals(1L, iteratorsProfile.get("Counter"));
+    assertEquals(1L, iteratorsProfile.get("Size"));
+    assertThat((Double) iteratorsProfile.get("Time"), isA(Double.class));
   }
 
   @Test

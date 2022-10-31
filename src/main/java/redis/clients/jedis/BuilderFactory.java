@@ -1667,6 +1667,95 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, Object>> SEARCH_PROFILE_PROFILE = new Builder<Map<String, Object>>() {
+
+    private final String ITERATORS_PROFILE_STR = "Iterators profile";
+    private final String CHILD_ITERATORS_STR = "Child iterators";
+    private final String RESULT_PROCESSORS_PROFILE_STR = "Result processors profile";
+
+    @Override
+    public Map<String, Object> build(Object data) {
+      List<Object> list = (List<Object>) SafeEncoder.encodeObject(data);
+      Map<String, Object> profileMap = new HashMap<>(list.size(), 1f);
+
+      for (Object listObject : list) {
+        List<Object> attributeList = (List<Object>) listObject;
+        String attributeName = (String) attributeList.get(0);
+
+        if (attributeList.size() == 2) {
+          if (attributeName.equals(ITERATORS_PROFILE_STR)) {
+            List<Object> iteratorsAttributeList = (List<Object>) attributeList.get(1);
+            int childIteratorsIndex = iteratorsAttributeList.indexOf(CHILD_ITERATORS_STR);
+
+            Map<String, Object> iteratorsProfile;
+            if (childIteratorsIndex < 0) {
+              childIteratorsIndex = iteratorsAttributeList.size();
+              iteratorsProfile = new HashMap<>(childIteratorsIndex / 2, 1f);
+            } else {
+              iteratorsProfile = new HashMap<>(1 + childIteratorsIndex / 2, 1f);
+            }
+
+            for (int i = 0; i < childIteratorsIndex; i += 2) {
+              String key = (String) iteratorsAttributeList.get(i);
+              Object value = iteratorsAttributeList.get(i + 1);
+              if (key.equals("Time")) {
+                value = DoublePrecision.parseFloatingPointNumber((String) value);
+              }
+              iteratorsProfile.put(key, value);
+            }
+
+            if (childIteratorsIndex + 1 < iteratorsAttributeList.size()) {
+              List<Map<String, Object>> childIteratorsList = new ArrayList<>(iteratorsAttributeList.size() - childIteratorsIndex - 1);
+              for (int i = childIteratorsIndex + 1; i < iteratorsAttributeList.size(); i++) {
+                childIteratorsList.add(getSimpleMap(iteratorsAttributeList.get(i)));
+              }
+              iteratorsProfile.put(CHILD_ITERATORS_STR, childIteratorsList);
+            }
+
+            profileMap.put(ITERATORS_PROFILE_STR, iteratorsProfile);
+            continue;
+          }
+
+          Object value = attributeList.get(1);
+          if (attributeName.endsWith(" time")) {
+            value = DoublePrecision.parseFloatingPointNumber((String) value);
+          }
+          profileMap.put(attributeName, value);
+          // continue;
+        } else if (attributeList.size() > 2) {
+
+          if (attributeName.equals(RESULT_PROCESSORS_PROFILE_STR)) {
+            List<Map<String, Object>> resultProcessorsProfileList = new ArrayList<>(attributeList.size() - 1);
+            for (int i = 1; i < attributeList.size(); i++) {
+              resultProcessorsProfileList.add(getSimpleMap(attributeList.get(i)));
+            }
+            profileMap.put(attributeName, resultProcessorsProfileList);
+            continue;
+          }
+
+          profileMap.put(attributeName, attributeList.subList(1, attributeList.size()));
+          // continue;
+        }
+        // else ??!!
+      }
+      return profileMap;
+    }
+
+    private Map<String, Object> getSimpleMap(Object data) {
+      List<Object> list = (List<Object>) data;
+      Map<String, Object> map = new HashMap<>(list.size() / 2, 1f);
+      for (int i = 0; i < list.size(); i += 2) {
+        String key = (String) list.get(i);
+        Object value = list.get(i + 1);
+        if (key.equals("Time")) {
+          value = DoublePrecision.parseFloatingPointNumber((String) value);
+        }
+        map.put(key, value);
+      }
+      return map;
+    }
+  };
+
   public static final Builder<Map<String, List<String>>> SEARCH_SYNONYM_GROUPS = new Builder<Map<String, List<String>>>() {
     @Override
     public Map<String, List<String>> build(Object data) {

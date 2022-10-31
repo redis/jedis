@@ -3512,6 +3512,24 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map.Entry<AggregationResult, Map<String, Object>> ftProfileAggregate(String indexName,
+      FTProfileParams profileParams, AggregationBuilder aggr) {
+    return executeCommand(commandObjects.ftProfileAggregate(indexName, profileParams, aggr));
+  }
+
+  @Override
+  public Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+      FTProfileParams profileParams, Query query) {
+    return executeCommand(commandObjects.ftProfileSearch(indexName, profileParams, query));
+  }
+
+  @Override
+  public Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+      FTProfileParams profileParams, String query, FTSearchParams searchParams) {
+    return executeCommand(commandObjects.ftProfileSearch(indexName, profileParams, query, searchParams));
+  }
+
+  @Override
   public String ftDropIndex(String indexName) {
     return executeCommand(commandObjects.ftDropIndex(indexName));
   }

@@ -98,7 +98,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void jsonV1() {
+  public void jsonV1() throws Exception {
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");
     hm1.put("oh", "snap");

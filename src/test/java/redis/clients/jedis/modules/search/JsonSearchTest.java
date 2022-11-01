@@ -1,5 +1,6 @@
 package redis.clients.jedis.modules.search;
 
+import org.json.JSONException;
 import static org.junit.Assert.*;
 
 import org.json.JSONObject;
@@ -39,16 +40,16 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
     client.executeCommand(command);
   }
 
-  private JSONObject toJson(Object... values) {
+  private JSONObject toJson(Object... values) throws JSONException {
     JSONObject json = new JSONObject();
     for (int i = 0; i < values.length; i += 2) {
-      json.put((String) values[i], values[i + 1]);
-    }
+        json.put((String) values[i], values[i + 1]);
+      }
     return json;
   }
 
   @Test
-  public void create() {
+  public void create() throws JSONException {
     Schema schema = new Schema().addTextField("$.first", 1.0).addTextField("$.last", 1.0)
         .addNumericField("$.age");
     IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON)
@@ -84,7 +85,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void createWithFieldNames() {
+  public void createWithFieldNames() throws JSONException {
     Schema schema = new Schema()
         .addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
@@ -125,7 +126,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void parseJson() {
+  public void parseJson() throws JSONException {
     Schema schema = new Schema()
         .addField(new TextField(FieldName.of("$.first").as("first")))
         .addField(new TextField(FieldName.of("$.last")))
@@ -166,7 +167,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void parseJsonPartial() {
+  public void parseJsonPartial() throws JSONException {
     Schema schema = new Schema()
                 .addField(new TextField(FieldName.of("$.first").as("first")))
                 .addField(new TextField(FieldName.of("$.last")))
@@ -201,7 +202,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void parseJsonPartialWithFieldNames() {
+  public void parseJsonPartialWithFieldNames() throws JSONException {
     Schema schema = new Schema()
                 .addField(new TextField(FieldName.of("$.first").as("first")))
                 .addField(new TextField(FieldName.of("$.last")))
@@ -232,7 +233,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void dialect() {
+  public void dialect() throws JSONException {
     Schema schema = new Schema()
             .addField(new TextField(FieldName.of("$.first").as("first")))
             .addField(new TextField(FieldName.of("$.last")))
@@ -253,7 +254,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void slop() {
+  public void slop() throws JSONException {
     Schema schema = new Schema()
             .addField(new TextField(FieldName.of("$.first").as("first")))
             .addField(new TextField(FieldName.of("$.last")))
@@ -276,7 +277,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void timeout() {
+  public void timeout() throws JSONException {
     Schema schema = new Schema()
             .addField(new TextField(FieldName.of("$.first").as("first")))
             .addField(new TextField(FieldName.of("$.last")))
@@ -295,7 +296,7 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void inOrder() {
+  public void inOrder() throws JSONException {
     Schema schema = new Schema()
             .addField(new TextField(FieldName.of("$.first").as("first")))
             .addField(new TextField(FieldName.of("$.last")))

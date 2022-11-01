@@ -470,8 +470,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals("JSONObject length mismatch", a.length(), b.length());
     //assertEquals(a.keySet(), b.keySet());
     //for (String key : a.keySet()) {
-    for (Iterator ai = a.keys();ai.hasNext();) {
-      String key = (String)ai.next();
+    for (Iterator ai = a.keys(); ai.hasNext();) {
+      String key = (String) ai.next();
       if (a.isNull(key)) {
         assertTrue(key + "'s value is not null", b.isNull(key));
         continue;

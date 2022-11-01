@@ -1,8 +1,8 @@
 package redis.clients.jedis.modules.search;
 
-import org.json.JSONException;
 import static org.junit.Assert.*;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -43,8 +43,8 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
   private JSONObject toJson(Object... values) throws JSONException {
     JSONObject json = new JSONObject();
     for (int i = 0; i < values.length; i += 2) {
-        json.put((String) values[i], values[i + 1]);
-      }
+      json.put((String) values[i], values[i + 1]);
+    }
     return json;
   }
 

@@ -889,26 +889,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void profileSearch() {
-    assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
-
-    Map<String, String> map = new HashMap<>();
-    map.put("t1", "foo");
-    map.put("t2", "bar");
-    client.hset("doc1", map);
-
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
-        FTProfileParams.profileParams(), "foo", FTSearchParams.searchParams());
-    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
-    assertEquals("TEXT", iteratorsProfile.get("Type"));
-    assertEquals("foo", iteratorsProfile.get("Term"));
-    assertEquals(1L, iteratorsProfile.get("Counter"));
-    assertEquals(1L, iteratorsProfile.get("Size"));
-    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
-  }
-
-  @Test
   public void testHNSWVVectorSimilarity() {
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
@@ -956,5 +936,59 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  public void profileSearch() {
+    assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
+
+    Map<String, String> map = new HashMap<>();
+    map.put("t1", "foo");
+    map.put("t2", "bar");
+    client.hset("doc1", map);
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "foo", FTSearchParams.searchParams());
+    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("TEXT", iteratorsProfile.get("Type"));
+    assertEquals("foo", iteratorsProfile.get("Term"));
+    assertEquals(1L, iteratorsProfile.get("Counter"));
+    assertEquals(1L, iteratorsProfile.get("Size"));
+    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
+  }
+
+  @Test
+  public void profileSearchDeepReply() {
+    assertOK(client.ftCreate(index, TextField.of("t")));
+    client.hset("1", Collections.singletonMap("t", "hello"));
+    client.hset("2", Collections.singletonMap("t", "world"));
+
+    Map.Entry<SearchResult, Map<String, Object>> profile
+        = client.ftProfileSearch(index, FTProfileParams.profileParams(),
+            "hello(hello(hello(hello(hello(hello)))))", FTSearchParams.searchParams().noContent());
+
+    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("INTERSECT", depth0.get("Type"));
+    List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
+    assertEquals("TEXT", depth0_children.get(0).get("Type"));
+    Map<String, Object> depth1 = depth0_children.get(1);
+    assertEquals("INTERSECT", depth1.get("Type"));
+    List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
+    assertEquals("TEXT", depth1_children.get(0).get("Type"));
+    Map<String, Object> depth2 = depth1_children.get(1);
+    assertEquals("INTERSECT", depth2.get("Type"));
+    List<Map<String, Object>> depth2_children = (List<Map<String, Object>>) depth2.get("Child iterators");
+    assertEquals("TEXT", depth2_children.get(0).get("Type"));
+    Map<String, Object> depth3 = depth2_children.get(1);
+    assertEquals("INTERSECT", depth3.get("Type"));
+    List<Map<String, Object>> depth3_children = (List<Map<String, Object>>) depth3.get("Child iterators");
+    assertEquals("TEXT", depth3_children.get(0).get("Type"));
+    Map<String, Object> depth4 = depth3_children.get(1);
+    assertEquals("INTERSECT", depth4.get("Type"));
+    List<Map<String, Object>> depth4_children = (List<Map<String, Object>>) depth4.get("Child iterators");
+    assertEquals("TEXT", depth4_children.get(0).get("Type"));
+    Map<String, Object> depth5 = depth4_children.get(1);
+    assertEquals("TEXT", depth5.get("Type"));
   }
 }

@@ -1681,67 +1681,41 @@ public final class BuilderFactory {
       for (Object listObject : list) {
         List<Object> attributeList = (List<Object>) listObject;
         String attributeName = (String) attributeList.get(0);
+        Object attributeValue;
 
         if (attributeList.size() == 2) {
-          if (attributeName.equals(ITERATORS_PROFILE_STR)) {
-            List<Object> iteratorsAttributeList = (List<Object>) attributeList.get(1);
-            int childIteratorsIndex = iteratorsAttributeList.indexOf(CHILD_ITERATORS_STR);
-
-            Map<String, Object> iteratorsProfile;
-            if (childIteratorsIndex < 0) {
-              childIteratorsIndex = iteratorsAttributeList.size();
-              iteratorsProfile = new HashMap<>(childIteratorsIndex / 2, 1f);
-            } else {
-              iteratorsProfile = new HashMap<>(1 + childIteratorsIndex / 2, 1f);
-            }
-
-            for (int i = 0; i < childIteratorsIndex; i += 2) {
-              String key = (String) iteratorsAttributeList.get(i);
-              Object value = iteratorsAttributeList.get(i + 1);
-              if (key.equals("Time")) {
-                value = DoublePrecision.parseFloatingPointNumber((String) value);
-              }
-              iteratorsProfile.put(key, value);
-            }
-
-            if (childIteratorsIndex + 1 < iteratorsAttributeList.size()) {
-              List<Map<String, Object>> childIteratorsList = new ArrayList<>(iteratorsAttributeList.size() - childIteratorsIndex - 1);
-              for (int i = childIteratorsIndex + 1; i < iteratorsAttributeList.size(); i++) {
-                childIteratorsList.add(getSimpleMap(iteratorsAttributeList.get(i)));
-              }
-              iteratorsProfile.put(CHILD_ITERATORS_STR, childIteratorsList);
-            }
-
-            profileMap.put(ITERATORS_PROFILE_STR, iteratorsProfile);
-            continue;
-          }
 
           Object value = attributeList.get(1);
-          if (attributeName.endsWith(" time")) {
-            value = DoublePrecision.parseFloatingPointNumber((String) value);
+          if (attributeName.equals(ITERATORS_PROFILE_STR)) {
+            attributeValue = parseIterators(value);
+          } else if (attributeName.endsWith(" time")) {
+            attributeValue = DoublePrecision.parseFloatingPointNumber((String) value);
+          } else {
+            attributeValue = value;
           }
-          profileMap.put(attributeName, value);
-          // continue;
+
         } else if (attributeList.size() > 2) {
 
           if (attributeName.equals(RESULT_PROCESSORS_PROFILE_STR)) {
             List<Map<String, Object>> resultProcessorsProfileList = new ArrayList<>(attributeList.size() - 1);
             for (int i = 1; i < attributeList.size(); i++) {
-              resultProcessorsProfileList.add(getSimpleMap(attributeList.get(i)));
+              resultProcessorsProfileList.add(parseResultProcessors(attributeList.get(i)));
             }
-            profileMap.put(attributeName, resultProcessorsProfileList);
-            continue;
+            attributeValue = resultProcessorsProfileList;
+          } else {
+            attributeValue = attributeList.subList(1, attributeList.size());
           }
 
-          profileMap.put(attributeName, attributeList.subList(1, attributeList.size()));
-          // continue;
+        } else {
+          attributeValue = null;
         }
-        // else ??!!
+
+        profileMap.put(attributeName, attributeValue);
       }
       return profileMap;
     }
 
-    private Map<String, Object> getSimpleMap(Object data) {
+    private Map<String, Object> parseResultProcessors(Object data) {
       List<Object> list = (List<Object>) data;
       Map<String, Object> map = new HashMap<>(list.size() / 2, 1f);
       for (int i = 0; i < list.size(); i += 2) {
@@ -1753,6 +1727,37 @@ public final class BuilderFactory {
         map.put(key, value);
       }
       return map;
+    }
+
+    private Map<String, Object> parseIterators(Object data) {
+      List<Object> iteratorsAttributeList = (List<Object>) data;
+      int childIteratorsIndex = iteratorsAttributeList.indexOf(CHILD_ITERATORS_STR);
+
+      Map<String, Object> iteratorsProfile;
+      if (childIteratorsIndex < 0) {
+        childIteratorsIndex = iteratorsAttributeList.size();
+        iteratorsProfile = new HashMap<>(childIteratorsIndex / 2, 1f);
+      } else {
+        iteratorsProfile = new HashMap<>(1 + childIteratorsIndex / 2, 1f);
+      }
+
+      for (int i = 0; i < childIteratorsIndex; i += 2) {
+        String key = (String) iteratorsAttributeList.get(i);
+        Object value = iteratorsAttributeList.get(i + 1);
+        if (key.equals("Time")) {
+          value = DoublePrecision.parseFloatingPointNumber((String) value);
+        }
+        iteratorsProfile.put(key, value);
+      }
+
+      if (childIteratorsIndex + 1 < iteratorsAttributeList.size()) {
+        List<Map<String, Object>> childIteratorsList = new ArrayList<>(iteratorsAttributeList.size() - childIteratorsIndex - 1);
+        for (int i = childIteratorsIndex + 1; i < iteratorsAttributeList.size(); i++) {
+          childIteratorsList.add(parseIterators(iteratorsAttributeList.get(i)));
+        }
+        iteratorsProfile.put(CHILD_ITERATORS_STR, childIteratorsList);
+      }
+      return iteratorsProfile;
     }
   };
 

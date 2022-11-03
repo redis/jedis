@@ -1024,27 +1024,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void profileSearch() {
-    Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    Map<String, String> map = new HashMap<>();
-    map.put("t1", "foo");
-    map.put("t2", "bar");
-    client.hset("doc1", map);
-
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
-        FTProfileParams.profileParams(), new Query("foo"));
-    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
-    assertEquals("TEXT", iteratorsProfile.get("Type"));
-    assertEquals("foo", iteratorsProfile.get("Term"));
-    assertEquals(1L, iteratorsProfile.get("Counter"));
-    assertEquals(1L, iteratorsProfile.get("Size"));
-    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
-  }
-
-  @Test
   public void testDialectsWithFTExplain() throws Exception {
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
@@ -1165,6 +1144,15 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
+
+    // profile
+    Map.Entry<SearchResult, Map<String, Object>> profile
+        = client.ftProfileSearch(index, FTProfileParams.profileParams(), query);
+    doc1 = profile.getKey().getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("VECTOR", iteratorsProfile.get("Type"));
   }
 
   @Test
@@ -1189,5 +1177,35 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
+
+    // profile
+    Map.Entry<SearchResult, Map<String, Object>> profile
+        = client.ftProfileSearch(index, FTProfileParams.profileParams(), query);
+    doc1 = profile.getKey().getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("VECTOR", iteratorsProfile.get("Type"));
+  }
+
+  @Test
+  public void profileSearch() {
+    Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    Map<String, String> map = new HashMap<>();
+    map.put("t1", "foo");
+    map.put("t2", "bar");
+    client.hset("doc1", map);
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), new Query("foo"));
+    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("TEXT", iteratorsProfile.get("Type"));
+    assertEquals("foo", iteratorsProfile.get("Term"));
+    assertEquals(1L, iteratorsProfile.get("Counter"));
+    assertEquals(1L, iteratorsProfile.get("Size"));
+    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
   }
 }

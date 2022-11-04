@@ -1189,7 +1189,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void profileSearch() {
+  public void searchProfile() {
     Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 

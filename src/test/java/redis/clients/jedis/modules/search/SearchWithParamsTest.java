@@ -939,7 +939,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void profileSearch() {
+  public void searchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
 
     Map<String, String> map = new HashMap<>();
@@ -959,7 +959,27 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void profileSearchDeepReply() {
+  public void notIteratorSearchProfile() {
+    assertOK(client.ftCreate(index, TextField.of("t")));
+    client.hset("1", Collections.singletonMap("t", "foo"));
+    client.hset("2", Collections.singletonMap("t", "bar"));
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "foo -@t:baz", FTSearchParams.searchParams().noContent());
+
+    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("INTERSECT", depth0.get("Type"));
+    List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
+    assertEquals("TEXT", depth0_children.get(0).get("Type"));
+    Map<String, Object> depth1 = depth0_children.get(1);
+    assertEquals("NOT", depth1.get("Type"));
+//    List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
+//    assertEquals("EMPTY", depth1_children.get(0).get("Type"));
+    System.out.println(depth1.get("Child iterator"));
+  }
+
+  @Test
+  public void deepReplySearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "hello"));
     client.hset("2", Collections.singletonMap("t", "world"));

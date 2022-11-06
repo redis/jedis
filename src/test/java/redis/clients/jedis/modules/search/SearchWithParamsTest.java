@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -14,6 +15,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
+import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
@@ -956,6 +958,37 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(1L, iteratorsProfile.get("Counter"));
     assertEquals(1L, iteratorsProfile.get("Size"));
     assertSame(Double.class, iteratorsProfile.get("Time").getClass());
+  }
+
+  @Test
+  public void vectorSearchProfile() {
+    assertOK(client.ftCreate(index, VectorField.builder().fieldName("v")
+        .algorithm(VectorAlgorithm.FLAT).addAttribute("TYPE", "FLOAT32")
+        .addAttribute("DIM", 2).addAttribute("DISTANCE_METRIC", "L2").build(),
+        TextField.of("t")));
+
+    client.hset("1", toMap("v", "bababaca", "t", "hello"));
+    client.hset("2", toMap("v", "babababa", "t", "hello"));
+    client.hset("3", toMap("v", "aabbaabb", "t", "hello"));
+    client.hset("4", toMap("v", "bbaabbaa", "t", "hello world"));
+    client.hset("5", toMap("v", "aaaabbbb", "t", "hello world"));
+
+    FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", "aaaaaaaa")
+        .sortBy("__v_score", SortingOrder.ASC).noContent().dialect(2);
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "*=>[KNN 3 @v $vec]", searchParams);
+    assertEquals(3, profile.getKey().getTotalResults());
+
+    assertEquals(Arrays.asList(4, 2, 1).toString(), profile.getKey().getDocuments()
+        .stream().map(Document::getId).collect(Collectors.toList()).toString());
+
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("VECTOR", iteratorsProfile.get("Type"));
+    assertEquals(3L, iteratorsProfile.get("Counter"));
+
+    List<Map<String, Object>> resultProcessorsProfile = (List<Map<String, Object>>) profile.getValue().get("Result processors profile");
+    assertEquals("Vector Similarity Scores Loader", resultProcessorsProfile.get(1).get("Type"));
+    assertEquals(3l, resultProcessorsProfile.get(1).get("Counter"));
   }
 
   @Test

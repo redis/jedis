@@ -959,6 +959,26 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void maxPrefixExpansionSearchProfile() {
+    final String configParam = "MAXPREFIXEXPANSIONS";
+    String configValue = client.ftConfigGet(configParam).get(configParam);
+    client.ftConfigSet(configParam, "2");
+
+    assertOK(client.ftCreate(index, TextField.of("t")));
+    client.hset("1", Collections.singletonMap("t", "foo1"));
+    client.hset("2", Collections.singletonMap("t", "foo2"));
+    client.hset("3", Collections.singletonMap("t", "foo3"));
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
+    // Warning=Max prefix expansion reached
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("Max prefix expansion reached", iteratorsProfile.get("Warning"));
+
+    client.ftConfigSet(configParam, configValue);
+  }
+
+  @Test
   public void notIteratorSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "foo"));

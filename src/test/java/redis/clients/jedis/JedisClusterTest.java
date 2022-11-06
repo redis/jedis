@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -779,5 +780,18 @@ public class JedisClusterTest extends JedisClusterTestBase {
       }
     }
     return false;
+  }
+
+  @Test
+  public void broadcast() {
+    try (JedisCluster cluster = new JedisCluster(Collections.singleton(new HostAndPort(LOCAL_IP, 7379)),
+        DefaultJedisClientConfig.builder().password("cluster").build())) {
+      JedisBroadcast broadcast = new JedisBroadcast(cluster);
+      
+      Map<?, BroadcastResponse<String>> replies = broadcast.broadcastCommand(new CommandObject<>(
+          new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
+      assertEquals(3, replies.size());
+      replies.values().forEach(reply -> assertEquals("PONG", reply.get()));
+    }
   }
 }

@@ -1729,8 +1729,9 @@ public final class BuilderFactory {
       return map;
     }
 
-    private Map<String, Object> parseIterators(Object data) {
-      List<Object> iteratorsAttributeList = (List<Object>) data;
+    private Object parseIterators(Object data) {
+      if (!(data instanceof List)) return data;
+      List iteratorsAttributeList = (List) data;
       int childIteratorsIndex = iteratorsAttributeList.indexOf(CHILD_ITERATORS_STR);
 
       Map<String, Object> iteratorsProfile;
@@ -1751,7 +1752,7 @@ public final class BuilderFactory {
       }
 
       if (childIteratorsIndex + 1 < iteratorsAttributeList.size()) {
-        List<Map<String, Object>> childIteratorsList = new ArrayList<>(iteratorsAttributeList.size() - childIteratorsIndex - 1);
+        List childIteratorsList = new ArrayList(iteratorsAttributeList.size() - childIteratorsIndex - 1);
         for (int i = childIteratorsIndex + 1; i < iteratorsAttributeList.size(); i++) {
           childIteratorsList.add(parseIterators(iteratorsAttributeList.get(i)));
         }

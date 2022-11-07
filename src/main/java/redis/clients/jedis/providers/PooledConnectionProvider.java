@@ -36,11 +36,13 @@ public class PooledConnectionProvider implements ConnectionProvider {
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory) {
     this(new ConnectionPool(factory));
+    this.connectionMapKey = factory;
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionPool(factory, poolConfig));
+    this.connectionMapKey = factory;
   }
 
   private PooledConnectionProvider(Pool<Connection> pool) {
@@ -68,6 +70,6 @@ public class PooledConnectionProvider implements ConnectionProvider {
 
   @Override
   public Map<?, Pool<Connection>> getConnectionMap() {
-    return Collections.singletonMap("", pool);
+    return Collections.singletonMap(connectionMapKey, pool);
   }
 }

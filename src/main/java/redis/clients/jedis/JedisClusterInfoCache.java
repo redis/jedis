@@ -58,6 +58,9 @@ public class JedisClusterInfoCache {
 
   public void discoverClusterNodesAndSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
+    if (slotsInfo.size() == 0) {
+      return;
+    }
     w.lock();
     try {
       reset();
@@ -139,6 +142,9 @@ public class JedisClusterInfoCache {
 
   private void discoverClusterSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
+    if (slotsInfo.size() == 0) {
+      return;
+    }
     w.lock();
     try {
       this.slots.clear();

@@ -1091,4 +1091,18 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertSame(String.class, depth1_children.get(0).getClass());
     }
   }
+
+  @Test
+  public void list() {
+    assertEquals(Collections.emptyList(), client.ftList());
+
+    final int count = 20;
+    Set<String> names = new HashSet<>();
+    for (int i = 0; i < count; i++) {
+      final String name = "idx" + i;
+      assertOK(client.ftCreate(name, TextField.of("t" + i)));
+      names.add(name);
+    }
+    assertEquals(names, new HashSet<>(client.ftList()));
+  }
 }

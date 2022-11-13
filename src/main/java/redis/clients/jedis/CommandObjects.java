@@ -3283,6 +3283,10 @@ public class CommandObjects {
   public final CommandObject<Long> ftSugLen(String key) {
     return new CommandObject<>(commandArguments(SearchCommand.SUGLEN).key(key), BuilderFactory.LONG);
   }
+
+  public final CommandObject<List<String>> ftList() {
+    return new CommandObject<>(commandArguments(SearchCommand._LIST), BuilderFactory.STRING_LIST);
+  }
   // RediSearch commands
 
   // RedisJSON commands

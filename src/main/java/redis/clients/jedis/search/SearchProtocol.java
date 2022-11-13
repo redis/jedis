@@ -32,7 +32,8 @@ public class SearchProtocol {
     DICTDUMP("FT.DICTDUMP"),
     SPELLCHECK("FT.SPELLCHECK"),
     TAGVALS("FT.TAGVALS"),
-    PROFILE("FT.PROFILE");
+    PROFILE("FT.PROFILE"),
+    _LIST("FT._LIST");
 
     private final byte[] raw;
 

@@ -129,4 +129,6 @@ public interface RediSearchCommands {
   boolean ftSugDel(String key, String string);
 
   long ftSugLen(String key);
+
+  List<String> ftList();
 }

@@ -3673,6 +3673,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public long ftSugLen(String key) {
     return executeCommand(commandObjects.ftSugLen(key));
   }
+
+  @Override
+  public List<String> ftList() {
+    return executeCommand(commandObjects.ftList());
+  }
   // RediSearch commands
 
   // RedisJSON commands

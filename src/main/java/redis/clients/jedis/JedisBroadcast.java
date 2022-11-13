@@ -28,7 +28,7 @@ public class JedisBroadcast {
 
   public JedisBroadcast(ConnectionProvider provider) {
     if (provider == null) {
-      throw new NullPointerException("ConnectionProvider is null.");
+      throw new NullPointerException("ConnectionProvider cannot be null.");
     }
     this.provider = provider;
   }
@@ -51,8 +51,7 @@ public class JedisBroadcast {
   private <T> T executeCommand(Object connection, CommandObject<T> commandObject) {
     if (connection instanceof Connection) {
       return ((Connection) connection).executeCommand(commandObject);
-    }
-    if (connection instanceof Pool) {
+    } else if (connection instanceof Pool) {
       try (Connection _conn = ((Pool<Connection>) connection).getResource()) {
         return _conn.executeCommand(commandObject);
       }

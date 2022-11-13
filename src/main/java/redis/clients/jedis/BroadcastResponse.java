@@ -2,6 +2,9 @@ package redis.clients.jedis;
 
 import java.util.function.Supplier;
 
+/**
+ * Represents the response from a single node in broadcast mode.
+ */
 public class BroadcastResponse<T> implements Supplier<T> {
 
   private T response = null;

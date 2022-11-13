@@ -5,10 +5,10 @@ import static org.junit.Assert.assertFalse;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.Map;
+import java.util.function.Supplier;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.BroadcastResponse;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisBroadcast;
@@ -50,7 +50,7 @@ public class BroadcastTest extends RedisModuleCommandsTestBase {
       }
     }) {
       JedisBroadcast broadcast = new JedisBroadcast(provider);
-      Map<?, BroadcastResponse<String>> reply = broadcast.ftCreate(index, TextField.of("t"));
+      Map<?, Supplier<String>> reply = broadcast.ftCreate(index, TextField.of("t"));
       assertEquals(1, reply.size());
       assertOK(reply.values().stream().findAny().get().get());
     }

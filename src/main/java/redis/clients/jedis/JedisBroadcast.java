@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
@@ -32,9 +33,9 @@ public class JedisBroadcast {
     this.provider = provider;
   }
 
-  public final <T> Map<?, BroadcastResponse<T>> broadcastCommand(CommandObject<T> commandObject) {
+  public final <T> Map<?, Supplier<T>> broadcastCommand(CommandObject<T> commandObject) {
     Map<?, ?> connectionMap = provider.getConnectionMap();
-    Map<Object, BroadcastResponse<T>> responseMap = new HashMap<>(connectionMap.size(), 1f);
+    Map<Object, Supplier<T>> responseMap = new HashMap<>(connectionMap.size(), 1f);
     for (Map.Entry<? extends Object, ? extends Object> entry : connectionMap.entrySet()) {
       Object key = entry.getKey();
       Object connection = entry.getValue();
@@ -59,68 +60,68 @@ public class JedisBroadcast {
     throw new IllegalStateException(connection.getClass() + "is not supported.");
   }
 
-  public Map<?, BroadcastResponse<List<Boolean>>> scriptExists(String... sha1) {
+  public Map<?, Supplier<List<Boolean>>> scriptExists(String... sha1) {
     CommandObject<List<Boolean>> command = new CommandObject<>(new CommandArguments(Command.SCRIPT)
         .add(Keyword.EXISTS).addObjects((Object[]) sha1), BuilderFactory.BOOLEAN_LIST);
     return broadcastCommand(command);
   }
 
-  public Map<?, BroadcastResponse<List<Boolean>>> scriptExists(byte[]... sha1) {
+  public Map<?, Supplier<List<Boolean>>> scriptExists(byte[]... sha1) {
     CommandObject<List<Boolean>> command = new CommandObject<>(new CommandArguments(Command.SCRIPT)
         .add(Keyword.EXISTS).addObjects((Object[]) sha1), BuilderFactory.BOOLEAN_LIST);
     return broadcastCommand(command);
   }
 
-  public Map<?, BroadcastResponse<String>> scriptLoad(String script) {
+  public Map<?, Supplier<String>> scriptLoad(String script) {
     CommandObject<String> command = new CommandObject<>(new CommandArguments(Command.SCRIPT)
         .add(Keyword.LOAD).add(script), BuilderFactory.STRING);
     return broadcastCommand(command);
   }
 
-  public Map<?, BroadcastResponse<byte[]>> scriptLoad(byte[] script) {
+  public Map<?, Supplier<byte[]>> scriptLoad(byte[] script) {
     CommandObject<byte[]> command = new CommandObject<>(new CommandArguments(Command.SCRIPT)
         .add(Keyword.LOAD).add(script), BuilderFactory.BINARY);
     return broadcastCommand(command);
   }
 
-  public Map<?, BroadcastResponse<String>> scriptFlush() {
+  public Map<?, Supplier<String>> scriptFlush() {
     CommandObject<String> command = new CommandObject<>(new CommandArguments(Command.SCRIPT)
         .add(Keyword.FLUSH), BuilderFactory.STRING);
     return broadcastCommand(command);
   }
 
-  public Map<?, BroadcastResponse<String>> scriptFlush(FlushMode flushMode) {
+  public Map<?, Supplier<String>> scriptFlush(FlushMode flushMode) {
     CommandObject<String> command = new CommandObject<>(new CommandArguments(Command.SCRIPT)
         .add(Keyword.FLUSH).add(flushMode), BuilderFactory.STRING);
     return broadcastCommand(command);
   }
 
-  public Map<?, BroadcastResponse<String>> scriptKill() {
+  public Map<?, Supplier<String>> scriptKill() {
     CommandObject<String> command = new CommandObject<>(new CommandArguments(Command.SCRIPT)
         .add(Keyword.KILL), BuilderFactory.STRING);
     return broadcastCommand(command);
   }
 
-  public Map<?, BroadcastResponse<String>> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+  public Map<?, Supplier<String>> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
     CommandArguments args = new CommandArguments(SearchCommand.CREATE).add(indexName)
         .addParams(indexOptions).add(SearchKeyword.SCHEMA);
     schema.fields.forEach(field -> args.addParams(field));
     return broadcastCommand(new CommandObject<>(args, BuilderFactory.STRING));
   }
 
-  public Map<?, BroadcastResponse<String>> ftCreate(String indexName, SchemaField... schemaFields) {
+  public Map<?, Supplier<String>> ftCreate(String indexName, SchemaField... schemaFields) {
     return ftCreate(indexName, Arrays.asList(schemaFields));
   }
 
-  public Map<?, BroadcastResponse<String>> ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {
+  public Map<?, Supplier<String>> ftCreate(String indexName, FTCreateParams createParams, SchemaField... schemaFields) {
     return ftCreate(indexName, createParams, Arrays.asList(schemaFields));
   }
 
-  public Map<?, BroadcastResponse<String>> ftCreate(String indexName, Iterable<SchemaField> schemaFields) {
+  public Map<?, Supplier<String>> ftCreate(String indexName, Iterable<SchemaField> schemaFields) {
     return ftCreate(indexName, FTCreateParams.createParams(), schemaFields);
   }
 
-  public Map<?, BroadcastResponse<String>> ftCreate(String indexName, FTCreateParams createParams,
+  public Map<?, Supplier<String>> ftCreate(String indexName, FTCreateParams createParams,
       Iterable<SchemaField> schemaFields) {
     CommandArguments args = new CommandArguments(SearchCommand.CREATE).add(indexName)
         .addParams(createParams).add(SearchKeyword.SCHEMA);

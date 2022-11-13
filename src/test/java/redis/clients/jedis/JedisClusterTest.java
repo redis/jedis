@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Test;
@@ -787,7 +788,7 @@ public class JedisClusterTest extends JedisClusterTestBase {
         DefaultJedisClientConfig.builder().password("cluster").build())) {
       JedisBroadcast broadcast = new JedisBroadcast(cluster);
       
-      Map<?, BroadcastResponse<String>> replies = broadcast.broadcastCommand(new CommandObject<>(
+      Map<?, Supplier<String>> replies = broadcast.broadcastCommand(new CommandObject<>(
           new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
       assertEquals(3, replies.size());
       replies.values().forEach(reply -> assertEquals("PONG", reply.get()));

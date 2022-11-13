@@ -1733,6 +1733,8 @@ public final class BuilderFactory {
       if (!(data instanceof List)) return data;
       List iteratorsAttributeList = (List) data;
       int childIteratorsIndex = iteratorsAttributeList.indexOf(CHILD_ITERATORS_STR);
+      // https://github.com/RediSearch/RediSearch/issues/3205 patch. TODO: Undo if resolved in RediSearch.
+      if (childIteratorsIndex < 0) childIteratorsIndex = iteratorsAttributeList.indexOf("Child iterator");
 
       Map<String, Object> iteratorsProfile;
       if (childIteratorsIndex < 0) {

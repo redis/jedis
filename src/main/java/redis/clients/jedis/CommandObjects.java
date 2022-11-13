@@ -3132,6 +3132,31 @@ public class CommandObjects {
         .add(indexName).add(cursorId), BuilderFactory.STRING);
   }
 
+  public CommandObject<Map.Entry<AggregationResult, Map<String, Object>>> ftProfileAggregate(
+      String indexName, FTProfileParams profileParams, AggregationBuilder aggr) {
+    return new CommandObject<>(commandArguments(SearchCommand.PROFILE).add(indexName)
+        .add(SearchKeyword.AGGREGATE).addParams(profileParams).add(SearchKeyword.QUERY)
+        .addObjects(aggr.getArgs()), new SearchProfileResponseBuilder<>(!aggr.isWithCursor()
+            ? BuilderFactory.SEARCH_AGGREGATION_RESULT
+            : BuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
+  }
+
+  public CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+      String indexName, FTProfileParams profileParams, Query query) {
+    return new CommandObject<>(commandArguments(SearchCommand.PROFILE).add(indexName)
+        .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
+        .addParams(query), new SearchProfileResponseBuilder<>(new SearchResultBuilder(
+            !query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true)));
+  }
+
+  public CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+      String indexName, FTProfileParams profileParams, String query, FTSearchParams searchParams) {
+    return new CommandObject<>(commandArguments(SearchCommand.PROFILE).add(indexName)
+        .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
+        .addParams(searchParams), new SearchProfileResponseBuilder<>(new SearchResultBuilder(
+            !searchParams.getNoContent(), searchParams.getWithScores(), false, true)));
+  }
+
   public CommandObject<String> ftDropIndex(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName), BuilderFactory.STRING);
   }
@@ -3991,6 +4016,22 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
   // RedisGraph commands
+
+  private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
+
+    private final Builder<T> replyBuilder;
+
+    public SearchProfileResponseBuilder(Builder<T> replyBuilder) {
+      this.replyBuilder = replyBuilder;
+    }
+
+    @Override
+    public Map.Entry<T, Map<String, Object>> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return KeyValue.of(replyBuilder.build(list.get(0)),
+          BuilderFactory.SEARCH_PROFILE_PROFILE.build(list.get(1)));
+    }
+  }
 
   private static final Gson GSON = new Gson();
 

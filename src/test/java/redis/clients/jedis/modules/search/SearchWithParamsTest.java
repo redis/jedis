@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -14,6 +15,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
+import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
@@ -859,10 +861,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void timeout() {
     assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-    addDocument("doc1", doc);
+    Map<String, String> map = new HashMap<>();
+    map.put("field1", "value");
+    map.put("field2", "not");
+    client.hset("doc1", map);
 
     SearchResult res = client.ftSearch(index, "value", FTSearchParams.searchParams().timeout(1000));
     assertEquals(1, res.getTotalResults());
@@ -875,11 +877,11 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void inOrder() {
     assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-    addDocument("doc2", doc);
-    addDocument("doc1", doc);
+    Map<String, String> map = new HashMap<>();
+    map.put("field1", "value");
+    map.put("field2", "not");
+    client.hset("doc2", map);
+    client.hset("doc1", map);
 
     SearchResult res = client.ftSearch(index, "value", FTSearchParams.searchParams().inOrder());
     assertEquals(2, res.getTotalResults());
@@ -936,5 +938,157 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  public void searchProfile() {
+    assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
+
+    Map<String, String> map = new HashMap<>();
+    map.put("t1", "foo");
+    map.put("t2", "bar");
+    client.hset("doc1", map);
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "foo", FTSearchParams.searchParams());
+    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("TEXT", iteratorsProfile.get("Type"));
+    assertEquals("foo", iteratorsProfile.get("Term"));
+    assertEquals(1L, iteratorsProfile.get("Counter"));
+    assertEquals(1L, iteratorsProfile.get("Size"));
+    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
+  }
+
+  @Test
+  public void vectorSearchProfile() {
+    assertOK(client.ftCreate(index, VectorField.builder().fieldName("v")
+        .algorithm(VectorAlgorithm.FLAT).addAttribute("TYPE", "FLOAT32")
+        .addAttribute("DIM", 2).addAttribute("DISTANCE_METRIC", "L2").build(),
+        TextField.of("t")));
+
+    client.hset("1", toMap("v", "bababaca", "t", "hello"));
+    client.hset("2", toMap("v", "babababa", "t", "hello"));
+    client.hset("3", toMap("v", "aabbaabb", "t", "hello"));
+    client.hset("4", toMap("v", "bbaabbaa", "t", "hello world"));
+    client.hset("5", toMap("v", "aaaabbbb", "t", "hello world"));
+
+    FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", "aaaaaaaa")
+        .sortBy("__v_score", SortingOrder.ASC).noContent().dialect(2);
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "*=>[KNN 3 @v $vec]", searchParams);
+    assertEquals(3, profile.getKey().getTotalResults());
+
+    assertEquals(Arrays.asList(4, 2, 1).toString(), profile.getKey().getDocuments()
+        .stream().map(Document::getId).collect(Collectors.toList()).toString());
+
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("VECTOR", iteratorsProfile.get("Type"));
+    assertEquals(3L, iteratorsProfile.get("Counter"));
+
+    List<Map<String, Object>> resultProcessorsProfile = (List<Map<String, Object>>) profile.getValue().get("Result processors profile");
+    assertEquals("Vector Similarity Scores Loader", resultProcessorsProfile.get(1).get("Type"));
+    assertEquals(3l, resultProcessorsProfile.get(1).get("Counter"));
+  }
+
+  @Test
+  public void maxPrefixExpansionSearchProfile() {
+    final String configParam = "MAXPREFIXEXPANSIONS";
+    String configValue = client.ftConfigGet(configParam).get(configParam);
+    client.ftConfigSet(configParam, "2");
+
+    assertOK(client.ftCreate(index, TextField.of("t")));
+    client.hset("1", Collections.singletonMap("t", "foo1"));
+    client.hset("2", Collections.singletonMap("t", "foo2"));
+    client.hset("3", Collections.singletonMap("t", "foo3"));
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
+    // Warning=Max prefix expansion reached
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("Max prefix expansion reached", iteratorsProfile.get("Warning"));
+
+    client.ftConfigSet(configParam, configValue);
+  }
+
+  @Test
+  public void notIteratorSearchProfile() {
+    assertOK(client.ftCreate(index, TextField.of("t")));
+    client.hset("1", Collections.singletonMap("t", "foo"));
+    client.hset("2", Collections.singletonMap("t", "bar"));
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), "foo -@t:baz", FTSearchParams.searchParams().noContent());
+
+    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("INTERSECT", depth0.get("Type"));
+    List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
+    assertEquals("TEXT", depth0_children.get(0).get("Type"));
+    Map<String, Object> depth1 = depth0_children.get(1);
+    assertEquals("NOT", depth1.get("Type"));
+    List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
+    assertEquals(1, depth1_children.size());
+    assertEquals("EMPTY", depth1_children.get(0).get("Type"));
+  }
+
+  @Test
+  public void deepReplySearchProfile() {
+    assertOK(client.ftCreate(index, TextField.of("t")));
+    client.hset("1", Collections.singletonMap("t", "hello"));
+    client.hset("2", Collections.singletonMap("t", "world"));
+
+    Map.Entry<SearchResult, Map<String, Object>> profile
+        = client.ftProfileSearch(index, FTProfileParams.profileParams(),
+            "hello(hello(hello(hello(hello(hello)))))", FTSearchParams.searchParams().noContent());
+
+    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("INTERSECT", depth0.get("Type"));
+    List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
+    assertEquals("TEXT", depth0_children.get(0).get("Type"));
+    Map<String, Object> depth1 = depth0_children.get(1);
+    assertEquals("INTERSECT", depth1.get("Type"));
+    List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
+    assertEquals("TEXT", depth1_children.get(0).get("Type"));
+    Map<String, Object> depth2 = depth1_children.get(1);
+    assertEquals("INTERSECT", depth2.get("Type"));
+    List<Map<String, Object>> depth2_children = (List<Map<String, Object>>) depth2.get("Child iterators");
+    assertEquals("TEXT", depth2_children.get(0).get("Type"));
+    Map<String, Object> depth3 = depth2_children.get(1);
+    assertEquals("INTERSECT", depth3.get("Type"));
+    List<Map<String, Object>> depth3_children = (List<Map<String, Object>>) depth3.get("Child iterators");
+    assertEquals("TEXT", depth3_children.get(0).get("Type"));
+    Map<String, Object> depth4 = depth3_children.get(1);
+    assertEquals("INTERSECT", depth4.get("Type"));
+    List<Map<String, Object>> depth4_children = (List<Map<String, Object>>) depth4.get("Child iterators");
+    assertEquals("TEXT", depth4_children.get(0).get("Type"));
+    Map<String, Object> depth5 = depth4_children.get(1);
+    assertEquals("TEXT", depth5.get("Type"));
+    assertNull(depth5.get("Child iterators"));
+  }
+
+  @Test
+  public void limitedSearchProfile() {
+    assertOK(client.ftCreate(index, TextField.of("t")));
+    client.hset("1", Collections.singletonMap("t", "hello"));
+    client.hset("2", Collections.singletonMap("t", "hell"));
+    client.hset("3", Collections.singletonMap("t", "help"));
+    client.hset("4", Collections.singletonMap("t", "helowa"));
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams().limited(), "%hell% hel*", FTSearchParams.searchParams().noContent());
+
+    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("INTERSECT", depth0.get("Type"));
+    assertEquals(3L, depth0.get("Counter"));
+
+    List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
+    assertFalse(depth0_children.isEmpty());
+    for (Map<String, Object> depth1 : depth0_children) {
+      assertEquals("UNION", depth1.get("Type"));
+      assertNotNull(depth1.get("Query type"));
+      List depth1_children = (List) depth1.get("Child iterators");
+      assertEquals(1, depth1_children.size());
+      assertSame(String.class, depth1_children.get(0).getClass());
+    }
   }
 }

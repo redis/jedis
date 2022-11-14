@@ -85,7 +85,8 @@ public interface RediSearchPipelineCommands {
 
   Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query);
 
-  Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query, FTSpellCheckParams spellCheckParams);
+  Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query,
+      FTSpellCheckParams spellCheckParams);
 
   Response<Map<String, Object>> ftInfo(String indexName);
 

@@ -131,6 +131,7 @@ public class ClusterBinaryValuesCommandsTest extends ClusterJedisCommandsTestBas
     cluster.set("{f}oo2".getBytes(), "bar".getBytes());
     cluster.set("{f}oo3".getBytes(), "bar".getBytes());
     assertEquals(3, cluster.keys("{f}o*".getBytes()).size());
+    cluster.del("{f}oo1", "{f}oo2", "{f}oo3");
   }
 
   @Test

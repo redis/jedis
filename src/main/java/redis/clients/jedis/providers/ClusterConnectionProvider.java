@@ -14,6 +14,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisClusterInfoCache;
+import redis.clients.jedis.exceptions.JedisClusterException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -41,7 +42,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       try (Connection jedis = new Connection(hostAndPort, clientConfig)) {
         cache.discoverClusterNodesAndSlots(jedis);
         return;
-      } catch (JedisConnectionException e) {
+      } catch (JedisConnectionException | JedisClusterException e) {
         // try next nodes
       }
     }

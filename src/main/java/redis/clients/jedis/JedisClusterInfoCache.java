@@ -144,7 +144,7 @@ public class JedisClusterInfoCache {
   private void discoverClusterSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
     if (slotsInfo.isEmpty()) {
-      return;
+      throw new JedisClusterException("Cluster slots list is empty");
     }
     w.lock();
     try {

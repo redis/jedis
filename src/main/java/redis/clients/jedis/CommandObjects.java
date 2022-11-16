@@ -3,14 +3,14 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
@@ -3326,7 +3326,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new GsonObjectBuilder<>(clazz));
   }
 
-  public final CommandObject<Object> jsonGet(String key, Path2... paths) {
+  public final CommandObject<JsonNode> jsonGet(String key, Path2... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), BuilderFactory.JSON_OBJECT);
   }
 
@@ -3342,7 +3342,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new GsonObjectBuilder<>(clazz));
   }
 
-  public final CommandObject<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
+  public final CommandObject<List<ArrayNode>> jsonMGet(Path2 path, String... keys) {
     return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), BuilderFactory.JSON_ARRAY_LIST);
   }
 
@@ -3418,21 +3418,21 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
+  public final CommandObject<ArrayNode> jsonNumIncrBy(String key, Path2 path, double value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.JSON_ARRAY);
   }
 
   public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
   }
-
-  public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
-    CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
-    for (Object object : objects) {
-      args.add(object);
-    }
-    return new CommandObject<>(args, BuilderFactory.LONG);
-  }
+//
+//  public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
+//    CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
+//    for (Object object : objects) {
+//      args.add(object);
+//    }
+//    return new CommandObject<>(args, BuilderFactory.LONG);
+//  }
 
   public final CommandObject<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path).addObjects(objects);

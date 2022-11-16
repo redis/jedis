@@ -1,6 +1,7 @@
 package redis.clients.jedis.json;
 
-import org.json.JSONArray;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import redis.clients.jedis.Response;
 
 import java.util.List;
@@ -51,13 +52,13 @@ public interface RedisJsonPipelineCommands {
 
   <T> Response<T> jsonGet(String key, Class<T> clazz);
 
-  Response<Object> jsonGet(String key, Path2... paths);
+  Response<JsonNode> jsonGet(String key, Path2... paths);
 
   Response<Object> jsonGet(String key, Path... paths);
 
   <T> Response<T> jsonGet(String key, Class<T> clazz, Path... paths);
 
-  default Response<List<JSONArray>> jsonMGet(String... keys) {
+  default Response<List<ArrayNode>> jsonMGet(String... keys) {
     return jsonMGet(Path2.ROOT_PATH, keys);
   }
 
@@ -65,7 +66,7 @@ public interface RedisJsonPipelineCommands {
     return jsonMGet(Path.ROOT_PATH, clazz, keys);
   }
 
-  Response<List<JSONArray>> jsonMGet(Path2 path, String... keys);
+  Response<List<ArrayNode>> jsonMGet(Path2 path, String... keys);
 
   <T> Response<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys);
 
@@ -103,7 +104,7 @@ public interface RedisJsonPipelineCommands {
 
   Response<Long> jsonStrLen(String key, Path path);
 
-  Response<JSONArray> jsonNumIncrBy(String key, Path2 path, double value);
+  Response<ArrayNode> jsonNumIncrBy(String key, Path2 path, double value);
 
   Response<Double> jsonNumIncrBy(String key, Path path, double value);
 

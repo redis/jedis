@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import redis.clients.jedis.exceptions.JedisClusterException;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 

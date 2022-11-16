@@ -59,6 +59,33 @@ public class JedisBroadcast {
     throw new IllegalStateException(connection.getClass() + "is not supported.");
   }
 
+  public Map<?, Supplier<String>> configSet(final String... parameterValues) {
+    if (parameterValues.length > 0 && parameterValues.length % 2 == 0) {
+      // ok
+    } else {
+      throw new IllegalStateException("It requires 'pair's of config parameter-values.");
+    }
+    CommandArguments args = new CommandArguments(Command.CONFIG).add(Keyword.SET)
+        .addObjects((Object[]) parameterValues);
+    return broadcastCommand(new CommandObject<>(args, BuilderFactory.STRING));
+  }
+
+  public Map<?, Supplier<String>> flushAll() {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(Command.FLUSHALL),
+        BuilderFactory.STRING));
+  }
+
+  public Map<?, Supplier<String>> flushAll(FlushMode flushMode) {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(Command.FLUSHALL)
+        .add(flushMode), BuilderFactory.STRING));
+  }
+
+  public Map<?, Supplier<Long>> waitReplicas(final int replicas, final long timeout) {
+    CommandArguments args = new CommandArguments(Command.WAIT)
+        .add(Protocol.toByteArray(replicas)).add(Protocol.toByteArray(timeout));
+    return broadcastCommand(new CommandObject<>(args, BuilderFactory.LONG));
+  }
+
   public Map<?, Supplier<List<Boolean>>> scriptExists(String... sha1) {
     CommandObject<List<Boolean>> command = new CommandObject<>(new CommandArguments(Command.SCRIPT)
         .add(Keyword.EXISTS).addObjects((Object[]) sha1), BuilderFactory.BOOLEAN_LIST);
@@ -126,5 +153,15 @@ public class JedisBroadcast {
         .addParams(createParams).add(SearchKeyword.SCHEMA);
     schemaFields.forEach(field -> args.addParams(field));
     return broadcastCommand(new CommandObject<>(args, BuilderFactory.STRING));
+  }
+
+  public Map<?, Supplier<String>> ftDropIndex(String indexName) {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(SearchCommand.DROPINDEX)
+        .add(indexName), BuilderFactory.STRING));
+  }
+
+  public Map<?, Supplier<String>> ftDropIndexDD(String indexName) {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(SearchCommand.DROPINDEX)
+        .add(indexName).add(SearchKeyword.DD), BuilderFactory.STRING));
   }
 }

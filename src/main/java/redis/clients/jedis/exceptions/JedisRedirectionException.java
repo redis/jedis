@@ -2,6 +2,12 @@ package redis.clients.jedis.exceptions;
 
 import redis.clients.jedis.HostAndPort;
 
+/**
+ * Umbrella exception class representing all redirection replies from Redis.
+ *
+ * @see JedisAskDataException
+ * @see JedisMovedDataException
+ */
 public class JedisRedirectionException extends JedisDataException {
 
   private static final long serialVersionUID = 3878126572474819403L;

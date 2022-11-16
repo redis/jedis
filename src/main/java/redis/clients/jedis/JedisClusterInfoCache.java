@@ -60,7 +60,7 @@ public class JedisClusterInfoCache {
   public void discoverClusterNodesAndSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
     if (slotsInfo.isEmpty()) {
-      throw new JedisClusterException("Cluster slots list is empty");
+      throw new JedisClusterOperationException("Cluster slots list is empty.");
     }
     w.lock();
     try {

@@ -65,7 +65,7 @@ Student oliwia = new Student("Oliwia", "Jagoda");
 client.jsonSet("student:112", gson.toJson(oliwia));
 ```
 
-Some other ways to store POJOs as JSON:
+Some of other ways to store POJOs as JSON:
 
 ```
 client.jsonSetLegacy("student:111", maya);

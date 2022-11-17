@@ -152,7 +152,7 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
-					<trimStackTrace>false</trimStackTrace>
+					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
 			</plugin>
 			<plugin>

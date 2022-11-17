@@ -1,12 +1,13 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +30,7 @@ import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ControlCommandsTest extends JedisCommandsTestBase {
 
@@ -218,7 +220,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void configSetBinary() {
-    byte[] maxmemory = encode("maxmemory");
+    byte[] maxmemory = SafeEncoder.encode("maxmemory");
     List<byte[]> info = jedis.configGet(maxmemory);
     assertArrayEquals(maxmemory, info.get(0));
     byte[] memory = info.get(1);
@@ -233,7 +235,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     assertEquals(6, info.size());
     assertEquals("OK", jedis.configSet(info.toArray(new String[6])));
 
-    byte[][] bparams = new byte[][]{encode("hash-max-listpack-entries"), encode("set-max-intset-entries"), encode("zset-max-listpack-entries")};
+    byte[][] bparams = new byte[][]{SafeEncoder.encode("hash-max-listpack-entries"),
+      SafeEncoder.encode("set-max-intset-entries"), SafeEncoder.encode("zset-max-listpack-entries")};
     List<byte[]> binfo = jedis.configGet(bparams);
     assertEquals(6, binfo.size());
     assertEquals("OK", jedis.configSet(binfo.toArray(new byte[6][])));
@@ -383,14 +386,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     // may subject to be 'tuned' especially targeting a major Redis release.
 
     jedis.set("foo", "bar");
-    long usage = jedis.memoryUsage("foo");
-    assertTrue(usage >= 30);
-    assertTrue(usage <= 80);
+    assertThat(jedis.memoryUsage("foo"), greaterThan(20l));
 
     jedis.lpush("foobar", "fo", "ba", "sha");
-    usage = jedis.memoryUsage("foobar", 2);
-    assertTrue(usage >= 110);
-    assertTrue(usage <= 190);
+    assertThat(jedis.memoryUsage("foobar", 2), greaterThan(36l));
 
     assertNull(jedis.memoryUsage("roo", 2));
   }
@@ -405,14 +404,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     byte[] bfoobar = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
 
     jedis.set(bfoo, bbar);
-    long usage = jedis.memoryUsage(bfoo);
-    assertTrue(usage >= 30);
-    assertTrue(usage <= 80);
+    assertThat(jedis.memoryUsage(bfoo), greaterThan(20l));
 
     jedis.lpush(bfoobar, new byte[]{0x01, 0x02}, new byte[]{0x05, 0x06}, new byte[]{0x00});
-    usage = jedis.memoryUsage(bfoobar, 2);
-    assertTrue(usage >= 110);
-    assertTrue(usage <= 190);
+    assertThat(jedis.memoryUsage(bfoobar, 2), greaterThan(40l));
 
     assertNull(jedis.memoryUsage("roo", 2));
   }

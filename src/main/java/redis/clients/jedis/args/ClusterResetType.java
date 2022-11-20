@@ -2,6 +2,9 @@ package redis.clients.jedis.args;
 
 import redis.clients.jedis.util.SafeEncoder;
 
+/**
+ * Reset type for command cluster reset
+ */
 public enum ClusterResetType implements Rawable {
 
   SOFT, HARD;

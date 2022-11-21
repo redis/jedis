@@ -1,5 +1,8 @@
 package redis.clients.jedis.exceptions;
 
+/**
+ * Any error reply from Redis.
+ */
 public class JedisDataException extends JedisException {
 
   private static final long serialVersionUID = 3878126572474819403L;

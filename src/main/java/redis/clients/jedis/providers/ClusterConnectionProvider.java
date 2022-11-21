@@ -41,7 +41,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       try (Connection jedis = new Connection(hostAndPort, clientConfig)) {
         cache.discoverClusterNodesAndSlots(jedis);
         return;
-      } catch (JedisConnectionException e) {
+      } catch (JedisException e) {
         // try next nodes
       }
     }

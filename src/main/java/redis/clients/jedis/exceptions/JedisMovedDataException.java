@@ -2,6 +2,9 @@ package redis.clients.jedis.exceptions;
 
 import redis.clients.jedis.HostAndPort;
 
+/**
+ * {@code -MOVED} reply from Redis.
+ */
 public class JedisMovedDataException extends JedisRedirectionException {
 
   private static final long serialVersionUID = 3878126572474819403L;

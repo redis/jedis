@@ -53,14 +53,23 @@ private class Student {
 }
 ```
 
-Now we can create some students and store them in Redis as JSON":
+Now we can create some students and store them in Redis as JSON:
 
 ```java
+final Gson gson = new Gson();
+
 Student maya = new Student("Maya", "Jayavant");
-client.jsonSet("student:111", maya);
+client.jsonSet("student:111", gson.toJson(maya));
 
 Student oliwia = new Student("Oliwia", "Jagoda");
-client.jsonSet("student:112", oliwia);
+client.jsonSet("student:112", gson.toJson(oliwia));
+```
+
+Some of other ways to store POJOs as JSON:
+
+```
+client.jsonSetLegacy("student:111", maya);
+client.jsonSetWithEscape("student:112", oliwia);
 ```
 
 ## Querying and indexing JSON

@@ -4,8 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import org.junit.Test;
 
 import redis.clients.jedis.args.FlushMode;
@@ -90,5 +93,32 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     byte[] sha1 = cluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
     byte[][] arraySha1 = { sha1 };
     assertEquals(Collections.singletonList(Boolean.TRUE), cluster.scriptExists(byteKey, arraySha1));
+  }
+
+  @Test
+  public void broadcast() {
+    Map<?, Supplier<String>> stringReplies;
+    String script_1 = "return 'jedis'", script_2 = "return 79", sha1_1, sha1_2;
+
+    stringReplies = cluster.scriptLoadBroadcast(script_1);
+    assertEquals(3, stringReplies.size());
+    sha1_1 = stringReplies.values().stream().findAny().get().get();
+    stringReplies.values().forEach(reply -> assertEquals(sha1_1, reply.get()));
+
+    stringReplies = cluster.scriptLoadBroadcast(script_2);
+    assertEquals(3, stringReplies.size());
+    sha1_2 = stringReplies.values().stream().findAny().get().get();
+    stringReplies.values().forEach(reply -> assertEquals(sha1_2, reply.get()));
+
+    Map<?, Supplier<List<Boolean>>> booleanListReplies;
+    booleanListReplies = cluster.scriptExistsBroadcast(sha1_1, sha1_2);
+    assertEquals(3, booleanListReplies.size());
+    booleanListReplies.values().forEach(reply -> assertEquals(Arrays.asList(true, true), reply.get()));
+
+    cluster.scriptFlushBroadcast();
+
+    booleanListReplies = cluster.scriptExistsBroadcast(sha1_1, sha1_2);
+    assertEquals(3, booleanListReplies.size());
+    booleanListReplies.values().forEach(reply -> assertEquals(Arrays.asList(false, false), reply.get()));
   }
 }

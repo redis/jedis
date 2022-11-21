@@ -3860,14 +3860,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public String scriptFlush() {
-    connection.sendCommand(SCRIPT, FLUSH);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.scriptFlush());
   }
 
   @Override
   public String scriptFlush(final FlushMode flushMode) {
-    connection.sendCommand(SCRIPT, FLUSH.getRaw(), flushMode.getRaw());
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.scriptFlush(flushMode));
   }
 
   @Override
@@ -3879,20 +3877,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public List<Boolean> scriptExists(final byte[]... sha1) {
-    connection.sendCommand(SCRIPT, joinParameters(Keyword.EXISTS.getRaw(), sha1));
-    return BuilderFactory.BOOLEAN_LIST.build(connection.getOne());
+    return connection.executeCommand(commandObjects.scriptExists(sha1));
   }
 
   @Override
   public byte[] scriptLoad(final byte[] script) {
-    connection.sendCommand(SCRIPT, LOAD.getRaw(), script);
-    return connection.getBinaryBulkReply();
+    return connection.executeCommand(commandObjects.scriptLoad(script));
   }
 
   @Override
   public String scriptKill() {
-    connection.sendCommand(SCRIPT, KILL);
-    return connection.getStatusCodeReply();
+    return connection.executeCommand(commandObjects.scriptKill());
   }
 
   @Override
@@ -4335,8 +4330,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public long waitReplicas(final int replicas, final long timeout) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(WAIT, toByteArray(replicas), toByteArray(timeout));
-    return connection.getIntegerReply();
+    return connection.executeCommand(commandObjects.waitReplicas(replicas, timeout));
   }
 
   @Override
@@ -7993,14 +7987,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public List<Boolean> scriptExists(final String... sha1) {
-    connection.sendCommand(SCRIPT, joinParameters(Keyword.EXISTS.name(), sha1));
-    return BuilderFactory.BOOLEAN_LIST.build(connection.getOne());
+    return connection.executeCommand(commandObjects.scriptExists(sha1));
   }
 
   @Override
   public String scriptLoad(final String script) {
-    connection.sendCommand(SCRIPT, LOAD.name(), script);
-    return connection.getBulkReply();
+    return connection.executeCommand(commandObjects.scriptLoad(script));
   }
 
   @Override

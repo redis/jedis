@@ -2,9 +2,12 @@ package redis.clients.jedis;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
@@ -34,6 +37,7 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.Pool;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -165,6 +169,33 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public final <T> T executeCommand(CommandObject<T> commandObject) {
     return executor.executeCommand(commandObject);
+  }
+
+  public final <T> Map<?, Supplier<T>> broadcastCommand(CommandObject<T> commandObject) {
+    // TODO: Push this implementation in executor interface/classes.
+    Map<?, ?> connectionMap = provider.getConnectionMap();
+    Map<Object, Supplier<T>> responseMap = new HashMap<>(connectionMap.size(), 1f);
+    for (Map.Entry<? extends Object, ? extends Object> entry : connectionMap.entrySet()) {
+      Object key = entry.getKey();
+      Object connection = entry.getValue();
+      try {
+        responseMap.put(key, new BroadcastResponse<>(executeBroadcastCommand(connection, commandObject)));
+      } catch (RuntimeException re) {
+        responseMap.put(key, new BroadcastResponse<>(re));
+      }
+    }
+    return responseMap;
+  }
+
+  private <T> T executeBroadcastCommand(Object connection, CommandObject<T> commandObject) {
+    if (connection instanceof Connection) {
+      return ((Connection) connection).executeCommand(commandObject);
+    } else if (connection instanceof Pool) {
+      try (Connection _conn = ((Pool<Connection>) connection).getResource()) {
+        return _conn.executeCommand(commandObject);
+      }
+    }
+    throw new IllegalStateException(connection.getClass() + "is not supported.");
   }
 
   // Key commands
@@ -3322,6 +3353,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
   }
 
+  public Map<?, Supplier<Long>> waitReplicasBroadcast(final int replicas, final long timeout) {
+    return broadcastCommand(commandObjects.waitReplicas(replicas, timeout));
+  }
+
   @Override
   public Object eval(String script, String sampleKey) {
     return executeCommand(commandObjects.eval(script, sampleKey));
@@ -3352,6 +3387,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.scriptExists(sampleKey, sha1s));
   }
 
+  public Map<?, Supplier<List<Boolean>>> scriptExistsBroadcast(String... sha1s) {
+    return broadcastCommand(commandObjects.scriptExists(sha1s));
+  }
+
   @Override
   public Boolean scriptExists(byte[] sha1, byte[] sampleKey) {
     return scriptExists(sampleKey, new byte[][]{sha1}).get(0);
@@ -3362,9 +3401,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.scriptExists(sampleKey, sha1s));
   }
 
+  public Map<?, Supplier<List<Boolean>>> scriptExistsBroadcast(byte[]... sha1s) {
+    return broadcastCommand(commandObjects.scriptExists(sha1s));
+  }
+
   @Override
   public String scriptLoad(String script, String sampleKey) {
     return executeCommand(commandObjects.scriptLoad(script, sampleKey));
+  }
+
+  public Map<?, Supplier<String>> scriptLoadBroadcast(String script) {
+    return broadcastCommand(commandObjects.scriptLoad(script));
   }
 
   @Override
@@ -3377,14 +3424,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.scriptFlush(sampleKey, flushMode));
   }
 
+  public Map<?, Supplier<String>> scriptFlushBroadcast() {
+    return broadcastCommand(commandObjects.scriptFlush());
+  }
+
+  public Map<?, Supplier<String>> scriptFlushBroadcast(FlushMode flushMode) {
+    return broadcastCommand(commandObjects.scriptFlush(flushMode));
+  }
+
   @Override
   public String scriptKill(String sampleKey) {
     return executeCommand(commandObjects.scriptKill(sampleKey));
   }
 
+  public Map<?, Supplier<String>> scriptKillBroadcast() {
+    return broadcastCommand(commandObjects.scriptKill());
+  }
+
   @Override
   public byte[] scriptLoad(byte[] script, byte[] sampleKey) {
     return executeCommand(commandObjects.scriptLoad(script, sampleKey));
+  }
+
+  public Map<?, Supplier<byte[]>> scriptLoadBroadcast(byte[] script) {
+    return broadcastCommand(commandObjects.scriptLoad(script));
   }
 
   @Override
@@ -3402,6 +3465,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.scriptKill(sampleKey));
   }
   // Sample key commands
+
+  public Map<?, Supplier<String>> configSetBroadcast(final String... parameterValues) {
+    if (parameterValues.length > 0 && parameterValues.length % 2 == 0) {
+      // ok
+    } else {
+      throw new IllegalStateException("It requires 'pair's of config parameter-values.");
+    }
+    CommandArguments args = new CommandArguments(Protocol.Command.CONFIG).add(Protocol.Keyword.SET)
+        .addObjects((Object[]) parameterValues);
+    return broadcastCommand(new CommandObject<>(args, BuilderFactory.STRING));
+  }
+
+  public Map<?, Supplier<String>> flushAllBroadcast() {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(Protocol.Command.FLUSHALL),
+        BuilderFactory.STRING));
+  }
+
+  public Map<?, Supplier<String>> flushAllBroadcast(FlushMode flushMode) {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(Protocol.Command.FLUSHALL)
+        .add(flushMode), BuilderFactory.STRING));
+  }
 
   // Random node commands
   public long publish(String channel, String message) {
@@ -3451,9 +3535,31 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
   }
 
+  public Map<?, Supplier<String>> ftCreateBroadcast(String indexName, IndexOptions indexOptions, Schema schema) {
+    return broadcastCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+  }
+
   @Override
   public String ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
     return executeCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
+  }
+
+  public Map<?, Supplier<String>> ftCreateBroadcast(String indexName, SchemaField... schemaFields) {
+    return ftCreateBroadcast(indexName, Arrays.asList(schemaFields));
+  }
+
+  public Map<?, Supplier<String>> ftCreateBroadcast(String indexName, FTCreateParams createParams,
+      SchemaField... schemaFields) {
+    return ftCreateBroadcast(indexName, createParams, Arrays.asList(schemaFields));
+  }
+
+  public Map<?, Supplier<String>> ftCreateBroadcast(String indexName, Iterable<SchemaField> schemaFields) {
+    return ftCreateBroadcast(indexName, FTCreateParams.createParams(), schemaFields);
+  }
+
+  public Map<?, Supplier<String>> ftCreateBroadcast(String indexName, FTCreateParams createParams,
+      Iterable<SchemaField> schemaFields) {
+    return broadcastCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
   }
 
   @Override
@@ -3537,6 +3643,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String ftDropIndexDD(String indexName) {
     return executeCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  public Map<?, Supplier<String>> ftDropIndexBroadcast(String indexName) {
+    return broadcastCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  public Map<?, Supplier<String>> ftDropIndexDDBroadcast(String indexName) {
+    return broadcastCommand(commandObjects.ftDropIndexDD(indexName));
   }
 
   @Override

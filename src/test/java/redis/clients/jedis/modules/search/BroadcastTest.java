@@ -50,7 +50,7 @@ public class BroadcastTest extends RedisModuleCommandsTestBase {
       }
     }) {
       JedisBroadcast broadcast = new JedisBroadcast(provider);
-      Map<?, Supplier<String>> reply = broadcast.ftCreate(index, TextField.of("t"));
+      Map<?, Supplier<String>> reply = broadcast.ftCreateBroadcast(index, TextField.of("t"));
       assertEquals(1, reply.size());
       assertOK(reply.values().stream().findAny().get().get());
     }

@@ -18,7 +18,6 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
-import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 

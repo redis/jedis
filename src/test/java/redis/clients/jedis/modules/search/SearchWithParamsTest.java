@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,6 +18,7 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
+import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
@@ -136,6 +138,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     SearchResult asFamily = client.ftSearch(index, "@family:Rod");
     assertEquals(1, asFamily.getTotalResults());
+  }
+
+  @Test
+  public void createBroadcast() {
+    Map<?, Supplier<String>> reply = client.ftCreateBroadcast(index, TextField.of("t"));
+    assertEquals(1, reply.size());
+    assertOK(reply.values().stream().findFirst().get().get());
   }
 
   @Test

@@ -16,6 +16,10 @@ public class Pool<T> extends GenericObjectPool<T> {
     super(factory, poolConfig);
   }
 
+  public Pool(final PooledObjectFactory<T> factory) {
+    super(factory);
+  }
+
   @Override
   public void close() {
     destroy();

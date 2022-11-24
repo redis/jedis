@@ -272,11 +272,11 @@ public class ClusterCommandExecutorTest {
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
         assertNotNull(connection);
 
-        if (connection == master) {
+        if (connection.toString().equals("master")) {
           throw new JedisConnectionException("Master is down");
         }
 
-        assert connection == replica;
+        assert connection.toString().equals("replica");
 
         return (T) "Success!";
       }

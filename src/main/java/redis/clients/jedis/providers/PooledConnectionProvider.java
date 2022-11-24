@@ -20,14 +20,20 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig));
+    this(new ConnectionPool(hostAndPort, clientConfig));
+  }
+
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory) {
-    this(factory, new GenericObjectPoolConfig<>());
+    this(new ConnectionPool(factory));
   }
 
-  public PooledConnectionProvider(PooledObjectFactory<Connection> factory, GenericObjectPoolConfig<Connection> poolConfig) {
+  public PooledConnectionProvider(PooledObjectFactory<Connection> factory,
+      GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionPool(factory, poolConfig));
   }
 

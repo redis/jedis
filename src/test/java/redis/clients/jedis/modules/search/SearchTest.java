@@ -914,26 +914,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void config() throws Exception {
-    assertEquals("OK", client.ftConfigSet("timeout", "100"));
-    Map<String, String> configMap = client.ftConfigGet("*");
-    assertEquals("100", configMap.get("TIMEOUT"));
-  }
-
-  @Test
-  public void configOnTimeout() throws Exception {
-    assertEquals("OK", client.ftConfigSet("ON_TIMEOUT", "fail"));
-    assertEquals(Collections.singletonMap("ON_TIMEOUT", "fail"), client.ftConfigGet("ON_TIMEOUT"));
-
-    try {
-      client.ftConfigSet("ON_TIMEOUT", "null");
-      fail("null is not valid value for ON_TIMEOUT");
-    } catch (JedisDataException e) {
-      // Should throw an exception after RediSearch 2.2
-    }
-  }
-
-  @Test
   public void alias() throws Exception {
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
@@ -1013,10 +993,10 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-    addDocument("doc1", doc);
+    Map<String, String> map = new HashMap<>();
+    map.put("field1", "value");
+    map.put("field2", "not");
+    client.hset("doc1", map);
 
     SearchResult res = client.ftSearch(index, new Query("value").timeout(1000));
     assertEquals(1, res.getTotalResults());
@@ -1030,41 +1010,17 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Schema sc = new Schema().addTextField("field1", 1.0).addTextField("field2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
-    Map<String, Object> doc = new HashMap<>();
-    doc.put("field1", "value");
-    doc.put("field2", "not");
-    addDocument("doc2", doc);
-    addDocument("doc1", doc);
+    Map<String, String> map = new HashMap<>();
+    map.put("field1", "value");
+    map.put("field2", "not");
+    client.hset("doc2", map);
+    client.hset("doc1", map);
 
     SearchResult res = client.ftSearch(index, new Query("value").setInOrder());
     assertEquals(2, res.getTotalResults());
     assertEquals("doc2", res.getDocuments().get(0).getId());
     assertEquals("value", res.getDocuments().get(0).get("field1"));
     assertEquals("not", res.getDocuments().get(0).get("field2"));
-  }
-
-  @Test
-  public void testDialectConfig() {
-    // confirm default
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "1"), client.ftConfigGet("DEFAULT_DIALECT"));
-
-    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "2"));
-    assertEquals(Collections.singletonMap("DEFAULT_DIALECT", "2"), client.ftConfigGet("DEFAULT_DIALECT"));
-
-    try {
-      client.ftConfigSet("DEFAULT_DIALECT", "0");
-      fail();
-    } catch (JedisDataException ex) {
-    }
-
-    try {
-      client.ftConfigSet("DEFAULT_DIALECT", "3");
-      fail();
-    } catch (JedisDataException ex) {
-    }
-
-    // Restore to default
-    assertEquals("OK", client.ftConfigSet("DEFAULT_DIALECT", "1"));
   }
 
   @Test
@@ -1188,6 +1144,15 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
+
+    // profile
+    Map.Entry<SearchResult, Map<String, Object>> profile
+        = client.ftProfileSearch(index, FTProfileParams.profileParams(), query);
+    doc1 = profile.getKey().getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("VECTOR", iteratorsProfile.get("Type"));
   }
 
   @Test
@@ -1212,5 +1177,35 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, query).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
+
+    // profile
+    Map.Entry<SearchResult, Map<String, Object>> profile
+        = client.ftProfileSearch(index, FTProfileParams.profileParams(), query);
+    doc1 = profile.getKey().getDocuments().get(0);
+    assertEquals("a", doc1.getId());
+    assertEquals("0", doc1.get("__v_score"));
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("VECTOR", iteratorsProfile.get("Type"));
+  }
+
+  @Test
+  public void searchProfile() {
+    Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    Map<String, String> map = new HashMap<>();
+    map.put("t1", "foo");
+    map.put("t2", "bar");
+    client.hset("doc1", map);
+
+    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), new Query("foo"));
+    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    assertEquals("TEXT", iteratorsProfile.get("Type"));
+    assertEquals("foo", iteratorsProfile.get("Term"));
+    assertEquals(1L, iteratorsProfile.get("Counter"));
+    assertEquals(1L, iteratorsProfile.get("Size"));
+    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
   }
 }

@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -46,7 +47,7 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, new GenericObjectPoolConfig<Connection>(), startNodes);
+    this(clientConfig, null, startNodes);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
@@ -58,6 +59,9 @@ public class JedisClusterInfoCache {
 
   public void discoverClusterNodesAndSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
+    if (slotsInfo.isEmpty()) {
+      throw new JedisClusterOperationException("Cluster slots list is empty.");
+    }
     w.lock();
     try {
       reset();
@@ -139,6 +143,9 @@ public class JedisClusterInfoCache {
 
   private void discoverClusterSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
+    if (slotsInfo.isEmpty()) {
+      throw new JedisClusterOperationException("Cluster slots list is empty.");
+    }
     w.lock();
     try {
       this.slots.clear();
@@ -204,7 +211,8 @@ public class JedisClusterInfoCache {
       ConnectionPool existingPool = nodes.get(nodeKey);
       if (existingPool != null) return existingPool;
 
-      ConnectionPool nodePool = new ConnectionPool(node, clientConfig, poolConfig);
+      ConnectionPool nodePool = poolConfig == null ? new ConnectionPool(node, clientConfig)
+          : new ConnectionPool(node, clientConfig, poolConfig);
       nodes.put(nodeKey, nodePool);
       return nodePool;
     } finally {

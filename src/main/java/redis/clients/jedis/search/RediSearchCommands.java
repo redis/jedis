@@ -62,6 +62,15 @@ public interface RediSearchCommands {
 
   String ftCursorDel(String indexName, long cursorId);
 
+  Map.Entry<AggregationResult, Map<String, Object>> ftProfileAggregate(String indexName,
+      FTProfileParams profileParams, AggregationBuilder aggr);
+
+  Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+      FTProfileParams profileParams, Query query);
+
+  Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
+      FTProfileParams profileParams, String query, FTSearchParams searchParams);
+
   String ftDropIndex(String indexName);
 
   String ftDropIndexDD(String indexName);
@@ -84,7 +93,8 @@ public interface RediSearchCommands {
 
   Map<String, Map<String, Double>> ftSpellCheck(String index, String query);
 
-  Map<String, Map<String, Double>> ftSpellCheck(String index, String query, FTSpellCheckParams spellCheckParams);
+  Map<String, Map<String, Double>> ftSpellCheck(String index, String query,
+      FTSpellCheckParams spellCheckParams);
 
   Map<String, Object> ftInfo(String indexName);
 
@@ -119,4 +129,6 @@ public interface RediSearchCommands {
   boolean ftSugDel(String key, String string);
 
   long ftSugLen(String key);
+
+  List<String> ftList();
 }

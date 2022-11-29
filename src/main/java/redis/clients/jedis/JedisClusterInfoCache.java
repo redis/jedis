@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -58,6 +59,9 @@ public class JedisClusterInfoCache {
 
   public void discoverClusterNodesAndSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
+    if (slotsInfo.isEmpty()) {
+      throw new JedisClusterOperationException("Cluster slots list is empty.");
+    }
     w.lock();
     try {
       reset();
@@ -139,6 +143,9 @@ public class JedisClusterInfoCache {
 
   private void discoverClusterSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
+    if (slotsInfo.isEmpty()) {
+      throw new JedisClusterOperationException("Cluster slots list is empty.");
+    }
     w.lock();
     try {
       this.slots.clear();

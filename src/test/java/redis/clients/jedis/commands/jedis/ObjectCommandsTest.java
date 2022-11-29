@@ -1,8 +1,10 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -20,12 +22,13 @@ import java.util.List;
 
 public class ObjectCommandsTest extends JedisCommandsTestBase {
 
-  private String key = "mylist";
-  private byte[] binaryKey = SafeEncoder.encode(key);
-  private static final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
+  private final String key = "mylist";
+  private final byte[] binaryKey = SafeEncoder.encode(key);
+  private final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
   private Jedis lfuJedis;
 
   @Before
+  @Override
   public void setUp() throws Exception {
     super.setUp();
 
@@ -35,6 +38,7 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
   }
 
   @After
+  @Override
   public void tearDown() throws Exception {
     lfuJedis.disconnect();
     super.tearDown();
@@ -53,14 +57,21 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void objectEncoding() {
-    jedis.lpush(key, "hello world");
-    String encoding = jedis.objectEncoding(key);
-    assertEquals("quicklist", encoding);
+  public void objectEncodingString() {
+    jedis.set(key, "hello world");
+    assertThat(jedis.objectEncoding(key), containsString("str"));
 
     // Binary
-    encoding = SafeEncoder.encode(jedis.objectEncoding(binaryKey));
-    assertEquals("quicklist", encoding);
+    assertThat(SafeEncoder.encode(jedis.objectEncoding(binaryKey)), containsString("str"));
+  }
+
+  @Test
+  public void objectEncodingList() {
+    jedis.lpush(key, "hello world");
+    assertThat(jedis.objectEncoding(key), containsString("list"));
+
+    // Binary
+    assertThat(SafeEncoder.encode(jedis.objectEncoding(binaryKey)), containsString("list"));
   }
 
   @Test

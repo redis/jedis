@@ -13,7 +13,7 @@ public class PooledHyperLogLogCommandsTest extends HyperLogLogCommandsTestBase {
   }
 
   @AfterClass
-  public static void closeCluster() {
+  public static void cleanUp() {
     jedis.close();
   }
 

@@ -13,7 +13,7 @@ public class PooledBinaryValuesCommandsTest extends BinaryValuesCommandsTestBase
   }
 
   @AfterClass
-  public static void closeCluster() {
+  public static void cleanUp() {
     jedis.close();
   }
 

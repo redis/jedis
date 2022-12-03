@@ -3,8 +3,8 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * The Args of cluster failover.
- * Enum object describing cluster failover.
+ * Enumeration of cluster failover options.
+ * <p>
  * Used by {@link redis.clients.jedis.commands.ClusterCommands#clusterFailover(ClusterFailoverOption)}
  * */
 public enum ClusterFailoverOption implements Rawable {

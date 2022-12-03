@@ -1,13 +1,13 @@
 package redis.clients.jedis.args;
 
 /**
- * The Interface used to save args with byte array.
+ * Byte array representation of arguments to write in socket input stream.
  */
 public interface Rawable {
 
   /**
-   * Get args with byte array.
-   * @return byte array of arg
+   * Get byte array.
+   * @return binary
    */
   byte[] getRaw();
 }

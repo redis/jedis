@@ -2,9 +2,7 @@ package redis.clients.jedis.args;
 
 import redis.clients.jedis.util.SafeEncoder;
 
-/**
- * Client type
- */
+
 public enum ClientType implements Rawable {
 
   NORMAL, MASTER, SLAVE, REPLICA, PUBSUB;

@@ -4,13 +4,13 @@ import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 /**
- * Args transform Factory.
+ *  Factory class to get {@Rawable} objects.
  */
 public final class RawableFactory {
 
   /**
-   * Transform an int value to raw.
-   * @param i value
+   * Get a {@Rawable} from an {@code int}.
+   * @param i integer value
    * @return raw
    */
   public static Rawable from(int i) {
@@ -18,8 +18,8 @@ public final class RawableFactory {
   }
 
   /**
-   * Transform a double value to raw.
-   * @param d value
+   * Get a {@Rawable} from a {@code double}.
+   * @param d numeric value
    * @return raw
    */
   public static Rawable from(double d) {
@@ -27,7 +27,7 @@ public final class RawableFactory {
   }
 
   /**
-   * Transform a byte array value to raw.
+   * Get a {@Rawable} from a byte array.
    * @param binary value
    * @return raw
    */
@@ -36,7 +36,7 @@ public final class RawableFactory {
   }
 
   /**
-   * Transform a string value to raw.
+   * Get a {@Rawable} from a {@link String}.
    * @param string value
    * @return raw
    */
@@ -45,8 +45,8 @@ public final class RawableFactory {
   }
 
   /**
-   * Default implement of Rawable
-   * */
+   * Default implementation of {@link Rawable}.
+   **/
   public static class Raw implements Rawable {
 
     private final byte[] raw;
@@ -62,7 +62,7 @@ public final class RawableFactory {
   }
 
   /**
-   * Init raw with string.
+   * A {@link Rawable} wrapping a {@link String}.
    */
   public static class RawString extends Raw {
 

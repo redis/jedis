@@ -9,11 +9,12 @@ import redis.clients.jedis.util.SafeEncoder;
 public enum ClusterResetType implements Rawable {
 
   /**
-   * Soft reset:Reset The cluster info
+   * Soft reset: Reset only the cluster info.
    */
   SOFT,
+
   /**
-   * Hard reset: Reset The cluster info, set epochs to 0, change node ID
+   * Hard reset: Reset the cluster info, set epochs to 0, change node ID
    */
   HARD;
 

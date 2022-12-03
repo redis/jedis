@@ -3,7 +3,7 @@ package redis.clients.jedis.args;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * The operations of the command bitop
+ * Bit operations for {@code BITOP} command.
  */
 public enum BitOP implements Rawable {
 

@@ -4,7 +4,7 @@ import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 /**
- *  Factory class to get {@link Rawable} objects.
+ * Factory class to get {@link Rawable} objects.
  */
 public final class RawableFactory {
 

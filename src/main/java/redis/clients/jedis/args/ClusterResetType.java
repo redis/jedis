@@ -14,7 +14,7 @@ public enum ClusterResetType implements Rawable {
   SOFT,
 
   /**
-   * Hard reset: Reset the cluster info, set epochs to 0, change node ID
+   * Hard reset: Reset the cluster info, set epochs to 0, change node ID.
    */
   HARD;
 

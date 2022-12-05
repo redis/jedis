@@ -394,4 +394,9 @@ public class JedisPooled extends UnifiedJedis {
   public final Pool<Connection> getPool() {
     return ((PooledConnectionProvider) provider).getPool();
   }
+
+  @Override
+  public Pipeline pipelined() {
+    return (Pipeline) super.pipelined();
+  }
 }

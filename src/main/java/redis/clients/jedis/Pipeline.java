@@ -33,22 +33,21 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
     DatabasePipelineCommands, RedisModulePipelineCommands, Closeable {
 
   protected final Connection connection;
-//  private final Jedis jedis;
+  private final boolean closeConnection;
   private final CommandObjects commandObjects;
   private final GraphCommandObjects graphCommandObjects;
 
-  public Pipeline(Connection connection) {
-//    super(connection);
-    this.connection = connection;
-//    this.jedis = null;
-    this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(this.connection);
+  public Pipeline(Jedis jedis) {
+    this(jedis.getConnection(), false);
   }
 
-  public Pipeline(Jedis jedis) {
-//    super(jedis.getConnection());
-    this.connection = jedis.getConnection();
-//    this.jedis = jedis;
+  public Pipeline(Connection connection) {
+    this(connection, false);
+  }
+
+  public Pipeline(Connection connection, boolean closeConnection) {
+    this.connection = connection;
+    this.closeConnection = closeConnection;
     this.commandObjects = new CommandObjects();
     this.graphCommandObjects = new GraphCommandObjects(this.connection);
   }
@@ -61,6 +60,10 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public void close() {
     sync();
+
+    if (closeConnection) {
+      connection.close();
+    }
   }
 
   /**

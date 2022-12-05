@@ -191,10 +191,15 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   public Map<String, ConnectionPool> getClusterNodes() {
-    return ((ClusterCommandExecutor) executor).provider.getNodes();
+    return ((ClusterConnectionProvider) provider).getNodes();
   }
 
   public Connection getConnectionFromSlot(int slot) {
-    return ((ClusterCommandExecutor) executor).provider.getConnectionFromSlot(slot);
+    return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);
+  }
+
+  @Override
+  public ClusterPipeline pipelined() {
+    return new ClusterPipeline((ClusterConnectionProvider) provider);
   }
 }

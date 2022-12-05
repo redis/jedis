@@ -944,4 +944,37 @@ public class ClusterPipeliningTest {
   private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
     return CoreMatchers.<T>hasItem(equalTo(expected));
   }
+
+  @Test
+  public void simple() { // TODO: move into 'redis.clients.jedis.commands.unified.cluster' package
+    try (JedisCluster jedis = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+      final int count = 10;
+      int totalCount = 0;
+      for (int i = 0; i < count; i++) {
+        jedis.set("foo" + i, "bar" + i);
+      }
+      totalCount += count;
+      for (int i = 0; i < count; i++) {
+        jedis.rpush("foobar" + i, "foo" + i, "bar" + i);
+      }
+      totalCount += count;
+
+      List<Response<?>> responses = new ArrayList<>(totalCount);
+      List<Object> expected = new ArrayList<>(totalCount);
+      try (ClusterPipeline pipeline = jedis.pipelined()) {
+        for (int i = 0; i < count; i++) {
+          responses.add(pipeline.get("foo" + i));
+          expected.add("bar" + i);
+        }
+        for (int i = 0; i < count; i++) {
+          responses.add(pipeline.lrange("foobar" + i, 0, -1));
+          expected.add(Arrays.asList("foo" + i, "bar" + i));
+        }
+      }
+
+      for (int i = 0; i < totalCount; i++) {
+        assertEquals(expected.get(i), responses.get(i).get());
+      }
+    }
+  }
 }

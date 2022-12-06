@@ -59,6 +59,11 @@ public class JedisBroadcast {
     throw new IllegalStateException(connection.getClass() + "is not supported.");
   }
 
+  public Map<?, Supplier<String>> ping() {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(Command.PING),
+        BuilderFactory.STRING));
+  }
+
   public Map<?, Supplier<String>> configSet(final String... parameterValues) {
     if (parameterValues.length > 0 && parameterValues.length % 2 == 0) {
       // ok

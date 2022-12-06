@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -1104,5 +1105,12 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       names.add(name);
     }
     assertEquals(names, new HashSet<>(client.ftList()));
+  }
+
+  @Test
+  public void broadcast() {
+    Map<?, Supplier<String>> reply = client.broadcasted().ftCreate(index, TextField.of("t"));
+    assertEquals(1, reply.size());
+    assertOK(reply.values().stream().findFirst().get().get());
   }
 }

@@ -13,7 +13,7 @@ public class PooledBitCommandsTest extends BitCommandsTestBase {
   }
 
   @AfterClass
-  public static void closeCluster() {
+  public static void cleanUp() {
     jedis.close();
   }
 

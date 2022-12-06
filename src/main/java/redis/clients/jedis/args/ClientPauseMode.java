@@ -2,6 +2,9 @@ package redis.clients.jedis.args;
 
 import redis.clients.jedis.util.SafeEncoder;
 
+/**
+ * Client pause supported modes.
+ */
 public enum ClientPauseMode implements Rawable {
 
   ALL, WRITE;

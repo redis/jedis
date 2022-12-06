@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
@@ -30,16 +31,27 @@ public interface JedisClientConfig {
 
   /**
    * @return Redis ACL user
+   * @deprecated Use {@link JedisClientConfig#getCredentialsProvider()}.
    */
+  @Deprecated
   default String getUser() {
     return null;
   }
 
+  /**
+   * @deprecated Use {@link JedisClientConfig#getCredentialsProvider()}.
+   */
+  @Deprecated
   default String getPassword() {
     return null;
   }
 
+  @Deprecated
   default void updatePassword(String password) {
+  }
+
+  default Supplier<RedisCredentials> getCredentialsProvider() {
+    return null;
   }
 
   default int getDatabase() {

@@ -437,4 +437,54 @@ public class JedisPoolTest {
       }
     }
   }
+
+  @Test
+  public void testResetInvalidCredentials() {
+    DefaultRedisCredentialsProvider credentialsProvider
+        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "foobared"));
+    JedisFactory factory = new JedisFactory(hnp, DefaultJedisClientConfig.builder()
+        .credentialsProvider(credentialsProvider).clientName("my_shiny_client_name").build());
+
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
+      Jedis obj1_ref;
+      try (Jedis obj1_1 = pool.getResource()) {
+        obj1_ref = obj1_1;
+        obj1_1.set("foo", "bar");
+        assertEquals("bar", obj1_1.get("foo"));
+        assertEquals(1, pool.getNumActive());
+      }
+      assertEquals(0, pool.getNumActive());
+      try (Jedis obj1_2 = pool.getResource()) {
+        assertSame(obj1_ref, obj1_2);
+        assertEquals(1, pool.getNumActive());
+        credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "wrong password"));
+        try (Jedis obj2 = pool.getResource()) {
+          fail("Should not get resource from pool");
+        } catch (JedisException e) { }
+        assertEquals(1, pool.getNumActive());
+      }
+      assertEquals(0, pool.getNumActive());
+    }
+  }
+
+  @Test
+  public void testResetValidCredentials() {
+    DefaultRedisCredentialsProvider credentialsProvider
+        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
+    JedisFactory factory = new JedisFactory(hnp, DefaultJedisClientConfig.builder()
+        .credentialsProvider(credentialsProvider).clientName("my_shiny_client_name").build());
+
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
+      try (Jedis obj1 = pool.getResource()) {
+        fail("Should not get resource from pool");
+      } catch (JedisException e) { }
+      assertEquals(0, pool.getNumActive());
+
+      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
+      try (Jedis obj2 = pool.getResource()) {
+        obj2.set("foo", "bar");
+        assertEquals("bar", obj2.get("foo"));
+      }
+    }
+  }
 }

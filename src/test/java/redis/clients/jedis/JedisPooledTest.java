@@ -170,4 +170,25 @@ public class JedisPooledTest {
       assertEquals("bar", pool.get("foo"));
     }
   }
+
+  @Test
+  public void testResetValidCredentials() {
+    DefaultRedisCredentialsProvider credentialsProvider = 
+        new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
+    ConnectionFactory factory = new ConnectionFactory(HostAndPorts.getRedisServers().get(0),
+        DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider)
+            .clientName("my_shiny_client_name").build());
+
+    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), factory)) {
+      try {
+        pool.get("foo");
+        fail("Should not get resource from pool");
+      } catch (JedisException e) { }
+      assertEquals(0, pool.getPool().getNumActive());
+
+      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
+      pool.set("foo", "bar");
+      assertEquals("bar", pool.get("foo"));
+    }
+  }
 }

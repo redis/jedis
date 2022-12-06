@@ -49,7 +49,7 @@ public final class Protocol {
   private static final String NOPERM_PREFIX = "NOPERM";
 
   private Protocol() {
-    // this prevent the class from instantiation
+    throw new InstantiationError("Must not instantiate this class");
   }
 
   public static void sendCommand(final RedisOutputStream os, CommandArguments args) {

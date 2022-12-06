@@ -68,7 +68,7 @@ public class JedisBroadcast {
     if (parameterValues.length > 0 && parameterValues.length % 2 == 0) {
       // ok
     } else {
-      throw new IllegalStateException("It requires 'pair's of config parameter-values.");
+      throw new IllegalArgumentException("It requires 'pair's of config parameter-values.");
     }
     CommandArguments args = new CommandArguments(Command.CONFIG).add(Keyword.SET)
         .addObjects((Object[]) parameterValues);

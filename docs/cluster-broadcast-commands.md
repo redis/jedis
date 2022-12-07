@@ -5,16 +5,15 @@ When using [Open Source Redis Cluster API](https://redis.io/docs/reference/clust
 For example, if we want to update the configuration of the Redis Cluster, we need to broadcast the command [CONFIG SET](https://redis.io/commands/config-set/) to all nodes:
 
 ```java
-package org.example;
-import redis.clients.jedis.*;
-import redis.clients.jedis.exceptions.JedisDataException;
-
 import java.util.Map;
 import java.util.function.Supplier;
 
+import redis.clients.jedis.*;
+import redis.clients.jedis.exceptions.JedisDataException;
+
 public class Main {
     public static void main(String[] args) {
-        
+
         var clusterNode = new HostAndPort("127.0.0.1", 7000);
         JedisCluster client = new JedisCluster(clusterNode);
         JedisBroadcast broadcast = client.broadcast();
@@ -32,7 +31,7 @@ public class Main {
                 // retry command or handle the error
             }
         }
-        
+
     }
 }
 ```

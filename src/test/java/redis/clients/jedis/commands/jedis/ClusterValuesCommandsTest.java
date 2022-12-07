@@ -115,7 +115,7 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test
   public void broadcastRawPing() {
-    Map<?, Supplier<String>> replies = cluster.broadcasted().broadcastCommand(
+    Map<?, Supplier<String>> replies = cluster.broadcast().broadcastCommand(
         new CommandObject<>(new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
     assertEquals(3, replies.size());
     replies.values().forEach(reply -> assertEquals("PONG", reply.get()));
@@ -123,7 +123,7 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test
   public void broadcastPing() {
-    Map<?, Supplier<String>> replies = cluster.broadcasted().ping();
+    Map<?, Supplier<String>> replies = cluster.broadcast().ping();
     assertEquals(3, replies.size());
     replies.values().forEach(reply -> assertEquals("PONG", reply.get()));
   }
@@ -133,7 +133,7 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
     assertNull(cluster.get("foo"));
     assertEquals("OK", cluster.set("foo", "bar"));
     assertEquals("bar", cluster.get("foo"));
-    cluster.broadcasted().flushAll();
+    cluster.broadcast().flushAll();
     assertNull(cluster.get("foo"));
   }
 }

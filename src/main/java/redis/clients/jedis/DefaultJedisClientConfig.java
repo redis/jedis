@@ -11,7 +11,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final int socketTimeoutMillis;
   private final int blockingSocketTimeoutMillis;
 
-  private volatile Supplier<RedisCredentials> credentials;
+  private volatile Supplier<RedisCredentials> credentialsProvider;
   private final int database;
   private final String clientName;
 
@@ -23,13 +23,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final HostAndPortMapper hostAndPortMapper;
 
   private DefaultJedisClientConfig(int connectionTimeoutMillis, int soTimeoutMillis,
-      int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentials, int database, String clientName,
-      boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
+      int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
+      String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
     this.connectionTimeoutMillis = connectionTimeoutMillis;
     this.socketTimeoutMillis = soTimeoutMillis;
     this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
-    this.credentials = credentials;
+    this.credentialsProvider = credentialsProvider;
     this.database = database;
     this.clientName = clientName;
     this.ssl = ssl;
@@ -55,25 +55,28 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
+  @Deprecated
   public String getUser() {
-    return credentials.get().getUser();
+    return credentialsProvider.get().getUser();
   }
 
   @Override
+  @Deprecated
   public String getPassword() {
-    return new String(credentials.get().getPassword());
+    char[] password = credentialsProvider.get().getPassword();
+    return password == null ? null : new String(credentialsProvider.get().getPassword());
   }
 
   @Override
   public Supplier<RedisCredentials> getCredentialsProvider() {
-    return credentials;
+    return credentialsProvider;
   }
 
   @Override
   @Deprecated
   public synchronized void updatePassword(String password) {
     String user = getUser();
-    ((DefaultRedisCredentialsProvider) this.credentials)
+    ((DefaultRedisCredentialsProvider) this.credentialsProvider)
         .setCredentials(new DefaultRedisCredentials(user, password));
   }
 
@@ -124,7 +127,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private String user = null;
     private String password = null;
-    private Supplier<RedisCredentials> credentials;
+    private Supplier<RedisCredentials> credentialsProvider;
     private int database = Protocol.DEFAULT_DATABASE;
     private String clientName = null;
 
@@ -139,9 +142,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     public DefaultJedisClientConfig build() {
+      if (credentialsProvider == null) {
+        credentialsProvider = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password));
+      }
+
       return new DefaultJedisClientConfig(connectionTimeoutMillis, socketTimeoutMillis,
-          blockingSocketTimeoutMillis, credentials, database, clientName, ssl, sslSocketFactory,
-          sslParameters, hostnameVerifier, hostAndPortMapper);
+          blockingSocketTimeoutMillis, credentialsProvider, database, clientName, ssl,
+          sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
     public Builder timeoutMillis(int timeoutMillis) {
@@ -184,12 +191,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     public Builder credentials(RedisCredentials credentials) {
-      this.credentials = new DefaultRedisCredentialsProvider(credentials);
+      this.credentialsProvider = new DefaultRedisCredentialsProvider(credentials);
       return this;
     }
 
     public Builder credentialsProvider(Supplier<RedisCredentials> credentials) {
-      this.credentials = credentials;
+      this.credentialsProvider = credentials;
       return this;
     }
 
@@ -229,6 +236,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
   }
 
+  @Deprecated
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
@@ -239,11 +247,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
+    Supplier<RedisCredentials> credentialsProvider = copy.getCredentialsProvider();
+    if (credentialsProvider == null) {
+      credentialsProvider = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(copy.getUser(), copy.getPassword()));
+    }
     return new DefaultJedisClientConfig(copy.getConnectionTimeoutMillis(),
         copy.getSocketTimeoutMillis(), copy.getBlockingSocketTimeoutMillis(),
-        new DefaultRedisCredentialsProvider(
-            new DefaultRedisCredentials(copy.getUser(), copy.getPassword())),
-        copy.getDatabase(), copy.getClientName(), copy.isSsl(),
+        credentialsProvider, copy.getDatabase(), copy.getClientName(), copy.isSsl(),
         copy.getSslSocketFactory(), copy.getSslParameters(),
         copy.getHostnameVerifier(), copy.getHostAndPortMapper());
   }

@@ -241,20 +241,18 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
-    return new DefaultJedisClientConfig(connectionTimeoutMillis, soTimeoutMillis, blockingSocketTimeoutMillis,
+    return new DefaultJedisClientConfig(
+        connectionTimeoutMillis, soTimeoutMillis, blockingSocketTimeoutMillis,
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)),
-        database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
+        database, clientName, ssl, sslSocketFactory, sslParameters,
+        hostnameVerifier, hostAndPortMapper);
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
-    Supplier<RedisCredentials> credentialsProvider = copy.getCredentialsProvider();
-    if (credentialsProvider == null) {
-      credentialsProvider = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(copy.getUser(), copy.getPassword()));
-    }
     return new DefaultJedisClientConfig(copy.getConnectionTimeoutMillis(),
         copy.getSocketTimeoutMillis(), copy.getBlockingSocketTimeoutMillis(),
-        credentialsProvider, copy.getDatabase(), copy.getClientName(), copy.isSsl(),
-        copy.getSslSocketFactory(), copy.getSslParameters(),
+        copy.getCredentialsProvider(), copy.getDatabase(), copy.getClientName(),
+        copy.isSsl(), copy.getSslSocketFactory(), copy.getSslParameters(),
         copy.getHostnameVerifier(), copy.getHostAndPortMapper());
   }
 }

@@ -4534,7 +4534,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisGraph commands
 
-  public JedisBroadcast broadcasted() {
+  public JedisBroadcast broadcast() {
     return new JedisBroadcast(this);
   }
 

@@ -24,5 +24,4 @@ class DefaultRedisCredentials implements RedisCredentials {
   public char[] getPassword() {
     return password;
   }
-
 }

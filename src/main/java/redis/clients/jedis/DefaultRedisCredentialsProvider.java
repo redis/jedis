@@ -2,7 +2,7 @@ package redis.clients.jedis;
 
 class DefaultRedisCredentialsProvider implements RedisCredentialsProvider {
 
-  private RedisCredentials credentials;
+  private volatile RedisCredentials credentials;
 
   DefaultRedisCredentialsProvider(RedisCredentials credentials) {
     this.credentials = credentials;
@@ -18,10 +18,8 @@ class DefaultRedisCredentialsProvider implements RedisCredentialsProvider {
   }
 
   @Override
-  public void prepare() {
-  }
+  public void prepare() { }
 
   @Override
-  public void cleanUp() {
-  }
+  public void cleanUp() { }
 }

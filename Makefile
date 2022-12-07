@@ -464,10 +464,7 @@ release:
 	make stop
 
 system-setup:
-	sudo apt-get install -y gcc-8 g++-8
-	cd /usr/bin ;\
-	sudo ln -sf gcc-8 gcc ;\
-	sudo ln -sf g++-8 g++
+	sudo apt install -y gcc g++
 	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch unstable --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git

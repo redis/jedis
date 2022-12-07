@@ -148,6 +148,28 @@ public class ClusterPipeliningTest {
       Response<String> r6 = pipeline.get("key3");
 
       pipeline.sync();
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
+    }
+  }
+
+  @Test
+  public void clusterPipelined() {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+        ClusterPipeline pipeline = cluster.pipelined()) {
+
+      Response<String> r1 = pipeline.set("key1", "value1");
+      Response<String> r2 = pipeline.set("key2", "value2");
+      Response<String> r3 = pipeline.set("key3", "value3");
+      Response<String> r4 = pipeline.get("key1");
+      Response<String> r5 = pipeline.get("key2");
+      Response<String> r6 = pipeline.get("key3");
+
+      pipeline.sync();
 
       assertEquals("OK", r1.get());
       assertEquals("OK", r2.get());
@@ -159,7 +181,7 @@ public class ClusterPipeliningTest {
   }
 
   @Test
-  public void clusterPipelinedAndIntermediateSync() {
+  public void intermediateSync() {
     try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
         ClusterPipeline pipeline = cluster.pipelined()) {
 
@@ -178,6 +200,33 @@ public class ClusterPipeliningTest {
       Response<String> r6 = pipeline.get("key3");
 
       pipeline.sync();
+
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
+    }
+  }
+
+  @Test
+  public void intermediateSyncs() {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+        ClusterPipeline pipeline = cluster.pipelined()) {
+
+      Response<String> r1 = pipeline.set("key1", "value1");
+      Response<String> r2 = pipeline.set("key2", "value2");
+      Response<String> r3 = pipeline.set("key3", "value3");
+
+      for (int i = 0; i < 100; i++) pipeline.sync();
+
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+
+      Response<String> r4 = pipeline.get("key1");
+      Response<String> r5 = pipeline.get("key2");
+      Response<String> r6 = pipeline.get("key3");
+
+      for (int i = 0; i < 100; i++) pipeline.sync();
 
       assertEquals("value1", r4.get());
       assertEquals("value2", r5.get());

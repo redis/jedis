@@ -97,6 +97,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     if (syncing) {
       return;
     }
+    syncing = true;
 
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();

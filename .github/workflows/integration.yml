@@ -30,10 +30,10 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
-      - name: stunnel
+      - name: System setup
         run: |
-          sudo apt-get update
-          sudo apt-get install -y stunnel make
+          sudo apt update
+          sudo apt install -y stunnel make
           make system-setup
       - name: Cache dependencies
         uses: actions/cache@v2
@@ -42,10 +42,10 @@ jobs:
             ~/.m2/repository
             /var/cache/apt
           key: jedis-${{hashFiles('**/pom.xml')}}
-      - name: mvn offline
+      - name: Maven offline
         run: |
           mvn -q dependency:go-offline
-      - name: run tests
+      - name: Run tests
         run: |
           TEST="" make test
         env:
@@ -53,8 +53,8 @@ jobs:
           TERM: dumb
       - name: redismod docker
         run: docker run -p 52567:6379 -d redislabs/redismod:edge
-      - name: run tests
+      - name: Run tests
         run: mvn -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
-      - name: codecov
+      - name: Codecov
         run: |
           bash <(curl -s https://codecov.io/bash)

@@ -73,6 +73,16 @@ public class JedisBroadcast {
     return broadcastCommand(new CommandObject<>(args, BuilderFactory.STRING));
   }
 
+  public Map<?, Supplier<String>> flushDB() {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(Command.FLUSHDB),
+        BuilderFactory.STRING));
+  }
+
+  public Map<?, Supplier<String>> flushDB(FlushMode flushMode) {
+    return broadcastCommand(new CommandObject<>(new CommandArguments(Command.FLUSHDB)
+        .add(flushMode), BuilderFactory.STRING));
+  }
+
   public Map<?, Supplier<String>> flushAll() {
     return broadcastCommand(new CommandObject<>(new CommandArguments(Command.FLUSHALL),
         BuilderFactory.STRING));

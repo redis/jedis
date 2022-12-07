@@ -65,9 +65,7 @@ public class JedisBroadcast {
   }
 
   public Map<?, Supplier<String>> configSet(final String... parameterValues) {
-    if (parameterValues.length > 0 && parameterValues.length % 2 == 0) {
-      // ok
-    } else {
+    if (parameterValues.length > 0 && parameterValues.length % 2 != 0) {
       throw new IllegalArgumentException("It requires 'pair's of config parameter-values.");
     }
     CommandArguments args = new CommandArguments(Command.CONFIG).add(Keyword.SET)

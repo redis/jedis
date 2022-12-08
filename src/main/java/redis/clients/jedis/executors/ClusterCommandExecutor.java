@@ -58,7 +58,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
       } catch (JedisClusterOperationException jnrcne) {
         throw jnrcne;
-      } catch (JedisConnectionException jce) {
+      } catch (JedisException jce) {
         lastException = jce;
         ++consecutiveConnectionFailures;
         log.debug("Failed connecting to Redis: {}", connection, jce);

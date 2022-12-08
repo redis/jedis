@@ -363,6 +363,11 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void clientUnpause() {
+    assertEquals("OK", jedis.clientUnpause());
+  }
+
+  @Test
   public void clientNoEvict() {
     assertEquals("OK", jedis.clientNoEvictOn());
     assertEquals("OK", jedis.clientNoEvictOff());

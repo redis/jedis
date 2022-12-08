@@ -12,18 +12,12 @@ public class BitPosParams implements IParams {
   public BitPosParams() {
   }
 
-  /**
-   * @deprecated Use {@link BitPosParams#start(long)}.
-   */
-  @Deprecated
+  // TODO: deprecate ??
   public BitPosParams(long start) {
     this.start = start;
   }
 
-  /**
-   * @deprecated Use {@link BitPosParams#start(long)} and {@link BitPosParams#end(long)}.
-   */
-  @Deprecated
+  // TODO: deprecate ??
   public BitPosParams(long start, long end) {
     this(start);
 

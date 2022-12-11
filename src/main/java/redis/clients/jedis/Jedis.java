@@ -4287,16 +4287,23 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String clientUnpause() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, UNPAUSE);
+    return connection.getBulkReply();
+  }
+
+  @Override
   public String clientNoEvictOn() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CLIENT,"NO-EVICT", "ON");
+    connection.sendCommand(CLIENT, "NO-EVICT", "ON");
     return connection.getBulkReply();
   }
 
   @Override
   public String clientNoEvictOff() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CLIENT,"NO-EVICT", "OFF");
+    connection.sendCommand(CLIENT, "NO-EVICT", "OFF");
     return connection.getBulkReply();
   }
 

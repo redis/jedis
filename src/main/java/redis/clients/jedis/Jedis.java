@@ -9201,6 +9201,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String latencyDoctor() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LATENCY, DOCTOR);
+    return connection.getBulkReply();
+  }
+
+  @Override
   public StreamEntryID xadd(final String key, final StreamEntryID id, final Map<String, String> hash) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xadd(key, id, hash));

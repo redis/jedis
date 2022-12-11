@@ -9,24 +9,24 @@ import java.util.List;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.util.KeyValue;
 
-public class ModuleLoadexParams implements IParams {
+public class ModuleLoadExParams implements IParams {
 
   private final List<KeyValue<String, String>> configs = new ArrayList<>();
   private final List<String> args = new ArrayList<>();
 
-  public ModuleLoadexParams() {
+  public ModuleLoadExParams() {
   }
 
-  public ModuleLoadexParams moduleLoadexParams() {
-    return new ModuleLoadexParams();
+  public ModuleLoadExParams moduleLoadexParams() {
+    return new ModuleLoadExParams();
   }
 
-  public ModuleLoadexParams config(String name, String value) {
+  public ModuleLoadExParams config(String name, String value) {
     this.configs.add(KeyValue.of(name, value));
     return this;
   }
 
-  public ModuleLoadexParams arg(String arg) {
+  public ModuleLoadExParams arg(String arg) {
     this.args.add(arg);
     return this;
   }

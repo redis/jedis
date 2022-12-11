@@ -2,7 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import redis.clients.jedis.Module;
-import redis.clients.jedis.params.ModuleLoadexParams;
+import redis.clients.jedis.params.ModuleLoadExParams;
 
 public interface ModuleCommands {
 
@@ -38,7 +38,7 @@ public interface ModuleCommands {
    * @param params as in description
    * @return OK
    */
-  String moduleLoadex(String path, ModuleLoadexParams params);
+  String moduleLoadEx(String path, ModuleLoadExParams params);
 
   /**
    * Unload the module specified by name. Note that the module's name is reported by the

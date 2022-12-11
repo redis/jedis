@@ -9113,7 +9113,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String moduleLoadex(String path, ModuleLoadexParams params) {
+  public String moduleLoadEx(String path, ModuleLoadExParams params) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(new CommandArguments(Command.MODULE).add(LOADEX).add(path)
         .addParams(params));

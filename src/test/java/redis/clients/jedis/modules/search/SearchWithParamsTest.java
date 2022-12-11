@@ -1109,7 +1109,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void broadcast() {
-    Map<?, Supplier<String>> reply = client.broadcasted().ftCreate(index, TextField.of("t"));
+    Map<?, Supplier<String>> reply = client.broadcast().ftCreate(index, TextField.of("t"));
     assertEquals(1, reply.size());
     assertOK(reply.values().stream().findFirst().get().get());
   }

@@ -132,6 +132,20 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  public void bitposModifier() {
+    jedis.set("mykey", "\\x00\\xff\\xf0");
+    assertEquals(0, jedis.bitpos("mykey", false));
+    assertEquals(1, jedis.bitpos("mykey", true));
+    assertEquals(1, jedis.bitpos("mykey", true, BitPosParams.bitPosParams()));
+    assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2)));
+    assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)));
+    assertEquals(18, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(2).end(-1)
+        .modifier(BitCountOption.BYTE)));
+    assertEquals(9, jedis.bitpos("mykey", true, BitPosParams.bitPosParams().start(7).end(15)
+        .modifier(BitCountOption.BIT)));
+  }
+
+  @Test
   public void setAndgetrange() {
     jedis.set("key1", "Hello World");
     assertEquals(11, jedis.setrange("key1", 6, "Jedis"));

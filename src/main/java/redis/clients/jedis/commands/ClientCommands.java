@@ -130,6 +130,12 @@ public interface ClientCommands {
   String clientPause(long timeout, ClientPauseMode mode);
 
   /**
+   * CLIENT UNPAUSE is used to resume command processing for all clients that were paused by CLIENT PAUSE.
+   * @return OK
+   */
+  String clientUnpause();
+
+  /**
    * Turn on the client eviction mode for the current connection.
    *
    * @return OK

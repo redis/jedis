@@ -1,30 +1,58 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.List;
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.args.BitCountOption;
 
 public class BitPosParams implements IParams {
-  private List<byte[]> params = new ArrayList<>();
+
+  private Long start;
+  private Long end;
+  private BitCountOption modifier;
 
   public BitPosParams() {
   }
 
+  // TODO: deprecate ??
   public BitPosParams(long start) {
-    params.add(Protocol.toByteArray(start));
+    this.start = start;
   }
 
+  // TODO: deprecate ??
   public BitPosParams(long start, long end) {
     this(start);
 
-    params.add(Protocol.toByteArray(end));
+    this.end = end;
+  }
+
+  public static BitPosParams bitPosParams() {
+    return new BitPosParams();
+  }
+
+  public BitPosParams start(long start) {
+    this.start = start;
+    return this;
+  }
+
+  public BitPosParams end(long end) {
+    this.end = end;
+    return this;
+  }
+
+  public BitPosParams modifier(BitCountOption modifier) {
+    this.modifier = modifier;
+    return this;
   }
 
   @Override
   public void addParams(CommandArguments args) {
-    for (byte[] param : params) {
-      args.add(param);
+    if (start != null) {
+      args.add(start);
+      if (end != null) {
+        args.add(end);
+        if (modifier != null) {
+          args.add(modifier);
+        }
+      }
     }
   }
 }

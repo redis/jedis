@@ -41,7 +41,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       try (Connection jedis = new Connection(hostAndPort, clientConfig)) {
         cache.discoverClusterNodesAndSlots(jedis);
         return;
-      } catch (JedisConnectionException e) {
+      } catch (JedisException e) {
         // try next nodes
       }
     }
@@ -134,5 +134,10 @@ public class ClusterConnectionProvider implements ConnectionProvider {
         return getConnection();
       }
     }
+  }
+
+  @Override
+  public Map<String, ConnectionPool> getConnectionMap() {
+    return Collections.unmodifiableMap(getNodes());
   }
 }

@@ -39,4 +39,9 @@ public class JedisSharding extends UnifiedJedis {
   public JedisSharding(ShardedConnectionProvider provider, Pattern tagPattern) {
     super(provider, tagPattern);
   }
+
+  @Override
+  public ShardedPipeline pipelined() {
+    return new ShardedPipeline((ShardedConnectionProvider) provider);
+  }
 }

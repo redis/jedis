@@ -4535,6 +4535,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisGraph commands
 
+  public JedisBroadcast broadcast() {
+    return new JedisBroadcast(this);
+  }
+
+  public Object pipelined() {
+    if (provider == null) {
+      throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+    }
+    Connection connection = provider.getConnection();
+    return new Pipeline(connection, true);
+  }
+
   public Object sendCommand(ProtocolCommand cmd) {
     return executeCommand(commandObjects.commandArguments(cmd));
   }

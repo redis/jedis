@@ -3558,14 +3558,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public List<byte[]> configGet(final byte[] pattern) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, Keyword.GET.getRaw(), pattern);
+    connection.sendCommand(Command.CONFIG, Keyword.GET.getRaw(), pattern);
     return connection.getBinaryMultiBulkReply();
   }
 
   @Override
   public List<byte[]> configGet(byte[]... patterns) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, joinParameters(Keyword.GET.getRaw(), patterns));
+    connection.sendCommand(Command.CONFIG, joinParameters(Keyword.GET.getRaw(), patterns));
     return connection.getBinaryMultiBulkReply();
   }
 
@@ -3575,7 +3575,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String configResetStat() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, Keyword.RESETSTAT);
+    connection.sendCommand(Command.CONFIG, Keyword.RESETSTAT);
     return connection.getStatusCodeReply();
   }
 
@@ -3608,7 +3608,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String configRewrite() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, Keyword.REWRITE);
+    connection.sendCommand(Command.CONFIG, Keyword.REWRITE);
     return connection.getStatusCodeReply();
   }
 
@@ -3644,14 +3644,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String configSet(final byte[] parameter, final byte[] value) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, Keyword.SET.getRaw(), parameter, value);
+    connection.sendCommand(Command.CONFIG, Keyword.SET.getRaw(), parameter, value);
     return connection.getStatusCodeReply();
   }
 
   @Override
   public String configSet(final byte[]... parameterValues) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, joinParameters(Keyword.SET.getRaw(), parameterValues));
+    connection.sendCommand(Command.CONFIG, joinParameters(Keyword.SET.getRaw(), parameterValues));
     return connection.getStatusCodeReply();
   }
 
@@ -4287,16 +4287,23 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String clientUnpause() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, UNPAUSE);
+    return connection.getBulkReply();
+  }
+
+  @Override
   public String clientNoEvictOn() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CLIENT,"NO-EVICT", "ON");
+    connection.sendCommand(CLIENT, "NO-EVICT", "ON");
     return connection.getBulkReply();
   }
 
   @Override
   public String clientNoEvictOff() {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CLIENT,"NO-EVICT", "OFF");
+    connection.sendCommand(CLIENT, "NO-EVICT", "OFF");
     return connection.getBulkReply();
   }
 
@@ -7844,14 +7851,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public List<String> configGet(final String pattern) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, Keyword.GET.name(), pattern);
+    connection.sendCommand(Command.CONFIG, Keyword.GET.name(), pattern);
     return connection.getMultiBulkReply();
   }
 
   @Override
   public List<String> configGet(String... patterns) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, joinParameters(Keyword.GET.name(), patterns));
+    connection.sendCommand(Command.CONFIG, joinParameters(Keyword.GET.name(), patterns));
     return connection.getMultiBulkReply();
   }
 
@@ -7887,14 +7894,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public String configSet(final String parameter, final String value) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, Keyword.SET.name(), parameter, value);
+    connection.sendCommand(Command.CONFIG, Keyword.SET.name(), parameter, value);
     return connection.getStatusCodeReply();
   }
 
   @Override
   public String configSet(final String... parameterValues) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CONFIG, joinParameters(Keyword.SET.name(), parameterValues));
+    connection.sendCommand(Command.CONFIG, joinParameters(Keyword.SET.name(), parameterValues));
     return connection.getStatusCodeReply();
   }
 
@@ -9113,6 +9120,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String moduleLoadEx(String path, ModuleLoadExParams params) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(new CommandArguments(Command.MODULE).add(LOADEX).add(path)
+        .addParams(params));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String moduleUnload(final String name) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.MODULE, UNLOAD.name(), name);
@@ -9190,6 +9205,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String lolwut(LolwutParams lolwutParams) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(new CommandArguments(LOLWUT).addParams(lolwutParams));
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String latencyDoctor() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LATENCY, DOCTOR);
     return connection.getBulkReply();
   }
 

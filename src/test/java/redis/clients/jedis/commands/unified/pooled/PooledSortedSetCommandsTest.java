@@ -13,7 +13,7 @@ public class PooledSortedSetCommandsTest extends SortedSetCommandsTestBase {
   }
 
   @AfterClass
-  public static void closeCluster() {
+  public static void cleanUp() {
     jedis.close();
   }
 

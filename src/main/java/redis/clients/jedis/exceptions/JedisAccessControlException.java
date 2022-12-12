@@ -1,5 +1,8 @@
 package redis.clients.jedis.exceptions;
 
+/**
+ * An access control error reply from Redis; i.e. {@code -WRONGPASS}, {@code -NOPERM}.
+ */
 public class JedisAccessControlException extends JedisDataException {
 
   public JedisAccessControlException(String message) {

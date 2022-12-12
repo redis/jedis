@@ -1616,6 +1616,8 @@ public final class BuilderFactory {
       try {
         return new JSONArray(str);
       } catch (JSONException ex) {
+        // This is not necessary but we are doing this just to make is safer
+        // for com.vaadin.external.google:android-json library
         throw new JedisException(ex);
       }
     }

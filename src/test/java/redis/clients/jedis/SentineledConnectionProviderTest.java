@@ -41,11 +41,9 @@ public class SentineledConnectionProviderTest {
   public void repeatedSentinelPoolInitialization() {
     for (int i = 0; i < 20; ++i) {
 
-      try (SentineledConnectionProvider provider
-          = new SentineledConnectionProvider(MASTER_NAME, sentinels,
-              DefaultJedisClientConfig.builder().timeoutMillis(1000)
-                  .password("foobared").database(2).build(),
-              DefaultJedisClientConfig.builder().build())) {
+      try (SentineledConnectionProvider provider = new SentineledConnectionProvider(MASTER_NAME,
+          DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+          sentinels, DefaultJedisClientConfig.builder().build())) {
 
         provider.getConnection().close();
       }
@@ -58,20 +56,16 @@ public class SentineledConnectionProviderTest {
     wrongSentinels.add(new HostAndPort("localhost", 65432));
     wrongSentinels.add(new HostAndPort("localhost", 65431));
 
-    try (SentineledConnectionProvider provider
-        = new SentineledConnectionProvider(MASTER_NAME, wrongSentinels,
-            DefaultJedisClientConfig.builder().build(),
-            DefaultJedisClientConfig.builder().build())) {
+    try (SentineledConnectionProvider provider = new SentineledConnectionProvider(MASTER_NAME,
+        DefaultJedisClientConfig.builder().build(), wrongSentinels, DefaultJedisClientConfig.builder().build())) {
     }
   }
 
   @Test(expected = JedisException.class)
   public void initializeWithNotMonitoredMasterNameShouldThrowException() {
     final String wrongMasterName = "wrongMasterName";
-    try (SentineledConnectionProvider provider
-        = new SentineledConnectionProvider(wrongMasterName, sentinels,
-            DefaultJedisClientConfig.builder().build(),
-            DefaultJedisClientConfig.builder().build())) {
+    try (SentineledConnectionProvider provider = new SentineledConnectionProvider(wrongMasterName,
+        DefaultJedisClientConfig.builder().build(), sentinels, DefaultJedisClientConfig.builder().build())) {
     }
   }
 
@@ -79,11 +73,9 @@ public class SentineledConnectionProviderTest {
   public void checkCloseableConnections() throws Exception {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
 
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, sentinels,
-        DefaultJedisClientConfig.builder().timeoutMillis(1000)
-            .password("foobared").database(2).build(),
-        DefaultJedisClientConfig.builder().build(),
-        config)) {
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
+        DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+        config, sentinels, DefaultJedisClientConfig.builder().build())) {
       assertSame(SentineledConnectionProvider.class, jedis.provider.getClass());
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -95,11 +87,9 @@ public class SentineledConnectionProviderTest {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentineled jedis = new JedisSentineled(MASTER_NAME, sentinels,
-        DefaultJedisClientConfig.builder().timeoutMillis(1000)
-            .password("foobared").database(2).build(),
-        DefaultJedisClientConfig.builder().build(),
-        config);
+    JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
+        DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+        config, sentinels, DefaultJedisClientConfig.builder().build());
 
     Connection conn = jedis.provider.getConnection();
     try {

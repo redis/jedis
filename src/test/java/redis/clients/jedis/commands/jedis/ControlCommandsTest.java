@@ -1,6 +1,7 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -250,12 +251,9 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void clientPause() throws InterruptedException, ExecutionException {
     ExecutorService executorService = Executors.newFixedThreadPool(2);
-    try {
-      final Jedis jedisToPause1 = createJedis();
-      final Jedis jedisToPause2 = createJedis();
+    try (Jedis jedisToPause1 = createJedis(); Jedis jedisToPause2 = createJedis();) {
 
-      int pauseMillis = 1250;
-      jedis.clientPause(pauseMillis);
+      jedis.clientPause(1000L);
 
       Future<Long> latency1 = executorService.submit(new Callable<Long>() {
         @Override
@@ -274,18 +272,12 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         }
       });
 
-      long latencyMillis1 = latency1.get();
-      long latencyMillis2 = latency2.get();
+      assertThat(latency1.get(), greaterThan(100L));
+      assertThat(latency2.get(), greaterThan(100L));
 
-      int pauseMillisDelta = 100;
-      assertTrue(pauseMillis <= latencyMillis1 && latencyMillis1 <= pauseMillis + pauseMillisDelta);
-      assertTrue(pauseMillis <= latencyMillis2 && latencyMillis2 <= pauseMillis + pauseMillisDelta);
-
-      jedisToPause1.close();
-      jedisToPause2.close();
     } finally {
       executorService.shutdown();
-      if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+      if (!executorService.awaitTermination(2, TimeUnit.SECONDS)) {
         executorService.shutdownNow();
       }
     }
@@ -293,13 +285,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientPauseAll() throws InterruptedException, ExecutionException {
-    final int pauseMillis = 1250;
-    final int pauseMillisDelta = 100;
-
     ExecutorService executorService = Executors.newFixedThreadPool(1);
     try (Jedis jedisPause = createJedis()) {
 
-      jedis.clientPause(pauseMillis, ClientPauseMode.ALL);
+      jedis.clientPause(1000L, ClientPauseMode.ALL);
 
       Future<Long> latency = executorService.submit(new Callable<Long>() {
         @Override
@@ -310,8 +299,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         }
       });
 
-      long latencyMillis = latency.get();
-      assertTrue(pauseMillis <= latencyMillis && latencyMillis <= pauseMillis + pauseMillisDelta);
+      assertThat(latency.get(), greaterThan(100L));
 
     } finally {
       executorService.shutdown();
@@ -323,13 +311,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientPauseWrite() throws InterruptedException, ExecutionException {
-    final int pauseMillis = 1250;
-    final int pauseMillisDelta = 100;
-
     ExecutorService executorService = Executors.newFixedThreadPool(2);
     try (Jedis jedisRead = createJedis(); Jedis jedisWrite = createJedis();) {
 
-      jedis.clientPause(pauseMillis, ClientPauseMode.WRITE);
+      jedis.clientPause(1000L, ClientPauseMode.WRITE);
 
       Future<Long> latencyRead = executorService.submit(new Callable<Long>() {
         @Override
@@ -348,11 +333,9 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         }
       });
 
-      long latencyReadMillis = latencyRead.get();
-      assertTrue(0 <= latencyReadMillis && latencyReadMillis <= pauseMillisDelta);
+      assertThat(latencyRead.get(), lessThan(100L));
 
-      long latencyWriteMillis = latencyWrite.get();
-      assertTrue(pauseMillis <= latencyWriteMillis && latencyWriteMillis <= pauseMillis + pauseMillisDelta);
+      assertThat(latencyWrite.get(), greaterThan(100L));
 
     } finally {
       executorService.shutdown();

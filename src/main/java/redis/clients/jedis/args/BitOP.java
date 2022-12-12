@@ -2,6 +2,9 @@ package redis.clients.jedis.args;
 
 import redis.clients.jedis.util.SafeEncoder;
 
+/**
+ * Bit operations for {@code BITOP} command.
+ */
 public enum BitOP implements Rawable {
 
   AND, OR, XOR, NOT;

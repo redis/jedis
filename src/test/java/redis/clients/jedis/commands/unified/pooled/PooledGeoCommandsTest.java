@@ -13,7 +13,7 @@ public class PooledGeoCommandsTest extends GeoCommandsTestBase {
   }
 
   @AfterClass
-  public static void closeCluster() {
+  public static void cleanUp() {
     jedis.close();
   }
 

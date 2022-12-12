@@ -79,6 +79,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void latencyDoctor() {
+    String report = jedis.latencyDoctor();
+    assertNotNull(report);
+  }
+
+  @Test
   public void exists() {
     String status = jedis.set("foo", "bar");
     assertEquals("OK", status);

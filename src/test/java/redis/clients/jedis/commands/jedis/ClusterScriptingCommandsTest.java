@@ -4,10 +4,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 import org.junit.Test;
 
+import redis.clients.jedis.JedisBroadcast;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -90,5 +94,33 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     byte[] sha1 = cluster.scriptLoad("return redis.call('get','foo')".getBytes(), byteKey);
     byte[][] arraySha1 = { sha1 };
     assertEquals(Collections.singletonList(Boolean.TRUE), cluster.scriptExists(byteKey, arraySha1));
+  }
+
+  @Test
+  public void broadcast() {
+    Map<?, Supplier<String>> stringReplies;
+    String script_1 = "return 'jedis'", script_2 = "return 79", sha1_1, sha1_2;
+    JedisBroadcast broadcast = new JedisBroadcast(cluster);
+
+    stringReplies = broadcast.scriptLoad(script_1);
+    assertEquals(3, stringReplies.size());
+    sha1_1 = stringReplies.values().stream().findAny().get().get();
+    stringReplies.values().forEach(reply -> assertEquals(sha1_1, reply.get()));
+
+    stringReplies = broadcast.scriptLoad(script_2);
+    assertEquals(3, stringReplies.size());
+    sha1_2 = stringReplies.values().stream().findAny().get().get();
+    stringReplies.values().forEach(reply -> assertEquals(sha1_2, reply.get()));
+
+    Map<?, Supplier<List<Boolean>>> booleanListReplies;
+    booleanListReplies = broadcast.scriptExists(sha1_1, sha1_2);
+    assertEquals(3, booleanListReplies.size());
+    booleanListReplies.values().forEach(reply -> assertEquals(Arrays.asList(true, true), reply.get()));
+
+    broadcast.scriptFlush();
+
+    booleanListReplies = broadcast.scriptExists(sha1_1, sha1_2);
+    assertEquals(3, booleanListReplies.size());
+    booleanListReplies.values().forEach(reply -> assertEquals(Arrays.asList(false, false), reply.get()));
   }
 }

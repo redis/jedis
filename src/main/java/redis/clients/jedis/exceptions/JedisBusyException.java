@@ -1,5 +1,8 @@
 package redis.clients.jedis.exceptions;
 
+/**
+ * {@code -BUSY} reply from Redis.
+ */
 public class JedisBusyException extends JedisDataException {
 
   private static final long serialVersionUID = 3992655220229243478L;

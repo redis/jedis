@@ -1,16 +1,22 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 import org.junit.Test;
 
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
@@ -105,5 +111,29 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
         assertEquals(0, subscribedChannels);
       }
     }, "foo");
+  }
+
+  @Test
+  public void broadcastRawPing() {
+    Map<?, Supplier<String>> replies = cluster.broadcast().broadcastCommand(
+        new CommandObject<>(new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
+    assertEquals(3, replies.size());
+    replies.values().forEach(reply -> assertEquals("PONG", reply.get()));
+  }
+
+  @Test
+  public void broadcastPing() {
+    Map<?, Supplier<String>> replies = cluster.broadcast().ping();
+    assertEquals(3, replies.size());
+    replies.values().forEach(reply -> assertEquals("PONG", reply.get()));
+  }
+
+  @Test
+  public void broadcastFlushAll() {
+    assertNull(cluster.get("foo"));
+    assertEquals("OK", cluster.set("foo", "bar"));
+    assertEquals("bar", cluster.get("foo"));
+    cluster.broadcast().flushAll();
+    assertNull(cluster.get("foo"));
   }
 }

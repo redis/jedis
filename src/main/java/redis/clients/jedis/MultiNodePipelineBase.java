@@ -41,7 +41,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
-  private volatile boolean synced;
+  private volatile boolean syncing = false;
 
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
@@ -49,7 +49,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
-    synced = false;
     this.commandObjects = commandObjects;
   }
 
@@ -90,16 +89,15 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     try {
       sync();
     } finally {
-      for (Connection connection : connections.values()) {
-        IOUtils.closeQuietly(connection);
-      }
+      connections.values().forEach(IOUtils::closeQuietly);
     }
   }
 
   public final void sync() {
-    if (synced) {
+    if (syncing) {
       return;
     }
+    syncing = true;
 
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
@@ -121,7 +119,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
         IOUtils.closeQuietly(connection);
       }
     }
-    synced = true;
+
+    syncing = false;
   }
 
   @Override

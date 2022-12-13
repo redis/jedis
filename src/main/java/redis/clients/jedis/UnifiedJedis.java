@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -7,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
@@ -3727,7 +3728,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Object jsonGet(String key, Path2... paths) {
+  public JsonNode jsonGet(String key, Path2... paths) {
     return executeCommand(commandObjects.jsonGet(key, paths));
   }
 
@@ -3747,7 +3748,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<JSONArray> jsonMGet(Path2 path, String... keys) {
+  public List<ArrayNode> jsonMGet(Path2 path, String... keys) {
     return executeCommand(commandObjects.jsonMGet(path, keys));
   }
 
@@ -3842,7 +3843,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public JSONArray jsonNumIncrBy(String key, Path2 path, double value) {
+  public ArrayNode jsonNumIncrBy(String key, Path2 path, double value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 

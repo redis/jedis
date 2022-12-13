@@ -3,14 +3,19 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
@@ -18,6 +23,7 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.GraphProtocol.GraphCommand;
 import redis.clients.jedis.graph.GraphProtocol.GraphKeyword;
 import redis.clients.jedis.json.*;
@@ -3295,11 +3301,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> jsonSetWithEscape(String key, Path2 path, Object object) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GSON.toJson(object)), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path)
+        .add(writeJsonObject(object)), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object pojo) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GSON.toJson(pojo)), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path)
+        .add(writeJsonObject(pojo)), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSetWithPlainString(String key, Path path, String string) {
@@ -3311,11 +3319,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GSON.toJson(object)).addParams(params), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path)
+        .add(writeJsonObject(object)).addParams(params), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object pojo, JsonSetParams params) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GSON.toJson(pojo)).addParams(params), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path)
+        .add(writeJsonObject(pojo)).addParams(params), BuilderFactory.STRING);
   }
 
   public final CommandObject<Object> jsonGet(String key) {
@@ -3326,7 +3336,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new GsonObjectBuilder<>(clazz));
   }
 
-  public final CommandObject<Object> jsonGet(String key, Path2... paths) {
+  public final CommandObject<JsonNode> jsonGet(String key, Path2... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), BuilderFactory.JSON_OBJECT);
   }
 
@@ -3342,7 +3352,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new GsonObjectBuilder<>(clazz));
   }
 
-  public final CommandObject<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
+  public final CommandObject<List<ArrayNode>> jsonMGet(Path2 path, String... keys) {
     return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), BuilderFactory.JSON_ARRAY_LIST);
   }
 
@@ -3395,15 +3405,18 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(GSON.toJson(string)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key)
+        .add(writeJsonObject(string)), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> jsonStrAppend(String key, Path2 path, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(GSON.toJson(string)), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path)
+        .add(writeJsonObject(string)), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Path path, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(GSON.toJson(string)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path)
+        .add(writeJsonObject(string)), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> jsonStrLen(String key) {
@@ -3418,21 +3431,21 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
+  public final CommandObject<ArrayNode> jsonNumIncrBy(String key, Path2 path, double value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.JSON_ARRAY);
   }
 
   public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
   }
-
-  public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
-    CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
-    for (Object object : objects) {
-      args.add(object);
-    }
-    return new CommandObject<>(args, BuilderFactory.LONG);
-  }
+//
+//  public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
+//    CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
+//    for (Object object : objects) {
+//      args.add(object);
+//    }
+//    return new CommandObject<>(args, BuilderFactory.LONG);
+//  }
 
   public final CommandObject<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path).addObjects(objects);
@@ -3442,7 +3455,7 @@ public class CommandObjects {
   public final CommandObject<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object object : objects) {
-      args.add(GSON.toJson(object));
+      args.add(writeJsonObject(object));
     }
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }
@@ -3450,7 +3463,7 @@ public class CommandObjects {
   public final CommandObject<Long> jsonArrAppend(String key, Path path, Object... pojos) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object pojo : pojos) {
-      args.add(GSON.toJson(pojo));
+      args.add(writeJsonObject(pojo));
     }
     return new CommandObject<>(args, BuilderFactory.LONG);
   }
@@ -3460,11 +3473,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Long>> jsonArrIndexWithEscape(String key, Path2 path, Object scalar) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(GSON.toJson(scalar)), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path)
+        .add(writeJsonObject(scalar)), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<Long> jsonArrIndex(String key, Path path, Object scalar) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(GSON.toJson(scalar)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path)
+        .add(writeJsonObject(scalar)), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> jsonArrInsert(String key, Path2 path, int index, Object... objects) {
@@ -3475,7 +3490,7 @@ public class CommandObjects {
   public final CommandObject<List<Long>> jsonArrInsertWithEscape(String key, Path2 path, int index, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
     for (Object object : objects) {
-      args.add(GSON.toJson(object));
+      args.add(writeJsonObject(object));
     }
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }
@@ -3483,7 +3498,7 @@ public class CommandObjects {
   public final CommandObject<Long> jsonArrInsert(String key, Path path, int index, Object... pojos) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
     for (Object pojo : pojos) {
-      args.add(GSON.toJson(pojo));
+      args.add(writeJsonObject(pojo));
     }
     return new CommandObject<>(args, BuilderFactory.LONG);
   }
@@ -4037,7 +4052,27 @@ public class CommandObjects {
     }
   }
 
-  private static final Gson GSON = new Gson();
+  private final ObjectMapper jackson = new ObjectMapper()
+      .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
+      .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+
+  private byte[] writeJsonObject(Object value) {
+    try {
+      // return objectMapper.writer().writeValueAsString(value);
+      return jackson.writer().writeValueAsBytes(value);
+    } catch (IOException ioe) {
+      throw new JedisException(ioe);
+    }
+  }
+
+  private <T> T readJsonObject(byte[] value, Class<T> clazz) {
+    if (value == null) return null;
+    try {
+      return jackson.reader().readValue(value, clazz);
+    } catch (IOException ioe) {
+      throw new JedisException(ioe);
+    }
+  }
 
   private class GsonObjectBuilder<T> extends Builder<T> {
 
@@ -4049,7 +4084,8 @@ public class CommandObjects {
 
     @Override
     public T build(Object data) {
-      return GSON.fromJson(BuilderFactory.STRING.build(data), clazz);
+      // return readObject(BuilderFactory.STRING.build(data), clazz);
+      return readJsonObject(BuilderFactory.BINARY.build(data), clazz);
     }
   }
 
@@ -4066,8 +4102,9 @@ public class CommandObjects {
       if (data == null) {
         return null;
       }
-      List<String> list = BuilderFactory.STRING_LIST.build(data);
-      return list.stream().map(s -> GSON.fromJson(s, clazz)).collect(Collectors.toList());
+      // return BuilderFactory.STRING_LIST.build(data).stream()
+      return BuilderFactory.BINARY_LIST.build(data).stream()
+          .map(value -> readJsonObject(value, clazz)).collect(Collectors.toList());
     }
   }
 

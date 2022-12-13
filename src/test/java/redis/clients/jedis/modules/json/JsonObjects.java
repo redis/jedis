@@ -5,7 +5,6 @@ import java.util.Objects;
 public class JsonObjects {
 
   /* A simple class that represents an object in real life */
-  @SuppressWarnings("unused")
   public static class IRLObject {
 
     public String str;
@@ -17,7 +16,6 @@ public class JsonObjects {
     }
   }
 
-  @SuppressWarnings("unused")
   public static class FooBarObject {
 
     public String foo;
@@ -40,6 +38,8 @@ public class JsonObjects {
     String quuz;
     private String grault;
     private String waldo;
+
+    public Baz() { }
 
     public Baz(final String quuz, final String grault, final String waldo) {
       this.quuz = quuz;
@@ -73,30 +73,13 @@ public class JsonObjects {
     private String garply;
     private Baz baz;
 
+    public Qux() { }
+
     public Qux(final String quux, final String corge, final String garply, final Baz baz) {
       this.quux = quux;
       this.corge = corge;
       this.garply = garply;
       this.baz = baz;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) {
-        return true;
-      }
-      if (o == null) {
-        return false;
-      }
-      if (getClass() != o.getClass()) {
-        return false;
-      }
-      Qux other = (Qux) o;
-
-      return Objects.equals(quux, other.quux)
-          && Objects.equals(corge, other.corge)
-          && Objects.equals(garply, other.garply)
-          && Objects.equals(baz, other.baz);
     }
   }
 }

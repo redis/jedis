@@ -1,10 +1,12 @@
 package redis.clients.jedis;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.resps.StreamConsumerFullInfo;
@@ -1586,38 +1588,50 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
+  private static final ObjectMapper JACKSON_MAPPER = new ObjectMapper();
+
+  public static final Builder<JsonNode> JSON_OBJECT = new Builder<JsonNode>() {
     @Override
-    public Object build(Object data) {
+    public JsonNode build(Object data) {
       if (data == null) return null;
 
-      if (!(data instanceof byte[])) return data;
+      //if (!(data instanceof byte[])) return data;
 
-      String str = STRING.build(data);
-      if (str.charAt(0) == '{') {
-        try {
-          return new JSONObject(str);
-        } catch (Exception ex) { }
-      } else if (str.charAt(0) == '[') {
-        try {
-          return new JSONArray(str);
-        } catch (Exception ex) { }
+//      String str = STRING.build(data);
+//      if (str.charAt(0) == '{') {
+//        try {
+//          return new JSONObject(str);
+//        } catch (Exception ex) { }
+//      } else if (str.charAt(0) == '[') {
+//        try {
+//          return new JSONArray(str);
+//        } catch (Exception ex) { }
+//      }
+//      return str;
+      try {
+        return JACKSON_MAPPER.readTree(BINARY.build(data));
+      } catch (IOException ioe) {
+        throw new JedisException(ioe);
       }
-      return str;
     }
   };
 
-  public static final Builder<JSONArray> JSON_ARRAY = new Builder<JSONArray>() {
+  public static final Builder<ArrayNode> JSON_ARRAY = new Builder<ArrayNode>() {
     @Override
-    public JSONArray build(Object data) {
+    public ArrayNode build(Object data) {
       if (data == null) return null;
-      return new JSONArray(STRING.build(data));
+//      return new JSONArray(STRING.build(data));
+      try {
+        return (ArrayNode) JACKSON_MAPPER.readTree(BINARY.build(data));
+      } catch (IOException ioe) {
+        throw new JedisException(ioe);
+      }
     }
   };
 
-  public static final Builder<List<JSONArray>> JSON_ARRAY_LIST = new Builder<List<JSONArray>>() {
+  public static final Builder<List<ArrayNode>> JSON_ARRAY_LIST = new Builder<List<ArrayNode>>() {
     @Override
-    public List<JSONArray> build(Object data) {
+    public List<ArrayNode> build(Object data) {
       if (data == null) return null;
       List<Object> list = (List<Object>) data;
       return list.stream().map(o -> JSON_ARRAY.build(o)).collect(Collectors.toList());

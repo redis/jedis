@@ -1,7 +1,8 @@
 package redis.clients.jedis.json;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.List;
-import org.json.JSONArray;
 
 public interface RedisJsonCommands {
 
@@ -47,7 +48,7 @@ public interface RedisJsonCommands {
 
   <T> T jsonGet(String key, Class<T> clazz);
 
-  Object jsonGet(String key, Path2... paths);
+  JsonNode jsonGet(String key, Path2... paths);
 
   Object jsonGet(String key, Path... paths);
 
@@ -55,7 +56,7 @@ public interface RedisJsonCommands {
 
   <T> T jsonGet(String key, Class<T> clazz, Path... paths);
 
-  default List<JSONArray> jsonMGet(String... keys) {
+  default List<ArrayNode> jsonMGet(String... keys) {
     return jsonMGet(Path2.ROOT_PATH, keys);
   }
 
@@ -63,7 +64,7 @@ public interface RedisJsonCommands {
     return jsonMGet(Path.ROOT_PATH, clazz, keys);
   }
 
-  List<JSONArray> jsonMGet(Path2 path, String... keys);
+  List<ArrayNode> jsonMGet(Path2 path, String... keys);
 
   <T> List<T> jsonMGet(Path path, Class<T> clazz, String... keys);
 
@@ -101,7 +102,7 @@ public interface RedisJsonCommands {
 
   Long jsonStrLen(String key, Path path);
 
-  JSONArray jsonNumIncrBy(String key, Path2 path, double value);
+  ArrayNode jsonNumIncrBy(String key, Path2 path, double value);
 
   double jsonNumIncrBy(String key, Path path, double value);
 

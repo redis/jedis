@@ -221,4 +221,20 @@ public interface ServerCommands {
   String lolwut();
 
   String lolwut(LolwutParams lolwutParams);
+
+  /**
+   * The LATENCY DOCTOR command reports about different latency-related issues and advises about
+   * possible remedies.
+   * <p>
+   * This command is the most powerful analysis tool in the latency monitoring framework, and is
+   * able to provide additional statistical data like the average period between latency spikes, the
+   * median deviation, and a human-readable analysis of the event. For certain events, like fork,
+   * additional information is provided, like the rate at which the system forks processes.
+   * <p>
+   * This is the output you should post in the Redis mailing list if you are looking for help about
+   * Latency related issues.
+   *
+   * @return the report
+   */
+  String latencyDoctor();
 }

@@ -6,12 +6,13 @@ import static redis.clients.jedis.Protocol.Command.MULTI;
 import static redis.clients.jedis.Protocol.Command.UNWATCH;
 import static redis.clients.jedis.Protocol.Command.WATCH;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
@@ -3639,7 +3640,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Object> jsonGet(String key, Path2... paths) {
+  public Response<JsonNode> jsonGet(String key, Path2... paths) {
     return appendCommand(commandObjects.jsonGet(key, paths));
   }
 
@@ -3654,7 +3655,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
+  public Response<List<ArrayNode>> jsonMGet(Path2 path, String... keys) {
     return appendCommand(commandObjects.jsonMGet(path, keys));
   }
 
@@ -3749,7 +3750,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
+  public Response<ArrayNode> jsonNumIncrBy(String key, Path2 path, double value) {
     return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 

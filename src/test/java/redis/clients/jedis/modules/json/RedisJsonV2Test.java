@@ -6,6 +6,10 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.json.Path2.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.List;
@@ -26,7 +30,9 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     RedisModuleCommandsTestBase.prepare();
   }
 
-  private static final Gson gson = new Gson();
+  private final Gson gson = new Gson();
+
+  private final ObjectMapper mapper = new ObjectMapper();
 
   @Test
   public void basicSetGetShouldSucceed() {
@@ -102,7 +108,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     // check multiple paths
     IRLObject obj = new IRLObject();
     client.jsonSetWithEscape("obj", obj);
-    JSONObject result = (JSONObject) client.jsonGet("obj", Path2.of("bool"), Path2.of("str"));
+    ObjectNode result = (ObjectNode) client.jsonGet("obj", Path2.of("bool"), Path2.of("str"));
     assertJsonArrayEquals(jsonArray(true), result.get("$.bool"));
     assertJsonArrayEquals(jsonArray("string"), result.get("$.str"));
   }
@@ -180,7 +186,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void mgetWithPathWithAllKeysExist() {
+  public void mgetWithPathWithAllKeysExist() throws JsonProcessingException {
     Baz baz1 = new Baz("quuz1", "grault1", "waldo1");
     Baz baz2 = new Baz("quuz2", "grault2", "waldo2");
     Qux qux1 = new Qux("quux1", "corge1", "garply1", baz1);
@@ -189,10 +195,12 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSet("qux1", new JSONObject(gson.toJson(qux1)));
     client.jsonSet("qux2", new JSONObject(gson.toJson(qux2)));
 
-    List<JSONArray> list = client.jsonMGet(Path2.of("baz"), "qux1", "qux2");
+    List<ArrayNode> list = client.jsonMGet(Path2.of("baz"), "qux1", "qux2");
     assertEquals(2, list.size());
-    assertJsonArrayEquals(jsonArray(new JSONObject(gson.toJson(baz1))), list.get(0));
-    assertJsonArrayEquals(jsonArray(new JSONObject(gson.toJson(baz2))), list.get(1));
+//    assertJsonArrayEquals(jsonArray(new JSONObject(gson.toJson(baz1))), list.get(0));
+//    assertJsonArrayEquals(jsonArray(new JSONObject(gson.toJson(baz2))), list.get(1));
+    assertJsonArrayEquals(jsonArray(mapper.readTree(gson.toJson(baz1))), list.get(0));
+    assertJsonArrayEquals(jsonArray(mapper.readTree(gson.toJson(baz2))), list.get(1));
   }
 
   @Test
@@ -205,7 +213,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     client.jsonSetWithEscape("qux1", qux1);
     client.jsonSetWithEscape("qux2", qux2);
 
-    List<JSONArray> list = client.jsonMGet("qux1", "qux2", "qux3");
+    List<ArrayNode> list = client.jsonMGet("qux1", "qux2", "qux3");
 
     assertEquals(3, list.size());
     assertNull(list.get(2));
@@ -246,7 +254,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
     assertEquals(1L, client.jsonClear("qux", objPath));
 //    assertEquals(new Baz(null, null, null), client.jsonGet("qux", objPath));
-    assertJsonArrayEquals(jsonArray(new JSONObject()), client.jsonGet("qux", objPath));
+//    assertJsonArrayEquals(jsonArray(new JSONObject()), client.jsonGet("qux", objPath));
+    assertJsonArrayEquals(jsonArray(mapper.createObjectNode()), client.jsonGet("qux", objPath));
   }
 
   @Test
@@ -382,7 +391,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   public void numIncrBy() {
     client.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertJsonArrayEquals(jsonArray((Object) null), client.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
-    assertJsonArrayEquals(jsonArray(null, 4, 7, null), client.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
+    assertJsonArrayEquals(jsonArray(null, 4.0, 7.0, null), client.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
     assertJsonArrayEquals(jsonArray((Object) null), client.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
     assertJsonArrayEquals(jsonArray(), client.jsonNumIncrBy("doc", Path2.of("..c"), 0d));
   }
@@ -434,60 +443,78 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals("true", arr.get(4));
   }
 
-  private void assertJsonArrayEquals(JSONArray a, Object _b) {
-    if (!(_b instanceof JSONArray)) {
-      fail("Actual value is not JSONArray.");
-    }
-    JSONArray b = (JSONArray) _b;
-    assertEquals("JSONArray length mismatch", a.length(), b.length());
-    int length = a.length();
-    for (int index = 0; index < length; index++) {
-      if (a.isNull(index)) {
-        assertTrue(index + "'th element is not null", b.isNull(index));
-        continue;
-      }
-      Object ia = a.get(index);
-      Object ib = b.get(index);
-      if (ia instanceof JSONArray) {
-        assertJsonArrayEquals((JSONArray) ia, ib);
-      } else if (ia instanceof JSONObject) {
-        assertJsonObjectEquals((JSONObject) ia, ib);
-      } else if (ia instanceof Number && ib instanceof Number) {
-        assertEquals(index + "'th element mismatch", ((Number) ia).doubleValue(), ((Number) ib).doubleValue(), 0d);
-      } else {
-        assertEquals(index + "'th element mismatch", ia, ib);
-      }
-    }
+  private void assertJsonArrayEquals(ArrayNode a, Object _b) {
+    assertEquals(a, _b);
+//    if (!(_b instanceof ArrayNode)) {
+//      fail("Actual value is not ArrayNode.");
+//    }
+//    ArrayNode b = (ArrayNode) _b;
+//    assertEquals("ArrayNode length mismatch", a.size(), b.size());
+//    int length = a.size();
+//    for (int index = 0; index < length; index++) {
+//      if (a.isNull(index)) {
+//        assertTrue(index + "'th element is not null", b.isNull(index));
+//        continue;
+//      }
+//      Object ia = a.get(index);
+//      Object ib = b.get(index);
+//      if (ia instanceof ArrayNode) {
+//        assertJsonArrayEquals((ArrayNode) ia, ib);
+//      } else if (ia instanceof JSONObject) {
+//        assertJsonObjectEquals((JSONObject) ia, ib);
+//      } else if (ia instanceof Number && ib instanceof Number) {
+//        assertEquals(index + "'th element mismatch", ((Number) ia).doubleValue(), ((Number) ib).doubleValue(), 0d);
+//      } else {
+//        assertEquals(index + "'th element mismatch", ia, ib);
+//      }
+//    }
   }
+//
+//  private void assertJsonObjectEquals(ObjectNode a, Object _b) {
+//    if (!(_b instanceof ObjectNode)) {
+//      fail("Actual value is not ObjectNode.");
+//    }
+//    ObjectNode b = (ObjectNode) _b;
+//    assertEquals("ObjectNode length mismatch", a.size(), b.size());
+//    assertEquals(a.keySet(), b.keySet());
+//    for (String key : a.keySet()) {
+//      if (a.isNull(key)) {
+//        assertTrue(key + "'s value is not null", b.isNull(key));
+//        continue;
+//      }
+//      Object oa = a.get(key);
+//      Object ob = b.get(key);
+//      if (oa instanceof JSONArray) {
+//        assertJsonArrayEquals((JSONArray) oa, ob);
+//      } else if (oa instanceof JSONObject) {
+//        assertJsonObjectEquals((JSONObject) oa, ob);
+//      } else {
+//        assertEquals(key + "'s value mismatch", oa, ob);
+//      }
+//    }
+//  }
 
-  private void assertJsonObjectEquals(JSONObject a, Object _b) {
-    if (!(_b instanceof JSONObject)) {
-      fail("Actual value is not JSONObject.");
-    }
-    JSONObject b = (JSONObject) _b;
-    assertEquals("JSONObject length mismatch", a.length(), b.length());
-    assertEquals(a.keySet(), b.keySet());
-    for (String key : a.keySet()) {
-      if (a.isNull(key)) {
-        assertTrue(key + "'s value is not null", b.isNull(key));
-        continue;
-      }
-      Object oa = a.get(key);
-      Object ob = b.get(key);
-      if (oa instanceof JSONArray) {
-        assertJsonArrayEquals((JSONArray) oa, ob);
-      } else if (oa instanceof JSONObject) {
-        assertJsonObjectEquals((JSONObject) oa, ob);
-      } else {
-        assertEquals(key + "'s value mismatch", oa, ob);
-      }
-    }
-  }
-
-  private static JSONArray jsonArray(Object... objects) {
-    JSONArray arr = new JSONArray();
+  private ArrayNode jsonArray(Object... objects) {
+    ArrayNode arr = mapper.createArrayNode();
     for (Object o : objects) {
-      arr.put(o);
+      if (o == null) {
+        arr.addNull();
+      } else if (o instanceof Boolean) {
+        arr.add((Boolean) o);
+      } else if (o instanceof Integer) {
+        arr.add((Integer) o);
+      } else if (o instanceof Double) {
+        arr.add((Double) o);
+      } else if (o instanceof String) {
+        arr.add((String) o);
+      } else if (o instanceof ObjectNode) {
+        arr.add((ObjectNode) o);
+      } else if (o instanceof ArrayNode) {
+        arr.add((ArrayNode) o);
+      } else {
+        System.out.println(o.getClass());
+        throw new IllegalArgumentException("" + o);
+      }
     }
     return arr;
   }

@@ -7,12 +7,13 @@ import static redis.clients.jedis.modules.json.JsonObjects.Baz;
 import static redis.clients.jedis.modules.json.JsonObjects.IRLObject;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.gson.Gson;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -120,7 +121,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<Map> getObject = p.jsonGet("foo", Map.class);
     Response<Object> getWithPath = p.jsonGet("foo", Path.ROOT_PATH);
     Response<Map> getObjectWithPath = p.jsonGet("foo", Map.class, Path.ROOT_PATH);
-    Response<List<JSONArray>> mget = p.jsonMGet("foo");
+    Response<List<ArrayNode>> mget = p.jsonMGet("foo");
     p.jsonSet("baz", new JSONObject(gson.toJson(baz1)));
     Response<List<Baz>> mgetClass = p.jsonMGet(Path.ROOT_PATH, Baz.class, "baz");
     Response<Long> strLenPath = p.jsonStrLen("foo", new Path("hello"));
@@ -205,8 +206,8 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Pipeline p = new Pipeline(c);
 
     Response<String> setWithEscape = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm1);
-    Response<Object> get = p.jsonGet("foo",  Path2.ROOT_PATH);
-    Response<List<JSONArray>> mget = p.jsonMGet(Path2.ROOT_PATH, "foo");
+    Response<JsonNode> get = p.jsonGet("foo",  Path2.ROOT_PATH);
+    Response<List<ArrayNode>> mget = p.jsonMGet(Path2.ROOT_PATH, "foo");
     Response<List<Long>> strLen = p.jsonStrLen("foo", new Path2("hello"));
     Response<List<Long>> strApp = p.jsonStrAppend("foo", new Path2("hello"), "!");
     Response<Long> del = p.jsonDel("foo", new Path2("hello"));

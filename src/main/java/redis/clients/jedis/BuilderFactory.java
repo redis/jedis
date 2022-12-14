@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import redis.clients.jedis.exceptions.JedisException;
@@ -1611,7 +1612,14 @@ public final class BuilderFactory {
     @Override
     public JSONArray build(Object data) {
       if (data == null) return null;
-      return new JSONArray(STRING.build(data));
+      String str = STRING.build(data);
+      try {
+        return new JSONArray(str);
+      } catch (JSONException ex) {
+        // This is not necessary but we are doing this just to make is safer
+        // for com.vaadin.external.google:android-json library
+        throw new JedisException(ex);
+      }
     }
   };
 

@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,16 +19,13 @@ public class JedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "mymaster";
 
-  protected static HostAndPort master = HostAndPorts.getRedisServers().get(2);
-  protected static HostAndPort slave1 = HostAndPorts.getRedisServers().get(3);
+  //protected static HostAndPort master = HostAndPorts.getRedisServers().get(2);
+  //protected static HostAndPort slave1 = HostAndPorts.getRedisServers().get(3);
 
-  protected static HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
-  protected static HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
+  protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
+  protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
 
-  protected static Jedis sentinelJedis1;
-  protected static Jedis sentinelJedis2;
-
-  protected Set<String> sentinels = new HashSet<>();
+  protected final Set<String> sentinels = new HashSet<>();
 
   @Before
   public void setUp() throws Exception {
@@ -37,15 +33,6 @@ public class JedisSentinelPoolTest {
 
     sentinels.add(sentinel1.toString());
     sentinels.add(sentinel2.toString());
-
-    sentinelJedis1 = new Jedis(sentinel1);
-    sentinelJedis2 = new Jedis(sentinel2);
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    sentinelJedis1.close();
-    sentinelJedis2.close();
   }
 
   @Test
@@ -196,58 +183,4 @@ public class JedisSentinelPoolTest {
       }
     }
   }
-//
-//  @Test
-//  public void ensureSafeTwiceFailover() throws InterruptedException {
-//    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels,
-//        new GenericObjectPoolConfig<Jedis>(), 1000, "foobared", 2, "twice-failover-client");
-//
-//    forceFailover(pool);
-//    // after failover sentinel needs a bit of time to stabilize before a new failover
-//    Thread.sleep(1000);
-//    forceFailover(pool);
-//
-//    // you can test failover as much as possible
-//  }
-//
-//  private void forceFailover(JedisSentinelPool pool) throws InterruptedException {
-//    HostAndPort oldMaster = pool.getCurrentHostMaster();
-//
-//    // jedis connection should be master
-//    Jedis beforeFailoverJedis = pool.getResource();
-//    assertEquals("PONG", beforeFailoverJedis.ping());
-//
-//    waitForFailover(pool, oldMaster);
-//
-//    Jedis afterFailoverJedis = pool.getResource();
-//    assertEquals("PONG", afterFailoverJedis.ping());
-//    assertEquals(2, afterFailoverJedis.getDB());
-//    assertEquals("twice-failover-client", afterFailoverJedis.clientGetname());
-//
-//    // returning both connections to the pool should not throw
-//    beforeFailoverJedis.close();
-//    afterFailoverJedis.close();
-//  }
-//
-//  private void waitForFailover(JedisSentinelPool pool, HostAndPort oldMaster)
-//      throws InterruptedException {
-//    HostAndPort newMaster = JedisSentinelTestUtil.waitForNewPromotedMaster(MASTER_NAME,
-//      sentinelJedis1, sentinelJedis2);
-//
-//    waitForJedisSentinelPoolRecognizeNewMaster(pool, newMaster);
-//  }
-//
-//  private void waitForJedisSentinelPoolRecognizeNewMaster(JedisSentinelPool pool,
-//      HostAndPort newMaster) throws InterruptedException {
-//
-//    while (true) {
-//      HostAndPort currentHostMaster = pool.getCurrentHostMaster();
-//
-//      if (newMaster.equals(currentHostMaster)) break;
-//
-//      // System.out.println("JedisSentinelPool's master is not yet changed, sleep...");
-//      Thread.sleep(100);
-//    }
-//  }
-
 }

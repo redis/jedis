@@ -11,7 +11,6 @@ import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -28,10 +27,7 @@ import redis.clients.jedis.util.SafeEncoder;
 public class ClusterPipeliningTest {
 
   private static final String LOCAL_IP = "127.0.0.1";
-  private static final int DEFAULT_TIMEOUT = 2000;
-  private static final int DEFAULT_REDIRECTIONS = 5;
 
-  private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
   private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG
       = DefaultJedisClientConfig.builder().password("cluster").build();
 
@@ -100,28 +96,6 @@ public class ClusterPipeliningTest {
   }
 
   @Test
-  public void clusterPipelineSync() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline clusterPipeline = new ClusterPipeline(provider);
-
-      Response<String> r1 = clusterPipeline.set("key1", "value1");
-      Response<String> r2 = clusterPipeline.set("key2", "value2");
-      Response<String> r3 = clusterPipeline.set("key3", "value3");
-      Response<String> r4 = clusterPipeline.get("key1");
-      Response<String> r5 = clusterPipeline.get("key2");
-      Response<String> r6 = clusterPipeline.get("key3");
-
-      clusterPipeline.sync();
-      Assert.assertEquals("OK", r1.get());
-      Assert.assertEquals("OK", r2.get());
-      Assert.assertEquals("OK", r3.get());
-      Assert.assertEquals("value1", r4.get());
-      Assert.assertEquals("value2", r5.get());
-      Assert.assertEquals("value3", r6.get());
-    }
-  }
-
-  @Test
   public void constructorClientConfig() {
     try (ClusterPipeline pipe = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
       Response<String> r1 = pipe.set("key1", "value1");
@@ -132,18 +106,18 @@ public class ClusterPipeliningTest {
       Response<String> r6 = pipe.get("key3");
 
       pipe.sync();
-      Assert.assertEquals("OK", r1.get());
-      Assert.assertEquals("OK", r2.get());
-      Assert.assertEquals("OK", r3.get());
-      Assert.assertEquals("value1", r4.get());
-      Assert.assertEquals("value2", r5.get());
-      Assert.assertEquals("value3", r6.get());
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
     }
   }
 
   @Test
   public void constructorPoolConfig() {
-    try (ClusterPipeline pipe = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG, DEFAULT_POOL_CONFIG)) {
+    try (ClusterPipeline pipe = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG, new ConnectionPoolConfig())) {
       Response<String> r1 = pipe.set("key1", "value1");
       Response<String> r2 = pipe.set("key2", "value2");
       Response<String> r3 = pipe.set("key3", "value3");
@@ -152,19 +126,117 @@ public class ClusterPipeliningTest {
       Response<String> r6 = pipe.get("key3");
 
       pipe.sync();
-      Assert.assertEquals("OK", r1.get());
-      Assert.assertEquals("OK", r2.get());
-      Assert.assertEquals("OK", r3.get());
-      Assert.assertEquals("value1", r4.get());
-      Assert.assertEquals("value2", r5.get());
-      Assert.assertEquals("value3", r6.get());
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
+    }
+  }
+
+  @Test
+  public void constructorConnectionProvider() {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
+        ClusterPipeline pipeline = new ClusterPipeline(provider)) {
+
+      Response<String> r1 = pipeline.set("key1", "value1");
+      Response<String> r2 = pipeline.set("key2", "value2");
+      Response<String> r3 = pipeline.set("key3", "value3");
+      Response<String> r4 = pipeline.get("key1");
+      Response<String> r5 = pipeline.get("key2");
+      Response<String> r6 = pipeline.get("key3");
+
+      pipeline.sync();
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
+    }
+  }
+
+  @Test
+  public void clusterPipelined() {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+        ClusterPipeline pipeline = cluster.pipelined()) {
+
+      Response<String> r1 = pipeline.set("key1", "value1");
+      Response<String> r2 = pipeline.set("key2", "value2");
+      Response<String> r3 = pipeline.set("key3", "value3");
+      Response<String> r4 = pipeline.get("key1");
+      Response<String> r5 = pipeline.get("key2");
+      Response<String> r6 = pipeline.get("key3");
+
+      pipeline.sync();
+
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
+    }
+  }
+
+  @Test
+  public void intermediateSync() {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+        ClusterPipeline pipeline = cluster.pipelined()) {
+
+      Response<String> r1 = pipeline.set("key1", "value1");
+      Response<String> r2 = pipeline.set("key2", "value2");
+      Response<String> r3 = pipeline.set("key3", "value3");
+
+      pipeline.sync();
+
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+
+      Response<String> r4 = pipeline.get("key1");
+      Response<String> r5 = pipeline.get("key2");
+      Response<String> r6 = pipeline.get("key3");
+
+      pipeline.sync();
+
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
+    }
+  }
+
+  @Test
+  public void intermediateSyncs() {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+        ClusterPipeline pipeline = cluster.pipelined()) {
+
+      Response<String> r1 = pipeline.set("key1", "value1");
+      Response<String> r2 = pipeline.set("key2", "value2");
+      Response<String> r3 = pipeline.set("key3", "value3");
+
+      for (int i = 0; i < 100; i++) pipeline.sync();
+
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+
+      Response<String> r4 = pipeline.get("key1");
+      Response<String> r5 = pipeline.get("key2");
+      Response<String> r6 = pipeline.get("key3");
+
+      for (int i = 0; i < 100; i++) pipeline.sync();
+
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
     }
   }
 
   @Test
   public void pipelineResponse() {
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
       jc.set("string", "foo");
       jc.lpush("list", "foo");
       jc.hset("hash", "foo", "bar");
@@ -216,8 +288,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void pipelineBinarySafeHashCommands() {
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
       jc.hset("key".getBytes(), "f1".getBytes(), "v111".getBytes());
       jc.hset("key".getBytes(), "f22".getBytes(), "v2222".getBytes());
     }
@@ -335,13 +406,13 @@ public class ClusterPipeliningTest {
     Response<String> r7 = p.get("key3");
 
     p.sync();
-    Assert.assertEquals("OK", r1.get());
-    Assert.assertEquals("OK", r2.get());
-    Assert.assertEquals("OK", r3.get());
-    Assert.assertNull(r4.get());
-    Assert.assertEquals("value1", r5.get());
-    Assert.assertEquals("value2", r6.get());
-    Assert.assertEquals("value3", r7.get());
+    assertEquals("OK", r1.get());
+    assertEquals("OK", r2.get());
+    assertEquals("OK", r3.get());
+    assertNull(r4.get());
+    assertEquals("value1", r5.get());
+    assertEquals("value2", r6.get());
+    assertEquals("value3", r7.get());
   }
 
   @Test
@@ -365,14 +436,14 @@ public class ClusterPipeliningTest {
     Response<List<String>> r7 = p.lrange("key1", 0, 4);
 
     p.sync();
-    Assert.assertEquals(Long.valueOf(5), r1.get());
-    Assert.assertEquals(sorted, r2.get());
-    Assert.assertEquals(Long.valueOf(5), r3.get());
-    Assert.assertEquals(sorted, r4.get());
-    Assert.assertEquals(2, r5.get().size());
-    Assert.assertEquals(Long.valueOf(5), r6.get());
+    assertEquals(Long.valueOf(5), r1.get());
+    assertEquals(sorted, r2.get());
+    assertEquals(Long.valueOf(5), r3.get());
+    assertEquals(sorted, r4.get());
+    assertEquals(2, r5.get().size());
+    assertEquals(Long.valueOf(5), r6.get());
     Collections.reverse(sorted);
-    Assert.assertEquals(sorted, r7.get());
+    assertEquals(sorted, r7.get());
   }
 
   @Test
@@ -404,25 +475,25 @@ public class ClusterPipeliningTest {
     Response<String> r19 = p.lmove("my{newlist}", "myother{newlist}", ListDirection.LEFT, ListDirection.RIGHT);
 
     p.sync();
-    Assert.assertEquals(Long.valueOf(4), r1.get());
-    Assert.assertEquals(Long.valueOf(4), r2.get());
-    Assert.assertEquals(Long.valueOf(0), r3.get());
-    Assert.assertEquals(Long.valueOf(0), r4.get());
-    Assert.assertEquals(1, r5.get().size());
-    Assert.assertEquals("OK", r6.get());
-    Assert.assertEquals(Long.valueOf(2), r7.get());
-    Assert.assertEquals("hello", r8.get());
-    Assert.assertEquals("OK", r9.get());
-    Assert.assertEquals(Long.valueOf(1), r10.get());
-    Assert.assertEquals(vals, r11.get());
-    Assert.assertEquals("foo", r12.get());
-    Assert.assertEquals(vals, r13.get());
-    Assert.assertEquals(2, r14.get().size());
-    Assert.assertEquals(Long.valueOf(2), r15.get());
-    Assert.assertEquals(Long.valueOf(0), r16.get());
-    Assert.assertEquals(Long.valueOf(0), r17.get());
-    Assert.assertEquals("world", r18.get());
-    Assert.assertEquals("hello", r19.get());
+    assertEquals(Long.valueOf(4), r1.get());
+    assertEquals(Long.valueOf(4), r2.get());
+    assertEquals(Long.valueOf(0), r3.get());
+    assertEquals(Long.valueOf(0), r4.get());
+    assertEquals(1, r5.get().size());
+    assertEquals("OK", r6.get());
+    assertEquals(Long.valueOf(2), r7.get());
+    assertEquals("hello", r8.get());
+    assertEquals("OK", r9.get());
+    assertEquals(Long.valueOf(1), r10.get());
+    assertEquals(vals, r11.get());
+    assertEquals("foo", r12.get());
+    assertEquals(vals, r13.get());
+    assertEquals(2, r14.get().size());
+    assertEquals(Long.valueOf(2), r15.get());
+    assertEquals(Long.valueOf(0), r16.get());
+    assertEquals(Long.valueOf(0), r17.get());
+    assertEquals("world", r18.get());
+    assertEquals("hello", r19.get());
   }
 
   @Test
@@ -465,24 +536,24 @@ public class ClusterPipeliningTest {
 //    Response<Long> r18 = p.smove("my{set}", "mynew{set}", "hello");
 
     p.sync();
-    Assert.assertEquals(Long.valueOf(4), r1.get());
-    Assert.assertEquals(diff, r2.get());
-    Assert.assertEquals(Long.valueOf(diff.size()), r3.get());
-    Assert.assertEquals(diff, r4.get());
-    Assert.assertEquals(inter, r5.get());
-    Assert.assertEquals(Long.valueOf(inter.size()), r6.get());
-    Assert.assertEquals(inter, r7.get());
-    Assert.assertEquals(union, r8.get());
-    Assert.assertEquals(Long.valueOf(union.size()), r9.get());
-    Assert.assertEquals(union, r10.get());
-    Assert.assertTrue(r11.get());
-    Assert.assertTrue(r12.get().get(0) && !r12.get().get(1));
-    Assert.assertEquals(Long.valueOf(1), r13.get());
-    Assert.assertTrue(union.containsAll(r14.get()));
-    Assert.assertEquals(Long.valueOf(2), r15.get());
-    Assert.assertTrue(union.contains(r16.get()));
-    Assert.assertTrue(union.containsAll(r17.get()));
-//    Assert.assertEquals(Long.valueOf(1), r18.get());
+    assertEquals(Long.valueOf(4), r1.get());
+    assertEquals(diff, r2.get());
+    assertEquals(Long.valueOf(diff.size()), r3.get());
+    assertEquals(diff, r4.get());
+    assertEquals(inter, r5.get());
+    assertEquals(Long.valueOf(inter.size()), r6.get());
+    assertEquals(inter, r7.get());
+    assertEquals(union, r8.get());
+    assertEquals(Long.valueOf(union.size()), r9.get());
+    assertEquals(union, r10.get());
+    assertTrue(r11.get());
+    assertTrue(r12.get().get(0) && !r12.get().get(1));
+    assertEquals(Long.valueOf(1), r13.get());
+    assertTrue(union.containsAll(r14.get()));
+    assertEquals(Long.valueOf(2), r15.get());
+    assertTrue(union.contains(r16.get()));
+    assertTrue(union.containsAll(r17.get()));
+//    assertEquals(Long.valueOf(1), r18.get());
   }
 
   @Test
@@ -523,26 +594,26 @@ public class ClusterPipeliningTest {
     Response<List<Tuple>> r20 = p.zpopmin("myset", 1);
 
     p.sync();
-    Assert.assertEquals(Long.valueOf(3), r1.get());
-    Assert.assertEquals(Long.valueOf(2), r2.get());
-    Assert.assertEquals(Long.valueOf(0), r3.get());
-    Assert.assertEquals(Long.valueOf(1), r4.get());
-    Assert.assertEquals(Long.valueOf(1), r5.get());
-    Assert.assertEquals(Long.valueOf(1), r6.get());
-    Assert.assertNull(r7.get());
-    Assert.assertTrue(r8.get().size() == 1 && r8.get().contains("a3"));
-    Assert.assertTrue(r9.get().size() == 1 && r9.get().contains(max));
-    Assert.assertTrue(members.contains(r10.get()));
-    Assert.assertTrue(members.containsAll(r11.get()));
+    assertEquals(Long.valueOf(3), r1.get());
+    assertEquals(Long.valueOf(2), r2.get());
+    assertEquals(Long.valueOf(0), r3.get());
+    assertEquals(Long.valueOf(1), r4.get());
+    assertEquals(Long.valueOf(1), r5.get());
+    assertEquals(Long.valueOf(1), r6.get());
+    assertNull(r7.get());
+    assertTrue(r8.get().size() == 1 && r8.get().contains("a3"));
+    assertTrue(r9.get().size() == 1 && r9.get().contains(max));
+    assertTrue(members.contains(r10.get()));
+    assertTrue(members.containsAll(r11.get()));
     assertEquals(1, r12.get().size());
-    Assert.assertEquals(Double.valueOf(1), r13.get());
-    Assert.assertTrue(hm.values().containsAll(r14.get()));
-    Assert.assertEquals(max, r15.get());
-    Assert.assertEquals(min, r16.get());
-    Assert.assertEquals(Long.valueOf(1), r17.get());
-    Assert.assertEquals(Long.valueOf(0), r18.get());
-    Assert.assertTrue(r19.get().size() == 2 && r19.get().contains(max));
-    Assert.assertTrue(r20.get().size() == 1 && r20.get().contains(min));
+    assertEquals(Double.valueOf(1), r13.get());
+    assertTrue(hm.values().containsAll(r14.get()));
+    assertEquals(max, r15.get());
+    assertEquals(min, r16.get());
+    assertEquals(Long.valueOf(1), r17.get());
+    assertEquals(Long.valueOf(0), r18.get());
+    assertTrue(r19.get().size() == 2 && r19.get().contains(max));
+    assertTrue(r20.get().size() == 1 && r20.get().contains(min));
   }
 
   @Test
@@ -583,22 +654,22 @@ public class ClusterPipeliningTest {
     Response<Long> r16 = p.hstrlen("myhash", "field1");
 
     p.sync();
-    Assert.assertEquals(Long.valueOf(1), r1.get());
-    Assert.assertEquals(Long.valueOf(0), r2.get());
-    Assert.assertEquals("hello", r3.get());
-    Assert.assertEquals(Long.valueOf(2), r4.get());
-    Assert.assertEquals("OK", r5.get());
-    Assert.assertEquals(Double.valueOf(3.5), r6.get());
-    Assert.assertEquals(Long.valueOf(1), r7.get());
-    Assert.assertEquals(Long.valueOf(1), r8.get());
-    Assert.assertFalse(r9.get());
-    Assert.assertEquals(keys, r10.get());
-    Assert.assertEquals(vals, r11.get());
-    Assert.assertEquals(vals2, r12.get());
-    Assert.assertTrue(hm.keySet().contains(r13.get()));
-    Assert.assertEquals(2, r14.get().size());
-    Assert.assertTrue(r15.get().containsKey("field3") && r15.get().containsValue("5"));
-    Assert.assertEquals(Long.valueOf(5), r16.get());
+    assertEquals(Long.valueOf(1), r1.get());
+    assertEquals(Long.valueOf(0), r2.get());
+    assertEquals("hello", r3.get());
+    assertEquals(Long.valueOf(2), r4.get());
+    assertEquals("OK", r5.get());
+    assertEquals(Double.valueOf(3.5), r6.get());
+    assertEquals(Long.valueOf(1), r7.get());
+    assertEquals(Long.valueOf(1), r8.get());
+    assertFalse(r9.get());
+    assertEquals(keys, r10.get());
+    assertEquals(vals, r11.get());
+    assertEquals(vals2, r12.get());
+    assertTrue(hm.keySet().contains(r13.get()));
+    assertEquals(2, r14.get().size());
+    assertTrue(r15.get().containsKey("field3") && r15.get().containsValue("5"));
+    assertEquals(Long.valueOf(5), r16.get());
   }
 
   @Test
@@ -648,23 +719,23 @@ public class ClusterPipeliningTest {
     Response<List<String>> r17 = p.zrange("radius{#}", 0, -1);
 
     p.sync();
-    Assert.assertEquals(Long.valueOf(2), r1.get());
-    Assert.assertEquals(Double.valueOf(3067.4157), r2.get());
-    Assert.assertEquals(Double.valueOf(3.0674), r3.get());
-    Assert.assertEquals(hashValues, r4.get());
-    Assert.assertEquals(values, r5.get());
-    Assert.assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
-    Assert.assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
-    Assert.assertEquals(expectedResponse, r8.get().get(0));
-    Assert.assertEquals(expectedResponse, r9.get().get(0));
-    Assert.assertEquals(Long.valueOf(1), r10.get());
-    Assert.assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));
-    Assert.assertTrue(r12.get().size() == 2 && r12.get().get(0).getMemberByString().equals("place2"));
-    Assert.assertTrue(r13.get().size() == 2 && r13.get().get(0).getMemberByString().equals("place2"));
-    Assert.assertTrue(r14.get().size() == 1 && r14.get().get(0).getMemberByString().equals("place2"));
-    Assert.assertTrue(r15.get().size() == 1 && r15.get().get(0).getMemberByString().equals("place2"));
-    Assert.assertEquals(Long.valueOf(1), r16.get());
-    Assert.assertTrue(r17.get().size() == 1 && r17.get().contains("place2"));
+    assertEquals(Long.valueOf(2), r1.get());
+    assertEquals(Double.valueOf(3067.4157), r2.get());
+    assertEquals(Double.valueOf(3.0674), r3.get());
+    assertEquals(hashValues, r4.get());
+    assertEquals(values, r5.get());
+    assertTrue(r6.get().size() == 1 && r6.get().get(0).getMemberByString().equals("place1"));
+    assertTrue(r7.get().size() == 1 && r7.get().get(0).getMemberByString().equals("place1"));
+    assertEquals(expectedResponse, r8.get().get(0));
+    assertEquals(expectedResponse, r9.get().get(0));
+    assertEquals(Long.valueOf(1), r10.get());
+    assertTrue(r11.get().size() == 1 && r11.get().contains("place1"));
+    assertTrue(r12.get().size() == 2 && r12.get().get(0).getMemberByString().equals("place2"));
+    assertTrue(r13.get().size() == 2 && r13.get().get(0).getMemberByString().equals("place2"));
+    assertTrue(r14.get().size() == 1 && r14.get().get(0).getMemberByString().equals("place2"));
+    assertTrue(r15.get().size() == 1 && r15.get().get(0).getMemberByString().equals("place2"));
+    assertEquals(Long.valueOf(1), r16.get());
+    assertTrue(r17.get().size() == 1 && r17.get().contains("place2"));
   }
 
   @Test
@@ -679,11 +750,11 @@ public class ClusterPipeliningTest {
     Response<Long> r5 = p.pfcount("{hll}3");
 
     p.sync();
-    Assert.assertEquals(Long.valueOf(1), r1.get());
-    Assert.assertEquals(Long.valueOf(1), r2.get());
-    Assert.assertEquals(Long.valueOf(4), r3.get());
-    Assert.assertEquals("OK", r4.get());
-    Assert.assertEquals(Long.valueOf(4), r5.get());
+    assertEquals(Long.valueOf(1), r1.get());
+    assertEquals(Long.valueOf(1), r2.get());
+    assertEquals(Long.valueOf(4), r3.get());
+    assertEquals("OK", r4.get());
+    assertEquals(Long.valueOf(4), r5.get());
   }
 
   @Test
@@ -712,19 +783,19 @@ public class ClusterPipeliningTest {
     Response<Boolean> r13 = p.getbit("my{otherkey}", 7);
 
     p.sync();
-    Assert.assertEquals("OK", r1.get());
-    Assert.assertEquals("foo", r2.get());
-    Assert.assertEquals(Long.valueOf(6), r3.get());
-    Assert.assertEquals(Long.valueOf(16), r4.get());
-    Assert.assertEquals(Long.valueOf(6), r5.get());
-    Assert.assertEquals(Long.valueOf(1), r6.get());
-    Assert.assertEquals(Long.valueOf(8), r7.get());
-    Assert.assertEquals(fieldRes, r8.get());
-    Assert.assertEquals(fieldRes.subList(1, 2), r9.get());
-    Assert.assertEquals(Long.valueOf(6), r10.get());
-    Assert.assertEquals("`bc`ab", r11.get());
-    Assert.assertFalse(r12.get());
-    Assert.assertTrue(r13.get());
+    assertEquals("OK", r1.get());
+    assertEquals("foo", r2.get());
+    assertEquals(Long.valueOf(6), r3.get());
+    assertEquals(Long.valueOf(16), r4.get());
+    assertEquals(Long.valueOf(6), r5.get());
+    assertEquals(Long.valueOf(1), r6.get());
+    assertEquals(Long.valueOf(8), r7.get());
+    assertEquals(fieldRes, r8.get());
+    assertEquals(fieldRes.subList(1, 2), r9.get());
+    assertEquals(Long.valueOf(6), r10.get());
+    assertEquals("`bc`ab", r11.get());
+    assertFalse(r12.get());
+    assertTrue(r13.get());
   }
 
   @Test
@@ -752,19 +823,19 @@ public class ClusterPipeliningTest {
     // More stream commands are missing
 
     p.sync();
-    Assert.assertEquals(streamId1, r1.get());
-    Assert.assertEquals(streamId2, r2.get());
-    Assert.assertEquals(Long.valueOf(2), r3.get());
-    Assert.assertTrue(r4.get().size() == 2
+    assertEquals(streamId1, r1.get());
+    assertEquals(streamId2, r2.get());
+    assertEquals(Long.valueOf(2), r3.get());
+    assertTrue(r4.get().size() == 2
         && r4.get().get(0).getID().compareTo(streamId1) == 0
         && r4.get().get(1).getID().compareTo(streamId2) == 0);
-    Assert.assertTrue(r5.get().size() == 1 && r5.get().get(0).getID().compareTo(streamId1) == 0);
-    Assert.assertTrue(r6.get().size() == 2
+    assertTrue(r5.get().size() == 1 && r5.get().get(0).getID().compareTo(streamId1) == 0);
+    assertTrue(r6.get().size() == 2
         && r6.get().get(1).getID().compareTo(streamId1) == 0
         && r6.get().get(0).getID().compareTo(streamId2) == 0);
-    Assert.assertTrue(r7.get().size() == 1 && r7.get().get(0).getID().compareTo(streamId2) == 0);
-    Assert.assertEquals("OK", r8.get());
-    Assert.assertEquals("OK", r9.get());
+    assertTrue(r7.get().size() == 1 && r7.get().get(0).getID().compareTo(streamId2) == 0);
+    assertEquals("OK", r8.get());
+    assertEquals("OK", r9.get());
   }
 
   @Test
@@ -871,8 +942,7 @@ public class ClusterPipeliningTest {
   public void testEvalsha() {
     String script = "return 'success!'";
     String sha1;
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
       sha1 = jc.scriptLoad(script, "sampleKey");
       assertTrue(jc.scriptExists(sha1, "sampleKey"));
     }
@@ -892,8 +962,7 @@ public class ClusterPipeliningTest {
     String arg = "3";
     String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
     String sha1;
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
       sha1 = jc.scriptLoad(script, key);
       assertTrue(jc.scriptExists(sha1, key));
     }
@@ -920,8 +989,7 @@ public class ClusterPipeliningTest {
     String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
     byte[] bScript = SafeEncoder.encode(script);
     byte[] bSha1;
-    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
-        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+    try (JedisCluster jc = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
       bSha1 = jc.scriptLoad(bScript, bKey);
       assertTrue(jc.scriptExists(bSha1, bKey));
     }

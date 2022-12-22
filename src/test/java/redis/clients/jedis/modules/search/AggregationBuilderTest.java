@@ -1,15 +1,16 @@
 package redis.clients.jedis.modules.search;
 
-import redis.clients.jedis.exceptions.JedisDataException;
+import static org.junit.Assert.*;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.search.FieldName;
 import redis.clients.jedis.search.IndexOptions;
@@ -83,6 +84,34 @@ public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
     assertNotNull(r2);
     assertEquals("abc", r2.getString("name"));
     assertEquals(10, r2.getLong("sum"));
+  }
+
+  @Test
+  public void testAggregations2() {
+    Schema sc = new Schema();
+    sc.addSortableTextField("name", 1.0);
+    sc.addSortableNumericField("count");
+    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+
+    addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    addDocument(new Document("data2").set("name", "def").set("count", 5));
+    addDocument(new Document("data3").set("name", "def").set("count", 25));
+
+    AggregationBuilder r = new AggregationBuilder()
+        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .sortBy(10, SortedField.desc("@sum"));
+
+    // actual search
+    AggregationResult res = client.ftAggregate(index, r);
+    assertEquals(2, res.getTotalResults());
+
+    List<Row> rows = res.getRows();
+    assertEquals("def", rows.get(0).get("name"));
+    assertEquals("30", rows.get(0).get("sum"));
+    assertNull(rows.get(0).get("nosuchcol"));
+
+    assertEquals("abc", rows.get(1).get("name"));
+    assertEquals("10", rows.get(1).get("sum"));
   }
 
   @Test

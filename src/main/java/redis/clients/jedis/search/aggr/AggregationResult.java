@@ -35,7 +35,7 @@ public class AggregationResult {
 
     for (int i = 1; i < list.size(); i++) {
       List<Object> mapList = (List<Object>) list.get(i);
-      Map<String, Object> map = new HashMap<>();
+      Map<String, Object> map = new HashMap<>(mapList.size() / 2, 1f);
       for (int j = 0; j < mapList.size(); j += 2) {
         Object r = mapList.get(j);
         if (r instanceof JedisDataException) {

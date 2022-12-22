@@ -1,12 +1,8 @@
 package redis.clients.jedis.search.aggr;
 
 import java.util.Map;
+import redis.clients.jedis.util.DoublePrecision;
 
-/**
- * Created by mnunberg on 5/17/18.
- *
- * Row in aggregation result-set
- */
 public class Row {
 
   private final Map<String, Object> fields;
@@ -19,24 +15,33 @@ public class Row {
     return fields.containsKey(key);
   }
 
+  public Object get(String key) {
+    return fields.get(key);
+  }
+
   public String getString(String key) {
     if (!containsKey(key)) {
       return "";
     }
-    return new String((byte[]) fields.get(key));
+    return (String) fields.get(key);
   }
 
   public long getLong(String key) {
     if (!containsKey(key)) {
       return 0;
     }
-    return Long.parseLong(getString(key));
+    return Long.parseLong((String) fields.get(key));
   }
 
   public double getDouble(String key) {
     if (!containsKey(key)) {
       return 0;
     }
-    return Double.parseDouble(getString(key));
+    return DoublePrecision.parseFloatingPointNumber((String) fields.get(key));
+  }
+
+  @Override
+  public String toString() {
+    return String.valueOf(fields);
   }
 }

@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -87,60 +88,77 @@ public class SentineledConnectionProviderTest {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
+
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
         DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
-        config, sentinels, DefaultJedisClientConfig.builder().build());
+        config, sentinels, DefaultJedisClientConfig.builder().build())) {
 
-    Connection conn = jedis.provider.getConnection();
-    try {
-      conn.ping();
-    } finally {
-      conn.close();
-    }
+      Connection conn = jedis.provider.getConnection();
+      try {
+        conn.ping();
+      } finally {
+        conn.close();
+      }
 
-    Connection conn2 = jedis.provider.getConnection();
-    try {
-      assertEquals(conn, conn2);
-    } finally {
-      conn2.close();
+      Connection conn2 = jedis.provider.getConnection();
+      try {
+        assertEquals(conn, conn2);
+      } finally {
+        conn2.close();
+      }
     }
   }
-//
-//  @Test
-//  public void testResetInvalidPassword() {
-//    JedisFactory factory = new JedisFactory(null, 0, 2000, 2000, "foobared", 0, "my_shiny_client_name") { };
-//
-//    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory)) {
-//      Jedis obj1_ref;
-//      try (Jedis obj1_1 = pool.getResource()) {
-//        obj1_ref = obj1_1;
-//        obj1_1.set("foo", "bar");
-//        assertEquals("bar", obj1_1.get("foo"));
-//      }
-//      try (Jedis obj1_2 = pool.getResource()) {
-//        assertSame(obj1_ref, obj1_2);
-//        factory.setPassword("wrong password");
-//        try (Jedis obj2 = pool.getResource()) {
-//          fail("Should not get resource from pool");
-//        } catch (JedisException e) { }
-//      }
-//    }
-//  }
-//
-//  @Test
-//  public void testResetValidPassword() {
-//    JedisFactory factory = new JedisFactory(null, 0, 2000, 2000, "wrong password", 0, "my_shiny_client_name") { };
-//
-//    try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, new JedisPoolConfig(), factory)) {
-//      try (Jedis obj1 = pool.getResource()) {
-//        fail("Should not get resource from pool");
-//      } catch (JedisException e) { }
-//
-//      factory.setPassword("foobared");
-//      try (Jedis obj2 = pool.getResource()) {
-//        obj2.set("foo", "bar");
-//        assertEquals("bar", obj2.get("foo"));
-//      }
-//    }
-//  }
+
+  @Test
+  public void testResetInvalidPassword() {
+    DefaultRedisCredentialsProvider credentialsProvider
+        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "foobared"));
+
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, DefaultJedisClientConfig.builder()
+        .timeoutMillis(2000).credentialsProvider(credentialsProvider).database(2)
+        .clientName("my_shiny_client_name").build(), new ConnectionPoolConfig(),
+        sentinels, DefaultJedisClientConfig.builder().build())) {
+
+      jedis.set("foo", "bar");
+
+      Connection conn1_ref;
+      try (Connection conn1_1 = jedis.provider.getConnection()) {
+        conn1_ref = conn1_1;
+        assertEquals("bar", new Jedis(conn1_1).get("foo"));
+      }
+
+      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "wrong password"));
+
+      try (Connection conn1_2 = jedis.provider.getConnection()) {
+        assertSame(conn1_ref, conn1_2);
+
+        try (Connection conn2 = jedis.provider.getConnection()) {
+          fail("Should not get resource from pool");
+        } catch (JedisException e) { }
+      }
+    }
+  }
+
+  @Test
+  public void testResetValidPassword() {
+    DefaultRedisCredentialsProvider credentialsProvider
+        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "wrong password"));
+
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, DefaultJedisClientConfig.builder()
+        .timeoutMillis(2000).credentialsProvider(credentialsProvider).database(2)
+        .clientName("my_shiny_client_name").build(), new ConnectionPoolConfig(),
+        sentinels, DefaultJedisClientConfig.builder().build())) {
+
+      try (Connection conn1 = jedis.provider.getConnection()) {
+        fail("Should not get resource from pool");
+      } catch (JedisException e) { }
+
+      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
+
+      try (Connection conn2 = jedis.provider.getConnection()) {
+        new Jedis(conn2).set("foo", "bar");
+        assertEquals("bar", jedis.get("foo"));
+      }
+    }
+  }
 }

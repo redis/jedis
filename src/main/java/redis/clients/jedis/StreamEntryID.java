@@ -113,10 +113,8 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
 
   /**
    * Should be used only with XREADGROUP
-   *
-   * <code>
-   * XREADGROUP $GroupName $ConsumerName BLOCK 2000 COUNT 10 STREAMS mystream >
-   * </code>
+   * <p>
+   * {@code XREADGROUP $GroupName $ConsumerName BLOCK 2000 COUNT 10 STREAMS mystream >}
    */
   public static final StreamEntryID UNRECEIVED_ENTRY = new StreamEntryID() {
 

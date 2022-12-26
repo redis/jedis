@@ -28,7 +28,7 @@ public interface StringCommands {
    * <b><a href="http://redis.io/commands/set">Set Command</a></b>
    * Set the string value as value of the key. Can be used with optional params.
    * <p>
-   * Time complexity: O(1)<
+   * Time complexity: O(1)
    * @param key
    * @param value
    * @param params {@link SetParams}

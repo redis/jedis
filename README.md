@@ -35,6 +35,8 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 </dependency>
 ```
 
+To use the cutting-edge Jedis, check [here](/docs/jedis-maven.md).
+
 Next, you'll need to connect to Redis. For many applications, it's best to use a connection pool. You can instantiate a Jedis connection pool like so:
 
 ```java

@@ -838,7 +838,7 @@ public final class BuilderFactory {
   };
 
   /**
-   * Create a AccessControlUser object from the ACL GETUSER < > result
+   * Create a AccessControlUser object from the ACL GETUSER reply.
    */
   public static final Builder<AccessControlUser> ACCESS_CONTROL_USER = new Builder<AccessControlUser>() {
     @SuppressWarnings("unchecked")
@@ -1868,7 +1868,6 @@ public final class BuilderFactory {
    * values. The resulting set displays the same ordering, concurrency, and performance
    * characteristics as the backing list. This class should be used only for Redis commands which
    * return Set result.
-   * @param <E>
    */
   protected static class SetFromList<E> extends AbstractSet<E> implements Serializable {
     private static final long serialVersionUID = -2850347066962734052L;

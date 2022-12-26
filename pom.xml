@@ -174,8 +174,10 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>3.4.1</version>
 				<configuration>
-					<aggregate>true</aggregate>
-					<additionalparam>-Xdoclint:none</additionalparam>
+					<source>8</source><!-- Until JDK 11+ -->
+					<detectJavaApiLink>false</detectJavaApiLink><!-- Until JDK 11+ -->
+					<!--<doclint>none</doclint>-->
+					<!--<doclint>all,-missing</doclint>-->
 				</configuration>
 				<executions>
 					<execution>

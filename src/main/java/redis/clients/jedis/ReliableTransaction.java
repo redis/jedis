@@ -14,8 +14,7 @@ public class ReliableTransaction extends TransactionBase {
   /**
    * Creates a new transaction.
    * 
-   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
-   * called with this object.
+   * A MULTI command will be executed. WATCH/UNWATCH/MULTI commands must not be called with this object.
    */
   public ReliableTransaction(Connection connection) {
     super(connection);

@@ -25,6 +25,8 @@ You can also **contribute documentation** -- or anything to improve Jedis. Pleas
 
 ## Getting started
 
+
+
 To get started with Jedis, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
 
 ```xml
@@ -37,7 +39,13 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 
 To use the cutting-edge Jedis, check [here](/docs/jedis-maven.md).
 
-Next, you'll need to connect to Redis. For many applications, it's best to use a connection pool. You can instantiate a Jedis connection pool like so:
+Next, you'll need to connect to Redis. Consider installing a redis-stack docker:
+
+```bash
+docker run -p 6379:6379 -it redis/redis-stack:latest
+```
+
+For many applications, it's best to use a connection pool. You can instantiate a Jedis connection pool like so:
 
 ```java
 JedisPool pool = new JedisPool("localhost", 6379);

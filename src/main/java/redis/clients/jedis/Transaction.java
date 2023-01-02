@@ -9,6 +9,8 @@ public class Transaction extends TransactionBase {
 
   private final Jedis jedis;
 
+  // Legacy - to support Jedis.multi()
+  // TODO: Should be package private ??
   public Transaction(Jedis jedis) {
     super(jedis.getConnection());
     this.jedis = jedis;

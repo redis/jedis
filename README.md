@@ -25,8 +25,6 @@ You can also **contribute documentation** -- or anything to improve Jedis. Pleas
 
 ## Getting started
 
-
-
 To get started with Jedis, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
 
 ```xml

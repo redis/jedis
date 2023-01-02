@@ -51,7 +51,13 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   /**
-   * If you want to WATCH/UNWATCH keys before MULTI command you should do {@code doMulti = true}.
+   * Creates a transaction.
+   *
+   * If user wants to WATCH/UNWATCH keys and then call MULTI ({@link #multi()}) ownself, it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param doMulti {@code false} for manual WATCH, UNWATCH and MULTI
    */
   public TransactionBase(Connection connection, boolean doMulti) {
     this.connection = connection;

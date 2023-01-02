@@ -2,6 +2,9 @@ package redis.clients.jedis;
 
 import java.util.List;
 
+/**
+ * A pipeline based transaction.
+ */
 public class Transaction extends TransactionBase {
 
   private final Jedis jedis;
@@ -17,7 +20,13 @@ public class Transaction extends TransactionBase {
   }
 
   /**
-   * If you want to WATCH/UNWATCH keys before MULTI command you should do {@code doMulti = true}.
+   * Creates a transaction.
+   *
+   * If user wants to WATCH/UNWATCH keys and then call MULTI ({@link #multi()}) ownself, it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param doMulti {@code false} for manual WATCH, UNWATCH and MULTI
    */
   public Transaction(Connection connection, boolean doMulti) {
     super(connection, doMulti);

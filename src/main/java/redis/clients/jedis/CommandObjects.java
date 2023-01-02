@@ -646,6 +646,10 @@ public class CommandObjects {
   }
 
   /**
+   * @param keyA
+   * @param keyB
+   * @param params
+   * @return 
    * @deprecated STRALGO LCS command will be removed from Redis 7.
    * LCS can be used instead of this method.
    */
@@ -656,6 +660,10 @@ public class CommandObjects {
   }
 
   /**
+   * @param keyA
+   * @param keyB
+   * @param params
+   * @return 
    * @deprecated STRALGO LCS command will be removed from Redis 7.
    * LCS can be used instead of this method.
    */
@@ -2440,6 +2448,13 @@ public class CommandObjects {
   }
 
   /**
+   * @param key
+   * @param groupName
+   * @param start
+   * @param end
+   * @param count
+   * @param consumerName
+   * @return 
    * @deprecated Use {@link CommandObjects#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated

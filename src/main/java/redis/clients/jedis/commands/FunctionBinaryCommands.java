@@ -14,6 +14,7 @@ public interface FunctionBinaryCommands {
    * @param name
    * @param keys
    * @param args
+   * @return 
    */
   Object fcall(byte[] name, List<byte[]> keys, List<byte[]> args);
 
@@ -88,11 +89,12 @@ public interface FunctionBinaryCommands {
 
   /**
    * Load a library to Redis.
-   * @param functionCode the source code. The library payload must start
-   *                     with Shebang statement that provides a metadata
-   *                     about the library (like the engine to use and the library name).
-   *                     Shebang format: #!<engine name> name=<library name>.
-   *                     Currently engine name must be lua.
+   * <p>
+   * The library payload must start with Shebang statement that provides a metadata about the
+   * library (like the engine to use and the library name). Shebang format:
+   * {@code #!<engine name> name=<library name>}. Currently engine name must be lua.
+   *
+   * @param functionCode the source code.
    * @return The library name that was loaded
    */
   String functionLoad(byte[] functionCode);

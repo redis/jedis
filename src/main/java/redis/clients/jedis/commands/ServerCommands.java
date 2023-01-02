@@ -42,7 +42,7 @@ public interface ServerCommands {
 
   /**
    * Delete all the keys of all the existing databases, not just the currently selected one.
-   * @param flushMode
+   * @param flushMode SYNC or ASYNC
    * @return a simple string reply (OK)
    */
   String flushAll(FlushMode flushMode);
@@ -53,7 +53,6 @@ public interface ServerCommands {
    * requirepass directive in the configuration file. If password matches the password in the
    * configuration file, the server replies with the OK status code and starts accepting commands.
    * Otherwise, an error is returned and the clients needs to try a new password.
-   * @param password
    * @return the result of the auth
    */
   String auth(String password);
@@ -61,8 +60,6 @@ public interface ServerCommands {
   /**
    * Request for authentication with username and password, based on the ACL feature introduced in
    * Redis 6.0 see https://redis.io/topics/acl
-   * @param user
-   * @param password
    * @return OK
    */
   String auth(String user, String password);

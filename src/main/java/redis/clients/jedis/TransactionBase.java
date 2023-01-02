@@ -46,6 +46,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   private boolean inWatch = false;
   private boolean inMulti = false;
 
+  /**
+   * Creates a new transaction.
+   * 
+   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
+   * called with this object.
+   */
   public TransactionBase(Connection connection) {
     this(connection, true);
   }

@@ -11,6 +11,12 @@ public class ReliableTransaction extends TransactionBase {
 
   private static final String QUEUED_STR = "QUEUED";
 
+  /**
+   * Creates a new transaction.
+   * 
+   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
+   * called with this object.
+   */
   public ReliableTransaction(Connection connection) {
     super(connection);
   }

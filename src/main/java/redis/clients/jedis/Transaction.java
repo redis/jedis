@@ -14,6 +14,12 @@ public class Transaction extends TransactionBase {
     this.jedis = jedis;
   }
 
+  /**
+   * Creates a new transaction.
+   * 
+   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
+   * called with this object.
+   */
   public Transaction(Connection connection) {
     super(connection);
     this.jedis = null;

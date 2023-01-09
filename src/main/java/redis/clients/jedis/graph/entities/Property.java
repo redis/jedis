@@ -3,9 +3,7 @@ package redis.clients.jedis.graph.entities;
 import java.util.Objects;
 
 /**
- * A Graph entity property. Has a name, type, and value
- *
- * @param <T>
+ * A Graph entity property. Has a name, type, and value.
  */
 public class Property<T> {
 

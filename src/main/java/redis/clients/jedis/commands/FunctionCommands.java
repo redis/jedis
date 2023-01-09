@@ -92,11 +92,12 @@ public interface FunctionCommands {
 
   /**
    * Load a library to Redis.
-   * @param functionCode the source code. The library payload must start
-   *                     with Shebang statement that provides a metadata
-   *                     about the library (like the engine to use and the library name).
-   *                     Shebang format: #!<engine name> name=<library name>.
-   *                     Currently engine name must be lua.
+   * <p>
+   * The library payload must start with Shebang statement that provides a metadata about the
+   * library (like the engine to use and the library name). Shebang format:
+   * {@code #!<engine name> name=<library name>}. Currently engine name must be lua.
+   *
+   * @param functionCode the source code.
    * @return The library name that was loaded
    */
   String functionLoad(String functionCode);

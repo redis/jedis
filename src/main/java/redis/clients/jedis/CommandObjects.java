@@ -3793,6 +3793,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BloomFilterCommand.LOADCHUNK).key(key).add(iterator).add(data), BuilderFactory.STRING);
   }
 
+  public final CommandObject<Long> bfCard(String key) {
+    return new CommandObject<>(commandArguments(BloomFilterCommand.CARD).key(key), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Map<String, Object>> bfInfo(String key) {
     return new CommandObject<>(commandArguments(BloomFilterCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }

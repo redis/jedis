@@ -3993,6 +3993,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<Long> bfCard(String key) {
+    return appendCommand(commandObjects.bfCard(key));
+  }
+
+  @Override
   public Response<Map<String, Object>> bfInfo(String key) {
     return appendCommand(commandObjects.bfInfo(key));
   }

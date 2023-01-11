@@ -3,9 +3,6 @@ package redis.clients.jedis;
 import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.resps.StreamConsumerFullInfo;
@@ -1584,51 +1581,6 @@ public final class BuilderFactory {
         }
       }
       return classes;
-    }
-  };
-
-  public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
-    @Override
-    public Object build(Object data) {
-      if (data == null) return null;
-
-      if (!(data instanceof byte[])) return data;
-
-      String str = STRING.build(data);
-      if (str.charAt(0) == '{') {
-        try {
-          return new JSONObject(str);
-        } catch (Exception ex) { }
-      } else if (str.charAt(0) == '[') {
-        try {
-          return new JSONArray(str);
-        } catch (Exception ex) { }
-      }
-      return str;
-    }
-  };
-
-  public static final Builder<JSONArray> JSON_ARRAY = new Builder<JSONArray>() {
-    @Override
-    public JSONArray build(Object data) {
-      if (data == null) return null;
-      String str = STRING.build(data);
-      try {
-        return new JSONArray(str);
-      } catch (JSONException ex) {
-        // This is not necessary but we are doing this just to make is safer
-        // for com.vaadin.external.google:android-json library
-        throw new JedisException(ex);
-      }
-    }
-  };
-
-  public static final Builder<List<JSONArray>> JSON_ARRAY_LIST = new Builder<List<JSONArray>>() {
-    @Override
-    public List<JSONArray> build(Object data) {
-      if (data == null) return null;
-      List<Object> list = (List<Object>) data;
-      return list.stream().map(o -> JSON_ARRAY.build(o)).collect(Collectors.toList());
     }
   };
 

@@ -3342,7 +3342,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> jsonGet(String key, Path2... paths) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), BuilderFactory.JSON_OBJECT);
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), JsonBuilderFactory.JSON_OBJECT);
   }
 
   public final CommandObject<Object> jsonGet(String key, Path... paths) {
@@ -3358,7 +3358,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
-    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), BuilderFactory.JSON_ARRAY_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), JsonBuilderFactory.JSON_ARRAY_LIST);
   }
 
   public final <T> CommandObject<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys) {
@@ -3434,7 +3434,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
-    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.JSON_ARRAY);
+    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), JsonBuilderFactory.JSON_ARRAY);
   }
 
   public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {

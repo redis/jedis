@@ -3,16 +3,13 @@ package redis.clients.jedis.commands;
 import java.util.List;
 
 import redis.clients.jedis.Response;
-import redis.clients.jedis.args.BitCountOption;
-import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
-public interface StringPipelineBinaryCommands {
+public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands {
 
   Response<String> set(byte[] key, byte[] value);
 
@@ -28,10 +25,6 @@ public interface StringPipelineBinaryCommands {
   Response<byte[]> getDel(byte[] key);
 
   Response<byte[]> getEx(byte[] key, GetExParams params);
-
-  Response<Boolean> setbit(byte[] key, long offset, boolean value);
-
-  Response<Boolean> getbit(byte[] key, long offset);
 
   Response<Long> setrange(byte[] key, long offset, byte[] value);
 
@@ -66,22 +59,6 @@ public interface StringPipelineBinaryCommands {
   Response<byte[]> substr(byte[] key, int start, int end);
 
   Response<Long> strlen(byte[] key);
-
-  Response<Long> bitcount(byte[] key);
-
-  Response<Long> bitcount(byte[] key, long start, long end);
-
-  Response<Long> bitcount(byte[] key, long start, long end, BitCountOption option);
-
-  Response<Long> bitpos(byte[] key, boolean value);
-
-  Response<Long> bitpos(byte[] key, boolean value, BitPosParams params);
-
-  Response<List<Long>> bitfield(byte[] key, byte[]... arguments);
-
-  Response<List<Long>> bitfieldReadonly(byte[] key, byte[]... arguments);
-
-  Response<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
   /**
    * @deprecated STRALGO LCS command will be removed from Redis 7.

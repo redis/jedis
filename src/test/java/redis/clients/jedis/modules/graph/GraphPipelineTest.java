@@ -21,14 +21,14 @@ import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.graph.entities.Node;
 import redis.clients.jedis.graph.entities.Property;
-import redis.clients.jedis.json.GsonJson;
+import redis.clients.jedis.json.GsonJsonEncoderDecoder;
 import redis.clients.jedis.json.JsonEncoderDecoder;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   private Connection c;
-  private JsonEncoderDecoder jsonEncoderDecoder = new GsonJson();
+  private JsonEncoderDecoder jsonEncoderDecoder = new GsonJsonEncoderDecoder();
 
   @BeforeClass
   public static void prepare() {

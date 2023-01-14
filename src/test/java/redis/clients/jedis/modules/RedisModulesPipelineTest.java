@@ -27,7 +27,7 @@ import redis.clients.jedis.search.aggr.*;
 public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   private static final Gson gson = new Gson();
-  private static final JsonEncoderDecoder jsonEncoderDecoder = new GsonJson();
+  private static final JsonEncoderDecoder jsonEncoderDecoder = new GsonJsonEncoderDecoder();
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();

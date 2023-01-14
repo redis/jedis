@@ -2,7 +2,7 @@ package redis.clients.jedis.json;
 
 import com.google.gson.Gson;
 
-public class GsonJson implements JsonEncoderDecoder {
+public class GsonJsonEncoderDecoder implements JsonEncoderDecoder {
 
     private static final Gson GSON = new Gson();
 

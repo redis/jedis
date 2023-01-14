@@ -40,7 +40,7 @@ public class CommandObjects {
     private final JsonEncoderDecoder jsonEncoderDecoder;
 
     public CommandObjects() {
-        this.jsonEncoderDecoder = new GsonJson();
+        this.jsonEncoderDecoder = new GsonJsonEncoderDecoder();
     }
 
     public CommandObjects(JsonEncoderDecoder jsonEncoderDecoder) {

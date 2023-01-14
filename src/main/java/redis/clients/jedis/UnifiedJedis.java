@@ -20,6 +20,7 @@ import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
+import redis.clients.jedis.json.JsonEncoderDecoder;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -48,9 +49,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
   }
 
+  public UnifiedJedis(JsonEncoderDecoder jsonEncoderDecoder) {
+    this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT), jsonEncoderDecoder);
+  }
+
   public UnifiedJedis(HostAndPort hostAndPort) {
 //    this(new Connection(hostAndPort));
     this(new PooledConnectionProvider(hostAndPort));
+  }
+
+  public UnifiedJedis(HostAndPort hostAndPort, JsonEncoderDecoder jsonEncoderDecoder) {
+    //    this(new Connection(hostAndPort));
+    this(new PooledConnectionProvider(hostAndPort), jsonEncoderDecoder);
   }
 
   public UnifiedJedis(final String url) {
@@ -84,6 +94,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.provider = provider;
     this.executor = new DefaultCommandExecutor(provider);
     this.commandObjects = new CommandObjects();
+  }
+
+  public UnifiedJedis(ConnectionProvider provider, JsonEncoderDecoder jsonEncoderDecoder) {
+    this.provider = provider;
+    this.executor = new DefaultCommandExecutor(provider);
+    this.commandObjects = new CommandObjects(jsonEncoderDecoder);
   }
 
   /**
@@ -4548,7 +4564,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     }
     Connection connection = provider.getConnection();
-    return new Pipeline(connection, true);
+    return new Pipeline(connection, commandObjects, true);
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

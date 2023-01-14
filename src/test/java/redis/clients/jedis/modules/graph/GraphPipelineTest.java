@@ -21,11 +21,14 @@ import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.graph.entities.Node;
 import redis.clients.jedis.graph.entities.Property;
+import redis.clients.jedis.json.GsonJson;
+import redis.clients.jedis.json.JsonEncoderDecoder;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   private Connection c;
+  private JsonEncoderDecoder jsonEncoderDecoder = new GsonJson();
 
   @BeforeClass
   public static void prepare() {
@@ -55,7 +58,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testSync() {
-    Pipeline pipeline = new Pipeline(c);
+    Pipeline pipeline = new Pipeline(c,jsonEncoderDecoder);
 
     pipeline.set("x", "1");
     pipeline.graphQuery("social", "CREATE (:Person {name:'a'})");
@@ -140,7 +143,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testReadOnlyQueries() {
-    Pipeline pipeline = new Pipeline(c);
+    Pipeline pipeline = new Pipeline(c,jsonEncoderDecoder);
 
     pipeline.set("x", "1");
     pipeline.graphQuery("social", "CREATE (:Person {name:'a'})");
@@ -215,7 +218,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testWaitReplicas() {
-    Pipeline pipeline = new Pipeline(c);
+    Pipeline pipeline = new Pipeline(c,jsonEncoderDecoder);
     pipeline.set("x", "1");
     pipeline.graphProfile("social", "CREATE (:Person {name:'a'})");
     pipeline.graphProfile("g", "CREATE (:Person {name:'a'})");

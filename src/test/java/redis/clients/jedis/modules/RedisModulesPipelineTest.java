@@ -20,16 +20,14 @@ import org.junit.Test;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.json.JsonSetParams;
-import redis.clients.jedis.json.Path;
-import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 
 public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   private static final Gson gson = new Gson();
-
+  private static final JsonEncoderDecoder jsonEncoderDecoder = new GsonJson();
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
@@ -45,7 +43,8 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     fields.put("body", "lorem ipsum");
 
     Connection c = createConnection();
-    Pipeline p = new Pipeline(c);
+
+    Pipeline p = new Pipeline(c,jsonEncoderDecoder);
 
     Response<String> create = p.ftCreate(index, IndexOptions.defaultOptions(), sc);
     Response<String> alter = p.ftAlter(index, new Schema().addTextField("foo", 1.0));
@@ -113,7 +112,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Baz baz3 = new Baz("quuz3", "grault3", "waldo3");
 
     Connection c = createConnection();
-    Pipeline p = new Pipeline(c);
+    Pipeline p = new Pipeline(c,jsonEncoderDecoder);
 
     Response<String> set1 = p.jsonSet("foo", Path.ROOT_PATH, hm1);
     Response<Object> get = p.jsonGet("foo");
@@ -202,7 +201,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     hm2.put("number", 3);
 
     Connection c = createConnection();
-    Pipeline p = new Pipeline(c);
+    Pipeline p = new Pipeline(c,jsonEncoderDecoder);
 
     Response<String> setWithEscape = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm1);
     Response<Object> get = p.jsonGet("foo",  Path2.ROOT_PATH);

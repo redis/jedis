@@ -8,6 +8,7 @@ import javax.net.ssl.SSLSocketFactory;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.json.JsonEncoderDecoder;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
@@ -16,6 +17,10 @@ public class JedisPooled extends UnifiedJedis {
 
   public JedisPooled() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+  }
+
+  public JedisPooled(JsonEncoderDecoder jsonEncoderDecoder) {
+    super(jsonEncoderDecoder);
   }
 
   /**

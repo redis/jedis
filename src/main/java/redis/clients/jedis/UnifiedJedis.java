@@ -20,6 +20,7 @@ import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
+import redis.clients.jedis.json.JsonEncoderDecoder;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
@@ -41,15 +42,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
-  private final CommandObjects commandObjects;
   private final GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this);
+  private CommandObjects commandObjects;
 
   public UnifiedJedis() {
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
   }
 
+  public UnifiedJedis(JsonEncoderDecoder jsonEncoderDecoder) {
+    this();
+    this.commandObjects = new CommandObjects(jsonEncoderDecoder);
+  }
+
   public UnifiedJedis(HostAndPort hostAndPort) {
-//    this(new Connection(hostAndPort));
     this(new PooledConnectionProvider(hostAndPort));
   }
 
@@ -4548,7 +4553,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     }
     Connection connection = provider.getConnection();
-    return new Pipeline(connection, true);
+    return new Pipeline(connection, commandObjects,true);
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

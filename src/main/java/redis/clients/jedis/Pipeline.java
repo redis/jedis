@@ -38,17 +38,17 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   private final GraphCommandObjects graphCommandObjects;
 
   public Pipeline(Jedis jedis) {
-    this(jedis.getConnection(), false);
+    this(jedis.getConnection(), jedis.getCommandObjects(), false);
   }
 
   public Pipeline(Connection connection) {
-    this(connection, false);
+    this(connection, new CommandObjects(), false);
   }
 
-  public Pipeline(Connection connection, boolean closeConnection) {
+  public Pipeline(Connection connection, CommandObjects commandObjects, boolean closeConnection) {
     this.connection = connection;
     this.closeConnection = closeConnection;
-    this.commandObjects = new CommandObjects();
+    this.commandObjects = commandObjects;
     this.graphCommandObjects = new GraphCommandObjects(this.connection);
   }
 

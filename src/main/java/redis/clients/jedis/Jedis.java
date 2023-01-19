@@ -25,6 +25,7 @@ import redis.clients.jedis.commands.*;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.json.JsonEncoderDecoder;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
@@ -36,7 +37,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     SentinelCommands, Closeable {
 
   protected final Connection connection;
-  private final CommandObjects commandObjects = new CommandObjects();
+  private final CommandObjects commandObjects;
   private int db = 0;
   private Transaction transaction = null;
   private boolean isInMulti = false;
@@ -47,7 +48,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   private Pool<Jedis> dataSource = null;
 
   public Jedis() {
+    this(new Connection());
+  }
+
+  public Jedis(JsonEncoderDecoder jsonEncoderDecoder) {
     connection = new Connection();
+    commandObjects = new CommandObjects(jsonEncoderDecoder);
   }
 
   /**
@@ -60,11 +66,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public Jedis(final HostAndPort hp) {
-    connection = new Connection(hp);
+    this(new Connection(hp));
   }
 
   public Jedis(final String host, final int port) {
-    connection = new Connection(host, port);
+    this(new Connection(host, port));
   }
 
   public Jedis(final String host, final int port, final JedisClientConfig config) {
@@ -72,7 +78,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
-    connection = new Connection(hostPort, config);
+    this(new Connection(hostPort, config));
   }
 
   public Jedis(final String host, final int port, final boolean ssl) {
@@ -150,6 +156,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
         DefaultJedisClientConfig.builder().user(JedisURIHelper.getUser(uri))
             .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
+    commandObjects = new CommandObjects();
   }
 
   public Jedis(URI uri, final SSLSocketFactory sslSocketFactory,
@@ -204,18 +211,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
             .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
             .build());
+    commandObjects = new CommandObjects();
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
-    connection = new Connection(jedisSocketFactory);
+    this(new Connection(jedisSocketFactory));
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    connection = new Connection(jedisSocketFactory, clientConfig);
+    this(new Connection(jedisSocketFactory, clientConfig));
   }
 
   public Jedis(final Connection connection) {
     this.connection = connection;
+    commandObjects = new CommandObjects();
   }
 
   @Override
@@ -230,6 +239,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Connection getConnection() {
     return connection;
+  }
+
+  public CommandObjects getCommandObjects() {
+    return commandObjects;
   }
 
   // Legacy
@@ -6368,7 +6381,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param count if positive, return an array of distinct elements.
    *        If negative the behavior changes and the command is allowed to
-   *        return the same element multiple times  
+   *        return the same element multiple times
    * @return A list of randomly selected elements
    */
   @Override
@@ -8710,7 +8723,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long clusterCountFailureReports(final String nodeId) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, "COUNT-FAILURE-REPORTS",  nodeId);
-    return connection.getIntegerReply();  
+    return connection.getIntegerReply();
   }
 
   @Override

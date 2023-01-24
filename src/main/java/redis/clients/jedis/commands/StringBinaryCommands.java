@@ -2,16 +2,13 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-import redis.clients.jedis.args.BitCountOption;
-import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
-public interface StringBinaryCommands {
+public interface StringBinaryCommands extends BitBinaryCommands {
 
   String set(byte[] key, byte[] value);
 
@@ -27,10 +24,6 @@ public interface StringBinaryCommands {
   byte[] getDel(byte[] key);
 
   byte[] getEx(byte[] key, GetExParams params);
-
-  boolean setbit(byte[] key, long offset, boolean value);
-
-  boolean getbit(byte[] key, long offset);
 
   long setrange(byte[] key, long offset, byte[] value);
 
@@ -65,22 +58,6 @@ public interface StringBinaryCommands {
   byte[] substr(byte[] key, int start, int end);
 
   long strlen(byte[] key);
-
-  long bitcount(byte[] key);
-
-  long bitcount(byte[] key, long start, long end);
-
-  long bitcount(byte[] key, long start, long end, BitCountOption option);
-
-  long bitpos(byte[] key, boolean value);
-
-  long bitpos(byte[] key, boolean value, BitPosParams params);
-
-  List<Long> bitfield(byte[] key, byte[]... arguments);
-
-  List<Long> bitfieldReadonly(byte[] key, byte[]... arguments);
-
-  long bitop(BitOP op, byte[] destKey, byte[]... srcKeys);
 
   /**
    * @deprecated STRALGO LCS command will be removed from Redis 7.

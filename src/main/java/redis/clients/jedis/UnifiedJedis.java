@@ -4221,6 +4221,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long bfCard(String key) {
+    return executeCommand(commandObjects.bfCard(key));
+  }
+
+  @Override
   public Map<String, Object> bfInfo(String key) {
     return executeCommand(commandObjects.bfInfo(key));
   }

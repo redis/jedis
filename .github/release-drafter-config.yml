@@ -34,6 +34,7 @@ categories:
   - title: '🧰 Maintenance'
     labels:
       - 'maintenance'
+      - 'dependencies'
       - 'testing'
 change-template: '- $TITLE (#$NUMBER)'
 exclude-labels:

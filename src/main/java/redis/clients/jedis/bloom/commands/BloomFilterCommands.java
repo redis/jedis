@@ -98,5 +98,7 @@ public interface BloomFilterCommands {
    */
   String bfLoadChunk(String key, long iterator, byte[] data);
 
+  long bfCard(String key);
+
   Map<String, Object> bfInfo(String key);
 }

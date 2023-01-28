@@ -16,6 +16,7 @@ public class RedisBloomProtocol {
     INSERT("BF.INSERT"),
     SCANDUMP("BF.SCANDUMP"),
     LOADCHUNK("BF.LOADCHUNK"),
+    CARD("BF.CARD"),
     INFO("BF.INFO");
 
     private final byte[] raw;

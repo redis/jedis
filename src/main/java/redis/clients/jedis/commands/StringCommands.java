@@ -2,16 +2,13 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 
-import redis.clients.jedis.args.BitCountOption;
-import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
-public interface StringCommands {
+public interface StringCommands extends BitCommands {
 
   /**
    * <b><a href="http://redis.io/commands/set">Set Command</a></b>
@@ -28,7 +25,7 @@ public interface StringCommands {
    * <b><a href="http://redis.io/commands/set">Set Command</a></b>
    * Set the string value as value of the key. Can be used with optional params.
    * <p>
-   * Time complexity: O(1)<
+   * Time complexity: O(1)
    * @param key
    * @param value
    * @param params {@link SetParams}
@@ -62,7 +59,7 @@ public interface StringCommands {
    * <p>
    * Time complexity: O(1)
    * @param key
-   * @return The value of key
+   * @return The value stored in key
    */
   String getDel(String key);
 
@@ -79,32 +76,9 @@ public interface StringCommands {
    * Time complexity: O(1)
    * @param key
    * @param params {@link GetExParams}
-   * @return The original bit value stored at offset
+   * @return The value stored in key
    */
   String getEx(String key, GetExParams params);
-
-  /**
-   * <b><a href="http://redis.io/commands/setbit">SetBit Command</a></b>
-   * Sets or clears the bit at offset in the string value stored at key.
-   * <p>
-   * Time complexity: O(1)
-   * @param key
-   * @param offset
-   * @param value
-   * @return The original bit value stored at offset
-   */
-  boolean setbit(String key, long offset, boolean value);
-
-  /**
-   * <b><a href="http://redis.io/commands/getbit">GetBit Command</a></b>
-   * Returns the bit value at offset in the string value stored at key.
-   * <p>
-   * Time complexity: O(1)
-   * @param key
-   * @param offset
-   * @return The bit value stored at offset
-   */
-  boolean getbit(String key, long offset);
 
   /**
    * <b><a href="http://redis.io/commands/setrange">SetRange Command</a></b>
@@ -366,81 +340,6 @@ public interface StringCommands {
    * @return The length of the string at key, or 0 when key does not exist
    */
   long strlen(String key);
-
-  /**
-   * <b><a href="http://redis.io/commands/bitcount">Bitcount Command</a></b>
-   * Count the number of set bits (population counting) in a string.
-   * @param key
-   * @return The number of bits set to 1
-   */
-  long bitcount(String key);
-
-  /**
-   * <b><a href="http://redis.io/commands/bitcount">Bitcount Command</a></b>
-   * Count the number of set bits (population counting) in a string only in an interval start and end.
-   * <p>
-   * Like for the GETRANGE command start and end can contain negative values in order to index bytes
-   * starting from the end of the string, where -1 is the last byte, -2 is the penultimate, and so forth.
-   * @param key
-   * @param start byte start index
-   * @param end byte end index
-   * @return The number of bits set to 1
-   */
-  long bitcount(String key, long start, long end);
-
-  /**
-   * @see StringCommands#bitcount(String, long, long)
-   * @param key
-   * @param start byte start index
-   * @param end byte end index
-   * @param option indicate BYTE or BIT
-   * @return The number of bits set to 1
-   */
-  long bitcount(String key, long start, long end, BitCountOption option);
-
-  /**
-   * <b><a href="http://redis.io/commands/bitpos">Bitpos Command</a></b>
-   * Return the position of the first bit set to 1 or 0 in a string.
-   * @param key
-   * @param value the bit value
-   * @return The position of the first bit set to 1 or 0 according to the request
-   */
-  long bitpos(String key, boolean value);
-
-  /**
-   * <b><a href="http://redis.io/commands/bitpos">Bitpos Command</a></b>
-   * Return the position of the first bit set to 1 or 0 in a string.
-   * @param key
-   * @param value the bit value
-   * @param params {@link BitPosParams}
-   * @return The position of the first bit set to 1 or 0 according to the request
-   */
-  long bitpos(String key, boolean value, BitPosParams params);
-
-  /**
-   * <b><a href="http://redis.io/commands/bitfield">Bitfield Command</a></b>
-   * The command treats a Redis string as an array of bits, and is capable of addressing specific integer
-   * fields of varying bit widths and arbitrary non (necessary) aligned offset.
-   * @param key
-   * @param arguments may be used with optional arguments
-   * @return A List of results
-   */
-  List<Long> bitfield(String key, String...arguments);
-
-  /**
-   * The readonly version of {@link StringCommands#bitfield(String, String...) BITFIELD}
-   */
-  List<Long> bitfieldReadonly(String key, String...arguments);
-
-  /**
-   * <b><a href="http://redis.io/commands/bitop">Bitop Command</a></b>
-   * Perform a bitwise operation between multiple keys (containing string values) and store the result in the destKey.
-   * @param op can be AND, OR, XOR or NOT
-   * @param destKey
-   * @param srcKeys
-   * @return The size of the string stored in the destKey
-   */
-  long bitop(BitOP op, String destKey, String... srcKeys);
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.

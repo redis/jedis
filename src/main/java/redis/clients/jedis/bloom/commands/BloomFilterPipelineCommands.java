@@ -28,5 +28,7 @@ public interface BloomFilterPipelineCommands {
 
   Response<String> bfLoadChunk(String key, long iterator, byte[] data);
 
+  Response<Long> bfCard(String key);
+
   Response<Map<String, Object>> bfInfo(String key);
 }

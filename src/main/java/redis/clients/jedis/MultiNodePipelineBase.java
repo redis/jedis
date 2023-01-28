@@ -4010,6 +4010,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Long> bfCard(String key) {
+    return appendCommand(commandObjects.bfCard(key));
+  }
+
+  @Override
   public Response<Map<String, Object>> bfInfo(String key) {
     return appendCommand(commandObjects.bfInfo(key));
   }

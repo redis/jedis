@@ -2,8 +2,8 @@ package redis.clients.jedis.modules.bloom;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
@@ -92,14 +92,6 @@ public class BloomTest extends RedisModuleCommandsTestBase {
     assertFalse(client.bfExists("newFilter", "bar"));
     assertFalse(client.bfAdd("newFilter", "foo"));
   }
-//
-//  @Test
-//  public void addExistsByte() {
-//    assertTrue(client.bfAdd("newFilter", "foo".getBytes()));
-//    assertFalse(client.bfAdd("newFilter", "foo".getBytes()));
-//    assertTrue(client.bfExists("newFilter", "foo".getBytes()));
-//    assertFalse(client.bfExists("newFilter", "bar".getBytes()));
-//  }
 
   @Test
   public void testExistsNonExist() {
@@ -113,26 +105,6 @@ public class BloomTest extends RedisModuleCommandsTestBase {
 
     rv = client.bfMAdd("newFilter", "newElem", "bar", "baz");
     assertEquals(Arrays.asList(true, false, false), rv);
-
-//    // Try with bytes
-//    rv = client.bfMAdd("newFilter", new byte[]{1}, new byte[]{2}, new byte[]{3});
-//    assertEquals(3, rv.length);
-//    for (boolean i : rv) {
-//      assertTrue(i);
-//    }
-//
-//    rv = client.bfMAdd("newFilter", new byte[]{0}, new byte[]{3});
-//    assertEquals(2, rv.length);
-//    assertTrue(rv[0]);
-//    assertFalse(rv[1]);
-//
-//    rv = client.existsMulti("newFilter", new byte[]{0}, new byte[]{1}, new byte[]{2}, new byte[]{3}, new byte[]{5});
-//    assertEquals(5, rv.length);
-//    assertTrue(rv[0]);
-//    assertTrue(rv[1]);
-//    assertTrue(rv[2]);
-//    assertTrue(rv[3]);
-//    assertFalse(rv[4]);
   }
 
   @Test
@@ -163,12 +135,9 @@ public class BloomTest extends RedisModuleCommandsTestBase {
     assertTrue(client.bfExists("b1", "1"));
 
     // returning an error if the filter does not already exist
-    try {
-      client.bfInsert("b2", new BFInsertParams().noCreate(), "1");
-      fail("Should error if the filter does not already exist.");
-    } catch (JedisDataException e) {
-      assertEquals("ERR not found", e.getMessage());
-    }
+    JedisDataException jde = assertThrows("Should error if the filter does not already exist.",
+        JedisDataException.class, () -> client.bfInsert("b2", new BFInsertParams().noCreate(), "1"));
+    assertEquals("ERR not found", jde.getMessage());
 
     client.bfInsert("b3", new BFInsertParams().capacity(1L).error(0.0001), "2");
     assertTrue(client.bfExists("b3", "2"));
@@ -182,24 +151,35 @@ public class BloomTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testInfo() {
+  public void card() {
+    client.bfInsert("test_card", new BFInsertParams().capacity(1L), "1");
+    assertEquals(1L, client.bfCard("test_card"));
+
+    // returning '0' if the filter does not already exist
+    assertEquals(0L, client.bfCard("not_exist"));
+
+    // returning an error if the filter is not a bloom filter
+    client.set("foo", "bar");
+    assertThrows("Should error if the filter is not a bloom filter",
+        JedisDataException.class, () -> client.bfCard("foo"));
+  }
+
+  @Test
+  public void info() {
     client.bfInsert("test_info", new BFInsertParams().capacity(1L), "1");
     Map<String, Object> info = client.bfInfo("test_info");
     assertEquals(Long.valueOf(1), info.get("Number of items inserted"));
 
     // returning an error if the filter does not already exist
-    try {
-      client.bfInfo("not_exist");
-      fail("Should error if the filter does not already exist.");
-    } catch (JedisDataException e) {
-      assertEquals("ERR not found", e.getMessage());
-    }
+    JedisDataException jde = assertThrows("Should error if the filter does not already exist.",
+        JedisDataException.class, () -> client.bfInfo("not_exist"));
+    assertEquals("ERR not found", jde.getMessage());
   }
 
   @Test
   public void insertNonScaling() {
-    List<Boolean> insert = client.bfInsert("nonscaling_err", BFInsertParams.insertParams()
-        .capacity(4).nonScaling(), "a", "b", "c");
+    List<Boolean> insert = client.bfInsert("nonscaling_err",
+        BFInsertParams.insertParams().capacity(4).nonScaling(), "a", "b", "c");
     assertEquals(Arrays.asList(true, true, true), insert);
 
     insert = client.bfInsert("nonscaling_err", "d", "e");
@@ -209,8 +189,9 @@ public class BloomTest extends RedisModuleCommandsTestBase {
   @Test
   public void insertExpansion() {
     // BF.INSERT bfexpansion CAPACITY 3 expansion 3 ITEMS a b c d e f g h j k l o i u y t r e w q
-    List<Boolean> insert = client.bfInsert("bfexpansion", BFInsertParams.insertParams()
-        .capacity(3).expansion(3), "a", "b", "c", "d", "e", "f", "g", "h", "j", "k", "l",
+    List<Boolean> insert = client.bfInsert("bfexpansion",
+        BFInsertParams.insertParams().capacity(3).expansion(3),
+        "a", "b", "c", "d", "e", "f", "g", "h", "j", "k", "l",
         "o", "i", "u", "y", "t", "r", "e", "w", "q");
     assertEquals(20, insert.size());
   }

@@ -158,9 +158,4 @@ public class ShardedConnectionProvider implements ConnectionProvider {
     }
     return tail.get(tail.firstKey());
   }
-
-  @Override
-  public Map<String, ConnectionPool> getConnectionMap() {
-    return Collections.unmodifiableMap(resources);
-  }
 }

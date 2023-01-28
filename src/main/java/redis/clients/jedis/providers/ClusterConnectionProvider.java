@@ -135,9 +135,4 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       }
     }
   }
-
-  @Override
-  public Map<String, ConnectionPool> getConnectionMap() {
-    return Collections.unmodifiableMap(getNodes());
-  }
 }

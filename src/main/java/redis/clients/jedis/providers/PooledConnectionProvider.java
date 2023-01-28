@@ -1,7 +1,5 @@
 package redis.clients.jedis.providers;
 
-import java.util.Collections;
-import java.util.Map;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -66,10 +64,5 @@ public class PooledConnectionProvider implements ConnectionProvider {
   @Override
   public Connection getConnection(CommandArguments args) {
     return pool.getResource();
-  }
-
-  @Override
-  public Map<?, Pool<Connection>> getConnectionMap() {
-    return Collections.singletonMap(connectionMapKey, pool);
   }
 }

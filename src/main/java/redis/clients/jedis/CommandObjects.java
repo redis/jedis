@@ -50,6 +50,10 @@ public class CommandObjects {
     return FLUSHALL_COMMAND_OBJECT;
   }
 
+  public final CommandObject<String> configSet(String parameter, String value) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
   // Key commands
   public final CommandObject<Boolean> exists(String key) {
     return new CommandObject<>(commandArguments(Command.EXISTS).key(key), BuilderFactory.BOOLEAN);

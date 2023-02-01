@@ -196,6 +196,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return checkAndBroadcastCommand(commandObjects.flushAll());
   }
 
+  public String configSet(String parameter, String value) {
+    return checkAndBroadcastCommand(commandObjects.configSet(parameter, value));
+  }
+
   // Key commands
   @Override
   public boolean exists(String key) {

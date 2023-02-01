@@ -43,7 +43,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final CommandExecutor executor;
   private final CommandObjects commandObjects;
   private final GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this);
-  private JedisBroadcastAndRoundRobinConfig bcAndRRConfig = null;
+  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
 
   public UnifiedJedis() {
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
@@ -169,23 +169,23 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public final <T> T broadcastCommand(CommandObject<T> commandObject) {
-    return ((ClusterCommandExecutor) executor).broadcastCommand(commandObject);
+    return executor.broadcastCommand(commandObject);
   }
 
   private <T> T checkAndBroadcastCommand(CommandObject<T> commandObject) {
-//    if (bcAndRRConfig == null ||
-//        bcAndRRConfig.getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
-//      return executeCommand(commandObject);
-//    }
-//    return broadcastCommand(commandObject);
-    boolean broadcast = true; // by default we would assume to broadcast when broadcast is called
-    if (bcAndRRConfig == null) {
-      //
+    boolean broadcast = true;
+
+    if (broadcastAndRoundRobinConfig == null) {
     } else if (commandObject.getArguments().getCommand() instanceof SearchProtocol.SearchCommand
-        && bcAndRRConfig.getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
+        && broadcastAndRoundRobinConfig.getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
       broadcast = false;
     }
+
     return broadcast ? broadcastCommand(commandObject) : executeCommand(commandObject);
+  }
+
+  public void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
+    this.broadcastAndRoundRobinConfig = config;
   }
 
   public String ping() {

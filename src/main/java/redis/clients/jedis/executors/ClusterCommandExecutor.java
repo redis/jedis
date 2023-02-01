@@ -37,6 +37,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
     this.provider.close();
   }
 
+  @Override
   public final <T> T broadcastCommand(CommandObject<T> commandObject) {
     Map<String, ConnectionPool> connectionMap = provider.getConnectionMap();
 
@@ -52,7 +53,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
           holder.addReply(node, aReply);
           if (isErrored) { // already errored
           } else if (reply == null) {
-            reply = aReply;
+            reply = aReply; // ok
           } else if (reply.equals(aReply)) {
             // ok
           } else {

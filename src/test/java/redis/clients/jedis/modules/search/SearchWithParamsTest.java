@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.junit.BeforeClass;
 import org.junit.Test;

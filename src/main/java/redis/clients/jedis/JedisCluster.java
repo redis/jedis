@@ -4,8 +4,9 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.executors.ClusterCommandExecutor;
+
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 
 public class JedisCluster extends UnifiedJedis {
@@ -181,7 +182,8 @@ public class JedisCluster extends UnifiedJedis {
     super(clusterNodes, clientConfig, maxAttempts);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
     super(clusterNodes, clientConfig, maxAttempts, maxTotalRetriesDuration);
   }
 

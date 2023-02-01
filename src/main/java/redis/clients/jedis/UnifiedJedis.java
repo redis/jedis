@@ -43,6 +43,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final CommandExecutor executor;
   private final CommandObjects commandObjects;
   private final GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this);
+  private JedisBroadcastAndRoundRobinConfig bcAndRRConfig = null;
 
   public UnifiedJedis() {
     this(new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT));
@@ -165,6 +166,34 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public final <T> T executeCommand(CommandObject<T> commandObject) {
     return executor.executeCommand(commandObject);
+  }
+
+  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
+    return ((ClusterCommandExecutor) executor).broadcastCommand(commandObject);
+  }
+
+  private <T> T checkAndBroadcastCommand(CommandObject<T> commandObject) {
+//    if (bcAndRRConfig == null ||
+//        bcAndRRConfig.getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
+//      return executeCommand(commandObject);
+//    }
+//    return broadcastCommand(commandObject);
+    boolean broadcast = true; // by default we would assume to broadcast when broadcast is called
+    if (bcAndRRConfig == null) {
+      //
+    } else if (commandObject.getArguments().getCommand() instanceof SearchProtocol.SearchCommand
+        && bcAndRRConfig.getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
+      broadcast = false;
+    }
+    return broadcast ? broadcastCommand(commandObject) : executeCommand(commandObject);
+  }
+
+  public String ping() {
+    return checkAndBroadcastCommand(commandObjects.ping());
+  }
+
+  public String flushAll() {
+    return checkAndBroadcastCommand(commandObjects.flushAll());
   }
 
   // Key commands
@@ -3342,6 +3371,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.evalsha(sha1, sampleKey));
   }
 
+  public List<Boolean> scriptExists(List<String> sha1s) {
+    return checkAndBroadcastCommand(commandObjects.scriptExists(sha1s));
+  }
+
   @Override
   public Boolean scriptExists(String sha1, String sampleKey) {
     return scriptExists(sampleKey, new String[]{sha1}).get(0);
@@ -3362,9 +3395,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.scriptExists(sampleKey, sha1s));
   }
 
+  public String scriptLoad(String script) {
+    return checkAndBroadcastCommand(commandObjects.scriptLoad(script));
+  }
+
   @Override
   public String scriptLoad(String script, String sampleKey) {
     return executeCommand(commandObjects.scriptLoad(script, sampleKey));
+  }
+
+  public String scriptFlush() {
+    return checkAndBroadcastCommand(commandObjects.scriptFlush());
   }
 
   @Override
@@ -3453,7 +3494,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
-    return executeCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
+    return checkAndBroadcastCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
   }
 
   @Override
@@ -4538,10 +4579,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.graphConfigGet(configName));
   }
   // RedisGraph commands
-
-  public JedisBroadcast broadcast() {
-    return new JedisBroadcast(this);
-  }
 
   public Object pipelined() {
     if (provider == null) {

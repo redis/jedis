@@ -10,7 +10,7 @@ import redis.clients.jedis.HostAndPort;
  */
 public class JedisBroadcastException extends JedisDataException {
 
-  private static final String BROADCAST_ERROR_MESSAGE = "<a generic broadcast error message goes here.>";
+  private static final String BROADCAST_ERROR_MESSAGE = "A failure occurred while broadcasting the command.";
 
   private final Map<HostAndPort, SingleReply> replies = new HashMap<>();
 

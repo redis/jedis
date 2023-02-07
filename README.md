@@ -97,18 +97,21 @@ Now you can use the `JedisCluster` instance and send commands like you would wit
 jedis.sadd("planets", "Mars");
 ```
 
+## Documentation
+
+The [Jedis wiki](http://github.com/redis/jedis/wiki) contains several useful articles for using Jedis.
+
+You can also check the [latest Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html).
+
+Some specific use-case examples can be found in [`redis.clients.jedis.examples` 
+package](src/test/java/redis/clients/jedis/examples/) of the test source codes.
+
 ## Using Redis modules
 
 Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
 [RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
 
 See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.
-
-## Documentation
-
-The [Jedis wiki](http://github.com/redis/jedis/wiki) contains several useful articles for using Jedis.
-
-You can also check the [latest Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html).
 
 ## Troubleshooting
 

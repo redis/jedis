@@ -1,38 +1,14 @@
 package redis.clients.jedis.commands.unified.pipeline;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
-
-import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
-import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
-import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
-import static redis.clients.jedis.util.AssertUtil.assertByteArraySetEquals;
-import static redis.clients.jedis.util.AssertUtil.assertCollectionContains;
 import static redis.clients.jedis.util.AssertUtil.assertPipelineSyncAll;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper;
-import redis.clients.jedis.params.ScanParams;
-import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.util.JedisByteHashMap;
 
 public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
 

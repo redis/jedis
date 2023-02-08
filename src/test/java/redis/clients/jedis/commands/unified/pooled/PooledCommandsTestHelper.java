@@ -11,16 +11,16 @@ public class PooledCommandsTestHelper {
 
   private static Jedis node;
 
-  static JedisPooled getPooled() throws InterruptedException {
+  public static JedisPooled getPooled() throws InterruptedException {
 
     node = new Jedis(nodeInfo);
     node.auth("foobared");
-    node.flushAll();
+    //node.flushAll();
 
     return new JedisPooled(nodeInfo.getHost(), nodeInfo.getPort(), null, "foobared");
   }
 
-  static void clearData() {
-    node.flushDB();
+  public static void clearData() {
+    node.flushAll();
   }
 }

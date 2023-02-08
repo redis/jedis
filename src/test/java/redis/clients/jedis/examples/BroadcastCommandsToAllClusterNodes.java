@@ -4,11 +4,11 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisCluster;
 
 /**
- * When using <a href="https://redis.io/docs/reference/cluster-spec/">Open Source Redis Cluster API</a>, some commands
- * can be required to be executed against all primary nodes. To simplify this task, Jedis provides an easy way to
- * broadcast commands.
- * 
- * For example, if we want to update the server configuration of all nodes in the Redis Cluster, we need to broadcast
+ * When using the <a href="https://redis.io/docs/reference/cluster-spec/">Open Source Redis Cluster
+ * API</a>, some commands must be executed against all primary nodes. To simplify this task, Jedis
+ * provides an easy way to broadcast commands.
+ *
+ * For example, to update the server configuration of all nodes in the Redis Cluster, we broadcast
  * the command [CONFIG SET](https://redis.io/commands/config-set/) to all nodes.
  */
 public class BroadcastCommandsToAllClusterNodes {

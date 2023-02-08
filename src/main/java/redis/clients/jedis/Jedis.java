@@ -3785,6 +3785,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     jedisPubSub.proceedWithPatterns(connection, patterns);
   }
 
+  public void ssubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
+    jedisPubSub.proceedWithPatterns(connection, patterns);
+  }
+
   /**
    * Evaluates scripts using the Lua interpreter built into Redis starting from version 2.6.0.
    * @param script
@@ -7912,6 +7916,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
+    jedisPubSub.proceedWithPatterns(connection, patterns);
+  }
+
+  public void ssubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
     jedisPubSub.proceedWithPatterns(connection, patterns);
   }
 

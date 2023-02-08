@@ -30,6 +30,9 @@ public abstract class BinaryJedisPubSub {
   public void onPSubscribe(byte[] pattern, int subscribedChannels) {
   }
 
+  public void onSSubscribe(byte[] pattern, int subscribedChannels) {
+  }
+
   public void onPong(byte[] pattern) {
   }
 
@@ -50,6 +53,11 @@ public abstract class BinaryJedisPubSub {
 
   public void psubscribe(byte[]... patterns) {
     client.sendCommand(Command.PSUBSCRIBE, patterns);
+    client.flush();
+  }
+
+  public void ssubscribe(byte[]... patterns) {
+    client.sendCommand(Command.SSUBSCRIBE, patterns);
     client.flush();
   }
 
@@ -84,6 +92,13 @@ public abstract class BinaryJedisPubSub {
       psubscribe(patterns);
       process();
     } finally {
+      this.client.rollbackTimeout();
+    }
+
+    try{
+      ssubscribe(patterns);
+      process();
+    }finally{
       this.client.rollbackTimeout();
     }
   }
@@ -128,7 +143,11 @@ public abstract class BinaryJedisPubSub {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         onPSubscribe(bpattern, subscribedChannels);
-      } else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
+      } else if (Arrays.equals(SSUBSCRIBE.getRaw(), resp)) {
+        subscribedChannels = ((Long) reply.get(2)).intValue();
+        final byte[] bpattern = (byte[]) reply.get(1);
+        onSSubscribe(bpattern, subscribedChannels);
+      }else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         onPUnsubscribe(bpattern, subscribedChannels);

@@ -34,6 +34,9 @@ public abstract class JedisPubSub {
   public void onPSubscribe(String pattern, int subscribedChannels) {
   }
 
+  public void onSSubscribe(String pattern, int subscribedChannels) {
+  }
+
   public void onPong(String pattern) {
 
   }
@@ -67,6 +70,14 @@ public abstract class JedisPubSub {
       throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
     }
     client.sendCommand(Command.PSUBSCRIBE, patterns);
+    client.flush();
+  }
+
+  public void ssubscribe(String... patterns) {
+    if (client == null) {
+      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+    }
+    client.sendCommand(Command.SSUBSCRIBE, patterns);
     client.flush();
   }
 
@@ -111,6 +122,13 @@ public abstract class JedisPubSub {
     this.client.setTimeoutInfinite();
     try {
       psubscribe(patterns);
+      process();
+    } finally {
+      this.client.rollbackTimeout();
+    }
+
+    try {
+      ssubscribe(patterns);
       process();
     } finally {
       this.client.rollbackTimeout();
@@ -167,7 +185,12 @@ public abstract class JedisPubSub {
         final byte[] bpattern = (byte[]) reply.get(1);
         final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
         onPSubscribe(strpattern, subscribedChannels);
-      } else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
+      } else if (Arrays.equals(SSUBSCRIBE.getRaw(), resp)) {
+        subscribedChannels = ((Long) reply.get(2)).intValue();
+        final byte[] bpattern = (byte[]) reply.get(1);
+        final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);
+        onSSubscribe(strpattern, subscribedChannels);
+      }else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
         subscribedChannels = ((Long) reply.get(2)).intValue();
         final byte[] bpattern = (byte[]) reply.get(1);
         final String strpattern = (bpattern == null) ? null : SafeEncoder.encode(bpattern);

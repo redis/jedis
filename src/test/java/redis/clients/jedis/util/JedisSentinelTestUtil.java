@@ -32,6 +32,11 @@ public class JedisSentinelTestUtil {
       public void onPSubscribe(String pattern, int subscribedChannels) {
         commandJedis.sentinelFailover(masterName);
       }
+
+      @Override
+      public void onSSubscribe(String pattern, int subscribedChannels) {
+        commandJedis.sentinelFailover(masterName);
+      }
     }, "*");
 
     String[] chunks = newmaster.get().split(" ");

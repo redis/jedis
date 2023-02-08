@@ -3424,6 +3424,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  public void ssubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    }
+  }
+
   public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
     try (Connection connection = this.provider.getConnection()) {
       jedisPubSub.proceed(connection, channels);
@@ -3431,6 +3437,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
+    try (Connection connection = this.provider.getConnection()) {
+      jedisPubSub.proceedWithPatterns(connection, patterns);
+    }
+  }
+
+  public void ssubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
     try (Connection connection = this.provider.getConnection()) {
       jedisPubSub.proceedWithPatterns(connection, patterns);
     }

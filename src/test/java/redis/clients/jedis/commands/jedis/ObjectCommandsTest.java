@@ -48,11 +48,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
   public void objectRefcount() {
     jedis.lpush(key, "hello world");
     Long refcount = jedis.objectRefcount(key);
-    assertEquals(new Long(1), refcount);
+    assertEquals(Long.valueOf(1), refcount);
 
     // Binary
     refcount = jedis.objectRefcount(binaryKey);
-    assertEquals(new Long(1), refcount);
+    assertEquals(Long.valueOf(1), refcount);
 
   }
 

@@ -79,11 +79,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(key, "hello world");
 
     Long time = jedis.objectIdletime(key);
-    assertEquals(new Long(0), time);
+    assertEquals(Long.valueOf(0), time);
 
     // Binary
     time = jedis.objectIdletime(binaryKey);
-    assertEquals(new Long(0), time);
+    assertEquals(Long.valueOf(0), time);
   }
 
   @Test

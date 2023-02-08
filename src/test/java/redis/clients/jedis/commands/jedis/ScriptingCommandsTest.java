@@ -111,7 +111,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
     Long response = (Long) jedis.eval(script, keys, new ArrayList<String>());
 
-    assertEquals(new Long(2), response);
+    assertEquals(Long.valueOf(2), response);
   }
 
   @Test

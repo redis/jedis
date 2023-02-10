@@ -185,7 +185,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
         if (count == 3) {
           Jedis otherJedis = createJedis();
           Long numPatterns = otherJedis.pubsubNumPat();
-          assertEquals(new Long(2l), numPatterns);
+          assertEquals(Long.valueOf(2l), numPatterns);
           punsubscribe();
         }
       }

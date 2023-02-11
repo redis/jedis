@@ -279,8 +279,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
 //    Response<List<Object>> r3 = p.exec();
 //    List<Object> result = p.syncAndReturnAll();
 //
-//    assertEquals(new Long(-1), r1.get());
-//    assertEquals(new Long(-3), r2.get());
+//    assertEquals(Long.valueOf(-1), r1.get());
+//    assertEquals(Long.valueOf(-3), r2.get());
 //
 //    assertEquals(4, result.size());
 //
@@ -291,11 +291,11 @@ public class PipeliningTest extends JedisCommandsTestBase {
 //    // 4th result is a list with the results from the multi
 //    @SuppressWarnings("unchecked")
 //    List<Object> multiResult = (List<Object>) result.get(3);
-//    assertEquals(new Long(-1), multiResult.get(0));
-//    assertEquals(new Long(-3), multiResult.get(1));
+//    assertEquals(Long.valueOf(-1), multiResult.get(0));
+//    assertEquals(Long.valueOf(-3), multiResult.get(1));
 //
-//    assertEquals(new Long(-1), r3.get().get(0));
-//    assertEquals(new Long(-3), r3.get().get(1));
+//    assertEquals(Long.valueOf(-1), r3.get().get(0));
+//    assertEquals(Long.valueOf(-3), r3.get().get(1));
 //
 //  }
 //

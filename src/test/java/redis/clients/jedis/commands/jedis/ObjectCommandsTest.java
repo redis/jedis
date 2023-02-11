@@ -48,11 +48,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
   public void objectRefcount() {
     jedis.lpush(key, "hello world");
     Long refcount = jedis.objectRefcount(key);
-    assertEquals(new Long(1), refcount);
+    assertEquals(Long.valueOf(1), refcount);
 
     // Binary
     refcount = jedis.objectRefcount(binaryKey);
-    assertEquals(new Long(1), refcount);
+    assertEquals(Long.valueOf(1), refcount);
 
   }
 
@@ -79,11 +79,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(key, "hello world");
 
     Long time = jedis.objectIdletime(key);
-    assertEquals(new Long(0), time);
+    assertEquals(Long.valueOf(0), time);
 
     // Binary
     time = jedis.objectIdletime(binaryKey);
-    assertEquals(new Long(0), time);
+    assertEquals(Long.valueOf(0), time);
   }
 
   @Test

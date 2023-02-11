@@ -5687,8 +5687,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Remove the specified field(s) from a hash stored at key.
-   * Specified fields that do not exist within this hash are ignored.
+   * Remove the specified field(s) from a hash stored at key. Specified fields that do not exist
+   * within this hash are ignored.
    * <p>
    * <b>Time complexity:</b> O(1)
    * @param key

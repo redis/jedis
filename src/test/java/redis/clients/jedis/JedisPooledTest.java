@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Test;
 
@@ -175,11 +176,10 @@ public class JedisPooledTest {
   public void testResetValidCredentials() {
     DefaultRedisCredentialsProvider credentialsProvider = 
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
-    ConnectionFactory factory = new ConnectionFactory(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider)
-            .clientName("my_shiny_client_name").build());
 
-    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), factory)) {
+    try (JedisPooled pool = new JedisPooled(HostAndPorts.getRedisServers().get(0),
+        DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider)
+            .clientName("my_shiny_client_name").build())) {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");
@@ -189,6 +189,64 @@ public class JedisPooledTest {
       credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
       pool.set("foo", "bar");
       assertEquals("bar", pool.get("foo"));
+    }
+  }
+
+  @Test
+  public void testCredentialsProvider() {
+    final AtomicInteger prepareCount = new AtomicInteger();
+    final AtomicInteger cleanupCount = new AtomicInteger();
+
+    RedisCredentialsProvider credentialsProvider = new RedisCredentialsProvider() {
+      boolean firstCall = true;
+
+      @Override
+      public void prepare() {
+        prepareCount.incrementAndGet();
+      }
+
+      @Override
+      public RedisCredentials get() {
+        if (firstCall) {
+          firstCall = false;
+          return new RedisCredentials() { };
+        }
+
+        return new RedisCredentials() {
+          @Override
+          public String getUser() {
+            return null;
+          }
+
+          @Override
+          public char[] getPassword() {
+            return "foobared".toCharArray();
+          }
+        };
+      }
+
+      @Override
+      public void cleanUp() {
+        cleanupCount.incrementAndGet();
+      }
+    };
+
+    try (JedisPooled pool = new JedisPooled(HostAndPorts.getRedisServers().get(0),
+        DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider)
+            .clientName("my_shiny_client_name").build())) {
+      try {
+        pool.get("foo");
+        fail("Should not get resource from pool");
+      } catch (JedisException e) {
+      }
+      assertEquals(0, pool.getPool().getNumActive());
+      assertEquals(1, prepareCount.get());
+      assertEquals(1, cleanupCount.get());
+
+      pool.set("foo", "bar");
+      assertEquals("bar", pool.get("foo"));
+      assertEquals(2, prepareCount.get());
+      assertEquals(2, cleanupCount.get());
     }
   }
 }

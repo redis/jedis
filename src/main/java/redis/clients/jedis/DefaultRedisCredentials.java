@@ -1,16 +1,16 @@
 package redis.clients.jedis;
 
-class DefaultRedisCredentials implements RedisCredentials {
+public final class DefaultRedisCredentials implements RedisCredentials {
 
   private final String user;
   private final char[] password;
 
-  DefaultRedisCredentials(String user, char[] password) {
+  public DefaultRedisCredentials(String user, char[] password) {
     this.user = user;
     this.password = password;
   }
 
-  DefaultRedisCredentials(String user, CharSequence password) {
+  public DefaultRedisCredentials(String user, CharSequence password) {
     this.user = user;
     this.password = password == null ? null
         : password instanceof String ? ((String) password).toCharArray()

@@ -1,0 +1,62 @@
+---
+
+name: Integration
+
+on:
+  push:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.rst'
+    branches:
+      - master
+      - '[0-9].[0-9]'
+  pull_request:
+    branches:
+      - master
+      - '[0-9].[0-9]'
+  schedule:
+    - cron: '0 1 * * *' # nightly build
+
+jobs:
+
+  build:
+    name: Build and Test
+    runs-on: macos-latest
+    steps:
+      # https://github.com/orgs/community/discussions/25777#discussioncomment-3249229
+      - uses: docker-practice/actions-setup-docker@master
+        timeout-minutes: 12
+      - uses: actions/checkout@v2
+      - name: Set up publishing to maven central
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: System setup
+        run: |
+          brew install gcc g++ stunnel make
+          /usr/local/bin/make system-setup
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+      - name: Maven offline
+        run: |
+          mvn -q dependency:go-offline
+      - name: Run tests
+        run: |
+          TEST="" make test
+        env:
+          JVM_OPTS: -Xmx3200m
+          TERM: dumb
+      - name: redismod docker
+        run: docker run -p 52567:6379 -d redislabs/redismod:edge
+      - name: Run tests
+        run: mvn -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
+      - name: Codecov
+        run: |
+          bash <(curl -s https://codecov.io/bash)

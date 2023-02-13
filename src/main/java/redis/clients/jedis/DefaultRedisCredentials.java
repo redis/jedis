@@ -10,9 +10,11 @@ class DefaultRedisCredentials implements RedisCredentials {
     this.password = password;
   }
 
-  DefaultRedisCredentials(String user, String password) {
+  DefaultRedisCredentials(String user, CharSequence password) {
     this.user = user;
-    this.password = password == null ? null : password.toCharArray();
+    this.password = password == null ? null
+        : password instanceof String ? ((String) password).toCharArray()
+            : toCharArray(password);
   }
 
   @Override
@@ -23,5 +25,14 @@ class DefaultRedisCredentials implements RedisCredentials {
   @Override
   public char[] getPassword() {
     return password;
+  }
+
+  private static char[] toCharArray(CharSequence seq) {
+    final int len = seq.length();
+    char[] arr = new char[len];
+    for (int i = 0; i < len; i++) {
+      arr[i] = seq.charAt(i);
+    }
+    return arr;
   }
 }

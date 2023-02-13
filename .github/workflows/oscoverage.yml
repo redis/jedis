@@ -27,7 +27,11 @@ jobs:
       # https://github.com/orgs/community/discussions/25777#discussioncomment-3249229
       - uses: docker-practice/actions-setup-docker@master
         timeout-minutes: 12
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          repository: redis/redis
+          path: redis-git
       - name: Set up publishing to maven central
         uses: actions/setup-java@v2
         with:
@@ -35,8 +39,8 @@ jobs:
           distribution: 'temurin'
       - name: System setup
         run: |
-          brew install gcc g++ stunnel make
-          /usr/local/bin/make system-setup
+          brew install gcc stunnel make
+          /usr/local/bin/make -C redis-git
       - name: Cache dependencies
         uses: actions/cache@v2
         with:

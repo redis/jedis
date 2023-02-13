@@ -31,17 +31,11 @@ public interface JedisClientConfig {
 
   /**
    * @return Redis ACL user
-   * @deprecated Use {@link JedisClientConfig#getCredentialsProvider()}.
    */
-  @Deprecated
   default String getUser() {
     return null;
   }
 
-  /**
-   * @deprecated Use {@link JedisClientConfig#getCredentialsProvider()}.
-   */
-  @Deprecated
   default String getPassword() {
     return null;
   }

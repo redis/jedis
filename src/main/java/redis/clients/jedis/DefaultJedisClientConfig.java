@@ -55,13 +55,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  @Deprecated
   public String getUser() {
     return credentialsProvider.get().getUser();
   }
 
   @Override
-  @Deprecated
   public String getPassword() {
     char[] password = credentialsProvider.get().getPassword();
     return password == null ? null : new String(credentialsProvider.get().getPassword());
@@ -172,19 +170,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    /**
-     * @deprecated Use {@link Builder#credentials(redis.clients.jedis.RedisCredentials)}.
-     */
-    @Deprecated
     public Builder user(String user) {
       this.user = user;
       return this;
     }
 
-    /**
-     * @deprecated Use {@link Builder#credentials(redis.clients.jedis.RedisCredentials)}.
-     */
-    @Deprecated
     public Builder password(String password) {
       this.password = password;
       return this;
@@ -236,7 +226,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
   }
 
-  @Deprecated
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, String user, String password, int database, String clientName,
       boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,

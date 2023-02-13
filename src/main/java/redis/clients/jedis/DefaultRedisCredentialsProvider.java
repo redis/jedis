@@ -16,10 +16,4 @@ class DefaultRedisCredentialsProvider implements RedisCredentialsProvider {
   public RedisCredentials get() {
     return this.credentials;
   }
-
-  @Override
-  public void prepare() { }
-
-  @Override
-  public void cleanUp() { }
 }

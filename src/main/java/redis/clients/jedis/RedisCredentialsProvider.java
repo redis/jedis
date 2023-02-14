@@ -18,8 +18,6 @@ public interface RedisCredentialsProvider extends Supplier<RedisCredentials> {
    */
   default void prepare() { }
 
-  @Override RedisCredentials get();
-
   /**
    * Clean up credentials (e.g. from memory).
    *

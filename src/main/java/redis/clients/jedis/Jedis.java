@@ -5687,13 +5687,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Remove the specified field from an hash stored at key.
+   * Remove the specified field(s) from a hash stored at key. Specified fields that do not exist
+   * within this hash are ignored.
    * <p>
    * <b>Time complexity:</b> O(1)
    * @param key
    * @param fields
-   * @return If the field was present in the hash it is deleted and 1 is returned, otherwise 0 is
-   *         returned and no operation is performed.
+   * @return The number of fields that were removed from the hash, not including specified but
+   *         non-existing fields. If key does not exist, it is treated as an empty hash and this
+   *         command returns 0.
    */
   @Override
   public long hdel(final String key, final String... fields) {

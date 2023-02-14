@@ -200,7 +200,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void hdel() {
-    Map<String, String> hash = new HashMap<String, String>();
+    Map<String, String> hash = new HashMap<>();
     hash.put("bar", "car");
     hash.put("car", "bar");
     jedis.hmset("foo", hash);
@@ -211,7 +211,7 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     assertNull(jedis.hget("foo", "bar"));
 
     // Binary
-    Map<byte[], byte[]> bhash = new HashMap<byte[], byte[]>();
+    Map<byte[], byte[]> bhash = new HashMap<>();
     bhash.put(bbar, bcar);
     bhash.put(bcar, bbar);
     jedis.hmset(bfoo, bhash);
@@ -220,6 +220,13 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, jedis.hdel(bfoo, bfoo));
     assertEquals(1, jedis.hdel(bfoo, bbar));
     assertNull(jedis.hget(bfoo, bbar));
+
+    // Deleting multiple fields returns the right value.
+    jedis.hmset("foo", hash);
+    assertEquals(2, jedis.hdel("foo", "bar", "car", "dne"));
+
+    jedis.hmset(bfoo, bhash);
+    assertEquals(2, jedis.hdel(bfoo, bbar, bcar, bbar1));
   }
 
   @Test

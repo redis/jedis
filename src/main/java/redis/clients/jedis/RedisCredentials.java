@@ -12,5 +12,4 @@ public interface RedisCredentials {
   default char[] getPassword() {
     return null;
   }
-
 }

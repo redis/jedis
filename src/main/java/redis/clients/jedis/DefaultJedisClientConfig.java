@@ -62,7 +62,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   @Override
   public String getPassword() {
     char[] password = credentialsProvider.get().getPassword();
-    return password == null ? null : new String(credentialsProvider.get().getPassword());
+    return password == null ? null : new String(password);
   }
 
   @Override
@@ -73,9 +73,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   @Override
   @Deprecated
   public synchronized void updatePassword(String password) {
-    String user = getUser();
     ((DefaultRedisCredentialsProvider) this.credentialsProvider)
-        .setCredentials(new DefaultRedisCredentials(user, password));
+        .setCredentials(new DefaultRedisCredentials(getUser(), password));
   }
 
   @Override
@@ -141,7 +140,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public DefaultJedisClientConfig build() {
       if (credentialsProvider == null) {
-        credentialsProvider = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password));
+        credentialsProvider = new DefaultRedisCredentialsProvider(
+            new DefaultRedisCredentials(user, password));
       }
 
       return new DefaultJedisClientConfig(connectionTimeoutMillis, socketTimeoutMillis,

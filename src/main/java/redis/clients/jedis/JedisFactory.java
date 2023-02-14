@@ -142,6 +142,11 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     ((DefaultJedisSocketFactory) jedisSocketFactory).updateHostAndPort(hostAndPort);
   }
 
+  /**
+   * @deprecated Use {@link RedisCredentialsProvider} through
+   * {@link JedisClientConfig#getCredentialsProvider()}.
+   */
+  @Deprecated
   public void setPassword(final String password) {
     this.clientConfig.updatePassword(password);
   }

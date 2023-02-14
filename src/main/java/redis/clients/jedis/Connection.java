@@ -4,8 +4,12 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -336,15 +340,16 @@ public class Connection implements Closeable {
   private void initializeFromClientConfig(JedisClientConfig config) {
     try {
       connect();
-      String password = config.getPassword();
-      if (password != null) {
-        String user = config.getUser();
-        if (user != null) {
-          auth(user, password);
-        } else {
-          auth(password);
-        }
+
+      Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
+      if (credentialsProvider instanceof RedisCredentialsProvider) {
+        ((RedisCredentialsProvider) credentialsProvider).prepare();
+        auth(credentialsProvider);
+        ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+      } else {
+        auth(credentialsProvider);
       }
+
       int dbIndex = config.getDatabase();
       if (dbIndex > 0) {
         select(dbIndex);
@@ -354,6 +359,7 @@ public class Connection implements Closeable {
         // TODO: need to figure out something without encoding
         clientSetname(clientName);
       }
+
     } catch (JedisException je) {
       try {
         if (isConnected()) {
@@ -361,20 +367,33 @@ public class Connection implements Closeable {
         }
         disconnect();
       } catch (Exception e) {
-        //
+        // the first exception 'je' will be thrown
       }
       throw je;
     }
   }
 
-  private String auth(final String password) {
-    sendCommand(Protocol.Command.AUTH, password);
-    return getStatusCodeReply();
-  }
+  private void auth(final Supplier<RedisCredentials> credentialsProvider) {
+    RedisCredentials credentials = credentialsProvider.get();
+    if (credentials == null || credentials.getPassword() == null) return;
 
-  private String auth(final String user, final String password) {
-    sendCommand(Protocol.Command.AUTH, user, password);
-    return getStatusCodeReply();
+    // Source: https://stackoverflow.com/a/9670279/4021802
+    ByteBuffer passBuf = Protocol.CHARSET.encode(CharBuffer.wrap(credentials.getPassword()));
+    byte[] rawPass = Arrays.copyOfRange(passBuf.array(), passBuf.position(), passBuf.limit());
+    Arrays.fill(passBuf.array(), (byte) 0); // clear sensitive data
+
+    if (credentials.getUser() != null) {
+      sendCommand(Protocol.Command.AUTH, SafeEncoder.encode(credentials.getUser()), rawPass);
+    } else {
+      sendCommand(Protocol.Command.AUTH, rawPass);
+    }
+
+    Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+
+    // clearing 'char[] credentials.getPassword()' should be
+    // handled in RedisCredentialsProvider.cleanUp()
+
+    getStatusCodeReply(); // OK
   }
 
   public String select(final int index) {

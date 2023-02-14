@@ -28,7 +28,9 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public CommandArguments add(Object arg) {
-    if (arg instanceof Rawable) {
+    if (arg == null) {
+      throw new IllegalArgumentException("null is not a valid argument.");
+    } else if (arg instanceof Rawable) {
       args.add((Rawable) arg);
     } else if (arg instanceof byte[]) {
       args.add(RawableFactory.from((byte[]) arg));
@@ -37,9 +39,6 @@ public class CommandArguments implements Iterable<Rawable> {
     } else if (arg instanceof Boolean) {
       args.add(RawableFactory.from(Integer.toString((Boolean) arg ? 1 : 0)));
     } else {
-      if (arg == null) {
-        throw new IllegalArgumentException("null is not a valid argument.");
-      }
       args.add(RawableFactory.from(String.valueOf(arg)));
     }
     return this;

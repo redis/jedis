@@ -367,7 +367,7 @@ public class Connection implements Closeable {
         }
         disconnect();
       } catch (Exception e) {
-        //
+        // the first exception 'je' will be thrown
       }
       throw je;
     }
@@ -375,30 +375,25 @@ public class Connection implements Closeable {
 
   private void auth(final Supplier<RedisCredentials> credentialsProvider) {
     RedisCredentials credentials = credentialsProvider.get();
-    if (credentials == null) return;
-    char[] password = credentials.getPassword();
-    if (password != null) {
-      String user = credentials.getUser();
-      byte[] binaryPassword = toBytes(password);
-      if (user != null) {
-        sendCommand(Protocol.Command.AUTH, SafeEncoder.encode(user), binaryPassword);
-      } else {
-        sendCommand(Protocol.Command.AUTH, binaryPassword);
-      }
-      // clearing 'char[] password' should be handled in RedisCredentialsProvider
-      Arrays.fill(binaryPassword, (byte) 0); // clear sensitive data
-      getStatusCodeReply();
-    }
-  }
+    if (credentials == null || credentials.getPassword() == null) return;
 
-  // Source: https://stackoverflow.com/a/9670279/4021802
-  private byte[] toBytes(char[] chars) {
-    CharBuffer charBuffer = CharBuffer.wrap(chars);
-    ByteBuffer byteBuffer = Protocol.CHARSET.encode(charBuffer);
-    byte[] bytes = Arrays.copyOfRange(byteBuffer.array(),
-        byteBuffer.position(), byteBuffer.limit());
-    Arrays.fill(byteBuffer.array(), (byte) 0); // clear sensitive data
-    return bytes;
+    // Source: https://stackoverflow.com/a/9670279/4021802
+    ByteBuffer passBuf = Protocol.CHARSET.encode(CharBuffer.wrap(credentials.getPassword()));
+    byte[] rawPass = Arrays.copyOfRange(passBuf.array(), passBuf.position(), passBuf.limit());
+    Arrays.fill(passBuf.array(), (byte) 0); // clear sensitive data
+
+    if (credentials.getUser() != null) {
+      sendCommand(Protocol.Command.AUTH, SafeEncoder.encode(credentials.getUser()), rawPass);
+    } else {
+      sendCommand(Protocol.Command.AUTH, rawPass);
+    }
+
+    Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+
+    // clearing 'char[] credentials.getPassword()' should be
+    // handled in RedisCredentialsProvider.cleanUp()
+
+    getStatusCodeReply(); // OK
   }
 
   public String select(final int index) {

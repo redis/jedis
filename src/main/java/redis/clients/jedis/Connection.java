@@ -343,7 +343,9 @@ public class Connection implements Closeable {
 
       Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
       if (credentialsProvider instanceof RedisCredentialsProvider) {
-        auth((RedisCredentialsProvider) credentialsProvider);
+        ((RedisCredentialsProvider) credentialsProvider).prepare();
+        auth(credentialsProvider);
+        ((RedisCredentialsProvider) credentialsProvider).cleanUp();
       } else {
         auth(credentialsProvider);
       }
@@ -369,12 +371,6 @@ public class Connection implements Closeable {
       }
       throw je;
     }
-  }
-
-  private void auth(final RedisCredentialsProvider credentialsProvider) {
-    credentialsProvider.prepare();
-    auth((Supplier<RedisCredentials>) credentialsProvider);
-    credentialsProvider.cleanUp();
   }
 
   private void auth(final Supplier<RedisCredentials> credentialsProvider) {

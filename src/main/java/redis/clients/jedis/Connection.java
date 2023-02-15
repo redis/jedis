@@ -9,7 +9,9 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -341,23 +343,34 @@ public class Connection implements Closeable {
     try {
       connect();
 
-      Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
-      if (credentialsProvider instanceof RedisCredentialsProvider) {
-        ((RedisCredentialsProvider) credentialsProvider).prepare();
-        auth(credentialsProvider);
-        ((RedisCredentialsProvider) credentialsProvider).cleanUp();
-      } else {
-        auth(credentialsProvider);
-      }
+      if (config.getRedisProtocol() == RedisProtocol.RESP3 && config.getUser() != null) {
 
-      int dbIndex = config.getDatabase();
-      if (dbIndex > 0) {
-        select(dbIndex);
-      }
-      String clientName = config.getClientName();
-      if (clientName != null) {
-        // TODO: need to figure out something without encoding
-        clientSetname(clientName);
+        hello(config.getRedisProtocol(), config.getUser(), config.getPassword(), config.getClientName());
+
+      } else {
+
+        Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
+        if (credentialsProvider instanceof RedisCredentialsProvider) {
+          ((RedisCredentialsProvider) credentialsProvider).prepare();
+          auth(credentialsProvider);
+          ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+        } else {
+          auth(credentialsProvider);
+        }
+
+        int dbIndex = config.getDatabase();
+        if (dbIndex > 0) {
+          select(dbIndex);
+        }
+        String clientName = config.getClientName();
+        if (clientName != null) {
+          // TODO: need to figure out something without encoding
+          clientSetname(clientName);
+        }
+
+        if (config.getRedisProtocol() != null) {
+          hello(config.getRedisProtocol());
+        }
       }
 
     } catch (JedisException je) {
@@ -371,6 +384,28 @@ public class Connection implements Closeable {
       }
       throw je;
     }
+  }
+
+  private Map hello(final RedisProtocol protocol) {
+    sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()));
+    Map reply = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+    LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
+    return reply;
+  }
+
+  private Map hello(final RedisProtocol protocol, final String user, final String password,
+      final String clientName) {
+    if (clientName == null) {
+      sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()),
+          Protocol.Keyword.AUTH.name(), user, password);
+    } else {
+      sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()),
+          Protocol.Keyword.AUTH.name(), user, password,
+          Protocol.Keyword.SETNAME.name(), clientName);
+    }
+    Map reply = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+    LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
+    return reply;
   }
 
   private void auth(final Supplier<RedisCredentials> credentialsProvider) {

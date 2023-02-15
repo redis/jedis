@@ -77,6 +77,14 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void resp3() {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
+        .protocol(RedisProtocol.RESP3).user("default").password("foobared").build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
   public void timeoutConnection() throws Exception {
     Jedis jedis = new Jedis("localhost", 6379, 15000);
     jedis.auth("foobared");

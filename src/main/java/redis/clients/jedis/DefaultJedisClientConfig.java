@@ -247,16 +247,15 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
     return new DefaultJedisClientConfig(null,
         connectionTimeoutMillis, soTimeoutMillis, blockingSocketTimeoutMillis,
-        new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)),
-        database, clientName, ssl, sslSocketFactory, sslParameters,
-        hostnameVerifier, hostAndPortMapper);
+        new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)), database,
+        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
-    return new DefaultJedisClientConfig(null, copy.getConnectionTimeoutMillis(),
-        copy.getSocketTimeoutMillis(), copy.getBlockingSocketTimeoutMillis(),
-        copy.getCredentialsProvider(), copy.getDatabase(), copy.getClientName(),
-        copy.isSsl(), copy.getSslSocketFactory(), copy.getSslParameters(),
-        copy.getHostnameVerifier(), copy.getHostAndPortMapper());
+    return new DefaultJedisClientConfig(copy.getRedisProtocol(),
+        copy.getConnectionTimeoutMillis(), copy.getSocketTimeoutMillis(),
+        copy.getBlockingSocketTimeoutMillis(), copy.getCredentialsProvider(),
+        copy.getDatabase(), copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(),
+        copy.getSslParameters(), copy.getHostnameVerifier(), copy.getHostAndPortMapper());
   }
 }

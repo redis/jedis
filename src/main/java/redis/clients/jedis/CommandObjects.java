@@ -35,6 +35,12 @@ public class CommandObjects {
 
   private volatile JsonObjectMapper jsonObjectMapper;
 
+  private RedisProtocol proto;
+
+  protected void setProtocol(RedisProtocol proto) {
+    this.proto = proto;
+  }
+
   protected CommandArguments commandArguments(ProtocolCommand command) {
     return new CommandArguments(command);
   }
@@ -1099,7 +1105,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<Map<String, String>> hrandfieldWithValues(String key, long count) {
-    return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES), BuilderFactory.STRING_MAP);
+    return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
+        proto != RedisProtocol.RESP3 ? BuilderFactory.STRING_MAP : BuilderFactory.STRING_MAP_FROM_PAIRS);
   }
 
   public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
@@ -1115,7 +1122,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count) {
-    return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES), BuilderFactory.BINARY_MAP);
+    return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
+        proto != RedisProtocol.RESP3 ? BuilderFactory.BINARY_MAP : BuilderFactory.BINARY_MAP_FROM_PAIRS);
   }
 
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {

@@ -389,7 +389,7 @@ public class Connection implements Closeable {
   private Map hello(final RedisProtocol protocol) {
     sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()));
     Map reply = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
-    LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
+    // LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
     return reply;
   }
 
@@ -404,7 +404,7 @@ public class Connection implements Closeable {
           Protocol.Keyword.SETNAME.name(), clientName);
     }
     Map reply = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
-    LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
+    // LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
     return reply;
   }
 

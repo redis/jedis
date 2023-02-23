@@ -295,6 +295,26 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<byte[], byte[]>> BINARY_MAP_FROM_PAIRS = new Builder<Map<byte[], byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], byte[]> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      final Map<byte[], byte[]> map = new JedisByteHashMap();
+      for (Object object : list) {
+        final List<byte[]> flat = (List<byte[]>) object;
+        map.put(flat.get(0), flat.get(1));
+      }
+
+      return map;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, String>";
+    }
+  };
+
   public static final Builder<String> STRING = new Builder<String>() {
     @Override
     public String build(Object data) {

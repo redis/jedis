@@ -131,6 +131,7 @@ public final class Protocol {
 
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
+    //System.out.println((char) b);
     int num;
     switch (b) {
       case PLUS_BYTE:

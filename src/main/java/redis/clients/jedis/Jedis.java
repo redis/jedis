@@ -73,6 +73,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
     connection = new Connection(hostPort, config);
+    RedisProtocol proto = config.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public Jedis(final String host, final int port, final boolean ssl) {
@@ -204,6 +206,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
             .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
             .build());
+    RedisProtocol proto = config.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
@@ -212,6 +216,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     connection = new Connection(jedisSocketFactory, clientConfig);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public Jedis(final Connection connection) {

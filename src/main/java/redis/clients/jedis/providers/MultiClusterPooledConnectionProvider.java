@@ -123,25 +123,27 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      */
     public void incrementActiveMultiClusterIndex() {
 
-        String originalClusterName;
-
+        // Field-level synchronization is used to avoid the edge case in which
+        // setActiveMultiClusterIndex(int multiClusterIndex) is called at the same time
         synchronized (activeMultiClusterIndex) {
-            originalClusterName = getClusterCircuitBreaker(activeMultiClusterIndex).getName();
+
+            String originalClusterName = getClusterCircuitBreaker().getName();
 
             if (++activeMultiClusterIndex > multiClusterMap.size())
                 throw new JedisConnectionException("CircuitBreaker could not failover since the " +
                 "MultiClusterJedisClientConfig was not provided with an additional cluster according to its " +
                 "prioritized list. If applicable, consider failing back OR restarting with an available cluster/database " +
                 "endpoint that is higher on the list.");
+
+            CircuitBreaker circuitBreaker = getClusterCircuitBreaker();
+
+            // Handles edge-case in which the user resets the activeMultiClusterIndex to a higher priority prematurely
+            // which forces a failover to the next prioritized cluster that has potentially not yet recovered
+            if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState()))
+                incrementActiveMultiClusterIndex();
+
+            else log.warn("CircuitBreaker changed the connection pool from '{}' to '{}'", originalClusterName, circuitBreaker.getName());
         }
-
-        // Handles edge-case in which the user resets the activeMultiClusterIndex to a higher priority prematurely
-        // which forces a failover to the next prioritized cluster that has potentially not yet recovered
-        if (CircuitBreaker.State.FORCED_OPEN.equals(getClusterCircuitBreaker().getState()))
-            incrementActiveMultiClusterIndex();
-
-        else log.warn("CircuitBreaker changed the connection pool from '{}' to '{}'",
-                      originalClusterName, getClusterCircuitBreaker().getName());
     }
 
     /**
@@ -155,32 +157,28 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         CircuitBreaker circuitBreaker = getClusterCircuitBreaker(multiClusterIndex);
 
-        // Synchronization on the circuit breaker is used to avoid any mutation in
-        // between forced transitioning from closed and opened if unsuccessful
-        synchronized (circuitBreaker) {
+        State originalState = circuitBreaker.getState();
 
-            State originalState = circuitBreaker.getState();
+        Connection targetConnection = null;
+        try {
+            // Transitions the state machine to a CLOSED state, allowing state transition, metrics and event publishing
+            // Safe since the activeMultiClusterIndex has not yet been changed and therefore no traffic will be routed yet
+            circuitBreaker.transitionToClosedState();
 
-            Connection targetConnection = null;
-            try {
-                // Transitions the state machine to a CLOSED state, allowing state transition, metrics and event publishing
-                circuitBreaker.transitionToClosedState();
+            targetConnection = getConnection(multiClusterIndex);
+            targetConnection.ping();
+        }
+        catch (Exception e) {
 
-                targetConnection = getConnection(multiClusterIndex);
-                targetConnection.ping();
-            }
-            catch (Exception e) {
+            // If the original state was FORCED_OPEN, then transition it back which stops state transition, metrics and event publishing
+            if (CircuitBreaker.State.FORCED_OPEN.equals(originalState))
+                circuitBreaker.transitionToForcedOpenState();
 
-                // If the original state was FORCED_OPEN, then transition it back which stops state transition, metrics and event publishing
-                if (CircuitBreaker.State.FORCED_OPEN.equals(originalState))
-                    circuitBreaker.transitionToForcedOpenState();
-
-                throw new JedisValidationException(circuitBreaker.getName() + " failed to connect. Please check configuration and try again. " + e);
-            }
-            finally {
-                if (targetConnection != null)
-                    targetConnection.close();
-            }
+            throw new JedisValidationException(circuitBreaker.getName() + " failed to connect. Please check configuration and try again. " + e);
+        }
+        finally {
+            if (targetConnection != null)
+                targetConnection.close();
         }
     }
 
@@ -192,19 +190,22 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      * Special care should be taken to confirm cluster/database availability AND
      * potentially cross-cluster replication BEFORE using this capability.
      */
-    public void setActiveMultiClusterIndex(int multiClusterIndex) {
+    public synchronized void setActiveMultiClusterIndex(int multiClusterIndex) {
 
-        if (activeMultiClusterIndex == multiClusterIndex)
-            return;
-
-        if (multiClusterIndex < 1 || multiClusterIndex > multiClusterMap.size())
-            throw new JedisValidationException("MultiClusterIndex: " + multiClusterIndex + " is not within the configured range. " +
-                                               "Please choose an index between 1 and " + multiClusterMap.size());
-
-        validateTargetConnection(multiClusterIndex);
-
+        // Field-level synchronization is used to avoid the edge case in which
+        // incrementActiveMultiClusterIndex() is called at the same time
         synchronized (activeMultiClusterIndex) {
-            String originalClusterName = getClusterCircuitBreaker(activeMultiClusterIndex).getName();
+
+            if (activeMultiClusterIndex == multiClusterIndex)
+                return;
+
+            if (multiClusterIndex < 1 || multiClusterIndex > multiClusterMap.size())
+                throw new JedisValidationException("MultiClusterIndex: " + multiClusterIndex + " is not within " +
+                          "the configured range. Please choose an index between 1 and " + multiClusterMap.size());
+
+            validateTargetConnection(multiClusterIndex);
+
+            String originalClusterName = getClusterCircuitBreaker().getName();
 
             activeMultiClusterIndex = multiClusterIndex;
 

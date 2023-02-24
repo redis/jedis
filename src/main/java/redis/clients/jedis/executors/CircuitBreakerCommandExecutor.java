@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.util.IOUtils;
 
 import java.util.Arrays;
@@ -25,7 +26,7 @@ import java.util.List;
 public class CircuitBreakerCommandExecutor implements CommandExecutor {
 
     private final static List<Class<? extends Throwable>> circuitBreakerFallbackException =
-            Arrays.asList(CallNotPermittedException.class);
+                                                          Arrays.asList(CallNotPermittedException.class);
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -42,11 +43,14 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
 
     @Override
     public <T> T executeCommand(CommandObject<T> commandObject) {
-        DecorateSupplier<T> supplier = Decorators.ofSupplier(() -> this.handleExecuteCommand(commandObject));
+        Cluster cluster = provider.getCluster(); // Pass this by reference for thread safety
 
-        supplier.withRetry(provider.getClusterRetry());
-        supplier.withCircuitBreaker(provider.getClusterCircuitBreaker());
-        supplier.withFallback(circuitBreakerFallbackException, e -> this.handleClusterFailover(commandObject));
+        DecorateSupplier<T> supplier = Decorators.ofSupplier(() -> this.handleExecuteCommand(commandObject, cluster));
+
+        supplier.withRetry(cluster.getRetry());
+        supplier.withCircuitBreaker(cluster.getCircuitBreaker());
+        supplier.withFallback(circuitBreakerFallbackException,
+                              e -> this.handleClusterFailover(commandObject, cluster.getCircuitBreaker()));
 
         return supplier.decorate().get();
     }
@@ -54,16 +58,13 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
     /**
      * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
      */
-    private <T> T handleExecuteCommand(CommandObject<T> commandObject) {
+    private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster) {
         Connection connection = null;
         try {
-            connection = provider.getConnection(commandObject.getArguments());
-
-            if (log.isDebugEnabled())
-                log.debug("{} processed handleExecuteCommand(commandObject)", provider.getClusterRetry().getName());
-
+            connection = cluster.getConnection();
             return connection.executeCommand(commandObject);
-        } finally {
+        }
+        finally {
             if (connection != null) {
                 connection.close();
             }
@@ -73,22 +74,22 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
     /**
      * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker failure scenarios
      */
-    private synchronized <T> T handleClusterFailover(CommandObject<T> commandObject) {
+    private synchronized <T> T handleClusterFailover(CommandObject<T> commandObject, CircuitBreaker circuitBreaker) {
 
         // Check state to handle race conditions since incrementActiveMultiClusterIndex() is non-idempotent
-        if (!CircuitBreaker.State.FORCED_OPEN.equals(provider.getClusterCircuitBreaker().getState())) {
+        if (!CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState())) {
 
             // Transitions state machine to a FORCED_OPEN state, stopping state transition, metrics and event publishing.
             // To recover/transition from this forced state the user will need to manually failback
-            provider.getClusterCircuitBreaker().transitionToForcedOpenState();
+            circuitBreaker.transitionToForcedOpenState();
 
-            String originalCluster = provider.getClusterCircuitBreaker().getName();
+            String originalCluster = circuitBreaker.getName();
 
-            // Incrementing the activeMultiClusterIndex will allow subsequent calls to executeCommand
-            // use the next cluster connection according to the configuration's prioritization/order
+            // Incrementing the activeMultiClusterIndex will allow subsequent calls to the executeCommand()
+            // to use the next cluster's connection pool - according to the configuration's prioritization/order
             provider.incrementActiveMultiClusterIndex();
 
-            log.warn("CircuitBreaker failed over connection pool from '{}' to '{}'",
+            log.warn("CircuitBreaker failed over the connection pool from '{}' to '{}'",
                      originalCluster, provider.getClusterCircuitBreaker().getName());
         }
 

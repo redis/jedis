@@ -39,7 +39,7 @@ public final class MultiClusterJedisClientConfig {
 
     private final ClusterJedisClientConfig[] clusterJedisClientConfigs;
 
-    //////////// Retry Config -  https://resilience4j.readme.io/docs/retry ////////////
+    //////////// Retry Config - https://resilience4j.readme.io/docs/retry ////////////
 
     /** Maximum number of attempts (including the initial call as the first attempt) */
     private int retryMaxAttempts;

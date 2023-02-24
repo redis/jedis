@@ -33,8 +33,17 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private final Map<Integer, Cluster> clusterMap = new ConcurrentHashMap<>();
-    private volatile Integer activeMultiClusterIndex = 1; // Current active cluster to which all traffic will be routed
+    /**
+     * Ordered map of cluster/database endpoints which were provided at startup via the MultiClusterJedisClientConfig.
+     * Users can move down (failover) or (up) failback the map depending on their availability and order.
+     */
+    private final Map<Integer, Cluster> multiClusterMap = new ConcurrentHashMap<>();
+
+    /**
+     * Indicates the actively used cluster/database endpoint (connection pool) amongst the pre-configured list which were
+     * provided at startup via the MultiClusterJedisClientConfig. All traffic will be routed according to this index.
+     */
+    private volatile Integer activeMultiClusterIndex = 1;
 
 
     public MultiClusterPooledConnectionProvider(MultiClusterJedisClientConfig multiClusterJedisClientConfig) {
@@ -84,7 +93,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             Retry retry = RetryRegistry.of(retryConfig).retry(clusterId);
 
-
             Retry.EventPublisher retryPublisher = retry.getEventPublisher();
             retryPublisher.onRetry(event -> log.warn(String.valueOf(event)));
             retryPublisher.onError(event -> log.error(String.valueOf(event)));
@@ -98,26 +106,25 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
             circuitBreakerEventPublisher.onStateTransition(event -> log.warn(String.valueOf(event)));
 
-            clusterMap.put(config.getPriority(), new Cluster(new ConnectionPool(config.getHostAndPort(),
+            multiClusterMap.put(config.getPriority(), new Cluster(new ConnectionPool(config.getHostAndPort(),
                                                                                 config.getJedisClientConfig()),
                                                                                 retry, circuitBreaker));
         }
     }
 
     /**
-     * Increments the index used by all interactions with this provider as a representation
-     * of the currently active connection through which all commands should flow through.
+     * Increments the actively used cluster/database endpoint (connection pool) amongst the pre-configured list which were
+     * provided at startup via the MultiClusterJedisClientConfig. All traffic will be routed according to this index.
      *
-     * Only indexes within the preconfigured range (static) are supported
-     * otherwise an exception will be thrown.
+     * Only indexes within the pre-configured range (static) are supported otherwise an exception will be thrown.
      *
      * In the event that the next prioritized connection has a forced open state,
-     * the method will recursively increment the index as to avoid a failed command.
+     * the method will recursively increment the index in order to avoid a failed command.
      */
     public void incrementActiveMultiClusterIndex() {
 
         synchronized (activeMultiClusterIndex) {
-            if (++activeMultiClusterIndex > clusterMap.size())
+            if (++activeMultiClusterIndex > multiClusterMap.size())
                 throw new JedisConnectionException(getClusterCircuitBreaker(--activeMultiClusterIndex).getName() +
                         " failed to connect. No additional clusters were configured for failover");
         }
@@ -169,15 +176,21 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     }
 
     /**
-     * Used to manually failback to any pre-configured cluster.
+     * Manually overrides the actively used cluster/database endpoint (connection pool) amongst the
+     * pre-configured list which were provided at startup via the MultiClusterJedisClientConfig.
+     * All traffic will be routed according to the provided new index.
      *
      * Special care should be taken to confirm cluster/database availability AND
      * potentially cross-cluster replication BEFORE using this capability.
      */
     public void setActiveMultiClusterIndex(int multiClusterIndex) {
 
-        if (multiClusterIndex < 1 || multiClusterIndex > clusterMap.size())
-            throw new JedisValidationException("MultiClusterPriority: " + multiClusterIndex + " is not within the configured range");
+        if (activeMultiClusterIndex == multiClusterIndex)
+            return;
+
+        if (multiClusterIndex < 1 || multiClusterIndex > multiClusterMap.size())
+            throw new JedisValidationException("MultiClusterIndex: " + multiClusterIndex + " is not within the configured range. " +
+                                               "Please choose an index between 1 and " + multiClusterMap.size());
 
         validateTargetConnection(multiClusterIndex);
 
@@ -188,55 +201,59 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     @Override
     public void close() {
-        clusterMap.get(activeMultiClusterIndex).getConnection().close();
+        multiClusterMap.get(activeMultiClusterIndex).getConnectionPool().close();
     }
 
     @Override
     public Connection getConnection() {
-        return clusterMap.get(activeMultiClusterIndex).getConnection().getResource();
+        return multiClusterMap.get(activeMultiClusterIndex).getConnection();
     }
 
     public Connection getConnection(int multiClusterIndex) {
-        return clusterMap.get(multiClusterIndex).getConnection().getResource();
+        return multiClusterMap.get(multiClusterIndex).getConnection();
     }
 
     @Override
     public Connection getConnection(CommandArguments args) {
-        return clusterMap.get(activeMultiClusterIndex).getConnection().getResource();
+        return multiClusterMap.get(activeMultiClusterIndex).getConnection();
     }
 
     @Override
     public Map<?, Pool<Connection>> getConnectionMap() {
-        ConnectionPool connectionPool = clusterMap.get(activeMultiClusterIndex).getConnection();
+        ConnectionPool connectionPool = multiClusterMap.get(activeMultiClusterIndex).getConnectionPool();
         return Collections.singletonMap(connectionPool.getFactory(), connectionPool);
     }
 
-    public Retry getClusterRetry() {
-        return clusterMap.get(activeMultiClusterIndex).getRetry();
+    public Cluster getCluster() {
+        return multiClusterMap.get(activeMultiClusterIndex);
     }
 
     public CircuitBreaker getClusterCircuitBreaker() {
-        return clusterMap.get(activeMultiClusterIndex).getCircuitBreaker();
+        return multiClusterMap.get(activeMultiClusterIndex).getCircuitBreaker();
     }
 
     public CircuitBreaker getClusterCircuitBreaker(int multiClusterIndex) {
-        return clusterMap.get(multiClusterIndex).getCircuitBreaker();
+        return multiClusterMap.get(multiClusterIndex).getCircuitBreaker();
     }
 
-    static class Cluster {
+    public static class Cluster {
 
-        private final ConnectionPool connection;
+        private final ConnectionPool connectionPool;
         private final Retry retry;
         private final CircuitBreaker circuitBreaker;
 
-        public Cluster(ConnectionPool connection, Retry retry, CircuitBreaker circuitBreaker) {
-            this.connection = connection;
+        public Cluster(ConnectionPool connectionPool, Retry retry, CircuitBreaker circuitBreaker) {
+            this.connectionPool = connectionPool;
             this.retry = retry;
             this.circuitBreaker = circuitBreaker;
         }
 
-        public ConnectionPool getConnection() {
-            return connection;
+        public Connection getConnection() {
+            return connectionPool.getResource();
+        }
+
+        public ConnectionPool getConnectionPool() {
+            return connectionPool;
         }
 
         public Retry getRetry() {

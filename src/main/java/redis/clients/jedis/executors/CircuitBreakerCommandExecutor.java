@@ -83,14 +83,9 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
             // To recover/transition from this forced state the user will need to manually failback
             circuitBreaker.transitionToForcedOpenState();
 
-            String originalCluster = circuitBreaker.getName();
-
             // Incrementing the activeMultiClusterIndex will allow subsequent calls to the executeCommand()
             // to use the next cluster's connection pool - according to the configuration's prioritization/order
             provider.incrementActiveMultiClusterIndex();
-
-            log.warn("CircuitBreaker failed over the connection pool from '{}' to '{}'",
-                     originalCluster, provider.getClusterCircuitBreaker().getName());
         }
 
         // Recursive call to the initiating method so the operation can be retried on the next cluster connection

@@ -123,16 +123,25 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      */
     public void incrementActiveMultiClusterIndex() {
 
+        String originalClusterName;
+
         synchronized (activeMultiClusterIndex) {
+            originalClusterName = getClusterCircuitBreaker(activeMultiClusterIndex).getName();
+
             if (++activeMultiClusterIndex > multiClusterMap.size())
-                throw new JedisConnectionException(getClusterCircuitBreaker(--activeMultiClusterIndex).getName() +
-                        " failed to connect. No additional clusters were configured for failover");
+                throw new JedisConnectionException("CircuitBreaker could not failover since the " +
+                "MultiClusterJedisClientConfig was not provided with an additional cluster according to its " +
+                "prioritized list. If applicable, consider failing back OR restarting with an available cluster/database " +
+                "endpoint that is higher on the list.");
         }
 
         // Handles edge-case in which the user resets the activeMultiClusterIndex to a higher priority prematurely
         // which forces a failover to the next prioritized cluster that has potentially not yet recovered
         if (CircuitBreaker.State.FORCED_OPEN.equals(getClusterCircuitBreaker().getState()))
             incrementActiveMultiClusterIndex();
+
+        else log.warn("CircuitBreaker changed the connection pool from '{}' to '{}'",
+                      originalClusterName, getClusterCircuitBreaker().getName());
     }
 
     /**
@@ -195,7 +204,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         validateTargetConnection(multiClusterIndex);
 
         synchronized (activeMultiClusterIndex) {
+            String originalClusterName = getClusterCircuitBreaker(activeMultiClusterIndex).getName();
+
             activeMultiClusterIndex = multiClusterIndex;
+
+            log.warn("CircuitBreaker changed the connection pool from '{}' to '{}'",
+                     originalClusterName, getClusterCircuitBreaker().getName());
         }
     }
 

@@ -854,6 +854,36 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<GeoCoordinate>> GEO_COORDINATE_LIST_RESP3 = new Builder<List<GeoCoordinate>>() {
+    @Override
+    public List<GeoCoordinate> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      return interpretGeoposResult((List<Object>) data);
+    }
+
+    @Override
+    public String toString() {
+      return "List<GeoCoordinate>";
+    }
+
+    private List<GeoCoordinate> interpretGeoposResult(List<Object> responses) {
+      List<GeoCoordinate> responseCoordinate = new ArrayList<>(responses.size());
+      for (Object response : responses) {
+        if (response == null) {
+          responseCoordinate.add(null);
+        } else {
+          List<Object> respList = (List<Object>) response;
+          GeoCoordinate coord = new GeoCoordinate(DOUBLE_RESP3.build(respList.get(0)),
+              DOUBLE_RESP3.build(respList.get(1)));
+          responseCoordinate.add(coord);
+        }
+      }
+      return responseCoordinate;
+    }
+  };
+
   public static final Builder<List<GeoRadiusResponse>> GEORADIUS_WITH_PARAMS_RESULT = new Builder<List<GeoRadiusResponse>>() {
     @Override
     public List<GeoRadiusResponse> build(Object data) {
@@ -885,6 +915,65 @@ public final class BuilderFactory {
 
               resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
                   DOUBLE.build(coord.get(1))));
+            } else if (info instanceof Long) {
+              // score
+              resp.setRawScore(LONG.build(info));
+            } else {
+              // distance
+              resp.setDistance(DOUBLE.build(info));
+            }
+          }
+
+          responses.add(resp);
+        }
+      } else {
+        // list of members
+        for (Object obj : objectList) {
+          responses.add(new GeoRadiusResponse((byte[]) obj));
+        }
+      }
+
+      return responses;
+    }
+
+    @Override
+    public String toString() {
+      return "GeoRadiusWithParamsResult";
+    }
+  };
+
+  public static final Builder<List<GeoRadiusResponse>> GEORADIUS_WITH_PARAMS_RESULT_RESP3
+      = new Builder<List<GeoRadiusResponse>>() {
+    @Override
+    public List<GeoRadiusResponse> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> objectList = (List<Object>) data;
+
+      List<GeoRadiusResponse> responses = new ArrayList<>(objectList.size());
+      if (objectList.isEmpty()) {
+        return responses;
+      }
+
+      if (objectList.get(0) instanceof List<?>) {
+        // list of members with additional informations
+        GeoRadiusResponse resp;
+        for (Object obj : objectList) {
+          List<Object> informations = (List<Object>) obj;
+
+          resp = new GeoRadiusResponse((byte[]) informations.get(0));
+
+          int size = informations.size();
+          for (int idx = 1; idx < size; idx++) {
+            Object info = informations.get(idx);
+            if (info instanceof List<?>) {
+              // coordinate
+              List<Object> coord = (List<Object>) info;
+
+              resp.setCoordinate(new GeoCoordinate(DOUBLE_RESP3.build(coord.get(0)),
+                  DOUBLE_RESP3.build(coord.get(1))));
             } else if (info instanceof Long) {
               // score
               resp.setRawScore(LONG.build(info));

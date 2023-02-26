@@ -2038,11 +2038,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Double> geodist(String key, String member1, String member2) {
-    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2), getDoubleBuilder());
+    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Double> geodist(String key, String member1, String member2, GeoUnit unit) {
-    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2).add(unit), getDoubleBuilder());
+    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2).add(unit), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<List<String>> geohash(String key, String... members) {
@@ -2050,7 +2050,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<GeoCoordinate>> geopos(String key, String... members) {
-    return new CommandObject<>(commandArguments(GEOPOS).key(key).addObjects((Object[]) members), BuilderFactory.GEO_COORDINATE_LIST);
+    return new CommandObject<>(commandArguments(GEOPOS).key(key).addObjects((Object[]) members),
+        getGeoCoordinateBuilder());
   }
 
   public final CommandObject<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member) {
@@ -2066,11 +2067,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Double> geodist(byte[] key, byte[] member1, byte[] member2) {
-    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2), getDoubleBuilder());
+    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Double> geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
-    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2).add(unit), getDoubleBuilder());
+    return new CommandObject<>(commandArguments(GEODIST).key(key).add(member1).add(member2).add(unit), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<List<byte[]>> geohash(byte[] key, byte[]... members) {
@@ -2078,29 +2079,30 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<GeoCoordinate>> geopos(byte[] key, byte[]... members) {
-    return new CommandObject<>(commandArguments(GEOPOS).key(key).addObjects((Object[]) members), BuilderFactory.GEO_COORDINATE_LIST);
+    return new CommandObject<>(commandArguments(GEOPOS).key(key).addObjects((Object[]) members),
+        getGeoCoordinateBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadius(String key,
       double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit).addParams(param), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(String key,
       double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit).addParams(param), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<Long> georadiusStore(String key, double longitude, double latitude,
@@ -2111,24 +2113,24 @@ public class CommandObjects {
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER).key(key).add(member)
-        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(String key,
       String member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER).key(key).add(member)
-        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit).addParams(param), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER_RO).key(key).add(member)
-        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(String key,
       String member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER_RO).key(key).add(member)
-        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit).addParams(param), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<Long> georadiusByMemberStore(String key, String member,
@@ -2139,25 +2141,25 @@ public class CommandObjects {
 
   public final CommandObject<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadius(byte[] key,
       double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit).addParams(param), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(byte[] key,
       double longitude, double latitude, double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusReadonly(byte[] key,
       double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return new CommandObject<>(commandArguments(GEORADIUS_RO).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit).addParams(param), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<Long> georadiusStore(byte[] key, double longitude, double latitude,
@@ -2168,22 +2170,22 @@ public class CommandObjects {
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER).key(key).add(member)
-        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER).key(key).add(member)
-        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit).addParams(param), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER_RO).key(key).add(member)
-        .add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER_RO).key(key).add(member)
-        .add(radius).add(unit).addParams(param), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(radius).add(unit).addParams(param), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<Long> georadiusByMemberStore(byte[] key, byte[] member,
@@ -2195,32 +2197,32 @@ public class CommandObjects {
   public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, String member,
       double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key).add(FROMMEMBER).add(member)
-        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(BYRADIUS).add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, GeoCoordinate coord,
       double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key)
         .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
-        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(BYRADIUS).add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, String member,
       double width, double height, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key).add(FROMMEMBER).add(member)
-        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(BYBOX).add(width).add(height).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, GeoCoordinate coord,
       double width, double height, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key)
         .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
-        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(BYBOX).add(width).add(height).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, GeoSearchParam params) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key).addParams(params),
-        BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<Long> geosearchStore(String dest, String src, String member,
@@ -2259,32 +2261,32 @@ public class CommandObjects {
   public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member,
       double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key).add(FROMMEMBER).add(member)
-        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(BYRADIUS).add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, GeoCoordinate coord,
       double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key)
         .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
-        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(BYRADIUS).add(radius).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member,
       double width, double height, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key).add(FROMMEMBER).add(member)
-        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(BYBOX).add(width).add(height).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, GeoCoordinate coord,
       double width, double height, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key)
         .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
-        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        .add(BYBOX).add(width).add(height).add(unit), getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, GeoSearchParam params) {
     return new CommandObject<>(commandArguments(GEOSEARCH).key(key).addParams(params),
-        BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT);
+        getGeoRadiusResponseListBuilder());
   }
 
   public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, byte[] member,
@@ -2319,6 +2321,16 @@ public class CommandObjects {
 
   public final CommandObject<Long> geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params).add(STOREDIST), BuilderFactory.LONG);
+  }
+
+  private Builder<List<GeoCoordinate>> getGeoCoordinateBuilder() {
+    if (proto == RedisProtocol.RESP3) return BuilderFactory.GEO_COORDINATE_LIST_RESP3;
+    return BuilderFactory.GEO_COORDINATE_LIST;
+  }
+
+  private Builder<List<GeoRadiusResponse>> getGeoRadiusResponseListBuilder() {
+    if (proto == RedisProtocol.RESP3) return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT_RESP3;
+    return BuilderFactory.GEORADIUS_WITH_PARAMS_RESULT;
   }
   // Geo commands
 

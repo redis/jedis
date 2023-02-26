@@ -552,7 +552,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Double> incrByFloat(String key, double increment) {
-    return new CommandObject<>(commandArguments(INCRBYFLOAT).key(key).add(increment), getDoubleBuilder());
+    return new CommandObject<>(commandArguments(INCRBYFLOAT).key(key).add(increment), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Long> incr(byte[] key) {
@@ -564,7 +564,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Double> incrByFloat(byte[] key, double increment) {
-    return new CommandObject<>(commandArguments(INCRBYFLOAT).key(key).add(increment), getDoubleBuilder());
+    return new CommandObject<>(commandArguments(INCRBYFLOAT).key(key).add(increment), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Long> decr(String key) {
@@ -1042,7 +1042,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Double> hincrByFloat(String key, String field, double value) {
-    return new CommandObject<>(commandArguments(HINCRBYFLOAT).key(key).add(field).add(value), getDoubleBuilder());
+    return new CommandObject<>(commandArguments(HINCRBYFLOAT).key(key).add(field).add(value), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Boolean> hexists(String key, String field) {
@@ -1062,7 +1062,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Double> hincrByFloat(byte[] key, byte[] field, double value) {
-    return new CommandObject<>(commandArguments(HINCRBYFLOAT).key(key).add(field).add(value), getDoubleBuilder());
+    return new CommandObject<>(commandArguments(HINCRBYFLOAT).key(key).add(field).add(value), BuilderFactory.DOUBLE);
   }
 
   public final CommandObject<Boolean> hexists(byte[] key, byte[] field) {

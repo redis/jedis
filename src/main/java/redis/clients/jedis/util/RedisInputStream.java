@@ -218,7 +218,7 @@ public class RedisInputStream extends FilterInputStream {
   }
 
   public double readDoubleCrLf() {
-    return Double.parseDouble(readLine());
+    return DoublePrecision.parseFloatingPointNumber(readLine());
   }
 
   public BigInteger readBigIntegerCrLf() {

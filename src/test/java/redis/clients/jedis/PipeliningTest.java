@@ -210,9 +210,13 @@ public class PipeliningTest extends JedisCommandsTestBase {
 
   @Test
   public void pipelineSelect() {
+    jedis.set("foo", "bar");
+    jedis.swapDB(0, 1);
     Pipeline p = jedis.pipelined();
+    p.get("foo");
     p.select(1);
-    p.sync();
+    p.get("foo");
+    assertEquals(Arrays.<Object>asList(null, "OK", "bar"), p.syncAndReturnAll());
   }
 
   @Test

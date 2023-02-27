@@ -4290,7 +4290,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   @Override
   public Response<String> select(final int index) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.SELECT), BuilderFactory.STRING));
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.SELECT).add(index), BuilderFactory.STRING));
   }
 
   @Override

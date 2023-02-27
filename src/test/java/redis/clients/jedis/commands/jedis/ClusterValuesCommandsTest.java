@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
@@ -115,17 +114,14 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
   @Test
   public void broadcastRawPing() {
-    Map<?, Supplier<String>> replies = cluster.broadcast().broadcastCommand(
+    String reply = cluster.broadcastCommand(
         new CommandObject<>(new CommandArguments(Protocol.Command.PING), BuilderFactory.STRING));
-    assertEquals(3, replies.size());
-    replies.values().forEach(reply -> assertEquals("PONG", reply.get()));
+    assertEquals("PONG", reply);
   }
 
   @Test
   public void broadcastPing() {
-    Map<?, Supplier<String>> replies = cluster.broadcast().ping();
-    assertEquals(3, replies.size());
-    replies.values().forEach(reply -> assertEquals("PONG", reply.get()));
+    assertEquals("PONG", cluster.ping());
   }
 
   @Test
@@ -133,7 +129,7 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
     assertNull(cluster.get("foo"));
     assertEquals("OK", cluster.set("foo", "bar"));
     assertEquals("bar", cluster.get("foo"));
-    cluster.broadcast().flushAll();
+    cluster.flushAll();
     assertNull(cluster.get("foo"));
   }
 }

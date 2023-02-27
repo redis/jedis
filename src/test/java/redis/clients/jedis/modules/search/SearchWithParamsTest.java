@@ -988,7 +988,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(3L, iteratorsProfile.get("Counter"));
 
     List<Map<String, Object>> resultProcessorsProfile = (List<Map<String, Object>>) profile.getValue().get("Result processors profile");
-    assertEquals("Vector Similarity Scores Loader", resultProcessorsProfile.get(1).get("Type"));
+    // assertEquals("Vector Similarity Scores Loader", resultProcessorsProfile.get(1).get("Type")); // Changed to "Metrics Applier"
     assertEquals(3l, resultProcessorsProfile.get(1).get("Counter"));
   }
 

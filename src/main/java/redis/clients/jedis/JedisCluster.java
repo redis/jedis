@@ -13,16 +13,37 @@ public class JedisCluster extends UnifiedJedis {
    * Default timeout in milliseconds.
    */
   public static final int DEFAULT_TIMEOUT = 2000;
+  /**
+   * Default amount of attemps for connecting.
+   */
   public static final int DEFAULT_MAX_ATTEMPTS = 5;
 
+  /**
+   * Creates a Jedis-Cluster Instance where only a single Host is being used as a "Cluster".<br>
+   * Here, the default Timeout of {@value #DEFAULT_TIMEOUT} ms is being used with {@value  #DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * @param node Host to connect to.
+   */
   public JedisCluster(HostAndPort node) {
     this(Collections.singleton(node));
   }
 
+  /**
+   * Creates a Jedis-Cluster Instance where only a single Host is being used as a "Cluster".<br>
+   * Here, the default of {@value  #DEFAULT_MAX_ATTEMPTS} maximum attempts is being used.
+   * @param node Host to connect to.
+   * @param timeout Timeout in milliseconds.
+   */
   public JedisCluster(HostAndPort node, int timeout) {
     this(Collections.singleton(node), timeout);
   }
 
+  /**
+   * Creates a Jedis-Cluster Instance where only a single Host is being used as a "Cluster".<br>
+   * You can specify the timeout and the maximum attempts.
+   * @param node Host to connect to.
+   * @param timeout Timeout in milliseconds.
+   * @param maxAttempts Maximum Attempts to use.
+   */
   public JedisCluster(HostAndPort node, int timeout, int maxAttempts) {
     this(Collections.singleton(node), timeout, maxAttempts);
   }
@@ -83,14 +104,32 @@ public class JedisCluster extends UnifiedJedis {
     this(Collections.singleton(node), clientConfig, maxAttempts, poolConfig);
   }
 
+  /**
+   * Creates a Jedis-Cluster with multiple Nodes/Instances.
+   * Here, the default Timeout of {@value #DEFAULT_TIMEOUT} ms is being used with {@value  #DEFAULT_MAX_ATTEMPTS} maximum attempts.
+   * @param nodes Hosts to connect to.
+   */
   public JedisCluster(Set<HostAndPort> nodes) {
     this(nodes, DEFAULT_TIMEOUT);
   }
 
+  /**
+   * Creates a Jedis-Cluster with multiple Nodes/Instances.
+   * Here, the default of {@value  #DEFAULT_MAX_ATTEMPTS} maximum attempts is being used.
+   * @param nodes Hosts to connect to.
+   * @param timeout Timeout in milliseconds.
+   */
   public JedisCluster(Set<HostAndPort> nodes, int timeout) {
     this(nodes, DefaultJedisClientConfig.builder().timeoutMillis(timeout).build());
   }
 
+  /**
+   * Creates a Jedis-Cluster with multiple Nodes/Instances. <br>
+   * You can specify the timeout and the maximum attempts.
+   * @param nodes Hosts to connect to.
+   * @param timeout Timeout in milliseconds.
+   * @param maxAttempts Maximum Attempts to use.
+   */
   public JedisCluster(Set<HostAndPort> nodes, int timeout, int maxAttempts) {
     this(nodes, DefaultJedisClientConfig.builder().timeoutMillis(timeout).build(), maxAttempts);
   }
@@ -187,6 +226,18 @@ public class JedisCluster extends UnifiedJedis {
     super(clusterNodes, clientConfig, maxAttempts);
   }
 
+  /**
+   * Creates a Jedis-Cluster with multiple Nodes/Instances. <br>
+   * You can specify the timeout and the maximum attempts. <br><br>
+   *
+   * Additionally, you are free to provide a {@link JedisClientConfig} instance. <br>
+   * You can use the {@link DefaultJedisClientConfig#builder()} Builder-Pattern to customize your configuration, includings socketTimeouts, Username & Passwords aswell as SSL and hostnames.
+   *
+   * @param clusterNodes Hosts to connect to.
+   * @param clientConfig Timeout in milliseconds.
+   * @param maxAttempts Maximum Attempts to use.
+   * @param maxTotalRetriesDuration Maximum time used for reconnecting.
+   */
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     super(clusterNodes, clientConfig, maxAttempts, maxTotalRetriesDuration);
@@ -197,10 +248,22 @@ public class JedisCluster extends UnifiedJedis {
     super(provider, maxAttempts, maxTotalRetriesDuration);
   }
 
+  /**
+   * Returns all nodes that were configured to connect to in a KEY-VALUE pair (Map).
+   * Key is the HOST:PORT and the value is the connection.
+   * @return Map of all connections.
+   */
   public Map<String, ConnectionPool> getClusterNodes() {
     return ((ClusterConnectionProvider) provider).getNodes();
   }
 
+  /**
+   * Returns the connection for one of the 16,384 slots.<br><br>
+   * If there is no connection for the given slot, either cause the node died or didn't connect, it may not return the correct node.
+   * It will try to resolve connection-based issues using reconnection.
+   * @param slot Slot to retrieve the Connection for
+   * @return Connection of the provided slot, given that the Redis-Cluster is enabled.
+   */
   public Connection getConnectionFromSlot(int slot) {
     return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);
   }

@@ -2818,8 +2818,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
   }
 
+  private final CommandObject<String> SCRIPT_KILL_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
+
   public final CommandObject<String> scriptKill() {
-    return new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
+    return SCRIPT_KILL_COMMAND_OBJECT;
   }
 
   public final CommandObject<String> scriptKill(String sampleKey) {
@@ -2972,6 +2974,12 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(FUNCTION).add(RESTORE).add(serializedValue)
         .add(policy.getRaw()), BuilderFactory.STRING);
   }
+
+  private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT = new CommandObject<>(commandArguments(SLOWLOG).add(RESET), BuilderFactory.STRING);
+
+  public final CommandObject<String> slowlogReset() {
+    return SLOWLOG_RESET_COMMAND_OBJECT;
+  }
   // Scripting commands
 
   // Miscellaneous commands
@@ -3087,10 +3095,6 @@ public class CommandObjects {
 
   public final CommandObject<Long> objectFreq(byte[] key) {
     return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<String> slowlogReset() {
-    return new CommandObject<>(commandArguments(SLOWLOG).add(RESET), BuilderFactory.STRING);
   }
 
   public CommandObject<Long> waitReplicas(int replicas, long timeout) {

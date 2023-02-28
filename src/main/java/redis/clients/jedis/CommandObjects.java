@@ -50,6 +50,12 @@ public class CommandObjects {
     return FLUSHALL_COMMAND_OBJECT;
   }
 
+  private final CommandObject<String> FLUSHDB_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHDB), BuilderFactory.STRING);
+
+  public final CommandObject<String> flushDB() {
+    return FLUSHDB_COMMAND_OBJECT;
+  }
+
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
   }
@@ -2812,6 +2818,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> scriptKill() {
+    return new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> scriptKill(String sampleKey) {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
   }
@@ -3077,6 +3087,10 @@ public class CommandObjects {
 
   public final CommandObject<Long> objectFreq(byte[] key) {
     return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> slowlogReset() {
+    return new CommandObject<>(commandArguments(SLOWLOG).add(RESET), BuilderFactory.STRING);
   }
 
   public CommandObject<Long> waitReplicas(int replicas, long timeout) {

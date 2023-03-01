@@ -35,6 +35,14 @@ public interface ServerCommands {
   String flushDB();
 
   /**
+   * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
+   * for this operation is O(N), N being the number of keys in the database.
+   * @param flushMode can be SYNC or ASYNC
+   * @return OK
+   */
+  String flushDB(FlushMode flushMode);
+
+  /**
    * Delete all the keys of all the existing databases, not just the currently selected one.
    * @return a simple string reply (OK)
    */

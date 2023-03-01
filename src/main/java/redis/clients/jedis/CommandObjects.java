@@ -50,6 +50,12 @@ public class CommandObjects {
     return FLUSHALL_COMMAND_OBJECT;
   }
 
+  private final CommandObject<String> FLUSHDB_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHDB), BuilderFactory.STRING);
+
+  public final CommandObject<String> flushDB() {
+    return FLUSHDB_COMMAND_OBJECT;
+  }
+
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
   }
@@ -2812,6 +2818,12 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
   }
 
+  private final CommandObject<String> SCRIPT_KILL_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
+
+  public final CommandObject<String> scriptKill() {
+    return SCRIPT_KILL_COMMAND_OBJECT;
+  }
+
   public final CommandObject<String> scriptKill(String sampleKey) {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
   }
@@ -2835,6 +2847,12 @@ public class CommandObjects {
 
   public final CommandObject<String> scriptKill(byte[] sampleKey) {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT = new CommandObject<>(commandArguments(SLOWLOG).add(RESET), BuilderFactory.STRING);
+
+  public final CommandObject<String> slowlogReset() {
+    return SLOWLOG_RESET_COMMAND_OBJECT;
   }
 
   public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {

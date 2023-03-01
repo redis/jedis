@@ -261,7 +261,7 @@ public class JedisCluster extends UnifiedJedis {
    * Returns the connection for one of the 16,384 slots.<br><br>
    * If there is no connection for the given slot, either cause the node died or didn't connect, it may not return the correct node.
    * It will try to resolve connection-based issues using reconnection.
-   * @param slot Slot to retrieve the Connection for
+   * @param slot the slot to retrieve the connection for.
    * @return connection of the provided slot. {@code close()} of this connection must be called after use.
    */
   public Connection getConnectionFromSlot(int slot) {

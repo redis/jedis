@@ -262,7 +262,7 @@ public class JedisCluster extends UnifiedJedis {
    * If there is no connection for the given slot, either cause the node died or didn't connect, it may not return the correct node.
    * It will try to resolve connection-based issues using reconnection.
    * @param slot Slot to retrieve the Connection for
-   * @return Connection of the provided slot, given that the Redis-Cluster is enabled.
+   * @return connection of the provided slot. {@code close()} of this connection must be called after use.
    */
   public Connection getConnectionFromSlot(int slot) {
     return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);

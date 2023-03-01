@@ -251,7 +251,7 @@ public class JedisCluster extends UnifiedJedis {
   /**
    * Returns all nodes that were configured to connect to in a KEY-VALUE pair (Map).
    * Key is the HOST:PORT and the value is the connection.
-   * @return Map of all connections.
+   * @return the map of all connections.
    */
   public Map<String, ConnectionPool> getClusterNodes() {
     return ((ClusterConnectionProvider) provider).getNodes();

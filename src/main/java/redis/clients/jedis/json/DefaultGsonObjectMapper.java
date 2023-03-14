@@ -1,4 +1,4 @@
-package redis.clients.jedis.json.parser;
+package redis.clients.jedis.json;
 
 import com.google.gson.Gson;
 

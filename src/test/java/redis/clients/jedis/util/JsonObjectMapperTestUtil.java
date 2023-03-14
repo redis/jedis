@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.*;
-import redis.clients.jedis.json.parser.JsonObjectMapper;
+import redis.clients.jedis.json.JsonObjectMapper;
 
 import java.lang.reflect.Type;
 import java.time.Instant;

@@ -18,8 +18,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.json.parser.DefaultGsonObjectMapper;
-import redis.clients.jedis.json.parser.JsonObjectMapper;
+import redis.clients.jedis.json.DefaultGsonObjectMapper;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -4096,7 +4096,7 @@ public class CommandObjects {
   }
   private JsonObjectMapper getJsonObjectMapper() {
     return this.jsonObjectMapper.orElseThrow(() -> new JedisException(
-        "No Json Object Mapper configured. Please config one with jedisRef.setJsonObjectMapper(redis.clients.jedis.json.parser.JsonObjectMapper)"));
+        "No Json Object Mapper configured. Please config one with jedisRef.setJsonObjectMapper(redis.clients.jedis.json.JsonObjectMapper)"));
   }
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.jsonObjectMapper = Optional.ofNullable(jsonObjectMapper);

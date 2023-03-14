@@ -14,7 +14,12 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Arrays;
 import java.util.List;
+
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -285,11 +290,14 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis2.close();
     jedis2.auth(USER_NAME, USER_PASSWORD);
 
+    final List<String> nopermKeys = Arrays.asList("NOPERM No permissions to access a key",
+        "NOPERM this user has no permissions to access one of the keys used as arguments");
+
     try {
       jedis2.set("foo", "bar");
       fail("Should throw a NOPERM exception");
     } catch (JedisAccessControlException e) {
-      assertEquals("NOPERM No permissions to access a key", e.getMessage());
+      MatcherAssert.assertThat(e.getMessage(), Matchers.isIn(nopermKeys));
     }
 
     // allow user to access a subset of the key
@@ -304,7 +312,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
       jedis2.set("zap:3", "c");
       fail("Should throw a NOPERM exception");
     } catch (JedisAccessControlException e) {
-      assertEquals("NOPERM No permissions to access a key", e.getMessage());
+      MatcherAssert.assertThat(e.getMessage(), Matchers.isIn(nopermKeys));
     }
   }
 

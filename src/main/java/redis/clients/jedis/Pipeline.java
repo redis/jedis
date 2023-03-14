@@ -20,6 +20,7 @@ import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.parser.JsonParser;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -4360,5 +4361,10 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   public <T> Response<T> executeCommand(CommandObject<T> command) {
     return appendCommand(command);
+  }
+
+  @Override
+  public void setJsonParser(JsonParser jsonParser) {
+    this.commandObjects.setJsonParser(jsonParser);
   }
 }

@@ -4645,7 +4645,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(new CommandObject<>(args, BuilderFactory.RAW_OBJECT));
   }
 
-  @Override
   public void setJsonParser(JsonParser jsonParser) {
     this.commandObjects.setJsonParser(jsonParser);
   }

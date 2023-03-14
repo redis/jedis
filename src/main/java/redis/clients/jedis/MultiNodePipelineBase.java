@@ -4302,7 +4302,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
   }
 
-  @Override
   public void setJsonParser(JsonParser jsonParser) {
     this.commandObjects.setJsonParser(jsonParser);
   }

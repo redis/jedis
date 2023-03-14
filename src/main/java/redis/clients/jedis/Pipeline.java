@@ -4363,7 +4363,6 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
     return appendCommand(command);
   }
 
-  @Override
   public void setJsonParser(JsonParser jsonParser) {
     this.commandObjects.setJsonParser(jsonParser);
   }

@@ -4378,7 +4378,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(command);
   }
 
-  @Override
   public void setJsonParser(JsonParser jsonParser) {
     this.commandObjects.setJsonParser(jsonParser);
   }

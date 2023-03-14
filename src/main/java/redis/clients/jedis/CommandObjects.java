@@ -34,8 +34,7 @@ import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
-  // initialize the json object mapper with simple gson configuration as the default.
-  private Optional<JsonObjectMapper> jsonObjectMapper = Optional.of(new DefaultGsonObjectMapper());
+  private volatile JsonObjectMapper jsonObjectMapper;
 
   protected CommandArguments commandArguments(ProtocolCommand command) {
     return new CommandArguments(command);
@@ -4094,12 +4093,32 @@ public class CommandObjects {
   public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
+
+  /**
+   * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
+   * default implementation will be created and returned.
+   * <p>This process of checking whether or not
+   * the instance reference exists follows <a
+   * href="https://en.wikipedia.org/wiki/Double-checked_locking#Usage_in_Java"
+   * target="_blank">'double-checked lock optimization'</a> approach to reduce the overhead of
+   * acquiring a lock by testing the lock criteria (the "lock hint") before acquiring the lock.</p>
+   * @return the JsonObjectMapper instance reference
+   * @see DefaultGsonObjectMapper
+   */
   private JsonObjectMapper getJsonObjectMapper() {
-    return this.jsonObjectMapper.orElseThrow(() -> new JedisException(
-        "No Json Object Mapper configured. Please config one with jedisRef.setJsonObjectMapper(redis.clients.jedis.json.JsonObjectMapper)"));
+    JsonObjectMapper localRef = this.jsonObjectMapper;
+    if (Objects.isNull(localRef)) {
+      synchronized (this) {
+        localRef = this.jsonObjectMapper;
+        if (Objects.isNull(localRef)) {
+          this.jsonObjectMapper = localRef = new DefaultGsonObjectMapper();
+        }
+      }
+    }
+    return localRef;
   }
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
-    this.jsonObjectMapper = Optional.ofNullable(jsonObjectMapper);
+    this.jsonObjectMapper = jsonObjectMapper;
   }
   // RedisGraph commands
 

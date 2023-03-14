@@ -18,8 +18,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.json.parser.DefaultGsonParser;
-import redis.clients.jedis.json.parser.JsonParser;
+import redis.clients.jedis.json.parser.DefaultGsonObjectMapper;
+import redis.clients.jedis.json.parser.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -34,8 +34,8 @@ import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
-  // initialize the parser with simple gson configuration as the default.
-  private Optional<JsonParser> jsonParser = Optional.of(new DefaultGsonParser());
+  // initialize the json object mapper with simple gson configuration as the default.
+  private Optional<JsonObjectMapper> jsonObjectMapper = Optional.of(new DefaultGsonObjectMapper());
 
   protected CommandArguments commandArguments(ProtocolCommand command) {
     return new CommandArguments(command);
@@ -3357,11 +3357,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> jsonSetWithEscape(String key, Path2 path, Object object) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(getJsonParser().toJson(object)), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(
+        getJsonObjectMapper().toJson(object)), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object pojo) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(getJsonParser().toJson(pojo)), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(
+        getJsonObjectMapper().toJson(pojo)), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSetWithPlainString(String key, Path path, String string) {
@@ -3373,11 +3375,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(getJsonParser().toJson(object)).addParams(params), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(
+        getJsonObjectMapper().toJson(object)).addParams(params), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object pojo, JsonSetParams params) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(getJsonParser().toJson(pojo)).addParams(params), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(
+        getJsonObjectMapper().toJson(pojo)).addParams(params), BuilderFactory.STRING);
   }
 
   public final CommandObject<Object> jsonGet(String key) {
@@ -3457,15 +3461,18 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(getJsonParser().toJson(string)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(
+        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> jsonStrAppend(String key, Path2 path, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(getJsonParser().toJson(string)), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(
+        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Path path, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(getJsonParser().toJson(string)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(
+        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> jsonStrLen(String key) {
@@ -3504,7 +3511,7 @@ public class CommandObjects {
   public final CommandObject<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object object : objects) {
-      args.add(getJsonParser().toJson(object));
+      args.add(getJsonObjectMapper().toJson(object));
     }
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }
@@ -3512,7 +3519,7 @@ public class CommandObjects {
   public final CommandObject<Long> jsonArrAppend(String key, Path path, Object... pojos) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object pojo : pojos) {
-      args.add(getJsonParser().toJson(pojo));
+      args.add(getJsonObjectMapper().toJson(pojo));
     }
     return new CommandObject<>(args, BuilderFactory.LONG);
   }
@@ -3522,11 +3529,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Long>> jsonArrIndexWithEscape(String key, Path2 path, Object scalar) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(getJsonParser().toJson(scalar)), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(
+        getJsonObjectMapper().toJson(scalar)), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<Long> jsonArrIndex(String key, Path path, Object scalar) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(getJsonParser().toJson(scalar)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(
+        getJsonObjectMapper().toJson(scalar)), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> jsonArrInsert(String key, Path2 path, int index, Object... objects) {
@@ -3537,7 +3546,7 @@ public class CommandObjects {
   public final CommandObject<List<Long>> jsonArrInsertWithEscape(String key, Path2 path, int index, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
     for (Object object : objects) {
-      args.add(getJsonParser().toJson(object));
+      args.add(getJsonObjectMapper().toJson(object));
     }
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }
@@ -3545,7 +3554,7 @@ public class CommandObjects {
   public final CommandObject<Long> jsonArrInsert(String key, Path path, int index, Object... pojos) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
     for (Object pojo : pojos) {
-      args.add(getJsonParser().toJson(pojo));
+      args.add(getJsonObjectMapper().toJson(pojo));
     }
     return new CommandObject<>(args, BuilderFactory.LONG);
   }
@@ -4085,12 +4094,12 @@ public class CommandObjects {
   public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
-  private JsonParser getJsonParser() {
-    return this.jsonParser.orElseThrow(() -> new JedisException(
-        "No Json Parser configured. Please config one with jedisRef.setJsonParser(redis.clients.jedis.json.parser.JsonParser)"));
+  private JsonObjectMapper getJsonObjectMapper() {
+    return this.jsonObjectMapper.orElseThrow(() -> new JedisException(
+        "No Json Object Mapper configured. Please config one with jedisRef.setJsonObjectMapper(redis.clients.jedis.json.parser.JsonObjectMapper)"));
   }
-  public void setJsonParser(JsonParser jsonParser) {
-    this.jsonParser = Optional.ofNullable(jsonParser);
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.jsonObjectMapper = Optional.ofNullable(jsonObjectMapper);
   }
   // RedisGraph commands
 
@@ -4119,7 +4128,7 @@ public class CommandObjects {
 
     @Override
     public T build(Object data) {
-      return getJsonParser().fromJson(BuilderFactory.STRING.build(data), clazz);
+      return getJsonObjectMapper().fromJson(BuilderFactory.STRING.build(data), clazz);
     }
   }
 
@@ -4137,7 +4146,7 @@ public class CommandObjects {
         return null;
       }
       List<String> list = BuilderFactory.STRING_LIST.build(data);
-      return list.stream().map(s -> getJsonParser().fromJson(s, clazz)).collect(Collectors.toList());
+      return list.stream().map(s -> getJsonObjectMapper().fromJson(s, clazz)).collect(Collectors.toList());
     }
   }
 

@@ -23,7 +23,7 @@ import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.json.parser.JsonParser;
+import redis.clients.jedis.json.parser.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.resps.*;
@@ -4302,7 +4302,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
   }
 
-  public void setJsonParser(JsonParser jsonParser) {
-    this.commandObjects.setJsonParser(jsonParser);
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.commandObjects.setJsonObjectMapper(jsonObjectMapper);
   }
 }

@@ -5,11 +5,10 @@ import com.google.gson.Gson;
 /**
  * Use the default {@link Gson} configuration for serialization and deserialization JSON
  * operations.
- * <p>Needs to explicit the <strong>gson</strong> maven dependency in the <em>pom.xml</em> file to
- * make the use.</p>
- * @see JsonParser Create a custom JSON parser
+ * <p>When none is explicitly set, this will be set.</p>
+ * @see JsonObjectMapper Create a custom JSON serializer/deserializer
  */
-public class DefaultGsonParser implements JsonParser {
+public class DefaultGsonObjectMapper implements JsonObjectMapper {
   /**
    * Instance of Gson object with default gson configuration.
    */

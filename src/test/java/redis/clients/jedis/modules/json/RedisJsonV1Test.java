@@ -20,7 +20,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
-import redis.clients.jedis.util.JsonParserTestUtil;
+import redis.clients.jedis.util.JsonObjectMapperTestUtil;
 
 public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
@@ -500,7 +500,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     Person person = new Person("foo", Instant.now());
 
     // setting the custom json gson parser
-    client.setJsonParser(JsonParserTestUtil.getCustomGsonParser());
+    client.setJsonObjectMapper(JsonObjectMapperTestUtil.getCustomGsonObjectMapper());
 
     client.jsonSet(person.getId(), ROOT_PATH, person);
 
@@ -525,7 +525,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     Person person = new Person("foo", Instant.now());
 
     // setting the custom json jackson parser
-    client.setJsonParser(JsonParserTestUtil.getCustomJacksonParser());
+    client.setJsonObjectMapper(JsonObjectMapperTestUtil.getCustomJacksonObjectMapper());
 
     client.jsonSet(person.getId(), ROOT_PATH, person);
 
@@ -540,7 +540,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     // By default json parser is simple gson configuration.
     // But if it isn't configured and some JSON operation is performed, an exception will be thrown describing that it needs a configuration
     // forcing null to achieve the exception
-    client.setJsonParser(null);
+    client.setJsonObjectMapper(null);
     client.jsonSet(person.getId(), ROOT_PATH, person);
   }
 }

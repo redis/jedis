@@ -26,7 +26,7 @@ import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.json.parser.JsonParser;
+import redis.clients.jedis.json.parser.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -4378,7 +4378,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(command);
   }
 
-  public void setJsonParser(JsonParser jsonParser) {
-    this.commandObjects.setJsonParser(jsonParser);
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.commandObjects.setJsonObjectMapper(jsonObjectMapper);
   }
 }

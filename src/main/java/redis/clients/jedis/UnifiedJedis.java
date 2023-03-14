@@ -23,7 +23,7 @@ import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.json.parser.JsonParser;
+import redis.clients.jedis.json.parser.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
@@ -4645,7 +4645,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(new CommandObject<>(args, BuilderFactory.RAW_OBJECT));
   }
 
-  public void setJsonParser(JsonParser jsonParser) {
-    this.commandObjects.setJsonParser(jsonParser);
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.commandObjects.setJsonObjectMapper(jsonObjectMapper);
   }
 }

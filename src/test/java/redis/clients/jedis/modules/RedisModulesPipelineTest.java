@@ -23,7 +23,6 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
-import redis.clients.jedis.json.parser.DefaultGsonParser;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 

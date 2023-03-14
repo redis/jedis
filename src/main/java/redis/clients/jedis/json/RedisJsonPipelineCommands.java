@@ -2,10 +2,11 @@ package redis.clients.jedis.json;
 
 import org.json.JSONArray;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.json.parser.RedisJsonParser;
 
 import java.util.List;
 
-public interface RedisJsonPipelineCommands {
+public interface RedisJsonPipelineCommands extends RedisJsonParser {
 
   default Response<String> jsonSet(String key, Object object) {
     return RedisJsonPipelineCommands.this.jsonSet(key, Path2.ROOT_PATH, object);

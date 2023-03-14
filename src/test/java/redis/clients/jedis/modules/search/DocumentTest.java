@@ -39,7 +39,8 @@ public class DocumentTest {
     assertEquals(score, read.getScore(), 0d);
     assertArrayEquals(payload, read.getPayload());
 
-    String exp = String.format(Locale.US, "id:%s, score: %.1f, payload:%s, properties:%s", id,
+    // use english language to make sure the decimal separator is the same as the toString
+    String exp = String.format(Locale.ENGLISH, "id:%s, score: %.1f, payload:%s, properties:%s", id,
         score, SafeEncoder.encode(payload), "[string=c, float=12.0]");
     assertEquals(exp, read.toString());
     assertEquals("c", read.getString("string"));
@@ -56,8 +57,9 @@ public class DocumentTest {
     byte[] payload = "1a".getBytes();
     Document document = new Document(id, map, score, payload);
 
-    String expected = String.format(Locale.US, "id:%s, score: %.1f, payload:%s, properties:%s", id,
-        score, SafeEncoder.encode(payload), "[string=c, float=12.0]");
+    // use english language to make sure the decimal separator is the same as the toString
+    String expected = String.format(Locale.ENGLISH, "id:%s, score: %.1f, payload:%s, properties:%s",
+        id, score, SafeEncoder.encode(payload), "[string=c, float=12.0]");
     assertEquals(expected, document.toString());
   }
 
@@ -70,8 +72,9 @@ public class DocumentTest {
     map.put("float", 12d);
     Document document = new Document(id, map, score);
 
-    String expected = String.format(Locale.US, "id:%s, score: %.1f, payload:%s, properties:%s", id,
-        score, null, "[string=c, float=12.0]");
+    // use english language to make sure the decimal separator is the same as the toString
+    String expected = String.format(Locale.ENGLISH, "id:%s, score: %.1f, payload:%s, properties:%s",
+        id, score, null, "[string=c, float=12.0]");
     assertEquals(expected, document.toString());
   }
 }

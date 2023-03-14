@@ -17,7 +17,6 @@ import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisConfigException;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.parser.DefaultGsonParser;

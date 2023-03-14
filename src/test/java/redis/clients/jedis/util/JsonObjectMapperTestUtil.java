@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.*;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.json.JsonObjectMapper;
 
 import java.lang.reflect.Type;
@@ -57,9 +58,8 @@ public class JsonObjectMapperTestUtil {
       try {
         return om.readValue(value, valueType);
       } catch (JsonProcessingException e) {
-        e.printStackTrace();
+        throw new JedisException(e);
       }
-      return null;
     }
 
     @Override
@@ -67,9 +67,8 @@ public class JsonObjectMapperTestUtil {
       try {
         return om.writeValueAsString(value);
       } catch (JsonProcessingException e) {
-        e.printStackTrace();
+        throw new JedisException(e);
       }
-      return null;
     }
   }
 

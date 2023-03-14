@@ -11,6 +11,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.json.parser.DefaultGsonParser;
 
 public abstract class RedisModuleCommandsTestBase {
 
@@ -38,6 +39,7 @@ public abstract class RedisModuleCommandsTestBase {
       jedis.flushAll();
     }
     client = new UnifiedJedis(hnp);
+    client.setJsonParser(new DefaultGsonParser());
   }
 
   @After

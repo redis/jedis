@@ -23,6 +23,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.parser.DefaultGsonParser;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 
@@ -114,6 +115,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
     Connection c = createConnection();
     Pipeline p = new Pipeline(c);
+    p.setJsonParser(new DefaultGsonParser());
 
     Response<String> set1 = p.jsonSet("foo", Path.ROOT_PATH, hm1);
     Response<Object> get = p.jsonGet("foo");
@@ -203,6 +205,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
     Connection c = createConnection();
     Pipeline p = new Pipeline(c);
+    p.setJsonParser(new DefaultGsonParser());
 
     Response<String> setWithEscape = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm1);
     Response<Object> get = p.jsonGet("foo",  Path2.ROOT_PATH);

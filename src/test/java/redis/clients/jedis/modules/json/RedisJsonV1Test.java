@@ -7,16 +7,22 @@ import static redis.clients.jedis.modules.json.JsonObjects.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.exceptions.JedisConfigException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
+import redis.clients.jedis.json.parser.DefaultGsonParser;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
+import redis.clients.jedis.util.JsonParserTestUtil;
 
 public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
@@ -489,5 +495,54 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertEquals(Long.valueOf(3), arr.get(2));
     assertEquals("2.5", arr.get(3));
     assertEquals("true", arr.get(4));
+  }
+
+  @Test
+  public void testJsonGsonParser() {
+    Person person = new Person("foo", Instant.now());
+
+    // setting the custom json gson parser
+    client.setJsonParser(JsonParserTestUtil.getCustomGsonParser());
+
+    client.jsonSet(person.getId(), ROOT_PATH, person);
+
+    String valueExpected = client.jsonGet(person.getId(), String.class, Path.of(".created"));
+    assertEquals(valueExpected, person.getCreated().toString());
+  }
+
+  @Test
+  public void testDefaultJsonGsonParserStringsMustBeDifferent() {
+    Person person = new Person("foo", Instant.now());
+
+    // setting the default json gson parser
+    client.setJsonParser(new DefaultGsonParser());
+
+    client.jsonSet(person.getId(), ROOT_PATH, person);
+
+    Object valueExpected = client.jsonGet(person.getId(), Path.of(".created"));
+    assertNotEquals(valueExpected, person.getCreated().toString());
+  }
+
+  @Test
+  public void testJsonJacksonParser() {
+    Person person = new Person("foo", Instant.now());
+
+    // setting the custom json jackson parser
+    client.setJsonParser(JsonParserTestUtil.getCustomJacksonParser());
+
+    client.jsonSet(person.getId(), ROOT_PATH, person);
+
+    String valueExpected = client.jsonGet(person.getId(), String.class, Path.of(".created"));
+    assertEquals(valueExpected, person.getCreated().toString());
+  }
+
+  @Test(expected = JedisConfigException.class)
+  public void testShouldThrowJedisExceptionForEmptyJsonParser() {
+    Person person = new Person("foo", Instant.now());
+
+    // By default json parser is not configured.
+    // But if it isn't configured and some JSON operation is performed, an exception will be thrown describing that it needs a configuration
+    client.setJsonParser(null);
+    client.jsonSet(person.getId(), ROOT_PATH, person);
   }
 }

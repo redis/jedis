@@ -1,5 +1,6 @@
 package redis.clients.jedis.modules.json;
 
+import java.time.Instant;
 import java.util.Objects;
 
 public class JsonObjects {
@@ -97,6 +98,21 @@ public class JsonObjects {
           && Objects.equals(corge, other.corge)
           && Objects.equals(garply, other.garply)
           && Objects.equals(baz, other.baz);
+    }
+  }
+
+  public static class Person {
+    private final String id;
+    private final Instant created;
+    public Person(String id, Instant created) {
+      this.id = id;
+      this.created = created;
+    }
+    public String getId() {
+      return id;
+    }
+    public Instant getCreated() {
+      return created;
     }
   }
 }

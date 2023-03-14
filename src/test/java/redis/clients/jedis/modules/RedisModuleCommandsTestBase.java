@@ -39,7 +39,6 @@ public abstract class RedisModuleCommandsTestBase {
       jedis.flushAll();
     }
     client = new UnifiedJedis(hnp);
-    client.setJsonParser(new DefaultGsonParser());
   }
 
   @After

@@ -115,7 +115,6 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
     Connection c = createConnection();
     Pipeline p = new Pipeline(c);
-    p.setJsonParser(new DefaultGsonParser());
 
     Response<String> set1 = p.jsonSet("foo", Path.ROOT_PATH, hm1);
     Response<Object> get = p.jsonGet("foo");
@@ -205,7 +204,6 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
     Connection c = createConnection();
     Pipeline p = new Pipeline(c);
-    p.setJsonParser(new DefaultGsonParser());
 
     Response<String> setWithEscape = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm1);
     Response<Object> get = p.jsonGet("foo",  Path2.ROOT_PATH);

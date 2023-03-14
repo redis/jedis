@@ -19,7 +19,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
-import redis.clients.jedis.json.parser.DefaultGsonParser;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.JsonParserTestUtil;
 
@@ -513,8 +512,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   public void testDefaultJsonGsonParserStringsMustBeDifferent() {
     Person person = new Person("foo", Instant.now());
 
-    // setting the default json gson parser
-    client.setJsonParser(new DefaultGsonParser());
+    // using the default json gson parser which is automatically configured
 
     client.jsonSet(person.getId(), ROOT_PATH, person);
 
@@ -539,8 +537,9 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   public void testShouldThrowJedisExceptionForEmptyJsonParser() {
     Person person = new Person("foo", Instant.now());
 
-    // By default json parser is not configured.
+    // By default json parser is simple gson configuration.
     // But if it isn't configured and some JSON operation is performed, an exception will be thrown describing that it needs a configuration
+    // forcing null to achieve the exception
     client.setJsonParser(null);
     client.jsonSet(person.getId(), ROOT_PATH, person);
   }

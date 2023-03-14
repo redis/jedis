@@ -18,6 +18,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
+import redis.clients.jedis.json.parser.DefaultGsonParser;
 import redis.clients.jedis.json.parser.JsonParser;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
@@ -33,7 +34,8 @@ import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
-  private Optional<JsonParser> jsonParser = Optional.empty();
+  // initialize the parser with simple gson configuration as the default.
+  private Optional<JsonParser> jsonParser = Optional.of(new DefaultGsonParser());
 
   protected CommandArguments commandArguments(ProtocolCommand command) {
     return new CommandArguments(command);

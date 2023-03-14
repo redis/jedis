@@ -1,16 +1,20 @@
 package redis.clients.jedis.modules.search;
 
-import org.junit.Test;
-import redis.clients.jedis.search.Document;
-import redis.clients.jedis.util.SafeEncoder;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
+import redis.clients.jedis.search.Document;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class DocumentTest {
 

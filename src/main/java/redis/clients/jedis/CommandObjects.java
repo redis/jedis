@@ -14,7 +14,7 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.exceptions.JedisConfigException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
@@ -4084,7 +4084,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
   private JsonParser getJsonParser() {
-    return this.jsonParser.orElseThrow(() -> new JedisConfigException(
+    return this.jsonParser.orElseThrow(() -> new JedisException(
         "No Json Parser configured. Please config one with jedisRef.setJsonParser(redis.clients.jedis.json.parser.JsonParser)"));
   }
   public void setJsonParser(JsonParser jsonParser) {

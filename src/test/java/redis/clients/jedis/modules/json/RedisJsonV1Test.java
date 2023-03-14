@@ -15,8 +15,8 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.exceptions.JedisConfigException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.parser.DefaultGsonParser;
@@ -535,7 +535,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertEquals(valueExpected, person.getCreated().toString());
   }
 
-  @Test(expected = JedisConfigException.class)
+  @Test(expected = JedisException.class)
   public void testShouldThrowJedisExceptionForEmptyJsonParser() {
     Person person = new Person("foo", Instant.now());
 

@@ -25,6 +25,19 @@ You can also **contribute documentation** -- or anything to improve Jedis. Pleas
 
 ## Getting started
 
+### Supported Redis Versions
+
+The most recent version of this library supports redis version [5.0](https://github.com/redis/redis/blob/5.0/00-RELEASENOTES), [6.0](https://github.com/redis/redis/blob/6.0/00-RELEASENOTES), [6.2](https://github.com/redis/redis/blob/6.2/00-RELEASENOTES), and [7.0](https://github.com/redis/redis/blob/7.0/00-RELEASENOTES).
+
+The table below higlights version compatibility of the most-recent library versions and redis versions.
+
+| Library version | Supported redis versions |
+|-----------------|-------------------|
+| 3.9 | <= 6.2 Family of releases |
+| >= 4.0 | Version 5.0 to current |
+
+### Getting started with Jedis
+
 To get started with Jedis, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
 
 ```xml

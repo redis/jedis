@@ -1,7 +1,5 @@
 package redis.clients.jedis.json;
 
-import redis.clients.jedis.json.DefaultGsonObjectMapper;
-
 /**
  * Represents the ability of serialize an object to JSON format string and deserialize it to the
  * typed object.

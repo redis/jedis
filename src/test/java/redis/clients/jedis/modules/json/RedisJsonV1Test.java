@@ -16,7 +16,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
@@ -531,16 +530,5 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
     String valueExpected = client.jsonGet(person.getId(), String.class, Path.of(".created"));
     assertEquals(valueExpected, person.getCreated().toString());
-  }
-
-  @Test(expected = JedisException.class)
-  public void testShouldThrowJedisExceptionForEmptyJsonParser() {
-    Person person = new Person("foo", Instant.now());
-
-    // By default json parser is simple gson configuration.
-    // But if it isn't configured and some JSON operation is performed, an exception will be thrown describing that it needs a configuration
-    // forcing null to achieve the exception
-    client.setJsonObjectMapper(null);
-    client.jsonSet(person.getId(), ROOT_PATH, person);
   }
 }

@@ -1349,17 +1349,39 @@ public final class BuilderFactory {
       = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
     @Override
     public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
-      if (data == null) {
-        return null;
-      }
-      List<Object> streams = (List<Object>) data;
+      if (data == null) return null;
+      List streamObjects = (List) data;
 
-      List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streams.size());
-      for (Object streamObj : streams) {
+      List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamObjects.size());
+      for (Object streamObj : streamObjects) {
         List<Object> stream = (List<Object>) streamObj;
-        String streamId = SafeEncoder.encode((byte[]) stream.get(0));
-        List<StreamEntry> streamEntries = BuilderFactory.STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<>(streamId, streamEntries));
+        String streamKey = STRING.build(stream.get(0));
+        List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(stream.get(1));
+        result.add(new AbstractMap.SimpleEntry<>(streamKey, streamEntries));
+      }
+
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Entry<String, List<StreamEntry>>>";
+    }
+  };
+
+  public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE_RESP3
+      = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
+    @Override
+    public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
+      if (data == null) return null;
+      List streamObjects = (List) data;
+
+      List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamObjects.size() / 2);
+      Iterator iter = streamObjects.iterator();
+      while (iter.hasNext()) {
+        String streamKey = STRING.build(iter.next());
+        List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(iter.next());
+        result.add(new AbstractMap.SimpleEntry<>(streamKey, streamEntries));
       }
 
       return result;

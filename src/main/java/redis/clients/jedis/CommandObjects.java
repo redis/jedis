@@ -2704,7 +2704,7 @@ public class CommandObjects {
     Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
     entrySet.forEach(entry -> args.key(entry.getKey()));
     entrySet.forEach(entry -> args.add(entry.getValue()));
-    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE);
+    return new CommandObject<>(args, getStreamReadResponseBuilder());
   }
 
   public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(
@@ -2716,7 +2716,7 @@ public class CommandObjects {
     Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
     entrySet.forEach(entry -> args.key(entry.getKey()));
     entrySet.forEach(entry -> args.add(entry.getValue()));
-    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE);
+    return new CommandObject<>(args, getStreamReadResponseBuilder());
   }
 
   public final CommandObject<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
@@ -2742,6 +2742,11 @@ public class CommandObjects {
       args.add(entry.getValue());
     }
     return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
+  }
+
+  private Builder<List<Map.Entry<String, List<StreamEntry>>>> getStreamReadResponseBuilder() {
+    if (proto == RedisProtocol.RESP3) return BuilderFactory.STREAM_READ_RESPONSE_RESP3;
+    return BuilderFactory.STREAM_READ_RESPONSE;
   }
   // Stream commands
 

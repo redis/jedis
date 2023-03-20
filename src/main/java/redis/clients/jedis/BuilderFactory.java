@@ -111,7 +111,9 @@ public final class BuilderFactory {
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {
-      return DoublePrecision.parseFloatingPointNumber(STRING.build(data));
+      if (data == null) return null;
+      else if (data instanceof Double) return (Double) data;
+      else return DoublePrecision.parseFloatingPointNumber(STRING.build(data));
     }
 
     @Override
@@ -124,41 +126,8 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public List<Double> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<byte[]> values = (List<byte[]>) data;
-      List<Double> doubles = new ArrayList<>(values.size());
-      for (byte[] value : values) {
-        doubles.add(DOUBLE.build(value));
-      }
-      return doubles;
-    }
-
-    @Override
-    public String toString() {
-      return "List<Double>";
-    }
-  };
-
-  public static final Builder<Double> DOUBLE_RESP3 = new Builder<Double>() {
-    @Override
-    public Double build(Object data) {
-      return (Double) data;
-    }
-
-    @Override
-    public String toString() {
-      return "Double";
-    }
-  };
-
-  public static final Builder<List<Double>> DOUBLE_LIST_RESP3 = new Builder<List<Double>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Double> build(Object data) {
       if (null == data) return null;
-      return ((List<Object>) data).stream().map(DOUBLE_RESP3::build).collect(Collectors.toList());
+      return ((List<Object>) data).stream().map(DOUBLE::build).collect(Collectors.toList());
     }
 
     @Override
@@ -490,23 +459,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Tuple> TUPLE_RESP3 = new Builder<Tuple>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Tuple build(Object data) {
-      List<byte[]> l = (List<byte[]>) data; // never null
-      if (l.isEmpty()) {
-        return null;
-      }
-      return new Tuple(l.get(0), DOUBLE_RESP3.build(l.get(1)));
-    }
-
-    @Override
-    public String toString() {
-      return "Tuple";
-    }
-  };
-
   public static final Builder<KeyedZSetElement> KEYED_ZSET_ELEMENT = new Builder<KeyedZSetElement>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -516,23 +468,6 @@ public final class BuilderFactory {
         return null;
       }
       return new KeyedZSetElement(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
-    }
-
-    @Override
-    public String toString() {
-      return "KeyedZSetElement";
-    }
-  };
-
-  public static final Builder<KeyedZSetElement> KEYED_ZSET_ELEMENT_RESP3 = new Builder<KeyedZSetElement>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public KeyedZSetElement build(Object data) {
-      List<Object> l = (List<Object>) data; // never null
-      if (l.isEmpty()) {
-        return null;
-      }
-      return new KeyedZSetElement(BINARY.build(l.get(0)), BINARY.build(l.get(1)), DOUBLE_RESP3.build(l.get(2)));
     }
 
     @Override
@@ -563,20 +498,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<Tuple>> TUPLE_LIST_RESP3 = new Builder<List<Tuple>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Tuple> build(Object data) {
-      if (null == data) return null;
-      return ((List<List<Object>>) data).stream().map(TUPLE_RESP3::build).collect(Collectors.toList());
-    }
-
-    @Override
-    public String toString() {
-      return "List<Tuple>";
-    }
-  };
-
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -599,44 +520,12 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Set<Tuple>> TUPLE_ZSET_RESP3 = new Builder<Set<Tuple>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Set<Tuple> build(Object data) {
-      if (null == data) return null;
-      List<List<Object>> list = (List<List<Object>>) data;
-      final Set<Tuple> result = new LinkedHashSet<>(list.size(), 1);
-      list.forEach((ob) -> result.add(
-          new Tuple(BINARY.build(ob.get(0)), DOUBLE_RESP3.build(ob.get(1)))));
-      return result;
-    }
-
-    @Override
-    public String toString() {
-      return "ZSet<Tuple>";
-    }
-  };
-
   private static final Builder<List<Tuple>> TUPLE_LIST_FROM_PAIRS = new Builder<List<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
     public List<Tuple> build(Object data) {
       if (data == null) return null;
       return ((List<List<Object>>) data).stream().map(TUPLE::build).collect(Collectors.toList());
-    }
-
-    @Override
-    public String toString() {
-      return "List<Tuple>";
-    }
-  };
-
-  private static final Builder<List<Tuple>> TUPLE_LIST_FROM_PAIRS_RESP3 = new Builder<List<Tuple>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Tuple> build(Object data) {
-      if (data == null) return null;
-      return ((List<List<Object>>) data).stream().map(TUPLE_RESP3::build).collect(Collectors.toList());
     }
 
     @Override
@@ -661,22 +550,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyValue<String, List<Tuple>>> KEYED_TUPLE_LIST_RESP3
-      = new Builder<KeyValue<String, List<Tuple>>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public KeyValue<String, List<Tuple>> build(Object data) {
-      if (data == null) return null;
-      List<Object> l = (List<Object>) data;
-      return new KeyValue<>(STRING.build(l.get(0)), TUPLE_LIST_FROM_PAIRS_RESP3.build(l.get(1)));
-    }
-
-    @Override
-    public String toString() {
-      return "KeyValue<String, List<Tuple>>";
-    }
-  };
-
   public static final Builder<KeyValue<byte[], List<Tuple>>> BINARY_KEYED_TUPLE_LIST
       = new Builder<KeyValue<byte[], List<Tuple>>>() {
     @Override
@@ -685,22 +558,6 @@ public final class BuilderFactory {
       if (data == null) return null;
       List<Object> l = (List<Object>) data;
       return new KeyValue<>(BINARY.build(l.get(0)), TUPLE_LIST_FROM_PAIRS.build(l.get(1)));
-    }
-
-    @Override
-    public String toString() {
-      return "KeyValue<byte[], List<Tuple>>";
-    }
-  };
-
-  public static final Builder<KeyValue<byte[], List<Tuple>>> BINARY_KEYED_TUPLE_LIST_RESP3
-      = new Builder<KeyValue<byte[], List<Tuple>>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public KeyValue<byte[], List<Tuple>> build(Object data) {
-      if (data == null) return null;
-      List<Object> l = (List<Object>) data;
-      return new KeyValue<>(BINARY.build(l.get(0)), TUPLE_LIST_FROM_PAIRS_RESP3.build(l.get(1)));
     }
 
     @Override
@@ -854,36 +711,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<GeoCoordinate>> GEO_COORDINATE_LIST_RESP3 = new Builder<List<GeoCoordinate>>() {
-    @Override
-    public List<GeoCoordinate> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      return interpretGeoposResult((List<Object>) data);
-    }
-
-    @Override
-    public String toString() {
-      return "List<GeoCoordinate>";
-    }
-
-    private List<GeoCoordinate> interpretGeoposResult(List<Object> responses) {
-      List<GeoCoordinate> responseCoordinate = new ArrayList<>(responses.size());
-      for (Object response : responses) {
-        if (response == null) {
-          responseCoordinate.add(null);
-        } else {
-          List<Object> respList = (List<Object>) response;
-          GeoCoordinate coord = new GeoCoordinate(DOUBLE_RESP3.build(respList.get(0)),
-              DOUBLE_RESP3.build(respList.get(1)));
-          responseCoordinate.add(coord);
-        }
-      }
-      return responseCoordinate;
-    }
-  };
-
   public static final Builder<List<GeoRadiusResponse>> GEORADIUS_WITH_PARAMS_RESULT = new Builder<List<GeoRadiusResponse>>() {
     @Override
     public List<GeoRadiusResponse> build(Object data) {
@@ -915,65 +742,6 @@ public final class BuilderFactory {
 
               resp.setCoordinate(new GeoCoordinate(DOUBLE.build(coord.get(0)),
                   DOUBLE.build(coord.get(1))));
-            } else if (info instanceof Long) {
-              // score
-              resp.setRawScore(LONG.build(info));
-            } else {
-              // distance
-              resp.setDistance(DOUBLE.build(info));
-            }
-          }
-
-          responses.add(resp);
-        }
-      } else {
-        // list of members
-        for (Object obj : objectList) {
-          responses.add(new GeoRadiusResponse((byte[]) obj));
-        }
-      }
-
-      return responses;
-    }
-
-    @Override
-    public String toString() {
-      return "GeoRadiusWithParamsResult";
-    }
-  };
-
-  public static final Builder<List<GeoRadiusResponse>> GEORADIUS_WITH_PARAMS_RESULT_RESP3
-      = new Builder<List<GeoRadiusResponse>>() {
-    @Override
-    public List<GeoRadiusResponse> build(Object data) {
-      if (data == null) {
-        return null;
-      }
-
-      List<Object> objectList = (List<Object>) data;
-
-      List<GeoRadiusResponse> responses = new ArrayList<>(objectList.size());
-      if (objectList.isEmpty()) {
-        return responses;
-      }
-
-      if (objectList.get(0) instanceof List<?>) {
-        // list of members with additional informations
-        GeoRadiusResponse resp;
-        for (Object obj : objectList) {
-          List<Object> informations = (List<Object>) obj;
-
-          resp = new GeoRadiusResponse((byte[]) informations.get(0));
-
-          int size = informations.size();
-          for (int idx = 1; idx < size; idx++) {
-            Object info = informations.get(idx);
-            if (info instanceof List<?>) {
-              // coordinate
-              List<Object> coord = (List<Object>) info;
-
-              resp.setCoordinate(new GeoCoordinate(DOUBLE_RESP3.build(coord.get(0)),
-                  DOUBLE_RESP3.build(coord.get(1))));
             } else if (info instanceof Long) {
               // score
               resp.setRawScore(LONG.build(info));
@@ -1702,7 +1470,7 @@ public final class BuilderFactory {
   };
 
   private static final List<Builder> BACKUP_BUILDERS_FOR_DECODING_FUNCTIONS
-      = Arrays.asList(STRING, LONG, DOUBLE_RESP3);
+      = Arrays.asList(STRING, LONG, DOUBLE);
 
   private static Map<String, Object> createMapFromDecodingFunctions(Iterator<Object> iterator,
       Map<String, Builder> mappingFunctions) {

@@ -2,6 +2,8 @@ package redis.clients.jedis.modules.json;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.json.Path2.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.*;
@@ -430,7 +432,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals("[", arr.get(0));
     assertNull(arr.get(1));
     assertEquals(Long.valueOf(3), arr.get(2));
-    assertEquals("2.5", arr.get(3));
+    //assertEquals("2.5", arr.get(3));
+    assertThat(arr.get(3), anyOf(is("2.5"), is(2.5)));
     assertEquals("true", arr.get(4));
   }
 

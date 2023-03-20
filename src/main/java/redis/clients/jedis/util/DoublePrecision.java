@@ -26,11 +26,18 @@ public final class DoublePrecision {
           return Double.NEGATIVE_INFINITY;
 
         case "nan":
+        case "-nan": // for some module commands // TODO: remove
           return Double.NaN;
 
         default:
           throw e;
       }
     }
+  }
+
+  public static Double parseEncodedFloatingPointNumber(Object val) {
+    if (val == null) return null;
+    else if (val instanceof Double) return (Double) val;
+    else return parseFloatingPointNumber((String) val);
   }
 }

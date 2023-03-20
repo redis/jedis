@@ -80,6 +80,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
 //    this(new Connection(hostAndPort, clientConfig));
     this(new PooledConnectionProvider(hostAndPort, clientConfig));
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public UnifiedJedis(ConnectionProvider provider) {
@@ -113,15 +115,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
         Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {

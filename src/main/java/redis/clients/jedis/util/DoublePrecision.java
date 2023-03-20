@@ -6,7 +6,7 @@ public final class DoublePrecision {
     throw new InstantiationError("Must not instantiate this class");
   }
 
-  public static Double parseFloatingPointNumber(String str) {
+  public static Double parseFloatingPointNumber(String str) throws NumberFormatException {
 
     if (str == null) return null;
 

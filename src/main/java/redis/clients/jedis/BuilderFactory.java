@@ -1152,7 +1152,8 @@ public final class BuilderFactory {
   /**
    * Create an Access Control Log Entry Result of ACL LOG command
    */
-  public static final Builder<List<AccessControlLogEntry>> ACCESS_CONTROL_LOG_ENTRY_LIST = new Builder<List<AccessControlLogEntry>>() {
+  public static final Builder<List<AccessControlLogEntry>> ACCESS_CONTROL_LOG_ENTRY_LIST
+      = new Builder<List<AccessControlLogEntry>>() {
 
     private final Map<String, Builder> mappingFunctions = createDecoderMap();
 
@@ -1164,7 +1165,7 @@ public final class BuilderFactory {
       tempMappingFunctions.put(AccessControlLogEntry.CONTEXT, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.OBJECT, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.USERNAME, STRING);
-      tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS, STRING);
+      // tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.CLIENT_INFO, STRING);
 
       return tempMappingFunctions;
@@ -1182,7 +1183,8 @@ public final class BuilderFactory {
       for (List<Object> logEntryData : logEntries) {
         Iterator<Object> logEntryDataIterator = logEntryData.iterator();
         AccessControlLogEntry accessControlLogEntry = new AccessControlLogEntry(
-            createMapFromDecodingFunctions(logEntryDataIterator, mappingFunctions));
+            createMapFromDecodingFunctions(logEntryDataIterator, mappingFunctions,
+                BACKUP_BUILDERS_FOR_DECODING_FUNCTIONS));
         list.add(accessControlLogEntry);
       }
       return list;
@@ -1699,8 +1701,16 @@ public final class BuilderFactory {
     }
   };
 
+  private static final List<Builder> BACKUP_BUILDERS_FOR_DECODING_FUNCTIONS
+      = Arrays.asList(STRING, LONG, DOUBLE_RESP3);
+
   private static Map<String, Object> createMapFromDecodingFunctions(Iterator<Object> iterator,
       Map<String, Builder> mappingFunctions) {
+    return createMapFromDecodingFunctions(iterator, mappingFunctions, null);
+  }
+
+  private static Map<String, Object> createMapFromDecodingFunctions(Iterator<Object> iterator,
+      Map<String, Builder> mappingFunctions, Collection<Builder> backupBuilders) {
 
     Map<String, Object> resultMap = new HashMap<>();
     while (iterator.hasNext()) {
@@ -1710,13 +1720,13 @@ public final class BuilderFactory {
         resultMap.put(mapKey, mappingFunctions.get(mapKey).build(iterator.next()));
       } else { // For future - if we don't find an element in our builder map
         Object unknownData = iterator.next();
-        for (Builder b : mappingFunctions.values()) {
+        Collection<Builder> builders = backupBuilders != null ? backupBuilders : mappingFunctions.values();
+        for (Builder b : builders) {
           try {
             resultMap.put(mapKey, b.build(unknownData));
             break;
           } catch (ClassCastException e) {
             // We continue with next builder
-
           }
         }
       }

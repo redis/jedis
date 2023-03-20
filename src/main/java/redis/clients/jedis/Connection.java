@@ -11,7 +11,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
-import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -26,6 +25,7 @@ import redis.clients.jedis.util.SafeEncoder;
 public class Connection implements Closeable {
 
   private ConnectionPool memberOf;
+  private RedisProtocol protocol;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -66,6 +66,10 @@ public class Connection implements Closeable {
   @Override
   public String toString() {
     return "Connection{" + socketFactory + "}";
+  }
+
+  final RedisProtocol getRedisProtocol() {
+    return protocol;
   }
 
   public final void setHandlingPool(final ConnectionPool pool) {
@@ -342,10 +346,11 @@ public class Connection implements Closeable {
   private void initializeFromClientConfig(JedisClientConfig config) {
     try {
       connect();
+      protocol = config.getRedisProtocol();
 
-      if (config.getRedisProtocol() == RedisProtocol.RESP3 && config.getUser() != null) {
+      if (protocol == RedisProtocol.RESP3 && config.getUser() != null) {
 
-        hello(config.getRedisProtocol(), config.getUser(), config.getPassword(), config.getClientName());
+        hello(protocol, config.getUser(), config.getPassword(), config.getClientName());
 
       } else {
 
@@ -368,8 +373,8 @@ public class Connection implements Closeable {
           clientSetname(clientName);
         }
 
-        if (config.getRedisProtocol() != null) {
-          hello(config.getRedisProtocol());
+        if (protocol != null) {
+          hello(protocol);
         }
       }
 

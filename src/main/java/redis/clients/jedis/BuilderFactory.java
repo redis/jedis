@@ -498,6 +498,20 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<Tuple>> TUPLE_LIST_RESP3 = new Builder<List<Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Tuple> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(TUPLE::build).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<Tuple>";
+    }
+  };
+
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -512,6 +526,20 @@ public final class BuilderFactory {
         result.add(new Tuple(iterator.next(), DOUBLE.build(iterator.next())));
       }
       return result;
+    }
+
+    @Override
+    public String toString() {
+      return "ZSet<Tuple>";
+    }
+  };
+
+  public static final Builder<Set<Tuple>> TUPLE_ZSET_RESP3 = new Builder<Set<Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<Tuple> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(TUPLE::build).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override

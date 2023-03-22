@@ -26,6 +26,7 @@ public final class DoublePrecision {
           return Double.NEGATIVE_INFINITY;
 
         case "nan":
+        case "-nan": // for some module commands // TODO: remove
           return Double.NaN;
 
         default:

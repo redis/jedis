@@ -38,4 +38,12 @@ public class GraphValuesTest extends RedisModuleCommandsTestBase {
     Record r = rs.iterator().next();
     assertEquals(Double.NaN, r.getValue(0), 0d);
   }
+
+  @Test
+  public void parseMinusNaN() {
+    ResultSet rs = client.graphQuery("db", "RETURN sqrt(-1)");
+    assertEquals(1, rs.size());
+    Record r = rs.iterator().next();
+    assertEquals(Double.NaN, r.getValue(0), 0d);
+  }
 }

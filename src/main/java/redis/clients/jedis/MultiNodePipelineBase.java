@@ -80,7 +80,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
       connections.putIfAbsent(nodeKey, newOne);
       connection = connections.get(nodeKey);
       if (connection != newOne) {
-        log.debug("Duplicate connection to {}, close it", nodeKey);
+        log.debug("Duplicate connection to {}, closing it.", nodeKey);
         IOUtils.closeQuietly(newOne);
       }
     }

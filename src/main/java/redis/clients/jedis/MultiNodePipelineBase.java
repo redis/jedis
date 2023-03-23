@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +51,9 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
+
+  private final ThreadPoolExecutor executor = new ThreadPoolExecutor(3, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
+          new ArrayBlockingQueue<>(3));
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();
@@ -106,6 +114,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     }
     syncing = true;
 
+    CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
     while (pipelinedResponsesIterator.hasNext()) {
@@ -114,10 +123,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
       try {
-        List<Object> unformatted = connection.getMany(queue.size());
-        for (Object o : unformatted) {
-          queue.poll().set(o);
-        }
+        executor.submit(() -> {
+          List<Object> unformatted = connection.getMany(queue.size());
+          for (Object o : unformatted) {
+            queue.poll().set(o);
+          }
+          countDownLatch.countDown();
+        });
       } catch (JedisConnectionException jce) {
         log.error("Error with connection to " + nodeKey, jce);
         // cleanup the connection
@@ -125,6 +137,12 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
         connections.remove(nodeKey);
         IOUtils.closeQuietly(connection);
       }
+    }
+
+    try {
+      countDownLatch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
 
     syncing = false;

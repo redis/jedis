@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -52,7 +53,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
 
-  private final ThreadPoolExecutor executor = new ThreadPoolExecutor(3, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
+  private final ExecutorService executorService = new ThreadPoolExecutor(3, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
           new ArrayBlockingQueue<>(3));
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
@@ -116,33 +117,34 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
     CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
-        = pipelinedResponses.entrySet().iterator();
+            = pipelinedResponses.entrySet().iterator();
     while (pipelinedResponsesIterator.hasNext()) {
       Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
-      try {
-        executor.submit(() -> {
+      executorService.submit(() -> {
+        try {
           List<Object> unformatted = connection.getMany(queue.size());
           for (Object o : unformatted) {
             queue.poll().set(o);
           }
+        } catch (JedisConnectionException jce) {
+          log.error("Error with connection to " + nodeKey, jce);
+          // cleanup the connection
+          pipelinedResponsesIterator.remove();
+          connections.remove(nodeKey);
+          IOUtils.closeQuietly(connection);
+        } finally {
           countDownLatch.countDown();
-        });
-      } catch (JedisConnectionException jce) {
-        log.error("Error with connection to " + nodeKey, jce);
-        // cleanup the connection
-        pipelinedResponsesIterator.remove();
-        connections.remove(nodeKey);
-        IOUtils.closeQuietly(connection);
-      }
+        }
+      });
     }
 
     try {
       countDownLatch.await();
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      log.error("Thread is interrupted during sync.", e);
     }
 
     syncing = false;

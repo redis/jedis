@@ -23,6 +23,13 @@ public final class Protocol {
   public static final int DEFAULT_DATABASE = 0;
   public static final int CLUSTER_HASHSLOTS = 16384;
 
+  /**
+   * default number of processes for sync, if you got enough cores for client
+   * or your cluster nodes more than 3 nodes, you may increase this workers number.
+   * suggest <= cluster nodes
+   */
+  public static final int CLUSTER_PIPELINE_SYNC_WORKERS = 3;
+
   public static final Charset CHARSET = StandardCharsets.UTF_8;
 
   public static final byte DOLLAR_BYTE = '$';

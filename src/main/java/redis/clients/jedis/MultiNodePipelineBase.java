@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -53,8 +54,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
 
-  private final ExecutorService executorService = new ThreadPoolExecutor(3, Integer.MAX_VALUE, 60L, TimeUnit.SECONDS,
-          new ArrayBlockingQueue<>(3));
+  private final ExecutorService executorService = Executors.newFixedThreadPool(Protocol.CLUSTER_PIPELINE_SYNC_WORKERS);
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();

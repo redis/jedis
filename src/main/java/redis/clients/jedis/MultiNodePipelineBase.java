@@ -117,7 +117,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
     CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
-            = pipelinedResponses.entrySet().iterator();
+        = pipelinedResponses.entrySet().iterator();
     while (pipelinedResponsesIterator.hasNext()) {
       Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
       HostAndPort nodeKey = entry.getKey();

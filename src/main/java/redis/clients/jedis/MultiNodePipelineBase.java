@@ -44,6 +44,13 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
+  /**
+   * default number of processes for sync, if you got enough cores for client
+   * or your cluster nodes more than 3 nodes, you may increase this workers number.
+   * suggest <= cluster nodes
+   */
+  public static volatile int MULTI_NODE_PIPELINE_SYNC_WORKERS = 3;
+
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
   private volatile boolean syncing = false;
@@ -51,7 +58,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
 
-  private final ExecutorService executorService = Executors.newFixedThreadPool(Protocol.CLUSTER_PIPELINE_SYNC_WORKERS);
+  private final ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();

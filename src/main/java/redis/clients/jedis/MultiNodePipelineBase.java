@@ -74,10 +74,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
       queue = pipelinedResponses.get(nodeKey);
       connection = connections.get(nodeKey);
     } else {
-      queue = new LinkedList<>();
-      connection = getConnection(nodeKey);
-      pipelinedResponses.put(nodeKey, queue);
-      connections.put(nodeKey, connection);
+      pipelinedResponses.putIfAbsent(nodeKey, new LinkedList<>());
+      queue = pipelinedResponses.get(nodeKey);
+
+      Connection newOne = getConnection(nodeKey);
+      connections.putIfAbsent(nodeKey, newOne);
+      connection = connections.get(nodeKey);
+      if (connection != newOne) {
+        log.debug("Duplicate connection to {}, closing it.", nodeKey);
+        IOUtils.closeQuietly(newOne);
+      }
     }
 
     connection.sendCommand(commandObject.getArguments());
@@ -1006,7 +1012,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<Double>> zmscore(String key, String... members) {    
+  public Response<List<Double>> zmscore(String key, String... members) {
     return appendCommand(commandObjects.zmscore(key, members));
   }
 

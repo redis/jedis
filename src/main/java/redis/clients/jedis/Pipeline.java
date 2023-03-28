@@ -48,8 +48,10 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   public Pipeline(Connection connection, boolean closeConnection) {
     this.connection = connection;
+    RedisProtocol proto = connection.getRedisProtocol();
     this.closeConnection = closeConnection;
     this.commandObjects = new CommandObjects();
+    if (proto != null) this.commandObjects.setProtocol(proto);
     this.graphCommandObjects = new GraphCommandObjects(this.connection);
   }
 

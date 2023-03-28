@@ -25,11 +25,18 @@ public final class Protocol {
 
   public static final Charset CHARSET = StandardCharsets.UTF_8;
 
-  public static final byte DOLLAR_BYTE = '$';
   public static final byte ASTERISK_BYTE = '*';
-  public static final byte PLUS_BYTE = '+';
-  public static final byte MINUS_BYTE = '-';
   public static final byte COLON_BYTE = ':';
+  public static final byte COMMA_BYTE = ',';
+  public static final byte DOLLAR_BYTE = '$';
+  public static final byte EQUAL_BYTE = '=';
+  public static final byte HASH_BYTE = '#';
+  public static final byte LEFT_BRACE_BYTE = '(';
+  public static final byte MINUS_BYTE = '-';
+  public static final byte PERCENT_BYTE = '%';
+  public static final byte PLUS_BYTE = '+';
+  public static final byte TILDE_BYTE = '~';
+  public static final byte UNDERSCORE_BYTE = '_';
 
   public static final byte[] BYTES_TRUE = toByteArray(1);
   public static final byte[] BYTES_FALSE = toByteArray(0);
@@ -124,25 +131,41 @@ public final class Protocol {
 
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
+    //System.out.println((char) b);
+    int num;
     switch (b) {
       case PLUS_BYTE:
-        return processStatusCodeReply(is);
+        return is.readLineBytes();
       case DOLLAR_BYTE:
+      case EQUAL_BYTE:
         return processBulkReply(is);
       case ASTERISK_BYTE:
-        return processMultiBulkReply(is);
+        num = is.readIntCrLf();
+        if (num == -1) return null;
+        return processMultiBulkReply(num, is);
       case COLON_BYTE:
-        return processInteger(is);
+        return is.readLongCrLf();
+      case UNDERSCORE_BYTE:
+        return is.readNullCrLf();
+      case COMMA_BYTE:
+        return is.readDoubleCrLf();
+      case LEFT_BRACE_BYTE:
+        return is.readBigIntegerCrLf();
+      case PERCENT_BYTE: // TODO: currently just to start working with HELLO
+        num = is.readIntCrLf();
+        if (num == -1) return null;
+        return processMultiBulkReply(2 * num, is);
+      case TILDE_BYTE: // TODO:
+        num = is.readIntCrLf();
+        if (num == -1) return null;
+        return processMultiBulkReply(num, is);
       case MINUS_BYTE:
         processError(is);
         return null;
+      // TODO: Blob error '!'
       default:
         throw new JedisConnectionException("Unknown reply: " + (char) b);
     }
-  }
-
-  private static byte[] processStatusCodeReply(final RedisInputStream is) {
-    return is.readLineBytes();
   }
 
   private static byte[] processBulkReply(final RedisInputStream is) {
@@ -168,15 +191,9 @@ public final class Protocol {
     return read;
   }
 
-  private static Long processInteger(final RedisInputStream is) {
-    return is.readLongCrLf();
-  }
-
-  private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-    final int num = is.readIntCrLf();
-    if (num == -1) {
-      return null;
-    }
+  // private static List<Object> processMultiBulkReply(final RedisInputStream is) {
+  private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
+    // final int num = is.readIntCrLf();
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
@@ -216,28 +233,32 @@ public final class Protocol {
 
   public static enum Command implements ProtocolCommand {
 
-    PING, SET, GET, GETDEL, GETEX, QUIT, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, KEYS, RANDOMKEY, MOVE,
-    RENAME, RENAMENX, DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, FLUSHALL, GETSET, MGET, SETNX, SETEX,
-    MSET, MSETNX, DECRBY, DECR, INCRBY, INCR, APPEND, SUBSTR, HSET, HGET, HSETNX, HMSET, HMGET,
-    HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HRANDFIELD, HINCRBYFLOAT, HSTRLEN, MIGRATE,
+    PING, AUTH, HELLO, SET, GET, GETDEL, GETEX, QUIT, EXISTS, DEL, UNLINK, TYPE, FLUSHDB, FLUSHALL,
+    KEYS, RANDOMKEY, MOVE, RENAME, RENAMENX, DBSIZE, EXPIRE, EXPIREAT, TTL, SELECT, GETSET, MGET,
+    SETNX, SETEX, MSET, MSETNX, DECRBY, DECR, INCRBY, INCR, STRLEN, APPEND, SUBSTR, MIGRATE, ECHO, //
+    HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HSTRLEN,
+    HRANDFIELD, HINCRBYFLOAT, // <-- hash
     RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, BLPOP, BRPOP, LINSERT, LPOS,
-    RPOPLPUSH, BRPOPLPUSH, BLMOVE, LMOVE, SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SRANDMEMBER,
-    SINTER, SINTERSTORE, SUNION, SUNIONSTORE, SDIFF, SDIFFSTORE, SISMEMBER, SMISMEMBER, SINTERCARD,
-    MULTI, DISCARD, EXEC, WATCH, UNWATCH, SORT, SORT_RO, AUTH, INFO, SHUTDOWN, MONITOR, CONFIG, LCS,
-    SUBSCRIBE, PUBLISH, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, PUBSUB, STRLEN, LPUSHX, RPUSHX, ECHO,
+    RPOPLPUSH, BRPOPLPUSH, BLMOVE, LMOVE, LMPOP, BLMPOP, // <-- list
+    SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SRANDMEMBER, SINTER, SINTERSTORE, SUNION, SUNIONSTORE,
+    SDIFF, SDIFFSTORE, SISMEMBER, SMISMEMBER, SINTERCARD, // <-- set
+    MULTI, DISCARD, EXEC, WATCH, UNWATCH, SORT, SORT_RO, INFO, SHUTDOWN, MONITOR, CONFIG, LCS,
+    SUBSCRIBE, PUBLISH, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, PUBSUB, LPUSHX, RPUSHX, //
     ZADD, ZDIFF, ZDIFFSTORE, ZRANGE, ZREM, ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE, ZRANDMEMBER, ZCARD,
     ZSCORE, ZPOPMAX, ZPOPMIN, ZCOUNT, ZUNION, ZUNIONSTORE, ZINTER, ZINTERSTORE, ZRANGEBYSCORE,
     ZREVRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZLEXCOUNT, ZRANGEBYLEX, ZREVRANGEBYLEX,
-    ZREMRANGEBYLEX, ZMSCORE, ZRANGESTORE, ZINTERCARD, SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, PERSIST,
+    ZREMRANGEBYLEX, ZMSCORE, ZRANGESTORE, ZINTERCARD, ZMPOP, BZMPOP, // <-- zset
+    GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO, GEOSEARCH, GEOSEARCHSTORE,
+    GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, // <-- geo
+    XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM,
+    XAUTOCLAIM, XINFO, // <-- stream
+    SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, PERSIST, BITFIELD_RO, ROLE, FAILOVER, EVAL_RO, EVALSHA_RO,
     SETBIT, GETBIT, BITPOS, SETRANGE, GETRANGE, EVAL, EVALSHA, SCRIPT, SLOWLOG, OBJECT, BITCOUNT,
     BITOP, SENTINEL, DUMP, RESTORE, PEXPIRE, PEXPIREAT, PTTL, INCRBYFLOAT, PSETEX, CLIENT, TIME,
     SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, READONLY, READWRITE, SLAVEOF, REPLICAOF, COPY,
-    PFADD, PFCOUNT, PFMERGE, MODULE, ACL, GEOADD, GEODIST, GEOHASH, GEOPOS, GEORADIUS, GEORADIUS_RO,
-    GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, BITFIELD, TOUCH, SWAPDB, MEMORY, BZPOPMIN, BZPOPMAX,
-    XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM,
-    XAUTOCLAIM, XINFO, BITFIELD_RO, ROLE, FAILOVER, GEOSEARCH, GEOSEARCHSTORE, EVAL_RO, EVALSHA_RO,
-    LOLWUT, EXPIRETIME, PEXPIRETIME, FUNCTION, FCALL, FCALL_RO, LMPOP, BLMPOP, ZMPOP, BZMPOP,
-    COMMAND, LATENCY, @Deprecated STRALGO;
+    PFADD, PFCOUNT, PFMERGE, MODULE, ACL, BITFIELD, TOUCH, SWAPDB, MEMORY, BZPOPMIN, BZPOPMAX,
+    LOLWUT, EXPIRETIME, PEXPIRETIME, FUNCTION, FCALL, FCALL_RO, COMMAND, LATENCY,
+    @Deprecated STRALGO;
 
     private final byte[] raw;
 

@@ -7,6 +7,7 @@ import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.IOUtils;
 
+// TODO: RESP3
 public class ShardedPipeline extends MultiNodePipelineBase {
 
   private final ShardedConnectionProvider provider;

@@ -24,6 +24,8 @@ import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
+// SLOW
+// TODO: make it fast
 public class ClusterPipeliningTest {
 
   private static final String LOCAL_IP = "127.0.0.1";

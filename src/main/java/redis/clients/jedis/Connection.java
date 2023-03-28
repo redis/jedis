@@ -9,6 +9,7 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.args.Rawable;
@@ -24,6 +25,7 @@ import redis.clients.jedis.util.SafeEncoder;
 public class Connection implements Closeable {
 
   private ConnectionPool memberOf;
+  private RedisProtocol protocol;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -64,6 +66,10 @@ public class Connection implements Closeable {
   @Override
   public String toString() {
     return "Connection{" + socketFactory + "}";
+  }
+
+  final RedisProtocol getRedisProtocol() {
+    return protocol;
   }
 
   public final void setHandlingPool(final ConnectionPool pool) {
@@ -340,24 +346,36 @@ public class Connection implements Closeable {
   private void initializeFromClientConfig(JedisClientConfig config) {
     try {
       connect();
+      protocol = config.getRedisProtocol();
 
-      Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
-      if (credentialsProvider instanceof RedisCredentialsProvider) {
-        ((RedisCredentialsProvider) credentialsProvider).prepare();
-        auth(credentialsProvider);
-        ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+      if (protocol == RedisProtocol.RESP3 && config.getUser() != null) {
+
+        hello(protocol, config.getUser(), config.getPassword(), config.getClientName());
+
       } else {
-        auth(credentialsProvider);
-      }
 
-      int dbIndex = config.getDatabase();
-      if (dbIndex > 0) {
-        select(dbIndex);
-      }
-      String clientName = config.getClientName();
-      if (clientName != null) {
-        // TODO: need to figure out something without encoding
-        clientSetname(clientName);
+        Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
+        if (credentialsProvider instanceof RedisCredentialsProvider) {
+          ((RedisCredentialsProvider) credentialsProvider).prepare();
+          auth(credentialsProvider);
+          ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+        } else {
+          auth(credentialsProvider);
+        }
+
+        int dbIndex = config.getDatabase();
+        if (dbIndex > 0) {
+          select(dbIndex);
+        }
+        String clientName = config.getClientName();
+        if (clientName != null) {
+          // TODO: need to figure out something without encoding
+          clientSetname(clientName);
+        }
+
+        if (protocol != null) {
+          hello(protocol);
+        }
       }
 
     } catch (JedisException je) {
@@ -371,6 +389,28 @@ public class Connection implements Closeable {
       }
       throw je;
     }
+  }
+
+  private Map hello(final RedisProtocol protocol) {
+    sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()));
+    Map reply = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+    // LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
+    return reply;
+  }
+
+  private Map hello(final RedisProtocol protocol, final String user, final String password,
+      final String clientName) {
+    if (clientName == null) {
+      sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()),
+          Protocol.Keyword.AUTH.name(), user, password);
+    } else {
+      sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()),
+          Protocol.Keyword.AUTH.name(), user, password,
+          Protocol.Keyword.SETNAME.name(), clientName);
+    }
+    Map reply = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+    // LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
+    return reply;
   }
 
   private void auth(final Supplier<RedisCredentials> credentialsProvider) {

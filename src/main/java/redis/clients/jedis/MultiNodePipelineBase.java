@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,12 +44,21 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
+  /**
+   * default number of processes for sync, if you got enough cores for client
+   * or your cluster nodes more than 3 nodes, you may increase this workers number.
+   * suggest <= cluster nodes
+   */
+  public static volatile int MULTI_NODE_PIPELINE_SYNC_WORKERS = 3;
+
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
   private volatile boolean syncing = false;
 
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
+
+  private final ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();
@@ -106,6 +119,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     }
     syncing = true;
 
+    CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
     while (pipelinedResponsesIterator.hasNext()) {
@@ -113,18 +127,28 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
-      try {
-        List<Object> unformatted = connection.getMany(queue.size());
-        for (Object o : unformatted) {
-          queue.poll().set(o);
+      executorService.submit(() -> {
+        try {
+          List<Object> unformatted = connection.getMany(queue.size());
+          for (Object o : unformatted) {
+            queue.poll().set(o);
+          }
+        } catch (JedisConnectionException jce) {
+          log.error("Error with connection to " + nodeKey, jce);
+          // cleanup the connection
+          pipelinedResponsesIterator.remove();
+          connections.remove(nodeKey);
+          IOUtils.closeQuietly(connection);
+        } finally {
+          countDownLatch.countDown();
         }
-      } catch (JedisConnectionException jce) {
-        log.error("Error with connection to " + nodeKey, jce);
-        // cleanup the connection
-        pipelinedResponsesIterator.remove();
-        connections.remove(nodeKey);
-        IOUtils.closeQuietly(connection);
-      }
+      });
+    }
+
+    try {
+      countDownLatch.await();
+    } catch (InterruptedException e) {
+      log.error("Thread is interrupted during sync.", e);
     }
 
     syncing = false;

@@ -4,6 +4,12 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
@@ -1096,5 +1102,31 @@ public class ClusterPipeliningTest {
             && thread.getName().startsWith("pool-"))
         .count();
     MatcherAssert.assertThat(count, Matchers.lessThanOrEqualTo(20));
+  }
+
+  @Test
+  public void clusterPipelineCustomExecutorService() {
+    ExecutorService myService = Executors.newFixedThreadPool(1);
+    MultiNodePipelineBase.setExecutorService(myService);
+
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG);
+         ClusterPipeline pipeline = cluster.pipelined()) {
+
+      Response<String> r1 = pipeline.set("key1", "value1");
+      Response<String> r2 = pipeline.set("key2", "value2");
+      Response<String> r3 = pipeline.set("key3", "value3");
+      Response<String> r4 = pipeline.get("key1");
+      Response<String> r5 = pipeline.get("key2");
+      Response<String> r6 = pipeline.get("key3");
+
+      pipeline.sync();
+
+      assertEquals("OK", r1.get());
+      assertEquals("OK", r2.get());
+      assertEquals("OK", r3.get());
+      assertEquals("value1", r4.get());
+      assertEquals("value2", r5.get());
+      assertEquals("value3", r6.get());
+    }
   }
 }

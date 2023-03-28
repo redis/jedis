@@ -29,7 +29,7 @@ You can also **contribute documentation** -- or anything to improve Jedis. Pleas
 
 The most recent version of this library supports redis version [5.0](https://github.com/redis/redis/blob/5.0/00-RELEASENOTES), [6.0](https://github.com/redis/redis/blob/6.0/00-RELEASENOTES), [6.2](https://github.com/redis/redis/blob/6.2/00-RELEASENOTES), and [7.0](https://github.com/redis/redis/blob/7.0/00-RELEASENOTES).
 
-The table below higlights version compatibility of the most-recent library versions and redis versions. Compatibility means communication features, and redis command capabilities.
+The table below highlights version compatibility of the most-recent library versions and Redis versions. Compatibility means communication features, and Redis command capabilities.
 
 | Library version | Supported redis versions |
 |-----------------|-------------------|

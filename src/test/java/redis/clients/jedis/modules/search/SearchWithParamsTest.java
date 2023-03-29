@@ -5,6 +5,7 @@ import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -1110,5 +1111,29 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void broadcast() {
     String reply = client.ftCreate(index, TextField.of("t"));
     assertOK(reply);
+  }
+
+  @Test
+  public void searchRoundRobin() {
+    assertOK(client.ftCreate(index, FTCreateParams.createParams(),
+        TextField.of("first"), TextField.of("last"), NumericField.of("age")));
+
+    client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
+    client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
+    client.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
+    client.hset("student:3333", toMap("first", "El", "last", "Mark", "age", "17"));
+    client.hset("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", "21"));
+    client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
+    client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
+
+    FtSearchRoundRobin search = client.ftSearch(3, index, "*", FTSearchParams.searchParams());
+    int total = 0;
+    while (!search.isRoundRobinCompleted()) {
+      SearchResult result = search.get();
+      int count = result.getDocuments().size();
+      assertThat(count, Matchers.lessThanOrEqualTo(3));
+      total += count;
+    }
+    assertEquals(7, total);
   }
 }

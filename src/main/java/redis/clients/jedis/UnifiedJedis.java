@@ -580,6 +580,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.scan(cursor, params, type));
   }
 
+  public ScanRoundRobin scan(int batchCount, String match) {
+    return new ScanRoundRobin(provider, batchCount, match);
+  }
+
+  public ScanRoundRobin scan(int batchCount, String match, String type) {
+    return new ScanRoundRobin(provider, batchCount, match, type);
+  }
+
   @Override
   public Set<byte[]> keys(byte[] pattern) {
     return executeCommand(commandObjects.keys(pattern));
@@ -3534,9 +3542,32 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.ftSearch(indexName, query, params));
   }
 
+  /**
+   * {@link FTSearchParams#limit(int, int)} will be ignored.
+   * @param batchCount
+   * @param indexName
+   * @param query
+   * @param params limit will be ignored
+   * @return search
+   */
+  public FtSearchRoundRobin ftSearch(int batchCount, String indexName, String query, FTSearchParams params) {
+    return new FtSearchRoundRobin(provider, batchCount, indexName, query, params);
+  }
+
   @Override
   public SearchResult ftSearch(String indexName, Query query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  /**
+   * {@link Query#limit(java.lang.Integer, java.lang.Integer)} will be ignored.
+   * @param batchCount
+   * @param indexName
+   * @param query limit will be ignored
+   * @return search
+   */
+  public FtSearchRoundRobin ftSearch(int batchCount, String indexName, Query query) {
+    return new FtSearchRoundRobin(provider, batchCount, indexName, query);
   }
 
   @Override

@@ -31,10 +31,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import redis.clients.jedis.ScanRoundRobin;
 
+import redis.clients.jedis.ScanRoundRobin;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;

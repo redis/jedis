@@ -1,6 +1,5 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
@@ -11,6 +10,7 @@ import java.util.Map;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -119,8 +119,8 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String script = "return { {KEYS[1]} , {2} }";
     List<?> results = (List<?>) jedis.eval(script, 1, "key1");
 
-    assertThat((List<String>) results.get(0), listWithItem("key1"));
-    assertThat((List<Long>) results.get(1), listWithItem(2L));
+    MatcherAssert.assertThat((List<String>) results.get(0), listWithItem("key1"));
+    MatcherAssert.assertThat((List<Long>) results.get(1), listWithItem(2L));
   }
 
   @Test
@@ -508,6 +508,6 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
-    return CoreMatchers.<T> hasItem(equalTo(expected));
+    return CoreMatchers.<T> hasItem(CoreMatchers.equalTo(expected));
   }
 }

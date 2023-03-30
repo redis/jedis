@@ -1,12 +1,10 @@
 package redis.clients.jedis;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -20,6 +18,7 @@ import java.util.UUID;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -570,8 +569,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.sync();
 
     List<?> results = (List<?>) result.get();
-    assertThat((List<String>) results.get(0), listWithItem("key1"));
-    assertThat((List<Long>) results.get(1), listWithItem(2L));
+    MatcherAssert.assertThat((List<String>) results.get(0), listWithItem("key1"));
+    MatcherAssert.assertThat((List<Long>) results.get(1), listWithItem(2L));
   }
 
   @Test
@@ -584,8 +583,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.sync();
 
     List<?> results = (List<?>) result.get();
-    assertThat((List<byte[]>) results.get(0), listWithItem(bKey));
-    assertThat((List<Long>) results.get(1), listWithItem(2L));
+    MatcherAssert.assertThat((List<byte[]>) results.get(0), listWithItem(bKey));
+    MatcherAssert.assertThat((List<Long>) results.get(1), listWithItem(2L));
   }
 
   @Test
@@ -858,6 +857,6 @@ public class PipeliningTest extends JedisCommandsTestBase {
 //  }
 
   private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
-    return CoreMatchers.<T> hasItem(equalTo(expected));
+    return CoreMatchers.<T> hasItem(CoreMatchers.equalTo(expected));
   }
 }

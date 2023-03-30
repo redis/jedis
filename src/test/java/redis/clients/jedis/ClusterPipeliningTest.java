@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
@@ -1010,7 +1009,7 @@ public class ClusterPipeliningTest {
   }
 
   private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
-    return CoreMatchers.<T>hasItem(equalTo(expected));
+    return CoreMatchers.<T>hasItem(CoreMatchers.equalTo(expected));
   }
 
   @Test

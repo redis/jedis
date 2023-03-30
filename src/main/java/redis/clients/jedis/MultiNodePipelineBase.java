@@ -45,9 +45,9 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   private final Logger log = LoggerFactory.getLogger(getClass());
 
   /**
-   * default number of processes for sync, if you got enough cores for client
-   * or your cluster nodes more than 3 nodes, you may increase this workers number.
-   * suggest <= cluster nodes
+   * The number of processes for {@code sync()}. If you have enough cores for client (and you have
+   * more than 3 cluster nodes), you may increase this number of workers.
+   * Suggestion:&nbsp;&le;&nbsp;cluster&nbsp;nodes.
    */
   public static volatile int MULTI_NODE_PIPELINE_SYNC_WORKERS = 3;
 
@@ -68,6 +68,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   /**
    * Sub-classes must call this method, if graph commands are going to be used.
+   * @param connectionProvider connection provider
    */
   protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
     this.graphCommandObjects = new GraphCommandObjects(connectionProvider);

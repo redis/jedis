@@ -12,6 +12,10 @@ on:
       - master
       - '[0-9].[0-9]'
   pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '**/*.rst'
     branches:
       - master
       - '[0-9].[0-9]'

@@ -24,7 +24,10 @@ public interface ServerCommands {
    * Ask the server to close the connection. The connection is closed as soon as all pending replies
    * have been written to the client.
    * @return OK
+   * @deprecated The quit command is deprecated and disconnect is recommended, see
+   * <a href="https://github.com/redis/redis/issues/11420">#11420</a>
    */
+  @Deprecated
   String quit();
 
   /**

@@ -237,7 +237,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection.connect();
   }
 
-  // Legacy
+  /**
+   * Closing the socket will disconnect the server connection.
+   */
   public void disconnect() {
     connection.disconnect();
   }
@@ -410,8 +412,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Ask the server to silently close the connection.
+   * @deprecated The quit command is deprecated and disconnect is recommended, see
+   * <a href="https://github.com/redis/redis/issues/11420">#11420</a>
    */
   @Override
+  @Deprecated
   public String quit() {
     checkIsInMultiOrPipeline();
     return connection.quit();

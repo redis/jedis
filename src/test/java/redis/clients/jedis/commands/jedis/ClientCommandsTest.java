@@ -16,10 +16,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.args.ClientAttrOption;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -60,6 +62,17 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     byte[] name = "binary".getBytes();
     client.clientSetname(name);
     assertArrayEquals(name, client.clientGetnameBinary());
+  }
+
+  @Test
+  public void clientSetInfoDefault() {
+    String libName = "jedis";
+    String libVersion = "999.999.999";
+    Assert.assertEquals("OK", client.clientSetInfo(ClientAttrOption.LIB_NAME, libName));
+    Assert.assertEquals("OK", client.clientSetInfo(ClientAttrOption.LIB_VER, libVersion));
+    String info = client.clientInfo();
+    assertTrue(info.contains("lib-name=jedis"));
+    assertTrue(info.contains("lib-ver=999.999.999"));
   }
 
   @Test

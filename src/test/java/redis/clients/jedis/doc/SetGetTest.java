@@ -15,16 +15,16 @@ public class SetGetTest extends JedisCommandsTestBase {
         String status = jedis.set("bike:1", "Process 134");
 
         if ("OK".equals(status))
-            System.out.println("Successfully set the key.");
+            System.out.println("Successfully added a bike.");
 
         String value = jedis.get("bike:1");
 
         if ( value != null)
-            System.out.println("The value is: " + value  + ".");
+            System.out.println("The name of the bike is: " + value  + ".");
 
         // OUTPUT:
-        // Successfully set the key.
-        // The value is: Process 134.
+        // Successfully added a bike.
+        // The name of the bike is: Process 134.
         assertEquals("OK", status);
         assertEquals("Process 134", value);
     }

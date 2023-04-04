@@ -23,6 +23,8 @@ public class SetGetTest extends JedisCommandsTestBase {
             System.out.println("The value is: " + value  + ".");
 
         // OUTPUT:
+        // Successfully set the key.
+        // The value is: Process 134.
         assertEquals("OK", status);
         assertEquals("Process 134", value);
     }

@@ -1,3 +1,4 @@
+// EXAMPLE: set_and_get
 // HIDE_START
 package redis.clients.jedis.doc;
 import redis.clients.jedis.Jedis;

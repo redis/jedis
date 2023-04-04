@@ -1,15 +1,12 @@
-// PAGES: Set, Get
 // HIDE_START
 package redis.clients.jedis.doc;
+import redis.clients.jedis.Jedis;
 
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
+public class SetGetExample {
 
-public class SetGetTest extends JedisCommandsTestBase {
+    public void run() {
 
-    @Test
-    public void setGetTest() {
+        Jedis jedis = new Jedis("localhost", 6379);
 
         // HIDE_END
         String status = jedis.set("bike:1", "Process 134");
@@ -22,10 +19,10 @@ public class SetGetTest extends JedisCommandsTestBase {
         if ( value != null)
             System.out.println("The name of the bike is: " + value  + ".");
 
-        // OUTPUT:
+        // HIDE_START
+        // Output:
         // Successfully added a bike.
         // The name of the bike is: Process 134.
-        assertEquals("OK", status);
-        assertEquals("Process 134", value);
+        // HIDE_END
     }
 }

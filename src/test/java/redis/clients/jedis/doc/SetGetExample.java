@@ -23,4 +23,3 @@ public class SetGetExample {
     }
 }
 // HIDE_END
-// TEST

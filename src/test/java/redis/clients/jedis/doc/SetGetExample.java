@@ -19,6 +19,7 @@ public class SetGetExample {
 
         if ( value != null)
             System.out.println("The name of the bike is: " + value  + ".");
-        
+        // HIDE_START
     }
 }
+// HIDE_END

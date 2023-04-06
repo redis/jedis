@@ -1,15 +1,22 @@
-// EXAMPLE: set_and_get
-// HIDE_START
+//EXAMPLE: set_and_get
+//HIDE_START
 package redis.clients.jedis.doc;
+
 import redis.clients.jedis.Jedis;
+
+//REMOVE_START
+import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+//REMOVE_END
 
 public class SetGetExample {
 
+    @Test
     public void run() {
 
         Jedis jedis = new Jedis("localhost", 6379);
 
-        // HIDE_END
+        //HIDE_END
         String status = jedis.set("bike:1", "Process 134");
 
         if ("OK".equals(status))
@@ -19,7 +26,12 @@ public class SetGetExample {
 
         if ( value != null)
             System.out.println("The name of the bike is: " + value  + ".");
-        // HIDE_START
+        //HIDE_START
+
+        //REMOVE_START
+        assertEquals("OK", status);
+        assertEquals("Process 134", value);
+        //REMOVE_END
     }
 }
-// HIDE_END
+//HIDE_END

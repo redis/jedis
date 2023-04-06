@@ -231,20 +231,23 @@ public class JedisPooledTest {
       }
     };
 
+    // TODO: do it without the help of pool config; from Connection constructor? (configurable) force ping?
+    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+    poolConfig.setMaxTotal(1);
+    poolConfig.setTestOnBorrow(true);
     try (JedisPooled pool = new JedisPooled(HostAndPorts.getRedisServers().get(0),
         DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider)
-            .clientName("my_shiny_client_name").build())) {
+            .build(), poolConfig)) {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");
       } catch (JedisException e) {
       }
-      assertEquals(0, pool.getPool().getNumActive());
+      assertEquals(0, pool.getPool().getNumActive() + pool.getPool().getNumIdle() + pool.getPool().getNumWaiters());
       assertEquals(1, prepareCount.get());
       assertEquals(1, cleanupCount.get());
 
-      pool.set("foo", "bar");
-      assertEquals("bar", pool.get("foo"));
+      assertEquals(null, pool.get("foo"));
       assertEquals(2, prepareCount.get());
       assertEquals(2, cleanupCount.get());
     }

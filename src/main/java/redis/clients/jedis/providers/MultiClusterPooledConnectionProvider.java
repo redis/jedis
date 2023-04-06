@@ -129,11 +129,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             String originalClusterName = getClusterCircuitBreaker().getName();
 
-            if (++activeMultiClusterIndex > multiClusterMap.size())
+            // Only increment if it can pass this validation otherwise we will need to check for NULL in the data path
+            if (activeMultiClusterIndex + 1 > multiClusterMap.size())
                 throw new JedisConnectionException("CircuitBreaker could not failover since the " +
                 "MultiClusterJedisClientConfig was not provided with an additional cluster according to its " +
                 "prioritized list. If applicable, consider failing back OR restarting with an available cluster/database " +
                 "endpoint that is higher on the list.");
+
+            else activeMultiClusterIndex++;
 
             CircuitBreaker circuitBreaker = getClusterCircuitBreaker();
 
@@ -158,15 +161,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         CircuitBreaker circuitBreaker = getClusterCircuitBreaker(multiClusterIndex);
 
         State originalState = circuitBreaker.getState();
-
-        Connection targetConnection = null;
         try {
             // Transitions the state machine to a CLOSED state, allowing state transition, metrics and event publishing
             // Safe since the activeMultiClusterIndex has not yet been changed and therefore no traffic will be routed yet
             circuitBreaker.transitionToClosedState();
 
-            targetConnection = getConnection(multiClusterIndex);
-            targetConnection.ping();
+            try (Connection targetConnection = getConnection(multiClusterIndex)) {
+                targetConnection.ping();
+            }
         }
         catch (Exception e) {
 
@@ -175,10 +177,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                 circuitBreaker.transitionToForcedOpenState();
 
             throw new JedisValidationException(circuitBreaker.getName() + " failed to connect. Please check configuration and try again. " + e);
-        }
-        finally {
-            if (targetConnection != null)
-                targetConnection.close();
         }
     }
 

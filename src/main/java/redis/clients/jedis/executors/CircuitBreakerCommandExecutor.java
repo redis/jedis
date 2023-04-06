@@ -4,8 +4,6 @@ import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
@@ -27,8 +25,6 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
 
     private final static List<Class<? extends Throwable>> circuitBreakerFallbackException =
                                                           Arrays.asList(CallNotPermittedException.class);
-
-    private final Logger log = LoggerFactory.getLogger(getClass());
 
     private final MultiClusterPooledConnectionProvider provider;
 
@@ -59,15 +55,8 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
      * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
      */
     private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster) {
-        Connection connection = null;
-        try {
-            connection = cluster.getConnection();
+        try (Connection connection = cluster.getConnection()) {
             return connection.executeCommand(commandObject);
-        }
-        finally {
-            if (connection != null) {
-                connection.close();
-            }
         }
     }
 

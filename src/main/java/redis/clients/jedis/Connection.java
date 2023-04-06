@@ -215,6 +215,9 @@ public class Connection implements Closeable {
     }
   }
 
+  /**
+   * Close the socket and disconnect the server.
+   */
   public void disconnect() {
     if (isConnected()) {
       try {
@@ -362,9 +365,7 @@ public class Connection implements Closeable {
 
     } catch (JedisException je) {
       try {
-        if (isConnected()) {
-          quit();
-        }
+        setBroken();
         disconnect();
       } catch (Exception e) {
         // the first exception 'je' will be thrown
@@ -406,6 +407,11 @@ public class Connection implements Closeable {
     return getStatusCodeReply();
   }
 
+  /**
+   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
+   * {@link Connection#disconnect()} can be used instead.
+   */
+  @Deprecated
   public String quit() {
     sendCommand(Protocol.Command.QUIT);
     String quitReturn = getStatusCodeReply();

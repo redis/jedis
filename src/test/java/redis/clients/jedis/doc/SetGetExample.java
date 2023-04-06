@@ -3,7 +3,6 @@
 package redis.clients.jedis.doc;
 
 import redis.clients.jedis.Jedis;
-
 //REMOVE_START
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -27,7 +26,6 @@ public class SetGetExample {
         if ( value != null)
             System.out.println("The name of the bike is: " + value  + ".");
         //HIDE_START
-
         //REMOVE_START
         assertEquals("OK", status);
         assertEquals("Process 134", value);

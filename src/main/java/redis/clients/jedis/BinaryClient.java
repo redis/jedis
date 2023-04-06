@@ -156,6 +156,9 @@ public class BinaryClient extends Connection {
     }
   }
 
+  /**
+   * Closing the socket will disconnect the server connection.
+   */
   @Override
   public void disconnect() {
     db = 0;
@@ -219,6 +222,11 @@ public class BinaryClient extends Connection {
     sendCommand(GETEX, params.getByteParams(key));
   }
 
+  /**
+   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
+   * {@link BinaryClient#disconnect()} can be used instead.
+   */
+  @Deprecated
   public void quit() {
     db = 0;
     sendCommand(QUIT);

@@ -408,8 +408,8 @@ public class Connection implements Closeable {
   }
 
   /**
-   * @deprecated The quit command is deprecated and disconnect is recommended, see
-   * <a href="https://github.com/redis/redis/issues/11420">#11420</a>
+   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
+   * {@link Connection#disconnect()} can be used instead.
    */
   @Deprecated
   public String quit() {

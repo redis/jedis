@@ -5,6 +5,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 import redis.clients.jedis.*;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 import redis.clients.jedis.util.IOUtils;
@@ -75,6 +76,14 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
             // Incrementing the activeMultiClusterIndex will allow subsequent calls to the executeCommand()
             // to use the next cluster's connection pool - according to the configuration's prioritization/order
             provider.incrementActiveMultiClusterIndex();
+        }
+
+        // Once the priority list is exhausted only a manual failback can open the circuit breaker so all subsequent operations will fail
+        else if (provider.isLastClusterCircuitBreakerForcedOpen()) {
+            throw new JedisConnectionException("Cluster/database endpoint could not failover since the " +
+                                               "MultiClusterJedisClientConfig was not provided with an additional cluster " +
+                                               "according to its priority sequence. If applicable, consider failing back OR " +
+                                               "restarting with an available cluster/database endpoint that is higher on the list.");
         }
 
         // Recursive call to the initiating method so the operation can be retried on the next cluster connection

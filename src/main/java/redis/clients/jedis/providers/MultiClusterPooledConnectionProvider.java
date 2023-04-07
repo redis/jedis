@@ -45,6 +45,13 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      */
     private volatile Integer activeMultiClusterIndex = 1;
 
+    /**
+     * Indicates the final cluster/database endpoint (connection pool), according to the pre-configured list
+     * provided at startup via the MultiClusterJedisClientConfig, is unavailable and therefore no further failover is possible.
+     * Users can manually failback to an available cluster which would reset this flag via {@link #setActiveMultiClusterIndex(int)}
+     */
+    private volatile boolean lastClusterCircuitBreakerForcedOpen = false;
+
 
     public MultiClusterPooledConnectionProvider(MultiClusterJedisClientConfig multiClusterJedisClientConfig) {
 
@@ -130,12 +137,15 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             String originalClusterName = getClusterCircuitBreaker().getName();
 
             // Only increment if it can pass this validation otherwise we will need to check for NULL in the data path
-            if (activeMultiClusterIndex + 1 > multiClusterMap.size())
-                throw new JedisConnectionException("CircuitBreaker could not failover since the " +
-                "MultiClusterJedisClientConfig was not provided with an additional cluster according to its " +
-                "prioritized list. If applicable, consider failing back OR restarting with an available cluster/database " +
-                "endpoint that is higher on the list.");
+            if (activeMultiClusterIndex + 1 > multiClusterMap.size()) {
 
+                lastClusterCircuitBreakerForcedOpen = true;
+
+                throw new JedisConnectionException("Cluster/database endpoint could not failover since the " +
+                                                   "MultiClusterJedisClientConfig was not provided with an additional cluster " +
+                                                   "according to its priority sequence. If applicable, consider failing back OR " +
+                                                   "restarting with an available cluster/database endpoint that is higher on the list.");
+            }
             else activeMultiClusterIndex++;
 
             CircuitBreaker circuitBreaker = getClusterCircuitBreaker();
@@ -145,7 +155,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             if (CircuitBreaker.State.FORCED_OPEN.equals(circuitBreaker.getState()))
                 incrementActiveMultiClusterIndex();
 
-            else log.warn("CircuitBreaker changed the connection pool from '{}' to '{}'", originalClusterName, circuitBreaker.getName());
+            else log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'", originalClusterName, circuitBreaker.getName());
         }
     }
 
@@ -194,8 +204,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         // incrementActiveMultiClusterIndex() is called at the same time
         synchronized (activeMultiClusterIndex) {
 
-            if (activeMultiClusterIndex == multiClusterIndex)
-                return;
+            // Allows an attempt to reset the current cluster from a FORCED_OPEN to CLOSED state in the event that no failover is possible
+            if (activeMultiClusterIndex == multiClusterIndex &&
+                !CircuitBreaker.State.FORCED_OPEN.equals(getClusterCircuitBreaker(multiClusterIndex).getState()))
+                    return;
 
             if (multiClusterIndex < 1 || multiClusterIndex > multiClusterMap.size())
                 throw new JedisValidationException("MultiClusterIndex: " + multiClusterIndex + " is not within " +
@@ -205,10 +217,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             String originalClusterName = getClusterCircuitBreaker().getName();
 
-            activeMultiClusterIndex = multiClusterIndex;
+            if (activeMultiClusterIndex == multiClusterIndex)
+                log.warn("Cluster/database endpoint '{}' successfully closed its circuit breaker", originalClusterName);
+            else
+                log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'",
+                         originalClusterName, getClusterCircuitBreaker(multiClusterIndex).getName());
 
-            log.warn("CircuitBreaker changed the connection pool from '{}' to '{}'",
-                     originalClusterName, getClusterCircuitBreaker().getName());
+            activeMultiClusterIndex = multiClusterIndex;
+            lastClusterCircuitBreakerForcedOpen = false;
         }
     }
 
@@ -276,6 +292,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         public CircuitBreaker getCircuitBreaker() {
             return circuitBreaker;
         }
+    }
+
+    public boolean isLastClusterCircuitBreakerForcedOpen() {
+        return lastClusterCircuitBreakerForcedOpen;
     }
 
 }

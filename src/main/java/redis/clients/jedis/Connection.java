@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.args.ClientAttrOption;
+import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -372,13 +372,13 @@ public class Connection implements Closeable {
       String libName = JedisMetaInfo.getArtifactId();
       if (libName != null) {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-            .add(ClientAttrOption.LIB_NAME.getRaw()).add(libName));
+            .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));
       }
 
       String libVersion = JedisMetaInfo.getVersion();
       if (libVersion != null) {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-            .add(ClientAttrOption.LIB_VER.getRaw()).add(libVersion));
+            .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
       }
 
       for (CommandArguments arg : fireAndForgetMsg) {

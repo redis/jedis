@@ -1,6 +1,6 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.args.ClientAttrOption;
+import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
@@ -84,7 +84,7 @@ public interface ClientBinaryCommands {
    * @param value the value
    * @return OK or error
    */
-  String clientSetInfo(ClientAttrOption attr, byte[] value);
+  String clientSetInfo(ClientAttributeOption attr, byte[] value);
 
   /**
    * Assigns a name to the current connection.

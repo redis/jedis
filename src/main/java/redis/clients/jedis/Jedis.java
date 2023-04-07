@@ -4232,6 +4232,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String clientSetInfo(ClientAttributeOption attr, byte[] value) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, SETINFO.getRaw(), attr.getRaw(), value);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String clientSetname(final byte[] name) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLIENT, SETNAME.getRaw(), name);
@@ -8512,6 +8519,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLIENT, Keyword.INFO);
     return connection.getBulkReply();
+  }
+
+  @Override
+  public String clientSetInfo(ClientAttributeOption attr, String value) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, SETINFO.getRaw(), attr.getRaw(), encode(value));
+    return connection.getStatusCodeReply();
   }
 
   @Override

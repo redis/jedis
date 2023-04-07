@@ -391,7 +391,7 @@ public class Connection implements Closeable {
           JedisDataException e = (JedisDataException)obj;
           String errorMsg = e.getMessage().toUpperCase();
           if (errorMsg.contains("UNKNOWN") ||
-              errorMsg.contains("NOAUTH")) {
+              errorMsg.contains("NOAUTH")) { // TODO: not filter out NOAUTH
             // ignore
           } else {
             throw e;

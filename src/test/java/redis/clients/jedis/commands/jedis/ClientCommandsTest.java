@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,8 +67,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void clientSetInfoDefault() {
     String libName = "jedis";
     String libVersion = "999.999.999";
-    Assert.assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_NAME, libName));
-    Assert.assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_VER, libVersion));
+    assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_NAME, libName));
+    assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_VER, libVersion));
     String info = client.clientInfo();
     assertTrue(info.contains("lib-name=jedis"));
     assertTrue(info.contains("lib-ver=999.999.999"));

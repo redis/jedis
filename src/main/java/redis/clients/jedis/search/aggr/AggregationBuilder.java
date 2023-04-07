@@ -1,6 +1,13 @@
 package redis.clients.jedis.search.aggr;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.StringJoiner;
+
 import redis.clients.jedis.search.FieldName;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -164,12 +171,14 @@ public class AggregationBuilder {
     return Collections.unmodifiableList(args);
   }
 
+  @Deprecated
   public void serializeRedisArgs(List<byte[]> redisArgs) {
     for (String s : getArgs()) {
       redisArgs.add(SafeEncoder.encode(s));
     }
   }
 
+  @Deprecated
   public String getArgsString() {
     StringJoiner sj = new StringJoiner(" ");
     for (String s : getArgs()) {

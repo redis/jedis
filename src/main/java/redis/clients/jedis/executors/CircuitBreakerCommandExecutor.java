@@ -75,7 +75,10 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
 
             // Incrementing the activeMultiClusterIndex will allow subsequent calls to the executeCommand()
             // to use the next cluster's connection pool - according to the configuration's prioritization/order
-            provider.incrementActiveMultiClusterIndex();
+            int activeMultiClusterIndex = provider.incrementActiveMultiClusterIndex();
+
+            // Implementation is optionally provided during configuration. Typically, used for activeMultiClusterIndex persistence or custom logging
+            provider.runClusterFailoverPostProcessor(activeMultiClusterIndex);
         }
 
         // Once the priority list is exhausted only a manual failback can open the circuit breaker so all subsequent operations will fail

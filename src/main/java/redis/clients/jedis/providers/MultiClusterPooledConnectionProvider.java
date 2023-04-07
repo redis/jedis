@@ -18,6 +18,8 @@ import redis.clients.jedis.util.Pool;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+
 
 /**
  * @author Allen Terleto (aterleto)
@@ -51,6 +53,12 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      * Users can manually failback to an available cluster which would reset this flag via {@link #setActiveMultiClusterIndex(int)}
      */
     private volatile boolean lastClusterCircuitBreakerForcedOpen = false;
+
+    /**
+     * Functional interface typically used for activeMultiClusterIndex persistence or custom logging after a successful
+     * failover of a cluster/database endpoint (connection pool). The activeMultiClusterIndex is passed as a parameter.
+     */
+    private Consumer<Integer> clusterFailoverPostProcessor;
 
 
     public MultiClusterPooledConnectionProvider(MultiClusterJedisClientConfig multiClusterJedisClientConfig) {
@@ -128,7 +136,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      * In the event that the next prioritized connection has a forced open state,
      * the method will recursively increment the index in order to avoid a failed command.
      */
-    public void incrementActiveMultiClusterIndex() {
+    public int incrementActiveMultiClusterIndex() {
 
         // Field-level synchronization is used to avoid the edge case in which
         // setActiveMultiClusterIndex(int multiClusterIndex) is called at the same time
@@ -156,6 +164,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             else log.warn("Cluster/database endpoint successfully updated from '{}' to '{}'", originalClusterName, circuitBreaker.getName());
         }
+
+        return activeMultiClusterIndex;
     }
 
     /**
@@ -264,6 +274,19 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         return multiClusterMap.get(multiClusterIndex).getCircuitBreaker();
     }
 
+    public boolean isLastClusterCircuitBreakerForcedOpen() {
+        return lastClusterCircuitBreakerForcedOpen;
+    }
+
+    public void runClusterFailoverPostProcessor(Integer multiClusterIndex) {
+        if (clusterFailoverPostProcessor != null)
+            clusterFailoverPostProcessor.accept(multiClusterIndex);
+    }
+
+    public void setClusterFailoverPostProcessor(Consumer<Integer> clusterFailoverPostProcessor) {
+        this.clusterFailoverPostProcessor = clusterFailoverPostProcessor;
+    }
+
     public static class Cluster {
 
         private final ConnectionPool connectionPool;
@@ -291,10 +314,6 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         public CircuitBreaker getCircuitBreaker() {
             return circuitBreaker;
         }
-    }
-
-    public boolean isLastClusterCircuitBreakerForcedOpen() {
-        return lastClusterCircuitBreakerForcedOpen;
     }
 
 }

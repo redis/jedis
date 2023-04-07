@@ -30,6 +30,7 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.aggr.FtAggregateRoundRobin;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
@@ -3544,14 +3545,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * {@link FTSearchParams#limit(int, int)} will be ignored.
-   * @param batchCount
+   * @param batchSize
    * @param indexName
    * @param query
    * @param params limit will be ignored
    * @return search
    */
-  public FtSearchRoundRobin ftSearch(int batchCount, String indexName, String query, FTSearchParams params) {
-    return new FtSearchRoundRobin(provider, batchCount, indexName, query, params);
+  public FtSearchRoundRobin ftSearch(int batchSize, String indexName, String query, FTSearchParams params) {
+    return new FtSearchRoundRobin(provider, batchSize, indexName, query, params);
   }
 
   @Override
@@ -3561,13 +3562,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * {@link Query#limit(java.lang.Integer, java.lang.Integer)} will be ignored.
-   * @param batchCount
+   * @param batchSize
    * @param indexName
    * @param query limit will be ignored
    * @return search
    */
-  public FtSearchRoundRobin ftSearch(int batchCount, String indexName, Query query) {
-    return new FtSearchRoundRobin(provider, batchCount, indexName, query);
+  public FtSearchRoundRobin ftSearch(int batchSize, String indexName, Query query) {
+    return new FtSearchRoundRobin(provider, batchSize, indexName, query);
   }
 
   @Override
@@ -3598,6 +3599,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String ftCursorDel(String indexName, long cursorId) {
     return executeCommand(commandObjects.ftCursorDel(indexName, cursorId));
+  }
+
+  public FtAggregateRoundRobin ftAggregateRoundRobin(String indexName, AggregationBuilder aggr) {
+    return new FtAggregateRoundRobin(provider, indexName, aggr);
   }
 
   @Override

@@ -13,6 +13,9 @@ public class FtSearchRoundRobin extends JedisRoundRobinBase<SearchResult> {
   private final int batchSize;
   private final IntFunction<CommandArguments> args;
 
+  /**
+   * {@link FTSearchParams#limit(int, int)} will be ignored.
+   */
   public FtSearchRoundRobin(ConnectionProvider connectionProvider, int batchSize, String indexName, String query, FTSearchParams params) {
     super(connectionProvider, new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
     this.batchSize = batchSize;
@@ -20,6 +23,9 @@ public class FtSearchRoundRobin extends JedisRoundRobinBase<SearchResult> {
         .add(indexName).add(query).addParams(params.limit(limitFirst, this.batchSize));
   }
 
+  /**
+   * {@link Query#limit(java.lang.Integer, java.lang.Integer)} will be ignored.
+   */
   public FtSearchRoundRobin(ConnectionProvider connectionProvider, int batchSize, String indexName, Query query) {
     super(connectionProvider, new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));
     this.batchSize = batchSize;

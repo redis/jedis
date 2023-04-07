@@ -141,10 +141,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
                 lastClusterCircuitBreakerForcedOpen = true;
 
-                throw new JedisConnectionException("Cluster/database endpoint could not failover since the " +
-                                                   "MultiClusterJedisClientConfig was not provided with an additional cluster " +
-                                                   "according to its priority sequence. If applicable, consider failing back OR " +
-                                                   "restarting with an available cluster/database endpoint that is higher on the list.");
+                throw new JedisConnectionException("Cluster/database endpoint could not failover since the MultiClusterJedisClientConfig was not " +
+                                                   "provided with an additional cluster/database endpoint according to its prioritized sequence. " +
+                                                   "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
             }
             else activeMultiClusterIndex++;
 

@@ -80,10 +80,9 @@ public class CircuitBreakerCommandExecutor implements CommandExecutor {
 
         // Once the priority list is exhausted only a manual failback can open the circuit breaker so all subsequent operations will fail
         else if (provider.isLastClusterCircuitBreakerForcedOpen()) {
-            throw new JedisConnectionException("Cluster/database endpoint could not failover since the " +
-                                               "MultiClusterJedisClientConfig was not provided with an additional cluster " +
-                                               "according to its priority sequence. If applicable, consider failing back OR " +
-                                               "restarting with an available cluster/database endpoint that is higher on the list.");
+            throw new JedisConnectionException("Cluster/database endpoint could not failover since the MultiClusterJedisClientConfig was not " +
+                                               "provided with an additional cluster/database endpoint according to its prioritized sequence. " +
+                                               "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
         }
 
         // Recursive call to the initiating method so the operation can be retried on the next cluster connection

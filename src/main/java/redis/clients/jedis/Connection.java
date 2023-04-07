@@ -432,6 +432,12 @@ public class Connection implements Closeable {
     getStatusCodeReply(); // OK
   }
 
+  @Deprecated
+  public String select(final int index) {
+    sendCommand(Protocol.Command.SELECT, Protocol.toByteArray(index));
+    return getStatusCodeReply();
+  }
+
   /**
    * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
    * {@link Connection#disconnect()} can be used instead.

@@ -4207,6 +4207,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
+  public TsMRangeRoundRobin tsMRangeRoundRobin(TSMRangeParams multiRangeParams) {
+    return new TsMRangeRoundRobin(provider, false, multiRangeParams);
+  }
+
   @Override
   public List<TSKeyedElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
@@ -4215,6 +4219,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<TSKeyedElements> tsMRevRange(TSMRangeParams multiRangeParams) {
     return executeCommand(commandObjects.tsMRevRange(multiRangeParams));
+  }
+
+  public TsMRangeRoundRobin tsMRevRangeRoundRobin(TSMRangeParams multiRangeParams) {
+    return new TsMRangeRoundRobin(provider, true, multiRangeParams);
   }
 
   @Override
@@ -4230,6 +4238,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
+  }
+
+  public TsMGetRoundRobin tsMGetRoundRobin(TSMGetParams multiGetParams, String... filters) {
+    return new TsMGetRoundRobin(provider, multiGetParams, filters);
   }
 
   @Override

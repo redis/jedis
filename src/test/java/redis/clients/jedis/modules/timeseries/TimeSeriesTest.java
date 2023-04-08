@@ -1,11 +1,6 @@
 package redis.clients.jedis.modules.timeseries;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.*;
 import org.junit.BeforeClass;
@@ -534,6 +529,71 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void mrangeFilterByRoundRobin() {
+    TsMRangeRoundRobin rr;
+    List<TSKeyedElements> range;
+
+    Map<String, String> labels = Collections.singletonMap("label", "multi");
+    client.tsCreate("ts1", TSCreateParams.createParams().labels(labels));
+    client.tsCreate("ts2", TSCreateParams.createParams().labels(labels));
+    String filter = "label=multi";
+
+    TSElement[] rawValues = new TSElement[]{
+      new TSElement(1000L, 1.0),
+      new TSElement(2000L, 0.9),
+      new TSElement(3200L, 1.1),
+      new TSElement(4500L, -1.1)
+    };
+
+    client.tsAdd("ts1", rawValues[0].getTimestamp(), rawValues[0].getValue());
+    client.tsAdd("ts2", rawValues[1].getTimestamp(), rawValues[1].getValue());
+    client.tsAdd("ts2", rawValues[2].getTimestamp(), rawValues[2].getValue());
+    client.tsAdd("ts1", rawValues[3].getTimestamp(), rawValues[3].getValue());
+
+    // MRANGE
+    rr = client.tsMRangeRoundRobin(TSMRangeParams.multiRangeParams(0L, 5000L)
+        .filterByTS(1000L, 2000L).filter(filter));
+    assertFalse(rr.isRoundRobinCompleted());
+    range = rr.get();
+    assertEquals("ts1", range.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0]), range.get(0).getValue());
+    assertEquals("ts2", range.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[1]), range.get(1).getValue());
+    assertTrue(rr.isRoundRobinCompleted());
+
+    rr = client.tsMRangeRoundRobin(TSMRangeParams.multiRangeParams(0L, 5000L)
+        .filterByValues(1.0, 1.2).filter(filter));
+    assertFalse(rr.isRoundRobinCompleted());
+    range = rr.get();
+    assertEquals("ts1", range.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0]), range.get(0).getValue());
+    assertEquals("ts2", range.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[2]), range.get(1).getValue());
+    assertTrue(rr.isRoundRobinCompleted());
+
+    // MREVRANGE
+    rr = client.tsMRevRangeRoundRobin(TSMRangeParams.multiRangeParams(0L, 5000L)
+        .filterByTS(1000L, 2000L).filter(filter));
+    assertFalse(rr.isRoundRobinCompleted());
+    range = rr.get();
+    assertEquals("ts1", range.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0]), range.get(0).getValue());
+    assertEquals("ts2", range.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[1]), range.get(1).getValue());
+    assertTrue(rr.isRoundRobinCompleted());
+
+    rr = client.tsMRevRangeRoundRobin(TSMRangeParams.multiRangeParams(0L, 5000L)
+        .filterByValues(1.0, 1.2).filter(filter));
+    assertFalse(rr.isRoundRobinCompleted());
+    range = rr.get();
+    assertEquals("ts1", range.get(0).getKey());
+    assertEquals(Arrays.asList(rawValues[0]), range.get(0).getValue());
+    assertEquals("ts2", range.get(1).getKey());
+    assertEquals(Arrays.asList(rawValues[2]), range.get(1).getValue());
+    assertTrue(rr.isRoundRobinCompleted());
+  }
+
+  @Test
   public void groupByReduce() {
     client.tsCreate("ts1", TSCreateParams.createParams().labels(convertMap("metric", "cpu", "metric_name", "system")));
     client.tsCreate("ts2", TSCreateParams.createParams().labels(convertMap("metric", "cpu", "metric_name", "user")));
@@ -622,6 +682,47 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(Collections.emptyMap(), ranges3.get(1).getLabels());
     assertEquals(new TSElement(1500, 1.3), ranges3.get(0).getValue());
     assertNull(ranges3.get(1).getValue());
+  }
+
+  @Test
+  public void mgetRoundRobin() {
+    TsMGetRoundRobin rr;
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+    assertEquals("OK", client.tsCreate("seriesMGet1", TSCreateParams.createParams()
+        .retention(100 * 1000 /*100sec retentionTime*/).labels(labels)));
+    assertEquals("OK", client.tsCreate("seriesMGet2", TSCreateParams.createParams()
+        .retention(100 * 1000 /*100sec retentionTime*/).labels(labels)));
+
+    // Test for empty result
+    rr = client.tsMGetRoundRobin(TSMGetParams.multiGetParams().withLabels(false), "l1=v2");
+    assertFalse(rr.isRoundRobinCompleted());
+    List<TSKeyValue<TSElement>> ranges1 = rr.get();
+    assertEquals(0, ranges1.size());
+    assertTrue(rr.isRoundRobinCompleted());
+
+    // Test for empty ranges
+    rr = client.tsMGetRoundRobin(TSMGetParams.multiGetParams().withLabels(true), "l1=v1");
+    assertFalse(rr.isRoundRobinCompleted());
+    List<TSKeyValue<TSElement>> ranges2 = rr.get();
+    assertEquals(2, ranges2.size());
+    assertEquals(labels, ranges2.get(0).getLabels());
+    assertEquals(labels, ranges2.get(1).getLabels());
+    assertNull(ranges2.get(0).getValue());
+    assertTrue(rr.isRoundRobinCompleted());
+
+    // Test for returned result on MGet
+    client.tsAdd("seriesMGet1", 1500, 1.3);
+    rr = client.tsMGetRoundRobin(TSMGetParams.multiGetParams().withLabels(false), "l1=v1");
+    assertFalse(rr.isRoundRobinCompleted());
+    List<TSKeyValue<TSElement>> ranges3 = rr.get();
+    assertEquals(2, ranges3.size());
+    assertEquals(Collections.emptyMap(), ranges3.get(0).getLabels());
+    assertEquals(Collections.emptyMap(), ranges3.get(1).getLabels());
+    assertEquals(new TSElement(1500, 1.3), ranges3.get(0).getValue());
+    assertNull(ranges3.get(1).getValue());
+    assertTrue(rr.isRoundRobinCompleted());
   }
 
   @Test

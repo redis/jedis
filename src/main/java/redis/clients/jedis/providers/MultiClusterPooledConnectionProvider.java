@@ -56,9 +56,11 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     /**
      * Functional interface typically used for activeMultiClusterIndex persistence or custom logging after a successful
-     * failover of a cluster/database endpoint (connection pool). The activeMultiClusterIndex is passed as a parameter.
+     * failover of a cluster/database endpoint (connection pool). Cluster/database endpoint info is passed as the sole parameter
+     *
+     * Example: cluster:2:redis-smart-cache.demo.com:12000
      */
-    private Consumer<Integer> clusterFailoverPostProcessor;
+    private Consumer<String> clusterFailoverPostProcessor;
 
 
     public MultiClusterPooledConnectionProvider(MultiClusterJedisClientConfig multiClusterJedisClientConfig) {
@@ -280,10 +282,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public void runClusterFailoverPostProcessor(Integer multiClusterIndex) {
         if (clusterFailoverPostProcessor != null)
-            clusterFailoverPostProcessor.accept(multiClusterIndex);
+            clusterFailoverPostProcessor.accept(getClusterCircuitBreaker(multiClusterIndex).getName());
     }
 
-    public void setClusterFailoverPostProcessor(Consumer<Integer> clusterFailoverPostProcessor) {
+    public void setClusterFailoverPostProcessor(Consumer<String> clusterFailoverPostProcessor) {
         this.clusterFailoverPostProcessor = clusterFailoverPostProcessor;
     }
 

@@ -1044,4 +1044,11 @@ public class ClusterPipeliningTest {
       }
     }
   }
+
+  @Test
+  public void transaction() {
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+      assertThrows(UnsupportedOperationException.class, () -> cluster.multi());
+    }
+  }
 }

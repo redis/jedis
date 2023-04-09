@@ -72,6 +72,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
    */
   protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
     this.graphCommandObjects = new GraphCommandObjects(connectionProvider);
+    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
   }
 
   protected abstract HostAndPort getNodeKey(CommandArguments args);

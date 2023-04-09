@@ -4649,8 +4649,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     }
-    Connection connection = provider.getConnection();
-    return new Pipeline(connection, true);
+    return new Pipeline(provider.getConnection(), true);
+  }
+
+  public Transaction multi() {
+    if (provider == null) {
+      throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+    }
+    return new Transaction(provider.getConnection(), true, true);
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

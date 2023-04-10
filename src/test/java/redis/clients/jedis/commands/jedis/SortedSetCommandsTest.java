@@ -403,6 +403,36 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void zrankWithScore() {
+    jedis.zadd("foo", 1d, "a");
+    jedis.zadd("foo", 2d, "b");
+
+    KeyValue<Long, Double> keyValue = jedis.zrankWithScore("foo", "a");
+    assertEquals(Long.valueOf(0), keyValue.getKey());
+    assertEquals(Double.valueOf(1d), keyValue.getValue());
+
+    keyValue = jedis.zrankWithScore("foo", "b");
+    assertEquals(Long.valueOf(1), keyValue.getKey());
+    assertEquals(Double.valueOf(2d), keyValue.getValue());
+
+    assertNull(jedis.zrankWithScore("car", "b"));
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 2d, bb);
+
+    keyValue = jedis.zrankWithScore(bfoo, ba);
+    assertEquals(Long.valueOf(0), keyValue.getKey());
+    assertEquals(Double.valueOf(1d), keyValue.getValue());
+
+    keyValue = jedis.zrankWithScore(bfoo, bb);
+    assertEquals(Long.valueOf(1), keyValue.getKey());
+    assertEquals(Double.valueOf(2d), keyValue.getValue());
+
+    assertNull(jedis.zrankWithScore(bcar, bb));
+  }
+
+  @Test
   public void zrevrank() {
     jedis.zadd("foo", 1d, "a");
     jedis.zadd("foo", 2d, "b");

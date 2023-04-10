@@ -154,6 +154,24 @@ public interface SortedSetCommands {
   Long zrevrank(String key, String member);
 
   /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from low to high.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  KeyValue<Long, Double> zrankWithScore(String key, String member);
+
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from high to low.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  KeyValue<Long, Double> zrevrankWithScore(String key, String member);
+
+  /**
    * Returns the specified range of elements in the sorted set stored at key.
    * <p>
    * Time complexity O(log(N)+M) with N being the number of elements in the sorted set and M the

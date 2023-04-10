@@ -929,6 +929,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<KeyValue<Long, Double>> zrankWithScore(String key, String member) {
+    return appendCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrevrankWithScore(String key, String member) {
+    return appendCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
+  @Override
   public Response<List<String>> zrange(String key, long start, long stop) {
     return appendCommand(commandObjects.zrange(key, start, stop));
   }
@@ -2673,6 +2683,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<Long> zrevrank(byte[] key, byte[] member) {
     return appendCommand(commandObjects.zrevrank(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrankWithScore(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrevrankWithScore(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.zrevrankWithScore(key, member));
   }
 
   @Override

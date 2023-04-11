@@ -97,18 +97,74 @@ Now you can use the `JedisCluster` instance and send commands like you would wit
 jedis.sadd("planets", "Mars");
 ```
 
-## Using Redis modules
+## Failover
 
-Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
-[RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+Jedis supports retry and failover for your Redis deployments. This is useful when:
+1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://docs.redis.com/latest/rs/databases/active-active/) clusters.
+2. You want your application to connect to one deployment at a time and to fail over to the next available deployment if the first deployment becomes unavailable.
 
-See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.
+### Configuring failover
+
+To configure Jedis for failover, you specify an ordered list of Redis databases.
+By default, Jedis will connect to the first Redis database in the list. If the first database becomes unavailable,
+Jedis will attempt to connect to the next database in the list, and so on.
+
+What follows here is a simple configuration example. For more details, see the [complete Jedis failover docs](docs/failover.md).
+
+First create an array of `ClusterJedisClientConfig` objects, one for each Redis database.
+
+```java
+JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret").build();
+
+ClusterJedisClientConfig[] clientConfigs = new ClusterJedisClientConfig[2];
+clientConfigs[0] = new ClusterJedisClientConfig(new HostAndPort("redis-east.example.com", 14000), config);
+clientConfigs[1] = new ClusterJedisClientConfig(new HostAndPort("redis-west.example.com", 14000), config);
+```
+
+The configuration above represents two example Redis databases: `redis-east.example.com` and `redis-west.example.com`.
+(Note: If you're running Redis Enterprise, we recommend that these two databases reside in separate clusters that are geo-distributed for regional / data center failover.)
+
+You can use these configuration objects to create and configure a connection provider that supports failover:
+
+```java
+MultiClusterJedisClientConfig.Builder builder = new MultiClusterJedisClientConfig.Builder(clientConfigs);
+builder.circuitBreakerSlidingWindowSize(10);
+builder.circuitBreakerSlidingWindowMinCalls(1);
+builder.circuitBreakerFailureRateThreshold(50.0f);
+
+MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(builder.build());
+```
+
+Internally, the connection provider uses a [configurable circuit breaker and retry implementation](https://resilience4j.readme.io/docs/circuitbreaker) to determine when to fail over.
+In this configuration, we've set a sliding window size of 10 and a failure rate threshold of 50%. This means that a failover will be triggered if 5 out of any 10 calls to Redis fail. Note that you can also configure a time-based sliding window. See the configuration details below for how to set this up.
+
+Once you've configured and created a `MultiClusterPooledConnectionProvider`, instantiate a `UnifiedJedis` instance for your application, passing in the provider you just created:
+
+```java
+UnifiedJedis jedis = new UnifiedJedis(provider);
+```
+
+When you use this `UnifiedJedis` instance to communicate with Redis, your application will be able to fail over automatically, when necessary.
+In this example, if `redis-east.example.com` becomes unavailable, the application will then connect to and use `redis-west.example.com`.
+
+We recommend testing your specific failover scenarios to ensure that this behavior meets your application's requirements.
+For more configuration options and examples, see the complete [Jedis failover docs](docs/failover.md).
 
 ## Documentation
 
 The [Jedis wiki](http://github.com/redis/jedis/wiki) contains several useful articles for using Jedis.
 
 You can also check the [latest Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html).
+
+Some specific use-case examples can be found in [`redis.clients.jedis.examples` 
+package](src/test/java/redis/clients/jedis/examples/) of the test source codes.
+
+## Using Redis modules
+
+Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
+[RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+
+See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.
 
 ## Troubleshooting
 

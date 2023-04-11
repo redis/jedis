@@ -25,6 +25,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.resps.AccessControlLogEntry;
 import redis.clients.jedis.resps.AccessControlUser;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
@@ -442,6 +443,30 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertEquals(status, "OK");
 
     jedis.aclDelUser("antirez");
+  }
+
+  @Test
+  public void aclLogWithEntryID() {
+    try {
+      jedis.auth("wronguser", "wrongpass");
+      fail("wrong user should not passed");
+    } catch (JedisAccessControlException e) {
+    }
+
+    List<AccessControlLogEntry> aclEntries = jedis.aclLog();
+    assertEquals("Number of log messages ", 1, aclEntries.size());
+    assertEquals(1, aclEntries.get(0).getCount());
+    assertEquals("wronguser", aclEntries.get(0).getUsername());
+    assertEquals("toplevel", aclEntries.get(0).getContext());
+    assertEquals("auth", aclEntries.get(0).getReason());
+    assertEquals("AUTH", aclEntries.get(0).getObject());
+    assertTrue(aclEntries.get(0).getEntryId() >= 0);
+    assertTrue(aclEntries.get(0).getTimestampCreated() > 0);
+    assertEquals(aclEntries.get(0).getTimestampCreated(), aclEntries.get(0).getTimestampLastUpdated());
+
+    // RESET
+    String status = jedis.aclLogReset();
+    assertEquals(status, "OK");
   }
 
   @Test

@@ -19,6 +19,10 @@ public class AccessControlLogEntry implements Serializable {
   public static final String USERNAME = "username";
   public static final String AGE_SECONDS = "age-seconds";
   public static final String CLIENT_INFO = "client-info";
+  // Redis 7.2
+  public static final String ENTRY_ID = "entry-id";
+  public static final String TIMESTAMP_CREATED = "timestamp-created";
+  public static final String TIMESTAMP_LAST_UPDATED = "timestamp-last-updated";
 
   private long count;
   private final String reason;
@@ -28,6 +32,9 @@ public class AccessControlLogEntry implements Serializable {
   private final String ageSeconds;
   private final Map<String, String> clientInfo;
   private final Map<String, Object> logEntry;
+  private final long entryId;
+  private final long timestampCreated;
+  private final long timestampLastUpdated;
 
   public AccessControlLogEntry(Map<String, Object> map) {
     count = (long) map.get(COUNT);
@@ -38,6 +45,9 @@ public class AccessControlLogEntry implements Serializable {
     ageSeconds = (String) map.get(AGE_SECONDS);
     clientInfo = getMapFromRawClientInfo((String) map.get(CLIENT_INFO));
     logEntry = map;
+    entryId = (long) map.get(ENTRY_ID);
+    timestampCreated = (long) map.get(TIMESTAMP_CREATED);
+    timestampLastUpdated = (long) map.get(TIMESTAMP_LAST_UPDATED);
   }
 
   public long getCount() {
@@ -75,6 +85,18 @@ public class AccessControlLogEntry implements Serializable {
     return logEntry;
   }
 
+  public long getEntryId() {
+    return entryId;
+  }
+
+  public long getTimestampCreated() {
+    return timestampCreated;
+  }
+
+  public long getTimestampLastUpdated() {
+    return timestampLastUpdated;
+  }
+
   /**
    * Convert the client-info string into a Map of String. When the value is empty, the value in the
    * map is set to an empty string The key order is maintained to reflect the string return by Redis
@@ -95,6 +117,8 @@ public class AccessControlLogEntry implements Serializable {
   public String toString() {
     return "AccessControlLogEntry{" + "count=" + count + ", reason='" + reason + '\''
         + ", context='" + context + '\'' + ", object='" + object + '\'' + ", username='" + username
-        + '\'' + ", ageSeconds='" + ageSeconds + '\'' + ", clientInfo=" + clientInfo + '}';
+        + '\'' + ", ageSeconds='" + ageSeconds + '\'' + ", clientInfo=" + clientInfo
+        + ", entryId=" + entryId + ", timestampCreated=" + timestampCreated
+        + ", timestampLastUpdated=" + timestampLastUpdated + '}';
   }
 }

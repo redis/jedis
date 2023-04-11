@@ -158,4 +158,16 @@ public interface ClientCommands {
    * @return OK
    */
   String clientNoEvictOff();
+
+  /**
+   * Turn on <a href="https://redis.io/commands/client-no-touch/">CLIENT NO-TOUCH</a>
+   * @return OK
+   */
+  String clientNoTouchOn();
+
+  /**
+   * Turn off <a href="https://redis.io/commands/client-no-touch/">CLIENT NO-TOUCH</a>
+   * @return OK
+   */
+  String clientNoTouchOff();
 }

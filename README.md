@@ -105,7 +105,7 @@ Jedis supports retry and failover for your Redis deployments. This is useful whe
 
 ### Configuring failover
 
-To configure Jedis for failover, you specify an ordered list of Redis databases to connect to.
+To configure Jedis for failover, you specify an ordered list of Redis databases.
 By default, Jedis will connect to the first Redis database in the list. If the first database becomes unavailable,
 Jedis will attempt to connect to the next database in the list, and so on.
 

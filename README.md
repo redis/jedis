@@ -122,7 +122,7 @@ clientConfigs[1] = new ClusterJedisClientConfig(new HostAndPort("redis-west.exam
 ```
 
 The configuration above represents two example Redis databases: `redis-east.example.com` and `redis-west.example.com`.
-(Note: If you're running Redis Enterprise, it's important that these two databases reside in separate clusters.)
+(Note: If you're running Redis Enterprise, we recommend that these two databases reside in separate clusters that are geo-distributed for regional / data center failover.)
 
 You can use these configuration objects to create and configure a connection provider that supports failover:
 
@@ -136,7 +136,7 @@ MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnection
 ```
 
 Internally, the connection provider uses a [configurable circuit breaker and retry implementation](https://resilience4j.readme.io/docs/circuitbreaker) to determine when to fail over.
-In this configuration, we've set a sliding window size of 10 and a failure rate threshold of 50%. This means that a failover will be triggered if 5 out of any 10 calls to Redis fail.
+In this configuration, we've set a sliding window size of 10 and a failure rate threshold of 50%. This means that a failover will be triggered if 5 out of any 10 calls to Redis fail. Note that you can also configure a time-based sliding window. See the configuration details below for how to set this up.
 
 Once you've configured and created a `MultiClusterPooledConnectionProvider`, instantiate a `UnifiedJedis` instance for your application, passing in the provider you just created:
 

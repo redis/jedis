@@ -10,7 +10,7 @@ This failure threshold is implemented using a [circuit breaker pattern](https://
 
 You can also configure Jedis to retry failed calls to Redis.
 Once a maximum number of retries have been exhausted, the circuit breaker will record a failure.
-When the circuit breaker reaches its failure threshold, a failover is triggered.
+When the circuit breaker reaches its failure threshold, a failover will be triggered on the subsequent operation.
 
 The remainder of this guide describes:
 
@@ -23,7 +23,7 @@ in production.
 
 ## Basic usage
 
-To configure Jedis for failover, you specify an ordered list of Redis databases to connect to.
+To configure Jedis for failover, you specify an ordered list of Redis databases.
 By default, Jedis will connect to the first Redis database in the list. If the first database becomes unavailable,
 Jedis will attempt to connect to the next database in the list, and so on.
 

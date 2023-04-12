@@ -96,13 +96,13 @@ public abstract class JedisClusterConnectionHandler implements Closeable {
       final JedisClientConfig seedNodesClientConfig,
       final GenericObjectPoolConfig<Jedis> poolConfig,
       final JedisClientConfig clusterNodesClientConfig) {
-    this.cache = new JedisClusterInfoCache(poolConfig, clusterNodesClientConfig);
+    this.cache = new JedisClusterInfoCache(poolConfig, clusterNodesClientConfig, nodes);
     initializeSlotsCache(nodes, seedNodesClientConfig);
   }
 
   public JedisClusterConnectionHandler(Set<HostAndPort> nodes,
       final GenericObjectPoolConfig<Jedis> poolConfig, final JedisClientConfig clientConfig) {
-    this.cache = new JedisClusterInfoCache(poolConfig, clientConfig);
+    this.cache = new JedisClusterInfoCache(poolConfig, clientConfig, nodes);
     initializeSlotsCache(nodes, clientConfig);
   }
 

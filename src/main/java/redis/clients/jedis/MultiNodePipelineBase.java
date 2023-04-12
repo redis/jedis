@@ -21,6 +21,8 @@ import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.commands.SampleBinaryKeyedPipelineCommands;
+import redis.clients.jedis.commands.SampleKeyedPipelineCommands;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
@@ -40,7 +42,7 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 
 public abstract class MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
-    RedisModulePipelineCommands, Closeable {
+    SampleKeyedPipelineCommands, SampleBinaryKeyedPipelineCommands, RedisModulePipelineCommands, Closeable {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -4329,10 +4331,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.graphProfile(graphName, query));
   }
   // RedisGraph commands
-
-  public Response<Long> waitReplicas(int replicas, long timeout) {
-    return appendCommand(commandObjects.waitReplicas(replicas, timeout));
-  }
 
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.commandObjects.setJsonObjectMapper(jsonObjectMapper);

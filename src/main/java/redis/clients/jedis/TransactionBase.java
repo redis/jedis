@@ -1722,47 +1722,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
 
-
-  @Override
-  public Response<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
-    return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
-  }
-
-  @Override
-  public Response<Object> eval(String script, String sampleKey) {
-    return appendCommand(commandObjects.eval(script, sampleKey));
-  }
-
-  @Override
-  public Response<Object> evalsha(String sha1, String sampleKey) {
-    return appendCommand(commandObjects.evalsha(sha1, sampleKey));
-  }
-
-  @Override
-  public Response<List<Boolean>> scriptExists(String sampleKey, String... sha1) {
-    return appendCommand(commandObjects.scriptExists(sampleKey, sha1));
-  }
-
-  @Override
-  public Response<String> scriptLoad(String script, String sampleKey) {
-    return appendCommand(commandObjects.scriptLoad(script, sampleKey));
-  }
-
-  @Override
-  public Response<String> scriptFlush(String sampleKey) {
-    return appendCommand(commandObjects.scriptFlush(sampleKey));
-  }
-
-  @Override
-  public Response<String> scriptFlush(String sampleKey, FlushMode flushMode) {
-    return appendCommand(commandObjects.scriptFlush(sampleKey, flushMode));
-  }
-
-  @Override
-  public Response<String> scriptKill(String sampleKey) {
-    return appendCommand(commandObjects.scriptKill(sampleKey));
-  }
-
   @Override
   public Response<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
     return appendCommand(commandObjects.fcall(name, keys, args));
@@ -2542,46 +2501,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   public Response<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
     return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
-  }
-
-  @Override
-  public Response<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout) {
-    return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
-  }
-
-  @Override
-  public Response<Object> eval(byte[] script, byte[] sampleKey) {
-    return appendCommand(commandObjects.eval(script, sampleKey));
-  }
-
-  @Override
-  public Response<Object> evalsha(byte[] sha1, byte[] sampleKey) {
-    return appendCommand(commandObjects.evalsha(sha1, sampleKey));
-  }
-
-  @Override
-  public Response<List<Boolean>> scriptExists(byte[] sampleKey, byte[]... sha1s) {
-    return appendCommand(commandObjects.scriptExists(sampleKey, sha1s));
-  }
-
-  @Override
-  public Response<byte[]> scriptLoad(byte[] script, byte[] sampleKey) {
-    return appendCommand(commandObjects.scriptLoad(script, sampleKey));
-  }
-
-  @Override
-  public Response<String> scriptFlush(byte[] sampleKey) {
-    return appendCommand(commandObjects.scriptFlush(sampleKey));
-  }
-
-  @Override
-  public Response<String> scriptFlush(byte[] sampleKey, FlushMode flushMode) {
-    return appendCommand(commandObjects.scriptFlush(sampleKey, flushMode));
-  }
-
-  @Override
-  public Response<String> scriptKill(byte[] sampleKey) {
-    return appendCommand(commandObjects.scriptKill(sampleKey));
   }
 
   @Override

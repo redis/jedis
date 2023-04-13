@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -21,8 +22,8 @@ import redis.clients.jedis.util.SafeEncoder;
 public class JedisClusterInfoCache {
 
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
-  private final Map<Integer, ConnectionPool> slots = new HashMap<>();
-  private final Map<Integer, HostAndPort> slotNodes = new HashMap<>();
+  private final TreeMap<Integer, ConnectionPool> slots = new TreeMap<>();
+  private final TreeMap<Integer, HostAndPort> slotNodes = new TreeMap<>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -89,6 +90,8 @@ public class JedisClusterInfoCache {
           }
         }
       }
+      mapReduceBySlot(slots);
+      mapReduceBySlot(slotNodes);
     } finally {
       w.unlock();
     }
@@ -176,6 +179,8 @@ public class JedisClusterInfoCache {
           }
         }
       }
+      mapReduceBySlot(slots);
+      mapReduceBySlot(slotNodes);
 
       // Remove dead nodes according to the latest query
       Iterator<Entry<String, ConnectionPool>> entryIt = nodes.entrySet().iterator();
@@ -195,6 +200,17 @@ public class JedisClusterInfoCache {
       }
     } finally {
       w.unlock();
+    }
+  }
+
+  private void mapReduceBySlot(TreeMap<Integer, ?> treeMap) {
+    Iterator<? extends Entry<Integer, ?>> iterator = treeMap.entrySet().iterator();
+    while (iterator.hasNext()) {
+      Entry<Integer, ?> temp = iterator.next();
+      Integer lowerKey = treeMap.lowerKey(temp.getKey());
+      if (lowerKey != null && temp.getValue().equals(treeMap.get(lowerKey))) {
+        iterator.remove();
+      }
     }
   }
 
@@ -260,7 +276,8 @@ public class JedisClusterInfoCache {
   public ConnectionPool getSlotPool(int slot) {
     r.lock();
     try {
-      return slots.get(slot);
+      ConnectionPool connectionPool = slots.get(slot);
+      return connectionPool == null ? slots.lowerEntry(slot).getValue() : connectionPool;
     } finally {
       r.unlock();
     }
@@ -269,7 +286,8 @@ public class JedisClusterInfoCache {
   public HostAndPort getSlotNode(int slot) {
     r.lock();
     try {
-      return slotNodes.get(slot);
+      HostAndPort hostAndPort = slotNodes.get(slot);
+      return hostAndPort == null ? slotNodes.lowerEntry(slot).getValue() : hostAndPort;
     } finally {
       r.unlock();
     }

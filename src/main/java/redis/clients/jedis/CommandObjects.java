@@ -3183,8 +3183,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).add(query).addParams(params),
-        new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
+        .add(query).addParams(params), new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, Query query) {
@@ -3198,21 +3198,25 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> ftExplain(String indexName, Query query) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.EXPLAIN), indexName).addParams(query), BuilderFactory.STRING);
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.EXPLAIN), indexName)
+        .addParams(query), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<String>> ftExplainCLI(String indexName, Query query) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.EXPLAINCLI), indexName).addParams(query), BuilderFactory.STRING_LIST);
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.EXPLAINCLI), indexName)
+        .addParams(query), BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.AGGREGATE), indexName).addObjects(aggr.getArgs()),
-        !aggr.isWithCursor() ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.AGGREGATE), indexName)
+        .addObjects(aggr.getArgs()), !aggr.isWithCursor() ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
+        : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
   public final CommandObject<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
     return new CommandObject<>(commandArguments(SearchCommand.CURSOR).add(SearchKeyword.READ)
-        .add(indexName).add(cursorId).add(SearchKeyword.COUNT).add(count), SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+        .add(indexName).add(cursorId).add(SearchKeyword.COUNT).add(count),
+        SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
   public final CommandObject<String> ftCursorDel(String indexName, long cursorId) {
@@ -3250,7 +3254,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> ftDropIndexDD(String indexName) {
-    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD),
+        BuilderFactory.STRING);
   }
 
   public final CommandObject<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
@@ -3259,15 +3264,18 @@ public class CommandObjects {
   }
 
   public final CommandObject<Map<String, List<String>>> ftSynDump(String indexName) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SYNDUMP), indexName), SearchBuilderFactory.SEARCH_SYNONYM_GROUPS);
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SYNDUMP), indexName),
+        SearchBuilderFactory.SEARCH_SYNONYM_GROUPS);
   }
 
   public final CommandObject<Long> ftDictAdd(String dictionary, String... terms) {
-    return new CommandObject<>(commandArguments(SearchCommand.DICTADD).add(dictionary).addObjects((Object[]) terms), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SearchCommand.DICTADD).add(dictionary).addObjects((Object[]) terms),
+        BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> ftDictDel(String dictionary, String... terms) {
-    return new CommandObject<>(commandArguments(SearchCommand.DICTDEL).add(dictionary).addObjects((Object[]) terms), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SearchCommand.DICTDEL).add(dictionary).addObjects((Object[]) terms),
+        BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<String>> ftDictDump(String dictionary) {
@@ -3298,11 +3306,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<Map<String, Object>> ftInfo(String indexName) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.INFO), indexName), BuilderFactory.ENCODED_OBJECT_MAP);
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.INFO), indexName),
+        BuilderFactory.ENCODED_OBJECT_MAP);
   }
 
   public final CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.TAGVALS), indexName).add(fieldName), BuilderFactory.STRING_SET);
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.TAGVALS), indexName)
+        .add(fieldName), BuilderFactory.STRING_SET);
   }
 
   public final CommandObject<String> ftAliasAdd(String aliasName, String indexName) {

@@ -26,6 +26,7 @@ import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -39,6 +40,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
 
   protected final Connection connection;
+  private final boolean closeConnection;
   private final CommandObjects commandObjects;
   private final GraphCommandObjects graphCommandObjects;
 
@@ -51,6 +53,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
    * 
    * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
    * called with this object.
+   * @param connection connection
    */
   public TransactionBase(Connection connection) {
     this(connection, true);
@@ -66,7 +69,22 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   public TransactionBase(Connection connection, boolean doMulti) {
+    this(connection, doMulti, false);
+  }
+
+  /**
+   * Creates a new transaction.
+   *
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param closeConnection should the 'connection' be closed when 'close()' is called?
+   */
+  public TransactionBase(Connection connection, boolean doMulti, boolean closeConnection) {
     this.connection = connection;
+    this.closeConnection = closeConnection;
     this.commandObjects = new CommandObjects();
     this.graphCommandObjects = new GraphCommandObjects(this.connection);
     if (doMulti) multi();
@@ -111,7 +129,13 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   @Override
   public final void close() {
-    clear();
+    try {
+      clear();
+    } finally {
+      if (closeConnection) {
+        connection.close();
+      }
+    }
   }
 
   public final void clear() {
@@ -4375,5 +4399,9 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   public <T> Response<T> executeCommand(CommandObject<T> command) {
     return appendCommand(command);
+  }
+
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.commandObjects.setJsonObjectMapper(jsonObjectMapper);
   }
 }

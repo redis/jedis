@@ -20,6 +20,7 @@ import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -4290,7 +4291,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   @Override
   public Response<String> select(final int index) {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.SELECT), BuilderFactory.STRING));
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.SELECT).add(index), BuilderFactory.STRING));
   }
 
   @Override
@@ -4360,5 +4361,9 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   public <T> Response<T> executeCommand(CommandObject<T> command) {
     return appendCommand(command);
+  }
+
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.commandObjects.setJsonObjectMapper(jsonObjectMapper);
   }
 }

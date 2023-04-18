@@ -54,14 +54,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     final Connection jedis = pooledConnection.getObject();
     if (jedis.isConnected()) {
       try {
-        // need a proper test, probably with mock
-        if (!jedis.isBroken()) {
-          jedis.quit();
-        }
-      } catch (RuntimeException e) {
-        logger.debug("Error while QUIT", e);
-      }
-      try {
         jedis.close();
       } catch (RuntimeException e) {
         logger.debug("Error while close", e);
@@ -74,21 +66,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     Connection jedis = null;
     try {
       jedis = new Connection(jedisSocketFactory, clientConfig);
-      jedis.connect();
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
-      if (jedis != null) {
-        try {
-          jedis.quit();
-        } catch (RuntimeException e) {
-          logger.debug("Error while QUIT", e);
-        }
-        try {
-          jedis.close();
-        } catch (RuntimeException e) {
-          logger.debug("Error while close", e);
-        }
-      }
+      logger.debug("Error while makeObject", je);
       throw je;
     }
   }

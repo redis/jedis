@@ -925,6 +925,9 @@ public final class BuilderFactory {
       tempMappingFunctions.put(AccessControlLogEntry.USERNAME, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.CLIENT_INFO, STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.ENTRY_ID, LONG);
+      tempMappingFunctions.put(AccessControlLogEntry.TIMESTAMP_CREATED, LONG);
+      tempMappingFunctions.put(AccessControlLogEntry.TIMESTAMP_LAST_UPDATED, LONG);
 
       return tempMappingFunctions;
     }

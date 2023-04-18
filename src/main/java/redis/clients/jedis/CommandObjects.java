@@ -3,10 +3,7 @@ package redis.clients.jedis;
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -20,6 +17,8 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
+import redis.clients.jedis.json.DefaultGsonObjectMapper;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
@@ -34,8 +33,32 @@ import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
+  private volatile JsonObjectMapper jsonObjectMapper;
+
   protected CommandArguments commandArguments(ProtocolCommand command) {
     return new CommandArguments(command);
+  }
+
+  private final CommandObject<String> PING_COMMAND_OBJECT = new CommandObject<>(commandArguments(PING), BuilderFactory.STRING);
+
+  public final CommandObject<String> ping() {
+    return PING_COMMAND_OBJECT;
+  }
+
+  private final CommandObject<String> FLUSHALL_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHALL), BuilderFactory.STRING);
+
+  public final CommandObject<String> flushAll() {
+    return FLUSHALL_COMMAND_OBJECT;
+  }
+
+  private final CommandObject<String> FLUSHDB_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHDB), BuilderFactory.STRING);
+
+  public final CommandObject<String> flushDB() {
+    return FLUSHDB_COMMAND_OBJECT;
+  }
+
+  public final CommandObject<String> configSet(String parameter, String value) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
   }
 
   // Key commands
@@ -645,7 +668,7 @@ public class CommandObjects {
    * @param keyA
    * @param keyB
    * @param params
-   * @return 
+   * @return
    * @deprecated STRALGO LCS command will be removed from Redis 7.
    * LCS can be used instead of this method.
    */
@@ -659,7 +682,7 @@ public class CommandObjects {
    * @param keyA
    * @param keyB
    * @param params
-   * @return 
+   * @return
    * @deprecated STRALGO LCS command will be removed from Redis 7.
    * LCS can be used instead of this method.
    */
@@ -2450,7 +2473,7 @@ public class CommandObjects {
    * @param end
    * @param count
    * @param consumerName
-   * @return 
+   * @return
    * @deprecated Use {@link CommandObjects#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
    */
   @Deprecated
@@ -2765,13 +2788,27 @@ public class CommandObjects {
         BuilderFactory.RAW_OBJECT);
   }
 
+  public final CommandObject<List<Boolean>> scriptExists(List<String> sha1s) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects(sha1s), BuilderFactory.BOOLEAN_LIST);
+  }
+
   public final CommandObject<List<Boolean>> scriptExists(String sampleKey, String... sha1s) {
     return new CommandObject<>(commandArguments(SCRIPT).add(Keyword.EXISTS).addObjects((Object[]) sha1s)
         .processKey(sampleKey), BuilderFactory.BOOLEAN_LIST);
   }
 
+  public final CommandObject<String> scriptLoad(String script) {
+    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> scriptLoad(String script, String sampleKey) {
     return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  private final CommandObject<String> SCRIPT_FLUSH_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(FLUSH), BuilderFactory.STRING);
+
+  public final CommandObject<String> scriptFlush() {
+    return SCRIPT_FLUSH_COMMAND_OBJECT;
   }
 
   public final CommandObject<String> scriptFlush(String sampleKey) {
@@ -2780,6 +2817,12 @@ public class CommandObjects {
 
   public final CommandObject<String> scriptFlush(String sampleKey, FlushMode flushMode) {
     return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  private final CommandObject<String> SCRIPT_KILL_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
+
+  public final CommandObject<String> scriptKill() {
+    return SCRIPT_KILL_COMMAND_OBJECT;
   }
 
   public final CommandObject<String> scriptKill(String sampleKey) {
@@ -2805,6 +2848,12 @@ public class CommandObjects {
 
   public final CommandObject<String> scriptKill(byte[] sampleKey) {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
+  }
+
+  private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT = new CommandObject<>(commandArguments(SLOWLOG).add(RESET), BuilderFactory.STRING);
+
+  public final CommandObject<String> slowlogReset() {
+    return SLOWLOG_RESET_COMMAND_OBJECT;
   }
 
   public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {
@@ -3135,7 +3184,7 @@ public class CommandObjects {
 
   public CommandObject<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
     return new CommandObject<>(commandArguments(SearchCommand.CURSOR).add(SearchKeyword.READ)
-        .add(indexName).add(cursorId).add(count), SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+        .add(indexName).add(cursorId).add(SearchKeyword.COUNT).add(count), SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
   public CommandObject<String> ftCursorDel(String indexName, long cursorId) {
@@ -3306,11 +3355,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> jsonSetWithEscape(String key, Path2 path, Object object) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GsonJson.toJson(object)), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(
+        getJsonObjectMapper().toJson(object)), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object pojo) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GsonJson.toJson(pojo)), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(
+        getJsonObjectMapper().toJson(pojo)), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSetWithPlainString(String key, Path path, String string) {
@@ -3322,19 +3373,21 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> jsonSetWithEscape(String key, Path2 path, Object object, JsonSetParams params) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GsonJson.toJson(object)).addParams(params), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(
+        getJsonObjectMapper().toJson(object)).addParams(params), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> jsonSet(String key, Path path, Object pojo, JsonSetParams params) {
-    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(GsonJson.toJson(pojo)).addParams(params), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(JsonCommand.SET).key(key).add(path).add(
+        getJsonObjectMapper().toJson(pojo)).addParams(params), BuilderFactory.STRING);
   }
 
   public final CommandObject<Object> jsonGet(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new GsonObjectBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new JsonObjectBuilder<>(Object.class));
   }
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new GsonObjectBuilder<>(clazz));
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new JsonObjectBuilder<>(clazz));
   }
 
   public final CommandObject<Object> jsonGet(String key, Path2... paths) {
@@ -3342,7 +3395,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> jsonGet(String key, Path... paths) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new GsonObjectBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new JsonObjectBuilder<>(Object.class));
   }
 
   public final CommandObject<String> jsonGetAsPlainString(String key, Path path) {
@@ -3350,7 +3403,7 @@ public class CommandObjects {
   }
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz, Path... paths) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new GsonObjectBuilder<>(clazz));
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new JsonObjectBuilder<>(clazz));
   }
 
   public final CommandObject<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
@@ -3358,7 +3411,7 @@ public class CommandObjects {
   }
 
   public final <T> CommandObject<List<T>> jsonMGet(Path path, Class<T> clazz, String... keys) {
-    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), new GsonObjectListBuilder<>(clazz));
+    return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), new JsonObjectListBuilder<>(clazz));
   }
 
   public final CommandObject<Long> jsonDel(String key) {
@@ -3406,15 +3459,18 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(GsonJson.toJson(string)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(
+        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> jsonStrAppend(String key, Path2 path, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(GsonJson.toJson(string)), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(
+        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<Long> jsonStrAppend(String key, Path path, Object string) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(GsonJson.toJson(string)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(
+        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> jsonStrLen(String key) {
@@ -3453,7 +3509,7 @@ public class CommandObjects {
   public final CommandObject<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object object : objects) {
-      args.add(GsonJson.toJson(object));
+      args.add(getJsonObjectMapper().toJson(object));
     }
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }
@@ -3461,7 +3517,7 @@ public class CommandObjects {
   public final CommandObject<Long> jsonArrAppend(String key, Path path, Object... pojos) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object pojo : pojos) {
-      args.add(GsonJson.toJson(pojo));
+      args.add(getJsonObjectMapper().toJson(pojo));
     }
     return new CommandObject<>(args, BuilderFactory.LONG);
   }
@@ -3471,11 +3527,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Long>> jsonArrIndexWithEscape(String key, Path2 path, Object scalar) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(GsonJson.toJson(scalar)), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(
+        getJsonObjectMapper().toJson(scalar)), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<Long> jsonArrIndex(String key, Path path, Object scalar) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(GsonJson.toJson(scalar)), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(
+        getJsonObjectMapper().toJson(scalar)), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> jsonArrInsert(String key, Path2 path, int index, Object... objects) {
@@ -3486,7 +3544,7 @@ public class CommandObjects {
   public final CommandObject<List<Long>> jsonArrInsertWithEscape(String key, Path2 path, int index, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
     for (Object object : objects) {
-      args.add(GsonJson.toJson(object));
+      args.add(getJsonObjectMapper().toJson(object));
     }
     return new CommandObject<>(args, BuilderFactory.LONG_LIST);
   }
@@ -3494,41 +3552,41 @@ public class CommandObjects {
   public final CommandObject<Long> jsonArrInsert(String key, Path path, int index, Object... pojos) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index);
     for (Object pojo : pojos) {
-      args.add(GsonJson.toJson(pojo));
+      args.add(getJsonObjectMapper().toJson(pojo));
     }
     return new CommandObject<>(args, BuilderFactory.LONG);
   }
 
   public final CommandObject<Object> jsonArrPop(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key), new GsonObjectBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key), new JsonObjectBuilder<>(Object.class));
   }
 
   public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key), new GsonObjectBuilder<>(clazz));
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key), new JsonObjectBuilder<>(clazz));
   }
 
   public final CommandObject<List<Object>> jsonArrPop(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path), new GsonObjectListBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path), new JsonObjectListBuilder<>(Object.class));
   }
 
   public final CommandObject<Object> jsonArrPop(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path), new GsonObjectBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path), new JsonObjectBuilder<>(Object.class));
   }
 
   public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path), new GsonObjectBuilder<>(clazz));
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path), new JsonObjectBuilder<>(clazz));
   }
 
   public final CommandObject<List<Object>> jsonArrPop(String key, Path2 path, int index) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectListBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new JsonObjectListBuilder<>(Object.class));
   }
 
   public final CommandObject<Object> jsonArrPop(String key, Path path, int index) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new JsonObjectBuilder<>(Object.class));
   }
 
   public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, int index) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new GsonObjectBuilder<>(clazz));
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new JsonObjectBuilder<>(clazz));
   }
 
   public final CommandObject<Long> jsonArrLen(String key) {
@@ -4034,6 +4092,33 @@ public class CommandObjects {
   public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
+
+  /**
+   * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
+   * default implementation will be created and returned.
+   * <p>This process of checking whether or not
+   * the instance reference exists follows <a
+   * href="https://en.wikipedia.org/wiki/Double-checked_locking#Usage_in_Java"
+   * target="_blank">'double-checked lock optimization'</a> approach to reduce the overhead of
+   * acquiring a lock by testing the lock criteria (the "lock hint") before acquiring the lock.</p>
+   * @return the JsonObjectMapper instance reference
+   * @see DefaultGsonObjectMapper
+   */
+  private JsonObjectMapper getJsonObjectMapper() {
+    JsonObjectMapper localRef = this.jsonObjectMapper;
+    if (Objects.isNull(localRef)) {
+      synchronized (this) {
+        localRef = this.jsonObjectMapper;
+        if (Objects.isNull(localRef)) {
+          this.jsonObjectMapper = localRef = new DefaultGsonObjectMapper();
+        }
+      }
+    }
+    return localRef;
+  }
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.jsonObjectMapper = jsonObjectMapper;
+  }
   // RedisGraph commands
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
@@ -4051,25 +4136,25 @@ public class CommandObjects {
           SearchBuilderFactory.SEARCH_PROFILE_PROFILE.build(list.get(1)));
     }
   }
-  private class GsonObjectBuilder<T> extends Builder<T> {
+  private class JsonObjectBuilder<T> extends Builder<T> {
 
     private final Class<T> clazz;
 
-    public GsonObjectBuilder(Class<T> clazz) {
+    public JsonObjectBuilder(Class<T> clazz) {
       this.clazz = clazz;
     }
 
     @Override
     public T build(Object data) {
-      return GsonJson.fromJson(BuilderFactory.STRING.build(data), clazz);
+      return getJsonObjectMapper().fromJson(BuilderFactory.STRING.build(data), clazz);
     }
   }
 
-  private class GsonObjectListBuilder<T> extends Builder<List<T>> {
+  private class JsonObjectListBuilder<T> extends Builder<List<T>> {
 
     private final Class<T> clazz;
 
-    public GsonObjectListBuilder(Class<T> clazz) {
+    public JsonObjectListBuilder(Class<T> clazz) {
       this.clazz = clazz;
     }
 
@@ -4079,7 +4164,7 @@ public class CommandObjects {
         return null;
       }
       List<String> list = BuilderFactory.STRING_LIST.build(data);
-      return list.stream().map(s -> GsonJson.fromJson(s, clazz)).collect(Collectors.toList());
+      return list.stream().map(s -> getJsonObjectMapper().fromJson(s, clazz)).collect(Collectors.toList());
     }
   }
 

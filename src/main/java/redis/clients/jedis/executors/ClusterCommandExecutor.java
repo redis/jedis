@@ -2,6 +2,7 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -9,6 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPool;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
@@ -32,6 +35,40 @@ public class ClusterCommandExecutor implements CommandExecutor {
   @Override
   public void close() {
     this.provider.close();
+  }
+
+  @Override
+  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
+    Map<String, ConnectionPool> connectionMap = provider.getConnectionMap();
+
+    boolean isErrored = false;
+    T reply = null;
+    JedisBroadcastException holder = new JedisBroadcastException();
+    for (Map.Entry<String, ConnectionPool> entry : connectionMap.entrySet()) {
+      HostAndPort node = HostAndPort.from(entry.getKey());
+      ConnectionPool pool = entry.getValue();
+      try (Connection connection = pool.getResource()) {
+        try {
+          T aReply = execute(connection, commandObject);
+          holder.addReply(node, aReply);
+          if (isErrored) { // already errored
+          } else if (reply == null) {
+            reply = aReply; // ok
+          } else if (reply.equals(aReply)) {
+            // ok
+          } else {
+            isErrored = true;
+            reply = null;
+          }
+        } catch (JedisDataException anError) {
+          holder.addError(node, anError);
+        }
+      }
+    }
+    if (isErrored) {
+      throw holder;
+    }
+    return reply;
   }
 
   @Override

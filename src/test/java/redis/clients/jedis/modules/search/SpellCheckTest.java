@@ -1,9 +1,6 @@
 package redis.clients.jedis.modules.search;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertThrows;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -82,16 +82,16 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   @Test
   public void distanceBound() {
     client.ftCreate(index, TextField.of("name"), TextField.of("body"));
-    assertThrows(JedisDataException.class, () -> client.ftSpellCheck(index, "name",
+    Assert.assertThrows(JedisDataException.class, () -> client.ftSpellCheck(index, "name",
         FTSpellCheckParams.spellCheckParams().distance(0)));
   }
 
   @Test
   public void dialectBound() {
     client.ftCreate(index, TextField.of("t"));
-    JedisDataException error = assertThrows(JedisDataException.class,
+    JedisDataException error = Assert.assertThrows(JedisDataException.class,
         () -> client.ftSpellCheck(index, "Tooni toque kerfuffle",
             FTSpellCheckParams.spellCheckParams().dialect(0)));
-    assertThat(error.getMessage(), containsString("DIALECT requires a non negative integer"));
+    MatcherAssert.assertThat(error.getMessage(), CoreMatchers.containsString("DIALECT requires a non negative integer"));
   }
 }

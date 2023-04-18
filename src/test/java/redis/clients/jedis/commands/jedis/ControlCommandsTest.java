@@ -1,13 +1,12 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.lessThan;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
@@ -21,6 +20,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -333,7 +333,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         }
       });
 
-      assertThat(latencyRead.get(), lessThan(100L));
+      assertThat(latencyRead.get(), Matchers.lessThan(100L));
 
       assertThat(latencyWrite.get(), greaterThan(100L));
 
@@ -354,6 +354,12 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void clientNoEvict() {
     assertEquals("OK", jedis.clientNoEvictOn());
     assertEquals("OK", jedis.clientNoEvictOff());
+  }
+
+  @Test
+  public void clientNoTouch() {
+    assertEquals("OK", jedis.clientNoTouchOn());
+    assertEquals("OK", jedis.clientNoTouchOff());
   }
 
   @Test

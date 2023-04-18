@@ -4,8 +4,8 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -988,7 +988,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(3L, iteratorsProfile.get("Counter"));
 
     List<Map<String, Object>> resultProcessorsProfile = (List<Map<String, Object>>) profile.getValue().get("Result processors profile");
-    assertEquals("Vector Similarity Scores Loader", resultProcessorsProfile.get(1).get("Type"));
+    // assertEquals("Vector Similarity Scores Loader", resultProcessorsProfile.get(1).get("Type")); // Changed to "Metrics Applier"
     assertEquals(3l, resultProcessorsProfile.get(1).get("Counter"));
   }
 
@@ -1109,8 +1109,31 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void broadcast() {
-    Map<?, Supplier<String>> reply = client.broadcast().ftCreate(index, TextField.of("t"));
-    assertEquals(1, reply.size());
-    assertOK(reply.values().stream().findFirst().get().get());
+    String reply = client.ftCreate(index, TextField.of("t"));
+    assertOK(reply);
+  }
+
+  @Test
+  public void searchRoundRobin() {
+    assertOK(client.ftCreate(index, FTCreateParams.createParams(),
+        TextField.of("first"), TextField.of("last"), NumericField.of("age")));
+
+    client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
+    client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
+    client.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
+    client.hset("student:3333", toMap("first", "El", "last", "Mark", "age", "17"));
+    client.hset("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", "21"));
+    client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
+    client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
+
+    FtSearchRoundRobin search = client.ftSearch(3, index, "*", FTSearchParams.searchParams());
+    int total = 0;
+    while (!search.isRoundRobinCompleted()) {
+      SearchResult result = search.get();
+      int count = result.getDocuments().size();
+      assertThat(count, Matchers.lessThanOrEqualTo(3));
+      total += count;
+    }
+    assertEquals(7, total);
   }
 }

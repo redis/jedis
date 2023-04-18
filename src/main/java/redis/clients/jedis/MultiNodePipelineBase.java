@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +27,7 @@ import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.resps.*;
@@ -39,12 +44,21 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
+  /**
+   * The number of processes for {@code sync()}. If you have enough cores for client (and you have
+   * more than 3 cluster nodes), you may increase this number of workers.
+   * Suggestion:&nbsp;&le;&nbsp;cluster&nbsp;nodes.
+   */
+  public static volatile int MULTI_NODE_PIPELINE_SYNC_WORKERS = 3;
+
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
   private volatile boolean syncing = false;
 
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
+
+  private final ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();
@@ -54,9 +68,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   /**
    * Sub-classes must call this method, if graph commands are going to be used.
+   * @param connectionProvider connection provider
    */
   protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
     this.graphCommandObjects = new GraphCommandObjects(connectionProvider);
+    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
   }
 
   protected abstract HostAndPort getNodeKey(CommandArguments args);
@@ -72,10 +88,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
       queue = pipelinedResponses.get(nodeKey);
       connection = connections.get(nodeKey);
     } else {
-      queue = new LinkedList<>();
-      connection = getConnection(nodeKey);
-      pipelinedResponses.put(nodeKey, queue);
-      connections.put(nodeKey, connection);
+      pipelinedResponses.putIfAbsent(nodeKey, new LinkedList<>());
+      queue = pipelinedResponses.get(nodeKey);
+
+      Connection newOne = getConnection(nodeKey);
+      connections.putIfAbsent(nodeKey, newOne);
+      connection = connections.get(nodeKey);
+      if (connection != newOne) {
+        log.debug("Duplicate connection to {}, closing it.", nodeKey);
+        IOUtils.closeQuietly(newOne);
+      }
     }
 
     connection.sendCommand(commandObject.getArguments());
@@ -99,6 +121,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     }
     syncing = true;
 
+    CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
     while (pipelinedResponsesIterator.hasNext()) {
@@ -106,18 +129,28 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
-      try {
-        List<Object> unformatted = connection.getMany(queue.size());
-        for (Object o : unformatted) {
-          queue.poll().set(o);
+      executorService.submit(() -> {
+        try {
+          List<Object> unformatted = connection.getMany(queue.size());
+          for (Object o : unformatted) {
+            queue.poll().set(o);
+          }
+        } catch (JedisConnectionException jce) {
+          log.error("Error with connection to " + nodeKey, jce);
+          // cleanup the connection
+          pipelinedResponsesIterator.remove();
+          connections.remove(nodeKey);
+          IOUtils.closeQuietly(connection);
+        } finally {
+          countDownLatch.countDown();
         }
-      } catch (JedisConnectionException jce) {
-        log.error("Error with connection to " + nodeKey, jce);
-        // cleanup the connection
-        pipelinedResponsesIterator.remove();
-        connections.remove(nodeKey);
-        IOUtils.closeQuietly(connection);
-      }
+      });
+    }
+
+    try {
+      countDownLatch.await();
+    } catch (InterruptedException e) {
+      log.error("Thread is interrupted during sync.", e);
     }
 
     syncing = false;
@@ -1004,7 +1037,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<Double>> zmscore(String key, String... members) {    
+  public Response<List<Double>> zmscore(String key, String... members) {
     return appendCommand(commandObjects.zmscore(key, members));
   }
 
@@ -4299,5 +4332,9 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
+  }
+
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.commandObjects.setJsonObjectMapper(jsonObjectMapper);
   }
 }

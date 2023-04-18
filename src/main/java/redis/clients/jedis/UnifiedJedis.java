@@ -201,6 +201,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
     this.broadcastAndRoundRobinConfig = config;
+    this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
   }
 
   public String ping() {

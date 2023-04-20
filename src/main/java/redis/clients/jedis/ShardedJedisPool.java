@@ -88,9 +88,17 @@ public class ShardedJedisPool extends Pool<ShardedJedis> {
       for (Jedis jedis : shardedJedis.getAllShards()) {
         if (jedis.isConnected()) {
           try {
+            // need a proper test, probably with mock
+            if (!jedis.isBroken()) {
+              jedis.quit();
+            }
+          } catch (RuntimeException e) {
+            logger.warn("Error while QUIT", e);
+          }
+          try {
             jedis.disconnect();
           } catch (RuntimeException e) {
-            logger.debug("Error while disconnect", e);
+            logger.warn("Error while disconnect", e);
           }
         }
       }

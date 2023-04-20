@@ -167,9 +167,16 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     Jedis jedis = null;
     try {
       jedis = new Jedis(jedisSocketFactory, clientConfig);
+      jedis.connect();
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
-      logger.debug("Error while makeObject", je);
+      if (jedis != null) {
+        try {
+          jedis.close();
+        } catch (RuntimeException e) {
+          logger.debug("Error while close", e);
+        }
+      }
       throw je;
     }
   }

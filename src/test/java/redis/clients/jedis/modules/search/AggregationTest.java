@@ -355,9 +355,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
         .sortBy(10, SortedField.desc("@sum"))
         .cursor(2, 10000);
 
-    ArrayList<Row> collect = new ArrayList<>();
-    client.ftAggregateIteration(index, agg).collect(collect);
-    assertEquals(4, collect.size());
+    assertEquals(4, client.ftAggregateIteration(index, agg).collect(new ArrayList<>()).size());
   }
 
   @Test

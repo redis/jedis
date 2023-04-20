@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.function.Supplier;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.CommandArguments;
@@ -90,9 +91,10 @@ public abstract class JedisCommandIterationBase<B, D> {
     return convertBatchToData(nextBatch());
   }
 
-  public final void collect(Collection<D> c) {
+  public final Collection<D> collect(Collection<D> c) {
     while (!isIterationCompleted()) {
       c.addAll(nextBatchList());
     }
+    return c;
   }
 }

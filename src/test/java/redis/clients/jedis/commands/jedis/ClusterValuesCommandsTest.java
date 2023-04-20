@@ -182,8 +182,6 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
       }
     }
 
-    Set<String> collect = new HashSet<>(26 * 26);
-    cluster.scanIteration(100, "*").collect(collect);
-    assertEquals(allIn, collect);
+    assertEquals(allIn, cluster.scanIteration(100, "*").collect(new HashSet<>(26 * 26)));
   }
 }

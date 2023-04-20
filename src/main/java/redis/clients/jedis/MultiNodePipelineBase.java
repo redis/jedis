@@ -3442,21 +3442,25 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  @Deprecated
   public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
     return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftCursorDel(String indexName, long cursorId) {
     return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftDropIndex(String indexName) {
     return appendCommand(commandObjects.ftDropIndex(indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftDropIndexDD(String indexName) {
     return appendCommand(commandObjects.ftDropIndexDD(indexName));
   }
@@ -3522,16 +3526,19 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasAdd(String aliasName, String indexName) {
     return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasUpdate(String aliasName, String indexName) {
     return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasDel(String aliasName) {
     return appendCommand(commandObjects.ftAliasDel(aliasName));
   }

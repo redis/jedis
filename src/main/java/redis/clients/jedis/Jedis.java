@@ -4336,6 +4336,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getBulkReply();
   }
 
+  @Override
+  public String clientNoTouchOn() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "NO-TOUCH", "ON");
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String clientNoTouchOff() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "NO-TOUCH", "OFF");
+    return connection.getStatusCodeReply();
+  }
+
   public List<String> time() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.TIME);

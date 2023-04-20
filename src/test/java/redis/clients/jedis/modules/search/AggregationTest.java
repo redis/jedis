@@ -10,6 +10,7 @@ import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -26,7 +27,7 @@ import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 import redis.clients.jedis.search.aggr.SortedField;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
-import redis.clients.jedis.search.aggr.FtAggregateRoundRobin;
+import redis.clients.jedis.search.aggr.FtAggregateIteration;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TextField;
 
@@ -314,7 +315,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void roundRobin() {
+  public void aggregateIteration() {
     client.ftCreate(index, TextField.of("name").sortable(), NumericField.of("count"));
 
     addDocument(new Document("data1").set("name", "abc").set("count", 10));
@@ -328,15 +329,33 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
         .sortBy(10, SortedField.desc("@sum"))
         .cursor(2, 10000);
 
-    FtAggregateRoundRobin rr = client.ftAggregateRoundRobin(index, agg);
+    FtAggregateIteration rr = client.ftAggregateIteration(index, agg);
     int total = 0;
-    while (!rr.isRoundRobinCompleted()) {
-      AggregationResult res = rr.get();
+    while (!rr.isIterationCompleted()) {
+      AggregationResult res = rr.nextBatch();
       int count = res.getRows().size();
       assertThat(count, Matchers.lessThanOrEqualTo(2));
       total += count;
     }
     assertEquals(4, total);
+  }
+
+  @Test
+  public void aggregateIterationCollect() {
+    client.ftCreate(index, TextField.of("name").sortable(), NumericField.of("count"));
+
+    addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    addDocument(new Document("data2").set("name", "def").set("count", 5));
+    addDocument(new Document("data3").set("name", "def").set("count", 25));
+    addDocument(new Document("data4").set("name", "ghi").set("count", 15));
+    addDocument(new Document("data5").set("name", "jkl").set("count", 20));
+
+    AggregationBuilder agg = new AggregationBuilder()
+        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .sortBy(10, SortedField.desc("@sum"))
+        .cursor(2, 10000);
+
+    assertEquals(4, client.ftAggregateIteration(index, agg).collect(new ArrayList<>()).size());
   }
 
   @Test

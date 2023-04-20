@@ -110,9 +110,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       }
     } catch (JedisException je) {
       try {
-        if (isConnected()) {
-          quit();
-        }
         disconnect();
       } catch (RuntimeException e) {
         //

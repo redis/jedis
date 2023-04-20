@@ -155,14 +155,6 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     final BinaryJedis jedis = pooledJedis.getObject();
     if (jedis.isConnected()) {
       try {
-        // need a proper test, probably with mock
-        if (!jedis.isBroken()) {
-          jedis.quit();
-        }
-      } catch (RuntimeException e) {
-        logger.debug("Error while QUIT", e);
-      }
-      try {
         jedis.close();
       } catch (RuntimeException e) {
         logger.debug("Error while close", e);
@@ -179,11 +171,6 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
       if (jedis != null) {
-        try {
-          jedis.quit();
-        } catch (RuntimeException e) {
-          logger.debug("Error while QUIT", e);
-        }
         try {
           jedis.close();
         } catch (RuntimeException e) {

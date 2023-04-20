@@ -59,19 +59,10 @@ public class BinaryShardedJedis extends Sharded<Jedis, JedisShardInfo> implement
     for (Jedis jedis : getAllShards()) {
       if (jedis.isConnected()) {
         try {
-          // need a proper test, probably with mock
-          if (!jedis.isBroken()) {
-            jedis.quit();
-          }
-        } catch (JedisConnectionException e) {
-          // ignore the exception node, so that all other normal nodes can release all connections.
-          logger.warn("Error while QUIT", e);
-        }
-        try {
           jedis.disconnect();
         } catch (JedisConnectionException e) {
           // ignore the exception node, so that all other normal nodes can release all connections.
-          logger.warn("Error while disconnect", e);
+          logger.debug("Error while disconnect", e);
         }
       }
     }

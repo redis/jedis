@@ -110,9 +110,6 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
       }
     } catch (JedisException je) {
       try {
-        if (isConnected()) {
-          quit();
-        }
         disconnect();
       } catch (RuntimeException e) {
         //
@@ -314,6 +311,9 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
     client.connect();
   }
 
+  /**
+   * Closing the socket will disconnect the server connection.
+   */
   public void disconnect() {
     client.disconnect();
   }
@@ -467,8 +467,11 @@ public class BinaryJedis implements BasicCommands, BinaryJedisCommands, MultiKey
 
   /**
    * Ask the server to silently close the connection.
+   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
+   * {@link BinaryJedis#disconnect()} can be used instead.
    */
   @Override
+  @Deprecated
   public String quit() {
     checkIsInMultiOrPipeline();
     client.quit();

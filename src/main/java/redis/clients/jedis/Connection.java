@@ -246,6 +246,9 @@ public class Connection implements Closeable {
     disconnect();
   }
 
+  /**
+   * Close the socket and disconnect the server.
+   */
   public void disconnect() {
     if (isConnected()) {
       try {

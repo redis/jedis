@@ -1114,7 +1114,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void searchRoundRobin() {
+  public void searchIteration() {
     assertOK(client.ftCreate(index, FTCreateParams.createParams(),
         TextField.of("first"), TextField.of("last"), NumericField.of("age")));
 
@@ -1126,14 +1126,35 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
     client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
 
-    FtSearchRoundRobin search = client.ftSearch(3, index, "*", FTSearchParams.searchParams());
+    FtSearchIteration search = client.ftSearchIteration(3, index, "*", FTSearchParams.searchParams());
     int total = 0;
-    while (!search.isRoundRobinCompleted()) {
-      SearchResult result = search.get();
+    while (!search.isIterationCompleted()) {
+      SearchResult result = search.nextBatch();
       int count = result.getDocuments().size();
       assertThat(count, Matchers.lessThanOrEqualTo(3));
       total += count;
     }
     assertEquals(7, total);
+  }
+
+  @Test
+  public void searchIterationCollect() {
+    assertOK(client.ftCreate(index, FTCreateParams.createParams(),
+        TextField.of("first"), TextField.of("last"), NumericField.of("age")));
+
+    client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
+    client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
+    client.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
+    client.hset("student:3333", toMap("first", "El", "last", "Mark", "age", "17"));
+    client.hset("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", "21"));
+    client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
+    client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
+
+    ArrayList<Document> collect = new ArrayList<>();
+    client.ftSearchIteration(3, index, "*", FTSearchParams.searchParams()).collect(collect);
+    assertEquals(7, collect.size());
+    assertEquals(Arrays.asList("profesor:5555", "student:1111", "pupil:2222", "student:3333",
+        "pupil:4444", "student:5555", "teacher:6666").stream().collect(Collectors.toSet()),
+        collect.stream().map(Document::getId).collect(Collectors.toSet()));
   }
 }

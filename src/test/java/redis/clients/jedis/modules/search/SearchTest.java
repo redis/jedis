@@ -1211,7 +1211,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void searchRoundRobin() throws Exception {
+  public void searchIteration() throws Exception {
     Schema sc = new Schema().addTextField("first", 1.0).addTextField("last", 1.0).addNumericField("age");
     IndexDefinition rule = new IndexDefinition();
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), sc));
@@ -1224,10 +1224,10 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
     client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
 
-    FtSearchRoundRobin search = client.ftSearch(3, index, new Query());
+    FtSearchIteration search = client.ftSearchIteration(3, index, new Query());
     int total = 0;
-    while (!search.isRoundRobinCompleted()) {
-      SearchResult result = search.get();
+    while (!search.isIterationCompleted()) {
+      SearchResult result = search.nextBatch();
       int count = result.getDocuments().size();
       assertThat(count, Matchers.lessThanOrEqualTo(3));
       total += count;

@@ -34,6 +34,7 @@ public class JedisClusterInfoCache {
 
   private final GenericObjectPoolConfig<Jedis> poolConfig;
   private final JedisClientConfig clientConfig;
+  private final Set<HostAndPort> startNodes;
 
   private static final int MASTER_NODE_INDEX = 2;
 
@@ -134,13 +135,14 @@ public class JedisClusterInfoCache {
         .blockingSocketTimeoutMillis(infiniteSoTimeout).user(user).password(password)
         .clientName(clientName).ssl(ssl).sslSocketFactory(sslSocketFactory)
         .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier)
-        .hostAndPortMapper(hostAndPortMap).build());
+        .hostAndPortMapper(hostAndPortMap).build(), null);
   }
 
   public JedisClusterInfoCache(final GenericObjectPoolConfig<Jedis> poolConfig,
-      final JedisClientConfig clientConfig) {
+      final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
+    this.startNodes = startNodes;
   }
 
   public void discoverClusterNodesAndSlots(Jedis jedis) {
@@ -181,6 +183,7 @@ public class JedisClusterInfoCache {
     // If rediscovering is already in process - no need to start one more same rediscovering, just return
     if (rediscoverLock.tryLock()) {
       try {
+        // First, if jedis is available, use jedis renew.
         if (jedis != null) {
           try {
             discoverClusterSlots(jedis);
@@ -190,20 +193,34 @@ public class JedisClusterInfoCache {
           }
         }
 
+        // Then, we use startNodes to try, as long as startNodes is available,
+        // whether it is vip, domain, or physical ip, it will succeed.
+        if (startNodes != null) {
+          for (HostAndPort hostAndPort : startNodes) {
+            try (Jedis j = new Jedis(hostAndPort, clientConfig)) {
+              discoverClusterSlots(j);
+              return;
+            } catch (JedisConnectionException e) {
+              // try next nodes
+            }
+          }
+        }
+
+        // Finally, we go back to the ShuffledNodesPool and try the remaining physical nodes.
         for (JedisPool jp : getShuffledNodesPool()) {
-          Jedis j = null;
-          try {
-            j = jp.getResource();
+          try (Jedis j = jp.getResource()) {
+            // If already tried in startNodes, skip this node.
+            HostAndPort hostAndPort = new HostAndPort(j.getClient().getHost(), j.getClient().getPort());
+            if (startNodes != null && startNodes.contains(hostAndPort)) {
+              continue;
+            }
             discoverClusterSlots(j);
             return;
           } catch (JedisConnectionException e) {
             // try next nodes
-          } finally {
-            if (j != null) {
-              j.close();
-            }
           }
         }
+
       } finally {
         rediscoverLock.unlock();
       }

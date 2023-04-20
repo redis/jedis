@@ -1,6 +1,7 @@
 package redis.clients.jedis.search.aggr;
 
 import java.util.Collection;
+
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchBuilderFactory;

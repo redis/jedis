@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.Collection;
 import java.util.function.Function;
+
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.providers.ConnectionProvider;

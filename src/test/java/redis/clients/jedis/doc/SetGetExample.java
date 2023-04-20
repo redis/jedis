@@ -16,15 +16,15 @@ public class SetGetExample {
         Jedis jedis = new Jedis("localhost", 6379);
 
         //HIDE_END
-        String status = jedis.set("bike:1", "Process 134");
+String status = jedis.set("bike:1", "Process 134");
 
-        if ("OK".equals(status))
-            System.out.println("Successfully added a bike.");
+if ("OK".equals(status))
+    System.out.println("Successfully added a bike.");
 
-        String value = jedis.get("bike:1");
+String value = jedis.get("bike:1");
 
-        if ( value != null)
-            System.out.println("The name of the bike is: " + value  + ".");
+if ( value != null)
+    System.out.println("The name of the bike is: " + value  + ".");
         //HIDE_START
         //REMOVE_START
         assertEquals("OK", status);

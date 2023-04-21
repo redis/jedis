@@ -1381,11 +1381,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<KeyValue<Long, Double>> zrankWithScore(String key, String member) {
-    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.RANK_WITHSCORE_PAIR);
+    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.ZRANK_WITHSCORE_PAIR);
   }
 
   public final CommandObject<KeyValue<Long, Double>> zrevrankWithScore(String key, String member) {
-    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.RANK_WITHSCORE_PAIR);
+    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.ZRANK_WITHSCORE_PAIR);
   }
 
   public final CommandObject<Long> zrank(byte[] key, byte[] member) {
@@ -1397,11 +1397,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<KeyValue<Long, Double>> zrankWithScore(byte[] key, byte[] member) {
-    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.RANK_WITHSCORE_PAIR);
+    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.ZRANK_WITHSCORE_PAIR);
   }
 
   public final CommandObject<KeyValue<Long, Double>> zrevrankWithScore(byte[] key, byte[] member) {
-    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.RANK_WITHSCORE_PAIR);
+    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.ZRANK_WITHSCORE_PAIR);
   }
 
   public final CommandObject<String> zrandmember(String key) {

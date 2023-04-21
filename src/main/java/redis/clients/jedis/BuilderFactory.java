@@ -389,7 +389,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyValue<Long, Double>> RANK_WITHSCORE_PAIR = new Builder<KeyValue<Long, Double>>() {
+  public static final Builder<KeyValue<Long, Double>> ZRANK_WITHSCORE_PAIR = new Builder<KeyValue<Long, Double>>() {
     @Override
     public KeyValue<Long, Double> build(Object data) {
       if (data == null) {

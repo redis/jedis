@@ -1,31 +1,37 @@
 package redis.clients.jedis.util;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Queue;
+import java.util.function.Supplier;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.providers.ConnectionProvider;
 
-public abstract class JedisRoundRobinBase<R> {
+/**
+ * @param <B> Type of each batch reply
+ * @param <D> Type of each data
+ */
+public abstract class JedisCommandIterationBase<B, D> {
 
-  private final Builder<R> builder;
+  private final Builder<B> builder;
 
   private final Queue<Map.Entry> connections;
 
   private Map.Entry connection;
 
-  private R lastReply;
+  private B lastReply;
 
   private boolean roundRobinCompleted;
   private boolean iterationCompleted;
 
-  protected JedisRoundRobinBase(ConnectionProvider connectionProvider, Builder<R> responseBuilder) {
+  protected JedisCommandIterationBase(ConnectionProvider connectionProvider, Builder<B> responseBuilder) {
     Map connectionMap = connectionProvider.getConnectionMap();
     ArrayList<Map.Entry> connectionList = new ArrayList<>(connectionMap.entrySet());
     Collections.shuffle(connectionList);
@@ -35,17 +41,17 @@ public abstract class JedisRoundRobinBase<R> {
     this.roundRobinCompleted = this.connections.isEmpty();
   }
 
-  public final boolean isRoundRobinCompleted() {
+  public final boolean isIterationCompleted() {
     return roundRobinCompleted;
   }
 
-  protected abstract boolean isIterationCompleted(R reply);
+  protected abstract boolean isNodeCompleted(B reply);
 
   protected abstract CommandArguments initCommandArguments();
 
-  protected abstract CommandArguments nextCommandArguments(R lastReply);
+  protected abstract CommandArguments nextCommandArguments(B lastReply);
 
-  public final R get() {
+  public final B nextBatch() {
     if (roundRobinCompleted) {
       throw new NoSuchElementException();
     }
@@ -70,12 +76,25 @@ public abstract class JedisRoundRobinBase<R> {
     }
 
     lastReply = builder.build(rawReply);
-    iterationCompleted = isIterationCompleted(lastReply);
+    iterationCompleted = isNodeCompleted(lastReply);
     if (iterationCompleted) {
       if (connections.isEmpty()) {
         roundRobinCompleted = true;
       }
     }
     return lastReply;
+  }
+
+  protected abstract Collection<D> convertBatchToData(B batch);
+
+  public final Collection<D> nextBatchList() {
+    return convertBatchToData(nextBatch());
+  }
+
+  public final Collection<D> collect(Collection<D> c) {
+    while (!isIterationCompleted()) {
+      c.addAll(nextBatchList());
+    }
+    return c;
   }
 }

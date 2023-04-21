@@ -32,6 +32,10 @@ public interface SortedSetBinaryCommands {
 
   Long zrevrank(byte[] key, byte[] member);
 
+  KeyValue<Long, Double> zrankWithScore(byte[] key, byte[] member);
+
+  KeyValue<Long, Double> zrevrankWithScore(byte[] key, byte[] member);
+
   List<byte[]> zrange(byte[] key, long start, long stop);
 
   List<byte[]> zrevrange(byte[] key, long start, long stop);

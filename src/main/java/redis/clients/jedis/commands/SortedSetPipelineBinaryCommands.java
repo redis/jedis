@@ -33,6 +33,10 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<Long> zrevrank(byte[] key, byte[] member);
 
+  Response<KeyValue<Long, Double>> zrankWithScore(byte[] key, byte[] member);
+
+  Response<KeyValue<Long, Double>> zrevrankWithScore(byte[] key, byte[] member);
+
   Response<List<byte[]>> zrange(byte[] key, long start, long stop);
 
   Response<List<byte[]>> zrevrange(byte[] key, long start, long stop);

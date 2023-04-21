@@ -2130,6 +2130,32 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrevrank(key, member));
   }
 
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from low to high.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  @Override
+  public KeyValue<Long, Double> zrankWithScore(byte[] key, byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from high to low.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  @Override
+  public KeyValue<Long, Double> zrevrankWithScore(byte[] key, byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
   @Override
   public List<byte[]> zrevrange(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
@@ -6557,6 +6583,32 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Long zrevrank(final String key, final String member) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zrevrank(key, member));
+  }
+
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from low to high.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  @Override
+  public KeyValue<Long, Double> zrankWithScore(String key, String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from high to low.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  @Override
+  public KeyValue<Long, Double> zrevrankWithScore(String key, String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrevrankWithScore(key, member));
   }
 
   @Override

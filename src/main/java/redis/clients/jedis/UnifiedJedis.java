@@ -1790,6 +1790,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public KeyValue<Long, Double> zrankWithScore(String key, String member) {
+    return executeCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public KeyValue<Long, Double> zrevrankWithScore(String key, String member) {
+    return executeCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
+  @Override
   public long zrem(byte[] key, byte[]... members) {
     return executeCommand(commandObjects.zrem(key, members));
   }
@@ -1812,6 +1822,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Long zrevrank(byte[] key, byte[] member) {
     return executeCommand(commandObjects.zrevrank(key, member));
+  }
+
+  @Override
+  public KeyValue<Long, Double> zrankWithScore(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public KeyValue<Long, Double> zrevrankWithScore(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.zrevrankWithScore(key, member));
   }
 
   @Override

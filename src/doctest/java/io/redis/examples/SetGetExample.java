@@ -26,7 +26,6 @@ public class SetGetExample {
         if ( value != null)
             System.out.println("The name of the bike is: " + value  + ".");
         //HIDE_START
-
         //REMOVE_START
         assertEquals("OK", status);
         assertEquals("Process 134", value);

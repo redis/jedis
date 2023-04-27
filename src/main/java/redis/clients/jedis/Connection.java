@@ -228,10 +228,10 @@ public class Connection implements Closeable {
         outputStream.flush();
         socket.close();
       } catch (IOException ex) {
-        broken = true;
         throw new JedisConnectionException(ex);
       } finally {
         IOUtils.closeQuietly(socket);
+        setBroken();
       }
     }
   }

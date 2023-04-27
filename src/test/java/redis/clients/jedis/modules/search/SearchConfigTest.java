@@ -2,13 +2,13 @@ package redis.clients.jedis.modules.search;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.Map;
+
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.exceptions.JedisDataException;
+
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 public class SearchConfigTest extends RedisModuleCommandsTestBase {

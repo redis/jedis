@@ -21,13 +21,6 @@ public interface ServerCommands {
   byte[] echo(byte[] arg);
 
   /**
-   * Ask the server to close the connection. The connection is closed as soon as all pending replies
-   * have been written to the client.
-   * @return OK
-   */
-  String quit();
-
-  /**
    * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
    * for this operation is O(N), N being the number of keys in the database.
    * @return OK

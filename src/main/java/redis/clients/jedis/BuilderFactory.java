@@ -401,6 +401,22 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<KeyValue<Long, Double>> ZRANK_WITHSCORE_PAIR = new Builder<KeyValue<Long, Double>>() {
+    @Override
+    public KeyValue<Long, Double> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      List<Object> l = (List<Object>) data;
+      return new KeyValue<>(LONG.build(l.get(0)), DOUBLE.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<Long, Double>";
+    }
+  };
+
   public static final Builder<KeyValue<String, List<String>>> KEYED_STRING_LIST
       = new Builder<KeyValue<String, List<String>>>() {
     @Override
@@ -963,6 +979,9 @@ public final class BuilderFactory {
       tempMappingFunctions.put(AccessControlLogEntry.USERNAME, STRING);
       // tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.CLIENT_INFO, STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.ENTRY_ID, LONG);
+      tempMappingFunctions.put(AccessControlLogEntry.TIMESTAMP_CREATED, LONG);
+      tempMappingFunctions.put(AccessControlLogEntry.TIMESTAMP_LAST_UPDATED, LONG);
 
       return tempMappingFunctions;
     }

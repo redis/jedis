@@ -2,23 +2,18 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.startsWith;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.List;
-
 import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.BeforeClass;
@@ -70,8 +65,8 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void aclListDefault() {
-    assertThat(jedis.aclList().size(), greaterThan(0));
-    assertThat(jedis.aclListBinary().size(), greaterThan(0));
+    assertFalse(jedis.aclList().isEmpty());
+    assertFalse(jedis.aclListBinary().isEmpty());
   }
 
   @Test
@@ -93,7 +88,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   public void aclUsers() {
     List<String> users = jedis.aclUsers();
     assertEquals(2, users.size());
-    assertThat(users, hasItem("default"));
+    assertThat(users, CoreMatchers.hasItem("default"));
 
     assertEquals(2, jedis.aclUsersBinary().size()); // Test binary
   }
@@ -103,7 +98,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     // get default user information
     AccessControlUser userInfo = jedis.aclGetUser("default");
 
-    assertThat(userInfo.getFlags().size(), greaterThanOrEqualTo(1));
+    assertFalse(userInfo.getFlags().isEmpty());
     assertEquals(1, userInfo.getPassword().size());
     assertEquals("+@all", userInfo.getCommands());
     assertEquals("~*", userInfo.getKeys().get(0));
@@ -111,7 +106,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     // create new user
     jedis.aclSetUser(USER_NAME);
     userInfo = jedis.aclGetUser(USER_NAME);
-    assertThat(userInfo.getFlags().size(), greaterThanOrEqualTo(1));
+    assertFalse(userInfo.getFlags().isEmpty());
     assertEquals("off", userInfo.getFlags().get(0));
     assertTrue(userInfo.getPassword().isEmpty());
     assertTrue(userInfo.getKeys().isEmpty());
@@ -298,7 +293,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
       jedis2.set("foo", "bar");
       fail("Should throw a NOPERM exception");
     } catch (JedisAccessControlException e) {
-      MatcherAssert.assertThat(e.getMessage(), Matchers.isIn(nopermKeys));
+      assertThat(e.getMessage(), Matchers.isIn(nopermKeys));
     }
 
     // allow user to access a subset of the key
@@ -313,7 +308,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
       jedis2.set("zap:3", "c");
       fail("Should throw a NOPERM exception");
     } catch (JedisAccessControlException e) {
-      MatcherAssert.assertThat(e.getMessage(), Matchers.isIn(nopermKeys));
+      assertThat(e.getMessage(), Matchers.isIn(nopermKeys));
     }
   }
 
@@ -449,6 +444,30 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     assertEquals(status, "OK");
 
     jedis.aclDelUser("antirez");
+  }
+
+  @Test
+  public void aclLogWithEntryID() {
+    try {
+      jedis.auth("wronguser", "wrongpass");
+      fail("wrong user should not passed");
+    } catch (JedisAccessControlException e) {
+    }
+
+    List<AccessControlLogEntry> aclEntries = jedis.aclLog();
+    assertEquals("Number of log messages ", 1, aclEntries.size());
+    assertEquals(1, aclEntries.get(0).getCount());
+    assertEquals("wronguser", aclEntries.get(0).getUsername());
+    assertEquals("toplevel", aclEntries.get(0).getContext());
+    assertEquals("auth", aclEntries.get(0).getReason());
+    assertEquals("AUTH", aclEntries.get(0).getObject());
+    assertTrue(aclEntries.get(0).getEntryId() >= 0);
+    assertTrue(aclEntries.get(0).getTimestampCreated() > 0);
+    assertEquals(aclEntries.get(0).getTimestampCreated(), aclEntries.get(0).getTimestampLastUpdated());
+
+    // RESET
+    String status = jedis.aclLogReset();
+    assertEquals(status, "OK");
   }
 
   @Test

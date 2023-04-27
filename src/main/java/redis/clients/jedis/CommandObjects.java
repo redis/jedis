@@ -33,12 +33,18 @@ import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
-  private volatile JsonObjectMapper jsonObjectMapper;
-
   private RedisProtocol proto;
 
   protected void setProtocol(RedisProtocol proto) {
     this.proto = proto;
+  }
+
+  private volatile JsonObjectMapper jsonObjectMapper;
+
+  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
+
+  void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
+    this.broadcastAndRoundRobinConfig = config;
   }
 
   protected CommandArguments commandArguments(ProtocolCommand command) {
@@ -1382,12 +1388,28 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member), BuilderFactory.LONG);
   }
 
+  public final CommandObject<KeyValue<Long, Double>> zrankWithScore(String key, String member) {
+    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.ZRANK_WITHSCORE_PAIR);
+  }
+
+  public final CommandObject<KeyValue<Long, Double>> zrevrankWithScore(String key, String member) {
+    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.ZRANK_WITHSCORE_PAIR);
+  }
+
   public final CommandObject<Long> zrank(byte[] key, byte[] member) {
     return new CommandObject<>(commandArguments(ZRANK).key(key).add(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> zrevrank(byte[] key, byte[] member) {
     return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<KeyValue<Long, Double>> zrankWithScore(byte[] key, byte[] member) {
+    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.ZRANK_WITHSCORE_PAIR);
+  }
+
+  public final CommandObject<KeyValue<Long, Double>> zrevrankWithScore(byte[] key, byte[] member) {
+    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member).add(WITHSCORE), BuilderFactory.ZRANK_WITHSCORE_PAIR);
   }
 
   public final CommandObject<String> zrandmember(String key) {
@@ -3162,14 +3184,36 @@ public class CommandObjects {
   // Miscellaneous commands
 
   // RediSearch commands
-  public CommandObject<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
+  private boolean isRoundRobinSearchCommand() {
+    if (broadcastAndRoundRobinConfig == null) {
+      return true;
+    } else if (broadcastAndRoundRobinConfig.getRediSearchModeInCluster() == JedisBroadcastAndRoundRobinConfig.RediSearchMode.LIGHT) {
+      return false;
+    }
+    return true;
+  }
+
+  private CommandArguments checkAndRoundRobinSearchCommand(CommandArguments commandArguments, String indexName) {
+    return isRoundRobinSearchCommand() ? commandArguments.add(indexName) : commandArguments.key(indexName);
+  }
+
+  private CommandArguments checkAndRoundRobinSearchCommand(CommandArguments commandArguments, byte[] indexName) {
+    return isRoundRobinSearchCommand() ? commandArguments.add(indexName) : commandArguments.key(indexName);
+  }
+
+  private <T> CommandObject<T> directSearchCommand(CommandObject<T> object, String indexName) {
+    object.getArguments().processKey(indexName);
+    return object;
+  }
+
+  public final CommandObject<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
     CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName)
         .addParams(indexOptions).add(SearchKeyword.SCHEMA);
     schema.fields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftCreate(String indexName, FTCreateParams createParams,
+  public final CommandObject<String> ftCreate(String indexName, FTCreateParams createParams,
       Iterable<SchemaField> schemaFields) {
     CommandArguments args = commandArguments(SearchCommand.CREATE).add(indexName)
         .addParams(createParams).add(SearchKeyword.SCHEMA);
@@ -3177,111 +3221,119 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftAlter(String indexName, Schema schema) {
+  public final CommandObject<String> ftAlter(String indexName, Schema schema) {
     CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName)
         .add(SearchKeyword.SCHEMA).add(SearchKeyword.ADD);
     schema.fields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
+  public final CommandObject<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
     CommandArguments args = commandArguments(SearchCommand.ALTER).add(indexName)
         .add(SearchKeyword.SCHEMA).add(SearchKeyword.ADD);
     schemaFields.forEach(field -> args.addParams(field));
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
-  public CommandObject<SearchResult> ftSearch(String indexName, String query) {
-    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query),
+  public final CommandObject<SearchResult> ftSearch(String indexName, String query) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).add(query),
         new SearchResultBuilder(true, false, false, true));
   }
 
-  public CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
-    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).add(query).addParams(params),
-        new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
+  public final CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
+        .add(query).addParams(params), new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
   }
 
-  public CommandObject<SearchResult> ftSearch(String indexName, Query query) {
-    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
+  public final CommandObject<SearchResult> ftSearch(String indexName, Query query) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).addParams(query),
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));
   }
 
-  public CommandObject<SearchResult> ftSearch(byte[] indexName, Query query) {
-    return new CommandObject<>(commandArguments(SearchCommand.SEARCH).add(indexName).addParams(query),
+  public final CommandObject<SearchResult> ftSearch(byte[] indexName, Query query) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).addParams(query),
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
   }
 
-  public CommandObject<String> ftExplain(String indexName, Query query) {
-    return new CommandObject<>(commandArguments(SearchCommand.EXPLAIN).add(indexName).addParams(query), BuilderFactory.STRING);
+  public final CommandObject<String> ftExplain(String indexName, Query query) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.EXPLAIN), indexName)
+        .addParams(query), BuilderFactory.STRING);
   }
 
-  public CommandObject<List<String>> ftExplainCLI(String indexName, Query query) {
-    return new CommandObject<>(commandArguments(SearchCommand.EXPLAINCLI).add(indexName).addParams(query), BuilderFactory.STRING_LIST);
+  public final CommandObject<List<String>> ftExplainCLI(String indexName, Query query) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.EXPLAINCLI), indexName)
+        .addParams(query), BuilderFactory.STRING_LIST);
   }
 
-  public CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
-    return new CommandObject<>(commandArguments(SearchCommand.AGGREGATE).add(indexName).addObjects(aggr.getArgs()),
-        !aggr.isWithCursor() ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+  public final CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.AGGREGATE), indexName)
+        .addObjects(aggr.getArgs()), !aggr.isWithCursor() ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
+        : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
-  public CommandObject<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
+  public final CommandObject<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
     return new CommandObject<>(commandArguments(SearchCommand.CURSOR).add(SearchKeyword.READ)
-        .add(indexName).add(cursorId).add(count), SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+        .add(indexName).add(cursorId).add(SearchKeyword.COUNT).add(count),
+        SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
-  public CommandObject<String> ftCursorDel(String indexName, long cursorId) {
+  public final CommandObject<String> ftCursorDel(String indexName, long cursorId) {
     return new CommandObject<>(commandArguments(SearchCommand.CURSOR).add(SearchKeyword.DEL)
         .add(indexName).add(cursorId), BuilderFactory.STRING);
   }
 
-  public CommandObject<Map.Entry<AggregationResult, Map<String, Object>>> ftProfileAggregate(
+  public final CommandObject<Map.Entry<AggregationResult, Map<String, Object>>> ftProfileAggregate(
       String indexName, FTProfileParams profileParams, AggregationBuilder aggr) {
-    return new CommandObject<>(commandArguments(SearchCommand.PROFILE).add(indexName)
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.AGGREGATE).addParams(profileParams).add(SearchKeyword.QUERY)
         .addObjects(aggr.getArgs()), new SearchProfileResponseBuilder<>(!aggr.isWithCursor()
             ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
             : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
   }
 
-  public CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+  public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, Query query) {
-    return new CommandObject<>(commandArguments(SearchCommand.PROFILE).add(indexName)
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
         .addParams(query), new SearchProfileResponseBuilder<>(new SearchResultBuilder(
             !query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true)));
   }
 
-  public CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
+  public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, String query, FTSearchParams searchParams) {
-    return new CommandObject<>(commandArguments(SearchCommand.PROFILE).add(indexName)
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
         .addParams(searchParams), new SearchProfileResponseBuilder<>(new SearchResultBuilder(
             !searchParams.getNoContent(), searchParams.getWithScores(), false, true)));
   }
 
-  public CommandObject<String> ftDropIndex(String indexName) {
+  public final CommandObject<String> ftDropIndex(String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName), BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftDropIndexDD(String indexName) {
-    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD), BuilderFactory.STRING);
+  public final CommandObject<String> ftDropIndexDD(String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD),
+        BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
-    return new CommandObject<>(commandArguments(SearchCommand.SYNUPDATE).add(indexName)
+  public final CommandObject<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SYNUPDATE), indexName)
         .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);
   }
 
-  public CommandObject<Map<String, List<String>>> ftSynDump(String indexName) {
-    return new CommandObject<>(commandArguments(SearchCommand.SYNDUMP).add(indexName), SearchBuilderFactory.SEARCH_SYNONYM_GROUPS);
+  public final CommandObject<Map<String, List<String>>> ftSynDump(String indexName) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SYNDUMP), indexName),
+        SearchBuilderFactory.SEARCH_SYNONYM_GROUPS);
   }
 
   public final CommandObject<Long> ftDictAdd(String dictionary, String... terms) {
-    return new CommandObject<>(commandArguments(SearchCommand.DICTADD).add(dictionary).addObjects((Object[]) terms), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SearchCommand.DICTADD).add(dictionary).addObjects((Object[]) terms),
+        BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> ftDictDel(String dictionary, String... terms) {
-    return new CommandObject<>(commandArguments(SearchCommand.DICTDEL).add(dictionary).addObjects((Object[]) terms), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SearchCommand.DICTDEL).add(dictionary).addObjects((Object[]) terms),
+        BuilderFactory.LONG);
   }
 
   public final CommandObject<Set<String>> ftDictDump(String dictionary) {
@@ -3289,45 +3341,47 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
-    return addProcessKey(ftDictAdd(dictionary, terms), indexName);
+    return directSearchCommand(ftDictAdd(dictionary, terms), indexName);
   }
 
   public final CommandObject<Long> ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
-    return addProcessKey(ftDictDel(dictionary, terms), indexName);
+    return directSearchCommand(ftDictDel(dictionary, terms), indexName);
   }
 
   public final CommandObject<Set<String>> ftDictDumpBySampleKey(String indexName, String dictionary) {
-    return addProcessKey(ftDictDump(dictionary), indexName);
+    return directSearchCommand(ftDictDump(dictionary), indexName);
   }
 
   public final CommandObject<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query) {
-    return new CommandObject<>(commandArguments(SearchCommand.SPELLCHECK).key(index).add(query),
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SPELLCHECK), index).add(query),
         SearchBuilderFactory.SEARCH_SPELLCHECK_RESPONSE);
   }
 
   public final CommandObject<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query,
       FTSpellCheckParams spellCheckParams) {
-    return new CommandObject<>(commandArguments(SearchCommand.SPELLCHECK).key(index).add(query)
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SPELLCHECK), index).add(query)
         .addParams(spellCheckParams), SearchBuilderFactory.SEARCH_SPELLCHECK_RESPONSE);
   }
 
-  public CommandObject<Map<String, Object>> ftInfo(String indexName) {
-    return new CommandObject<>(commandArguments(SearchCommand.INFO).add(indexName), BuilderFactory.ENCODED_OBJECT_MAP);
+  public final CommandObject<Map<String, Object>> ftInfo(String indexName) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.INFO), indexName),
+        BuilderFactory.ENCODED_OBJECT_MAP);
   }
 
-  public CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
-    return new CommandObject<>(commandArguments(SearchCommand.TAGVALS).add(indexName).add(fieldName), BuilderFactory.STRING_SET);
+  public final CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.TAGVALS), indexName)
+        .add(fieldName), BuilderFactory.STRING_SET);
   }
 
-  public CommandObject<String> ftAliasAdd(String aliasName, String indexName) {
+  public final CommandObject<String> ftAliasAdd(String aliasName, String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.ALIASADD).add(aliasName).add(indexName), BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftAliasUpdate(String aliasName, String indexName) {
+  public final CommandObject<String> ftAliasUpdate(String aliasName, String indexName) {
     return new CommandObject<>(commandArguments(SearchCommand.ALIASUPDATE).add(aliasName).add(indexName), BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftAliasDel(String aliasName) {
+   public final CommandObject<String> ftAliasDel(String aliasName) {
     return new CommandObject<>(commandArguments(SearchCommand.ALIASDEL).add(aliasName), BuilderFactory.STRING);
   }
 
@@ -3335,16 +3389,16 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.GET).add(option), BuilderFactory.STRING_MAP_FROM_PAIRS);
   }
 
-  public CommandObject<Map<String, String>> ftConfigGet(String indexName, String option) {
-    return ftConfigGet(option);
+  public final CommandObject<Map<String, String>> ftConfigGet(String indexName, String option) {
+    return directSearchCommand(ftConfigGet(option), indexName);
   }
 
   public final CommandObject<String> ftConfigSet(String option, String value) {
     return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.SET).add(option).add(value), BuilderFactory.STRING);
   }
 
-  public CommandObject<String> ftConfigSet(String indexName, String option, String value) {
-    return ftConfigSet(option, value);
+  public final CommandObject<String> ftConfigSet(String indexName, String option, String value) {
+    return directSearchCommand(ftConfigSet(option, value), indexName);
   }
 
   public final CommandObject<Long> ftSugAdd(String key, String string, double score) {
@@ -4280,10 +4334,5 @@ public class CommandObjects {
       args.add(entry.getKey());
     }
     return args;
-  }
-
-  private <T> CommandObject<T> addProcessKey(CommandObject<T> object, String sampleKey) {
-    object.getArguments().processKey(sampleKey);
-    return object;
   }
 }

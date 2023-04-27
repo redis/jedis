@@ -1,10 +1,16 @@
 package redis.clients.jedis.modules.search;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,8 +27,11 @@ import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 import redis.clients.jedis.search.aggr.SortedField;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
+import redis.clients.jedis.search.aggr.FtAggregateIteration;
+import redis.clients.jedis.search.schemafields.NumericField;
+import redis.clients.jedis.search.schemafields.TextField;
 
-public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
+public class AggregationTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "aggbindex";
 
@@ -259,7 +268,7 @@ public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testCursor() throws InterruptedException {
+  public void cursor() {
     Schema sc = new Schema();
     sc.addSortableTextField("name", 1.0);
     sc.addSortableNumericField("count");
@@ -303,19 +312,50 @@ public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
       fail();
     } catch (JedisDataException e) {
     }
+  }
 
-    AggregationBuilder r2 = new AggregationBuilder()
+  @Test
+  public void aggregateIteration() {
+    client.ftCreate(index, TextField.of("name").sortable(), NumericField.of("count"));
+
+    addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    addDocument(new Document("data2").set("name", "def").set("count", 5));
+    addDocument(new Document("data3").set("name", "def").set("count", 25));
+    addDocument(new Document("data4").set("name", "ghi").set("count", 15));
+    addDocument(new Document("data5").set("name", "jkl").set("count", 20));
+
+    AggregationBuilder agg = new AggregationBuilder()
         .groupBy("@name", Reducers.sum("@count").as("sum"))
         .sortBy(10, SortedField.desc("@sum"))
-        .cursor(1, 1000);
+        .cursor(2, 10000);
 
-    Thread.sleep(1000);
-
-    try {
-      client.ftCursorRead(index, res.getCursorId(), 1);
-      fail();
-    } catch (JedisDataException e) {
+    FtAggregateIteration rr = client.ftAggregateIteration(index, agg);
+    int total = 0;
+    while (!rr.isIterationCompleted()) {
+      AggregationResult res = rr.nextBatch();
+      int count = res.getRows().size();
+      assertThat(count, Matchers.lessThanOrEqualTo(2));
+      total += count;
     }
+    assertEquals(4, total);
+  }
+
+  @Test
+  public void aggregateIterationCollect() {
+    client.ftCreate(index, TextField.of("name").sortable(), NumericField.of("count"));
+
+    addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    addDocument(new Document("data2").set("name", "def").set("count", 5));
+    addDocument(new Document("data3").set("name", "def").set("count", 25));
+    addDocument(new Document("data4").set("name", "ghi").set("count", 15));
+    addDocument(new Document("data5").set("name", "jkl").set("count", 20));
+
+    AggregationBuilder agg = new AggregationBuilder()
+        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .sortBy(10, SortedField.desc("@sum"))
+        .cursor(2, 10000);
+
+    assertEquals(4, client.ftAggregateIteration(index, agg).collect(new ArrayList<>()).size());
   }
 
   @Test
@@ -350,6 +390,5 @@ public class AggregationBuilderTest extends RedisModuleCommandsTestBase {
     } catch (JedisDataException e) {
       // should throw JedisDataException on wrong aggregation query 
     }
-
   }
 }

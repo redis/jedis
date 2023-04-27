@@ -3,6 +3,7 @@ package redis.clients.jedis.modules.search;
 import static org.junit.Assert.*;
 
 import java.util.*;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -1207,5 +1208,30 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1L, iteratorsProfile.get("Counter"));
     assertEquals(1L, iteratorsProfile.get("Size"));
     assertSame(Double.class, iteratorsProfile.get("Time").getClass());
+  }
+
+  @Test
+  public void searchIteration() throws Exception {
+    Schema sc = new Schema().addTextField("first", 1.0).addTextField("last", 1.0).addNumericField("age");
+    IndexDefinition rule = new IndexDefinition();
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions().setDefinition(rule), sc));
+
+    client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
+    client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
+    client.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
+    client.hset("student:3333", toMap("first", "El", "last", "Mark", "age", "17"));
+    client.hset("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", "21"));
+    client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
+    client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
+
+    FtSearchIteration search = client.ftSearchIteration(3, index, new Query());
+    int total = 0;
+    while (!search.isIterationCompleted()) {
+      SearchResult result = search.nextBatch();
+      int count = result.getDocuments().size();
+      assertThat(count, Matchers.lessThanOrEqualTo(3));
+      total += count;
+    }
+    assertEquals(7, total);
   }
 }

@@ -8,6 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +45,21 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
+  /**
+   * The number of processes for {@code sync()}. If you have enough cores for client (and you have
+   * more than 3 cluster nodes), you may increase this number of workers.
+   * Suggestion:&nbsp;&le;&nbsp;cluster&nbsp;nodes.
+   */
+  public static volatile int MULTI_NODE_PIPELINE_SYNC_WORKERS = 3;
+
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
   private volatile boolean syncing = false;
 
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
+
+  private final ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();
@@ -56,9 +69,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   /**
    * Sub-classes must call this method, if graph commands are going to be used.
+   * @param connectionProvider connection provider
    */
   protected final void prepareGraphCommands(ConnectionProvider connectionProvider) {
     this.graphCommandObjects = new GraphCommandObjects(connectionProvider);
+    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
   }
 
   protected abstract HostAndPort getNodeKey(CommandArguments args);
@@ -107,6 +122,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     }
     syncing = true;
 
+    CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
     while (pipelinedResponsesIterator.hasNext()) {
@@ -114,18 +130,28 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
-      try {
-        List<Object> unformatted = connection.getMany(queue.size());
-        for (Object o : unformatted) {
-          queue.poll().set(o);
+      executorService.submit(() -> {
+        try {
+          List<Object> unformatted = connection.getMany(queue.size());
+          for (Object o : unformatted) {
+            queue.poll().set(o);
+          }
+        } catch (JedisConnectionException jce) {
+          log.error("Error with connection to " + nodeKey, jce);
+          // cleanup the connection
+          pipelinedResponsesIterator.remove();
+          connections.remove(nodeKey);
+          IOUtils.closeQuietly(connection);
+        } finally {
+          countDownLatch.countDown();
         }
-      } catch (JedisConnectionException jce) {
-        log.error("Error with connection to " + nodeKey, jce);
-        // cleanup the connection
-        pipelinedResponsesIterator.remove();
-        connections.remove(nodeKey);
-        IOUtils.closeQuietly(connection);
-      }
+      });
+    }
+
+    try {
+      countDownLatch.await();
+    } catch (InterruptedException e) {
+      log.error("Thread is interrupted during sync.", e);
     }
 
     syncing = false;
@@ -949,6 +975,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Long> zrevrank(String key, String member) {
     return appendCommand(commandObjects.zrevrank(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrankWithScore(String key, String member) {
+    return appendCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrevrankWithScore(String key, String member) {
+    return appendCommand(commandObjects.zrevrankWithScore(key, member));
   }
 
   @Override
@@ -2700,6 +2736,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<KeyValue<Long, Double>> zrankWithScore(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrevrankWithScore(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
+  @Override
   public Response<List<byte[]>> zrange(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrange(key, start, stop));
   }
@@ -3397,21 +3443,25 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  @Deprecated
   public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
     return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftCursorDel(String indexName, long cursorId) {
     return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftDropIndex(String indexName) {
     return appendCommand(commandObjects.ftDropIndex(indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftDropIndexDD(String indexName) {
     return appendCommand(commandObjects.ftDropIndexDD(indexName));
   }
@@ -3477,16 +3527,19 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasAdd(String aliasName, String indexName) {
     return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasUpdate(String aliasName, String indexName) {
     return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasDel(String aliasName) {
     return appendCommand(commandObjects.ftAliasDel(aliasName));
   }

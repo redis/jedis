@@ -243,7 +243,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection.connect();
   }
 
-  // Legacy
+  /**
+   * Closing the socket will disconnect the server connection.
+   */
   public void disconnect() {
     connection.disconnect();
   }
@@ -412,15 +414,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(FLUSHALL, flushMode.getRaw());
     return connection.getStatusCodeReply();
-  }
-
-  /**
-   * Ask the server to silently close the connection.
-   */
-  @Override
-  public String quit() {
-    checkIsInMultiOrPipeline();
-    return connection.quit();
   }
 
   /**
@@ -2131,6 +2124,32 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrevrank(key, member));
   }
 
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from low to high.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  @Override
+  public KeyValue<Long, Double> zrankWithScore(byte[] key, byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from high to low.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  @Override
+  public KeyValue<Long, Double> zrevrankWithScore(byte[] key, byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
   @Override
   public List<byte[]> zrevrange(final byte[] key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
@@ -3351,9 +3370,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Synchronously save the DB on disk, then shutdown the server.
    * <p>
    * Stop all the clients, save the DB, then quit the server. This commands makes sure that the DB
-   * is switched off without the lost of any data. This is not guaranteed if the connection uses
-   * simply {@link Jedis#save() SAVE} and then {@link Jedis#quit() QUIT} because other clients may
-   * alter the DB data between the two commands.
+   * is switched off without the lost of any data.
    * @throws JedisException with the status code reply on error. On success nothing is thrown since
    *         the server quits and the connection is closed.
    */
@@ -4233,6 +4250,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String clientSetInfo(ClientAttributeOption attr, byte[] value) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, SETINFO.getRaw(), attr.getRaw(), value);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String clientSetname(final byte[] name) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLIENT, SETNAME.getRaw(), name);
@@ -4302,6 +4326,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLIENT, "NO-EVICT", "OFF");
     return connection.getBulkReply();
+  }
+
+  @Override
+  public String clientNoTouchOn() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "NO-TOUCH", "ON");
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String clientNoTouchOff() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "NO-TOUCH", "OFF");
+    return connection.getStatusCodeReply();
   }
 
   public List<String> time() {
@@ -6539,6 +6577,32 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.zrevrank(key, member));
   }
 
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from low to high.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  @Override
+  public KeyValue<Long, Double> zrankWithScore(String key, String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  /**
+   * Returns the rank and the score of member in the sorted set stored at key, with the scores
+   * ordered from high to low.
+   * @param key the key
+   * @param member the member
+   * @return the KeyValue contains rank and score.
+   */
+  @Override
+  public KeyValue<Long, Double> zrevrankWithScore(String key, String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
   @Override
   public List<String> zrevrange(final String key, final long start, final long stop) {
     checkIsInMultiOrPipeline();
@@ -8513,6 +8577,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLIENT, Keyword.INFO);
     return connection.getBulkReply();
+  }
+
+  @Override
+  public String clientSetInfo(ClientAttributeOption attr, String value) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, SETINFO.getRaw(), attr.getRaw(), encode(value));
+    return connection.getStatusCodeReply();
   }
 
   @Override

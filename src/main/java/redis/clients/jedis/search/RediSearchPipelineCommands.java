@@ -59,12 +59,16 @@ public interface RediSearchPipelineCommands {
 
   Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr);
 
+  @Deprecated
   Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count);
 
+  @Deprecated
   Response<String> ftCursorDel(String indexName, long cursorId);
 
+  @Deprecated
   Response<String> ftDropIndex(String indexName);
 
+  @Deprecated
   Response<String> ftDropIndexDD(String indexName);
 
   Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms);
@@ -92,10 +96,13 @@ public interface RediSearchPipelineCommands {
 
   Response<Set<String>> ftTagVals(String indexName, String fieldName);
 
+  @Deprecated
   Response<String> ftAliasAdd(String aliasName, String indexName);
 
+  @Deprecated
   Response<String> ftAliasUpdate(String aliasName, String indexName);
 
+  @Deprecated
   Response<String> ftAliasDel(String aliasName);
 
   Response<Map<String, String>> ftConfigGet(String option);

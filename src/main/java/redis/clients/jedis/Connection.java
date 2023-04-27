@@ -196,13 +196,21 @@ public class Connection implements Closeable {
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
+
+        broken = false;
+
       } catch (JedisConnectionException jce) {
-        broken = true;
+
+        setBroken();
         throw jce;
+
       } catch (IOException ioe) {
-        broken = true;
+
+        setBroken();
         throw new JedisConnectionException("Failed to create input/output stream", ioe);
+
       } finally {
+
         if (broken) {
           IOUtils.closeQuietly(socket);
         }

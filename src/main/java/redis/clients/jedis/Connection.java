@@ -12,12 +12,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.util.JedisMetaInfo;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -221,6 +225,9 @@ public class Connection implements Closeable {
     }
   }
 
+  /**
+   * Close the socket and disconnect the server.
+   */
   public void disconnect() {
     if (isConnected()) {
       try {
@@ -363,26 +370,55 @@ public class Connection implements Closeable {
           auth(credentialsProvider);
         }
 
-        int dbIndex = config.getDatabase();
-        if (dbIndex > 0) {
-          select(dbIndex);
-        }
-        String clientName = config.getClientName();
-        if (clientName != null) {
-          // TODO: need to figure out something without encoding
-          clientSetname(clientName);
-        }
-
         if (protocol != null) {
           hello(protocol);
         }
       }
 
+      List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
+
+      int dbIndex = config.getDatabase();
+      if (dbIndex > 0) {
+        fireAndForgetMsg.add(new CommandArguments(Command.SELECT).add(Protocol.toByteArray(dbIndex)));
+      }
+
+      String clientName = config.getClientName();
+      if (clientName != null) {
+        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
+      }
+
+      String libName = JedisMetaInfo.getArtifactId();
+      if (libName != null) {
+        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
+            .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));
+      }
+
+      String libVersion = JedisMetaInfo.getVersion();
+      if (libVersion != null) {
+        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
+            .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
+      }
+
+      for (CommandArguments arg : fireAndForgetMsg) {
+        sendCommand(arg);
+      }
+
+      List<Object> objects = getMany(fireAndForgetMsg.size());
+      for (Object obj : objects) {
+        if (obj instanceof JedisDataException) {
+          JedisDataException e = (JedisDataException)obj;
+          String errorMsg = e.getMessage().toUpperCase();
+          if (errorMsg.contains("UNKNOWN") ||
+              errorMsg.contains("NOAUTH")) { // TODO: not filter out NOAUTH
+            // ignore
+          } else {
+            throw e;
+          }
+        }
+      }
     } catch (JedisException je) {
       try {
-        if (isConnected()) {
-          quit();
-        }
+        setBroken();
         disconnect();
       } catch (Exception e) {
         // the first exception 'je' will be thrown
@@ -436,16 +472,17 @@ public class Connection implements Closeable {
     getStatusCodeReply(); // OK
   }
 
+  @Deprecated
   public String select(final int index) {
     sendCommand(Protocol.Command.SELECT, Protocol.toByteArray(index));
     return getStatusCodeReply();
   }
 
-  private String clientSetname(final String name) {
-    sendCommand(Protocol.Command.CLIENT, Protocol.Keyword.SETNAME.name(), name);
-    return getStatusCodeReply();
-  }
-
+  /**
+   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
+   * {@link Connection#disconnect()} can be used instead.
+   */
+  @Deprecated
   public String quit() {
     sendCommand(Protocol.Command.QUIT);
     String quitReturn = getStatusCodeReply();

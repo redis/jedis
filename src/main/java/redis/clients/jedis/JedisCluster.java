@@ -209,4 +209,13 @@ public class JedisCluster extends UnifiedJedis {
   public ClusterPipeline pipelined() {
     return new ClusterPipeline((ClusterConnectionProvider) provider);
   }
+
+  /**
+   * @return nothing
+   * @throws UnsupportedOperationException
+   */
+  @Override
+  public Transaction multi() {
+    throw new UnsupportedOperationException();
+  }
 }

@@ -197,7 +197,7 @@ public class Connection implements Closeable {
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
 
-        broken = false;
+        broken = false; // unset broken status when connection is (re)initialized
 
       } catch (JedisConnectionException jce) {
 

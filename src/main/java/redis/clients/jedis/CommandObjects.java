@@ -33,13 +33,13 @@ import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
-  private volatile JsonObjectMapper jsonObjectMapper;
-
   private RedisProtocol proto;
 
   protected void setProtocol(RedisProtocol proto) {
     this.proto = proto;
   }
+
+  private volatile JsonObjectMapper jsonObjectMapper;
 
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
 

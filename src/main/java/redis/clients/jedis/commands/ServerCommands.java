@@ -21,16 +21,6 @@ public interface ServerCommands {
   byte[] echo(byte[] arg);
 
   /**
-   * Ask the server to close the connection. The connection is closed as soon as all pending replies
-   * have been written to the client.
-   * @return OK
-   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
-   * If available, {@code disconnect()} method in the concerned class can be used instead.
-   */
-  @Deprecated
-  String quit();
-
-  /**
    * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
    * for this operation is O(N), N being the number of keys in the database.
    * @return OK

@@ -237,7 +237,7 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void checkDisconnectOnQuit() {
-    jedis.quit();
+    jedis.disconnect();
     assertFalse(jedis.isConnected());
   }
 

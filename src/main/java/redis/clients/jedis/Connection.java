@@ -355,9 +355,13 @@ public class Connection implements Closeable {
       connect();
       protocol = config.getRedisProtocol();
 
+      boolean doClientName = true;
+
+      /// HELLO and AUTH --> 
       if (protocol == RedisProtocol.RESP3 && config.getUser() != null) {
 
         hello(protocol, config.getUser(), config.getPassword(), config.getClientName());
+        doClientName = false;
 
       } else {
 
@@ -374,6 +378,7 @@ public class Connection implements Closeable {
           hello(protocol);
         }
       }
+      /// HELLO and AUTH
 
       List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
 
@@ -383,7 +388,7 @@ public class Connection implements Closeable {
       }
 
       String clientName = config.getClientName();
-      if (clientName != null) {
+      if (doClientName && clientName != null) {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
       }
 
@@ -470,25 +475,6 @@ public class Connection implements Closeable {
     // handled in RedisCredentialsProvider.cleanUp()
 
     getStatusCodeReply(); // OK
-  }
-
-  @Deprecated
-  public String select(final int index) {
-    sendCommand(Protocol.Command.SELECT, Protocol.toByteArray(index));
-    return getStatusCodeReply();
-  }
-
-  /**
-   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
-   * {@link Connection#disconnect()} can be used instead.
-   */
-  @Deprecated
-  public String quit() {
-    sendCommand(Protocol.Command.QUIT);
-    String quitReturn = getStatusCodeReply();
-    disconnect();
-    setBroken();
-    return quitReturn;
   }
 
   public boolean ping() {

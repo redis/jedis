@@ -417,18 +417,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Ask the server to silently close the connection.
-   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
-   * {@link Jedis#disconnect()} can be used instead.
-   */
-  @Override
-  @Deprecated
-  public String quit() {
-    checkIsInMultiOrPipeline();
-    return connection.quit();
-  }
-
-  /**
    * COPY source destination [DB destination-db] [REPLACE]
    *
    * @param srcKey the source key.

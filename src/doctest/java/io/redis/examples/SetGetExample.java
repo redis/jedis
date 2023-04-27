@@ -1,9 +1,8 @@
 //EXAMPLE: set_and_get
 //HIDE_START
-package redis.clients.jedis.doc;
+package io.redis.examples;
 
-import redis.clients.jedis.Jedis;
-
+import redis.clients.jedis.UnifiedJedis;
 //REMOVE_START
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
@@ -14,7 +13,7 @@ public class SetGetExample {
     @Test
     public void run() {
 
-        Jedis jedis = new Jedis("localhost", 6379);
+        UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
 
         //HIDE_END
         String status = jedis.set("bike:1", "Process 134");

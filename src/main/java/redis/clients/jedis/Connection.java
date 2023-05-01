@@ -56,15 +56,15 @@ public class Connection implements Closeable {
     initializeFromClientConfig(clientConfig);
   }
 
+  public Connection(final JedisSocketFactory socketFactory) {
+    this.socketFactory = socketFactory;
+  }
+
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     initializeFromClientConfig(clientConfig);
-  }
-
-  public Connection(final JedisSocketFactory socketFactory) {
-    this.socketFactory = socketFactory;
   }
 
   @Override

@@ -159,6 +159,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
           sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
     }
 
+    /**
+     * Shortcut to {@link Builder#protocol(redis.clients.jedis.RedisProtocol)} with {@link RedisProtocol#RESP3}.
+     */
+    public Builder resp3() {
+      return protocol(RedisProtocol.RESP3);
+    }
+
     public Builder protocol(RedisProtocol protocol) {
       this.redisProtocol = protocol;
       return this;

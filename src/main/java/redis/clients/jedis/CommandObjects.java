@@ -4178,8 +4178,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(GraphCommand.EXPLAIN).key(graphName).add(query), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<List<List<String>>> graphSlowlog(String graphName) {
-    return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.STRING_LIST_LIST);
+  public final CommandObject<List<List<Object>>> graphSlowlog(String graphName) {
+    return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.ENCODED_OBJECT_LIST_LIST);
   }
 
   public final CommandObject<String> graphConfigSet(String configName, Object value) {

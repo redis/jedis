@@ -207,7 +207,7 @@ public class JedisCluster extends UnifiedJedis {
 
   @Override
   public ClusterPipeline pipelined() {
-    return new ClusterPipeline((ClusterConnectionProvider) provider);
+    return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);
   }
 
   /**

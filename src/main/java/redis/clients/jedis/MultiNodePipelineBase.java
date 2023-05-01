@@ -39,7 +39,6 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 
-// TODO: RESP3
 public abstract class MultiNodePipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
 

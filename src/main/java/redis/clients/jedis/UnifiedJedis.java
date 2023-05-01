@@ -17,6 +17,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
@@ -41,9 +42,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
 
+  protected RedisProtocol protocol = null;
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
-  private final CommandObjects commandObjects;
+  protected final CommandObjects commandObjects;
   private final GraphCommandObjects graphCommandObjects;
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
 
@@ -91,6 +93,15 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects = new CommandObjects();
     this.graphCommandObjects = new GraphCommandObjects(this);
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+    try (Connection conn = this.provider.getConnection()) {
+      if (conn != null) {
+        RedisProtocol proto = conn.getRedisProtocol();
+        if (proto != null) commandObjects.setProtocol(proto);
+      }
+    //} catch (JedisAccessControlException ace) {
+    } catch (JedisException je) { // TODO: use specific exception(s)
+      // use default protocol
+    }
   }
 
   /**
@@ -104,6 +115,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
+   * The constructor to directly use a custom {@link JedisSocketFactory}.
+   * <p>
+   * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
+   * {@link UnifiedJedis#provider} is accessed.
+   */
+  public UnifiedJedis(JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
+    this(new Connection(socketFactory, clientConfig));
+  }
+
+  /**
    * The constructor to directly use a {@link Connection}.
    * <p>
    * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
@@ -114,6 +135,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.executor = new SimpleCommandExecutor(connection);
     this.commandObjects = new CommandObjects();
     this.graphCommandObjects = new GraphCommandObjects(this);
+    RedisProtocol proto = connection.getRedisProtocol();
+    if (proto == RedisProtocol.RESP3) this.commandObjects.setProtocol(proto);
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
@@ -193,6 +216,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public void close() {
     IOUtils.closeQuietly(this.executor);
+  }
+
+  protected final void setProtocol(RedisProtocol protocol) {
+    this.protocol = protocol;
+    this.commandObjects.setProtocol(this.protocol);
   }
 
   public final <T> T executeCommand(CommandObject<T> commandObject) {
@@ -4685,7 +4713,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<List<String>> graphSlowlog(String graphName) {
+  public List<List<Object>> graphSlowlog(String graphName) {
     return executeCommand(commandObjects.graphSlowlog(graphName));
   }
 

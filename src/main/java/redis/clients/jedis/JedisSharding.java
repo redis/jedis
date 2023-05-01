@@ -6,6 +6,10 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.util.Hashing;
 
+/**
+ * @deprecated Sharding/Sharded feature will be removed in next major release.
+ */
+@Deprecated
 // TODO: RESP3
 public class JedisSharding extends UnifiedJedis {
 

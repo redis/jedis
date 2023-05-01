@@ -45,6 +45,9 @@ jobs:
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline
+      - name: Build docs
+        run: |
+          mvn javadoc:jar
       - name: Run tests
         run: |
           TEST="" make test

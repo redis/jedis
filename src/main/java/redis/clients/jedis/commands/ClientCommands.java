@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
@@ -77,6 +78,15 @@ public interface ClientCommands {
   String clientInfo();
 
   /**
+   * client set info command
+   * Since redis 7.2
+   * @param attr the attr option
+   * @param value the value
+   * @return OK or error
+   */
+  String clientSetInfo(ClientAttributeOption attr, String value);
+
+  /**
    * Assigns a name to the current connection.
    *
    * @param name current connection name
@@ -148,4 +158,16 @@ public interface ClientCommands {
    * @return OK
    */
   String clientNoEvictOff();
+
+  /**
+   * Turn on <a href="https://redis.io/commands/client-no-touch/">CLIENT NO-TOUCH</a>
+   * @return OK
+   */
+  String clientNoTouchOn();
+
+  /**
+   * Turn off <a href="https://redis.io/commands/client-no-touch/">CLIENT NO-TOUCH</a>
+   * @return OK
+   */
+  String clientNoTouchOff();
 }

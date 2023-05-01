@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.Test;
 
+import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
@@ -862,5 +863,28 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     jedis.set(bfoo1, bbar1);
     assertTrue(jedis.copy(bfoo1, bfoo2, true));
     assertArrayEquals(bbar1, jedis.get(bfoo2));
+  }
+
+  @Test
+  public void scanIteration() {
+    Set<String> allIn = new HashSet<>(26 * 26);
+    char[] arr = new char[2];
+    for (int i = 0; i < 26; i++) {
+      arr[0] = (char) ('a' + i);
+      for (int j = 0; j < 26; j++) {
+        arr[1] = (char) ('a' + j);
+        String str = new String(arr);
+        jedis.incr(str);
+        allIn.add(str);
+      }
+    }
+
+    Set<String> allScan = new HashSet<>();
+    ScanIteration scan = jedis.scanIteration(10, "*");
+    while (!scan.isIterationCompleted()) {
+      ScanResult<String> batch = scan.nextBatch();
+      allScan.addAll(batch.getResult());
+    }
+    assertEquals(allIn, allScan);
   }
 }

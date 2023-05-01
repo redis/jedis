@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -90,7 +91,8 @@ public class JedisPooledTest {
 
   @Test
   public void customClientName() {
-    try (JedisPooled pool = new JedisPooled(hnp, DefaultJedisClientConfig.builder().clientName("my_shiny_client_name").build());
+    try (JedisPooled pool = new JedisPooled(hnp, DefaultJedisClientConfig.builder()
+        .clientName("my_shiny_client_name").build());
         Connection jedis = pool.getPool().getResource()) {
       assertEquals("my_shiny_client_name", new Jedis(jedis).clientGetname());
     }
@@ -167,8 +169,7 @@ public class JedisPooledTest {
       assertEquals(0, pool.getPool().getNumActive());
 
       factory.setPassword("foobared");
-      pool.set("foo", "bar");
-      assertEquals("bar", pool.get("foo"));
+      assertNull(pool.get("foo"));
     }
   }
 
@@ -187,8 +188,7 @@ public class JedisPooledTest {
       assertEquals(0, pool.getPool().getNumActive());
 
       credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
-      pool.set("foo", "bar");
-      assertEquals("bar", pool.get("foo"));
+      assertNull(pool.get("foo"));
     }
   }
 
@@ -231,20 +231,23 @@ public class JedisPooledTest {
       }
     };
 
+    // TODO: do it without the help of pool config; from Connection constructor? (configurable) force ping?
+    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+    poolConfig.setMaxTotal(1);
+    poolConfig.setTestOnBorrow(true);
     try (JedisPooled pool = new JedisPooled(HostAndPorts.getRedisServers().get(0),
         DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider)
-            .clientName("my_shiny_client_name").build())) {
+            .build(), poolConfig)) {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");
       } catch (JedisException e) {
       }
-      assertEquals(0, pool.getPool().getNumActive());
+      assertEquals(0, pool.getPool().getNumActive() + pool.getPool().getNumIdle() + pool.getPool().getNumWaiters());
       assertEquals(1, prepareCount.get());
       assertEquals(1, cleanupCount.get());
 
-      pool.set("foo", "bar");
-      assertEquals("bar", pool.get("foo"));
+      assertNull(pool.get("foo"));
       assertEquals(2, prepareCount.get());
       assertEquals(2, cleanupCount.get());
     }

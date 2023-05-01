@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
@@ -75,6 +76,15 @@ public interface ClientBinaryCommands {
    * @return Information and statistics about the current client connection
    */
   byte[] clientInfoBinary();
+
+  /**
+   * client set info command
+   * Since redis 7.2
+   * @param attr the attr option
+   * @param value the value
+   * @return OK or error
+   */
+  String clientSetInfo(ClientAttributeOption attr, byte[] value);
 
   /**
    * Assigns a name to the current connection.

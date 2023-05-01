@@ -17,7 +17,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
-import redis.clients.jedis.exceptions.JedisAccessControlException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
@@ -98,7 +98,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         RedisProtocol proto = conn.getRedisProtocol();
         if (proto != null) commandObjects.setProtocol(proto);
       }
-    } catch (JedisAccessControlException ace) {
+    //} catch (JedisAccessControlException ace) {
+    } catch (JedisException je) { // TODO: use specific exception(s)
       // use default protocol
     }
   }

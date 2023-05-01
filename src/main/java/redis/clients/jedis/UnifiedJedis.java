@@ -138,12 +138,20 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects = new ClusterCommandObjects();
   }
 
+  /**
+   * @deprecated Sharding/Sharded feature will be removed in next major release.
+   */
+  @Deprecated
   public UnifiedJedis(ShardedConnectionProvider provider) {
     this.provider = provider;
     this.executor = new DefaultCommandExecutor(provider);
     this.commandObjects = new ShardedCommandObjects(provider.getHashingAlgo());
   }
 
+  /**
+   * @deprecated Sharding/Sharded feature will be removed in next major release.
+   */
+  @Deprecated
   public UnifiedJedis(ShardedConnectionProvider provider, Pattern tagPattern) {
     this.provider = provider;
     this.executor = new DefaultCommandExecutor(provider);

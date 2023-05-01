@@ -7,7 +7,6 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.RedisProtocol;
 
 public abstract class JedisCommandsTestBase {
 
@@ -21,7 +20,8 @@ public abstract class JedisCommandsTestBase {
 
   @Before
   public void setUp() throws Exception {
-    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3).timeoutMillis(500).password("foobared").build());
+    //jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
+    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().resp3().timeoutMillis(500).password("foobared").build());
     jedis.flushAll();
   }
 

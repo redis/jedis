@@ -302,14 +302,19 @@ public class Connection implements Closeable {
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
 
+//  @SuppressWarnings("unchecked")
+//  public List<Object> getUnflushedObjectMultiBulkReply() {
+//    return (List<Object>) readProtocolWithCheckingBroken();
+//  }
+//
   @SuppressWarnings("unchecked")
-  public List<Object> getUnflushedObjectMultiBulkReply() {
-    return (List<Object>) readProtocolWithCheckingBroken();
+  public Object getUnflushedObject() {
+    return readProtocolWithCheckingBroken();
   }
 
   public List<Object> getObjectMultiBulkReply() {
     flush();
-    return getUnflushedObjectMultiBulkReply();
+    return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
@@ -339,6 +344,9 @@ public class Connection implements Closeable {
 
     try {
       return Protocol.read(inputStream);
+//      Object read = Protocol.read(inputStream);
+//      System.out.println(SafeEncoder.encodeObject(read));
+//      return read;
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;

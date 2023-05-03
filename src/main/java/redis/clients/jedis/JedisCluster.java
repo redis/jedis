@@ -205,40 +205,6 @@ public class JedisCluster extends UnifiedJedis {
     return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);
   }
 
-  // commands
-  public long publish(String channel, String message) {
-    return executeCommand(commandObjects.publish(channel, message));
-  }
-
-  public long publish(byte[] channel, byte[] message) {
-    return executeCommand(commandObjects.publish(channel, message));
-  }
-
-  public void subscribe(final JedisPubSub jedisPubSub, final String... channels) {
-    try (Connection connection = this.provider.getConnection()) {
-      jedisPubSub.proceed(connection, channels);
-    }
-  }
-
-  public void psubscribe(final JedisPubSub jedisPubSub, final String... patterns) {
-    try (Connection connection = this.provider.getConnection()) {
-      jedisPubSub.proceedWithPatterns(connection, patterns);
-    }
-  }
-
-  public void subscribe(BinaryJedisPubSub jedisPubSub, final byte[]... channels) {
-    try (Connection connection = this.provider.getConnection()) {
-      jedisPubSub.proceed(connection, channels);
-    }
-  }
-
-  public void psubscribe(BinaryJedisPubSub jedisPubSub, final byte[]... patterns) {
-    try (Connection connection = this.provider.getConnection()) {
-      jedisPubSub.proceedWithPatterns(connection, patterns);
-    }
-  }
-  // commands
-
   @Override
   public ClusterPipeline pipelined() {
     return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);

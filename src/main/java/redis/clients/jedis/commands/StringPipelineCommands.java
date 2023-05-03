@@ -3,7 +3,6 @@ package redis.clients.jedis.commands;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -17,9 +16,6 @@ public interface StringPipelineCommands extends BitPipelineCommands {
 
   Response<String> get(String key);
 
-  /**
-   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
-   */
   Response<String> setGet(String key, String value, SetParams params);
 
   Response<String> getDel(String key);

@@ -4,7 +4,6 @@ import java.util.List;
 
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 

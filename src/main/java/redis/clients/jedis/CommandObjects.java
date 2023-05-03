@@ -451,6 +451,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.GET).key(key), BuilderFactory.BINARY);
   }
 
+  public final CommandObject<byte[]> setGet(byte[] key, byte[] value) {
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).add(Keyword.GET), BuilderFactory.BINARY);
+  }
+
   public final CommandObject<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
     return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params)
         .add(Keyword.GET), BuilderFactory.BINARY);
@@ -3100,14 +3104,6 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> publish(byte[] channel, byte[] message) {
-    return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> spublish(String channel, String message) {
-    return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> spublish(byte[] channel, byte[] message) {
     return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
   }
   // Miscellaneous commands

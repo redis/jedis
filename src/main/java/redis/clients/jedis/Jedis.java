@@ -491,6 +491,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public byte[] setGet(final byte[] key, final byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public byte[] setGet(final byte[] key, final byte[] value, final SetParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value, params));

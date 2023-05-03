@@ -741,6 +741,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public byte[] setGet(byte[] key, byte[] value) {
+    return executeCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public byte[] setGet(byte[] key, byte[] value, SetParams params) {
     return executeCommand(commandObjects.setGet(key, value, params));
   }

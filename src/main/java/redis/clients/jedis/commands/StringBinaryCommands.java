@@ -4,7 +4,6 @@ import java.util.List;
 
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.params.StrAlgoLCSParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -16,9 +15,8 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   byte[] get(byte[] key);
 
-  /**
-   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
-   */
+  byte[] setGet(byte[] key, byte[] value);
+
   byte[] setGet(byte[] key, byte[] value, SetParams params);
 
   byte[] getDel(byte[] key);

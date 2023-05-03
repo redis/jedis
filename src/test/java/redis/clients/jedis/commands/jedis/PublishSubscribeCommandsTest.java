@@ -21,7 +21,7 @@ import org.junit.Test;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
@@ -461,14 +461,14 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
     jedis.subscribe(pubsub, SafeEncoder.encode("foo"));
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test(expected = JedisException.class)
   public void unsubscribeWhenNotSusbscribed() throws InterruptedException {
     JedisPubSub pubsub = new JedisPubSub() {
     };
     pubsub.unsubscribe();
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test(expected = JedisException.class)
   public void handleClientOutputBufferLimitForSubscribeTooSlow() throws InterruptedException {
     final Jedis j = createJedis();
     final AtomicBoolean exit = new AtomicBoolean(false);

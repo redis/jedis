@@ -160,24 +160,6 @@ public class JedisPooledTest {
   }
 
   @Test
-  public void testResetValidPassword() {
-    ConnectionFactory factory = new ConnectionFactory(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().password("bad password")
-            .clientName("my_shiny_client_name").build());
-
-    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), factory)) {
-      try {
-        pool.get("foo");
-        fail("Should not get resource from pool");
-      } catch (JedisException e) { }
-      assertEquals(0, pool.getPool().getNumActive());
-
-      factory.setPassword("foobared");
-      assertNull(pool.get("foo"));
-    }
-  }
-
-  @Test
   public void testResetValidCredentials() {
     DefaultRedisCredentialsProvider credentialsProvider = 
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));

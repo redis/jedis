@@ -604,7 +604,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
-            null, null, 3, "xpendeing-consumer");
+        XPendingParams.xPendingParams().count(3).consumer("xpendeing-consumer"));
+
     // Sleep for 100ms so we can claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -634,7 +635,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
-      null, null, 3, "xpendeing-consumer");
+        XPendingParams.xPendingParams().count(3).consumer("xpendeing-consumer"));
     // Sleep for 100ms so we can claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -663,7 +664,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+            XPendingParams.xPendingParams().count(3).consumer("xpending-consumer"));
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -693,7 +694,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+            XPendingParams.xPendingParams().count(3).consumer("xpending-consumer"));
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -725,7 +726,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+            XPendingParams.xPendingParams().count(3).consumer("xpending-consumer"));
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -755,7 +756,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+            XPendingParams.xPendingParams().count(3).consumer("xpending-consumer"));
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);

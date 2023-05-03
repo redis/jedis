@@ -56,6 +56,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bnx = { 0x6E, 0x78 };
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
+
   private static final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
 
   @Test
@@ -944,12 +945,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.set("hello", "world"));
 
     // GET old value
-    assertEquals("world", jedis.set("hello", "jedis", setParams().get()));
+    assertEquals("world", jedis.setGet("hello", "jedis"));
 
     assertEquals("jedis", jedis.get("hello"));
 
     // GET null value
-    assertNull(jedis.set("key", "value", setParams().get()));
+    assertNull(jedis.setGet("key", "value"));
   }
 
   @Test

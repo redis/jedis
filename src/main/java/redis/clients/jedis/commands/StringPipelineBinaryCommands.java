@@ -60,12 +60,5 @@ public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands 
 
   Response<Long> strlen(byte[] key);
 
-  /**
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link StringPipelineBinaryCommands#lcs(byte[], byte[], LCSParams) LCS} can be used instead of this method.
-   */
-  @Deprecated
-  Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params);
-
   Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params);
 }

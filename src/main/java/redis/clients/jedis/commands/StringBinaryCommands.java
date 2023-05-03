@@ -60,13 +60,6 @@ public interface StringBinaryCommands extends BitBinaryCommands {
   long strlen(byte[] key);
 
   /**
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link StringBinaryCommands#lcs(byte[], byte[], LCSParams) LCS} can be used instead of this method.
-   */
-  @Deprecated
-  LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params);
-
-  /**
    * Calculate the longest common subsequence of keyA and keyB.
    * @param keyA
    * @param keyB

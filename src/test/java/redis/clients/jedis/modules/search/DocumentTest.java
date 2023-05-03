@@ -25,8 +25,7 @@ public class DocumentTest {
     Map<String, Object> map = new HashMap<>();
     map.put("string", "c");
     map.put("float", 12d);
-    byte[] payload = "1a".getBytes();
-    Document document = new Document(id, map, score, payload);
+    Document document = new Document(id, map, score);
 
     ByteArrayOutputStream aos = new ByteArrayOutputStream();
     ObjectOutputStream oos = new ObjectOutputStream(aos);
@@ -41,11 +40,9 @@ public class DocumentTest {
 
     assertEquals(id, read.getId());
     assertEquals(score, read.getScore(), 0d);
-    assertArrayEquals(payload, read.getPayload());
 
     // use english language to make sure the decimal separator is the same as the toString
-    String exp = String.format(Locale.ENGLISH, "id:%s, score: %.1f, payload:%s, properties:%s", id,
-        score, SafeEncoder.encode(payload), "[string=c, float=12.0]");
+    String exp = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s", id, score, "[string=c, float=12.0]");
     assertEquals(exp, read.toString());
     assertEquals("c", read.getString("string"));
     assertEquals(Double.valueOf(12d), read.get("float"));
@@ -58,12 +55,11 @@ public class DocumentTest {
     Map<String, Object> map = new HashMap<>();
     map.put("string", "c");
     map.put("float", 12d);
-    byte[] payload = "1a".getBytes();
-    Document document = new Document(id, map, score, payload);
+    Document document = new Document(id, map, score);
 
     // use english language to make sure the decimal separator is the same as the toString
-    String expected = String.format(Locale.ENGLISH, "id:%s, score: %.1f, payload:%s, properties:%s",
-        id, score, SafeEncoder.encode(payload), "[string=c, float=12.0]");
+    String expected = String.format(Locale.ENGLISH, "id:%s, score: %.1f, properties:%s",
+        id, score, "[string=c, float=12.0]");
     assertEquals(expected, document.toString());
   }
 

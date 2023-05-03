@@ -13,7 +13,6 @@ public class SetParams extends Params implements IParams {
   private static final String EXAT = "exat";
   private static final String PXAT = "pxat";
   private static final String KEEPTTL = "keepttl";
-  private static final String GET = "get";
 
   public SetParams() {
   }
@@ -89,17 +88,6 @@ public class SetParams extends Params implements IParams {
     return this;
   }
 
-  /**
-   * Return the old value stored at key, or nil when key did not exist.
-   * @return SetParams
-   * @deprecated Use {@code setGet} method (without setting {@link SetParams#get()}.
-   */
-  @Deprecated
-  public SetParams get() {
-    addParam(GET);
-    return this;
-  }
-
   @Override
   public void addParams(CommandArguments args) {
     if (contains(NX)) {
@@ -127,10 +115,6 @@ public class SetParams extends Params implements IParams {
     }
     if (contains(KEEPTTL)) {
       args.add(Keyword.KEEPTTL);
-    }
-
-    if (contains(GET)) {
-      args.add(Keyword.GET);
     }
   }
 

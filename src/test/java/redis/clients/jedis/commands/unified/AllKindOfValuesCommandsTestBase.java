@@ -739,12 +739,12 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertEquals("OK", jedis.set("hello", "world"));
 
     // GET old value
-    assertEquals("world", jedis.set("hello", "jedis", setParams().get()));
+    assertEquals("world", jedis.setGet("hello", "jedis"));
 
     assertEquals("jedis", jedis.get("hello"));
 
     // GET null value
-    assertNull(jedis.set("key", "value", setParams().get()));
+    assertNull(jedis.setGet("key", "value"));
   }
 
   @Test

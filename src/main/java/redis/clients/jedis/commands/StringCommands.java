@@ -47,9 +47,8 @@ public interface StringCommands extends BitCommands {
    */
   String get(String key);
 
-  /**
-   * WARNING: {@link SetParams#get()} MUST NOT be used with this method.
-   */
+  String setGet(String key, String value);
+
   String setGet(String key, String value, SetParams params);
 
   /**
@@ -340,18 +339,6 @@ public interface StringCommands extends BitCommands {
    * @return The length of the string at key, or 0 when key does not exist
    */
   long strlen(String key);
-
-  /**
-   * Calculate the longest common subsequence of keyA and keyB.
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link StringCommands#lcs(String, String, LCSParams) LCS} can be used instead of this method.
-   * @param keyA
-   * @param keyB
-   * @param params
-   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
-   */
-  @Deprecated
-  LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.

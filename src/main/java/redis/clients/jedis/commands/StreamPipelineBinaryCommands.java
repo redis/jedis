@@ -46,12 +46,6 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Object> xpending(byte[] key, byte[] groupName);
 
-  /**
-   * @deprecated Use {@link StreamPipelineBinaryCommands#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Deprecated
-  Response<List<Object>> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName);
-
   Response<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params);
 
   Response<List<byte[]>> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids);
@@ -78,12 +72,6 @@ public interface StreamPipelineBinaryCommands {
    * @param count stream info count
    */
   Response<Object> xinfoStreamFull(byte[] key, int count);
-
-  /**
-   * @deprecated Use {@link StreamPipelineBinaryCommands#xinfoGroups(byte[])}.
-   */
-  @Deprecated
-  Response<List<Object>> xinfoGroup(byte[] key);
 
   Response<List<Object>> xinfoGroups(byte[] key);
 

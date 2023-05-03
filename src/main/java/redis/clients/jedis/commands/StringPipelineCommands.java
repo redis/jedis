@@ -60,12 +60,5 @@ public interface StringPipelineCommands extends BitPipelineCommands {
 
   Response<Long> strlen(String key);
 
-  /**
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link StringPipelineCommands#lcs(String, String, LCSParams) LCS} can be used instead of this method.
-   */
-  @Deprecated
-  Response<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params);
-
   Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params);
 }

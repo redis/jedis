@@ -6,13 +6,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class JedisPubSubBase<T> {
 
-  private static final String JEDIS_SUBSCRIPTION_MESSAGE = "JedisPubSub is not subscribed to a Jedis instance.";
   private int subscribedChannels = 0;
   private volatile Connection client;
 
@@ -39,7 +37,7 @@ public abstract class JedisPubSubBase<T> {
 
   private void sendAndFlushCommand(Command command, T... args) {
     if (client == null) {
-      throw new JedisConnectionException(JEDIS_SUBSCRIPTION_MESSAGE);
+      throw new JedisException(getClass() + " is not connected to a Connection.");
     }
     CommandArguments cargs = new CommandArguments(command).addObjects(args);
     client.sendCommand(cargs);
@@ -176,7 +174,7 @@ public abstract class JedisPubSubBase<T> {
       }
     } while (isSubscribed());
 
-    /* Invalidate instance since this thread is no longer listening */
-    this.client = null;
+//    /* Invalidate instance since this thread is no longer listening */
+//    this.client = null;
   }
 }

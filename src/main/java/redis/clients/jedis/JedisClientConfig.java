@@ -44,10 +44,6 @@ public interface JedisClientConfig {
     return null;
   }
 
-  @Deprecated
-  default void updatePassword(String password) {
-  }
-
   default Supplier<RedisCredentials> getCredentialsProvider() {
     return new DefaultRedisCredentialsProvider(
         new DefaultRedisCredentials(getUser(), getPassword()));

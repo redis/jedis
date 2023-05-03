@@ -491,6 +491,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public byte[] setGet(final byte[] key, final byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public byte[] setGet(final byte[] key, final byte[] value, final SetParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setGet(key, value, params));
@@ -3385,21 +3391,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     }
   }
 
-  /**
-   * @deprecated Use {@link Jedis#shutdown(redis.clients.jedis.params.ShutdownParams)}.
-   */
-  @Override
-  @Deprecated
-  public void shutdown(final SaveMode saveMode) throws JedisException {
-    connection.sendCommand(SHUTDOWN, saveMode.getRaw());
-    try {
-      throw new JedisException(connection.getStatusCodeReply());
-    } catch (JedisConnectionException jce) {
-      // expected
-      connection.setBroken();
-    }
-  }
-
   @Override
   public void shutdown(ShutdownParams shutdownParams) throws JedisException {
     connection.sendCommand(new CommandArguments(SHUTDOWN).addParams(shutdownParams));
@@ -3675,26 +3666,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long strlen(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strlen(key));
-  }
-
-  /**
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link Jedis#lcs(byte[], byte[], LCSParams) LCS} can be used instead of this method.
-   */
-  @Override
-  @Deprecated
-  public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
-  /**
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   */
-  @Deprecated
-  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
   @Override
@@ -4759,17 +4730,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xtrim(key, params));
   }
 
-  /**
-   * @deprecated Use {@link Jedis#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Override
-  @Deprecated
-  public List<Object> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count,
-      byte[] consumerName) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
   @Override
   public Object xpending(final byte[] key, final byte[] groupName) {
     checkIsInMultiOrPipeline();
@@ -4826,13 +4786,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object xinfoStreamFull(byte[] key, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
-  @Deprecated
-  public List<Object> xinfoGroup(byte[] key) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override
@@ -4952,6 +4905,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String get(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public String setGet(final String key, final String value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value));
   }
 
   @Override
@@ -7730,36 +7689,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link Jedis#lcs(String, String, LCSParams) LCS} can be used instead of this method.
-   * @param keyA
-   * @param keyB
-   * @param params
-   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
-   */
-  @Override
-  @Deprecated
-  public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
-  /**
-   * Calculate the longest common subsequence of strA and strB.
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * @param strA
-   * @param strB
-   * @param params
-   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
-   */
-  @Deprecated
-  public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
-  }
-
-  /**
-   * Calculate the longest common subsequence of keyA and keyB.
    * @param keyA
    * @param keyB
    * @param params
@@ -9429,17 +9358,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xpending(key, groupName));
   }
 
-  /**
-   * @deprecated Use {@link Jedis#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Override
-  @Deprecated
-  public List<StreamPendingEntry> xpending(final String key, final String groupName,
-      final StreamEntryID start, final StreamEntryID end, final int count, final String consumerName) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
   @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupName, final XPendingParams params) {
     checkIsInMultiOrPipeline();
@@ -9489,12 +9407,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public StreamFullInfo xinfoStreamFull(String key, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
-  @Deprecated
-  public List<StreamGroupInfo> xinfoGroup(String key) {
-    return connection.executeCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override

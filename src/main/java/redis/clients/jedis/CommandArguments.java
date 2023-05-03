@@ -56,14 +56,6 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
-  @Deprecated
-  public CommandArguments addObjects(int[] ints) {
-    for (int i : ints) {
-      add(i);
-    }
-    return this;
-  }
-
   public CommandArguments key(Object key) {
     if (key instanceof Rawable) {
       Rawable raw = (Rawable) key;

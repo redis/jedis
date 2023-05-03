@@ -706,6 +706,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String setGet(String key, String value) {
+    return executeCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public String setGet(String key, String value, SetParams params) {
     return executeCommand(commandObjects.setGet(key, value, params));
   }
@@ -733,6 +738,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public byte[] get(byte[] key) {
     return executeCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public byte[] setGet(byte[] key, byte[] value) {
+    return executeCommand(commandObjects.setGet(key, value));
   }
 
   @Override
@@ -1018,16 +1028,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
     return executeCommand(commandObjects.bitop(op, destKey, srcKeys));
-  }
-
-  @Override
-  public LCSMatchResult strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
-    return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
-  @Override
-  public LCSMatchResult strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
   }
 
   @Override
@@ -2935,11 +2935,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamPendingEntry> xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName) {
-    return executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
-  @Override
   public List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params) {
     return executeCommand(commandObjects.xpending(key, groupName, params));
   }
@@ -2992,12 +2987,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public StreamFullInfo xinfoStreamFull(String key, int count) {
     return executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
-  @Deprecated
-  public List<StreamGroupInfo> xinfoGroup(String key) {
-    return executeCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override
@@ -3102,11 +3091,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Object> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName) {
-    return executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
-  @Override
   public List<Object> xpending(byte[] key, byte[] groupName, XPendingParams params) {
     return executeCommand(commandObjects.xpending(key, groupName, params));
   }
@@ -3144,12 +3128,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Object xinfoStreamFull(byte[] key, int count) {
     return executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
-  @Deprecated
-  public List<Object> xinfoGroup(byte[] key) {
-    return executeCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override
@@ -3590,14 +3568,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     try (Connection connection = this.provider.getConnection()) {
       jedisPubSub.proceedWithPatterns(connection, patterns);
     }
-  }
-
-  public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
-    return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
-  }
-
-  public LCSMatchResult strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
-    return executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
   // Random node commands
 
@@ -4552,12 +4522,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<Boolean> topkQuery(String key, String... items) {
     return executeCommand(commandObjects.topkQuery(key, items));
-  }
-
-  @Deprecated
-  @Override
-  public List<Long> topkCount(String key, String... items) {
-    return executeCommand(commandObjects.topkCount(key, items));
   }
 
   @Override

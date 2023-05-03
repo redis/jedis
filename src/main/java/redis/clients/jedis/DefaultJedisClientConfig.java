@@ -79,13 +79,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  @Deprecated
-  public synchronized void updatePassword(String password) {
-    ((DefaultRedisCredentialsProvider) this.credentialsProvider)
-        .setCredentials(new DefaultRedisCredentials(getUser(), password));
-  }
-
-  @Override
   public int getDatabase() {
     return database;
   }

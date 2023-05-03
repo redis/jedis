@@ -430,6 +430,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.GET).key(key), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> setGet(String key, String value) {
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).add(Keyword.GET), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> setGet(String key, String value, SetParams params) {
     return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params)
         .add(Keyword.GET), BuilderFactory.STRING);
@@ -445,6 +449,10 @@ public class CommandObjects {
 
   public final CommandObject<byte[]> get(byte[] key) {
     return new CommandObject<>(commandArguments(Command.GET).key(key), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<byte[]> setGet(byte[] key, byte[] value) {
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).add(Keyword.GET), BuilderFactory.BINARY);
   }
 
   public final CommandObject<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
@@ -674,34 +682,6 @@ public class CommandObjects {
 
   public final CommandObject<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
     return new CommandObject<>(commandArguments(BITOP).add(op).key(destKey).keys((Object[]) srcKeys), BuilderFactory.LONG);
-  }
-
-  /**
-   * @param keyA
-   * @param keyB
-   * @param params
-   * @return
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * LCS can be used instead of this method.
-   */
-  @Deprecated
-  public final CommandObject<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(Keyword.KEYS)
-        .key(keyA).key(keyB).addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
-  }
-
-  /**
-   * @param keyA
-   * @param keyB
-   * @param params
-   * @return
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * LCS can be used instead of this method.
-   */
-  @Deprecated
-  public final CommandObject<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(Keyword.KEYS)
-        .key(keyA).key(keyB).addParams(params), BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
   }
 
   public final CommandObject<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
@@ -2525,25 +2505,6 @@ public class CommandObjects {
         BuilderFactory.STREAM_PENDING_SUMMARY);
   }
 
-  /**
-   * @param key
-   * @param groupName
-   * @param start
-   * @param end
-   * @param count
-   * @param consumerName
-   * @return
-   * @deprecated Use {@link CommandObjects#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Deprecated
-  public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupName,
-      StreamEntryID start, StreamEntryID end, int count, String consumerName) {
-    CommandArguments args = commandArguments(XPENDING).key(key).add(groupName)
-        .add(start == null ? "-" : start).add(end == null ? "+" : end).add(count);
-    if (consumerName != null) args.add(consumerName);
-    return new CommandObject<>(args, BuilderFactory.STREAM_PENDING_ENTRY_LIST);
-  }
-
   public final CommandObject<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params) {
     return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName)
         .addParams(params), BuilderFactory.STREAM_PENDING_ENTRY_LIST);
@@ -2552,18 +2513,6 @@ public class CommandObjects {
   public final CommandObject<Object> xpending(byte[] key, byte[] groupName) {
     return new CommandObject<>(commandArguments(XPENDING).key(key).add(groupName),
         BuilderFactory.RAW_OBJECT);
-  }
-
-  /**
-   * @deprecated Use {@link CommandObjects#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Deprecated
-  public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupName,
-      byte[] start, byte[] end, int count, byte[] consumerName) {
-    CommandArguments args = commandArguments(XPENDING).key(key).add(groupName)
-        .add(start == null ? "-" : start).add(end == null ? "+" : end).add(count);
-    if (consumerName != null) args.add(consumerName);
-    return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params) {
@@ -2653,18 +2602,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.RAW_OBJECT);
   }
 
-  @Deprecated
-  public final CommandObject<List<StreamGroupInfo>> xinfoGroup(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
-  }
-
   public final CommandObject<List<StreamGroupInfo>> xinfoGroups(String key) {
     return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
-  }
-
-  @Deprecated
-  public final CommandObject<List<Object>> xinfoGroup(byte[] key) {
-    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Object>> xinfoGroups(byte[] key) {
@@ -3048,20 +2987,6 @@ public class CommandObjects {
   // Scripting commands
 
   // Miscellaneous commands
-  @Deprecated
-  public final CommandObject<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(STRINGS)
-        .add(strA).add(strB).addParams(params),
-        BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
-  }
-
-  @Deprecated
-  public final CommandObject<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
-    return new CommandObject<>(commandArguments(STRALGO).add(Keyword.LCS).add(STRINGS)
-        .add(strA).add(strB).addParams(params),
-        BuilderFactory.STR_ALGO_LCS_RESULT_BUILDER);
-  }
-
   public final CommandObject<Boolean> copy(String srcKey, String dstKey, int dstDB, boolean replace) {
     CommandArguments args = commandArguments(Command.COPY).key(srcKey).key(dstKey).add(DB).add(dstDB);
     if (replace) args.add(REPLACE);
@@ -3237,22 +3162,22 @@ public class CommandObjects {
 
   public final CommandObject<SearchResult> ftSearch(String indexName, String query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).add(query),
-        new SearchResultBuilder(true, false, false, true));
+        new SearchResultBuilder(true, false, true));
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
-        .add(query).addParams(params), new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
+        .add(query).addParams(params), new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), true));
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).addParams(query),
-        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));
+        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true));
   }
 
   public final CommandObject<SearchResult> ftSearch(byte[] indexName, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).addParams(query),
-        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), false));
+        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), false));
   }
 
   public final CommandObject<String> ftExplain(String indexName, Query query) {
@@ -3296,7 +3221,7 @@ public class CommandObjects {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
         .addParams(query), new SearchProfileResponseBuilder<>(new SearchResultBuilder(
-            !query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true)));
+            !query.getNoContent(), query.getWithScores(), true)));
   }
 
   public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
@@ -3304,7 +3229,7 @@ public class CommandObjects {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
         .addParams(searchParams), new SearchProfileResponseBuilder<>(new SearchResultBuilder(
-            !searchParams.getNoContent(), searchParams.getWithScores(), false, true)));
+            !searchParams.getNoContent(), searchParams.getWithScores(), true)));
   }
 
   public final CommandObject<String> ftDropIndex(String indexName) {
@@ -4074,10 +3999,6 @@ public class CommandObjects {
 
   public final CommandObject<List<Boolean>> topkQuery(String key, String... items) {
     return new CommandObject<>(commandArguments(TopKCommand.QUERY).key(key).addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
-  }
-
-  public final CommandObject<List<Long>> topkCount(String key, String... items) {
-    return new CommandObject<>(commandArguments(TopKCommand.COUNT).key(key).addObjects((Object[]) items), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<List<String>> topkList(String key) {

@@ -43,12 +43,6 @@ public interface StreamBinaryCommands {
 
   Object xpending(byte[] key, byte[] groupName);
 
-  /**
-   * @deprecated Use {@link StreamBinaryCommands#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Deprecated
-  List<Object> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName);
-
   List<Object> xpending(byte[] key, byte[] groupName, XPendingParams params);
 
   List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids);
@@ -75,12 +69,6 @@ public interface StreamBinaryCommands {
    * @param count stream info count
    */
   Object xinfoStreamFull(byte[] key, int count);
-
-  /**
-   * @deprecated Use {@link StreamBinaryCommands#xinfoGroups(byte[])}.
-   */
-  @Deprecated
-  List<Object> xinfoGroup(byte[] key);
 
   List<Object> xinfoGroups(byte[] key);
 

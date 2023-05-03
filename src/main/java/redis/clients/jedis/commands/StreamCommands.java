@@ -129,15 +129,6 @@ public interface StreamCommands {
   StreamPendingSummary xpending(String key, String groupName);
 
   /**
-   * XPENDING key group [start end count] [consumer]
-   *
-   * @deprecated Use {@link StreamCommands#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Deprecated
-  List<StreamPendingEntry> xpending(String key, String groupName, StreamEntryID start,
-      StreamEntryID end, int count, String consumerName);
-
-  /**
    * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
    */
   List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params);
@@ -222,12 +213,6 @@ public interface StreamCommands {
    * @return {@link StreamFullInfo} that contains information about the stream
    */
   StreamFullInfo xinfoStreamFull(String key, int count);
-
-  /**
-   * @deprecated Use {@link StreamCommands#xinfoGroups(java.lang.String)}.
-   */
-  @Deprecated
-  List<StreamGroupInfo> xinfoGroup(String key);
 
   /**
    * Introspection command used in order to retrieve different information about groups in the stream

@@ -3415,6 +3415,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public KeyValue<Long, Long> waitaof(String sampleKey, long numLocal, long numReplicas, long timeout) {
+    return executeCommand(commandObjects.waitaof(sampleKey, numLocal, numReplicas, timeout));
+  }
+
+  @Override
+  public KeyValue<Long, Long> waitaof(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
+    return executeCommand(commandObjects.waitaof(sampleKey, numLocal, numReplicas, timeout));
+  }
+
+  @Override
   public Object eval(String script, String sampleKey) {
     return executeCommand(commandObjects.eval(script, sampleKey));
   }

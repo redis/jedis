@@ -4390,6 +4390,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public KeyValue<Long, Long> waitaof(long numLocal, long numReplicas, long timeout) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(WAITAOF, toByteArray(numLocal), toByteArray(numReplicas), toByteArray(timeout));
+    return BuilderFactory.KEYED_LONG_LONG.build(connection.getOne());
+  }
+
+  @Override
   public long pfadd(final byte[] key, final byte[]... elements) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pfadd(key, elements));

@@ -251,7 +251,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void waitAof() {
-    assertEquals(KeyValue.of(1L, 0L), jedis.waitAOF(1L, 0L, 0L));
+    assertEquals(KeyValue.of(0L, 0L), jedis.waitAOF(0L, 0L, 100L));
   }
 
   @Test

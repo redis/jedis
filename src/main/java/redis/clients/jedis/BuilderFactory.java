@@ -421,7 +421,7 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public KeyValue<Long, Long> build(Object data) {
       if (data == null) return null;
-      List<byte[]> dataList = (List<byte[]>) data;
+      List<Object> dataList = (List<Object>) data;
       return new KeyValue<>(LONG.build(dataList.get(0)), LONG.build(dataList.get(1)));
     }
   };

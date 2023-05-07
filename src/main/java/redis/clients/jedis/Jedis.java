@@ -7935,6 +7935,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return BuilderFactory.PUBSUB_NUMSUB_MAP.build(connection.getOne());
   }
 
+  public List<String> pubsubShardChannels() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(PUBSUB, SHARDCHANNELS);
+    return connection.getMultiBulkReply();
+  }
+
+  public List<String> pubsubShardChannels(final String pattern) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(PUBSUB, SHARDCHANNELS.name(), pattern);
+    return connection.getMultiBulkReply();
+  }
+
+  public Map<String, Long> pubsubShardNumSub(String... channels) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(PUBSUB, joinParameters(SHARDNUMSUB.name(), channels));
+    return BuilderFactory.PUBSUB_NUMSUB_MAP.build(connection.getOne());
+  }
+
   @Override
   public Object eval(final String script, final int keyCount, final String... params) {
     checkIsInMultiOrPipeline();

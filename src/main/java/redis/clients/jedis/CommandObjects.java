@@ -3106,6 +3106,14 @@ public class CommandObjects {
   public final CommandObject<Long> publish(byte[] channel, byte[] message) {
     return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
   }
+
+  public final CommandObject<Long> spublish(String channel, String message) {
+    return new CommandObject<>(commandArguments(SPUBLISH).key(channel).add(message), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> spublish(byte[] channel, byte[] message) {
+    return new CommandObject<>(commandArguments(SPUBLISH).key(channel).add(message), BuilderFactory.LONG);
+  }
   // Miscellaneous commands
 
   // RediSearch commands

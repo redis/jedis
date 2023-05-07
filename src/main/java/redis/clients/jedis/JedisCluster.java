@@ -1,13 +1,14 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.util.JedisClusterCRC16.getSlot;
-
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
 
@@ -217,13 +218,13 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   public void ssubscribe(final JedisShardedPubSub jedisPubSub, final String... channels) {
-    try (Connection connection = getConnectionFromSlot(getSlot(channels[0]))) {
+    try (Connection connection = getConnectionFromSlot(JedisClusterCRC16.getSlot(channels[0]))) {
       jedisPubSub.proceed(connection, channels);
     }
   }
 
   public void ssubscribe(BinaryJedisShardedPubSub jedisPubSub, final byte[]... channels) {
-    try (Connection connection = getConnectionFromSlot(getSlot(channels[0]))) {
+    try (Connection connection = getConnectionFromSlot(JedisClusterCRC16.getSlot(channels[0]))) {
       jedisPubSub.proceed(connection, channels);
     }
   }

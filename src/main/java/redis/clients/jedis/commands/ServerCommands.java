@@ -62,7 +62,7 @@ public interface ServerCommands {
   /**
    * Request for authentication in a password-protected Redis server. Redis can be instructed to
    * require a password before allowing clients to execute commands. This is done using the
-   * require pass directive in the configuration file. If password matches the password in the
+   * requirepass directive in the configuration file. If password matches the password in the
    * configuration file, the server replies with the OK status code and starts accepting commands.
    * Otherwise, an error is returned and the clients needs to try a new password.
    * @return the result of the auth
@@ -239,7 +239,7 @@ public interface ServerCommands {
    * @return KeyValue where Key is number of local Redises (0 or 1) that have fsynced to AOF all writes
    * performed in the context of the current connection, and the value is the number of replicas that have acknowledged doing the same.
    */
-  KeyValue<Long, Long> waitaof(long numLocal, long numReplicas, long timeout);
+  KeyValue<Long, Long> waitAOF(long numLocal, long numReplicas, long timeout);
 
   String lolwut();
 

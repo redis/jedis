@@ -8,7 +8,7 @@ public interface SampleKeyedCommands {
 
   long waitReplicas(String sampleKey, int replicas, long timeout);
 
-  KeyValue<Long, Long> waitaof(String sampleKey, long numLocal, long numReplicas, long timeout);
+  KeyValue<Long, Long> waitAOF(String sampleKey, long numLocal, long numReplicas, long timeout);
 
   Object eval(String script, String sampleKey);
 

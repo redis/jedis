@@ -1689,8 +1689,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<KeyValue<Long, Long>> waitaof(String sampleKey, long numLocal, long numReplicas, long timeout) {
-    return appendCommand(commandObjects.waitaof(sampleKey, numLocal, numReplicas, timeout));
+  public Response<KeyValue<Long, Long>> waitAOF(String sampleKey, long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
   }
 
   @Override
@@ -2515,8 +2515,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<KeyValue<Long, Long>> waitaof(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
-    return appendCommand(commandObjects.waitaof(sampleKey, numLocal, numReplicas, timeout));
+  public Response<KeyValue<Long, Long>> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
   }
 
   @Override

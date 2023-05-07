@@ -112,7 +112,7 @@ public class ShardedCommandObjects extends CommandObjects {
   }
 
   @Override
-  public CommandObject<KeyValue<Long, Long>> waitaof(long numLocal, long numReplicas, long timeout) {
+  public CommandObject<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
     throw new UnsupportedOperationException();
   }
 }

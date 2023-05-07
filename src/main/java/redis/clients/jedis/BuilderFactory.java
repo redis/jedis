@@ -416,7 +416,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyValue<Long, Long>> KEYED_LONG_LONG = new Builder<KeyValue<Long, Long>>() {
+  public static final Builder<KeyValue<Long, Long>> LONG_LONG_PAIR = new Builder<KeyValue<Long, Long>>() {
     @Override
     @SuppressWarnings("unchecked")
     public KeyValue<Long, Long> build(Object data) {

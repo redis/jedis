@@ -230,7 +230,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     pipeline.set("x", "1");
     pipeline.graphProfile("social", "CREATE (:Person {name:'a'})");
     pipeline.graphProfile("g", "CREATE (:Person {name:'a'})");
-    pipeline.waitaof(1L, 0L, 100L);
+    pipeline.waitAOF(1L, 0L, 100L);
     List<Object> results = pipeline.syncAndReturnAll();
     assertEquals(0L, results.get(3));
   }

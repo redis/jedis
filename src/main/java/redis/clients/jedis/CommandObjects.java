@@ -3132,16 +3132,16 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
   }
 
-  public CommandObject<KeyValue<Long, Long>> waitaof(long numLocal, long numReplicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout), BuilderFactory.KEYED_LONG_LONG);
+  public CommandObject<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
+    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout), BuilderFactory.LONG_LONG_PAIR);
   }
 
-  public CommandObject<KeyValue<Long, Long>> waitaof(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout).processKey(sampleKey), BuilderFactory.KEYED_LONG_LONG);
+  public CommandObject<KeyValue<Long, Long>> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
+    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG_LONG_PAIR);
   }
 
-  public CommandObject<KeyValue<Long, Long>> waitaof(String sampleKey, long numLocal, long numReplicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout).processKey(sampleKey), BuilderFactory.KEYED_LONG_LONG);
+  public CommandObject<KeyValue<Long, Long>> waitAOF(String sampleKey, long numLocal, long numReplicas, long timeout) {
+    return new CommandObject<>(commandArguments(WAITAOF).add(numLocal).add(numReplicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG_LONG_PAIR);
   }
 
   public final CommandObject<Long> publish(String channel, String message) {

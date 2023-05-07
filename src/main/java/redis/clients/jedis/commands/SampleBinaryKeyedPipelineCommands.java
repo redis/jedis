@@ -9,7 +9,7 @@ public interface SampleBinaryKeyedPipelineCommands {
 
   Response<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout);
 
-  Response<KeyValue<Long, Long>> waitaof(byte[] sampleKey, long numLocal, long numReplicas, long timeout);
+  Response<KeyValue<Long, Long>> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout);
 
   Response<Object> eval(byte[] script, byte[] sampleKey);
 

@@ -1640,8 +1640,8 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyValue<Long, Long>> waitaof(String sampleKey, long numLocal, long numReplicas, long timeout) {
-    return appendCommand(commandObjects.waitaof(sampleKey, numLocal, numReplicas, timeout));
+  public Response<KeyValue<Long, Long>> waitAOF(String sampleKey, long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
   }
 
   @Override
@@ -2466,8 +2466,8 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyValue<Long, Long>> waitaof(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
-    return appendCommand(commandObjects.waitaof(sampleKey, numLocal, numReplicas, timeout));
+  public Response<KeyValue<Long, Long>> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
   }
 
   @Override
@@ -4322,8 +4322,8 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
   }
 
-  public Response<KeyValue<Long, Long>> waitaof(long numLocal, long numReplicas, long timeout) {
-    return appendCommand(commandObjects.waitaof(numLocal, numReplicas, timeout));
+  public Response<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(numLocal, numReplicas, timeout));
   }
 
   public Response<List<String>> time() {

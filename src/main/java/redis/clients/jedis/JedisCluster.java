@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.util.JedisClusterCRC16.getSlot;
+
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
@@ -204,6 +206,28 @@ public class JedisCluster extends UnifiedJedis {
   public Connection getConnectionFromSlot(int slot) {
     return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);
   }
+
+  // commands
+  public long spublish(String channel, String message) {
+    return executeCommand(commandObjects.spublish(channel, message));
+  }
+
+  public long spublish(byte[] channel, byte[] message) {
+    return executeCommand(commandObjects.spublish(channel, message));
+  }
+
+  public void ssubscribe(final JedisShardedPubSub jedisPubSub, final String... channels) {
+    try (Connection connection = getConnectionFromSlot(getSlot(channels[0]))) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void ssubscribe(BinaryJedisShardedPubSub jedisPubSub, final byte[]... channels) {
+    try (Connection connection = getConnectionFromSlot(getSlot(channels[0]))) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+  // commands
 
   @Override
   public ClusterPipeline pipelined() {

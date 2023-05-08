@@ -30,7 +30,7 @@ public final class Protocol {
   public static final byte COMMA_BYTE = ',';
   public static final byte DOLLAR_BYTE = '$';
   public static final byte EQUAL_BYTE = '=';
-  public static final byte GRATER_THAN_BYTE = '>';
+  public static final byte GREATER_THAN_BYTE = '>';
   public static final byte HASH_BYTE = '#';
   public static final byte LEFT_BRACE_BYTE = '(';
   public static final byte MINUS_BYTE = '-';
@@ -160,7 +160,7 @@ public final class Protocol {
         num = is.readIntCrLf();
         if (num == -1) return null;
         return processMultiBulkReply(num, is);
-      case GRATER_THAN_BYTE:
+      case GREATER_THAN_BYTE:
         num = is.readIntCrLf();
         if (num == -1) return null;
         return processMultiBulkReply(num, is);

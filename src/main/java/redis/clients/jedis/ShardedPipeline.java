@@ -8,10 +8,11 @@ import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.IOUtils;
 
 /**
+ * WARNING: RESP3 is not properly implemented for ShardedPipeline.
+ *
  * @deprecated Sharding/Sharded feature will be removed in next major release.
  */
 @Deprecated
-// TODO: RESP3
 public class ShardedPipeline extends MultiNodePipelineBase {
 
   private final ShardedConnectionProvider provider;

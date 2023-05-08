@@ -2630,12 +2630,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> bzpopmax(final double timeout, final byte[]... keys) {
+  public List<Object> bzpopmax(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public List<byte[]> bzpopmin(final double timeout, final byte[]... keys) {
+  public List<Object> bzpopmin(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmin(timeout, keys));
   }
 

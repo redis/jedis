@@ -4,12 +4,9 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import redis.clients.jedis.resps.StreamConsumerFullInfo;
-import redis.clients.jedis.resps.StreamFullInfo;
-import redis.clients.jedis.resps.StreamGroupFullInfo;
+import redis.clients.jedis.resps.*;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
-import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.DoublePrecision;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.KeyValue;
@@ -200,36 +197,6 @@ public final class BuilderFactory {
     }
   };
 
-  // TODO: remove
-  public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
-    @Override
-    public byte[] build(Object data) {
-      return ((byte[]) data);
-    }
-
-    @Override
-    public String toString() {
-      return "byte[]";
-    }
-  };
-
-  // TODO: remove
-  public static final Builder<List<byte[]>> BYTE_ARRAY_LIST = new Builder<List<byte[]>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<byte[]> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      return (List<byte[]>) data;
-    }
-
-    @Override
-    public String toString() {
-      return "List<byte[]>";
-    }
-  };
-
   public static final Builder<byte[]> BINARY = new Builder<byte[]>() {
     @Override
     public byte[] build(Object data) {
@@ -308,7 +275,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "Map<String, String>";
+      return "Map<byte[], byte[]>";
     }
   };
 
@@ -977,7 +944,7 @@ public final class BuilderFactory {
       tempMappingFunctions.put(AccessControlLogEntry.CONTEXT, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.OBJECT, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.USERNAME, STRING);
-      // tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS, STRING);
+      tempMappingFunctions.put(AccessControlLogEntry.AGE_SECONDS, DOUBLE);
       tempMappingFunctions.put(AccessControlLogEntry.CLIENT_INFO, STRING);
       tempMappingFunctions.put(AccessControlLogEntry.ENTRY_ID, LONG);
       tempMappingFunctions.put(AccessControlLogEntry.TIMESTAMP_CREATED, LONG);
@@ -1174,7 +1141,7 @@ public final class BuilderFactory {
         List<Object> stream = (List<Object>) streamObj;
         String streamKey = STRING.build(stream.get(0));
         List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(new AbstractMap.SimpleEntry<>(streamKey, streamEntries));
+        result.add(KeyValue.of(streamKey, streamEntries));
       }
 
       return result;
@@ -1198,7 +1165,7 @@ public final class BuilderFactory {
       while (iter.hasNext()) {
         String streamKey = STRING.build(iter.next());
         List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(iter.next());
-        result.add(new AbstractMap.SimpleEntry<>(streamKey, streamEntries));
+        result.add(KeyValue.of(streamKey, streamEntries));
       }
 
       return result;

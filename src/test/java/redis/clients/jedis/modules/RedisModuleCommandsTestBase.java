@@ -10,7 +10,6 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -39,7 +38,7 @@ public abstract class RedisModuleCommandsTestBase {
     try (Jedis jedis = new Jedis(hnp)) {
       jedis.flushAll();
     }
-    client = new UnifiedJedis(hnp, DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3).build());
+    client = new UnifiedJedis(hnp, DefaultJedisClientConfig.builder().resp3().build());
   }
 
   @After

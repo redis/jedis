@@ -1068,7 +1068,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  // TODO: RESP3
   public void limitedSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "hello"));

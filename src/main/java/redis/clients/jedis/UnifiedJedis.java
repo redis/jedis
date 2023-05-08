@@ -2339,12 +2339,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> bzpopmax(double timeout, byte[]... keys) {
+  public List<Object> bzpopmax(double timeout, byte[]... keys) {
     return executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public List<byte[]> bzpopmin(double timeout, byte[]... keys) {
+  public List<Object> bzpopmin(double timeout, byte[]... keys) {
     return executeCommand(commandObjects.bzpopmin(timeout, keys));
   }
 

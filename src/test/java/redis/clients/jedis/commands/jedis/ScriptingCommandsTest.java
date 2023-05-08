@@ -8,9 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -119,8 +118,8 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     String script = "return { {KEYS[1]} , {2} }";
     List<?> results = (List<?>) jedis.eval(script, 1, "key1");
 
-    MatcherAssert.assertThat((List<String>) results.get(0), listWithItem("key1"));
-    MatcherAssert.assertThat((List<Long>) results.get(1), listWithItem(2L));
+    MatcherAssert.assertThat((List<String>) results.get(0), Matchers.hasItem("key1"));
+    MatcherAssert.assertThat((List<Long>) results.get(1), Matchers.hasItem(2L));
   }
 
   @Test
@@ -505,9 +504,5 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
 
     // Binary
     assertEquals(Long.valueOf(1), jedis.fcallReadonly("noop".getBytes(), Collections.emptyList(), Collections.emptyList()));
-  }
-
-  private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
-    return CoreMatchers.<T> hasItem(CoreMatchers.equalTo(expected));
   }
 }

@@ -60,12 +60,16 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void connectWithConfigInterface() {
+  public void connectWithEmptyConfigInterface() {
     try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
     })) {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }
+  }
+
+  @Test
+  public void connectWithConfigInterface() {
     try (Jedis jedis = new Jedis(hnp, new JedisClientConfig() {
       @Override
       public String getPassword() {
@@ -77,9 +81,17 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void resp3() {
+  public void resp3Protocol() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
         .protocol(RedisProtocol.RESP3).user("default").password("foobared").build())) {
+      assertEquals("PONG", jedis.ping());
+    }
+  }
+
+  @Test
+  public void resp3Shortcut() {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().resp3()
+        .user("default").password("foobared").build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

@@ -2996,12 +2996,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
+  public Response<List<Object>> bzpopmax(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
+  public Response<List<Object>> bzpopmin(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
   }
 

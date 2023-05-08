@@ -1541,10 +1541,10 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
-    List<byte[]> actual = jedis.bzpopmax(0, bfoo, bbar);
+    List<Object> actual = jedis.bzpopmax(0, bfoo, bbar);
     assertEquals(3, actual.size());
-    assertArrayEquals(bfoo, actual.get(0));
-    assertArrayEquals(bb, actual.get(1));
+    assertArrayEquals(bfoo, (byte[]) actual.get(0));
+    assertArrayEquals(bb, (byte[]) actual.get(1));
     assertEquals(10d, BuilderFactory.DOUBLE.build(actual.get(2)), 1e-10);
   }
 
@@ -1559,10 +1559,10 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
-    List<byte[]> actual = jedis.bzpopmin(0, bbar, bfoo);
+    List<Object> actual = jedis.bzpopmin(0, bbar, bfoo);
     assertEquals(3, actual.size());
-    assertArrayEquals(bbar, actual.get(0));
-    assertArrayEquals(bc, actual.get(1));
+    assertArrayEquals(bbar, (byte[]) actual.get(0));
+    assertArrayEquals(bc, (byte[]) actual.get(1));
     assertEquals(0.1d, BuilderFactory.DOUBLE.build(actual.get(2)), 1e-10);
   }
 

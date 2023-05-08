@@ -1482,38 +1482,15 @@ public class CommandObjects {
         BuilderFactory.KEYED_ZSET_ELEMENT);
   }
 
-  public final CommandObject<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
+  public final CommandObject<List<Object>> bzpopmax(double timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys)
-        .add(timeout), getBZPopBuilder());
+        .add(timeout), BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
+  public final CommandObject<List<Object>> bzpopmin(double timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys)
-        .add(timeout), getBZPopBuilder());
+        .add(timeout), BuilderFactory.RAW_OBJECT_LIST);
   }
-
-  private Builder<List<byte[]>> getBZPopBuilder() {
-    if (proto == RedisProtocol.RESP3) return DUMMY_BZPOP_BUILDER;
-    return BuilderFactory.BINARY_LIST;
-  }
-
-  // TODO: remove
-  private static final Builder<List<byte[]>> DUMMY_BZPOP_BUILDER = new Builder<List<byte[]>>() {
-    @Override
-    public List<byte[]> build(Object data) {
-      if (data == null) return null;
-      List<Object> input = (List<Object>) data;
-      List<byte[]> output = new ArrayList<>(input.size());
-      for (Object in : input) {
-        if (in instanceof Double) {
-          output.add(Protocol.toByteArray((Double) in));
-        } else {
-          output.add((byte[]) in);
-        }
-      }
-      return output;
-    }
-  };
 
   public final CommandObject<Long> zcount(String key, double min, double max) {
     return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);

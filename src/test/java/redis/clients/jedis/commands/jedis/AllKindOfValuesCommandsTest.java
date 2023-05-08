@@ -1094,9 +1094,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     CommandDocument sortDoc = docs.get("sort");
     assertEquals("generic", sortDoc.getGroup());
-    MatcherAssert.assertThat(sortDoc.getSummary(), Matchers.anyOf(
-        Matchers.equalTo("Sort the elements in a list, set or sorted set"),
-        Matchers.equalTo("Sorts the elements in a list, a set, or a sorted set, optionally storing the result.")));
+    MatcherAssert.assertThat(sortDoc.getSummary(), Matchers.isOneOf(
+        "Sort the elements in a list, set or sorted set",
+        "Sorts the elements in a list, a set, or a sorted set, optionally storing the result."));
     assertNull(sortDoc.getHistory());
 
     CommandDocument setDoc = docs.get("set");

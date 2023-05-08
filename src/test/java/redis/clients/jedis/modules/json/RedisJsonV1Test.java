@@ -1,7 +1,5 @@
 package redis.clients.jedis.modules.json;
 
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.json.Path.ROOT_PATH;
 import static redis.clients.jedis.modules.json.JsonObjects.*;
@@ -14,6 +12,9 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -486,7 +487,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertNull(arr.get(1));
     assertEquals(Long.valueOf(3), arr.get(2));
     //assertEquals("2.5", arr.get(3));
-    assertThat(arr.get(3), anyOf(is("2.5"), is(2.5)));
+    MatcherAssert.assertThat(arr.get(3), Matchers.isOneOf("2.5", 2.5));
     assertEquals("true", arr.get(4));
 
     arr = client.jsonResp("resp", Path.of(".bar"));
@@ -494,7 +495,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertNull(arr.get(1));
     assertEquals(Long.valueOf(3), arr.get(2));
     //assertEquals("2.5", arr.get(3));
-    assertThat(arr.get(3), anyOf(is("2.5"), is(2.5)));
+    MatcherAssert.assertThat(arr.get(3), Matchers.isOneOf("2.5", 2.5));
     assertEquals("true", arr.get(4));
   }
 

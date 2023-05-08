@@ -5,9 +5,8 @@ import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -918,8 +917,8 @@ public class ClusterPipeliningTest {
       p.sync();
 
       List<?> results = (List<?>) result.get();
-      MatcherAssert.assertThat((List<String>) results.get(0), listWithItem("key1"));
-      MatcherAssert.assertThat((List<Long>) results.get(1), listWithItem(2L));
+      MatcherAssert.assertThat((List<String>) results.get(0), Matchers.hasItem("key1"));
+      MatcherAssert.assertThat((List<Long>) results.get(1), Matchers.hasItem(2L));
     }
   }
 
@@ -934,8 +933,8 @@ public class ClusterPipeliningTest {
       p.sync();
 
       List<?> results = (List<?>) result.get();
-      MatcherAssert.assertThat((List<byte[]>) results.get(0), listWithItem(bKey));
-      MatcherAssert.assertThat((List<Long>) results.get(1), listWithItem(2L));
+      MatcherAssert.assertThat((List<byte[]>) results.get(0), Matchers.hasItem(bKey));
+      MatcherAssert.assertThat((List<Long>) results.get(1), Matchers.hasItem(2L));
     }
   }
 
@@ -1008,10 +1007,6 @@ public class ClusterPipeliningTest {
       assertNull(result1.get());
       assertArrayEquals(SafeEncoder.encode("13"), result2.get());
     }
-  }
-
-  private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
-    return CoreMatchers.<T>hasItem(CoreMatchers.equalTo(expected));
   }
 
   @Test

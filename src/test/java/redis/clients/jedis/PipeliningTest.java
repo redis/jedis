@@ -469,6 +469,19 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void waitAof() {
+    Pipeline p = jedis.pipelined();
+    p.set("wait", "aof");
+    p.waitAOF(1L, 0L, 0L);
+    p.sync();
+
+    try (Jedis j = new Jedis(HostAndPorts.getRedisServers().get(4))) {
+      j.auth("foobared");
+      assertEquals("aof", j.get("wait"));
+    }
+  }
+
+  @Test
   public void setGet() {
     Pipeline p = jedis.pipelined();
     Response<String> _ok = p.set("hello", "world");

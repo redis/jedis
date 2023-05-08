@@ -3,10 +3,13 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.util.KeyValue;
 
 public interface SampleBinaryKeyedPipelineCommands {
 
   Response<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout);
+
+  Response<KeyValue<Long, Long>> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout);
 
   Response<Object> eval(byte[] script, byte[] sampleKey);
 

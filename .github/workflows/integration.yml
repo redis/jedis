@@ -55,7 +55,7 @@ jobs:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
       - name: redismod docker
-        run: docker run -p 52567:6379 -d redislabs/redismod:edge
+        run: docker run -p 52567:6379 -d redis/redis-stack-server:edge
       - name: Run tests
         run: mvn -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
       - name: Codecov

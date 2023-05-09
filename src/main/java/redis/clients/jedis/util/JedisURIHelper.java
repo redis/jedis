@@ -52,7 +52,7 @@ public final class JedisURIHelper {
     }
   }
 
-  public static RedisProtocol getProtocol(URI uri) {
+  public static RedisProtocol getRedisProtocol(URI uri) {
     if (uri.getQuery() == null) return null;
 
     String[] pairs = uri.getQuery().split("&");

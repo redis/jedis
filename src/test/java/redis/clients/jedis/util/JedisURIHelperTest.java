@@ -62,19 +62,19 @@ public class JedisURIHelperTest {
 
   @Test
   public void shouldGetDefaultProtocolWhenNotDefined() {
-    assertNull(getProtocol(URI.create("redis://host:1234")));
-    assertNull(getProtocol(URI.create("redis://host:1234/1")));
+    assertNull(getRedisProtocol(URI.create("redis://host:1234")));
+    assertNull(getRedisProtocol(URI.create("redis://host:1234/1")));
   }
 
   @Test
   public void shouldGetProtocolFromShortDefinition() {
-    assertEquals(RedisProtocol.RESP3, getProtocol(URI.create("redis://host:1234?protocol=3")));
-    assertEquals(RedisProtocol.RESP3, getProtocol(URI.create("redis://host:1234/1?protocol=3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234?protocol=3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=3")));
   }
 
   @Test
   public void shouldGetProtocolFromLongDefinition() {
-    assertEquals(RedisProtocol.RESP3, getProtocol(URI.create("redis://host:1234?protocol=resp3")));
-    assertEquals(RedisProtocol.RESP3, getProtocol(URI.create("redis://host:1234/1?protocol=resp3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234?protocol=resp3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=resp3")));
   }
 }

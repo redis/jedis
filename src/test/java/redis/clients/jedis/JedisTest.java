@@ -81,7 +81,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void resp3ProtocolConnect() {
+  public void connectOnResp3Protocol() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
         .protocol(RedisProtocol.RESP3).password("foobared").build())) {
       assertEquals("PONG", jedis.ping());
@@ -90,7 +90,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void resp3Shortcut() {
+  public void connectOnResp3ProtocolShortcut() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().resp3()
         .password("foobared").build())) {
       assertEquals("PONG", jedis.ping());
@@ -183,7 +183,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void resp3ConnectWithUrl() {
+  public void connectWithUrlOnResp3() {
     try (Jedis j = new Jedis("localhost", 6380)) {
       j.auth("foobared");
       j.select(2);
@@ -197,7 +197,7 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void resp3ConnectWithUri() throws URISyntaxException {
+  public void connectWithUriOnResp3() throws URISyntaxException {
     try (Jedis j = new Jedis("localhost", 6380)) {
       j.auth("foobared");
       j.select(2);

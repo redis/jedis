@@ -357,7 +357,7 @@ public class JedisPooled extends UnifiedJedis {
         .connectionTimeoutMillis(connectionTimeout).socketTimeoutMillis(soTimeout)
         .blockingSocketTimeoutMillis(infiniteSoTimeout).user(JedisURIHelper.getUser(uri))
         .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
-        .protocol(JedisURIHelper.getProtocol(uri)).ssl(JedisURIHelper.isRedisSSLScheme(uri))
+        .protocol(JedisURIHelper.getRedisProtocol(uri)).ssl(JedisURIHelper.isRedisSSLScheme(uri))
         .sslSocketFactory(sslSocketFactory).sslParameters(sslParameters)
         .hostnameVerifier(hostnameVerifier).build(), poolConfig);
   }

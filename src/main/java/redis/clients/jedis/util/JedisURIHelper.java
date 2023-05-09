@@ -1,11 +1,12 @@
 package redis.clients.jedis.util;
 
 import java.net.URI;
+import java.util.Locale;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 
 public final class JedisURIHelper {
-
-  private static final int DEFAULT_DB = 0;
 
   private static final String REDIS = "redis";
   private static final String REDISS = "rediss";
@@ -43,12 +44,40 @@ public final class JedisURIHelper {
     if (pathSplit.length > 1) {
       String dbIndexStr = pathSplit[1];
       if (dbIndexStr.isEmpty()) {
-        return DEFAULT_DB;
+        return Protocol.DEFAULT_DATABASE;
       }
       return Integer.parseInt(dbIndexStr);
     } else {
-      return DEFAULT_DB;
+      return Protocol.DEFAULT_DATABASE;
     }
+  }
+
+  public static RedisProtocol getProtocol(URI uri) {
+    if (uri.getQuery() == null) return null;
+
+    String[] pairs = uri.getQuery().split("&");
+    for (String pair : pairs) {
+      int idx = pair.indexOf("=");
+      //if ("protocol".equals(URLDecoder.decode(pair.substring(0, idx), "UTF-8").toLowerCase(Locale.ENGLISH))) {
+      if ("protocol".equals(pair.substring(0, idx).toLowerCase(Locale.ENGLISH))) {
+        //String val = URLDecoder.decode(pair.substring(idx + 1), "UTF-8").toUpperCase(Locale.ENGLISH);
+        String val = pair.substring(idx + 1).toUpperCase(Locale.ENGLISH);
+        if (val.length() > 1) {
+          return RedisProtocol.valueOf(val);
+        } else if (val.length() == 1) {
+          int ver = Integer.parseInt(val);
+          for (RedisProtocol proto : RedisProtocol.values()) {
+            if (proto.version() == ver) {
+              return proto;
+            }
+          }
+          throw new IllegalArgumentException("Unknown protocol " + ver);
+        } else {
+          return null; // null (default) when not defined
+        }
+      }
+    }
+    return null; // null (default) when not defined
   }
 
   public static boolean isValid(URI uri) {

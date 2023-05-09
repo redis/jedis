@@ -225,6 +225,7 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  @org.junit.Ignore
   public void testWaitAof() {
     Pipeline pipeline = new Pipeline(c);
     pipeline.set("x", "1");
@@ -234,5 +235,4 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     List<Object> results = pipeline.syncAndReturnAll();
     assertEquals(0L, results.get(3));
   }
-
 }

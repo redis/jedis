@@ -144,10 +144,12 @@ public final class Protocol {
         num = is.readIntCrLf();
         if (num == -1) return null;
         return processMultiBulkReply(num, is);
-      case COLON_BYTE:
-        return is.readLongCrLf();
       case UNDERSCORE_BYTE:
         return is.readNullCrLf();
+      case HASH_BYTE:
+        return is.readBooleanCrLf();
+      case COLON_BYTE:
+        return is.readLongCrLf();
       case COMMA_BYTE:
         return is.readDoubleCrLf();
       case LEFT_BRACE_BYTE:

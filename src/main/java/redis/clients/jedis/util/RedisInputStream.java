@@ -63,25 +63,6 @@ public class RedisInputStream extends FilterInputStream {
     throw new JedisConnectionException("Unexpected character!");
   }
 
-  public Object readNullCrLf() {
-    ensureCrLf();
-    return null;
-  }
-
-  public boolean readBooleanCrLf() {
-    final byte[] buf = this.buf;
-
-    ensureFill();
-    final byte b = buf[count++];
-
-    ensureCrLf();
-    switch (b) {
-      case 't': return true;
-      case 'f': return false;
-      default: throw new JedisConnectionException("Unexpected character!");
-    }
-  }
-
   public String readLine() {
     final StringBuilder sb = new StringBuilder();
     while (true) {
@@ -180,6 +161,25 @@ public class RedisInputStream extends FilterInputStream {
     }
 
     return bout == null ? new byte[0] : bout.toByteArray();
+  }
+
+  public Object readNullCrLf() {
+    ensureCrLf();
+    return null;
+  }
+
+  public boolean readBooleanCrLf() {
+    final byte[] buf = this.buf;
+
+    ensureFill();
+    final byte b = buf[count++];
+
+    ensureCrLf();
+    switch (b) {
+      case 't': return true;
+      case 'f': return false;
+      default: throw new JedisConnectionException("Unexpected character!");
+    }
   }
 
   public int readIntCrLf() {

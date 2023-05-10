@@ -5,6 +5,7 @@ import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ShutdownParams;
+import redis.clients.jedis.util.KeyValue;
 
 public interface ServerCommands {
 
@@ -195,7 +196,7 @@ public interface ServerCommands {
   String replicaofNoOne();
 
   /**
-   * Syncrhonous replication of Redis as described here: http://antirez.com/news/66.
+   * Synchronous replication of Redis as described here: http://antirez.com/news/66.
    * <p>
    * Blocks until all the previous write commands are successfully transferred and acknowledged by
    * at least the specified number of replicas. If the timeout, specified in milliseconds, is
@@ -209,6 +210,20 @@ public interface ServerCommands {
    *         current connection
    */
   long waitReplicas(int replicas, long timeout);
+
+  /**
+   * Blocks the current client until all the previous write commands are acknowledged as having been
+   * fsynced to the AOF of the local Redis and/or at least the specified number of replicas.
+   * <a href="https://redis.io/commands/waitaof/">Redis Documentation</a>
+   * @param numLocal Number of local instances that are required to acknowledge the sync (0 or 1),
+   *                 cannot be non-zero if the local Redis does not have AOF enabled
+   * @param numReplicas Number of replicas that are required to acknowledge the sync
+   * @param timeout Timeout in millis of the operation - if 0 timeout is unlimited. If the timeout is reached,
+   *                the command returns even if the specified number of acknowledgments has not been met.
+   * @return KeyValue where Key is number of local Redises (0 or 1) that have fsynced to AOF all writes
+   * performed in the context of the current connection, and the value is the number of replicas that have acknowledged doing the same.
+   */
+  KeyValue<Long, Long> waitAOF(long numLocal, long numReplicas, long timeout);
 
   String lolwut();
 

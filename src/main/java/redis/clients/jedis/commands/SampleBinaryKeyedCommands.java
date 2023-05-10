@@ -2,10 +2,13 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.util.KeyValue;
 
 public interface SampleBinaryKeyedCommands {
 
   long waitReplicas(byte[] sampleKey, int replicas, long timeout);
+
+  KeyValue<Long, Long> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout);
 
   Object eval(byte[] script, byte[] sampleKey);
 

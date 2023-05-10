@@ -223,4 +223,16 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
     List<Object> results = pipeline.syncAndReturnAll();
     assertEquals(Long.valueOf(0), results.get(3));
   }
+
+  @Test
+  @org.junit.Ignore
+  public void testWaitAof() {
+    Pipeline pipeline = new Pipeline(c);
+    pipeline.set("x", "1");
+    pipeline.graphProfile("social", "CREATE (:Person {name:'a'})");
+    pipeline.graphProfile("g", "CREATE (:Person {name:'a'})");
+    pipeline.waitAOF(1L, 0L, 100L);
+    List<Object> results = pipeline.syncAndReturnAll();
+    assertEquals(0L, results.get(3));
+  }
 }

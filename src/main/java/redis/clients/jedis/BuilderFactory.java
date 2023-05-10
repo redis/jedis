@@ -400,6 +400,16 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<KeyValue<Long, Long>> LONG_LONG_PAIR = new Builder<KeyValue<Long, Long>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<Long, Long> build(Object data) {
+      if (data == null) return null;
+      List<Object> dataList = (List<Object>) data;
+      return new KeyValue<>(LONG.build(dataList.get(0)), LONG.build(dataList.get(1)));
+    }
+  };
+
   public static final Builder<List<KeyValue<String, List<String>>>> KEYED_STRING_LIST_LIST
       = new Builder<List<KeyValue<String, List<String>>>>() {
     @Override

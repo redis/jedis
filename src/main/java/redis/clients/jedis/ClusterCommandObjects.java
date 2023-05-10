@@ -10,6 +10,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.JedisClusterHashTag;
+import redis.clients.jedis.util.KeyValue;
 
 public class ClusterCommandObjects extends CommandObjects {
 
@@ -97,4 +98,10 @@ public class ClusterCommandObjects extends CommandObjects {
   public final CommandObject<Long> waitReplicas(int replicas, long timeout) {
     throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
   }
+
+  @Override
+  public CommandObject<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
+    throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
+  }
+
 }

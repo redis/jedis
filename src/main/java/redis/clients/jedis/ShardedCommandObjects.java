@@ -12,6 +12,7 @@ import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.Hashing;
 import redis.clients.jedis.util.JedisClusterHashTag;
+import redis.clients.jedis.util.KeyValue;
 
 /**
  * @deprecated Sharding/Sharded feature will be removed in next major release.
@@ -111,6 +112,11 @@ public class ShardedCommandObjects extends CommandObjects {
 
   @Override
   public final CommandObject<Long> waitReplicas(int replicas, long timeout) {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public CommandObject<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
     throw new UnsupportedOperationException();
   }
 }

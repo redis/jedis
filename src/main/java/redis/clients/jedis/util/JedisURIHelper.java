@@ -1,7 +1,6 @@
 package redis.clients.jedis.util;
 
 import java.net.URI;
-import java.util.Locale;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
@@ -58,23 +57,14 @@ public final class JedisURIHelper {
     String[] pairs = uri.getQuery().split("&");
     for (String pair : pairs) {
       int idx = pair.indexOf("=");
-      //if ("protocol".equals(URLDecoder.decode(pair.substring(0, idx), "UTF-8").toLowerCase(Locale.ENGLISH))) {
-      if ("protocol".equals(pair.substring(0, idx).toLowerCase(Locale.ENGLISH))) {
-        //String val = URLDecoder.decode(pair.substring(idx + 1), "UTF-8").toUpperCase(Locale.ENGLISH);
-        String val = pair.substring(idx + 1).toUpperCase(Locale.ENGLISH);
-        if (val.length() > 1) {
-          return RedisProtocol.valueOf(val);
-        } else if (val.length() == 1) {
-          int ver = Integer.parseInt(val);
-          for (RedisProtocol proto : RedisProtocol.values()) {
-            if (proto.version() == ver) {
-              return proto;
-            }
+      if ("protocol".equals(pair.substring(0, idx))) {
+        String ver = pair.substring(idx + 1);
+        for (RedisProtocol proto : RedisProtocol.values()) {
+          if (proto.version().equals(ver)) {
+            return proto;
           }
-          throw new IllegalArgumentException("Unknown protocol " + ver);
-        } else {
-          return null; // null (default) when not defined
         }
+        throw new IllegalArgumentException("Unknown protocol " + ver);
       }
     }
     return null; // null (default) when not defined

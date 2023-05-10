@@ -67,14 +67,10 @@ public class JedisURIHelperTest {
   }
 
   @Test
-  public void shouldGetProtocolFromShortDefinition() {
+  public void shouldGetProtocolFromDefinition() {
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234?protocol=3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/?protocol=3")));
     assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=3")));
-  }
-
-  @Test
-  public void shouldGetProtocolFromLongDefinition() {
-    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234?protocol=resp3")));
-    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=resp3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1/?protocol=3")));
   }
 }

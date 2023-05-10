@@ -204,7 +204,7 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2?protocol=resp3"))) {
+    try (Jedis jedis = new Jedis(new URI("redis://:foobared@localhost:6380/2?protocol=3"))) {
       assertEquals("PONG", jedis.ping());
       assertEquals("bar", jedis.get("foo"));
     }

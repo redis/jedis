@@ -151,6 +151,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
         DefaultJedisClientConfig.builder().user(JedisURIHelper.getUser(uri))
             .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
+            .protocol(JedisURIHelper.getRedisProtocol(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
   }
 
@@ -203,6 +204,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
             .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
             .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+            .protocol(JedisURIHelper.getRedisProtocol(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
             .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
             .build());

@@ -130,6 +130,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
         .database(JedisURIHelper.getDBIndex(uri)).clientName(clientName)
+        .protocol(JedisURIHelper.getRedisProtocol(uri))
         .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(sslSocketFactory)
         .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build();
     this.jedisSocketFactory = new DefaultJedisSocketFactory(new HostAndPort(uri.getHost(), uri.getPort()), this.clientConfig);

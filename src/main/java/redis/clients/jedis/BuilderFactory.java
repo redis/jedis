@@ -137,6 +137,7 @@ public final class BuilderFactory {
     @Override
     public Boolean build(Object data) {
       if (data == null) return null;
+      else if (data instanceof Boolean) return (Boolean) data;
       return ((Long) data) == 1L;
     }
 
@@ -150,15 +151,8 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public List<Boolean> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<Long> longs = (List<Long>) data;
-      List<Boolean> booleans = new ArrayList<>(longs.size());
-      for (Long value : longs) {
-        booleans.add(value == null ? null : value == 1L);
-      }
-      return booleans;
+      if (null == data) return null;
+      return ((List<Object>) data).stream().map(BOOLEAN::build).collect(Collectors.toList());
     }
 
     @Override

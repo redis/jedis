@@ -3836,7 +3836,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Boolean>> bfMAdd(String key, String... items) {
     return new CommandObject<>(commandArguments(BloomFilterCommand.MADD).key(key).
-        addObjects((Object[]) items), BuilderFactory.BOOLEAN_LIST);
+        addObjects((Object[]) items), BuilderFactory.BOOLEAN_WITH_ERROR_LIST);
   }
 
   public final CommandObject<List<Boolean>> bfInsert(String key, String... items) {

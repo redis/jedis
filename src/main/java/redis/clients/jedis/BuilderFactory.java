@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
@@ -165,24 +166,11 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public List<Boolean> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      List<Object> longs = (List<Object>) data;
-      List<Boolean> booleans = new ArrayList<>(longs.size());
-      for (Object value : longs) {
-        Boolean bool = null;
-        if (value != null && value instanceof Long) {
-          long longValue = (Long) value;
-          if (longValue == 1L) {
-            bool = Boolean.TRUE;
-          } else if (longValue == 0L) {
-            bool = Boolean.FALSE;
-          }
-        }
-        booleans.add(bool);
-      }
-      return booleans;
+      if (null == data) return null;
+      return ((List<Object>) data).stream()
+          //.map((val) -> (val instanceof JedisDataException) ? val : BOOLEAN.build(val))
+          .map((val) -> (val instanceof JedisDataException) ? null : BOOLEAN.build(val))
+          .collect(Collectors.toList());
     }
 
     @Override

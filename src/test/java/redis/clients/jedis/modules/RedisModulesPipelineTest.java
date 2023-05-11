@@ -17,7 +17,6 @@ import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.Connection;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.json.JsonSetParams;
@@ -44,8 +43,9 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     fields.put("title", "hello world");
     fields.put("body", "lorem ipsum");
 
-    Connection c = createConnection();
-    Pipeline p = new Pipeline(c);
+//    Connection c = createConnection();
+//    Pipeline p = new Pipeline(c);
+    Pipeline p = (Pipeline) client.pipelined();
 
     Response<String> create = p.ftCreate(index, IndexOptions.defaultOptions(), sc);
     Response<String> alter = p.ftAlter(index, new Schema().addTextField("foo", 1.0));
@@ -65,7 +65,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<Map<String, List<String>>> synDump = p.ftSynDump(index);
 
     p.sync();
-    c.close();
+//    c.close();
 
     assertEquals("OK", create.get());
     assertEquals("OK", alter.get());
@@ -101,8 +101,9 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Baz baz2 = new Baz("quuz2", "grault2", "waldo2");
     Baz baz3 = new Baz("quuz3", "grault3", "waldo3");
 
-    Connection c = createConnection();
-    Pipeline p = new Pipeline(c);
+//    Connection c = createConnection();
+//    Pipeline p = new Pipeline(c);
+    Pipeline p = (Pipeline) client.pipelined();
 
     Response<String> set1 = p.jsonSet("foo", Path.ROOT_PATH, hm1);
     Response<Object> get = p.jsonGet("foo");
@@ -142,7 +143,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<Baz> popClassWithIndex = p.jsonArrPop("baz", Baz.class, Path.ROOT_PATH, 0);
 
     p.sync();
-    c.close();
+//    c.close();
 
     assertEquals("OK", set1.get());
     assertEquals(hm1, get.get());
@@ -190,8 +191,9 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     hm2.put("boolean", true);
     hm2.put("number", 3);
 
-    Connection c = createConnection();
-    Pipeline p = new Pipeline(c);
+//    Connection c = createConnection();
+//    Pipeline p = new Pipeline(c);
+    Pipeline p = (Pipeline) client.pipelined();
 
     Response<String> setWithEscape = p.jsonSetWithEscape("foo", Path2.ROOT_PATH, hm1);
     Response<Object> get = p.jsonGet("foo",  Path2.ROOT_PATH);
@@ -217,7 +219,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<Long> clear = p.jsonClear("foo", new Path2("array"));
 
     p.sync();
-    c.close();
+//    c.close();
 
     assertEquals("OK", setWithEscape.get());
     assertNotNull(get.get());

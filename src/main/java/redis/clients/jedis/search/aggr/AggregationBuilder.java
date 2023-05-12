@@ -95,18 +95,21 @@ public class AggregationBuilder {
     return this;
   }
 
-  public AggregationBuilder groupBy(Collection<String> fields, Collection<Reducer> reducers) {
+  public AggregationBuilder groupBy(Collection<String> fields, Collection<Reducer> reducers, Collection<String> filters) {
     String[] fieldsArr = new String[fields.size()];
     Group g = new Group(fields.toArray(fieldsArr));
     for (Reducer r : reducers) {
       g.reduce(r);
     }
+    for (String f : filters) {
+      g.filter(f);
+    }
     groupBy(g);
     return this;
   }
 
-  public AggregationBuilder groupBy(String field, Reducer... reducers) {
-    return groupBy(Collections.singletonList(field), Arrays.asList(reducers));
+  public AggregationBuilder groupBy(String field, Collection<String> filters, Reducer... reducers) {
+    return groupBy(Collections.singletonList(field), Arrays.asList(reducers), filters);
   }
 
   public AggregationBuilder groupBy(Group group) {

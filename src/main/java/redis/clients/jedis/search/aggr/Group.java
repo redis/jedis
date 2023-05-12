@@ -11,6 +11,7 @@ public class Group {
 
   private final List<Reducer> reducers = new ArrayList<>();
   private final List<String> fields = new ArrayList<>();
+  private final List<String> filters = new ArrayList<>();
   private Limit limit = new Limit(0, 0);
 
   public Group(String... fields) {
@@ -22,6 +23,11 @@ public class Group {
     return this;
   }
 
+  public Group filter(String filter) {
+    this.filters.add(filter);
+    return this;
+  }
+
   public Group limit(Limit limit) {
     this.limit = limit;
     return this;
@@ -30,6 +36,10 @@ public class Group {
   public void addArgs(List<String> args) {
     args.add(Integer.toString(fields.size()));
     args.addAll(fields);
+    if (!filters.isEmpty()) {
+      args.add("FILTER");
+      args.addAll(filters);
+    }
     for (Reducer r : reducers) {
       args.add("REDUCE");
       args.add(r.getName());

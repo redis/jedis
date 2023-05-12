@@ -23,6 +23,7 @@ import redis.clients.jedis.search.IndexOptions;
 import redis.clients.jedis.search.Schema;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.aggr.Group;
 import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 import redis.clients.jedis.search.aggr.SortedField;
@@ -72,7 +73,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .groupBy("@name", new ArrayList<>(), Reducers.sum("@count").as("sum"))
         .sortBy(10, SortedField.desc("@sum"));
 
     // actual search
@@ -107,7 +108,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .groupBy("@name", new ArrayList<>(), Reducers.sum("@count").as("sum"))
         .sortBy(10, SortedField.desc("@sum"));
 
     // actual search
@@ -153,7 +154,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-            .groupBy("@name", Reducers.sum("@count").as("sum"))
+            .groupBy("@name", new ArrayList<>(), Reducers.sum("@count").as("sum"))
             .timeout(5000);
 
     AggregationResult res = client.ftAggregate(index, r);
@@ -174,7 +175,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     params.put("name", "abc");
 
     AggregationBuilder r = new AggregationBuilder("$name")
-            .groupBy("@name", Reducers.sum("@count").as("sum"))
+            .groupBy("@name", new ArrayList<>(), Reducers.sum("@count").as("sum"))
             .params(params)
             .dialect(2); // From documentation - To use PARAMS, DIALECT must be set to 2
 
@@ -208,7 +209,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data6").set("name", "ghi").set("subj1", 70).set("subj2", 70));
 
     AggregationBuilder r = new AggregationBuilder().apply("(@subj1+@subj2)/2", "attemptavg")
-        .groupBy("@name", Reducers.avg("@attemptavg").as("avgscore"))
+        .groupBy("@name", new ArrayList<>(), Reducers.avg("@attemptavg").as("avgscore"))
         .filter("@avgscore>=50")
         .sortBy(10, SortedField.asc("@name"));
 
@@ -281,7 +282,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data3").set("name", "def").set("count", 25));
 
     AggregationBuilder r = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .groupBy("@name", new ArrayList<>(), Reducers.sum("@count").as("sum"))
         .sortBy(10, SortedField.desc("@sum"))
         .cursor(1, 3000);
 
@@ -325,7 +326,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data5").set("name", "jkl").set("count", 20));
 
     AggregationBuilder agg = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .groupBy("@name", new ArrayList<>(), Reducers.sum("@count").as("sum"))
         .sortBy(10, SortedField.desc("@sum"))
         .cursor(2, 10000);
 
@@ -351,7 +352,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     addDocument(new Document("data5").set("name", "jkl").set("count", 20));
 
     AggregationBuilder agg = new AggregationBuilder()
-        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .groupBy("@name", new ArrayList<>(), Reducers.sum("@count").as("sum"))
         .sortBy(10, SortedField.desc("@sum"))
         .cursor(2, 10000);
 
@@ -380,7 +381,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     // wrong aggregation query
     AggregationBuilder builder = new AggregationBuilder("hello")
         .apply("@price/1000", "k")
-        .groupBy("@state", Reducers.avg("@k").as("avgprice"))
+        .groupBy("@state", new ArrayList<>(), Reducers.avg("@k").as("avgprice"))
         .filter("@avgprice>=2")
         .sortBy(10, SortedField.asc("@state"));
 
@@ -390,5 +391,50 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     } catch (JedisDataException e) {
       // should throw JedisDataException on wrong aggregation query 
     }
+  }
+
+  @Test
+  public void testFilterAtGroupLevel() {
+    client.ftCreate(index,
+        TextField.of("id").sortable(),
+        TextField.of("eventId").sortable(),
+        TextField.of("type").sortable(),
+        TextField.of("name").sortable(),
+        TextField.of("createdTime")
+    );
+
+    addDocument(new Document("data1").set("eventId", "event1").set("type", "type1").set("name", "aaa").set("createdTime", 1683713590));
+    addDocument(new Document("data2").set("eventId", "event2").set("type", "type1").set("name", "aaa").set("createdTime", 1683714100));
+    addDocument(new Document("data3").set("eventId", "event3").set("type", "type1").set("name", "ccc").set("createdTime", 1683714100));
+    addDocument(new Document("data4").set("eventId", "event4").set("type", "type2").set("name", "ddd").set("createdTime", 1683713590));
+    addDocument(new Document("data5").set("eventId", "event5").set("type", "type2").set("name", "eee").set("createdTime", 1683713590));
+    addDocument(new Document("data6").set("eventId", "event6").set("type", "type1").set("name", "aaa").set("createdTime", 1683713590));
+    addDocument(new Document("data7").set("eventId", "event7").set("type", "type2").set("name", "eee").set("createdTime", 1683713590));
+
+    Group firstGroup = new Group("@eventId", "@type", "@name", "@createdTime");
+    firstGroup.filter("@createdTime < 1683714000");
+
+    Group secondGroup = new Group( "@type", "@name");
+    secondGroup.reduce(Reducers.count().setAlias("count"));
+
+    Group thirdGroup = new Group( "@type", "@name", "@count");
+    thirdGroup.filter("@count > 1");
+
+    AggregationBuilder r = new AggregationBuilder("*")
+        .groupBy(firstGroup)
+        .groupBy(secondGroup)
+        .groupBy(thirdGroup);
+
+    AggregationResult res = client.ftAggregate(index, r);
+    assertEquals(3, res.totalResults);
+    Row row1 = res.getRow(0);
+    assertNotNull(row1);
+    assertEquals("aaa", row1.getString("name"));
+    assertEquals("2", row1.getString("count"));
+
+    Row row2 = res.getRow(1);
+    assertNotNull(row2);
+    assertEquals("eee", row2.getString("name"));
+    assertEquals("2", row2.getString("count"));
   }
 }

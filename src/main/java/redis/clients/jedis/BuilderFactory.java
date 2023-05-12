@@ -4,17 +4,12 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.resps.StreamConsumerFullInfo;
 import redis.clients.jedis.resps.StreamFullInfo;
 import redis.clients.jedis.resps.StreamGroupFullInfo;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.aggr.AggregationResult;
-import redis.clients.jedis.timeseries.TSKeyedElements;
-import redis.clients.jedis.timeseries.TSElement;
-import redis.clients.jedis.timeseries.TSKeyValue;
 import redis.clients.jedis.util.DoublePrecision;
 import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.KeyValue;
@@ -418,6 +413,16 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "KeyValue<String, List<String>>";
+    }
+  };
+
+  public static final Builder<KeyValue<Long, Long>> LONG_LONG_PAIR = new Builder<KeyValue<Long, Long>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<Long, Long> build(Object data) {
+      if (data == null) return null;
+      List<Object> dataList = (List<Object>) data;
+      return new KeyValue<>(LONG.build(dataList.get(0)), LONG.build(dataList.get(1)));
     }
   };
 

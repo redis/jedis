@@ -31,6 +31,7 @@ import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class ControlCommandsTest extends JedisCommandsTestBase {
@@ -246,6 +247,11 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void waitReplicas() {
     assertEquals(1, jedis.waitReplicas(1, 100));
+  }
+
+  @Test
+  public void waitAof() {
+    assertEquals(KeyValue.of(0L, 0L), jedis.waitAOF(0L, 0L, 100L));
   }
 
   @Test

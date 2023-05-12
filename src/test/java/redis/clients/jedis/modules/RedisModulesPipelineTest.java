@@ -8,6 +8,7 @@ import static redis.clients.jedis.modules.json.JsonObjects.IRLObject;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import com.google.gson.Gson;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     p.hset("doc2", toStringMap(fields));
     Response<SearchResult> searchResult = p.ftSearch(index, new Query("hello world"));
     Response<SearchResult> searchBytesResult = p.ftSearch(index.getBytes(), new Query("hello world"));
-    Response<AggregationResult> aggregateResult = p.ftAggregate(index, new AggregationBuilder().groupBy("@title"));
+    Response<AggregationResult> aggregateResult = p.ftAggregate(index, new AggregationBuilder().groupBy("@title", new ArrayList<>()));
     Response<String> explain = p.ftExplain(index, new Query("@title:title_val"));
     Response<List<String>> explainCLI = p.ftExplainCLI(index, new Query("@title:title_val"));
     Response<Map<String, Object>> info = p.ftInfo(index);

@@ -417,16 +417,13 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     Group secondGroup = new Group( "@type", "@name");
     secondGroup.reduce(Reducers.count().setAlias("count"));
 
-    Group thirdGroup = new Group( "@type", "@name", "@count");
-    thirdGroup.filter("@count > 1");
-
     AggregationBuilder r = new AggregationBuilder("*")
         .groupBy(firstGroup)
         .groupBy(secondGroup)
-        .groupBy(thirdGroup);
+        .filter(("@count > 1"));
 
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(3, res.totalResults);
+    assertEquals(2, res.getResults().size());
 
     Row row1 = res.getRow(0);
     assertNotNull(row1);

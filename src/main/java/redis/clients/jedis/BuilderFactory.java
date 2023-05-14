@@ -1289,8 +1289,7 @@ public final class BuilderFactory {
       Map<String, Builder> tempMappingFunctions = new HashMap<>();
       tempMappingFunctions.put(StreamConsumerInfo.NAME, STRING);
       tempMappingFunctions.put(StreamConsumerInfo.IDLE, LONG);
-      tempMappingFunctions.put(StreamGroupInfo.PENDING, LONG);
-      tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED, STRING);
+      tempMappingFunctions.put(StreamConsumerInfo.PENDING, LONG);
       return tempMappingFunctions;
 
     }

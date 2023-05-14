@@ -3,9 +3,9 @@ package redis.clients.jedis.resps;
 import java.util.Map;
 
 /**
- * This class holds information about a consumer. They can be access via getters. For future purpose
- * there is also {@link StreamConsumerInfo#getConsumerInfo()}} method that returns a generic
- * {@code Map} - in case where more info is returned from the server.
+ * This class holds information about a consumer. They can be access via getters. There is also
+ * {@link StreamConsumerInfo#getConsumerInfo()}} method that returns a generic {@code Map} in case
+ * more info are returned from the server.
  */
 public class StreamConsumerInfo {
 

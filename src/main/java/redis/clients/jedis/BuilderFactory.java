@@ -1101,7 +1101,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_ID_RESPONSE
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_JUSTID_RESPONSE
       = new Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -1281,14 +1281,14 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST = new Builder<List<StreamConsumersInfo>>() {
+  public static final Builder<List<StreamConsumerInfo>> STREAM_CONSUMER_INFO_LIST = new Builder<List<StreamConsumerInfo>>() {
 
     Map<String, Builder> mappingFunctions = createDecoderMap();
 
     private Map<String, Builder> createDecoderMap() {
       Map<String, Builder> tempMappingFunctions = new HashMap<>();
-      tempMappingFunctions.put(StreamConsumersInfo.NAME, STRING);
-      tempMappingFunctions.put(StreamConsumersInfo.IDLE, LONG);
+      tempMappingFunctions.put(StreamConsumerInfo.NAME, STRING);
+      tempMappingFunctions.put(StreamConsumerInfo.IDLE, LONG);
       tempMappingFunctions.put(StreamGroupInfo.PENDING, LONG);
       tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED, STRING);
       return tempMappingFunctions;
@@ -1297,12 +1297,12 @@ public final class BuilderFactory {
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<StreamConsumersInfo> build(Object data) {
+    public List<StreamConsumerInfo> build(Object data) {
       if (null == data) {
         return null;
       }
 
-      List<StreamConsumersInfo> list = new ArrayList<>();
+      List<StreamConsumerInfo> list = new ArrayList<>();
       List<Object> streamsEntries = (List<Object>) data;
       Iterator<Object> groupsArray = streamsEntries.iterator();
 
@@ -1312,7 +1312,7 @@ public final class BuilderFactory {
 
         Iterator<Object> consumerInfoIterator = groupInfo.iterator();
 
-        StreamConsumersInfo streamGroupInfo = new StreamConsumersInfo(
+        StreamConsumerInfo streamGroupInfo = new StreamConsumerInfo(
             createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
         list.add(streamGroupInfo);
 
@@ -1413,7 +1413,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<StreamFullInfo> STREAM_INFO_FULL = new Builder<StreamFullInfo>() {
+  public static final Builder<StreamFullInfo> STREAM_FULL_INFO = new Builder<StreamFullInfo>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 

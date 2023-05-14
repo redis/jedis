@@ -2524,7 +2524,7 @@ public class CommandObjects {
       XAutoClaimParams params) {
     return new CommandObject<>(commandArguments(XAUTOCLAIM).key(key).add(group)
         .add(consumerName).add(minIdleTime).add(start).addParams(params)
-        .add(JUSTID), BuilderFactory.STREAM_AUTO_CLAIM_ID_RESPONSE);
+        .add(JUSTID), BuilderFactory.STREAM_AUTO_CLAIM_JUSTID_RESPONSE);
   }
 
   public final CommandObject<List<byte[]>> xclaim(byte[] key, byte[] group,
@@ -2564,11 +2564,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_FULL_INFO);
   }
 
   public final CommandObject<StreamFullInfo> xinfoStreamFull(String key, int count) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_FULL_INFO);
   }
 
   public final CommandObject<Object> xinfoStreamFull(byte[] key, int count) {
@@ -2587,8 +2587,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
-    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
+  public final CommandObject<List<StreamConsumerInfo>> xinfoConsumers(String key, String group) {
+    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMER_INFO_LIST);
   }
 
   public final CommandObject<List<Object>> xinfoConsumers(byte[] key, byte[] group) {

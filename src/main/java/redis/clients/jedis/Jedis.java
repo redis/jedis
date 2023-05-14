@@ -9442,7 +9442,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
+  public List<StreamConsumerInfo> xinfoConsumers(String key, String group) {
     return connection.executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 

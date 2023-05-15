@@ -1,4 +1,4 @@
-# Jedis 4 to Jedis 5 Breaking Changes
+# Jedis 5 Breaking Changes
 
 - `StreamConsumersInfo` has been renamed to `StreamConsumerInfo`.
 

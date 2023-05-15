@@ -2,6 +2,7 @@ PATH := ./redis-git/src:${PATH}
 STUNNEL_BIN := $(shell which stunnel)
 REDIS_VERSION := unstable
 
+ifeq(REDIS_VERSION, unstable)
 define REDIS1_CONF
 daemonize yes
 protected-mode no
@@ -15,6 +16,20 @@ appendonly no
 enable-module-command yes
 client-output-buffer-limit pubsub 256k 128k 5
 endef
+else
+define REDIS1_CONF
+daemonize yes
+protected-mode no
+port 6379
+requirepass foobared
+pidfile /tmp/redis1.pid
+logfile /tmp/redis1.log
+save ""
+appendonly no
+client-output-buffer-limit pubsub 256k 128k 5
+
+endef
+endif
 
 define REDIS2_CONF
 daemonize yes

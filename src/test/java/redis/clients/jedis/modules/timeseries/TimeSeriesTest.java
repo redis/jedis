@@ -852,12 +852,10 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     final TSElement latest = new TSElement(10, 8);
 
     // mget
-    //assertEquals(Arrays.asList(new TSKeyValue<>("ts2", null, compact)),
-    assertEquals(makeSingletonMap(new TSKeyValue<>("ts2", compact)),
+    assertEquals(makeSingletonMap(new TSKeyValue<>("ts2", null, compact)),
         client.tsMGet(TSMGetParams.multiGetParams(), "compact=true"));
 
-    //assertEquals(Arrays.asList(new TSKeyValue<>("ts2", null, latest)),
-    assertEquals(makeSingletonMap(new TSKeyValue<>("ts2", latest)),
+    assertEquals(makeSingletonMap(new TSKeyValue<>("ts2", null, latest)),
         client.tsMGet(TSMGetParams.multiGetParams().latest(), "compact=true"));
 
     // mrange

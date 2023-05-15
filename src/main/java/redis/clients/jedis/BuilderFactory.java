@@ -1570,7 +1570,6 @@ public final class BuilderFactory {
         if (flat.isEmpty()) continue;
         map.put(STRING.build(flat.get(0)), STRING.build(flat.get(1)));
       }
-
       return map;
     }
 
@@ -1585,9 +1584,12 @@ public final class BuilderFactory {
     public Map<String, Object> build(Object data) {
       final List<Object> list = (List<Object>) data;
       final Map<String, Object> map = new HashMap<>(list.size(), 1f);
-      list.stream().map((object) -> (List<Object>) object).forEachOrdered((flat) -> {
+      for (Object object : list) {
+        if (object == null) continue;
+        final List<Object> flat = (List<Object>) object;
+        if (flat.isEmpty()) continue;
         map.put(STRING.build(flat.get(0)), ENCODED_OBJECT.build(flat.get(1)));
-      });
+      }
       return map;
     }
   };

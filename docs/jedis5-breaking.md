@@ -47,7 +47,7 @@
 
 - `topkCount(String key, String... items)` method has been removed from everywhere.
 
-- Following methods have been removed from everywhere:
+- Following methods have been removed:
   - `strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params)`
   - `strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params)`
   - `strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params)`

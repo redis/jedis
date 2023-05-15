@@ -25,9 +25,7 @@
 
 [comment]: # Deprecated in Jedis 4
 
-- `quit()` method has been removed from `ServerCommands` and implementations.
-
-- `quit()` method has been removed from `Connection`.
+- `quit()` method has been removed from `Connection` and `ServerCommands` interface and implementations.
 
 - `select(int index)` method has been removed from `Connection`.
 

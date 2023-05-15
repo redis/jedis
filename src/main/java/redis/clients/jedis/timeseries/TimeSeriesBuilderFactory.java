@@ -40,7 +40,7 @@ public final class TimeSeriesBuilderFactory {
           .map((tsList) -> new TSKeyedElements(BuilderFactory.STRING.build(tsList.get(0)),
               BuilderFactory.STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
-          .collect(Collectors.toMap(TSKeyedElements::getKey, identity()));
+          .collect(Collectors.toMap(TSKeyedElements::getKey, identity(), (x, y) -> x, LinkedHashMap::new));
     }
   };
 

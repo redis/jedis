@@ -14,6 +14,6 @@ public class RedisProtocolUtil {
       }
       throw new IllegalArgumentException("Unknown protocol " + ver);
     }
-    return RedisProtocol.RESP3;
+    return null;
   }
 }

@@ -12,7 +12,7 @@
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
-- The `List<Object> getUnflushedObjectMultiBulkReply()` method has been removed from `Connection`.
+- `List<Object> getUnflushedObjectMultiBulkReply()` method has been removed from `Connection`.
   - `Object getUnflushedObject()` method has been added instead.
 
 - `STREAM_INFO_FULL` in BuilderFactory has been renamed to `STREAM_FULL_INFO`.

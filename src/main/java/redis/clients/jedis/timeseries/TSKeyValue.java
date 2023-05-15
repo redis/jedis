@@ -7,6 +7,11 @@ public class TSKeyValue<V> extends KeyValue<String, V> {
 
   private final Map<String, String> labels;
 
+  public TSKeyValue(String key, V value) {
+    super(key, value);
+    this.labels = null;
+  }
+
   public TSKeyValue(String key, Map<String, String> labels, V value) {
     super(key, value);
     this.labels = labels;

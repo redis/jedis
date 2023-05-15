@@ -54,7 +54,7 @@ jobs:
           mvn -q javadoc:jar
       - name: Run tests
         run: |
-          TEST="" make test
+          TEST="" make test REDIS_VERSION=${{matrix.redis-version}}
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb

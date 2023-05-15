@@ -88,8 +88,8 @@ jobs:
           distribution: 'temurin'
       - name: System setup
         run: |
-          sudo apt update
-          sudo apt install -y stunnel make
+          sudo apt update -yqq
+          sudo apt install -yqq stunnel make
           make system-setup
       - name: Cache dependencies
         uses: actions/cache@v2

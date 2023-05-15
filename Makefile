@@ -2,7 +2,7 @@ PATH := ./redis-git/src:${PATH}
 STUNNEL_BIN := $(shell which stunnel)
 REDIS_VERSION := unstable
 
-ifeq(REDIS_VERSION, unstable)
+ifeq (REDIS_VERSION, unstable)
 define REDIS1_CONF
 daemonize yes
 protected-mode no
@@ -480,7 +480,7 @@ release:
 	make stop
 
 system-setup:
-	sudo apt install -y gcc g++
+	sudo apt install -qqy gcc g++
 	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch ${REDIS_VERSION} --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git

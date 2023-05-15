@@ -218,7 +218,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
         .aggregation(AggregationType.COUNT, 1).filter("l1=v1"));
     assertEquals(1, ranges.size());
 
-    TSKeyedElements range = ranges.values().stream().findFirst().get();
+    TSKeyedElements range = ranges.values().stream().findAny().get();
     assertEquals("seriesAdd", range.getKey());
     assertEquals(Collections.emptyMap(), range.getLabels());
 
@@ -237,7 +237,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     Map<String, TSKeyedElements> ranges2 = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
         .aggregation(AggregationType.COUNT, 1).withLabels().filter("l4=v4"));
     assertEquals(1, ranges2.size());
-    assertEquals(labels2, ranges2.values().stream().findFirst().get().getLabels());
+    assertEquals(labels2, ranges2.values().stream().findAny().get().getLabels());
 
     Map<String, String> labels3 = new HashMap<>();
     labels3.put("l3", "v33");
@@ -949,19 +949,19 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     // mrange / mrevrange
     assertEquals(0, client.tsMRange(TSMRangeParams.multiRangeParams()
         .aggregation(AggregationType.STD_P, 10).bucketTimestampLow().filter("l=v"))
-        .values().stream().findFirst().get().getValue().get(0).getTimestamp());
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
     assertEquals(10, client.tsMRange(TSMRangeParams.multiRangeParams()
         .aggregation(AggregationType.STD_S, 10).bucketTimestampHigh().filter("l=v"))
-        .values().stream().findFirst().get().getValue().get(0).getTimestamp());
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
     assertEquals(5, client.tsMRange(TSMRangeParams.multiRangeParams()
         .aggregation(AggregationType.TWA, 10).bucketTimestampMid().filter("l=v"))
-        .values().stream().findFirst().get().getValue().get(0).getTimestamp());
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
     assertEquals(5, client.tsMRange(TSMRangeParams.multiRangeParams()
         .aggregation(AggregationType.VAR_P, 10).bucketTimestampMid().filter("l=v"))
-        .values().stream().findFirst().get().getValue().get(0).getTimestamp());
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
     assertEquals(5, client.tsMRange(TSMRangeParams.multiRangeParams()
         .aggregation(AggregationType.VAR_S, 10).bucketTimestamp("~").filter("l=v"))
-        .values().stream().findFirst().get().getValue().get(0).getTimestamp());
+        .values().stream().findAny().get().getValue().get(0).getTimestamp());
   }
 
   @Test

@@ -25,9 +25,11 @@ jobs:
             ~/.m2/repository
             /var/cache/apt
           key: jedis-${{hashFiles('**/pom.xml')}}
-
-      # modify me
-      #- name: build and run tests
-      #  run: |
-      #    mvn compile -DskipTests
-      #    mvn ...
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+      - name: Run doctests
+        run: |
+          - mvn -Pdoctests test

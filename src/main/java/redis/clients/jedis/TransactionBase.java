@@ -1662,7 +1662,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
+  public Response<List<StreamConsumerInfo>> xinfoConsumers(String key, String group) {
     return appendCommand(commandObjects.xinfoConsumers(key, group));
   }
 

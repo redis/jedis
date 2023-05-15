@@ -2,15 +2,15 @@
 
 - `StreamConsumersInfo` has been renamed to `StreamConsumerInfo`.
 
-- Return type of `getAgeSeconds()` in `AccessControlLogEntry` has been changed from `String` to `Double`.
-
-- Return type of `bzpopmax(double timeout, byte[]... keys)` has been changed to `List<Object>` (from `List<byte[]>`).
+- `bzpopmax(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
   - This is a three element list where the last element is a `Double`.
 
-- Return type of `bzpopmin(double timeout, byte[]... keys)` has been changed to `List<Object>` (from `List<byte[]>`).
+- `bzpopmin(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
   - This is a three element list where the last element is a `Double`.
 
-- Return type of `graphSlowlog(String graphName)` has been changed to `List<List<Object>>` (from `List<List<String>>`).
+- `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
+
+- `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
 - The `List<Object> getUnflushedObjectMultiBulkReply()` method has been removed from `Connection`.
   - `Object getUnflushedObject()` method has been added instead.

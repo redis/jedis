@@ -54,12 +54,12 @@ jobs:
           mvn -q javadoc:jar
       - name: Run tests
         run: |
-          TEST="" make test REDIS_VERSION=${{matrix.redis-version}}
+          TEST="" make test
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
       - name: Make - start
-        run: make start
+        run: make start REDIS_VERSION=${{matrix.redis-version}}
       - name: Test commands - default protocol
         run: mvn -q -Dtest="redis.clients.jedis.commands.**" test
       - name: Test module commands - default protocol

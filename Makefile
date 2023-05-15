@@ -2,7 +2,7 @@ PATH := ./redis-git/src:${PATH}
 STUNNEL_BIN := $(shell which stunnel)
 REDIS_VERSION := unstable
 
-ifeq (REDIS_VERSION, unstable)
+ifeq (${REDIS_VERSION},unstable)
 define REDIS1_CONF
 daemonize yes
 protected-mode no
@@ -27,7 +27,6 @@ logfile /tmp/redis1.log
 save ""
 appendonly no
 client-output-buffer-limit pubsub 256k 128k 5
-
 endef
 endif
 

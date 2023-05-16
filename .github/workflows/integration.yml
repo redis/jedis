@@ -58,6 +58,8 @@ jobs:
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
+      - name: Make - start
+        run: make start
       - name: Test commands - default protocol
         run: mvn -q -Dtest="redis.clients.jedis.commands.**" test
       - name: Test module commands - default protocol

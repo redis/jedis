@@ -171,6 +171,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.provider = provider;
     this.executor = new CircuitBreakerCommandExecutor(provider);
     this.commandObjects = new CommandObjects();
+    this.graphCommandObjects = new GraphCommandObjects(this);
+    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
   }
 
   /**

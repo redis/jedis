@@ -33,6 +33,8 @@ Set up test environments with ```make start```, tear down those environments wit
 * You can import code style file (located to hbase-formatter.xml) to Eclipse, IntelliJ
   * line break by column count seems not working with IntelliJ
 * <strike>You can run ```make format``` anytime to reformat without IDEs</strike>
+* DO NOT format the source codes within `io.redis.examples` test package.
+* A test class name MUST NOT end with `Example`.
 
 ## Adding commands
 

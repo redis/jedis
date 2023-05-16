@@ -162,20 +162,6 @@
 					<source>1.8</source>
 					<target>1.8</target>
 				</configuration>
-				<executions>
-					<execution>
-						<id>default-testCompile</id>
-						<phase>test-compile</phase>
-						<configuration>
-							<testExcludes>
-								<exclude>**/examples/*Example.java</exclude>
-							</testExcludes>
-						</configuration>
-						<goals>
-							<goal>testCompile</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -185,7 +171,7 @@
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
 					<excludes>
-						<exclude>src/test/java/io/redis/examples/*.java</exclude>
+						<exclude>**/examples/*Example.java</exclude>
 					</excludes>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>

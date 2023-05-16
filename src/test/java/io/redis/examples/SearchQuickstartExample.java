@@ -3,6 +3,7 @@
 package io.redis.examples;
 
 import java.math.BigDecimal;
+import java.util.*;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.*;
@@ -11,7 +12,6 @@ import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.search.schemafields.*;
 //REMOVE_START
 import org.junit.Test;
-import com.google.gson.Gson;
 
 import static org.junit.Assert.assertEquals;
 //REMOVE_END
@@ -59,8 +59,6 @@ public class SearchQuickstartExample {
                         "is a comfortable choice for urban cycling.",
                 "used"
         );
-        Gson gson = new Gson();
-        System.out.println(gson.toJson(bike1));
         // STEP_END
 
         Bicycle[] bicycles = {
@@ -172,8 +170,8 @@ public class SearchQuickstartExample {
         // STEP_END
 
         // STEP_START query_single_term_and_num_range
-        var query = new Query("folding @price:[1000 4000]");
-        var result = jedis.ftSearch("idx:bicycle", query).getDocuments();
+        Query query = new Query("folding @price:[1000 4000]");
+        List<Document> result = jedis.ftSearch("idx:bicycle", query).getDocuments();
         System.out.println(result);
         // Prints: [id:bicycle:6, score: 1.0, payload:null, properties:[
         // $={"brand":"Moore PLC","model":"Award Race","price":3790.76,
@@ -186,8 +184,8 @@ public class SearchQuickstartExample {
         // REMOVE_END
 
         // STEP_START query_single_term_limit_fields
-        var cargo_query = new Query("cargo").returnFields("price");
-        var cargo_result = jedis.ftSearch(
+        Query cargo_query = new Query("cargo").returnFields("price");
+        List<Document> cargo_result = jedis.ftSearch(
                 "idx:bicycle", cargo_query).getDocuments();
         System.out.println(cargo_result);
         // Prints: [id:bicycle:9, score: 1.0, payload:null, properties:[price=3833.71]]

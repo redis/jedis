@@ -74,12 +74,11 @@ public class MultiClusterPooledConnectionProviderTest {
     public void testIsLastClusterCircuitBreakerForcedOpen() {
         provider.setActiveMultiClusterIndex(1);
 
-        // This should set the
         try {
             provider.incrementActiveMultiClusterIndex();
         } catch (Exception e) {}
 
-        // This should set the
+        // This should set the isLastClusterCircuitBreakerForcedOpen to true
         try {
             provider.incrementActiveMultiClusterIndex();
         } catch (Exception e) {}
@@ -99,12 +98,14 @@ public class MultiClusterPooledConnectionProviderTest {
 
             // This should fail after 3 retries and meet the requirements to open the circuit on the next iteration
             try {
-                jedis.type("testKey");
+                jedis.set("foo", "bar");
+                jedis.incr("foo");
             } catch (Exception e) {}
 
             // This should fail after 3 retries and open the circuit which will trigger the post processor
             try {
-                jedis.type("testKey");
+                jedis.set("foo", "bar");
+                jedis.incr("foo");
             } catch (Exception e) {}
 
         }

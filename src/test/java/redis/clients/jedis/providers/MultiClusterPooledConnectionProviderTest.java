@@ -108,6 +108,11 @@ public class MultiClusterPooledConnectionProviderTest {
                 jedis.incr("foo");
             } catch (Exception e) {}
 
+            // Clean up so subsequent tests aren't impacted
+            try {
+                jedis.del("foo");
+            } catch (Exception e) {}
+
         }
 
         assertEquals(true, isValidTest.get());

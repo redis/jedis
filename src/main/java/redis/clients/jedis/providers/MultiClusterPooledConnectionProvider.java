@@ -28,7 +28,7 @@ import java.util.function.Consumer;
  * With this ConnectionProvider users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
  * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
  * <p>
- * Support for manunal failback is provided by way of {@link #setActiveMultiClusterIndex(int)}
+ * Support for manual failback is provided by way of {@link #setActiveMultiClusterIndex(int)}
  * <p>
  */
 public class MultiClusterPooledConnectionProvider implements ConnectionProvider {
@@ -197,7 +197,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             if (CircuitBreaker.State.FORCED_OPEN.equals(originalState))
                 circuitBreaker.transitionToForcedOpenState();
 
-            throw new JedisValidationException(circuitBreaker.getName() + " failed to connect. Please check configuration and try again. " + e);
+            throw new JedisValidationException(circuitBreaker.getName() + " failed to connect. Please check configuration and try again.", e);
         }
     }
 

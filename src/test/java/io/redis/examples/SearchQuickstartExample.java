@@ -1,5 +1,4 @@
-//EXAMPLE: set_and_get
-//HIDE_START
+//EXAMPLE: search_quickstart
 package io.redis.examples;
 
 import java.math.BigDecimal;
@@ -36,8 +35,6 @@ public class SearchQuickstartExample {
 
     @Test
     public void run() {
-        //HIDE_END
-
         // STEP_START connect
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
         // STEP_END
@@ -215,4 +212,3 @@ public class SearchQuickstartExample {
         // REMOVE_END
     }
 }
-//HIDE_END

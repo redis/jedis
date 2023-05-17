@@ -1,4 +1,4 @@
-//EXAMPLE: set_and_get
+//EXAMPLE: search_quickstart
 //HIDE_START
 package io.redis.examples;
 
@@ -10,6 +10,7 @@ import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.search.schemafields.*;
+//HIDE_END
 //REMOVE_START
 import org.junit.Test;
 
@@ -35,9 +36,7 @@ class Bicycle {
 public class SearchQuickstartExample {
 
     @Test
-    public void run() {
-        //HIDE_END
-
+    public void run() {       
         // STEP_START connect
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
         // STEP_END
@@ -215,4 +214,3 @@ public class SearchQuickstartExample {
         // REMOVE_END
     }
 }
-//HIDE_END

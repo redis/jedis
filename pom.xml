@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>4.4.0-SNAPSHOT</version>
+	<version>4.5.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -189,6 +189,9 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
+					<excludes>
+						<exclude>**/examples/*Example.java</exclude>
+					</excludes>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
 			</plugin>
@@ -300,6 +303,20 @@
 								</goals>
 							</execution>
 						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>doctests</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>3.0.0</version>
+						<configuration>
+							<test>**/examples/*Example.java</test>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>

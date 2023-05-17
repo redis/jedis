@@ -34,6 +34,10 @@ public interface SortedSetPipelineCommands {
 
   Response<Long> zrevrank(String key, String member);
 
+  Response<KeyValue<Long, Double>> zrankWithScore(String key, String member);
+
+  Response<KeyValue<Long, Double>> zrevrankWithScore(String key, String member);
+
   Response<List<String>> zrange(String key, long start, long stop);
 
   Response<List<String>> zrevrange(String key, long start, long stop);

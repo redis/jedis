@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.Test;
 
-import redis.clients.jedis.ScanRoundRobin;
+import redis.clients.jedis.ScanIteration;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
@@ -866,7 +866,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
-  public void scanRoundRobin() {
+  public void scanIteration() {
     Set<String> allIn = new HashSet<>(26 * 26);
     char[] arr = new char[2];
     for (int i = 0; i < 26; i++) {
@@ -880,9 +880,9 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     }
 
     Set<String> allScan = new HashSet<>();
-    ScanRoundRobin scan = jedis.scan(10, "*");
-    while (!scan.isRoundRobinCompleted()) {
-      ScanResult<String> batch = scan.get();
+    ScanIteration scan = jedis.scanIteration(10, "*");
+    while (!scan.isIterationCompleted()) {
+      ScanResult<String> batch = scan.nextBatch();
       allScan.addAll(batch.getResult());
     }
     assertEquals(allIn, allScan);

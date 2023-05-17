@@ -929,6 +929,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<KeyValue<Long, Double>> zrankWithScore(String key, String member) {
+    return appendCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrevrankWithScore(String key, String member) {
+    return appendCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
+  @Override
   public Response<List<String>> zrange(String key, long start, long stop) {
     return appendCommand(commandObjects.zrange(key, start, stop));
   }
@@ -1627,6 +1637,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Long>> waitAOF(String sampleKey, long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
   }
 
   @Override
@@ -2451,6 +2466,11 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<KeyValue<Long, Long>> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
+  }
+
+  @Override
   public Response<Object> eval(byte[] script, byte[] sampleKey) {
     return appendCommand(commandObjects.eval(script, sampleKey));
   }
@@ -2673,6 +2693,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   @Override
   public Response<Long> zrevrank(byte[] key, byte[] member) {
     return appendCommand(commandObjects.zrevrank(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrankWithScore(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrevrankWithScore(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.zrevrankWithScore(key, member));
   }
 
   @Override
@@ -3373,21 +3403,25 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  @Deprecated
   public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
     return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftCursorDel(String indexName, long cursorId) {
     return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftDropIndex(String indexName) {
     return appendCommand(commandObjects.ftDropIndex(indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftDropIndexDD(String indexName) {
     return appendCommand(commandObjects.ftDropIndexDD(indexName));
   }
@@ -3453,16 +3487,19 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasAdd(String aliasName, String indexName) {
     return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasUpdate(String aliasName, String indexName) {
     return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
   }
 
   @Override
+  @Deprecated
   public Response<String> ftAliasDel(String aliasName) {
     return appendCommand(commandObjects.ftAliasDel(aliasName));
   }
@@ -4283,6 +4320,10 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
+  }
+
+  public Response<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(numLocal, numReplicas, timeout));
   }
 
   public Response<List<String>> time() {

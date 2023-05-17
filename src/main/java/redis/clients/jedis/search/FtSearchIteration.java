@@ -1,13 +1,14 @@
 package redis.clients.jedis.search;
 
+import java.util.Collection;
 import java.util.function.IntFunction;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
-import redis.clients.jedis.util.JedisRoundRobinBase;
+import redis.clients.jedis.util.JedisCommandIterationBase;
 
-public class FtSearchRoundRobin extends JedisRoundRobinBase<SearchResult> {
+public class FtSearchIteration extends JedisCommandIterationBase<SearchResult, Document> {
 
   private int batchStart;
   private final int batchSize;
@@ -16,7 +17,7 @@ public class FtSearchRoundRobin extends JedisRoundRobinBase<SearchResult> {
   /**
    * {@link FTSearchParams#limit(int, int)} will be ignored.
    */
-  public FtSearchRoundRobin(ConnectionProvider connectionProvider, int batchSize, String indexName, String query, FTSearchParams params) {
+  public FtSearchIteration(ConnectionProvider connectionProvider, int batchSize, String indexName, String query, FTSearchParams params) {
     super(connectionProvider, new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), false, true));
     this.batchSize = batchSize;
     this.args = (limitFirst) -> new CommandArguments(SearchProtocol.SearchCommand.SEARCH)
@@ -26,7 +27,7 @@ public class FtSearchRoundRobin extends JedisRoundRobinBase<SearchResult> {
   /**
    * {@link Query#limit(java.lang.Integer, java.lang.Integer)} will be ignored.
    */
-  public FtSearchRoundRobin(ConnectionProvider connectionProvider, int batchSize, String indexName, Query query) {
+  public FtSearchIteration(ConnectionProvider connectionProvider, int batchSize, String indexName, Query query) {
     super(connectionProvider, new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), query.getWithPayloads(), true));
     this.batchSize = batchSize;
     this.args = (limitFirst) -> new CommandArguments(SearchProtocol.SearchCommand.SEARCH)
@@ -34,7 +35,7 @@ public class FtSearchRoundRobin extends JedisRoundRobinBase<SearchResult> {
   }
 
   @Override
-  protected boolean isIterationCompleted(SearchResult reply) {
+  protected boolean isNodeCompleted(SearchResult reply) {
     return batchStart >= reply.getTotalResults() - batchSize;
   }
 
@@ -48,5 +49,10 @@ public class FtSearchRoundRobin extends JedisRoundRobinBase<SearchResult> {
   protected CommandArguments nextCommandArguments(SearchResult lastReply) {
     batchStart += batchSize;
     return args.apply(batchStart);
+  }
+
+  @Override
+  protected Collection<Document> convertBatchToData(SearchResult batch) {
+    return batch.getDocuments();
   }
 }

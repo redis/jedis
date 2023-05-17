@@ -30,7 +30,7 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
-import redis.clients.jedis.search.aggr.FtAggregateRoundRobin;
+import redis.clients.jedis.search.aggr.FtAggregateIteration;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
@@ -216,6 +216,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
     this.broadcastAndRoundRobinConfig = config;
+    this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
   }
 
   public String ping() {
@@ -609,12 +610,23 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.scan(cursor, params, type));
   }
 
-  public ScanRoundRobin scan(int batchCount, String match) {
-    return new ScanRoundRobin(provider, batchCount, match);
+  /**
+   * @param batchCount COUNT for each batch execution
+   * @param match pattern
+   * @return scan iteration
+   */
+  public ScanIteration scanIteration(int batchCount, String match) {
+    return new ScanIteration(provider, batchCount, match);
   }
 
-  public ScanRoundRobin scan(int batchCount, String match, String type) {
-    return new ScanRoundRobin(provider, batchCount, match, type);
+  /**
+   * @param batchCount COUNT for each batch execution
+   * @param match pattern
+   * @param type key type
+   * @return scan iteration
+   */
+  public ScanIteration scanIteration(int batchCount, String match, String type) {
+    return new ScanIteration(provider, batchCount, match, type);
   }
 
   @Override
@@ -1793,6 +1805,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public KeyValue<Long, Double> zrankWithScore(String key, String member) {
+    return executeCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public KeyValue<Long, Double> zrevrankWithScore(String key, String member) {
+    return executeCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
+  @Override
   public long zrem(byte[] key, byte[]... members) {
     return executeCommand(commandObjects.zrem(key, members));
   }
@@ -1815,6 +1837,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Long zrevrank(byte[] key, byte[] member) {
     return executeCommand(commandObjects.zrevrank(key, member));
+  }
+
+  @Override
+  public KeyValue<Long, Double> zrankWithScore(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public KeyValue<Long, Double> zrevrankWithScore(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.zrevrankWithScore(key, member));
   }
 
   @Override
@@ -3398,6 +3430,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public KeyValue<Long, Long> waitAOF(String sampleKey, long numLocal, long numReplicas, long timeout) {
+    return executeCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
+  }
+
+  @Override
+  public KeyValue<Long, Long> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
+    return executeCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
+  }
+
+  @Override
   public Object eval(String script, String sampleKey) {
     return executeCommand(commandObjects.eval(script, sampleKey));
   }
@@ -3573,14 +3615,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * {@link FTSearchParams#limit(int, int)} will be ignored.
-   * @param batchSize
-   * @param indexName
-   * @param query
+   * @param batchSize batch size
+   * @param indexName index name
+   * @param query query
    * @param params limit will be ignored
-   * @return search
+   * @return search iteration
    */
-  public FtSearchRoundRobin ftSearch(int batchSize, String indexName, String query, FTSearchParams params) {
-    return new FtSearchRoundRobin(provider, batchSize, indexName, query, params);
+  public FtSearchIteration ftSearchIteration(int batchSize, String indexName, String query, FTSearchParams params) {
+    return new FtSearchIteration(provider, batchSize, indexName, query, params);
   }
 
   @Override
@@ -3590,13 +3632,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * {@link Query#limit(java.lang.Integer, java.lang.Integer)} will be ignored.
-   * @param batchSize
-   * @param indexName
+   * @param batchSize batch size
+   * @param indexName index name
    * @param query limit will be ignored
-   * @return search
+   * @return search iteration
    */
-  public FtSearchRoundRobin ftSearch(int batchSize, String indexName, Query query) {
-    return new FtSearchRoundRobin(provider, batchSize, indexName, query);
+  public FtSearchIteration ftSearchIteration(int batchSize, String indexName, Query query) {
+    return new FtSearchIteration(provider, batchSize, indexName, query);
   }
 
   @Override
@@ -3629,8 +3671,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.ftCursorDel(indexName, cursorId));
   }
 
-  public FtAggregateRoundRobin ftAggregateRoundRobin(String indexName, AggregationBuilder aggr) {
-    return new FtAggregateRoundRobin(provider, indexName, aggr);
+  /**
+   * {@link AggregationBuilder#cursor(int, long) CURSOR} must be set.
+   * @param indexName index name
+   * @param aggr cursor must be set
+   * @return aggregate iteration
+   */
+  public FtAggregateIteration ftAggregateIteration(String indexName, AggregationBuilder aggr) {
+    return new FtAggregateIteration(provider, indexName, aggr);
   }
 
   @Override
@@ -4235,10 +4283,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
-  public TsMRangeRoundRobin tsMRangeRoundRobin(TSMRangeParams multiRangeParams) {
-    return new TsMRangeRoundRobin(provider, false, multiRangeParams);
-  }
-
   @Override
   public List<TSKeyedElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
@@ -4247,10 +4291,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<TSKeyedElements> tsMRevRange(TSMRangeParams multiRangeParams) {
     return executeCommand(commandObjects.tsMRevRange(multiRangeParams));
-  }
-
-  public TsMRangeRoundRobin tsMRevRangeRoundRobin(TSMRangeParams multiRangeParams) {
-    return new TsMRangeRoundRobin(provider, true, multiRangeParams);
   }
 
   @Override
@@ -4266,10 +4306,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
-  }
-
-  public TsMGetRoundRobin tsMGetRoundRobin(TSMGetParams multiGetParams, String... filters) {
-    return new TsMGetRoundRobin(provider, multiGetParams, filters);
   }
 
   @Override

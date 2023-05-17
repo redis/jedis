@@ -190,13 +190,21 @@ public class Connection implements Closeable {
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
+
+        broken = false; // unset broken status when connection is (re)initialized
+
       } catch (JedisConnectionException jce) {
-        broken = true;
+
+        setBroken();
         throw jce;
+
       } catch (IOException ioe) {
-        broken = true;
+
+        setBroken();
         throw new JedisConnectionException("Failed to create input/output stream", ioe);
+
       } finally {
+
         if (broken) {
           IOUtils.closeQuietly(socket);
         }
@@ -228,10 +236,10 @@ public class Connection implements Closeable {
         outputStream.flush();
         socket.close();
       } catch (IOException ex) {
-        broken = true;
         throw new JedisConnectionException(ex);
       } finally {
         IOUtils.closeQuietly(socket);
+        setBroken();
       }
     }
   }

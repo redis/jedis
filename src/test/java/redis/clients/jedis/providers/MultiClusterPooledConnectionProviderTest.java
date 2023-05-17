@@ -18,7 +18,7 @@ import static org.junit.Assert.*;
 public class MultiClusterPooledConnectionProviderTest {
 
     private final HostAndPort hostAndPort1 = HostAndPorts.getRedisServers().get(0);
-    private final HostAndPort hostAndPort2 = HostAndPorts.getRedisServers().get(0);
+    private final HostAndPort hostAndPort2 = HostAndPorts.getRedisServers().get(1);
 
     private MultiClusterPooledConnectionProvider provider;
 

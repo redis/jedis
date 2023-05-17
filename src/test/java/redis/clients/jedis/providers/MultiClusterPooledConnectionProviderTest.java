@@ -17,8 +17,8 @@ import static org.junit.Assert.*;
  */
 public class MultiClusterPooledConnectionProviderTest {
 
-    private static final HostAndPort hostAndPort1 = HostAndPorts.getRedisServers().get(0);
-    private static final HostAndPort hostAndPort2 = HostAndPorts.getRedisServers().get(0);
+    private final HostAndPort hostAndPort1 = HostAndPorts.getRedisServers().get(0);
+    private final HostAndPort hostAndPort2 = HostAndPorts.getRedisServers().get(0);
 
     private MultiClusterPooledConnectionProvider provider;
 
@@ -29,13 +29,7 @@ public class MultiClusterPooledConnectionProviderTest {
         clusterJedisClientConfigs[0] = new ClusterJedisClientConfig(hostAndPort1, DefaultJedisClientConfig.builder().build());
         clusterJedisClientConfigs[1] = new ClusterJedisClientConfig(hostAndPort2, DefaultJedisClientConfig.builder().build());
 
-        MultiClusterJedisClientConfig.Builder builder = new MultiClusterJedisClientConfig.Builder(clusterJedisClientConfigs);
-
-        // Configures a single failed command to trigger an open circuit on the next subsequent failure
-        builder.circuitBreakerSlidingWindowSize(1);
-        builder.circuitBreakerSlidingWindowMinCalls(1);
-
-        provider = new MultiClusterPooledConnectionProvider(builder.build());
+        provider = new MultiClusterPooledConnectionProvider(new MultiClusterJedisClientConfig.Builder(clusterJedisClientConfigs).build());
     }
 
     @Test
@@ -88,29 +82,33 @@ public class MultiClusterPooledConnectionProviderTest {
 
     @Test
     public void testRunClusterFailoverPostProcessor() {
-        provider.setActiveMultiClusterIndex(1);
+        ClusterJedisClientConfig[] clusterJedisClientConfigs = new ClusterJedisClientConfig[2];
+        clusterJedisClientConfigs[0] = new ClusterJedisClientConfig(new HostAndPort("purposefully-incorrect", 0000),
+                                                                    DefaultJedisClientConfig.builder().build());
+        clusterJedisClientConfigs[1] = new ClusterJedisClientConfig(new HostAndPort("purposefully-incorrect", 0001),
+                                                                    DefaultJedisClientConfig.builder().build());
+
+        MultiClusterJedisClientConfig.Builder builder = new MultiClusterJedisClientConfig.Builder(clusterJedisClientConfigs);
+
+        // Configures a single failed command to trigger an open circuit on the next subsequent failure
+        builder.circuitBreakerSlidingWindowSize(1);
+        builder.circuitBreakerSlidingWindowMinCalls(1);
 
         AtomicBoolean isValidTest = new AtomicBoolean(false);
 
-        provider.setClusterFailoverPostProcessor(a -> { isValidTest.set(true); });
+        MultiClusterPooledConnectionProvider localProvider = new MultiClusterPooledConnectionProvider(builder.build());
+        localProvider.setClusterFailoverPostProcessor(a -> { isValidTest.set(true); });
 
-        try (UnifiedJedis jedis = new UnifiedJedis(provider)) {
+        try (UnifiedJedis jedis = new UnifiedJedis(localProvider)) {
 
             // This should fail after 3 retries and meet the requirements to open the circuit on the next iteration
             try {
-                jedis.set("foo", "bar");
-                jedis.incr("foo");
+                jedis.get("foo");
             } catch (Exception e) {}
 
             // This should fail after 3 retries and open the circuit which will trigger the post processor
             try {
-                jedis.set("foo", "bar");
-                jedis.incr("foo");
-            } catch (Exception e) {}
-
-            // Clean up so subsequent tests aren't impacted
-            try {
-                jedis.del("foo");
+                jedis.get("foo");
             } catch (Exception e) {}
 
         }

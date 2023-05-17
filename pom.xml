@@ -170,6 +170,9 @@
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
+					<excludes>
+						<exclude>**/examples/*Example.java</exclude>
+					</excludes>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
 			</plugin>
@@ -281,6 +284,20 @@
 								</goals>
 							</execution>
 						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>doctests</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>3.0.0</version>
+						<configuration>
+							<test>**/examples/*Example.java</test>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>

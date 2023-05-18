@@ -15,6 +15,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 //REMOVE_END
 
+// STEP_START data_class
 class Bicycle {
     public String brand;
     public String model;
@@ -30,6 +31,7 @@ class Bicycle {
         this.condition = condition;
     }
 }
+// STEP_END
 
 public class SearchQuickstartExample {
 
@@ -181,10 +183,10 @@ public class SearchQuickstartExample {
         // REMOVE_END
 
         // STEP_START query_single_term_limit_fields
-        Query cargo_query = new Query("cargo").returnFields("price");
-        List<Document> cargo_result = jedis.ftSearch(
-                "idx:bicycle", cargo_query).getDocuments();
-        System.out.println(cargo_result);
+        Query cargoQuery = new Query("cargo").returnFields("price");
+        List<Document> cargoResult = jedis.ftSearch(
+                "idx:bicycle", cargoQuery).getDocuments();
+        System.out.println(cargoResult);
         // Prints: [id:bicycle:9, score: 1.0, payload:null, properties:[price=3833.71]]
         // STEP_END
         // REMOVE_START

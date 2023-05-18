@@ -848,7 +848,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     // Using getters
     assertEquals(MY_CONSUMER, consumersInfo.get(0).getName());
     assertEquals(0L, consumersInfo.get(0).getPending());
-    assertTrue(consumersInfo.get(0).getIdle() > 0);
+    MatcherAssert.assertThat(consumersInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
+    MatcherAssert.assertThat(consumersInfo.get(0).getInactive(), Matchers.any(Long.class));
 
     // test with more groups and consumers
     jedis.xgroupCreate(STREAM_NAME, G2, StreamEntryID.LAST_ENTRY, false);

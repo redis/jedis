@@ -13,10 +13,12 @@ public class StreamConsumersInfo {
   public static final String NAME = "name";
   public static final String IDLE = "idle";
   public static final String PENDING = "pending";
+  public static final String INACTIVE = "inactive";
 
   private final String name;
   private final long idle;
   private final long pending;
+  private final Long inactive;
   private final Map<String, Object> consumerInfo;
 
   /**
@@ -26,9 +28,9 @@ public class StreamConsumersInfo {
 
     consumerInfo = map;
     name = (String) map.get(NAME);
-    idle = (long) map.get(IDLE);
-    pending = (long) map.get(PENDING);
-
+    idle = (Long) map.get(IDLE);
+    pending = (Long) map.get(PENDING);
+    inactive = (Long) map.get(INACTIVE);
   }
 
   public String getName() {
@@ -44,6 +46,14 @@ public class StreamConsumersInfo {
   }
 
   /**
+   * Since Redis 7.2.
+   */
+  public Long getInactive() {
+    return inactive;
+  }
+
+  /**
+   * All data.
    * @return Generic map containing all key-value pairs returned by the server
    */
   public Map<String, Object> getConsumerInfo() {

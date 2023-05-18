@@ -920,6 +920,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, group.getConsumers().size());
     StreamConsumerFullInfo consumer = group.getConsumers().get(0);
     assertEquals("xreadGroup-consumer", consumer.getName());
+    MatcherAssert.assertThat(consumer.getSeenTime(), Matchers.greaterThanOrEqualTo(0L));
+    MatcherAssert.assertThat(consumer.getActiveTime(), Matchers.greaterThanOrEqualTo(0L));
     assertEquals(1, consumer.getPending().size());
     List<Object> consumerPendingEntry = consumer.getPending().get(0);
     assertEquals(id1, consumerPendingEntry.get(0));

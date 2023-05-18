@@ -8827,7 +8827,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String clusterBumpEpoch() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.BUMPEPOCH);
-    return connection.getStatusCodeReply();
+    return connection.getBulkReply();
   }
 
   @Override
@@ -8877,6 +8877,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String clusterMyId() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.MYID);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String clusterMyShardId() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.MYSHARDID);
     return connection.getBulkReply();
   }
 

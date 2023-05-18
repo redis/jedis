@@ -382,9 +382,9 @@ public final class BuilderFactory {
     public List<Map.Entry<String, String>> build(Object data) {
       final List<Object> list = (List<Object>) data;
       final List<Map.Entry<String, String>> pairList = new ArrayList<>();
-      final Iterator<Object> iterator = list.iterator();
-      while (iterator.hasNext()) {
-        pairList.add(new AbstractMap.SimpleEntry<>(STRING.build(iterator.next()), STRING.build(iterator.next())));
+      for (Object object : list) {
+        final List<byte[]> flat = (List<byte[]>) object;
+        pairList.add(new AbstractMap.SimpleEntry<>(SafeEncoder.encode(flat.get(0)), SafeEncoder.encode(flat.get(1))));
       }
 
       return pairList;

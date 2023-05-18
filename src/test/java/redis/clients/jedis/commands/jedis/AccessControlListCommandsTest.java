@@ -1,9 +1,9 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -353,12 +353,13 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     // test the ACL Log
     jedis.auth("default", "foobared");
 
-    assertEquals("Number of log messages ", 1, jedis.aclLog().size());
-    assertEquals(1, jedis.aclLog().get(0).getCount());
-    assertEquals("antirez", jedis.aclLog().get(0).getUsername());
-    assertEquals("toplevel", jedis.aclLog().get(0).getContext());
-    assertEquals("command", jedis.aclLog().get(0).getReason());
-    assertEquals("get", jedis.aclLog().get(0).getObject());
+    List<AccessControlLogEntry> aclEntries = jedis.aclLog();
+    assertEquals("Number of log messages ", 1, aclEntries.size());
+    assertEquals(1, aclEntries.get(0).getCount());
+    assertEquals("antirez", aclEntries.get(0).getUsername());
+    assertEquals("toplevel", aclEntries.get(0).getContext());
+    assertEquals("command", aclEntries.get(0).getReason());
+    assertEquals("get", aclEntries.get(0).getObject());
 
     // Capture similar event
     jedis.aclLogReset();

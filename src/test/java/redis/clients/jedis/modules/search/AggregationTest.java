@@ -77,7 +77,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 
     // actual search
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(2, res.totalResults);
+    assertEquals(2, res.getTotalResults());
 
     Row r1 = res.getRow(0);
     assertNotNull(r1);
@@ -133,13 +133,13 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     AggregationBuilder r = new AggregationBuilder("kitti");
 
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(1, res.totalResults);
+    assertEquals(1, res.getTotalResults());
 
     r = new AggregationBuilder("kitti")
             .verbatim();
 
     res = client.ftAggregate(index, r);
-    assertEquals(0, res.totalResults);
+    assertEquals(0, res.getTotalResults());
   }
 
   @Test
@@ -157,7 +157,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
             .timeout(5000);
 
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(2, res.totalResults);
+    assertEquals(2, res.getTotalResults());
   }
 
   @Test
@@ -179,7 +179,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
             .dialect(2); // From documentation - To use PARAMS, DIALECT must be set to 2
 
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(1, res.totalResults);
+    assertEquals(1, res.getTotalResults());
 
     Row r1 = res.getRow(0);
     assertNotNull(r1);
@@ -214,7 +214,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 
     // actual search
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(3, res.totalResults);
+    assertEquals(3, res.getTotalResults());
 
     Row r1 = res.getRow(0);
     assertNotNull(r1);
@@ -287,7 +287,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 
     // actual search
     AggregationResult res = client.ftAggregate(index, r);
-    assertEquals(2, res.totalResults);
+    assertEquals(2, res.getTotalResults());
 
     Row row = res.getRow(0);
     assertNotNull(row);

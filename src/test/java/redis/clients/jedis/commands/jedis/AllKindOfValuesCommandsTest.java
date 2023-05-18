@@ -56,6 +56,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bnx = { 0x6E, 0x78 };
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
+
   private static final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
 
   @Test
@@ -944,12 +945,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals("OK", jedis.set("hello", "world"));
 
     // GET old value
-    assertEquals("world", jedis.set("hello", "jedis", setParams().get()));
+    assertEquals("world", jedis.setGet("hello", "jedis"));
 
     assertEquals("jedis", jedis.get("hello"));
 
     // GET null value
-    assertNull(jedis.set("key", "value", setParams().get()));
+    assertNull(jedis.setGet("key", "value"));
   }
 
   @Test
@@ -1093,9 +1094,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     CommandDocument sortDoc = docs.get("sort");
     assertEquals("generic", sortDoc.getGroup());
-    MatcherAssert.assertThat(sortDoc.getSummary(), Matchers.anyOf(
-        Matchers.equalTo("Sort the elements in a list, set or sorted set"),
-        Matchers.equalTo("Sorts the elements in a list, a set, or a sorted set, optionally storing the result.")));
+    MatcherAssert.assertThat(sortDoc.getSummary(), Matchers.isOneOf(
+        "Sort the elements in a list, set or sorted set",
+        "Sorts the elements in a list, a set, or a sorted set, optionally storing the result."));
     assertNull(sortDoc.getHistory());
 
     CommandDocument setDoc = docs.get("set");

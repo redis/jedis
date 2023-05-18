@@ -1,7 +1,8 @@
 package redis.clients.jedis.resps;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * This class holds information about an Access Control Log entry (returned by ACL LOG command) They
@@ -24,12 +25,12 @@ public class AccessControlLogEntry implements Serializable {
   public static final String TIMESTAMP_CREATED = "timestamp-created";
   public static final String TIMESTAMP_LAST_UPDATED = "timestamp-last-updated";
 
-  private long count;
+  private final long count;
   private final String reason;
   private final String context;
   private final String object;
   private final String username;
-  private final String ageSeconds;
+  private final Double ageSeconds;
   private final Map<String, String> clientInfo;
   private final Map<String, Object> logEntry;
   private final long entryId;
@@ -42,7 +43,7 @@ public class AccessControlLogEntry implements Serializable {
     context = (String) map.get(CONTEXT);
     object = (String) map.get(OBJECT);
     username = (String) map.get(USERNAME);
-    ageSeconds = (String) map.get(AGE_SECONDS);
+    ageSeconds = (Double) map.get(AGE_SECONDS);
     clientInfo = getMapFromRawClientInfo((String) map.get(CLIENT_INFO));
     logEntry = map;
     entryId = (long) map.get(ENTRY_ID);
@@ -70,7 +71,7 @@ public class AccessControlLogEntry implements Serializable {
     return username;
   }
 
-  public String getAgeSeconds() {
+  public Double getAgeSeconds() {
     return ageSeconds;
   }
 

@@ -770,7 +770,7 @@ public class GraphAPITest extends RedisModuleCommandsTestBase {
     assertNotNull(client.graphProfile("social", "CREATE (:person{name:'roi',age:32})"));
     assertNotNull(client.graphProfile("social", "CREATE (:person{name:'amit',age:30})"));
 
-    List<List<String>> slowlogs = client.graphSlowlog("social");
+    List<List<Object>> slowlogs = client.graphSlowlog("social");
     assertEquals(2, slowlogs.size());
     slowlogs.forEach(sl -> assertFalse(sl.isEmpty()));
     slowlogs.forEach(sl -> sl.forEach(Assert::assertNotNull));

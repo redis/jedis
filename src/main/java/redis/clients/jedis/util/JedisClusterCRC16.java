@@ -1,13 +1,12 @@
 package redis.clients.jedis.util;
 
-import redis.clients.jedis.exceptions.JedisClusterOperationException;
-
 /**
  * CRC16 Implementation according to CCITT standard Polynomial : 1021 (x^16 + x^12 + x^5 + 1) See <a
  * href="http://redis.io/topics/cluster-spec">Appendix A. CRC16 reference implementation in ANSI
  * C</a>
  */
 public final class JedisClusterCRC16 {
+
   private static final int[] LOOKUP_TABLE = { 0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5,
       0x60C6, 0x70E7, 0x8108, 0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF, 0x1231,
       0x0210, 0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6, 0x9339, 0x8318, 0xB37B, 0xA35A,
@@ -33,13 +32,9 @@ public final class JedisClusterCRC16 {
       0x2C83, 0x1CE0, 0x0CC1, 0xEF1F, 0xFF3E, 0xCF5D, 0xDF7C, 0xAF9B, 0xBFBA, 0x8FD9, 0x9FF8,
       0x6E17, 0x7E36, 0x4E55, 0x5E74, 0x2E93, 0x3EB2, 0x0ED1, 0x1EF0, };
 
-  private JedisClusterCRC16() {
-    throw new InstantiationError("Must not instantiate this class");
-  }
-
   public static int getSlot(String key) {
     if (key == null) {
-      throw new JedisClusterOperationException("Slot calculation of null is impossible");
+      throw new NullPointerException("Slot calculation of null is impossible");
     }
 
     key = JedisClusterHashTag.getHashTag(key);
@@ -49,7 +44,7 @@ public final class JedisClusterCRC16 {
 
   public static int getSlot(byte[] key) {
     if (key == null) {
-      throw new JedisClusterOperationException("Slot calculation of null is impossible");
+      throw new NullPointerException("Slot calculation of null is impossible");
     }
 
     int s = -1;
@@ -96,5 +91,9 @@ public final class JedisClusterCRC16 {
   public static int getCRC16(String key) {
     byte[] bytesKey = SafeEncoder.encode(key);
     return getCRC16(bytesKey, 0, bytesKey.length);
+  }
+
+  private JedisClusterCRC16() {
+    throw new InstantiationError("Must not instantiate this class");
   }
 }

@@ -542,11 +542,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
-  @Override
   public Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
     return appendCommand(commandObjects.lcs(keyA, keyB, params));
   }
@@ -1558,11 +1553,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName) {
-    return appendCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
-  @Override
   public Response<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params) {
     return appendCommand(commandObjects.xpending(key, groupName, params));
   }
@@ -1618,18 +1608,12 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  @Deprecated
-  public Response<List<StreamGroupInfo>> xinfoGroup(String key) {
-    return appendCommand(commandObjects.xinfoGroup(key));
-  }
-
-  @Override
   public Response<List<StreamGroupInfo>> xinfoGroups(String key) {
     return appendCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
-  public Response<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
+  public Response<List<StreamConsumerInfo>> xinfoConsumers(String key, String group) {
     return appendCommand(commandObjects.xinfoConsumers(key, group));
   }
 
@@ -1860,10 +1844,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   public Response<Long> publish(String channel, String message) {
     return appendCommand(commandObjects.publish(channel, message));
-  }
-
-  public Response<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
   @Override
@@ -2505,10 +2485,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.publish(channel, message));
   }
 
-  public Response<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
-  }
-
   @Override
   public Response<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
@@ -2980,12 +2956,12 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
+  public Response<List<Object>> bzpopmax(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
+  public Response<List<Object>> bzpopmin(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
@@ -3155,11 +3131,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<Object>> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName) {
-    return appendCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
-  @Override
   public Response<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params) {
     return appendCommand(commandObjects.xpending(key, groupName, params));
   }
@@ -3197,12 +3168,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Object> xinfoStreamFull(byte[] key, int count) {
     return appendCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
-  @Deprecated
-  public Response<List<Object>> xinfoGroup(byte[] key) {
-    return appendCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override
@@ -3390,11 +3355,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
-  @Override
-  public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
   // RediSearch commands
   @Override
   public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
@@ -3449,30 +3409,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return appendCommand(commandObjects.ftAggregate(indexName, aggr));
-  }
-
-  @Override
-  @Deprecated
-  public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
-    return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
-  }
-
-  @Override
-  @Deprecated
-  public Response<String> ftCursorDel(String indexName, long cursorId) {
-    return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
-  }
-
-  @Override
-  @Deprecated
-  public Response<String> ftDropIndex(String indexName) {
-    return appendCommand(commandObjects.ftDropIndex(indexName));
-  }
-
-  @Override
-  @Deprecated
-  public Response<String> ftDropIndexDD(String indexName) {
-    return appendCommand(commandObjects.ftDropIndexDD(indexName));
   }
 
   @Override
@@ -3533,24 +3469,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<Set<String>> ftTagVals(String indexName, String fieldName) {
     return appendCommand(commandObjects.ftTagVals(indexName, fieldName));
-  }
-
-  @Override
-  @Deprecated
-  public Response<String> ftAliasAdd(String aliasName, String indexName) {
-    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
-  }
-
-  @Override
-  @Deprecated
-  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
-    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
-  }
-
-  @Override
-  @Deprecated
-  public Response<String> ftAliasDel(String aliasName) {
-    return appendCommand(commandObjects.ftAliasDel(aliasName));
   }
 
   @Override
@@ -4217,11 +4135,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   @Override
   public Response<List<Boolean>> topkQuery(String key, String... items) {
     return appendCommand(commandObjects.topkQuery(key, items));
-  }
-
-  @Override
-  public Response<List<Long>> topkCount(String key, String... items) {
-    return appendCommand(commandObjects.topkCount(key, items));
   }
 
   @Override

@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-public abstract class BinaryJedisPubSub extends JedisPubSubBase<byte[]> {
+public abstract class BinaryJedisShardedPubSub extends JedisShardedPubSubBase<byte[]> {
 
   @Override
   protected final byte[] encode(byte[] raw) {

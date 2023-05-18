@@ -1,5 +1,7 @@
 package redis.clients.jedis.util;
 
+import static redis.clients.jedis.util.JedisURIHelper.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -7,6 +9,7 @@ import static org.junit.Assert.assertNull;
 import java.net.URI;
 import java.net.URISyntaxException;
 import org.junit.Test;
+import redis.clients.jedis.RedisProtocol;
 
 public class JedisURIHelperTest {
 
@@ -57,4 +60,17 @@ public class JedisURIHelperTest {
     assertFalse(JedisURIHelper.isValid(new URI("redis://host/0")));
   }
 
+  @Test
+  public void shouldGetDefaultProtocolWhenNotDefined() {
+    assertNull(getRedisProtocol(URI.create("redis://host:1234")));
+    assertNull(getRedisProtocol(URI.create("redis://host:1234/1")));
+  }
+
+  @Test
+  public void shouldGetProtocolFromDefinition() {
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234?protocol=3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/?protocol=3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1?protocol=3")));
+    assertEquals(RedisProtocol.RESP3, getRedisProtocol(URI.create("redis://host:1234/1/?protocol=3")));
+  }
 }

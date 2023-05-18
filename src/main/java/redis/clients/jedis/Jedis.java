@@ -73,6 +73,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
     connection = new Connection(hostPort, config);
+    RedisProtocol proto = config.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public Jedis(final String host, final int port, final boolean ssl) {
@@ -149,6 +151,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
         DefaultJedisClientConfig.builder().user(JedisURIHelper.getUser(uri))
             .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
+            .protocol(JedisURIHelper.getRedisProtocol(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
   }
 
@@ -201,9 +204,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
             .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
             .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+            .protocol(JedisURIHelper.getRedisProtocol(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
             .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
             .build());
+    RedisProtocol proto = config.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory) {
@@ -212,6 +218,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
     connection = new Connection(jedisSocketFactory, clientConfig);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
   }
 
   public Jedis(final Connection connection) {
@@ -411,18 +419,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Ask the server to silently close the connection.
-   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
-   * {@link Jedis#disconnect()} can be used instead.
-   */
-  @Override
-  @Deprecated
-  public String quit() {
-    checkIsInMultiOrPipeline();
-    return connection.quit();
-  }
-
-  /**
    * COPY source destination [DB destination-db] [REPLACE]
    *
    * @param srcKey the source key.
@@ -494,6 +490,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public byte[] get(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public byte[] setGet(final byte[] key, final byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value));
   }
 
   @Override
@@ -2630,12 +2632,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> bzpopmax(final double timeout, final byte[]... keys) {
+  public List<Object> bzpopmax(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public List<byte[]> bzpopmin(final double timeout, final byte[]... keys) {
+  public List<Object> bzpopmin(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
@@ -3376,30 +3378,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Synchronously save the DB on disk, then shutdown the server.
    * <p>
    * Stop all the clients, save the DB, then quit the server. This commands makes sure that the DB
-   * is switched off without the lost of any data. This is not guaranteed if the connection uses
-   * simply {@link Jedis#save() SAVE} and then {@link Jedis#quit() QUIT} because other clients may
-   * alter the DB data between the two commands.
+   * is switched off without the lost of any data.
    * @throws JedisException with the status code reply on error. On success nothing is thrown since
    *         the server quits and the connection is closed.
    */
   @Override
   public void shutdown() throws JedisException {
     connection.sendCommand(SHUTDOWN);
-    try {
-      throw new JedisException(connection.getStatusCodeReply());
-    } catch (JedisConnectionException jce) {
-      // expected
-      connection.setBroken();
-    }
-  }
-
-  /**
-   * @deprecated Use {@link Jedis#shutdown(redis.clients.jedis.params.ShutdownParams)}.
-   */
-  @Override
-  @Deprecated
-  public void shutdown(final SaveMode saveMode) throws JedisException {
-    connection.sendCommand(SHUTDOWN, saveMode.getRaw());
     try {
       throw new JedisException(connection.getStatusCodeReply());
     } catch (JedisConnectionException jce) {
@@ -3683,26 +3668,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long strlen(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.strlen(key));
-  }
-
-  /**
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link Jedis#lcs(byte[], byte[], LCSParams) LCS} can be used instead of this method.
-   */
-  @Override
-  @Deprecated
-  public LCSMatchResult strAlgoLCSKeys(final byte[] keyA, final byte[] keyB, final StrAlgoLCSParams params) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
-  /**
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   */
-  @Deprecated
-  public LCSMatchResult strAlgoLCSStrings(final byte[] strA, final byte[] strB, final StrAlgoLCSParams params) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
   @Override
@@ -4774,17 +4739,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xtrim(key, params));
   }
 
-  /**
-   * @deprecated Use {@link Jedis#xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Override
-  @Deprecated
-  public List<Object> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count,
-      byte[] consumerName) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
   @Override
   public Object xpending(final byte[] key, final byte[] groupName) {
     checkIsInMultiOrPipeline();
@@ -4841,13 +4795,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Object xinfoStreamFull(byte[] key, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xinfoStreamFull(key, count));
-  }
-
-  @Override
-  @Deprecated
-  public List<Object> xinfoGroup(byte[] key) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xinfoGroup(key));
   }
 
   @Override
@@ -4967,6 +4914,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String get(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public String setGet(final String key, final String value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.setGet(key, value));
   }
 
   @Override
@@ -7745,36 +7698,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Calculate the longest common subsequence of keyA and keyB.
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * {@link Jedis#lcs(String, String, LCSParams) LCS} can be used instead of this method.
-   * @param keyA
-   * @param keyB
-   * @param params
-   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
-   */
-  @Override
-  @Deprecated
-  public LCSMatchResult strAlgoLCSKeys(final String keyA, final String keyB, final StrAlgoLCSParams params) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
-  /**
-   * Calculate the longest common subsequence of strA and strB.
-   * @deprecated STRALGO LCS command will be removed from Redis 7.
-   * @param strA
-   * @param strB
-   * @param params
-   * @return According to StrAlgoLCSParams to decide to return content to fill LCSMatchResult.
-   */
-  @Deprecated
-  public LCSMatchResult strAlgoLCSStrings(final String strA, final String strB, final StrAlgoLCSParams params) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
-  }
-
-  /**
-   * Calculate the longest common subsequence of keyA and keyB.
    * @param keyA
    * @param keyB
    * @param params
@@ -8018,6 +7941,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Map<String, Long> pubsubNumSub(String... channels) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(PUBSUB, joinParameters(NUMSUB.name(), channels));
+    return BuilderFactory.PUBSUB_NUMSUB_MAP.build(connection.getOne());
+  }
+
+  public List<String> pubsubShardChannels() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(PUBSUB, SHARDCHANNELS);
+    return connection.getMultiBulkReply();
+  }
+
+  public List<String> pubsubShardChannels(final String pattern) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(PUBSUB, SHARDCHANNELS.name(), pattern);
+    return connection.getMultiBulkReply();
+  }
+
+  public Map<String, Long> pubsubShardNumSub(String... channels) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(PUBSUB, joinParameters(SHARDNUMSUB.name(), channels));
     return BuilderFactory.PUBSUB_NUMSUB_MAP.build(connection.getOne());
   }
 
@@ -9451,17 +9392,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.xpending(key, groupName));
   }
 
-  /**
-   * @deprecated Use {@link Jedis#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Override
-  @Deprecated
-  public List<StreamPendingEntry> xpending(final String key, final String groupName,
-      final StreamEntryID start, final StreamEntryID end, final int count, final String consumerName) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
   @Override
   public List<StreamPendingEntry> xpending(final String key, final String groupName, final XPendingParams params) {
     checkIsInMultiOrPipeline();
@@ -9514,18 +9444,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Deprecated
-  public List<StreamGroupInfo> xinfoGroup(String key) {
-    return connection.executeCommand(commandObjects.xinfoGroup(key));
-  }
-
-  @Override
   public List<StreamGroupInfo> xinfoGroups(String key) {
     return connection.executeCommand(commandObjects.xinfoGroups(key));
   }
 
   @Override
-  public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
+  public List<StreamConsumerInfo> xinfoConsumers(String key, String group) {
     return connection.executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 

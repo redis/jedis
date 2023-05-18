@@ -3425,6 +3425,15 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new JsonObjectBuilder<>(clazz));
   }
 
+  public final CommandObject<String> jsonMerge(String key, Path2 path, Object object) {
+    return new CommandObject<>(commandArguments(JsonCommand.MERGE).key(key).add(path).add(object), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> jsonMerge(String key, Path path, Object pojo) {
+    return new CommandObject<>(commandArguments(JsonCommand.MERGE).key(key).add(path).add(
+        getJsonObjectMapper().toJson(pojo)), BuilderFactory.STRING);
+  }
+
   public final CommandObject<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
     return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), JsonBuilderFactory.JSON_ARRAY_LIST);
   }

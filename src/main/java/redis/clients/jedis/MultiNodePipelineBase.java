@@ -3594,6 +3594,16 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<String> jsonMerge(String key, Path2 path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
   public Response<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
     return appendCommand(commandObjects.jsonMGet(path, keys));
   }

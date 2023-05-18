@@ -42,8 +42,7 @@ public class StreamConsumerFullInfo implements Serializable {
     return name;
   }
 
-  // TODO: Long
-  public long getSeenTime() {
+  public Long getSeenTime() {
     return seenTime;
   }
 

@@ -14,11 +14,13 @@ public class StreamConsumerFullInfo implements Serializable {
 
   public static final String NAME = "name";
   public static final String SEEN_TIME = "seen-time";
+  public static final String ACTIVE_TIME = "active-time";
   public static final String PEL_COUNT = "pel-count";
   public static final String PENDING = "pending";
 
   private final String name;
   private final Long seenTime;
+  private final Long activeTime; // since Redis 7.2
   private final Long pelCount;
   private final List<List<Object>> pending;
   private final Map<String, Object> consumerInfo;
@@ -28,18 +30,27 @@ public class StreamConsumerFullInfo implements Serializable {
     consumerInfo = map;
     name = (String) map.get(NAME);
     seenTime = (Long) map.get(SEEN_TIME);
+    activeTime = (Long) map.get(ACTIVE_TIME);
     pending = (List<List<Object>>) map.get(PENDING);
     pelCount = (Long) map.get(PEL_COUNT);
 
-    pending.stream().forEach(entry -> entry.set(0, new StreamEntryID((String) entry.get(0))));
+    pending.forEach(entry -> entry.set(0, new StreamEntryID((String) entry.get(0))));
   }
 
   public String getName() {
     return name;
   }
 
+  // TODO: Long
   public long getSeenTime() {
     return seenTime;
+  }
+
+  /**
+   * Since Redis 7.2.
+   */
+  public Long getActiveTime() {
+    return activeTime;
   }
 
   public Long getPelCount() {
@@ -50,6 +61,9 @@ public class StreamConsumerFullInfo implements Serializable {
     return pending;
   }
 
+  /**
+   * All data.
+   */
   public Map<String, Object> getConsumerInfo() {
     return consumerInfo;
   }

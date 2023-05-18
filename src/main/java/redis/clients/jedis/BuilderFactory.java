@@ -1312,7 +1312,8 @@ public final class BuilderFactory {
     }
   };
 
-  private static final Builder<List<StreamConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST = new Builder<List<StreamConsumerFullInfo>>() {
+  private static final Builder<List<StreamConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST
+      = new Builder<List<StreamConsumerFullInfo>>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 
@@ -1340,7 +1341,8 @@ public final class BuilderFactory {
       for (Object streamsEntry : streamsEntries) {
         List<Object> consumerInfoList = (List<Object>) streamsEntry;
         Iterator<Object> consumerInfoIterator = consumerInfoList.iterator();
-        StreamConsumerFullInfo consumerInfo = new StreamConsumerFullInfo(createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
+        StreamConsumerFullInfo consumerInfo = new StreamConsumerFullInfo(
+            createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
         list.add(consumerInfo);
       }
       return list;
@@ -1352,7 +1354,8 @@ public final class BuilderFactory {
     }
   };
 
-  private static final Builder<List<StreamGroupFullInfo>> STREAM_GROUP_FULL_INFO_LIST = new Builder<List<StreamGroupFullInfo>>() {
+  private static final Builder<List<StreamGroupFullInfo>> STREAM_GROUP_FULL_INFO_LIST
+      = new Builder<List<StreamGroupFullInfo>>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 
@@ -1384,8 +1387,8 @@ public final class BuilderFactory {
 
         Iterator<Object> groupInfoIterator = groupInfo.iterator();
 
-        StreamGroupFullInfo groupFullInfo = new StreamGroupFullInfo(createMapFromDecodingFunctions(
-                groupInfoIterator, mappingFunctions));
+        StreamGroupFullInfo groupFullInfo = new StreamGroupFullInfo(
+            createMapFromDecodingFunctions(groupInfoIterator, mappingFunctions));
         list.add(groupFullInfo);
 
       }

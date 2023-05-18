@@ -55,6 +55,10 @@ public interface RedisJsonCommands {
 
   <T> T jsonGet(String key, Class<T> clazz, Path... paths);
 
+  String jsonMerge(String key, Path2 path, Object object);
+
+  String jsonMerge(String key, Path path, Object pojo);
+
   default List<JSONArray> jsonMGet(String... keys) {
     return jsonMGet(Path2.ROOT_PATH, keys);
   }

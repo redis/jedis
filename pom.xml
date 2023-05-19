@@ -47,6 +47,14 @@
 	<properties>
 		<github.global.server>github</github.global.server>
 		<slf4j.version>1.7.36</slf4j.version>
+		<apache.commons.version>2.11.1</apache.commons.version>
+		<org.json.version>20230227</org.json.version>
+		<gson.version>2.10.1</gson.version>
+		<junit.version>4.13.2</junit.version>
+		<hamcrest.version>2.2</hamcrest.version>
+		<junixsocket.version>2.6.1</junixsocket.version>
+		<mockito.version>3.12.4</mockito.version>
+		<jackson.version>2.14.2</jackson.version>
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 	</properties>
 
@@ -59,29 +67,29 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
-			<version>2.11.1</version>
+			<version>${apache.commons.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20230227</version>
+			<version>${org.json.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.10.1</version>
+			<version>${gson.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.13.2</version>
+			<version>${junit.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
-			<version>2.2</version>
+			<version>${hamcrest.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -93,26 +101,26 @@
 		<dependency>
 			<groupId>com.kohlschutter.junixsocket</groupId>
 			<artifactId>junixsocket-core</artifactId>
-			<version>2.6.1</version>
+			<version>${junixsocket.version}</version>
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-inline</artifactId>
-			<version>3.12.4</version>
+			<version>${mockito.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.14.2</version>
+			<version>${jackson.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.14.2</version>
+			<version>${jackson.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

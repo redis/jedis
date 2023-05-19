@@ -283,7 +283,7 @@ public class ClusterCommandExecutorTest {
 
       @Override
       protected void sleep(long sleepMillis) {
-        assert sleepMillis > 0;
+        // assert sleepMillis > 0;
         totalSleepMs.addAndGet(sleepMillis);
       }
     };

@@ -186,6 +186,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     // Test with root path
     assertEquals("OK", client.jsonSet("test_merge", "{\"person\":{\"name\":\"John Doe\",\"age\":25,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}"));
     assertEquals("OK", client.jsonMerge("test_merge", new Path2("$"), "{\"person\":{\"age\":30}}"));
+
     assertEquals("{person={name=John Doe, age=30.0, address={home=123 Main Street}, phone=123-456-7890}}", client.jsonGet("test_merge"));
 
     // Test with root path path $.a.b

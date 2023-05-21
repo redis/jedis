@@ -1372,7 +1372,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return One or multiple random fields with values from a hash.
    */
   @Override
-  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+  public List<Map.Entry<byte[], byte[]>> hrandfieldWithValues(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hrandfieldWithValues(key, count));
   }
@@ -5799,7 +5799,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return one or multiple random fields with values from a hash.
    */
   @Override
-  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+  public List<Map.Entry<String, String>> hrandfieldWithValues(final String key, final long count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hrandfieldWithValues(key, count));
   }

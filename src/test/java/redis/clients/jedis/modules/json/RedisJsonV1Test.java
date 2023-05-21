@@ -186,6 +186,8 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertNull(client.jsonType("foobar", Path.of(".fooErr")));
   }
 
+  // Add JsonMerge test here
+
   @Test
   public void mgetWithPathWithAllKeysExist() {
     Baz baz1 = new Baz("quuz1", "grault1", "waldo1");

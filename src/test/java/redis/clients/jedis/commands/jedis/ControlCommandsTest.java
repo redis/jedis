@@ -155,13 +155,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
       List<Object> role = sentinel.role();
       assertEquals("sentinel", role.get(0));
       assertTrue(role.get(1) instanceof List);
-      assertTrue(((List) role.get(1)).contains("mymaster"));
+      AssertUtil.assertCollectionContains((List) role.get(1), "mymaster");
 
       // binary
       List<Object> brole = sentinel.roleBinary();
       assertArrayEquals("sentinel".getBytes(), (byte[]) brole.get(0));
       assertTrue(brole.get(1) instanceof List);
-      AssertUtil.assertCollectionContains((List) brole.get(1), "mymaster".getBytes());
+      AssertUtil.assertByteArrayCollectionContains((List) brole.get(1), "mymaster".getBytes());
     }
   }
 
@@ -341,7 +341,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
       assertThat(latencyRead.get(), Matchers.lessThan(100L));
 
-      assertThat(latencyWrite.get(), greaterThan(100L));
+      assertThat(latencyWrite.get(), Matchers.greaterThan(100L));
 
     } finally {
       executorService.shutdown();

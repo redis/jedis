@@ -241,7 +241,8 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<Map.Entry<byte[], byte[]>>> BINARY_PAIR_LIST = new Builder<List<Map.Entry<byte[], byte[]>>>() {
+  public static final Builder<List<Map.Entry<byte[], byte[]>>> BINARY_PAIR_LIST
+      = new Builder<List<Map.Entry<byte[], byte[]>>>() {
     @Override
     @SuppressWarnings("unchecked")
     public List<Map.Entry<byte[], byte[]>> build(Object data) {
@@ -261,7 +262,8 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<Map.Entry<byte[], byte[]>>> BINARY_PAIR_LIST_FROM_PAIRS = new Builder<List<Map.Entry<byte[], byte[]>>>() {
+  public static final Builder<List<Map.Entry<byte[], byte[]>>> BINARY_PAIR_LIST_FROM_PAIRS
+      = new Builder<List<Map.Entry<byte[], byte[]>>>() {
     @Override
     @SuppressWarnings("unchecked")
     public List<Map.Entry<byte[], byte[]>> build(Object data) {
@@ -326,7 +328,8 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
       if (null == data) return null;
-      return ((List<Object>) data).stream().map(STRING::build).collect(Collectors.toCollection(LinkedHashSet::new));
+      return ((List<Object>) data).stream().map(STRING::build)
+          .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
@@ -355,15 +358,16 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<Map.Entry<String, String>>> STRING_PAIR_LIST = new Builder<List<Map.Entry<String, String>>>() {
+  public static final Builder<List<Map.Entry<String, String>>> STRING_PAIR_LIST
+      = new Builder<List<Map.Entry<String, String>>>() {
     @Override
     @SuppressWarnings("unchecked")
     public List<Map.Entry<String, String>> build(Object data) {
       final List<byte[]> flatHash = (List<byte[]>) data;
-      final List<Map.Entry<String, String>> pairList = new ArrayList<>();
+      final List<Map.Entry<String, String>> pairList = new ArrayList<>(flatHash.size() / 2);
       final Iterator<byte[]> iterator = flatHash.iterator();
       while (iterator.hasNext()) {
-        pairList.add(new AbstractMap.SimpleEntry<>(STRING.build(iterator.next()), STRING.build(iterator.next())));
+        pairList.add(KeyValue.of(STRING.build(iterator.next()), STRING.build(iterator.next())));
       }
 
       return pairList;
@@ -373,28 +377,22 @@ public final class BuilderFactory {
     public String toString() {
       return "List<Map.Entry<String, String>>";
     }
-
   };
 
-  public static final Builder<List<Map.Entry<String, String>>> STRING_PAIR_LIST_FROM_PAIRS = new Builder<List<Map.Entry<String, String>>>() {
+  public static final Builder<List<Map.Entry<String, String>>> STRING_PAIR_LIST_FROM_PAIRS
+      = new Builder<List<Map.Entry<String, String>>>() {
     @Override
     @SuppressWarnings("unchecked")
     public List<Map.Entry<String, String>> build(Object data) {
-      final List<Object> list = (List<Object>) data;
-      final List<Map.Entry<String, String>> pairList = new ArrayList<>();
-      for (Object object : list) {
-        final List<byte[]> flat = (List<byte[]>) object;
-        pairList.add(new AbstractMap.SimpleEntry<>(SafeEncoder.encode(flat.get(0)), SafeEncoder.encode(flat.get(1))));
-      }
-
-      return pairList;
+      return ((List<Object>) data).stream().map(o -> (List<Object>) o)
+          .map(l -> KeyValue.of(STRING.build(l.get(0)), STRING.build(l.get(1))))
+          .collect(Collectors.toList());
     }
 
     @Override
     public String toString() {
       return "List<Map.Entry<String, String>>";
     }
-
   };
 
   public static final Builder<KeyedListElement> KEYED_LIST_ELEMENT = new Builder<KeyedListElement>() {

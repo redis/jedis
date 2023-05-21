@@ -22,6 +22,7 @@
 - Following BuilderFactory implementations have been removed:
   - `BYTE_ARRAY` (use `BINARY`)
   - `BYTE_ARRAY_LIST` (use `BINARY_LIST`)
+  - `BINARY_MAP_FROM_PAIRS`
 
 <!--- Deprecated in Jedis 4 --->
 

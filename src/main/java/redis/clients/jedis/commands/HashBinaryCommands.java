@@ -41,7 +41,7 @@ public interface HashBinaryCommands {
 
   List<byte[]> hrandfield(byte[] key, long count);
 
-  Map<byte[], byte[]> hrandfieldWithValues(byte[] key, long count);
+  List<Map.Entry<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count);
 
   default ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor) {
     return hscan(key, cursor, new ScanParams());

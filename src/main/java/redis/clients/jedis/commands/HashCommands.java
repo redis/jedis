@@ -41,7 +41,7 @@ public interface HashCommands {
 
   List<String> hrandfield(String key, long count);
 
-  Map<String, String> hrandfieldWithValues(String key, long count);
+  List<Map.Entry<String, String>> hrandfieldWithValues(String key, long count);
 
   default ScanResult<Map.Entry<String, String>> hscan(String key, String cursor) {
     return hscan(key, cursor, new ScanParams());

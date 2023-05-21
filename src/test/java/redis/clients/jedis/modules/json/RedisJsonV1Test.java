@@ -186,7 +186,23 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertNull(client.jsonType("foobar", Path.of(".fooErr")));
   }
 
-  // Add JsonMerge test here
+  @Test
+  public void testJsonMerge() {
+    client.jsonSet("foobar", ROOT_PATH, new FooBarObject());
+    assertEquals(0L, client.jsonDel("foobar", Path.of(".foo[1]")));
+
+    assertEquals("OK", client.jsonSet("test_merge", "{\"person\":{\"name\":\"John Doe\",\"age\":25,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}"));
+    assertEquals("OK", client.jsonMerge("test_merge",new Path("$"), "{\"person\":{\"age\":30}}"));
+    assertEquals("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}", client.jsonGet("test_merge").toString());
+
+    // Test with root path path $.a.b
+    assertEquals("OK", client.jsonMerge("test_merge", new Path("$.person.address"), "{\"work\":\"Redis office\"}"));
+    assertEquals("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}", client.jsonGet("test_merge").toString());
+
+    // Test with null value to delete a value
+    assertEquals("OK", client.jsonMerge("test_merge", new Path("$.person"), "{\"age\":null}"));
+    assertEquals("{\"person\":{\"name\":\"John Doe\",\"phone\":\"123-456-7890\",\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"}}}", client.jsonGet("test_merge").toString());
+  }
 
   @Test
   public void mgetWithPathWithAllKeysExist() {

@@ -322,7 +322,8 @@ public class ClusterCommandExecutorTest {
   public void runStopsRetryingAfterTimeout() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
 
-    final LongConsumer sleep = mock(LongConsumer.class);
+    //final LongConsumer sleep = mock(LongConsumer.class);
+    final AtomicLong totalSleepMs = new AtomicLong();
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, Duration.ZERO) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
@@ -337,7 +338,8 @@ public class ClusterCommandExecutorTest {
 
       @Override
       protected void sleep(long sleepMillis) {
-        sleep.accept(sleepMillis);
+        //sleep.accept(sleepMillis);
+        totalSleepMs.addAndGet(sleepMillis);
       }
     };
 
@@ -347,8 +349,10 @@ public class ClusterCommandExecutorTest {
     } catch (JedisClusterOperationException e) {
       // expected
     }
-    InOrder inOrder = inOrder(connectionHandler, sleep);
+    //InOrder inOrder = inOrder(connectionHandler, sleep);
+    InOrder inOrder = inOrder(connectionHandler);
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
     inOrder.verifyNoMoreInteractions();
+    assertEquals(0L, totalSleepMs.get());
   }
 }

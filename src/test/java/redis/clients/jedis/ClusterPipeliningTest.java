@@ -9,6 +9,7 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -650,8 +651,9 @@ public class ClusterPipeliningTest {
     Response<List<String>> r12 = p.hmget("myhash", "field1", "field2");
     Response<String> r13 = p.hrandfield("myotherhash");
     Response<List<String>> r14 = p.hrandfield("myotherhash", 2);
-    Response<Map<String, String>> r15 = p.hrandfieldWithValues("myotherhash", 2);
+    Response<List<Map.Entry<String, String>>> r15 = p.hrandfieldWithValues("myotherhash", 2);
     Response<Long> r16 = p.hstrlen("myhash", "field1");
+    Response<List<Map.Entry<String, String>>> r17 = p.hrandfieldWithValues("myotherhash", -2);
 
     p.sync();
     assertEquals(Long.valueOf(1), r1.get());
@@ -668,8 +670,9 @@ public class ClusterPipeliningTest {
     assertEquals(vals2, r12.get());
     assertTrue(hm.keySet().contains(r13.get()));
     assertEquals(2, r14.get().size());
-    assertTrue(r15.get().containsKey("field3") && r15.get().containsValue("5"));
+    Assert.assertTrue(r15.get().contains(new AbstractMap.SimpleEntry<>("field3", "5")));
     assertEquals(Long.valueOf(5), r16.get());
+    Assert.assertTrue(r17.get().contains(new AbstractMap.SimpleEntry<>("field3", "5")) || r17.get().contains(new AbstractMap.SimpleEntry<>("field2", "2")));
   }
 
   @Test

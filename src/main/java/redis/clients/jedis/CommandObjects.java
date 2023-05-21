@@ -1090,9 +1090,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Map<String, String>> hrandfieldWithValues(String key, long count) {
+  public final CommandObject<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        proto != RedisProtocol.RESP3 ? BuilderFactory.STRING_MAP : BuilderFactory.STRING_MAP_FROM_PAIRS);
+        proto != RedisProtocol.RESP3 ? BuilderFactory.STRING_PAIR_LIST : BuilderFactory.STRING_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
@@ -1107,9 +1107,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count) {
+  public final CommandObject<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        proto != RedisProtocol.RESP3 ? BuilderFactory.BINARY_MAP : BuilderFactory.BINARY_MAP_FROM_PAIRS);
+        proto != RedisProtocol.RESP3 ? BuilderFactory.BINARY_PAIR_LIST : BuilderFactory.BINARY_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {

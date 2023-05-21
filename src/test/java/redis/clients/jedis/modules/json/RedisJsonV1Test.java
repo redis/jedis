@@ -188,11 +188,9 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void testJsonMerge() {
-    client.jsonSet("foobar", ROOT_PATH, new FooBarObject());
-    assertEquals(0L, client.jsonDel("foobar", Path.of(".foo[1]")));
-
+    // Test with root path
     assertEquals("OK", client.jsonSet("test_merge", "{\"person\":{\"name\":\"John Doe\",\"age\":25,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}"));
-    assertEquals("OK", client.jsonMerge("test_merge",new Path("$"), "{\"person\":{\"age\":30}}"));
+    assertEquals("OK", client.jsonMerge("test_merge", ROOT_PATH, "{\"person\":{\"age\":30}}"));
     assertEquals("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}", client.jsonGet("test_merge").toString());
 
     // Test with root path path $.a.b

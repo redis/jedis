@@ -36,11 +36,11 @@ public interface SetBinaryCommands {
 
   Set<byte[]> sdiff(byte[]... keys);
 
-  long sdiffstore(byte[] dstkey, byte[]... keys);
+  long sdiffStore(byte[] dstkey, byte[]... keys);
 
   Set<byte[]> sinter(byte[]... keys);
 
-  long sinterstore(byte[] dstkey, byte[]... keys);
+  long sinterStore(byte[] dstkey, byte[]... keys);
 
   /**
    * This command works exactly like {@link SetBinaryCommands#sinter(byte[][]) SINTER} but instead of returning
@@ -50,7 +50,7 @@ public interface SetBinaryCommands {
    * @param keys
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
-  long sintercard(byte[]... keys);
+  long sinterCard(byte[]... keys);
 
   /**
    * This command works exactly like {@link SetBinaryCommands#sinter(byte[][]) SINTER} but instead of returning
@@ -62,11 +62,11 @@ public interface SetBinaryCommands {
    * @param keys
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
-  long sintercard(int limit, byte[]... keys);
+  long sinterCard(int limit, byte[]... keys);
 
   Set<byte[]> sunion(byte[]... keys);
 
-  long sunionstore(byte[] dstkey, byte[]... keys);
+  long sunionStore(byte[] dstkey, byte[]... keys);
 
   long smove(byte[] srckey, byte[] dstkey, byte[] member);
 

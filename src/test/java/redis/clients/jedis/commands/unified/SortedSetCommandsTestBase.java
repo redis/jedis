@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
@@ -10,10 +11,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
 
@@ -326,7 +325,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd("foo", 2, "c");
     jedis.zadd("foo", 3, "bb");
 
-    long stored = jedis.zrangestore("bar", "foo", ZRangeParams.zrangeByScoreParams(1, 2));
+    long stored = jedis.zrangeStore("bar", "foo", ZRangeParams.zrangeByScoreParams(1, 2));
     assertEquals(2, stored);
 
     List<String> range = jedis.zrange("bar", 0, -1);
@@ -341,7 +340,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd(bfoo, 0.1d, bc);
     jedis.zadd(bfoo, 2d, ba);
 
-    long bstored = jedis.zrangestore(bbar, bfoo, ZRangeParams.zrangeParams(0, 1).rev());
+    long bstored = jedis.zrangeStore(bbar, bfoo, ZRangeParams.zrangeParams(0, 1).rev());
     assertEquals(2, bstored);
 
     List<byte[]> brange = jedis.zrevrange(bbar, 0, 1);
@@ -1234,12 +1233,12 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     ZParams params = new ZParams();
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
-    Set<String> expected = new LinkedHashSet<>();
+    List<String> expected = new ArrayList<>();
     expected.add("a");
     expected.add("b");
     assertEquals(expected, jedis.zunion(params, "foo", "bar"));
 
-    Set<Tuple> expectedTuple = new LinkedHashSet<>();
+    List<Tuple> expectedTuple = new ArrayList<>();
     expectedTuple.add(new Tuple("b", new Double(9)));
     expectedTuple.add(new Tuple("a", new Double(7)));
     assertEquals(expectedTuple, jedis.zunionWithScores(params, "foo", "bar"));
@@ -1253,12 +1252,12 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     ZParams bparams = new ZParams();
     bparams.weights(2, 2.5);
     bparams.aggregate(ZParams.Aggregate.SUM);
-    Set<byte[]> bexpected = new LinkedHashSet<>();
+    List<byte[]> bexpected = new ArrayList<>();
     bexpected.add(bb);
     bexpected.add(ba);
-    AssertUtil.assertByteArraySetEquals(bexpected, jedis.zunion(params, bfoo, bbar));
+    AssertUtil.assertByteArrayListEquals(bexpected, jedis.zunion(params, bfoo, bbar));
 
-    Set<Tuple> bexpectedTuple = new LinkedHashSet<>();
+    List<Tuple> bexpectedTuple = new ArrayList<>();
     bexpectedTuple.add(new Tuple(bb, new Double(9)));
     bexpectedTuple.add(new Tuple(ba, new Double(7)));
     assertEquals(bexpectedTuple, jedis.zunionWithScores(bparams, bfoo, bbar));
@@ -1271,7 +1270,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd("bar", 2, "a");
     jedis.zadd("bar", 2, "b");
 
-    assertEquals(2, jedis.zunionstore("dst", "foo", "bar"));
+    assertEquals(2, jedis.zunionStore("dst", "foo", "bar"));
 
     List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("a", new Double(3)));
@@ -1284,7 +1283,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd(bbar, 2, ba);
     jedis.zadd(bbar, 2, bb);
 
-    assertEquals(2, jedis.zunionstore(SafeEncoder.encode("dst"), bfoo, bbar));
+    assertEquals(2, jedis.zunionStore(SafeEncoder.encode("dst"), bfoo, bbar));
 
     List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, new Double(3)));
@@ -1303,7 +1302,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
 
-    assertEquals(2, jedis.zunionstore("dst", params, "foo", "bar"));
+    assertEquals(2, jedis.zunionStore("dst", params, "foo", "bar"));
 
     List<Tuple> expected = new ArrayList<Tuple>();
     expected.add(new Tuple("a", new Double(7)));
@@ -1320,7 +1319,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     bparams.weights(2, 2.5);
     bparams.aggregate(ZParams.Aggregate.SUM);
 
-    assertEquals(2, jedis.zunionstore(SafeEncoder.encode("dst"), bparams, bfoo, bbar));
+    assertEquals(2, jedis.zunionStore(SafeEncoder.encode("dst"), bparams, bfoo, bbar));
 
     List<Tuple> bexpected = new ArrayList<Tuple>();
     bexpected.add(new Tuple(ba, new Double(7)));
@@ -1337,9 +1336,9 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     ZParams params = new ZParams();
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
-    assertEquals(Collections.singleton("a"), jedis.zinter(params, "foo", "bar"));
+    assertEquals(singletonList("a"), jedis.zinter(params, "foo", "bar"));
 
-    assertEquals(Collections.singleton(new Tuple("a", new Double(7))),
+    assertEquals(singletonList(new Tuple("a", new Double(7))),
       jedis.zinterWithScores(params, "foo", "bar"));
 
     // Binary
@@ -1350,9 +1349,9 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     ZParams bparams = new ZParams();
     bparams.weights(2, 2.5);
     bparams.aggregate(ZParams.Aggregate.SUM);
-    AssertUtil.assertByteArraySetEquals(Collections.singleton(ba), jedis.zinter(params, bfoo, bbar));
+    AssertUtil.assertByteArrayListEquals(singletonList(ba), jedis.zinter(params, bfoo, bbar));
 
-    assertEquals(Collections.singleton(new Tuple(ba, new Double(7))),
+    assertEquals(singletonList(new Tuple(ba, new Double(7))),
       jedis.zinterWithScores(bparams, bfoo, bbar));
   }
 
@@ -1362,9 +1361,9 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd("foo", 2, "b");
     jedis.zadd("bar", 2, "a");
 
-    assertEquals(1, jedis.zinterstore("dst", "foo", "bar"));
+    assertEquals(1, jedis.zinterStore("dst", "foo", "bar"));
 
-    assertEquals(Collections.singletonList(new Tuple("a", new Double(3))),
+    assertEquals(singletonList(new Tuple("a", new Double(3))),
         jedis.zrangeWithScores("dst", 0, 100));
 
     // Binary
@@ -1372,9 +1371,9 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd(bfoo, 2, bb);
     jedis.zadd(bbar, 2, ba);
 
-    assertEquals(1, jedis.zinterstore(SafeEncoder.encode("dst"), bfoo, bbar));
+    assertEquals(1, jedis.zinterStore(SafeEncoder.encode("dst"), bfoo, bbar));
 
-    assertEquals(Collections.singletonList(new Tuple(ba, new Double(3))),
+    assertEquals(singletonList(new Tuple(ba, new Double(3))),
         jedis.zrangeWithScores(SafeEncoder.encode("dst"), 0, 100));
   }
 
@@ -1388,9 +1387,9 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
 
-    assertEquals(1, jedis.zinterstore("dst", params, "foo", "bar"));
+    assertEquals(1, jedis.zinterStore("dst", params, "foo", "bar"));
 
-    assertEquals(Collections.singletonList(new Tuple("a", new Double(7))),
+    assertEquals(singletonList(new Tuple("a", new Double(7))),
         jedis.zrangeWithScores("dst", 0, 100));
 
     // Binary
@@ -1402,9 +1401,9 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     bparams.weights(2, 2.5);
     bparams.aggregate(ZParams.Aggregate.SUM);
 
-    assertEquals(1, jedis.zinterstore(SafeEncoder.encode("dst"), bparams, bfoo, bbar));
+    assertEquals(1, jedis.zinterStore(SafeEncoder.encode("dst"), bparams, bfoo, bbar));
 
-    assertEquals(Collections.singletonList(new Tuple(ba, new Double(7))),
+    assertEquals(singletonList(new Tuple(ba, new Double(7))),
         jedis.zrangeWithScores(SafeEncoder.encode("dst"), 0, 100));
   }
 
@@ -1415,8 +1414,8 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd("bar", 2, "a");
     jedis.zadd("bar", 1, "b");
 
-    assertEquals(2, jedis.zintercard("foo", "bar"));
-    assertEquals(1, jedis.zintercard(1, "foo", "bar"));
+    assertEquals(2, jedis.zinterCard("foo", "bar"));
+    assertEquals(1, jedis.zinterCard(1, "foo", "bar"));
 
     // Binary
     jedis.zadd(bfoo, 1, ba);
@@ -1424,8 +1423,8 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd(bbar, 2, ba);
     jedis.zadd(bbar, 2, bb);
 
-    assertEquals(2, jedis.zintercard(bfoo, bbar));
-    assertEquals(1, jedis.zintercard(1, bfoo, bbar));
+    assertEquals(2, jedis.zinterCard(bfoo, bbar));
+    assertEquals(1, jedis.zinterCard(1, bfoo, bbar));
   }
 
   @Test
@@ -1561,8 +1560,8 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd("bar", 1.0, "a");
 
     assertEquals(0, jedis.zdiff("bar1", "bar2").size());
-    assertEquals(Collections.singleton("b"), jedis.zdiff("foo", "bar"));
-    assertEquals(Collections.singleton(new Tuple("b", 2.0d)), jedis.zdiffWithScores("foo", "bar"));
+    assertEquals(singletonList("b"), jedis.zdiff("foo", "bar"));
+    assertEquals(singletonList(new Tuple("b", 2.0d)), jedis.zdiffWithScores("foo", "bar"));
 
     // binary
 
@@ -1571,10 +1570,10 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     jedis.zadd(bbar, 1.0, ba);
 
     assertEquals(0, jedis.zdiff(bbar1, bbar2).size());
-    Set<byte[]> bactual = jedis.zdiff(bfoo, bbar);
+    List<byte[]> bactual = jedis.zdiff(bfoo, bbar);
     assertEquals(1, bactual.size());
     assertArrayEquals(bb, bactual.iterator().next());
-    assertEquals(Collections.singleton(new Tuple(bb, 2.0d)), jedis.zdiffWithScores(bfoo, bbar));
+    assertEquals(singletonList(new Tuple(bb, 2.0d)), jedis.zdiffWithScores(bfoo, bbar));
   }
 
   @Test
@@ -1585,7 +1584,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     assertEquals(0, jedis.zdiffStore("bar3", "bar1", "bar2"));
     assertEquals(1, jedis.zdiffStore("bar3", "foo", "bar"));
-    assertEquals(Collections.singletonList("b"), jedis.zrange("bar3", 0, -1));
+    assertEquals(singletonList("b"), jedis.zrange("bar3", 0, -1));
 
     // binary
 

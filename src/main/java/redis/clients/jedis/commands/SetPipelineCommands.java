@@ -37,19 +37,19 @@ public interface SetPipelineCommands {
 
   Response<Set<String>> sdiff(String... keys);
 
-  Response<Long> sdiffstore(String dstKey, String... keys);
+  Response<Long> sdiffStore(String dstKey, String... keys);
 
   Response<Set<String>> sinter(String... keys);
 
-  Response<Long> sinterstore(String dstKey, String... keys);
+  Response<Long> sinterStore(String dstKey, String... keys);
 
-  Response<Long> sintercard(String... keys);
+  Response<Long> sinterCard(String... keys);
 
-  Response<Long> sintercard(int limit, String... keys);
+  Response<Long> sinterCard(int limit, String... keys);
 
   Response<Set<String>> sunion(String... keys);
 
-  Response<Long> sunionstore(String dstKey, String... keys);
+  Response<Long> sunionStore(String dstKey, String... keys);
 
   Response<Long> smove(String srckey, String dstKey, String member);
 

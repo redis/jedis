@@ -1674,8 +1674,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sdiffstore(String dstkey, String... keys) {
-    return executeCommand(commandObjects.sdiffstore(dstkey, keys));
+  public long sdiffStore(String dstkey, String... keys) {
+    return executeCommand(commandObjects.sdiffStore(dstkey, keys));
   }
 
   @Override
@@ -1684,18 +1684,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sinterstore(String dstkey, String... keys) {
-    return executeCommand(commandObjects.sinterstore(dstkey, keys));
+  public long sinterStore(String dstkey, String... keys) {
+    return executeCommand(commandObjects.sinterStore(dstkey, keys));
   }
 
   @Override
-  public long sintercard(String... keys) {
-    return executeCommand(commandObjects.sintercard(keys));
+  public long sinterCard(String... keys) {
+    return executeCommand(commandObjects.sinterCard(keys));
   }
 
   @Override
-  public long sintercard(int limit, String... keys) {
-    return executeCommand(commandObjects.sintercard(limit, keys));
+  public long sinterCard(int limit, String... keys) {
+    return executeCommand(commandObjects.sinterCard(limit, keys));
   }
 
   @Override
@@ -1704,8 +1704,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sunionstore(String dstkey, String... keys) {
-    return executeCommand(commandObjects.sunionstore(dstkey, keys));
+  public long sunionStore(String dstkey, String... keys) {
+    return executeCommand(commandObjects.sunionStore(dstkey, keys));
   }
 
   @Override
@@ -1719,8 +1719,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sdiffstore(byte[] dstkey, byte[]... keys) {
-    return executeCommand(commandObjects.sdiffstore(dstkey, keys));
+  public long sdiffStore(byte[] dstkey, byte[]... keys) {
+    return executeCommand(commandObjects.sdiffStore(dstkey, keys));
   }
 
   @Override
@@ -1729,18 +1729,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sinterstore(byte[] dstkey, byte[]... keys) {
-    return executeCommand(commandObjects.sinterstore(dstkey, keys));
+  public long sinterStore(byte[] dstkey, byte[]... keys) {
+    return executeCommand(commandObjects.sinterStore(dstkey, keys));
   }
 
   @Override
-  public long sintercard(byte[]... keys) {
-    return executeCommand(commandObjects.sintercard(keys));
+  public long sinterCard(byte[]... keys) {
+    return executeCommand(commandObjects.sinterCard(keys));
   }
 
   @Override
-  public long sintercard(int limit, byte[]... keys) {
-    return executeCommand(commandObjects.sintercard(limit, keys));
+  public long sinterCard(int limit, byte[]... keys) {
+    return executeCommand(commandObjects.sinterCard(limit, keys));
   }
 
   @Override
@@ -1749,8 +1749,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long sunionstore(byte[] dstkey, byte[]... keys) {
-    return executeCommand(commandObjects.sunionstore(dstkey, keys));
+  public long sunionStore(byte[] dstkey, byte[]... keys) {
+    return executeCommand(commandObjects.sunionStore(dstkey, keys));
   }
 
   @Override
@@ -2031,8 +2031,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long zrangestore(String dest, String src, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
+  public long zrangeStore(String dest, String src, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangeStore(dest, src, zRangeParams));
   }
 
   @Override
@@ -2146,8 +2146,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
+  public long zrangeStore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return executeCommand(commandObjects.zrangeStore(dest, src, zRangeParams));
   }
 
   @Override
@@ -2351,12 +2351,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<String> zdiff(String... keys) {
+  public List<String> zdiff(String... keys) {
     return executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Set<Tuple> zdiffWithScores(String... keys) {
+  public List<Tuple> zdiffWithScores(String... keys) {
     return executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -2366,12 +2366,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zdiff(byte[]... keys) {
+  public List<byte[]> zdiff(byte[]... keys) {
     return executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Set<Tuple> zdiffWithScores(byte[]... keys) {
+  public List<Tuple> zdiffWithScores(byte[]... keys) {
     return executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -2381,103 +2381,103 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long zinterstore(String dstkey, String... sets) {
-    return executeCommand(commandObjects.zinterstore(dstkey, sets));
+  public long zinterStore(String dstkey, String... sets) {
+    return executeCommand(commandObjects.zinterStore(dstkey, sets));
   }
 
   @Override
-  public long zinterstore(String dstkey, ZParams params, String... sets) {
-    return executeCommand(commandObjects.zinterstore(dstkey, params, sets));
+  public long zinterStore(String dstkey, ZParams params, String... sets) {
+    return executeCommand(commandObjects.zinterStore(dstkey, params, sets));
   }
 
   @Override
-  public Set<String> zinter(ZParams params, String... keys) {
+  public List<String> zinter(ZParams params, String... keys) {
     return executeCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Set<Tuple> zinterWithScores(ZParams params, String... keys) {
+  public List<Tuple> zinterWithScores(ZParams params, String... keys) {
     return executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
   @Override
-  public long zinterstore(byte[] dstkey, byte[]... sets) {
-    return executeCommand(commandObjects.zinterstore(dstkey, sets));
+  public long zinterStore(byte[] dstkey, byte[]... sets) {
+    return executeCommand(commandObjects.zinterStore(dstkey, sets));
   }
 
   @Override
-  public long zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
-    return executeCommand(commandObjects.zinterstore(dstkey, params, sets));
+  public long zinterStore(byte[] dstkey, ZParams params, byte[]... sets) {
+    return executeCommand(commandObjects.zinterStore(dstkey, params, sets));
   }
 
   @Override
-  public long zintercard(byte[]... keys) {
-    return executeCommand(commandObjects.zintercard(keys));
+  public long zinterCard(byte[]... keys) {
+    return executeCommand(commandObjects.zinterCard(keys));
   }
 
   @Override
-  public long zintercard(long limit, byte[]... keys) {
-    return executeCommand(commandObjects.zintercard(limit, keys));
+  public long zinterCard(long limit, byte[]... keys) {
+    return executeCommand(commandObjects.zinterCard(limit, keys));
   }
 
   @Override
-  public long zintercard(String... keys) {
-    return executeCommand(commandObjects.zintercard(keys));
+  public long zinterCard(String... keys) {
+    return executeCommand(commandObjects.zinterCard(keys));
   }
 
   @Override
-  public long zintercard(long limit, String... keys) {
-    return executeCommand(commandObjects.zintercard(limit, keys));
+  public long zinterCard(long limit, String... keys) {
+    return executeCommand(commandObjects.zinterCard(limit, keys));
   }
 
   @Override
-  public Set<byte[]> zinter(ZParams params, byte[]... keys) {
+  public List<byte[]> zinter(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Set<Tuple> zinterWithScores(ZParams params, byte[]... keys) {
+  public List<Tuple> zinterWithScores(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
   @Override
-  public Set<String> zunion(ZParams params, String... keys) {
+  public List<String> zunion(ZParams params, String... keys) {
     return executeCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+  public List<Tuple> zunionWithScores(ZParams params, String... keys) {
     return executeCommand(commandObjects.zunionWithScores(params, keys));
   }
 
   @Override
-  public long zunionstore(String dstkey, String... sets) {
-    return executeCommand(commandObjects.zunionstore(dstkey, sets));
+  public long zunionStore(String dstkey, String... sets) {
+    return executeCommand(commandObjects.zunionStore(dstkey, sets));
   }
 
   @Override
-  public long zunionstore(String dstkey, ZParams params, String... sets) {
-    return executeCommand(commandObjects.zunionstore(dstkey, params, sets));
+  public long zunionStore(String dstkey, ZParams params, String... sets) {
+    return executeCommand(commandObjects.zunionStore(dstkey, params, sets));
   }
 
   @Override
-  public Set<byte[]> zunion(ZParams params, byte[]... keys) {
+  public List<byte[]> zunion(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Set<Tuple> zunionWithScores(ZParams params, byte[]... keys) {
+  public List<Tuple> zunionWithScores(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zunionWithScores(params, keys));
   }
 
   @Override
-  public long zunionstore(byte[] dstkey, byte[]... sets) {
-    return executeCommand(commandObjects.zunionstore(dstkey, sets));
+  public long zunionStore(byte[] dstkey, byte[]... sets) {
+    return executeCommand(commandObjects.zunionStore(dstkey, sets));
   }
 
   @Override
-  public long zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
-    return executeCommand(commandObjects.zunionstore(dstkey, params, sets));
+  public long zunionStore(byte[] dstkey, ZParams params, byte[]... sets) {
+    return executeCommand(commandObjects.zunionStore(dstkey, params, sets));
   }
 
   @Override

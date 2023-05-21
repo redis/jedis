@@ -48,7 +48,7 @@ public interface SortedSetBinaryCommands {
 
   List<Tuple> zrangeWithScores(byte[] key, ZRangeParams zRangeParams);
 
-  long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams);
+  long zrangeStore(byte[] dest, byte[] src, ZRangeParams zRangeParams);
 
   byte[] zrandmember(byte[] key);
 
@@ -134,19 +134,19 @@ public interface SortedSetBinaryCommands {
 
   List<Object> bzpopmin(double timeout, byte[]... keys);
 
-  Set<byte[]> zdiff(byte[]... keys);
+  List<byte[]> zdiff(byte[]... keys);
 
-  Set<Tuple> zdiffWithScores(byte[]... keys);
+  List<Tuple> zdiffWithScores(byte[]... keys);
 
   long zdiffStore(byte[] dstkey, byte[]... keys);
 
-  Set<byte[]> zinter(ZParams params, byte[]... keys);
+  List<byte[]> zinter(ZParams params, byte[]... keys);
 
-  Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
+  List<Tuple> zinterWithScores(ZParams params, byte[]... keys);
 
-  long zinterstore(byte[] dstkey, byte[]... sets);
+  long zinterStore(byte[] dstkey, byte[]... sets);
 
-  long zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
+  long zinterStore(byte[] dstkey, ZParams params, byte[]... sets);
 
   /**
    * Similar to {@link SortedSetBinaryCommands#zinter(ZParams, byte[]...) ZINTER}, but
@@ -158,7 +158,7 @@ public interface SortedSetBinaryCommands {
    * @param keys group of sets
    * @return The number of elements in the resulting intersection
    */
-  long zintercard(byte[]... keys);
+  long zinterCard(byte[]... keys);
 
   /**
    * Similar to {@link SortedSetBinaryCommands#zinter(ZParams, byte[]...) ZINTER}, but
@@ -172,15 +172,15 @@ public interface SortedSetBinaryCommands {
    * @param keys group of sets
    * @return The number of elements in the resulting intersection
    */
-  long zintercard(long limit, byte[]... keys);
+  long zinterCard(long limit, byte[]... keys);
 
-  Set<byte[]> zunion(ZParams params, byte[]... keys);
+  List<byte[]> zunion(ZParams params, byte[]... keys);
 
-  Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
+  List<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 
-  long zunionstore(byte[] dstkey, byte[]... sets);
+  long zunionStore(byte[] dstkey, byte[]... sets);
 
-  long zunionstore(byte[] dstkey, ZParams params, byte[]... sets);
+  long zunionStore(byte[] dstkey, ZParams params, byte[]... sets);
 
   KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, byte[]... keys);
 

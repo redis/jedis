@@ -121,7 +121,7 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams);
 
-  Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams);
+  Response<Long> zrangeStore(byte[] dest, byte[] src, ZRangeParams zRangeParams);
 
   Response<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max);
 
@@ -135,31 +135,31 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<List<Object>> bzpopmin(double timeout, byte[]... keys);
 
-  Response<Set<byte[]>> zdiff(byte[]... keys);
+  Response<List<byte[]>> zdiff(byte[]... keys);
 
-  Response<Set<Tuple>> zdiffWithScores(byte[]... keys);
+  Response<List<Tuple>> zdiffWithScores(byte[]... keys);
 
   Response<Long> zdiffStore(byte[] dstkey, byte[]... keys);
 
-  Response<Set<byte[]>> zinter(ZParams params, byte[]... keys);
+  Response<List<byte[]>> zinter(ZParams params, byte[]... keys);
 
-  Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys);
+  Response<List<Tuple>> zinterWithScores(ZParams params, byte[]... keys);
 
-  Response<Long> zinterstore(byte[] dstkey, byte[]... sets);
+  Response<Long> zinterStore(byte[] dstkey, byte[]... sets);
 
-  Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets);
+  Response<Long> zinterStore(byte[] dstkey, ZParams params, byte[]... sets);
 
-  Response<Long> zintercard(byte[]... keys);
+  Response<Long> zinterCard(byte[]... keys);
 
-  Response<Long> zintercard(long limit, byte[]... keys);
+  Response<Long> zinterCard(long limit, byte[]... keys);
 
-  Response<Set<byte[]>> zunion(ZParams params, byte[]... keys);
+  Response<List<byte[]>> zunion(ZParams params, byte[]... keys);
 
-  Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys);
+  Response<List<Tuple>> zunionWithScores(ZParams params, byte[]... keys);
 
-  Response<Long> zunionstore(byte[] dstkey, byte[]... sets);
+  Response<Long> zunionStore(byte[] dstkey, byte[]... sets);
 
-  Response<Long> zunionstore(byte[] dstkey, ZParams params, byte[]... sets);
+  Response<Long> zunionStore(byte[] dstkey, ZParams params, byte[]... sets);
 
   Response<KeyValue<byte[], List<Tuple>>> zmpop(SortedSetOption option, byte[]... keys);
 

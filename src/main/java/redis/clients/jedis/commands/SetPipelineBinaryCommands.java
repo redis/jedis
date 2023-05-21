@@ -37,19 +37,19 @@ public interface SetPipelineBinaryCommands {
 
   Response<Set<byte[]>> sdiff(byte[]... keys);
 
-  Response<Long> sdiffstore(byte[] dstkey, byte[]... keys);
+  Response<Long> sdiffStore(byte[] dstkey, byte[]... keys);
 
   Response<Set<byte[]>> sinter(byte[]... keys);
 
-  Response<Long> sinterstore(byte[] dstkey, byte[]... keys);
+  Response<Long> sinterStore(byte[] dstkey, byte[]... keys);
 
-  Response<Long> sintercard(byte[]... keys);
+  Response<Long> sinterCard(byte[]... keys);
 
-  Response<Long> sintercard(int limit, byte[]... keys);
+  Response<Long> sinterCard(int limit, byte[]... keys);
 
   Response<Set<byte[]>> sunion(byte[]... keys);
 
-  Response<Long> sunionstore(byte[] dstkey, byte[]... keys);
+  Response<Long> sunionStore(byte[] dstkey, byte[]... keys);
 
   Response<Long> smove(byte[] srckey, byte[] dstkey, byte[] member);
 

@@ -1232,14 +1232,15 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     ZParams params = new ZParams();
     params.weights(2, 2.5);
     params.aggregate(ZParams.Aggregate.SUM);
+
     List<String> expected = new ArrayList<>();
     expected.add("a");
     expected.add("b");
     assertEquals(expected, jedis.zunion(params, "foo", "bar"));
 
     List<Tuple> expectedTuple = new ArrayList<>();
-    expectedTuple.add(new Tuple("b", new Double(9)));
     expectedTuple.add(new Tuple("a", new Double(7)));
+    expectedTuple.add(new Tuple("b", new Double(9)));
     assertEquals(expectedTuple, jedis.zunionWithScores(params, "foo", "bar"));
 
     // Binary
@@ -1248,18 +1249,15 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(bbar, 2, ba);
     jedis.zadd(bbar, 2, bb);
 
-    ZParams bparams = new ZParams();
-    bparams.weights(2, 2.5);
-    bparams.aggregate(ZParams.Aggregate.SUM);
     List<byte[]> bexpected = new ArrayList<>();
-    bexpected.add(bb);
     bexpected.add(ba);
+    bexpected.add(bb);
     AssertUtil.assertByteArrayListEquals(bexpected, jedis.zunion(params, bfoo, bbar));
 
     List<Tuple> bexpectedTuple = new ArrayList<>();
-    bexpectedTuple.add(new Tuple(bb, new Double(9)));
     bexpectedTuple.add(new Tuple(ba, new Double(7)));
-    assertEquals(bexpectedTuple, jedis.zunionWithScores(bparams, bfoo, bbar));
+    bexpectedTuple.add(new Tuple(bb, new Double(9)));
+    assertEquals(bexpectedTuple, jedis.zunionWithScores(params, bfoo, bbar));
   }
 
   @Test

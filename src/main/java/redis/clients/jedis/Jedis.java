@@ -3077,9 +3077,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][])} ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterStore(byte[], byte[][])} ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionstore(byte[], byte[][])} command inserts all elements across all inputs.
+   * {@link Jedis#zunionStore(byte[], byte[][])} command inserts all elements across all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
@@ -3108,9 +3108,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterStore(byte[], byte[][]) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionStore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -3167,9 +3167,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterStore(byte[], byte[][]) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
+   * {@link Jedis#zunionStore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
    * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -3199,9 +3199,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterStore(byte[], byte[][]) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
+   * {@link Jedis#zunionStore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
    * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7449,7 +7449,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterStore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
    * {@link Jedis#zunionStore(String, String[]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
@@ -7468,8 +7468,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sorted sets, and M being the number of elements in the resulting sorted set
    * @see Jedis#zunionStore(String, String[])
    * @see Jedis#zunionStore(String, ZParams, String[])
-   * @see Jedis#zinterstore(String, String...)
-   * @see Jedis#zinterstore(String, ZParams, String...)
+   * @see Jedis#zinterStore(String, String...)
+   * @see Jedis#zinterStore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @return The number of elements in the sorted set at dstkey
@@ -7485,7 +7485,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterStore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
    * {@link Jedis#zunionStore(String, String[]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
@@ -7504,8 +7504,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sorted sets, and M being the number of elements in the resulting sorted set
    * @see Jedis#zunionStore(String, String[])
    * @see Jedis#zunionStore(String, ZParams, String[])
-   * @see Jedis#zinterstore(String, String...)
-   * @see Jedis#zinterstore(String, ZParams, String...)
+   * @see Jedis#zinterStore(String, String...)
+   * @see Jedis#zinterStore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @param params
@@ -7560,7 +7560,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterStore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
    * {@link Jedis#zunionStore(String, String[]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
@@ -7579,8 +7579,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sorted sets, and M being the number of elements in the resulting sorted set
    * @see Jedis#zunionStore(String, String[])
    * @see Jedis#zunionStore(String, ZParams, String[])
-   * @see Jedis#zinterstore(String, String...)
-   * @see Jedis#zinterstore(String, ZParams, String...)
+   * @see Jedis#zinterStore(String, String...)
+   * @see Jedis#zinterStore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @return The number of elements in the sorted set at dstkey
@@ -7596,7 +7596,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterStore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
    * {@link Jedis#zunionStore(String, String[]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
@@ -7615,8 +7615,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * sorted sets, and M being the number of elements in the resulting sorted set
    * @see Jedis#zunionStore(String, String[])
    * @see Jedis#zunionStore(String, ZParams, String[])
-   * @see Jedis#zinterstore(String, String...)
-   * @see Jedis#zinterstore(String, ZParams, String...)
+   * @see Jedis#zinterStore(String, String...)
+   * @see Jedis#zinterStore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @param params

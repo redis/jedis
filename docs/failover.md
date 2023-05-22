@@ -222,4 +222,4 @@ This can happen only if a failed cluster comes back online and the application s
 If you need to avoid this scenario, consider using a failover callback, as described above, to externally record
 the name of the cluster that your application was most recently connected to. You can then check this state on startup
 to ensure that you application only connects to the most recently used cluster. For assistance with this technique,
-consider [opening an issue](https://github.com/redis/jedis/issues).
+[start a discussion](https://github.com/redis/jedis/discussions/new?category=q-a).

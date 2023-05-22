@@ -101,7 +101,7 @@ public class TSInfo {
                 chunksValueList.add(new HashMap<>(chunk));
                 if (chunk.containsKey(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)) {
                   chunk.put(CHUNKS_BYTES_PER_SAMPLE_PROPERTY,
-                      DoublePrecision.parseFloatingPointNumber((String) chunk.get(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)));
+                      DoublePrecision.parseEncodedFloatingPointNumber(chunk.get(CHUNKS_BYTES_PER_SAMPLE_PROPERTY)));
                 }
                 chunks.add(chunk);
               }

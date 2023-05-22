@@ -4,7 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertThrows;
 
 import java.util.Collections;
-import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.search.FieldName;
 import redis.clients.jedis.search.Schema;
@@ -31,9 +31,9 @@ public class SchemaTest {
         .addVectorField(VECTOR, Schema.VectorField.VectorAlgo.HNSW, Collections.emptyMap());
 
     String schemaPrint = sc.toString();
-    assertThat(schemaPrint, CoreMatchers.startsWith("Schema{fields=[TextField{name='title'"));
-    assertThat(schemaPrint, CoreMatchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
-    assertThat(schemaPrint, CoreMatchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
+    assertThat(schemaPrint, Matchers.startsWith("Schema{fields=[TextField{name='title'"));
+    assertThat(schemaPrint, Matchers.containsString("{name='release_year', type=NUMERIC, sortable=true, noindex=false}"));
+    assertThat(schemaPrint, Matchers.containsString("VectorField{name='vector', type=VECTOR, algorithm=HNSW"));
   }
 
   @Test

@@ -5,8 +5,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class TupleTest {
@@ -77,8 +77,8 @@ public class TupleTest {
   public void testToString() {
     Tuple t1 = new Tuple("key-name", 1d);
     String toStringResult = t1.toString();
-    MatcherAssert.assertThat(toStringResult, CoreMatchers.containsString("key-name"));
-    MatcherAssert.assertThat(toStringResult, CoreMatchers.containsString("1"));
+    MatcherAssert.assertThat(toStringResult, Matchers.containsString("key-name"));
+    MatcherAssert.assertThat(toStringResult, Matchers.containsString("1"));
   }
 
   @Test

@@ -9,6 +9,7 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
@@ -28,6 +29,7 @@ import redis.clients.jedis.util.SafeEncoder;
 public class Connection implements Closeable {
 
   private ConnectionPool memberOf;
+  private RedisProtocol protocol;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
@@ -54,6 +56,10 @@ public class Connection implements Closeable {
     initializeFromClientConfig(clientConfig);
   }
 
+  public Connection(final JedisSocketFactory socketFactory) {
+    this.socketFactory = socketFactory;
+  }
+
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
@@ -61,13 +67,13 @@ public class Connection implements Closeable {
     initializeFromClientConfig(clientConfig);
   }
 
-  public Connection(final JedisSocketFactory socketFactory) {
-    this.socketFactory = socketFactory;
-  }
-
   @Override
   public String toString() {
     return "Connection{" + socketFactory + "}";
+  }
+
+  final RedisProtocol getRedisProtocol() {
+    return protocol;
   }
 
   public final void setHandlingPool(final ConnectionPool pool) {
@@ -296,14 +302,19 @@ public class Connection implements Closeable {
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
 
+//  @SuppressWarnings("unchecked")
+//  public List<Object> getUnflushedObjectMultiBulkReply() {
+//    return (List<Object>) readProtocolWithCheckingBroken();
+//  }
+//
   @SuppressWarnings("unchecked")
-  public List<Object> getUnflushedObjectMultiBulkReply() {
-    return (List<Object>) readProtocolWithCheckingBroken();
+  public Object getUnflushedObject() {
+    return readProtocolWithCheckingBroken();
   }
 
   public List<Object> getObjectMultiBulkReply() {
     flush();
-    return getUnflushedObjectMultiBulkReply();
+    return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
@@ -333,6 +344,9 @@ public class Connection implements Closeable {
 
     try {
       return Protocol.read(inputStream);
+//      Object read = Protocol.read(inputStream);
+//      System.out.println(SafeEncoder.encodeObject(read));
+//      return read;
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -355,15 +369,32 @@ public class Connection implements Closeable {
   private void initializeFromClientConfig(JedisClientConfig config) {
     try {
       connect();
+      protocol = config.getRedisProtocol();
 
-      Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
-      if (credentialsProvider instanceof RedisCredentialsProvider) {
-        ((RedisCredentialsProvider) credentialsProvider).prepare();
-        auth(credentialsProvider);
-        ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+      boolean doClientName = true;
+
+      /// HELLO and AUTH --> 
+      if (protocol == RedisProtocol.RESP3 && config.getUser() != null) {
+
+        hello(protocol, config.getUser(), config.getPassword(), config.getClientName());
+        doClientName = false;
+
       } else {
-        auth(credentialsProvider);
+
+        Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
+        if (credentialsProvider instanceof RedisCredentialsProvider) {
+          ((RedisCredentialsProvider) credentialsProvider).prepare();
+          auth(credentialsProvider);
+          ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+        } else {
+          auth(credentialsProvider);
+        }
+
+        if (protocol != null) {
+          hello(protocol);
+        }
       }
+      /// HELLO and AUTH
 
       List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
 
@@ -373,7 +404,7 @@ public class Connection implements Closeable {
       }
 
       String clientName = config.getClientName();
-      if (clientName != null) {
+      if (doClientName && clientName != null) {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
       }
 
@@ -398,7 +429,14 @@ public class Connection implements Closeable {
         if (obj instanceof JedisDataException) {
           JedisDataException e = (JedisDataException)obj;
           String errorMsg = e.getMessage().toUpperCase();
-          if (errorMsg.contains("UNKNOWN") ||
+          /**
+           * 1. Redis 4.0 and before, we need to ignore `Syntax error`.
+           * 2. Redis 5.0 and later, we need to ignore `Unknown subcommand error`.
+           * 3. Because Jedis allows Jedis jedis = new Jedis() in advance, and jedis.auth(password) later,
+           * we need to ignore `NOAUTH errors`.
+           */
+          if (errorMsg.contains("SYNTAX") ||
+              errorMsg.contains("UNKNOWN") ||
               errorMsg.contains("NOAUTH")) { // TODO: not filter out NOAUTH
             // ignore
           } else {
@@ -415,6 +453,28 @@ public class Connection implements Closeable {
       }
       throw je;
     }
+  }
+
+  private Map hello(final RedisProtocol protocol) {
+    sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()));
+    Map reply = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+    // LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
+    return reply;
+  }
+
+  private Map hello(final RedisProtocol protocol, final String user, final String password,
+      final String clientName) {
+    if (clientName == null) {
+      sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()),
+          Protocol.Keyword.AUTH.name(), user, password);
+    } else {
+      sendCommand(Protocol.Command.HELLO, String.valueOf(protocol.version()),
+          Protocol.Keyword.AUTH.name(), user, password,
+          Protocol.Keyword.SETNAME.name(), clientName);
+    }
+    Map reply = BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+    // LoggerFactory.getLogger(Connection.class).info("HELLO reply: {}", reply);
+    return reply;
   }
 
   private void auth(final Supplier<RedisCredentials> credentialsProvider) {
@@ -438,25 +498,6 @@ public class Connection implements Closeable {
     // handled in RedisCredentialsProvider.cleanUp()
 
     getStatusCodeReply(); // OK
-  }
-
-  @Deprecated
-  public String select(final int index) {
-    sendCommand(Protocol.Command.SELECT, Protocol.toByteArray(index));
-    return getStatusCodeReply();
-  }
-
-  /**
-   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
-   * {@link Connection#disconnect()} can be used instead.
-   */
-  @Deprecated
-  public String quit() {
-    sendCommand(Protocol.Command.QUIT);
-    String quitReturn = getStatusCodeReply();
-    disconnect();
-    setBroken();
-    return quitReturn;
   }
 
   public boolean ping() {

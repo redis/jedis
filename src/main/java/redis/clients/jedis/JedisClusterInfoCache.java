@@ -36,17 +36,6 @@ public class JedisClusterInfoCache {
 
   private static final int MASTER_NODE_INDEX = 2;
 
-  @Deprecated
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig) {
-    this(clientConfig, new GenericObjectPoolConfig<Connection>());
-  }
-
-  @Deprecated
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig,
-      final GenericObjectPoolConfig<Connection> poolConfig) {
-    this(clientConfig, poolConfig, null);
-  }
-
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
     this(clientConfig, null, startNodes);
   }

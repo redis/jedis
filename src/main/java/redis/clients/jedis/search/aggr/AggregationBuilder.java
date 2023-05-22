@@ -171,22 +171,6 @@ public class AggregationBuilder {
     return Collections.unmodifiableList(args);
   }
 
-  @Deprecated
-  public void serializeRedisArgs(List<byte[]> redisArgs) {
-    for (String s : getArgs()) {
-      redisArgs.add(SafeEncoder.encode(s));
-    }
-  }
-
-  @Deprecated
-  public String getArgsString() {
-    StringJoiner sj = new StringJoiner(" ");
-    for (String s : getArgs()) {
-      sj.add(s);
-    }
-    return sj.toString();
-  }
-
   public boolean isWithCursor() {
     return isWithCursor;
   }

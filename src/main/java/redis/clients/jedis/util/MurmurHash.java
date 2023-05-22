@@ -21,7 +21,9 @@ import java.nio.ByteOrder;
  * The C version of MurmurHash 2.0 found at that site was ported to Java by Andrzej Bialecki (ab at
  * getopt org).
  * </p>
+ * @deprecated Sharding/Sharded feature will be removed in next major release.
  */
+@Deprecated
 public class MurmurHash implements Hashing {
   /**
    * Hashes bytes in an array.

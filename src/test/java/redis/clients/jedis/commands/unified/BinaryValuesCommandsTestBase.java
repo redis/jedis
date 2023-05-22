@@ -329,12 +329,12 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals("OK", jedis.set(bfoo, bbar));
 
     // GET old value
-    assertArrayEquals(bbar, jedis.setGet(bfoo, binaryValue, setParams()));
+    assertArrayEquals(bbar, jedis.setGet(bfoo, binaryValue));
 
     assertArrayEquals(binaryValue, jedis.get(bfoo));
 
     // GET null value
-    assertNull(jedis.setGet(bbar, bfoo, setParams()));
+    assertNull(jedis.setGet(bbar, bfoo));
   }
 
   @Test

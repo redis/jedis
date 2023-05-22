@@ -47,6 +47,10 @@ public interface RedisJsonPipelineCommands {
 
   Response<String> jsonSet(String key, Path path, Object pojo, JsonSetParams params);
 
+  Response<String> jsonMerge(String key, Path2 path, Object object);
+
+  Response<String> jsonMerge(String key, Path path, Object pojo);
+
   Response<Object> jsonGet(String key);
 
   <T> Response<T> jsonGet(String key, Class<T> clazz);
@@ -56,10 +60,6 @@ public interface RedisJsonPipelineCommands {
   Response<Object> jsonGet(String key, Path... paths);
 
   <T> Response<T> jsonGet(String key, Class<T> clazz, Path... paths);
-
-  Response<String> jsonMerge(String key, Path2 path, Object object);
-
-  Response<String> jsonMerge(String key, Path path, Object pojo);
 
   default Response<List<JSONArray>> jsonMGet(String... keys) {
     return jsonMGet(Path2.ROOT_PATH, keys);

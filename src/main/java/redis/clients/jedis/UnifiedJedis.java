@@ -3888,6 +3888,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String jsonMerge(String key, Path2 path, Object object) {
+    return executeCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
+  public String jsonMerge(String key, Path path, Object pojo) {
+    return executeCommand(commandObjects.jsonMerge(key, path, pojo));
+  }
+
+  @Override
   public Object jsonGet(String key) {
     return executeCommand(commandObjects.jsonGet(key));
   }
@@ -3915,16 +3925,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public <T> T jsonGet(String key, Class<T> clazz, Path... paths) {
     return executeCommand(commandObjects.jsonGet(key, clazz, paths));
-  }
-
-  @Override
-  public String jsonMerge(String key, Path2 path, Object object) {
-    return executeCommand(commandObjects.jsonMerge(key, path, object));
-  }
-
-  @Override
-  public String jsonMerge(String key, Path path, Object pojo) {
-    return executeCommand(commandObjects.jsonMerge(key, path, pojo));
   }
 
   @Override

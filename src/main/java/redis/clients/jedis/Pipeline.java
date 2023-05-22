@@ -3522,6 +3522,16 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  public Response<String> jsonMerge(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path2 path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
   public Response<Object> jsonGet(String key) {
     return appendCommand(commandObjects.jsonGet(key));
   }
@@ -3545,16 +3555,6 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   public <T> Response<T> jsonGet(String key, Class<T> clazz, Path... paths) {
     return appendCommand(commandObjects.jsonGet(key, clazz, paths));
   }
-
-    @Override
-    public Response<String> jsonMerge(String key, Path path, Object object) {
-      return appendCommand(commandObjects.jsonMerge(key, path, object));
-    }
-
-    @Override
-    public Response<String> jsonMerge(String key, Path2 path, Object object) {
-      return appendCommand(commandObjects.jsonMerge(key, path, object));
-    }
 
   @Override
   public Response<List<JSONArray>> jsonMGet(Path2 path, String... keys) {

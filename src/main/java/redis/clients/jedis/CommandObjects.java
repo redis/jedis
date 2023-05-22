@@ -3401,6 +3401,15 @@ public class CommandObjects {
         getJsonObjectMapper().toJson(pojo)).addParams(params), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> jsonMerge(String key, Path2 path, Object object) {
+    return new CommandObject<>(commandArguments(JsonCommand.MERGE).key(key).add(path).add(object), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> jsonMerge(String key, Path path, Object pojo) {
+    return new CommandObject<>(commandArguments(JsonCommand.MERGE).key(key).add(path).add(
+        getJsonObjectMapper().toJson(pojo)), BuilderFactory.STRING);
+  }
+
   public final CommandObject<Object> jsonGet(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new JsonObjectBuilder<>(Object.class));
   }
@@ -3423,15 +3432,6 @@ public class CommandObjects {
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz, Path... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new JsonObjectBuilder<>(clazz));
-  }
-
-  public final CommandObject<String> jsonMerge(String key, Path2 path, Object object) {
-    return new CommandObject<>(commandArguments(JsonCommand.MERGE).key(key).add(path).add(object), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> jsonMerge(String key, Path path, Object pojo) {
-    return new CommandObject<>(commandArguments(JsonCommand.MERGE).key(key).add(path).add(
-        getJsonObjectMapper().toJson(pojo)), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<JSONArray>> jsonMGet(Path2 path, String... keys) {

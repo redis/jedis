@@ -184,21 +184,52 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   @Test
   public void testJsonMerge() {
     // Test with root path
-    assertEquals("OK", client.jsonSet("test_merge", "{\"person\":{\"name\":\"John Doe\",\"age\":25,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}"));
-    assertEquals("OK", client.jsonMerge("test_merge", new Path2("$"), "{\"person\":{\"age\":30}}"));
+    JSONObject json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":25,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
+    assertEquals("OK", client.jsonSet("test_merge", json));
 
-    assertEquals("{person={name=John Doe, age=30.0, address={home=123 Main Street}, phone=123-456-7890}}", client.jsonGet("test_merge", Path2.of("$")));
+    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
+    assertEquals("OK", client.jsonMerge("test_merge", Path2.of("$"), "{\"person\":{\"age\":30}}"));
+
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge", Path2.of("$")));
 
     // Test with root path path $.a.b
-    assertEquals("OK", client.jsonMerge("test_merge", new Path2("$.person.address"), "{\"work\":\"Redis office\"}"));
-    assertEquals("{person={name=John Doe, age=30.0, address={home=123 Main Street, work=Redis office}, phone=123-456-7890}}", client.jsonGet("test_merge", Path2.of("$")));
+    assertEquals("OK", client.jsonMerge("test_merge", Path2.of("$.person.address"), "{\"work\":\"Redis office\"}"));
+    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge", Path2.of("$")));
 
     // Test with null value to delete a value
-    assertEquals("OK", client.jsonMerge("test_merge", new Path2("$.person"), "{\"age\":null}"));
-    assertEquals("{person={name=John Doe, phone=123-456-7890, address={home=123 Main Street, work=Redis office}}}", client.jsonGet("test_merge", Path2.of("$")));
+    assertEquals("OK", client.jsonMerge("test_merge", Path2.of("$.person"), "{\"age\":null}"));
+    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge", Path2.of("$")));
 
     // cleanup
     assertEquals(1L, client.del("test_merge"));
+  }
+
+  @Test
+  public void testJsonMergeArray()
+  {
+    // Test merge on an array
+    JSONObject json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}");
+    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), json)));
+    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]")));
+
+    json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
+
+    // assertEquals("{{a={b={c=[f]}}}", client.jsonGet("test_merge_array", Path2.of("$")));
+
+    // Test merge an array on a value
+    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":\"d\"}}}")));
+    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]")));
+    json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
+
+    // Test with null value to delete an array value
+    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}")));
+    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b"), "{\"c\":null}")));
+    json = new JSONObject("{\"a\":{\"b\":{}}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
   }
 
   @Test
@@ -474,7 +505,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
       if (ia instanceof JSONArray) {
         assertJsonArrayEquals((JSONArray) ia, ib);
       } else if (ia instanceof JSONObject) {
-        assertJsonObjectEquals((JSONObject) ia, ib);
+        assertJsonArrayEquals((JSONObject) ia, ib);
       } else if (ia instanceof Number && ib instanceof Number) {
         assertEquals(index + "'th element mismatch", ((Number) ia).doubleValue(), ((Number) ib).doubleValue(), 0d);
       } else {
@@ -483,7 +514,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     }
   }
 
-  private void assertJsonObjectEquals(JSONObject a, Object _b) {
+  private void assertJsonArrayEquals(JSONObject a, Object _b) {
     if (!(_b instanceof JSONObject)) {
       fail("Actual value is not JSONObject.");
     }
@@ -500,7 +531,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
       if (oa instanceof JSONArray) {
         assertJsonArrayEquals((JSONArray) oa, ob);
       } else if (oa instanceof JSONObject) {
-        assertJsonObjectEquals((JSONObject) oa, ob);
+        assertJsonArrayEquals((JSONObject) oa, ob);
       } else {
         assertEquals(key + "'s value mismatch", oa, ob);
       }

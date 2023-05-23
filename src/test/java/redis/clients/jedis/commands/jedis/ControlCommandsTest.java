@@ -7,8 +7,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.HashSet;
 import java.util.List;
@@ -32,7 +32,6 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.CommandListFilterByParams;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.resps.CommandDocument;
@@ -502,12 +501,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByPattern("a*"));
     assertTrue(commands.size() > 10);
 
-    try {
-      jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams());
-      fail();
-    } catch (JedisException e) {
-      assertTrue(true);
-    }
+    assertThrows(IllegalArgumentException.class, () ->
+        jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams()));
   }
 
   @Test

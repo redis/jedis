@@ -2,7 +2,6 @@ package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.exceptions.JedisException;
 
 public class CommandListFilterByParams implements IParams {
 
@@ -43,7 +42,8 @@ public class CommandListFilterByParams implements IParams {
       args.add(Keyword.PATTERN);
       args.add(pattern);
     } else {
-      throw new JedisException("Must choose exactly one filter");
+      throw new IllegalArgumentException("Must choose exactly one filter in "
+          + getClass().getSimpleName());
     }
   }
 }

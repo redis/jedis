@@ -19,6 +19,7 @@ import redis.clients.jedis.util.SafeEncoder;
 /**
  * Builder Class for {@code SORT} command parameters.
  */
+// TODO:
 public class SortingParams implements IParams {
 
   private final List<byte[]> params = new ArrayList<>();

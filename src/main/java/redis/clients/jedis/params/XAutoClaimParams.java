@@ -1,8 +1,7 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.COUNT;
-
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
 
 public class XAutoClaimParams implements IParams {
 
@@ -28,7 +27,7 @@ public class XAutoClaimParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (count != null) {
-      args.add(COUNT.getRaw()).add(count);
+      args.add(Keyword.COUNT.getRaw()).add(count);
     }
   }
 

@@ -4172,7 +4172,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public long clientKill(ClientKillParams params) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CLIENT, joinParameters(KILL.getRaw(), params.getByteParams()));
+    connection.sendCommand(new CommandArguments(CLIENT).add(KILL).addParams(params));
     return this.connection.getIntegerReply();
   }
 

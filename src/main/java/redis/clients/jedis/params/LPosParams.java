@@ -1,37 +1,37 @@
 package redis.clients.jedis.params;
 
+import static redis.clients.jedis.Protocol.Keyword.MAXLEN;
+import static redis.clients.jedis.Protocol.Keyword.RANK;
+
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.Protocol;
 
-public class LPosParams extends Params implements IParams {
+public class LPosParams implements IParams {
 
-  private static final String RANK = "RANK";
-  private static final String MAXLEN = "MAXLEN";
-
+  private Integer rank;
+  private Integer maxlen;
+  
   public static LPosParams lPosParams() {
     return new LPosParams();
   }
 
   public LPosParams rank(int rank) {
-    addParam(RANK, rank);
+    this.rank = rank;
     return this;
   }
 
   public LPosParams maxlen(int maxLen) {
-    addParam(MAXLEN, maxLen);
+    this.maxlen = maxLen;
     return this;
   }
 
   @Override
   public void addParams(CommandArguments args) {
-    if (contains(RANK)) {
-      args.add(RANK);
-      args.add(Protocol.toByteArray((int) getParam(RANK)));
+    if (rank != null) {
+      args.add(RANK).add(rank);
     }
 
-    if (contains(MAXLEN)) {
-      args.add(MAXLEN);
-      args.add(Protocol.toByteArray((int) getParam(MAXLEN)));
+    if (maxlen != null) {
+      args.add(MAXLEN).add(maxlen);
     }
   }
 

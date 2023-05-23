@@ -29,7 +29,7 @@ public class FailoverParams implements IParams {
   }
 
   /**
-   * Both TO ({@link FailoverParams#to(redis.clients.jedis.HostAndPort) or
+   * Both TO ({@link FailoverParams#to(redis.clients.jedis.HostAndPort)} or
    * {@link FailoverParams#to(java.lang.String, int)}) and
    * {@link FailoverParams#timeout(long) TIMEOUT} must be set in order for FORCE option.
    */

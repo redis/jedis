@@ -1,8 +1,7 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.VERSION;
-
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
 
 public class LolwutParams implements IParams {
 
@@ -27,7 +26,7 @@ public class LolwutParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (version != null) {
-      args.add(VERSION).add(version);
+      args.add(Keyword.VERSION).add(version);
 
       if (opargs != null && opargs.length > 0) {
         args.addObjects((Object[]) opargs);

@@ -80,6 +80,7 @@ public class SetParams implements IParams {
    * Retain the time to live associated with the key.
    * @return SetParams
    */
+  // TODO: deprecate?
   public SetParams keepttl() {
     return keepTtl();
   }

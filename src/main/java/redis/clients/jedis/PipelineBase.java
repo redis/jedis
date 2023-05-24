@@ -1,22 +1,17 @@
 package redis.clients.jedis;
 
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
-import redis.clients.jedis.commands.DatabasePipelineCommands;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;

@@ -8,8 +8,10 @@ import static redis.clients.jedis.Protocol.Command.WATCH;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import org.json.JSONArray;
 
@@ -36,9 +38,10 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
 
-public abstract class TransactionBase extends Queable implements PipelineCommands,
-    PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
+public abstract class TransactionBase implements PipelineCommands, PipelineBinaryCommands,
+    RedisModulePipelineCommands, Closeable {
 
+  private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
   protected final Connection connection;
   private final boolean closeConnection;
   private final CommandObjects commandObjects;
@@ -124,7 +127,9 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     connection.sendCommand(commandObject.getArguments());
     processAppendStatus();
-    return enqueResponse(commandObject.getBuilder());
+    Response<T> response = new Response<>(commandObject.getBuilder());
+    pipelinedResponses.add(response);
+    return response;
   }
 
   @Override
@@ -149,7 +154,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     }
   }
 
-  protected abstract void processPipelinedResponses();
+  protected abstract void processPipelinedResponses(int pipelineLength);
 
   public List<Object> exec() {
     if (!inMulti) {
@@ -157,19 +162,21 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     }
 
     try {
-      processPipelinedResponses();
+      processPipelinedResponses(pipelinedResponses.size());
       connection.sendCommand(EXEC);
 
       List<Object> unformatted = connection.getObjectMultiBulkReply();
       if (unformatted == null) {
-        clean();
+        pipelinedResponses.clear();
         return null;
       }
 
       List<Object> formatted = new ArrayList<>(unformatted.size());
       for (Object o : unformatted) {
         try {
-          formatted.add(generateResponse(o).get());
+          Response<?> response = pipelinedResponses.poll();
+          response.set(o);
+          formatted.add(response.get());
         } catch (JedisDataException e) {
           formatted.add(e);
         }
@@ -181,7 +188,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     } finally {
       inMulti = false;
       inWatch = false;
-      clean();
+      pipelinedResponses.clear();
     }
   }
 
@@ -191,7 +198,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     }
 
     try {
-      processPipelinedResponses();
+      processPipelinedResponses(pipelinedResponses.size());
       connection.sendCommand(DISCARD);
       return connection.getStatusCodeReply();
     } catch (JedisConnectionException jce) {
@@ -200,7 +207,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     } finally {
       inMulti = false;
       inWatch = false;
-      clean();
+      pipelinedResponses.clear();
     }
   }
 

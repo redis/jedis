@@ -2,8 +2,10 @@ package redis.clients.jedis;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import org.json.JSONArray;
 
@@ -30,9 +32,10 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
 
-public class Pipeline extends Queable implements PipelineCommands, PipelineBinaryCommands,
-    DatabasePipelineCommands, RedisModulePipelineCommands, Closeable {
+public class Pipeline implements PipelineCommands, PipelineBinaryCommands, DatabasePipelineCommands,
+    RedisModulePipelineCommands, Closeable {
 
+  private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
   protected final Connection connection;
   private final boolean closeConnection;
   private final CommandObjects commandObjects;
@@ -57,7 +60,9 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
 
   public final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     connection.sendCommand(commandObject.getArguments());
-    return enqueResponse(commandObject.getBuilder());
+    Response<T> response = new Response<>(commandObject.getBuilder());
+    pipelinedResponses.add(response);
+    return response;
   }
 
   @Override
@@ -76,9 +81,9 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
    */
   public void sync() {
     if (!hasPipelinedResponse()) return;
-    List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
+    List<Object> unformatted = connection.getMany(pipelinedResponses.size());
     for (Object o : unformatted) {
-      generateResponse(o);
+      pipelinedResponses.poll().set(o);
     }
   }
 
@@ -90,11 +95,13 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
    */
   public List<Object> syncAndReturnAll() {
     if (hasPipelinedResponse()) {
-      List<Object> unformatted = connection.getMany(getPipelinedResponseLength());
+      List<Object> unformatted = connection.getMany(pipelinedResponses.size());
       List<Object> formatted = new ArrayList<>();
       for (Object o : unformatted) {
         try {
-          formatted.add(generateResponse(o).get());
+          Response<?> response = pipelinedResponses.poll();
+          response.set(o);
+          formatted.add(response.get());
         } catch (JedisDataException e) {
           formatted.add(e);
         }
@@ -106,7 +113,7 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   public final boolean hasPipelinedResponse() {
-    return getPipelinedResponseLength() > 0;
+    return pipelinedResponses.size() > 0;
   }
 
   @Override

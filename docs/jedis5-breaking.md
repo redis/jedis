@@ -1,7 +1,5 @@
 # Jedis 5 Breaking Changes
 
-- `StreamConsumersInfo` has been renamed to `StreamConsumerInfo`.
-
 - `bzpopmax(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
   - This is a three element list where the last element is a `Double`.
 
@@ -12,11 +10,8 @@
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
-- `List<Object> getUnflushedObjectMultiBulkReply()` method has been removed from `Connection`.
-  - `Object getUnflushedObject()` method has been added instead.
+- All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.
 
-- `STREAM_INFO_FULL` in BuilderFactory has been renamed to `STREAM_FULL_INFO`.
-- `STREAM_CONSUMERS_INFO_LIST` in BuilderFactory has been renamed to `STREAM_CONSUMER_INFO_LIST`.
 - `STREAM_AUTO_CLAIM_ID_RESPONSE` in BuilderFactory has been renamed to `STREAM_AUTO_CLAIM_JUSTID_RESPONSE`.
 
 - Following BuilderFactory implementations have been removed:

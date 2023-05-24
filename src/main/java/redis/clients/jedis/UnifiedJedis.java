@@ -2997,7 +2997,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamConsumerInfo> xinfoConsumers(String key, String group) {
+  public List<StreamConsumersInfo> xinfoConsumers(String key, String group) {
     return executeCommand(commandObjects.xinfoConsumers(key, group));
   }
 

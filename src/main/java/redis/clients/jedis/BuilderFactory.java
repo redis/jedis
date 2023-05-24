@@ -1341,27 +1341,29 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<StreamConsumerInfo>> STREAM_CONSUMER_INFO_LIST = new Builder<List<StreamConsumerInfo>>() {
+  // TODO: rename to STREAM_CONSUMER_INFO_LIST ?
+  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST
+      = new Builder<List<StreamConsumersInfo>>() {
 
     Map<String, Builder> mappingFunctions = createDecoderMap();
 
     private Map<String, Builder> createDecoderMap() {
       Map<String, Builder> tempMappingFunctions = new HashMap<>();
-      tempMappingFunctions.put(StreamConsumerInfo.NAME, STRING);
-      tempMappingFunctions.put(StreamConsumerInfo.IDLE, LONG);
-      tempMappingFunctions.put(StreamConsumerInfo.PENDING, LONG);
+      tempMappingFunctions.put(StreamConsumersInfo.NAME, STRING);
+      tempMappingFunctions.put(StreamConsumersInfo.IDLE, LONG);
+      tempMappingFunctions.put(StreamConsumersInfo.PENDING, LONG);
       return tempMappingFunctions;
 
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<StreamConsumerInfo> build(Object data) {
+    public List<StreamConsumersInfo> build(Object data) {
       if (null == data) {
         return null;
       }
 
-      List<StreamConsumerInfo> list = new ArrayList<>();
+      List<StreamConsumersInfo> list = new ArrayList<>();
       List<Object> streamsEntries = (List<Object>) data;
       Iterator<Object> groupsArray = streamsEntries.iterator();
 
@@ -1371,7 +1373,7 @@ public final class BuilderFactory {
 
         Iterator<Object> consumerInfoIterator = groupInfo.iterator();
 
-        StreamConsumerInfo streamGroupInfo = new StreamConsumerInfo(
+        StreamConsumersInfo streamGroupInfo = new StreamConsumersInfo(
             createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
         list.add(streamGroupInfo);
 
@@ -1475,7 +1477,8 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<StreamFullInfo> STREAM_FULL_INFO = new Builder<StreamFullInfo>() {
+  // TODO: raname to STREAM_FULL_INFO ?
+  public static final Builder<StreamFullInfo> STREAM_INFO_FULL = new Builder<StreamFullInfo>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 

@@ -1613,7 +1613,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
-  public Response<List<StreamConsumerInfo>> xinfoConsumers(String key, String group) {
+  public Response<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
     return appendCommand(commandObjects.xinfoConsumers(key, group));
   }
 

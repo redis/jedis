@@ -302,11 +302,15 @@ public class Connection implements Closeable {
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
 
-//  @SuppressWarnings("unchecked")
-//  public List<Object> getUnflushedObjectMultiBulkReply() {
-//    return (List<Object>) readProtocolWithCheckingBroken();
-//  }
-//
+  /**
+   * @deprecated Use {@link Connection#getUnflushedObject()}.
+   */
+  @Deprecated
+  @SuppressWarnings("unchecked")
+  public List<Object> getUnflushedObjectMultiBulkReply() {
+    return (List<Object>) readProtocolWithCheckingBroken();
+  }
+
   @SuppressWarnings("unchecked")
   public Object getUnflushedObject() {
     return readProtocolWithCheckingBroken();

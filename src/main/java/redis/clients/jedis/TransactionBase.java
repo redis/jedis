@@ -1669,7 +1669,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<StreamConsumerInfo>> xinfoConsumers(String key, String group) {
+  public Response<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
     return appendCommand(commandObjects.xinfoConsumers(key, group));
   }
 

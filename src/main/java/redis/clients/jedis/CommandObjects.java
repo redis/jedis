@@ -4107,6 +4107,7 @@ public class CommandObjects {
   public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
+  // RedisGraph commands
 
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
@@ -4131,10 +4132,10 @@ public class CommandObjects {
     }
     return localRef;
   }
+
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.jsonObjectMapper = jsonObjectMapper;
   }
-  // RedisGraph commands
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
 

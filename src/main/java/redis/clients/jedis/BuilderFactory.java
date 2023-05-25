@@ -395,18 +395,33 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyedListElement> KEYED_LIST_ELEMENT = new Builder<KeyedListElement>() {
+  public static final Builder<KeyValue<String, String>> KEYED_ELEMENT = new Builder<KeyValue<String, String>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedListElement build(Object data) {
+    public KeyValue<String, String> build(Object data) {
       if (data == null) return null;
-      List<byte[]> l = (List<byte[]>) data;
-      return new KeyedListElement(l.get(0), l.get(1));
+      List<Object> l = (List<Object>) data;
+      return KeyValue.of(STRING.build(l.get(0)), STRING.build(l.get(1)));
     }
 
     @Override
     public String toString() {
-      return "KeyedListElement";
+      return "KeyValue<String, String>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], byte[]>> BINARY_KEYED_ELEMENT = new Builder<KeyValue<byte[], byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], byte[]> build(Object data) {
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      return KeyValue.of(BINARY.build(l.get(0)), BINARY.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], byte[]>";
     }
   };
 

@@ -12,25 +12,6 @@ import redis.clients.jedis.GeoCoordinate;
 public class ResponsesToStringTest {
 
   @Test
-  public void KeyedListElementTest() {
-    // test equals
-    KeyedListElement elem = new KeyedListElement("key-name", "elem");
-    KeyedListElement elem_copy = new KeyedListElement("key-name", "elem");
-    assertEquals(elem, elem);
-    assertEquals(elem, elem_copy);
-    assertNotEquals(elem, new Object());
-
-    // test toString
-    String toStringResult = elem.toString();
-    //assertThat(toStringResult, containsString("key-name"));
-    //assertThat(toStringResult, containsString("elem"));
-    assertEquals("key-name=elem", toStringResult);
-
-    // test hashCode
-    assertEquals(elem.hashCode(), elem_copy.hashCode());
-  }
-
-  @Test
   public void KeyedZSetElementTest() {
     // test equals
     KeyedZSetElement elem = new KeyedZSetElement("key-name", "elem", 1d);

@@ -48,11 +48,11 @@ public interface ListPipelineBinaryCommands {
 
   Response<List<byte[]>> blpop(int timeout, byte[]... keys);
 
-  Response<List<byte[]>> blpop(double timeout, byte[]... keys);
+  Response<KeyValue<byte[], byte[]>> blpop(double timeout, byte[]... keys);
 
   Response<List<byte[]>> brpop(int timeout, byte[]... keys);
 
-  Response<List<byte[]>> brpop(double timeout, byte[]... keys);
+  Response<KeyValue<byte[], byte[]>> brpop(double timeout, byte[]... keys);
 
   Response<byte[]> rpoplpush(byte[] srckey, byte[] dstkey);
 

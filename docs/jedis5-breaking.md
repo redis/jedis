@@ -6,6 +6,16 @@
 - `bzpopmin(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
   - This is a three element list where the last element is a `Double`.
 
+- Following methods now return `KeyValue<String, String>` instead of `KeyedListElement`:
+  - `blpop(double timeout, String key)`
+  - `blpop(double timeout, String... keys)`
+  - `brpop(double timeout, String key)`
+  - `brpop(double timeout, String... keys)`
+
+- Following methods now return `KeyValue<byte[], byte[]>` instead of `List<byte[]>`:
+  - `blpop(double timeout, byte[]... keys)`
+  - `brpop(double timeout, byte[]... keys)`
+
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).

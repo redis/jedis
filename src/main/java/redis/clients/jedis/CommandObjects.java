@@ -852,20 +852,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<KeyedListElement> blpop(double timeout, String key) {
-    return new CommandObject<>(commandArguments(BLPOP).blocking().key(key).add(timeout), BuilderFactory.KEYED_LIST_ELEMENT);
+  public final CommandObject<KeyValue<String, String>> blpop(double timeout, String key) {
+    return new CommandObject<>(commandArguments(BLPOP).blocking().key(key).add(timeout), BuilderFactory.KEYED_ELEMENT);
   }
 
-  public final CommandObject<KeyedListElement> blpop(double timeout, String... keys) {
-    return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_LIST_ELEMENT);
+  public final CommandObject<KeyValue<String, String>> blpop(double timeout, String... keys) {
+    return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ELEMENT);
   }
 
   public final CommandObject<List<byte[]>> blpop(int timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> blpop(double timeout, byte[]... keys) {
-    return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
+  public final CommandObject<KeyValue<byte[], byte[]>> blpop(double timeout, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_KEYED_ELEMENT);
   }
 
   public final CommandObject<List<String>> brpop(int timeout, String key) {
@@ -876,20 +876,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<KeyedListElement> brpop(double timeout, String key) {
-    return new CommandObject<>(commandArguments(BRPOP).blocking().key(key).add(timeout), BuilderFactory.KEYED_LIST_ELEMENT);
+  public final CommandObject<KeyValue<String, String>> brpop(double timeout, String key) {
+    return new CommandObject<>(commandArguments(BRPOP).blocking().key(key).add(timeout), BuilderFactory.KEYED_ELEMENT);
   }
 
-  public final CommandObject<KeyedListElement> brpop(double timeout, String... keys) {
-    return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_LIST_ELEMENT);
+  public final CommandObject<KeyValue<String, String>> brpop(double timeout, String... keys) {
+    return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ELEMENT);
   }
 
   public final CommandObject<List<byte[]>> brpop(int timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> brpop(double timeout, byte[]... keys) {
-    return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
+  public final CommandObject<KeyValue<byte[], byte[]>> brpop(double timeout, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_KEYED_ELEMENT);
   }
 
   public final CommandObject<String> rpoplpush(String srckey, String dstkey) {

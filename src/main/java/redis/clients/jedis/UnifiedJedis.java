@@ -1230,7 +1230,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyedListElement blpop(double timeout, String key) {
+  public KeyValue<String, String> blpop(double timeout, String key) {
     return executeCommand(commandObjects.blpop(timeout, key));
   }
 
@@ -1240,7 +1240,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyedListElement brpop(double timeout, String key) {
+  public KeyValue<String, String> brpop(double timeout, String key) {
     return executeCommand(commandObjects.brpop(timeout, key));
   }
 
@@ -1250,7 +1250,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyedListElement blpop(double timeout, String... keys) {
+  public KeyValue<String, String> blpop(double timeout, String... keys) {
     return executeCommand(commandObjects.blpop(timeout, keys));
   }
 
@@ -1260,7 +1260,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyedListElement brpop(double timeout, String... keys) {
+  public KeyValue<String, String> brpop(double timeout, String... keys) {
     return executeCommand(commandObjects.brpop(timeout, keys));
   }
 
@@ -1270,7 +1270,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> blpop(double timeout, byte[]... keys) {
+  public KeyValue<byte[], byte[]> blpop(double timeout, byte[]... keys) {
     return executeCommand(commandObjects.blpop(timeout, keys));
   }
 
@@ -1280,7 +1280,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> brpop(double timeout, byte[]... keys) {
+  public KeyValue<byte[], byte[]> brpop(double timeout, byte[]... keys) {
     return executeCommand(commandObjects.brpop(timeout, keys));
   }
 

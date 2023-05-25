@@ -63,21 +63,21 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private Consumer<String> clusterFailoverPostProcessor;
 
 
-    public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterJedisClientConfig) {
+    public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterClientConfig) {
 
-        if (multiClusterJedisClientConfig == null)
+        if (multiClusterClientConfig == null)
             throw new JedisValidationException("MultiClusterClientConfig must not be NULL for MultiClusterPooledConnectionProvider");
 
         ////////////// Configure Retry ////////////////////
 
         RetryConfig.Builder retryConfigBuilder = RetryConfig.custom();
-        retryConfigBuilder.maxAttempts(multiClusterJedisClientConfig.getRetryMaxAttempts());
-        retryConfigBuilder.intervalFunction(IntervalFunction.ofExponentialBackoff(multiClusterJedisClientConfig.getRetryWaitDuration(),
-                multiClusterJedisClientConfig.getRetryWaitDurationExponentialBackoffMultiplier()));
+        retryConfigBuilder.maxAttempts(multiClusterClientConfig.getRetryMaxAttempts());
+        retryConfigBuilder.intervalFunction(IntervalFunction.ofExponentialBackoff(multiClusterClientConfig.getRetryWaitDuration(),
+                multiClusterClientConfig.getRetryWaitDurationExponentialBackoffMultiplier()));
         retryConfigBuilder.failAfterMaxAttempts(false); // JedisConnectionException will be thrown
-        retryConfigBuilder.retryExceptions(multiClusterJedisClientConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
+        retryConfigBuilder.retryExceptions(multiClusterClientConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
 
-        List<Class> retryIgnoreExceptionList = multiClusterJedisClientConfig.getRetryIgnoreExceptionList();
+        List<Class> retryIgnoreExceptionList = multiClusterClientConfig.getRetryIgnoreExceptionList();
         if (retryIgnoreExceptionList != null && !retryIgnoreExceptionList.isEmpty())
             retryConfigBuilder.ignoreExceptions(retryIgnoreExceptionList.stream().toArray(Class[]::new));
 
@@ -86,16 +86,16 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         ////////////// Configure Circuit Breaker ////////////////////
 
         CircuitBreakerConfig.Builder circuitBreakerConfigBuilder = CircuitBreakerConfig.custom();
-        circuitBreakerConfigBuilder.failureRateThreshold(multiClusterJedisClientConfig.getCircuitBreakerFailureRateThreshold());
-        circuitBreakerConfigBuilder.slowCallRateThreshold(multiClusterJedisClientConfig.getCircuitBreakerSlowCallRateThreshold());
-        circuitBreakerConfigBuilder.slowCallDurationThreshold(multiClusterJedisClientConfig.getCircuitBreakerSlowCallDurationThreshold());
-        circuitBreakerConfigBuilder.minimumNumberOfCalls(multiClusterJedisClientConfig.getCircuitBreakerSlidingWindowMinCalls());
-        circuitBreakerConfigBuilder.slidingWindowType(multiClusterJedisClientConfig.getCircuitBreakerSlidingWindowType());
-        circuitBreakerConfigBuilder.slidingWindowSize(multiClusterJedisClientConfig.getCircuitBreakerSlidingWindowSize());
-        circuitBreakerConfigBuilder.recordExceptions(multiClusterJedisClientConfig.getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
+        circuitBreakerConfigBuilder.failureRateThreshold(multiClusterClientConfig.getCircuitBreakerFailureRateThreshold());
+        circuitBreakerConfigBuilder.slowCallRateThreshold(multiClusterClientConfig.getCircuitBreakerSlowCallRateThreshold());
+        circuitBreakerConfigBuilder.slowCallDurationThreshold(multiClusterClientConfig.getCircuitBreakerSlowCallDurationThreshold());
+        circuitBreakerConfigBuilder.minimumNumberOfCalls(multiClusterClientConfig.getCircuitBreakerSlidingWindowMinCalls());
+        circuitBreakerConfigBuilder.slidingWindowType(multiClusterClientConfig.getCircuitBreakerSlidingWindowType());
+        circuitBreakerConfigBuilder.slidingWindowSize(multiClusterClientConfig.getCircuitBreakerSlidingWindowSize());
+        circuitBreakerConfigBuilder.recordExceptions(multiClusterClientConfig.getCircuitBreakerIncludedExceptionList().stream().toArray(Class[]::new));
         circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State transitions are forced. No half open states are used
 
-        List<Class> circuitBreakerIgnoreExceptionList = multiClusterJedisClientConfig.getCircuitBreakerIgnoreExceptionList();
+        List<Class> circuitBreakerIgnoreExceptionList = multiClusterClientConfig.getCircuitBreakerIgnoreExceptionList();
         if (circuitBreakerIgnoreExceptionList != null && !circuitBreakerIgnoreExceptionList.isEmpty())
             circuitBreakerConfigBuilder.ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
 
@@ -103,7 +103,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         ////////////// Configure Cluster Map ////////////////////
 
-        ClusterClientConfig[] clusterConfigs = multiClusterJedisClientConfig.getClusterJedisClientConfigs();
+        ClusterClientConfig[] clusterConfigs = multiClusterClientConfig.getClusterClientConfigs();
         for (ClusterClientConfig config : clusterConfigs) {
 
             String clusterId = "cluster:" + config.getPriority() + ":" + config.getHostAndPort();
@@ -124,8 +124,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             circuitBreakerEventPublisher.onStateTransition(event -> log.warn(String.valueOf(event)));
 
             multiClusterMap.put(config.getPriority(), new Cluster(new ConnectionPool(config.getHostAndPort(),
-                                                                                config.getJedisClientConfig()),
-                                                                                retry, circuitBreaker));
+                                                                                     config.getJedisClientConfig()),
+                                                                                     retry, circuitBreaker));
         }
     }
 

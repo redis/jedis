@@ -104,7 +104,7 @@ public final class MultiClusterClientConfig {
         this.clusterClientConfigs = clusterClientConfigs;
     }
 
-    public ClusterClientConfig[] getClusterJedisClientConfigs() {
+    public ClusterClientConfig[] getClusterClientConfigs() {
         return clusterClientConfigs;
     }
 
@@ -164,11 +164,11 @@ public final class MultiClusterClientConfig {
 
         private int priority;
         private HostAndPort hostAndPort;
-        private JedisClientConfig jedisClientConfig;
+        private JedisClientConfig clientConfig;
 
-        public ClusterClientConfig(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
+        public ClusterClientConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
-            this.jedisClientConfig = jedisClientConfig;
+            this.clientConfig = clientConfig;
         }
 
         public int getPriority() {
@@ -184,7 +184,7 @@ public final class MultiClusterClientConfig {
         }
 
         public JedisClientConfig getJedisClientConfig() {
-            return jedisClientConfig;
+            return clientConfig;
         }
     }
 
@@ -211,7 +211,7 @@ public final class MultiClusterClientConfig {
         public Builder(ClusterClientConfig[] clusterClientConfigs) {
 
             if (clusterClientConfigs == null || clusterClientConfigs.length < 1)
-                throw new JedisValidationException("ClusterJedisClientConfigs are required for MultiClusterPooledConnectionProvider");
+                throw new JedisValidationException("ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
 
             for (int i = 0; i < clusterClientConfigs.length; i++)
                 clusterClientConfigs[i].setPriority(i + 1);

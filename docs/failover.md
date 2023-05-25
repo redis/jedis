@@ -34,24 +34,24 @@ If `redis-east` becomes unavailable, you want your application to connect to `re
 
 Let's look at one way of configuring Jedis for this scenario.
 
-First, create an array of `ClusterJedisClientConfig` objects, one for each Redis database.
+First, create an array of `ClusterClientConfig` objects, one for each Redis database.
 
 ```java
 JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret").build();
 
-ClusterJedisClientConfig[] clientConfigs = new ClusterJedisClientConfig[2];
-clientConfigs[0] = new ClusterJedisClientConfig(new HostAndPort("redis-east.example.com", 14000), config);
-clientConfigs[1] = new ClusterJedisClientConfig(new HostAndPort("redis-west.example.com", 14000), config);
+ClusterClientConfig[] clientConfigs = new ClusterClientConfig[2];
+clientConfigs[0] = new ClusterClientConfig(new HostAndPort("redis-east.example.com", 14000), config);
+clientConfigs[1] = new ClusterClientConfig(new HostAndPort("redis-west.example.com", 14000), config);
 ```
 
 The configuration above represents your two Redis deployments: `redis-east` and `redis-west`.
 You'll use this array of configuration objects to create a connection provider that supports failover.
 
-Use the `MultiClusterJedisClientConfig` builder to set your preferred retry and failover configuration, passing in the client configs you just created.
+Use the `MultiClusterClientConfig` builder to set your preferred retry and failover configuration, passing in the client configs you just created.
 Then build a `MultiClusterPooledConnectionProvider`.
 
 ```java
-MultiClusterJedisClientConfig.Builder builder = new MultiClusterJedisClientConfig.Builder(clientConfigs);
+MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clientConfigs);
 builder.circuitBreakerSlidingWindowSize(10);
 builder.circuitBreakerSlidingWindowMinCalls(1);
 builder.circuitBreakerFailureRateThreshold(50.0f);
@@ -87,7 +87,7 @@ then the circuit breaker's state transitions from `CLOSED` to `OPEN`.
 When this occurs, Jedis will attempt to connect to the next Redis database in its client configuration list.
 
 The supported retry and circuit breaker settings, and their default values, are described below.
-You can configure any of these settings using the `MultiClusterJedisClientConfig.Builder` builder.
+You can configure any of these settings using the `MultiClusterClientConfig.Builder` builder.
 Refer the basic usage above for an example of this.
 
 ### Retry configuration
@@ -194,9 +194,9 @@ The cluster's index is a 1-based index derived from its position in the client c
 For example, suppose you configure Jedis with the following client configs:
 
 ```
-ClusterJedisClientConfig[] clientConfigs = new ClusterJedisClientConfig[2];
-clientConfigs[0] = new ClusterJedisClientConfig(new HostAndPort("redis-east.example.com", 14000), config);
-clientConfigs[1] = new ClusterJedisClientConfig(new HostAndPort("redis-west.example.com", 14000), config);
+ClusterClientConfig[] clientConfigs = new ClusterClientConfig[2];
+clientConfigs[0] = new ClusterClientConfig(new HostAndPort("redis-east.example.com", 14000), config);
+clientConfigs[1] = new ClusterClientConfig(new HostAndPort("redis-west.example.com", 14000), config);
 ```
 
 In this case, `redis-east` will have an index of `1`, and `redis-west` will have an index of `2`.

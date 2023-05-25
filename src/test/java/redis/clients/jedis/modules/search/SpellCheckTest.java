@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
-import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -92,6 +92,6 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
     JedisDataException error = Assert.assertThrows(JedisDataException.class,
         () -> client.ftSpellCheck(index, "Tooni toque kerfuffle",
             FTSpellCheckParams.spellCheckParams().dialect(0)));
-    MatcherAssert.assertThat(error.getMessage(), CoreMatchers.containsString("DIALECT requires a non negative integer"));
+    MatcherAssert.assertThat(error.getMessage(), Matchers.containsString("DIALECT requires a non negative integer"));
   }
 }

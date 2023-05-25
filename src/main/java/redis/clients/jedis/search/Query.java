@@ -138,7 +138,6 @@ public class Query implements IParams {
   private boolean _noContent = false;
   private boolean _noStopwords = false;
   private boolean _withScores = false;
-  private boolean _withPayloads = false;
   private String _language = null;
   private String[] _fields = null;
   private String[] _keys = null;
@@ -150,7 +149,6 @@ public class Query implements IParams {
   private String summarizeSeparator = null;
   private int summarizeNumFragments = -1;
   private int summarizeFragmentLen = -1;
-  private byte[] _payload = null;
   private String _sortBy = null;
   private boolean _sortAsc = true;
   private boolean wantsHighlight = false;
@@ -192,9 +190,6 @@ public class Query implements IParams {
     if (_withScores) {
       args.add(SearchKeyword.WITHSCORES.getRaw());
     }
-    if (_withPayloads) {
-      args.add(SearchKeyword.WITHPAYLOADS.getRaw());
-    }
     if (_language != null) {
       args.add(SearchKeyword.LANGUAGE.getRaw());
       args.add(SafeEncoder.encode(_language));
@@ -217,11 +212,6 @@ public class Query implements IParams {
       args.add(SearchKeyword.SORTBY.getRaw());
       args.add(SafeEncoder.encode(_sortBy));
       args.add((_sortAsc ? SearchKeyword.ASC : SearchKeyword.DESC).getRaw());
-    }
-
-    if (_payload != null) {
-      args.add(SearchKeyword.PAYLOAD.getRaw());
-      args.add(_payload);
     }
 
     if (_paging.offset != 0 || _paging.num != 10) {
@@ -358,18 +348,6 @@ public class Query implements IParams {
   }
 
   /**
-   * Set the query payload to be evaluated by the scoring function
-   *
-   * @return the query object itself
-   * @deprecated Since RediSearch 2.0.0, PAYLOAD option is deprecated.
-   */
-  @Deprecated
-  public Query setPayload(byte[] payload) {
-    _payload = payload;
-    return this;
-  }
-
-  /**
    * Set the query to verbatim mode, disabling stemming and query expansion
    *
    * @return the query object
@@ -415,22 +393,6 @@ public class Query implements IParams {
    */
   public Query setWithScores() {
     this._withScores = true;
-    return this;
-  }
-
-  public boolean getWithPayloads() {
-    return _withPayloads;
-  }
-
-  /**
-   * Set the query to return object payloads, if any were given
-   *
-   * @return the query object itself
-   * @deprecated Since RediSearch 2.0.0, WITHPAYLOADS option is deprecated.
-   */
-  @Deprecated
-  public Query setWithPayload() {
-    this._withPayloads = true;
     return this;
   }
 

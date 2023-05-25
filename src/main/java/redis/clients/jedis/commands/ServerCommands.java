@@ -22,16 +22,6 @@ public interface ServerCommands {
   byte[] echo(byte[] arg);
 
   /**
-   * Ask the server to close the connection. The connection is closed as soon as all pending replies
-   * have been written to the client.
-   * @return OK
-   * @deprecated The QUIT command is deprecated, see <a href="https://github.com/redis/redis/issues/11420">#11420</a>.
-   * If available, {@code disconnect()} method in the concerned class can be used instead.
-   */
-  @Deprecated
-  String quit();
-
-  /**
    * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
    * for this operation is O(N), N being the number of keys in the database.
    * @return OK
@@ -126,15 +116,9 @@ public interface ServerCommands {
    */
   void shutdown() throws JedisException;
 
-  /**
-   * @see SaveMode
-   * @param saveMode modifier to alter the data save behavior of SHUTDOWN. {@code null} would
-   * trigger the default behavior.
-   * @throws JedisException
-   * @deprecated Use {@link ServerCommands#shutdown(redis.clients.jedis.params.ShutdownParams)}.
-   */
-  @Deprecated
-  void shutdown(SaveMode saveMode) throws JedisException;
+  default void shutdown(SaveMode saveMode) throws JedisException {
+    shutdown(ShutdownParams.shutdownParams().saveMode(saveMode));
+  }
 
   /**
    * @see SaveMode

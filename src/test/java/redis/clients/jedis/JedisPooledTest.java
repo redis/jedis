@@ -1,5 +1,8 @@
 package redis.clients.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -7,6 +10,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Test;
@@ -156,24 +160,6 @@ public class JedisPooledTest {
   }
 
   @Test
-  public void testResetValidPassword() {
-    ConnectionFactory factory = new ConnectionFactory(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().password("bad password")
-            .clientName("my_shiny_client_name").build());
-
-    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), factory)) {
-      try {
-        pool.get("foo");
-        fail("Should not get resource from pool");
-      } catch (JedisException e) { }
-      assertEquals(0, pool.getPool().getNumActive());
-
-      factory.setPassword("foobared");
-      assertNull(pool.get("foo"));
-    }
-  }
-
-  @Test
   public void testResetValidCredentials() {
     DefaultRedisCredentialsProvider credentialsProvider = 
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
@@ -196,9 +182,9 @@ public class JedisPooledTest {
   public void testCredentialsProvider() {
     final AtomicInteger prepareCount = new AtomicInteger();
     final AtomicInteger cleanupCount = new AtomicInteger();
+    final AtomicBoolean validPassword = new AtomicBoolean(false);
 
     RedisCredentialsProvider credentialsProvider = new RedisCredentialsProvider() {
-      boolean firstCall = true;
 
       @Override
       public void prepare() {
@@ -207,8 +193,7 @@ public class JedisPooledTest {
 
       @Override
       public RedisCredentials get() {
-        if (firstCall) {
-          firstCall = false;
+        if (!validPassword.get()) {
           return new RedisCredentials() { };
         }
 
@@ -244,12 +229,13 @@ public class JedisPooledTest {
       } catch (JedisException e) {
       }
       assertEquals(0, pool.getPool().getNumActive() + pool.getPool().getNumIdle() + pool.getPool().getNumWaiters());
-      assertEquals(1, prepareCount.get());
-      assertEquals(1, cleanupCount.get());
+      assertThat(prepareCount.getAndSet(0), greaterThanOrEqualTo(1));
+      assertThat(cleanupCount.getAndSet(0), greaterThanOrEqualTo(1));
 
+      validPassword.set(true);
       assertNull(pool.get("foo"));
-      assertEquals(2, prepareCount.get());
-      assertEquals(2, cleanupCount.get());
+      assertThat(prepareCount.get(), equalTo(1));
+      assertThat(cleanupCount.get(), equalTo(1));
     }
   }
 }

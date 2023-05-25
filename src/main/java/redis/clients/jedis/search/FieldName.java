@@ -73,11 +73,6 @@ public class FieldName implements IParams {
     addCommandArguments(args);
   }
 
-  @Deprecated // TODO: remove?
-  String getName() {
-    return name;
-  }
-
   @Override
   public String toString() {
     return attribute == null ? name : (name + " AS " + attribute);

@@ -6,6 +6,10 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Hashing;
 
+/**
+ * @deprecated Sharding/Sharded feature will be removed in next major release.
+ */
+@Deprecated
 public class ShardedCommandArguments extends CommandArguments {
 
   private final Hashing algo;

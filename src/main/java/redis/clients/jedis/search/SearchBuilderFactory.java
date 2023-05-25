@@ -53,7 +53,7 @@ public final class SearchBuilderFactory {
           if (attributeName.equals(ITERATORS_PROFILE_STR)) {
             attributeValue = parseIterators(value);
           } else if (attributeName.endsWith(" time")) {
-            attributeValue = DoublePrecision.parseFloatingPointNumber((String) value);
+            attributeValue = DoublePrecision.parseEncodedFloatingPointNumber(value);
           } else {
             attributeValue = value;
           }
@@ -86,7 +86,7 @@ public final class SearchBuilderFactory {
         String key = (String) list.get(i);
         Object value = list.get(i + 1);
         if (key.equals("Time")) {
-          value = DoublePrecision.parseFloatingPointNumber((String) value);
+          value = DoublePrecision.parseEncodedFloatingPointNumber(value);
         }
         map.put(key, value);
       }
@@ -112,7 +112,7 @@ public final class SearchBuilderFactory {
         String key = (String) iteratorsAttributeList.get(i);
         Object value = iteratorsAttributeList.get(i + 1);
         if (key.equals("Time")) {
-          value = DoublePrecision.parseFloatingPointNumber((String) value);
+          value = DoublePrecision.parseEncodedFloatingPointNumber(value);
         }
         iteratorsProfile.put(key, value);
       }

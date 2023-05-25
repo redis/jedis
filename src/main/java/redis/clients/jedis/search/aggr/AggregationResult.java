@@ -11,11 +11,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class AggregationResult {
 
-  /**
-   * @deprecated Use {@link AggregationResult#getTotalResults()}.
-   */
-  @Deprecated
-  public final long totalResults;
+  private final long totalResults;
 
   private final List<Map<String, Object>> results;
 

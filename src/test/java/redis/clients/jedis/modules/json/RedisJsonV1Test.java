@@ -12,6 +12,9 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -483,14 +486,16 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertEquals("[", arr.get(0));
     assertNull(arr.get(1));
     assertEquals(Long.valueOf(3), arr.get(2));
-    assertEquals("2.5", arr.get(3));
+    //assertEquals("2.5", arr.get(3));
+    MatcherAssert.assertThat(arr.get(3), Matchers.isOneOf("2.5", 2.5));
     assertEquals("true", arr.get(4));
 
     arr = client.jsonResp("resp", Path.of(".bar"));
     assertEquals("[", arr.get(0));
     assertNull(arr.get(1));
     assertEquals(Long.valueOf(3), arr.get(2));
-    assertEquals("2.5", arr.get(3));
+    //assertEquals("2.5", arr.get(3));
+    MatcherAssert.assertThat(arr.get(3), Matchers.isOneOf("2.5", 2.5));
     assertEquals("true", arr.get(4));
   }
 

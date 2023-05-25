@@ -4,8 +4,11 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
 
@@ -205,9 +208,31 @@ public class JedisCluster extends UnifiedJedis {
     return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);
   }
 
+  // commands
+  public long spublish(String channel, String message) {
+    return executeCommand(commandObjects.spublish(channel, message));
+  }
+
+  public long spublish(byte[] channel, byte[] message) {
+    return executeCommand(commandObjects.spublish(channel, message));
+  }
+
+  public void ssubscribe(final JedisShardedPubSub jedisPubSub, final String... channels) {
+    try (Connection connection = getConnectionFromSlot(JedisClusterCRC16.getSlot(channels[0]))) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void ssubscribe(BinaryJedisShardedPubSub jedisPubSub, final byte[]... channels) {
+    try (Connection connection = getConnectionFromSlot(JedisClusterCRC16.getSlot(channels[0]))) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+  // commands
+
   @Override
   public ClusterPipeline pipelined() {
-    return new ClusterPipeline((ClusterConnectionProvider) provider);
+    return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);
   }
 
   /**

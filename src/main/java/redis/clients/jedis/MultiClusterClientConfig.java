@@ -22,7 +22,7 @@ import java.util.List;
  * not passed through to Jedis users.
  * <p>
  */
-public final class MultiClusterJedisClientConfig {
+public final class MultiClusterClientConfig {
 
     private static final int RETRY_MAX_ATTEMPTS_DEFAULT = 3;
     private static final int RETRY_WAIT_DURATION_DEFAULT = 500;  // measured in milliseconds
@@ -37,7 +37,7 @@ public final class MultiClusterJedisClientConfig {
     private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f; // measured as percentage
     private static final Class CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = JedisConnectionException.class;
 
-    private final ClusterJedisClientConfig[] clusterJedisClientConfigs;
+    private final ClusterClientConfig[] clusterClientConfigs;
 
     //////////// Retry Config - https://resilience4j.readme.io/docs/retry ////////////
 
@@ -100,12 +100,12 @@ public final class MultiClusterJedisClientConfig {
     private List<Class> circuitBreakerIgnoreExceptionList;
 
 
-    public MultiClusterJedisClientConfig(ClusterJedisClientConfig[] clusterJedisClientConfigs) {
-        this.clusterJedisClientConfigs = clusterJedisClientConfigs;
+    public MultiClusterClientConfig(ClusterClientConfig[] clusterClientConfigs) {
+        this.clusterClientConfigs = clusterClientConfigs;
     }
 
-    public ClusterJedisClientConfig[] getClusterJedisClientConfigs() {
-        return clusterJedisClientConfigs;
+    public ClusterClientConfig[] getClusterJedisClientConfigs() {
+        return clusterClientConfigs;
     }
 
     public int getRetryMaxAttempts() {
@@ -160,13 +160,13 @@ public final class MultiClusterJedisClientConfig {
         return circuitBreakerSlidingWindowType;
     }
 
-    public static class ClusterJedisClientConfig {
+    public static class ClusterClientConfig {
 
         private int priority;
         private HostAndPort hostAndPort;
         private JedisClientConfig jedisClientConfig;
 
-        public ClusterJedisClientConfig(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
+        public ClusterClientConfig(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
             this.hostAndPort = hostAndPort;
             this.jedisClientConfig = jedisClientConfig;
         }
@@ -190,7 +190,7 @@ public final class MultiClusterJedisClientConfig {
 
     public static class Builder {
 
-        private ClusterJedisClientConfig[] clusterJedisClientConfigs;
+        private ClusterClientConfig[] clusterClientConfigs;
 
         private int retryMaxAttempts = RETRY_MAX_ATTEMPTS_DEFAULT;
         private int retryWaitDuration = RETRY_WAIT_DURATION_DEFAULT;
@@ -208,15 +208,15 @@ public final class MultiClusterJedisClientConfig {
         private List<Class> circuitBreakerIgnoreExceptionList;
         private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList;
 
-        public Builder(ClusterJedisClientConfig[] clusterJedisClientConfigs) {
+        public Builder(ClusterClientConfig[] clusterClientConfigs) {
 
-            if (clusterJedisClientConfigs == null || clusterJedisClientConfigs.length < 1)
+            if (clusterClientConfigs == null || clusterClientConfigs.length < 1)
                 throw new JedisValidationException("ClusterJedisClientConfigs are required for MultiClusterPooledConnectionProvider");
 
-            for (int i = 0; i < clusterJedisClientConfigs.length; i++)
-                clusterJedisClientConfigs[i].setPriority(i + 1);
+            for (int i = 0; i < clusterClientConfigs.length; i++)
+                clusterClientConfigs[i].setPriority(i + 1);
 
-            this.clusterJedisClientConfigs = clusterJedisClientConfigs;
+            this.clusterClientConfigs = clusterClientConfigs;
         }
 
         public Builder retryMaxAttempts(int retryMaxAttempts) {
@@ -289,8 +289,8 @@ public final class MultiClusterJedisClientConfig {
             return this;
         }
 
-        public MultiClusterJedisClientConfig build() {
-            MultiClusterJedisClientConfig config = new MultiClusterJedisClientConfig(this.clusterJedisClientConfigs);
+        public MultiClusterClientConfig build() {
+            MultiClusterClientConfig config = new MultiClusterClientConfig(this.clusterClientConfigs);
 
             config.retryMaxAttempts = this.retryMaxAttempts;
             config.retryWaitDuration = Duration.ofMillis(this.retryWaitDuration);

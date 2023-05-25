@@ -11,7 +11,7 @@ import io.github.resilience4j.retry.RetryRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiClusterJedisClientConfig.ClusterJedisClientConfig;
+import redis.clients.jedis.MultiClusterClientConfig.ClusterClientConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.Pool;
@@ -36,20 +36,20 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
-     * Ordered map of cluster/database endpoints which were provided at startup via the MultiClusterJedisClientConfig.
+     * Ordered map of cluster/database endpoints which were provided at startup via the MultiClusterClientConfig.
      * Users can move down (failover) or (up) failback the map depending on their availability and order.
      */
     private final Map<Integer, Cluster> multiClusterMap = new ConcurrentHashMap<>();
 
     /**
      * Indicates the actively used cluster/database endpoint (connection pool) amongst the pre-configured list which were
-     * provided at startup via the MultiClusterJedisClientConfig. All traffic will be routed according to this index.
+     * provided at startup via the MultiClusterClientConfig. All traffic will be routed according to this index.
      */
     private volatile Integer activeMultiClusterIndex = 1;
 
     /**
      * Indicates the final cluster/database endpoint (connection pool), according to the pre-configured list
-     * provided at startup via the MultiClusterJedisClientConfig, is unavailable and therefore no further failover is possible.
+     * provided at startup via the MultiClusterClientConfig, is unavailable and therefore no further failover is possible.
      * Users can manually failback to an available cluster which would reset this flag via {@link #setActiveMultiClusterIndex(int)}
      */
     private volatile boolean lastClusterCircuitBreakerForcedOpen = false;
@@ -63,10 +63,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
     private Consumer<String> clusterFailoverPostProcessor;
 
 
-    public MultiClusterPooledConnectionProvider(MultiClusterJedisClientConfig multiClusterJedisClientConfig) {
+    public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterJedisClientConfig) {
 
         if (multiClusterJedisClientConfig == null)
-            throw new JedisValidationException("MultiClusterJedisClientConfig must not be NULL for MultiClusterPooledConnectionProvider");
+            throw new JedisValidationException("MultiClusterClientConfig must not be NULL for MultiClusterPooledConnectionProvider");
 
         ////////////// Configure Retry ////////////////////
 
@@ -103,8 +103,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         ////////////// Configure Cluster Map ////////////////////
 
-        ClusterJedisClientConfig[] clusterConfigs = multiClusterJedisClientConfig.getClusterJedisClientConfigs();
-        for (ClusterJedisClientConfig config : clusterConfigs) {
+        ClusterClientConfig[] clusterConfigs = multiClusterJedisClientConfig.getClusterJedisClientConfigs();
+        for (ClusterClientConfig config : clusterConfigs) {
 
             String clusterId = "cluster:" + config.getPriority() + ":" + config.getHostAndPort();
 
@@ -131,7 +131,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     /**
      * Increments the actively used cluster/database endpoint (connection pool) amongst the pre-configured list which were
-     * provided at startup via the MultiClusterJedisClientConfig. All traffic will be routed according to this index.
+     * provided at startup via the MultiClusterClientConfig. All traffic will be routed according to this index.
      *
      * Only indexes within the pre-configured range (static) are supported otherwise an exception will be thrown.
      *
@@ -151,7 +151,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
                 lastClusterCircuitBreakerForcedOpen = true;
 
-                throw new JedisConnectionException("Cluster/database endpoint could not failover since the MultiClusterJedisClientConfig was not " +
+                throw new JedisConnectionException("Cluster/database endpoint could not failover since the MultiClusterClientConfig was not " +
                                                    "provided with an additional cluster/database endpoint according to its prioritized sequence. " +
                                                    "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
             }
@@ -203,7 +203,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     /**
      * Manually overrides the actively used cluster/database endpoint (connection pool) amongst the
-     * pre-configured list which were provided at startup via the MultiClusterJedisClientConfig.
+     * pre-configured list which were provided at startup via the MultiClusterClientConfig.
      * All traffic will be routed according to the provided new index.
      *
      * Special care should be taken to confirm cluster/database availability AND

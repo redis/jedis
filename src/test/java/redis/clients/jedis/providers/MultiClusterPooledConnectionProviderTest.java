@@ -4,7 +4,7 @@ import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiClusterJedisClientConfig.ClusterJedisClientConfig;
+import redis.clients.jedis.MultiClusterClientConfig.ClusterClientConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 
@@ -25,11 +25,11 @@ public class MultiClusterPooledConnectionProviderTest {
     @Before
     public void setUp() {
 
-        ClusterJedisClientConfig[] clusterJedisClientConfigs = new ClusterJedisClientConfig[2];
-        clusterJedisClientConfigs[0] = new ClusterJedisClientConfig(hostAndPort1, DefaultJedisClientConfig.builder().build());
-        clusterJedisClientConfigs[1] = new ClusterJedisClientConfig(hostAndPort2, DefaultJedisClientConfig.builder().build());
+        ClusterClientConfig[] clusterClientConfigs = new ClusterClientConfig[2];
+        clusterClientConfigs[0] = new ClusterClientConfig(hostAndPort1, DefaultJedisClientConfig.builder().build());
+        clusterClientConfigs[1] = new ClusterClientConfig(hostAndPort2, DefaultJedisClientConfig.builder().build());
 
-        provider = new MultiClusterPooledConnectionProvider(new MultiClusterJedisClientConfig.Builder(clusterJedisClientConfigs).build());
+        provider = new MultiClusterPooledConnectionProvider(new MultiClusterClientConfig.Builder(clusterClientConfigs).build());
     }
 
     @Test
@@ -82,13 +82,13 @@ public class MultiClusterPooledConnectionProviderTest {
 
     @Test
     public void testRunClusterFailoverPostProcessor() {
-        ClusterJedisClientConfig[] clusterJedisClientConfigs = new ClusterJedisClientConfig[2];
-        clusterJedisClientConfigs[0] = new ClusterJedisClientConfig(new HostAndPort("purposefully-incorrect", 0000),
+        ClusterClientConfig[] clusterClientConfigs = new ClusterClientConfig[2];
+        clusterClientConfigs[0] = new ClusterClientConfig(new HostAndPort("purposefully-incorrect", 0000),
                                                                     DefaultJedisClientConfig.builder().build());
-        clusterJedisClientConfigs[1] = new ClusterJedisClientConfig(new HostAndPort("purposefully-incorrect", 0001),
+        clusterClientConfigs[1] = new ClusterClientConfig(new HostAndPort("purposefully-incorrect", 0001),
                                                                     DefaultJedisClientConfig.builder().build());
 
-        MultiClusterJedisClientConfig.Builder builder = new MultiClusterJedisClientConfig.Builder(clusterJedisClientConfigs);
+        MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(clusterClientConfigs);
 
         // Configures a single failed command to trigger an open circuit on the next subsequent failure
         builder.circuitBreakerSlidingWindowSize(1);

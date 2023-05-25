@@ -1162,12 +1162,12 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
+  public Response<KeyValue<String, Tuple>> bzpopmax(double timeout, String... keys) {
     return appendCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public Response<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
+  public Response<KeyValue<String, Tuple>> bzpopmin(double timeout, String... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
@@ -2909,12 +2909,12 @@ public class Pipeline extends Queable implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<Object>> bzpopmax(double timeout, byte[]... keys) {
+  public Response<KeyValue<byte[], Tuple>> bzpopmax(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public Response<List<Object>> bzpopmin(double timeout, byte[]... keys) {
+  public Response<KeyValue<byte[], Tuple>> bzpopmin(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
   }
 

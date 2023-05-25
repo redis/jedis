@@ -1,16 +1,16 @@
 # Jedis 5 Breaking Changes
 
-- `bzpopmax(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
-  - This is a three element list where the last element is a `Double`.
+- Both `bzpopmax(double timeout, String... keys)` and `bzpopmin(double timeout, String... keys)` now return `KeyValue<String, Tuple>` (instead of `KeyedZSetElement`).
 
-- `bzpopmin(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
-  - This is a three element list where the last element is a `Double`.
+- Both `bzpopmax(double timeout, byte[]... keys)` and `bzpopmin(double timeout, byte[]... keys)` now return `KeyValue<byte[], Tuple>` (instead of `List<byte[]>`).
 
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
 - All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.
+
+- `KeyedZSetElement` is removed.
 
 - `STREAM_AUTO_CLAIM_ID_RESPONSE` in BuilderFactory has been renamed to `STREAM_AUTO_CLAIM_JUSTID_RESPONSE`.
 

@@ -494,20 +494,37 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyedZSetElement> KEYED_ZSET_ELEMENT = new Builder<KeyedZSetElement>() {
+  public static final Builder<KeyValue<String, Tuple>> KEYED_TUPLE = new Builder<KeyValue<String, Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedZSetElement build(Object data) {
-      List<byte[]> l = (List<byte[]>) data; // never null
+    public KeyValue<String, Tuple> build(Object data) {
+      List<Object> l = (List<Object>) data; // never null
       if (l.isEmpty()) {
         return null;
       }
-      return new KeyedZSetElement(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
+      return KeyValue.of(STRING.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
     }
 
     @Override
     public String toString() {
-      return "KeyedZSetElement";
+      return "KeyValue<String, Tuple>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], Tuple>> BINARY_KEYED_TUPLE = new Builder<KeyValue<byte[], Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], Tuple> build(Object data) {
+      List<Object> l = (List<Object>) data; // never null
+      if (l.isEmpty()) {
+        return null;
+      }
+      return KeyValue.of(BINARY.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], Tuple>";
     }
   };
 

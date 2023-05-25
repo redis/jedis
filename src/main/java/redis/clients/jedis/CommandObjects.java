@@ -1472,24 +1472,24 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZPOPMIN).key(key).add(count), getTupleListBuilder());
   }
 
-  public final CommandObject<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
+  public final CommandObject<KeyValue<String, Tuple>> bzpopmax(double timeout, String... keys) {
     return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys).add(timeout),
-        BuilderFactory.KEYED_ZSET_ELEMENT);
+        BuilderFactory.KEYED_TUPLE);
   }
 
-  public final CommandObject<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
+  public final CommandObject<KeyValue<String, Tuple>> bzpopmin(double timeout, String... keys) {
     return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys).add(timeout),
-        BuilderFactory.KEYED_ZSET_ELEMENT);
+        BuilderFactory.KEYED_TUPLE);
   }
 
-  public final CommandObject<List<Object>> bzpopmax(double timeout, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], Tuple>> bzpopmax(double timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys)
-        .add(timeout), BuilderFactory.RAW_OBJECT_LIST);
+        .add(timeout), BuilderFactory.BINARY_KEYED_TUPLE);
   }
 
-  public final CommandObject<List<Object>> bzpopmin(double timeout, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], Tuple>> bzpopmin(double timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys)
-        .add(timeout), BuilderFactory.RAW_OBJECT_LIST);
+        .add(timeout), BuilderFactory.BINARY_KEYED_TUPLE);
   }
 
   public final CommandObject<Long> zcount(String key, double min, double max) {

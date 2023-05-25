@@ -34,14 +34,14 @@ If `redis-east` becomes unavailable, you want your application to connect to `re
 
 Let's look at one way of configuring Jedis for this scenario.
 
-First, create an array of `ClusterClientConfig` objects, one for each Redis database.
+First, create an array of `ClusterConfig` objects, one for each Redis database.
 
 ```java
 JedisClientConfig config = DefaultJedisClientConfig.builder().user("cache").password("secret").build();
 
-ClusterClientConfig[] clientConfigs = new ClusterClientConfig[2];
-clientConfigs[0] = new ClusterClientConfig(new HostAndPort("redis-east.example.com", 14000), config);
-clientConfigs[1] = new ClusterClientConfig(new HostAndPort("redis-west.example.com", 14000), config);
+ClusterConfig[] clientConfigs = new ClusterConfig[2];
+clientConfigs[0] = new ClusterConfig(new HostAndPort("redis-east.example.com", 14000), config);
+clientConfigs[1] = new ClusterConfig(new HostAndPort("redis-west.example.com", 14000), config);
 ```
 
 The configuration above represents your two Redis deployments: `redis-east` and `redis-west`.
@@ -194,9 +194,9 @@ The cluster's index is a 1-based index derived from its position in the client c
 For example, suppose you configure Jedis with the following client configs:
 
 ```
-ClusterClientConfig[] clientConfigs = new ClusterClientConfig[2];
-clientConfigs[0] = new ClusterClientConfig(new HostAndPort("redis-east.example.com", 14000), config);
-clientConfigs[1] = new ClusterClientConfig(new HostAndPort("redis-west.example.com", 14000), config);
+ClusterConfig[] clientConfigs = new ClusterConfig[2];
+clientConfigs[0] = new ClusterConfig(new HostAndPort("redis-east.example.com", 14000), config);
+clientConfigs[1] = new ClusterConfig(new HostAndPort("redis-west.example.com", 14000), config);
 ```
 
 In this case, `redis-east` will have an index of `1`, and `redis-west` will have an index of `2`.

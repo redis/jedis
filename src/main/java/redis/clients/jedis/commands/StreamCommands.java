@@ -225,10 +225,10 @@ public interface StreamCommands {
    * Introspection command used in order to retrieve different information about consumers in the group
    * @param key Stream name
    * @param group Group name
-   * @return List of {@link StreamConsumerInfo} containing information about consumers that belong
+   * @return List of {@link StreamConsumersInfo} containing information about consumers that belong
    * to the the group
    */
-  List<StreamConsumerInfo> xinfoConsumers(String key, String group);
+  List<StreamConsumersInfo> xinfoConsumers(String key, String group);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]

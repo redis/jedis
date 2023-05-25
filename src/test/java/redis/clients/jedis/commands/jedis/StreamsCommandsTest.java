@@ -802,7 +802,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     Thread.sleep(1);
 
     List<StreamGroupInfo> groupInfo = jedis.xinfoGroups(STREAM_NAME);
-    List<StreamConsumerInfo> consumersInfo = jedis.xinfoConsumers(STREAM_NAME, G1);
+    List<StreamConsumersInfo> consumersInfo = jedis.xinfoConsumers(STREAM_NAME, G1);
 
     // Stream info test
     assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.LENGTH));
@@ -838,9 +838,9 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Consumer info test
     assertEquals(MY_CONSUMER,
-      consumersInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.NAME));
-    assertEquals(0L, consumersInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.PENDING));
-    assertTrue((Long) consumersInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.IDLE) > 0);
+      consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.NAME));
+    assertEquals(0L, consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.PENDING));
+    assertTrue((Long) consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.IDLE) > 0);
 
     // Using getters
     assertEquals(MY_CONSUMER, consumersInfo.get(0).getName());
@@ -855,7 +855,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     jedis.xreadGroup(G2, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
 
     List<StreamGroupInfo> manyGroupsInfo = jedis.xinfoGroups(STREAM_NAME);
-    List<StreamConsumerInfo> manyConsumersInfo = jedis.xinfoConsumers(STREAM_NAME, G2);
+    List<StreamConsumersInfo> manyConsumersInfo = jedis.xinfoConsumers(STREAM_NAME, G2);
 
     assertEquals(2, manyGroupsInfo.size());
     assertEquals(2, manyConsumersInfo.size());

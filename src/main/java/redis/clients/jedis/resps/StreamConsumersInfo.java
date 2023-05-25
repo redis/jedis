@@ -4,10 +4,11 @@ import java.util.Map;
 
 /**
  * This class holds information about a consumer. They can be access via getters. There is also
- * {@link StreamConsumerInfo#getConsumerInfo()}} method that returns a generic {@code Map} in case
+ * {@link StreamConsumersInfo#getConsumerInfo()}} method that returns a generic {@code Map} in case
  * more info are returned from the server.
  */
-public class StreamConsumerInfo {
+// TODO: rename to StreamConsumerInfo ?
+public class StreamConsumersInfo {
 
   public static final String NAME = "name";
   public static final String IDLE = "idle";
@@ -23,7 +24,7 @@ public class StreamConsumerInfo {
   /**
    * @param map contains key-value pairs with consumer info
    */
-  public StreamConsumerInfo(Map<String, Object> map) {
+  public StreamConsumersInfo(Map<String, Object> map) {
     consumerInfo = map;
     name = (String) map.get(NAME);
     idle = (Long) map.get(IDLE);

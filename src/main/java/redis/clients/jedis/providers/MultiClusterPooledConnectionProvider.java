@@ -11,7 +11,7 @@ import io.github.resilience4j.retry.RetryRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
-import redis.clients.jedis.MultiClusterClientConfig.ClusterClientConfig;
+import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.Pool;
@@ -103,8 +103,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         ////////////// Configure Cluster Map ////////////////////
 
-        ClusterClientConfig[] clusterConfigs = multiClusterClientConfig.getClusterClientConfigs();
-        for (ClusterClientConfig config : clusterConfigs) {
+        ClusterConfig[] clusterConfigs = multiClusterClientConfig.getClusterConfigs();
+        for (ClusterConfig config : clusterConfigs) {
 
             String clusterId = "cluster:" + config.getPriority() + ":" + config.getHostAndPort();
 

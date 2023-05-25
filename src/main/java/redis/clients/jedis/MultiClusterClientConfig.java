@@ -37,7 +37,7 @@ public final class MultiClusterClientConfig {
     private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f; // measured as percentage
     private static final Class CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = JedisConnectionException.class;
 
-    private final ClusterClientConfig[] clusterClientConfigs;
+    private final ClusterConfig[] clusterConfigs;
 
     //////////// Retry Config - https://resilience4j.readme.io/docs/retry ////////////
 
@@ -100,12 +100,12 @@ public final class MultiClusterClientConfig {
     private List<Class> circuitBreakerIgnoreExceptionList;
 
 
-    public MultiClusterClientConfig(ClusterClientConfig[] clusterClientConfigs) {
-        this.clusterClientConfigs = clusterClientConfigs;
+    public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
+        this.clusterConfigs = clusterConfigs;
     }
 
-    public ClusterClientConfig[] getClusterClientConfigs() {
-        return clusterClientConfigs;
+    public ClusterConfig[] getClusterConfigs() {
+        return clusterConfigs;
     }
 
     public int getRetryMaxAttempts() {
@@ -160,13 +160,13 @@ public final class MultiClusterClientConfig {
         return circuitBreakerSlidingWindowType;
     }
 
-    public static class ClusterClientConfig {
+    public static class ClusterConfig {
 
         private int priority;
         private HostAndPort hostAndPort;
         private JedisClientConfig clientConfig;
 
-        public ClusterClientConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
+        public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
             this.clientConfig = clientConfig;
         }
@@ -190,7 +190,7 @@ public final class MultiClusterClientConfig {
 
     public static class Builder {
 
-        private ClusterClientConfig[] clusterClientConfigs;
+        private ClusterConfig[] clusterConfigs;
 
         private int retryMaxAttempts = RETRY_MAX_ATTEMPTS_DEFAULT;
         private int retryWaitDuration = RETRY_WAIT_DURATION_DEFAULT;
@@ -208,15 +208,15 @@ public final class MultiClusterClientConfig {
         private List<Class> circuitBreakerIgnoreExceptionList;
         private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList;
 
-        public Builder(ClusterClientConfig[] clusterClientConfigs) {
+        public Builder(ClusterConfig[] clusterConfigs) {
 
-            if (clusterClientConfigs == null || clusterClientConfigs.length < 1)
+            if (clusterConfigs == null || clusterConfigs.length < 1)
                 throw new JedisValidationException("ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
 
-            for (int i = 0; i < clusterClientConfigs.length; i++)
-                clusterClientConfigs[i].setPriority(i + 1);
+            for (int i = 0; i < clusterConfigs.length; i++)
+                clusterConfigs[i].setPriority(i + 1);
 
-            this.clusterClientConfigs = clusterClientConfigs;
+            this.clusterConfigs = clusterConfigs;
         }
 
         public Builder retryMaxAttempts(int retryMaxAttempts) {
@@ -290,7 +290,7 @@ public final class MultiClusterClientConfig {
         }
 
         public MultiClusterClientConfig build() {
-            MultiClusterClientConfig config = new MultiClusterClientConfig(this.clusterClientConfigs);
+            MultiClusterClientConfig config = new MultiClusterClientConfig(this.clusterConfigs);
 
             config.retryMaxAttempts = this.retryMaxAttempts;
             config.retryWaitDuration = Duration.ofMillis(this.retryWaitDuration);

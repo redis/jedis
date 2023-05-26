@@ -1,4 +1,4 @@
-package redis.clients.jedis.resps;
+package redis.clients.jedis.misc;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
@@ -8,6 +8,9 @@ import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.resps.GeoRadiusResponse;
+import redis.clients.jedis.resps.KeyedListElement;
+import redis.clients.jedis.resps.KeyedZSetElement;
 
 public class ResponsesToStringTest {
 

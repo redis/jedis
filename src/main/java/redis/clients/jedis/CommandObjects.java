@@ -91,11 +91,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> persist(String key) {
-    return new CommandObject<>(commandArguments(PERSIST).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> persist(byte[] key) {
-    return new CommandObject<>(commandArguments(PERSIST).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> type(String key) {

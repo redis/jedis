@@ -21,6 +21,17 @@
   - `BYTE_ARRAY_LIST` (use `BINARY_LIST`)
   - `BINARY_MAP_FROM_PAIRS`
 
+- `Params` abstract class is removed.
+  - `toString()` support used by its sub-classes is now unavailable.
+
+- `CommandListFilterByParams` now throws `IllegalArgumentException` (instead of `JedisDataException`) in case of unfulfilling filter.
+
+- `FailoverParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
+
+- `XPendingParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
+
+- `getParams()` method is removed from `SortingParams` class.
+
 <!--- Deprecated in Jedis 4 --->
 
 - `quit()` method has been removed from `Connection` and `ServerCommands` interface and implementations.

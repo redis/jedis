@@ -1,11 +1,7 @@
 package redis.clients.jedis.params;
 
 import redis.clients.jedis.CommandArguments;
-
-import static redis.clients.jedis.Protocol.Keyword.IDX;
-import static redis.clients.jedis.Protocol.Keyword.LEN;
-import static redis.clients.jedis.Protocol.Keyword.MINMATCHLEN;
-import static redis.clients.jedis.Protocol.Keyword.WITHMATCHLEN;
+import redis.clients.jedis.Protocol.Keyword;
 
 public class LCSParams implements IParams {
 
@@ -57,16 +53,16 @@ public class LCSParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (len) {
-      args.add(LEN);
+      args.add(Keyword.LEN);
     }
     if (idx) {
-      args.add(IDX);
+      args.add(Keyword.IDX);
     }
     if (minMatchLen != null) {
-      args.add(MINMATCHLEN).add(minMatchLen);
+      args.add(Keyword.MINMATCHLEN).add(minMatchLen);
     }
     if (withMatchLen) {
-      args.add(WITHMATCHLEN);
+      args.add(Keyword.WITHMATCHLEN);
     }
   }
 }

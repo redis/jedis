@@ -20,7 +20,9 @@
 
 - All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.
 
-- `KeyedZSetElement` is removed.
+- `KeyedZSetElement` class is removed.
+
+- `KeyedListElement` class is removed.
 
 - `STREAM_AUTO_CLAIM_ID_RESPONSE` in BuilderFactory has been renamed to `STREAM_AUTO_CLAIM_JUSTID_RESPONSE`.
 

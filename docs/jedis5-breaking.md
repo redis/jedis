@@ -4,13 +4,25 @@
 
 - Both `bzpopmax(double timeout, byte[]... keys)` and `bzpopmin(double timeout, byte[]... keys)` now return `KeyValue<byte[], Tuple>` (instead of `List<byte[]>`).
 
+- Following methods now return `KeyValue<String, String>` instead of `KeyedListElement`:
+  - `blpop(double timeout, String key)`
+  - `blpop(double timeout, String... keys)`
+  - `brpop(double timeout, String key)`
+  - `brpop(double timeout, String... keys)`
+
+- Following methods now return `KeyValue<byte[], byte[]>` instead of `List<byte[]>`:
+  - `blpop(double timeout, byte[]... keys)`
+  - `brpop(double timeout, byte[]... keys)`
+
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
 - All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.
 
-- `KeyedZSetElement` is removed.
+- `KeyedZSetElement` class is removed.
+
+- `KeyedListElement` class is removed.
 
 - `STREAM_AUTO_CLAIM_ID_RESPONSE` in BuilderFactory has been renamed to `STREAM_AUTO_CLAIM_JUSTID_RESPONSE`.
 

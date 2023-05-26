@@ -6,28 +6,8 @@ import static org.junit.Assert.assertNotEquals;
 import org.junit.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.resps.GeoRadiusResponse;
-import redis.clients.jedis.resps.KeyedListElement;
 
 public class ResponsesToStringTest {
-
-  @Test
-  public void KeyedListElementTest() {
-    // test equals
-    KeyedListElement elem = new KeyedListElement("key-name", "elem");
-    KeyedListElement elem_copy = new KeyedListElement("key-name", "elem");
-    assertEquals(elem, elem);
-    assertEquals(elem, elem_copy);
-    assertNotEquals(elem, new Object());
-
-    // test toString
-    String toStringResult = elem.toString();
-    //assertThat(toStringResult, containsString("key-name"));
-    //assertThat(toStringResult, containsString("elem"));
-    assertEquals("key-name=elem", toStringResult);
-
-    // test hashCode
-    assertEquals(elem.hashCode(), elem_copy.hashCode());
-  }
 
   @Test
   public void GeoRadiusResponse() {

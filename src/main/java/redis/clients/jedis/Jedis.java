@@ -2532,7 +2532,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> blpop(final double timeout, final byte[]... keys) {
+  public KeyValue<byte[], byte[]> blpop(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.blpop(timeout, keys));
   }
 
@@ -2603,7 +2603,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> brpop(final double timeout, final byte[]... keys) {
+  public KeyValue<byte[], byte[]> brpop(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
 
@@ -6926,7 +6926,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedListElement blpop(final double timeout, final String... keys) {
+  public KeyValue<String, String> blpop(final double timeout, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blpop(timeout, keys));
   }
@@ -7000,7 +7000,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedListElement brpop(final double timeout, final String... keys) {
+  public KeyValue<String, String> brpop(final double timeout, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
@@ -7048,7 +7048,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedListElement blpop(double timeout, String key) {
+  public KeyValue<String, String> blpop(double timeout, String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blpop(timeout, key));
   }
@@ -7060,7 +7060,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedListElement brpop(double timeout, String key) {
+  public KeyValue<String, String> brpop(double timeout, String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.brpop(timeout, key));
   }

@@ -708,7 +708,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyedListElement> blpop(double timeout, String key) {
+  public Response<KeyValue<String, String>> blpop(double timeout, String key) {
     return appendCommand(commandObjects.blpop(timeout, key));
   }
 
@@ -718,7 +718,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyedListElement> brpop(double timeout, String key) {
+  public Response<KeyValue<String, String>> brpop(double timeout, String key) {
     return appendCommand(commandObjects.brpop(timeout, key));
   }
 
@@ -728,7 +728,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyedListElement> blpop(double timeout, String... keys) {
+  public Response<KeyValue<String, String>> blpop(double timeout, String... keys) {
     return appendCommand(commandObjects.blpop(timeout, keys));
   }
 
@@ -738,7 +738,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyedListElement> brpop(double timeout, String... keys) {
+  public Response<KeyValue<String, String>> brpop(double timeout, String... keys) {
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
@@ -2484,7 +2484,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<byte[]>> blpop(double timeout, byte[]... keys) {
+  public Response<KeyValue<byte[], byte[]>> blpop(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.blpop(timeout, keys));
   }
 
@@ -2494,7 +2494,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<byte[]>> brpop(double timeout, byte[]... keys) {
+  public Response<KeyValue<byte[], byte[]>> brpop(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 

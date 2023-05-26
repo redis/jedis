@@ -57,8 +57,8 @@
 - `setPassword(String password)` method has been removed from `JedisFactory`.
 
 - `get()` option has been removed from `SetParams`.  Following methods have been added in Jedis/UnifiedJedis for convenience:
-  - `setGet(String key, String value)` method has been added in `` interface.
-  - `setGet(byte[] key, byte[] value)` method has been added in `` interface.
+  - `setGet(String key, String value)` method has been added in `StringCommands` interface.
+  - `setGet(byte[] key, byte[] value)` method has been added in `StringBinaryCommands` interface.
 
 - `xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName)` method has been removed from everywhere.
   - Use `xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)` instead.

@@ -1,17 +1,8 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Command.DISCARD;
-import static redis.clients.jedis.Protocol.Command.EXEC;
-import static redis.clients.jedis.Protocol.Command.MULTI;
-import static redis.clients.jedis.Protocol.Command.UNWATCH;
-import static redis.clients.jedis.Protocol.Command.WATCH;
-
 import java.io.Closeable;
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import org.json.JSONArray;
 
@@ -21,8 +12,6 @@ import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.RedisModulePipelineCommands;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
@@ -38,178 +27,32 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
 
-public abstract class TransactionBase implements PipelineCommands, PipelineBinaryCommands,
+public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
 
-  private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
-  protected final Connection connection;
-  private final boolean closeConnection;
-  private final CommandObjects commandObjects;
-  private final GraphCommandObjects graphCommandObjects;
+  @Deprecated protected final CommandObjects commandObjects;
+  private GraphCommandObjects graphCommandObjects;
 
-  private boolean broken = false;
-  private boolean inWatch = false;
-  private boolean inMulti = false;
-
-  /**
-   * Creates a new transaction.
-   * 
-   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
-   * called with this object.
-   * @param connection connection
-   */
-  public TransactionBase(Connection connection) {
-    this(connection, true);
+  public PipelineBase(CommandObjects commandObjects) {
+    this.commandObjects = commandObjects;
   }
 
   /**
-   * Creates a new transaction.
-   *
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   *
-   * @param connection connection
-   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * Sub-classes must call this method, if graph commands are going to be used.
    */
-  public TransactionBase(Connection connection, boolean doMulti) {
-    this(connection, doMulti, false);
+  protected final void setGraphCommands(GraphCommandObjects graphCommandObjects) {
+    this.graphCommandObjects = graphCommandObjects;
   }
 
-  /**
-   * Creates a new transaction.
-   *
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   *
-   * @param connection connection
-   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
-   * @param closeConnection should the 'connection' be closed when 'close()' is called?
-   */
-  public TransactionBase(Connection connection, boolean doMulti, boolean closeConnection) {
-    this.connection = connection;
-    this.closeConnection = closeConnection;
-    this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(this.connection);
-    if (doMulti) multi();
-  }
-
-  public final void multi() {
-    connection.sendCommand(MULTI);
-    processMultiResponse();
-    inMulti = true;
-  }
-
-  public String watch(final String... keys) {
-    connection.sendCommand(WATCH, keys);
-    String status = connection.getStatusCodeReply();
-    inWatch = true;
-    return status;
-  }
-
-  public String watch(final byte[]... keys) {
-    connection.sendCommand(WATCH, keys);
-    String status = connection.getStatusCodeReply();
-    inWatch = true;
-    return status;
-  }
-
-  public String unwatch() {
-    connection.sendCommand(UNWATCH);
-    String status = connection.getStatusCodeReply();
-    inWatch = false;
-    return status;
-  }
-
-  protected abstract void processMultiResponse();
-
-  protected abstract void processAppendStatus();
-
-  protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
-    connection.sendCommand(commandObject.getArguments());
-    processAppendStatus();
-    Response<T> response = new Response<>(commandObject.getBuilder());
-    pipelinedResponses.add(response);
-    return response;
-  }
+  protected abstract <T> Response<T> appendCommand(CommandObject<T> commandObject);
 
   @Override
-  public final void close() {
-    try {
-      clear();
-    } finally {
-      if (closeConnection) {
-        connection.close();
-      }
-    }
-  }
+  public abstract void close();
 
-  public final void clear() {
-    if (broken) {
-      return;
-    }
-    if (inMulti) {
-      discard();
-    } else if (inWatch) {
-      unwatch();
-    }
-  }
-
-  protected abstract void processPipelinedResponses(int pipelineLength);
-
-  public List<Object> exec() {
-    if (!inMulti) {
-      throw new IllegalStateException("EXEC without MULTI");
-    }
-
-    try {
-      processPipelinedResponses(pipelinedResponses.size());
-      connection.sendCommand(EXEC);
-
-      List<Object> unformatted = connection.getObjectMultiBulkReply();
-      if (unformatted == null) {
-        pipelinedResponses.clear();
-        return null;
-      }
-
-      List<Object> formatted = new ArrayList<>(unformatted.size());
-      for (Object o : unformatted) {
-        try {
-          Response<?> response = pipelinedResponses.poll();
-          response.set(o);
-          formatted.add(response.get());
-        } catch (JedisDataException e) {
-          formatted.add(e);
-        }
-      }
-      return formatted;
-    } catch (JedisConnectionException jce) {
-      broken = true;
-      throw jce;
-    } finally {
-      inMulti = false;
-      inWatch = false;
-      pipelinedResponses.clear();
-    }
-  }
-
-  public String discard() {
-    if (!inMulti) {
-      throw new IllegalStateException("DISCARD without MULTI");
-    }
-
-    try {
-      processPipelinedResponses(pipelinedResponses.size());
-      connection.sendCommand(DISCARD);
-      return connection.getStatusCodeReply();
-    } catch (JedisConnectionException jce) {
-      broken = true;
-      throw jce;
-    } finally {
-      inMulti = false;
-      inWatch = false;
-      pipelinedResponses.clear();
-    }
-  }
+  /**
+   * Synchronize pipeline by reading all responses.
+   */
+  public abstract void sync();
 
   @Override
   public Response<Boolean> exists(String key) {
@@ -1058,21 +901,6 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<String>> zrange(String key, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrange(key, zRangeParams));
-  }
-
-  @Override
-  public Response<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
-  }
-
-  @Override
-  public Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
-  }
-
-  @Override
   public Response<String> zrandmember(String key) {
     return appendCommand(commandObjects.zrandmember(key));
   }
@@ -1145,7 +973,6 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   @Override
   public Response<List<String>> zrevrangeByScore(String key, double max, double min) {
     return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
-
   }
 
   @Override
@@ -1211,6 +1038,21 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   @Override
   public Response<List<Tuple>> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
     return appendCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<List<String>> zrange(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -1545,12 +1387,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
 
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
-    return appendCommand(commandObjects.xrevrange(key, start, end));
+    return appendCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
-    return appendCommand(commandObjects.xrevrange(key, start, end, count));
+    return appendCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
   @Override
@@ -1565,12 +1407,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
 
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, String end, String start) {
-    return appendCommand(commandObjects.xrevrange(key, start, end));
+    return appendCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
   public Response<List<StreamEntry>> xrevrange(String key, String end, String start, int count) {
-    return appendCommand(commandObjects.xrevrange(key, start, end, count));
+    return appendCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
   @Override
@@ -1722,7 +1564,6 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   public Response<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
     return appendCommand(commandObjects.evalshaReadonly(sha1, keys, args));
   }
-
 
   @Override
   public Response<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
@@ -1897,10 +1738,6 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   @Override
   public Response<Object> functionStatsBinary() {
     return appendCommand(commandObjects.functionStatsBinary());
-  }
-
-  public Response<Long> publish(String channel, String message) {
-    return appendCommand(commandObjects.publish(channel, message));
   }
 
   @Override
@@ -2230,7 +2067,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
 
   @Override
   public Response<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
-    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
+    return appendCommand(commandObjects.expireAt(key, unixTime));
   }
 
   @Override
@@ -2538,10 +2375,6 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
     return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
 
-  public Response<Long> publish(byte[] channel, byte[] message) {
-    return appendCommand(commandObjects.publish(channel, message));
-  }
-
   @Override
   public Response<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
@@ -2808,21 +2641,6 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrange(key, zRangeParams));
-  }
-
-  @Override
-  public Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
-  }
-
-  @Override
-  public Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
-  }
-
-  @Override
   public Response<byte[]> zrandmember(byte[] key) {
     return appendCommand(commandObjects.zrandmember(key));
   }
@@ -2994,12 +2812,27 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
 
   @Override
   public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByLex(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
   public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByLex(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
+  }
+
+  @Override
+  public Response<List<byte[]>> zrange(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrange(key, zRangeParams));
+  }
+
+  @Override
+  public Response<List<Tuple>> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+  }
+
+  @Override
+  public Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -3594,7 +3427,6 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   public Response<LCSMatchResult> lcs(byte[] keyA, byte[] keyB, LCSParams params) {
     return appendCommand(commandObjects.lcs(keyA, keyB, params));
   }
-
 
   @Override
   public Response<String> jsonSet(String key, Path2 path, Object object) {
@@ -4338,8 +4170,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
   // RedisGraph commands
 
-  public Response<Long> waitReplicas(int replicas, long timeout) {
-    return appendCommand(commandObjects.waitReplicas(replicas, timeout));
+  public Response<Long> publish(String channel, String message) {
+    return appendCommand(commandObjects.publish(channel, message));
+  }
+
+  public Response<Long> publish(byte[] channel, byte[] message) {
+    return appendCommand(commandObjects.publish(channel, message));
   }
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {

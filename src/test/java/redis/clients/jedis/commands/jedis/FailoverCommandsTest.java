@@ -68,7 +68,7 @@ public class FailoverCommandsTest {
     }
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void failoverForceWithoutToFailFast() {
     try (Jedis master = new Jedis(masterAddress)) {
       assertEquals("OK", master.failover(FailoverParams.failoverParams()
@@ -76,7 +76,7 @@ public class FailoverCommandsTest {
     }
   }
 
-  @Test(expected = IllegalStateException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void failoverForceWithoutTimeoutFailFast() {
     try (Jedis master = new Jedis(masterAddress)) {
       assertEquals("OK", master.failover(FailoverParams.failoverParams()

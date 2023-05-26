@@ -1,7 +1,9 @@
 package redis.clients.jedis.args;
 
 import static redis.clients.jedis.Protocol.toByteArray;
-import static redis.clients.jedis.util.SafeEncoder.encode;
+
+import java.util.Arrays;
+import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Factory class to get {@link Rawable} objects.
@@ -52,7 +54,7 @@ public final class RawableFactory {
     private final byte[] raw;
 
     public Raw(byte[] raw) {
-      this.raw = raw;
+      this.raw = Arrays.copyOf(raw, raw.length);
     }
 
     @Override
@@ -64,10 +66,17 @@ public final class RawableFactory {
   /**
    * A {@link Rawable} wrapping a {@link String}.
    */
-  public static class RawString extends Raw {
+  public static class RawString implements Rawable {
+
+    private final byte[] raw;
 
     public RawString(String str) {
-      super(encode(str));
+      this.raw = SafeEncoder.encode(str);
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
     }
   }
 

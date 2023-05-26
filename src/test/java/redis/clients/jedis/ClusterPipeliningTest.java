@@ -821,8 +821,8 @@ public class ClusterPipeliningTest {
     Response<Long> r3 = p.xlen("mystream");
     Response<List<StreamEntry>> r4 = p.xrange("mystream", streamId1, streamId2);
     Response<List<StreamEntry>> r5 = p.xrange("mystream", streamId1, streamId2, 1);
-    Response<List<StreamEntry>> r6 = p.xrevrange("mystream", streamId1, streamId2);
-    Response<List<StreamEntry>> r7 = p.xrevrange("mystream", streamId1, streamId2, 1);
+    Response<List<StreamEntry>> r6 = p.xrevrange("mystream", streamId2, streamId1);
+    Response<List<StreamEntry>> r7 = p.xrevrange("mystream", streamId2, streamId1, 1);
     Response<String> r8 = p.xgroupCreate("mystream", "group", streamId1, false);
     Response<String> r9 = p.xgroupSetID("mystream", "group", streamId2);
     // More stream commands are missing

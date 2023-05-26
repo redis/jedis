@@ -1,10 +1,12 @@
-package redis.clients.jedis.resps;
+package redis.clients.jedis.misc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.resps.GeoRadiusResponse;
+import redis.clients.jedis.resps.KeyedListElement;
 
 public class ResponsesToStringTest {
 

@@ -2564,11 +2564,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_FULL_INFO);
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_INFO_FULL);
   }
 
   public final CommandObject<StreamFullInfo> xinfoStreamFull(String key, int count) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_FULL_INFO);
+    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_INFO_FULL);
   }
 
   public final CommandObject<Object> xinfoStreamFull(byte[] key, int count) {
@@ -2587,8 +2587,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<StreamConsumerInfo>> xinfoConsumers(String key, String group) {
-    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMER_INFO_LIST);
+  public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
+    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
   }
 
   public final CommandObject<List<Object>> xinfoConsumers(byte[] key, byte[] group) {
@@ -4107,6 +4107,7 @@ public class CommandObjects {
   public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
+  // RedisGraph commands
 
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
@@ -4131,10 +4132,10 @@ public class CommandObjects {
     }
     return localRef;
   }
+
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.jsonObjectMapper = jsonObjectMapper;
   }
-  // RedisGraph commands
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
 

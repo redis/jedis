@@ -2632,12 +2632,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Object> bzpopmax(final double timeout, final byte[]... keys) {
+  public KeyValue<byte[], Tuple> bzpopmax(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public List<Object> bzpopmin(final double timeout, final byte[]... keys) {
+  public KeyValue<byte[], Tuple> bzpopmin(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
@@ -7030,13 +7030,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedZSetElement bzpopmax(double timeout, String... keys) {
+  public KeyValue<String, Tuple> bzpopmax(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public KeyedZSetElement bzpopmin(double timeout, String... keys) {
+  public KeyValue<String, Tuple> bzpopmin(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzpopmin(timeout, keys));
   }

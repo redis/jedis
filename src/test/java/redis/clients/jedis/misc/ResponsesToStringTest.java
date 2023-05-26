@@ -1,8 +1,5 @@
 package redis.clients.jedis.misc;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
-import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -10,7 +7,6 @@ import org.junit.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.KeyedListElement;
-import redis.clients.jedis.resps.KeyedZSetElement;
 
 public class ResponsesToStringTest {
 
@@ -28,27 +24,6 @@ public class ResponsesToStringTest {
     //assertThat(toStringResult, containsString("key-name"));
     //assertThat(toStringResult, containsString("elem"));
     assertEquals("key-name=elem", toStringResult);
-
-    // test hashCode
-    assertEquals(elem.hashCode(), elem_copy.hashCode());
-  }
-
-  @Test
-  public void KeyedZSetElementTest() {
-    // test equals
-    KeyedZSetElement elem = new KeyedZSetElement("key-name", "elem", 1d);
-    KeyedZSetElement elem_copy = new KeyedZSetElement("key-name", "elem", 1d);
-    assertEquals(elem, elem);
-    assertEquals(elem, elem_copy);
-    assertNotEquals(elem, new Object());
-
-    // test toString
-    String toStringResult = elem.toString();
-    assertThat(toStringResult, containsString("key=key-name"));
-    //assertThat(toStringResult, containsString("elem"));
-    assertThat(toStringResult, anyOf(containsString("element='elem'"), containsString("element=elem")));
-    //assertThat(toStringResult, containsString("1"));
-    assertThat(toStringResult, anyOf(containsString("score=1.0"), containsString("score=1")));
 
     // test hashCode
     assertEquals(elem.hashCode(), elem_copy.hashCode());

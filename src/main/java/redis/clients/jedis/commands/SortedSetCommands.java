@@ -6,7 +6,6 @@ import java.util.Set;
 
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.KeyValue;
@@ -668,7 +667,7 @@ public interface SortedSetCommands {
    *               be used to block indefinitely.
    * @param keys
    */
-  KeyedZSetElement bzpopmax(double timeout, String... keys);
+  KeyValue<String, Tuple> bzpopmax(double timeout, String... keys);
 
   /**
    * The blocking version of {@link SortedSetCommands#zpopmin(String) ZPOPMIN}
@@ -676,7 +675,7 @@ public interface SortedSetCommands {
    *               be used to block indefinitely.
    * @param keys
    */
-  KeyedZSetElement bzpopmin(double timeout, String... keys);
+  KeyValue<String, Tuple> bzpopmin(double timeout, String... keys);
 
   /**
    * Compute the difference between all the sets in the given keys.

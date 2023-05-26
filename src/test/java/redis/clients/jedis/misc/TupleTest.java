@@ -1,4 +1,4 @@
-package redis.clients.jedis.resps;
+package redis.clients.jedis.misc;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -8,6 +8,7 @@ import java.util.HashSet;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import redis.clients.jedis.resps.Tuple;
 
 public class TupleTest {
 

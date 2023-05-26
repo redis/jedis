@@ -184,7 +184,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.0</version>
 				<configuration>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
@@ -313,7 +313,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<version>3.0.0</version>
+						<version>3.1.0</version>
 						<configuration>
 							<test>**/examples/*Example.java</test>
 						</configuration>

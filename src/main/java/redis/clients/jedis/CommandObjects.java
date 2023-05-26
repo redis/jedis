@@ -91,11 +91,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> persist(String key) {
-    return new CommandObject<>(commandArguments(PERSIST).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> persist(byte[] key) {
-    return new CommandObject<>(commandArguments(PERSIST).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> type(String key) {
@@ -1472,24 +1472,24 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZPOPMIN).key(key).add(count), getTupleListBuilder());
   }
 
-  public final CommandObject<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
+  public final CommandObject<KeyValue<String, Tuple>> bzpopmax(double timeout, String... keys) {
     return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys).add(timeout),
-        BuilderFactory.KEYED_ZSET_ELEMENT);
+        BuilderFactory.KEYED_TUPLE);
   }
 
-  public final CommandObject<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
+  public final CommandObject<KeyValue<String, Tuple>> bzpopmin(double timeout, String... keys) {
     return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys).add(timeout),
-        BuilderFactory.KEYED_ZSET_ELEMENT);
+        BuilderFactory.KEYED_TUPLE);
   }
 
-  public final CommandObject<List<Object>> bzpopmax(double timeout, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], Tuple>> bzpopmax(double timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys)
-        .add(timeout), BuilderFactory.RAW_OBJECT_LIST);
+        .add(timeout), BuilderFactory.BINARY_KEYED_TUPLE);
   }
 
-  public final CommandObject<List<Object>> bzpopmin(double timeout, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], Tuple>> bzpopmin(double timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys)
-        .add(timeout), BuilderFactory.RAW_OBJECT_LIST);
+        .add(timeout), BuilderFactory.BINARY_KEYED_TUPLE);
   }
 
   public final CommandObject<Long> zcount(String key, double min, double max) {
@@ -4107,6 +4107,7 @@ public class CommandObjects {
   public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
+  // RedisGraph commands
 
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
@@ -4131,10 +4132,10 @@ public class CommandObjects {
     }
     return localRef;
   }
+
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.jsonObjectMapper = jsonObjectMapper;
   }
-  // RedisGraph commands
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
 

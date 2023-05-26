@@ -1,17 +1,8 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.ANY;
-import static redis.clients.jedis.Protocol.Keyword.BYBOX;
-import static redis.clients.jedis.Protocol.Keyword.BYRADIUS;
-import static redis.clients.jedis.Protocol.Keyword.COUNT;
-import static redis.clients.jedis.Protocol.Keyword.WITHCOORD;
-import static redis.clients.jedis.Protocol.Keyword.WITHDIST;
-import static redis.clients.jedis.Protocol.Keyword.WITHHASH;
-import static redis.clients.jedis.Protocol.Keyword.FROMMEMBER;
-import static redis.clients.jedis.Protocol.Keyword.FROMLONLAT;
-
-import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.args.SortingOrder;
 
@@ -104,55 +95,53 @@ public class GeoSearchParam implements IParams {
   }
 
   public GeoSearchParam count(int count) {
-    return this.count(count, false);
+    this.count = count;
+    return this;
   }
 
   public GeoSearchParam count(int count, boolean any) {
-    if (count > 0) {
-      this.count = count;
+    this.count = count;
+    this.any = true;
+    return this;
+  }
 
-      if (any) {
-        this.any = true;
-      }
+  public GeoSearchParam any() {
+    if (this.count == null) {
+      throw new IllegalArgumentException("COUNT must be set before ANY to be set");
     }
+    this.any = true;
     return this;
   }
 
   @Override
   public void addParams(CommandArguments args) {
     if (this.fromMember) {
-      args.add(FROMMEMBER);
-      args.add(this.member);
+      args.add(Keyword.FROMMEMBER).add(this.member);
     } else if (this.fromLonLat) {
-      args.add(FROMLONLAT);
-      args.add(coord.getLongitude());
-      args.add(coord.getLatitude());
+      args.add(Keyword.FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude());
     }
 
     if (this.byRadius) {
-      args.add(BYRADIUS);
-      args.add(this.radius);
+      args.add(Keyword.BYRADIUS).add(this.radius);
     } else if (this.byBox) {
-      args.add(BYBOX);
-      args.add(this.width);
-      args.add(this.height);
+      args.add(Keyword.BYBOX).add(this.width).add(this.height);
     }
     args.add(this.unit);
 
     if (withCoord) {
-      args.add(WITHCOORD);
+      args.add(Keyword.WITHCOORD);
     }
     if (withDist) {
-      args.add(WITHDIST);
+      args.add(Keyword.WITHDIST);
     }
     if (withHash) {
-      args.add(WITHHASH);
+      args.add(Keyword.WITHHASH);
     }
 
     if (count != null) {
-      args.add(COUNT).add(count);
+      args.add(Keyword.COUNT).add(count);
       if (any) {
-        args.add(ANY);
+        args.add(Keyword.ANY);
       }
     }
 

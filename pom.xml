@@ -287,7 +287,7 @@
 					<!--Sign the components - this is required by maven central for releases -->
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.0.1</version>
+						<version>3.1.0</version>
 						<configuration>
 							<gpgArguments>
 								<arg>--pinentry-mode</arg>

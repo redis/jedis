@@ -7,6 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
@@ -30,6 +32,10 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.params.CommandListFilterByParams;
+import redis.clients.jedis.params.LolwutParams;
+import redis.clients.jedis.resps.CommandDocument;
+import redis.clients.jedis.resps.CommandInfo;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
@@ -422,5 +428,89 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void memoryStats() {
     Map<String, Object> stats = jedis.memoryStats();
     assertNotNull(stats);
+  }
+
+  @Test
+  public void latencyDoctor() {
+    String report = jedis.latencyDoctor();
+    assertNotNull(report);
+  }
+
+  @Test
+  public void commandCount() {
+    assertTrue(jedis.commandCount() > 100);
+  }
+
+  @Test
+  public void commandDocs() {
+    Map<String, CommandDocument> docs = jedis.commandDocs("SORT", "SET");
+
+    CommandDocument sortDoc = docs.get("sort");
+    assertEquals("generic", sortDoc.getGroup());
+    MatcherAssert.assertThat(sortDoc.getSummary(), Matchers.isOneOf(
+        "Sort the elements in a list, set or sorted set",
+        "Sorts the elements in a list, a set, or a sorted set, optionally storing the result."));
+    assertNull(sortDoc.getHistory());
+
+    CommandDocument setDoc = docs.get("set");
+    assertEquals("1.0.0", setDoc.getSince());
+    assertEquals("O(1)", setDoc.getComplexity());
+    assertEquals("2.6.12: Added the `EX`, `PX`, `NX` and `XX` options.", setDoc.getHistory().get(0));
+  }
+
+  @Test
+  public void commandGetKeys() {
+    List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
+    assertEquals(2, keys.size());
+
+    List<KeyValue<String, List<String>>> keySandFlags = jedis.commandGetKeysAndFlags("SET", "k1", "v1");
+    assertEquals("k1", keySandFlags.get(0).getKey());
+    assertEquals(2, keySandFlags.get(0).getValue().size());
+  }
+
+  @Test
+  public void commandInfo() {
+    Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");
+
+    CommandInfo getInfo = infos.get("get");
+    assertEquals(2, getInfo.getArity());
+    assertEquals(2, getInfo.getFlags().size());
+    assertEquals(1, getInfo.getFirstKey());
+    assertEquals(1, getInfo.getLastKey());
+    assertEquals(1, getInfo.getStep());
+
+    assertNull(infos.get("foo")); // non-existing command
+
+    CommandInfo setInfo = infos.get("set");
+    assertEquals(3, setInfo.getAclCategories().size());
+    assertEquals(0, setInfo.getTips().size());
+    assertEquals(0, setInfo.getSubcommands().size());
+  }
+
+  @Test
+  public void commandList() {
+    List<String> commands = jedis.commandList();
+    assertTrue(commands.size() > 100);
+
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByModule("JSON"));
+    assertEquals(0, commands.size()); // json module was not loaded
+
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByAclCat("admin"));
+    assertTrue(commands.size() > 10);
+
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByPattern("a*"));
+    assertTrue(commands.size() > 10);
+
+    assertThrows(IllegalArgumentException.class, () ->
+        jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams()));
+  }
+
+  @Test
+  public void lolwut() {
+    assertNotNull(jedis.lolwut());
+
+    assertNotNull(jedis.lolwut(new LolwutParams().version(5)));
+
+    assertNotNull(jedis.lolwut(new LolwutParams().version(5).optionalArguments()));
   }
 }

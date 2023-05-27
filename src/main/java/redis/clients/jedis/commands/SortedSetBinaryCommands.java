@@ -130,9 +130,9 @@ public interface SortedSetBinaryCommands {
 
   ScanResult<Tuple> zscan(byte[] key, byte[] cursor, ScanParams params);
 
-  List<Object> bzpopmax(double timeout, byte[]... keys);
+  KeyValue<byte[], Tuple> bzpopmax(double timeout, byte[]... keys);
 
-  List<Object> bzpopmin(double timeout, byte[]... keys);
+  KeyValue<byte[], Tuple> bzpopmin(double timeout, byte[]... keys);
 
   Set<byte[]> zdiff(byte[]... keys);
 

@@ -1,12 +1,8 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.FORCE;
-import static redis.clients.jedis.Protocol.Keyword.TIMEOUT;
-import static redis.clients.jedis.Protocol.Keyword.TO;
-import static redis.clients.jedis.Protocol.toByteArray;
-
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Protocol.Keyword;
 
 public class FailoverParams implements IParams {
 
@@ -30,7 +26,9 @@ public class FailoverParams implements IParams {
   }
 
   /**
-   * WARNING: FORCE option can be used only if both TO and TIMEOUT options are specified.
+   * Both TO ({@link FailoverParams#to(redis.clients.jedis.HostAndPort)} or
+   * {@link FailoverParams#to(java.lang.String, int)}) and
+   * {@link FailoverParams#timeout(long) TIMEOUT} must be set in order for FORCE option.
    */
   public FailoverParams force() {
     this.force = true;
@@ -46,19 +44,18 @@ public class FailoverParams implements IParams {
   public void addParams(CommandArguments args) {
 
     if (to != null) {
-      args.add(TO);
-      args.add(to.getHost()).add(toByteArray(to.getPort()));
+      args.add(Keyword.TO).add(to.getHost()).add(to.getPort());
     }
 
     if (force) {
       if (to == null || timeout == null) {
-        throw new IllegalStateException("ERR FAILOVER with force option requires both a timeout and target HOST and IP.");
+        throw new IllegalArgumentException("FAILOVER with force option requires both a timeout and target HOST and IP.");
       }
-      args.add(FORCE);
+      args.add(Keyword.FORCE);
     }
 
     if (timeout != null) {
-      args.add(TIMEOUT).add(toByteArray(timeout));
+      args.add(Keyword.TIMEOUT).add(timeout);
     }
 
   }

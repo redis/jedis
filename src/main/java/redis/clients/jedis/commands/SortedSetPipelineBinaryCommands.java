@@ -131,9 +131,9 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<ScanResult<Tuple>> zscan(byte[] key, byte[] cursor, ScanParams params);
 
-  Response<List<Object>> bzpopmax(double timeout, byte[]... keys);
+  Response<KeyValue<byte[], Tuple>> bzpopmax(double timeout, byte[]... keys);
 
-  Response<List<Object>> bzpopmin(double timeout, byte[]... keys);
+  Response<KeyValue<byte[], Tuple>> bzpopmin(double timeout, byte[]... keys);
 
   Response<Set<byte[]>> zdiff(byte[]... keys);
 

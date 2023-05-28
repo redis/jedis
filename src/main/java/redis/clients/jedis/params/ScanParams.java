@@ -1,6 +1,5 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.COUNT;
 import static redis.clients.jedis.Protocol.Keyword.MATCH;
 
 import java.nio.ByteBuffer;
@@ -37,7 +36,7 @@ public class ScanParams implements IParams {
    * @see <a href="https://redis.io/commands/scan#the-count-option">COUNT option in Redis documentation</a>
    */
   public ScanParams count(final Integer count) {
-    params.put(COUNT, ByteBuffer.wrap(Protocol.toByteArray(count)));
+    params.put(Keyword.COUNT, ByteBuffer.wrap(Protocol.toByteArray(count)));
     return this;
   }
 

@@ -108,6 +108,15 @@ Now you can use the `JedisCluster` instance and send commands like you would wit
 jedis.sadd("planets", "Mars");
 ```
 
+## Failover
+
+Jedis supports retry and failover for your Redis deployments. This is useful when:
+
+1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://docs.redis.com/latest/rs/databases/active-active/) clusters.
+2. You want your application to connect to one deployment at a time and to fail over to the next available deployment if the first deployment becomes unavailable.
+
+For the complete failover configuration options and examples, see the [Jedis failover docs](docs/failover.md).
+
 ## Documentation
 
 The [Jedis wiki](http://github.com/redis/jedis/wiki) contains several useful articles for using Jedis.

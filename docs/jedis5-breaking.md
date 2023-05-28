@@ -1,12 +1,18 @@
 # Jedis 5 Breaking Changes
 
-- `StreamConsumersInfo` has been renamed to `StreamConsumerInfo`.
+- Both `bzpopmax(double timeout, String... keys)` and `bzpopmin(double timeout, String... keys)` now return `KeyValue<String, Tuple>` (instead of `KeyedZSetElement`).
 
-- `bzpopmax(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
-  - This is a three element list where the last element is a `Double`.
+- Both `bzpopmax(double timeout, byte[]... keys)` and `bzpopmin(double timeout, byte[]... keys)` now return `KeyValue<byte[], Tuple>` (instead of `List<byte[]>`).
 
-- `bzpopmin(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
-  - This is a three element list where the last element is a `Double`.
+- Following methods now return `KeyValue<String, String>` instead of `KeyedListElement`:
+  - `blpop(double timeout, String key)`
+  - `blpop(double timeout, String... keys)`
+  - `brpop(double timeout, String key)`
+  - `brpop(double timeout, String... keys)`
+
+- Following methods now return `KeyValue<byte[], byte[]>` instead of `List<byte[]>`:
+  - `blpop(double timeout, byte[]... keys)`
+  - `brpop(double timeout, byte[]... keys)`
 
 - `zdiff(String... keys)` method now returns `List<String>` (instead of `Set<String>`).
 - `zdiff(byte[]... keys)` method now returns `List<byte[]>` (instead of `Set<byte[]>`).
@@ -24,11 +30,12 @@
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
-- `List<Object> getUnflushedObjectMultiBulkReply()` method has been removed from `Connection`.
-  - `Object getUnflushedObject()` method has been added instead.
+- All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.
 
-- `STREAM_INFO_FULL` in BuilderFactory has been renamed to `STREAM_FULL_INFO`.
-- `STREAM_CONSUMERS_INFO_LIST` in BuilderFactory has been renamed to `STREAM_CONSUMER_INFO_LIST`.
+- `KeyedZSetElement` class is removed.
+
+- `KeyedListElement` class is removed.
+
 - `STREAM_AUTO_CLAIM_ID_RESPONSE` in BuilderFactory has been renamed to `STREAM_AUTO_CLAIM_JUSTID_RESPONSE`.
 
 - Following BuilderFactory implementations have been removed:
@@ -36,6 +43,19 @@
   - `BYTE_ARRAY_LIST` (use `BINARY_LIST`)
   - `BINARY_MAP_FROM_PAIRS`
   - `STRING_ORDERED_SET`
+
+- `Queable` class is removed.
+
+- `Params` abstract class is removed.
+  - `toString()` support used by its sub-classes is now unavailable.
+
+- `CommandListFilterByParams` now throws `IllegalArgumentException` (instead of `JedisDataException`) in case of unfulfilling filter.
+
+- `FailoverParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
+
+- `XPendingParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
+
+- `getParams()` method is removed from `SortingParams` class.
 
 <!--- Deprecated in Jedis 4 --->
 
@@ -50,8 +70,8 @@
 - `setPassword(String password)` method has been removed from `JedisFactory`.
 
 - `get()` option has been removed from `SetParams`.  Following methods have been added in Jedis/UnifiedJedis for convenience:
-  - `setGet(String key, String value)` method has been added in `` interface.
-  - `setGet(byte[] key, byte[] value)` method has been added in `` interface.
+  - `setGet(String key, String value)` method has been added in `StringCommands` interface.
+  - `setGet(byte[] key, byte[] value)` method has been added in `StringBinaryCommands` interface.
 
 - `xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName)` method has been removed from everywhere.
   - Use `xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)` instead.

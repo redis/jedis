@@ -505,7 +505,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
       if (ia instanceof JSONArray) {
         assertJsonArrayEquals((JSONArray) ia, ib);
       } else if (ia instanceof JSONObject) {
-        assertJsonArrayEquals((JSONObject) ia, ib);
+        assertJsonObjectEquals((JSONObject) ia, ib);
       } else if (ia instanceof Number && ib instanceof Number) {
         assertEquals(index + "'th element mismatch", ((Number) ia).doubleValue(), ((Number) ib).doubleValue(), 0d);
       } else {
@@ -514,7 +514,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     }
   }
 
-  private void assertJsonArrayEquals(JSONObject a, Object _b) {
+  private void assertJsonObjectEquals(JSONObject a, Object _b) {
     if (!(_b instanceof JSONObject)) {
       fail("Actual value is not JSONObject.");
     }
@@ -531,7 +531,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
       if (oa instanceof JSONArray) {
         assertJsonArrayEquals((JSONArray) oa, ob);
       } else if (oa instanceof JSONObject) {
-        assertJsonArrayEquals((JSONObject) oa, ob);
+        assertJsonObjectEquals((JSONObject) oa, ob);
       } else {
         assertEquals(key + "'s value mismatch", oa, ob);
       }

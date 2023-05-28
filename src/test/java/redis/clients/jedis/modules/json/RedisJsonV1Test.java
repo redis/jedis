@@ -13,11 +13,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.json.JSONObject;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -25,7 +22,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
-import redis.clients.jedis.modules.json.JsonObjects.Person;
 import redis.clients.jedis.util.JsonObjectMapperTestUtil;
 
 public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
@@ -204,7 +200,8 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     person.childrens.add("Child 3");
 
     // merge the new data
-    assertEquals("OK", client.jsonMerge("test_merge", ROOT_PATH, person));
+    assertEquals("OK", client.jsonMerge("test_merge", Path.of((".childrens")), person.childrens));
+    assertEquals("OK", client.jsonMerge("test_merge", Path.of((".age")), person.age));
     assertEquals(person, client.jsonGet("test_merge", Person.class));
   }
 

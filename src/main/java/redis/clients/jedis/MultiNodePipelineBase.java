@@ -138,6 +138,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase
 
     syncing = false;
   }
+
   @Deprecated
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));

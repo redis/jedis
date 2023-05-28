@@ -34,7 +34,7 @@ public class JsonObjects {
       this.fooB = true;
       this.fooI = 6574;
       this.fooF = 435.345f;
-      this.fooArr = new String[] { "a", "b", "c" };
+      this.fooArr = new String[]{"a", "b", "c"};
     }
   }
 

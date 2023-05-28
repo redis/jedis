@@ -519,7 +519,7 @@ public class ClusterPipeliningTest {
     Response<Long> r1 = p.sadd("my{set}", "hello", "hello", "world", "foo", "bar");
     p.sadd("mynew{set}", "hello", "hello", "world");
     Response<Set<String>> r2 = p.sdiff("my{set}", "mynew{set}");
-    Response<Long> r3 = p.sdiffstore("diffset{set}", "my{set}", "mynew{set}");
+    Response<Long> r3 = p.sdiffStore("diffset{set}", "my{set}", "mynew{set}");
     Response<Set<String>> r4 = p.smembers("diffset{set}");
     Response<Set<String>> r5 = p.sinter("my{set}", "mynew{set}");
     Response<Long> r6 = p.sinterstore("interset{set}", "my{set}", "mynew{set}");

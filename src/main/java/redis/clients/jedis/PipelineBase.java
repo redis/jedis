@@ -781,7 +781,7 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<Long> sdiffstore(String dstKey, String... keys) {
+  public Response<Long> sdiffStore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 

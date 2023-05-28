@@ -49,7 +49,7 @@ public interface SetPipelineCommands {
 
   Response<Set<String>> sunion(String... keys);
 
-  Response<Long> sunionStore(String dstKey, String... keys);
+  Response<Long> sunionstore(String dstKey, String... keys);
 
   Response<Long> smove(String srckey, String dstKey, String member);
 

@@ -1,5 +1,7 @@
 # Jedis 5 Breaking Changes
 
+- `pipelined()` method in UnifiedJedis now returns `PipelineBase` instead of `Object`.
+
 - Both `bzpopmax(double timeout, String... keys)` and `bzpopmin(double timeout, String... keys)` now return `KeyValue<String, Tuple>` (instead of `KeyedZSetElement`).
 
 - Both `bzpopmax(double timeout, byte[]... keys)` and `bzpopmin(double timeout, byte[]... keys)` now return `KeyValue<byte[], Tuple>` (instead of `List<byte[]>`).

@@ -4719,7 +4719,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisGraph commands
 
-  public Object pipelined() {
+  public PipelineBase pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     }

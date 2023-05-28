@@ -30,7 +30,7 @@ import redis.clients.jedis.util.KeyValue;
 public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
 
-  @Deprecated protected final CommandObjects commandObjects;
+  protected final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
 
   public PipelineBase(CommandObjects commandObjects) {

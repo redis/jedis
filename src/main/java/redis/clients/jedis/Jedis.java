@@ -6248,7 +6248,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This command works exactly like {@link Jedis#sinter(String[]) SINTER} but instead of returning
+   * This command works exactly like {@link Jedis#sinter(String...) SINTER} but instead of returning
    * the result set, it returns just the cardinality of the result.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest
@@ -6262,7 +6262,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This command works exactly like {@link Jedis#sinter(String[]) SINTER} but instead of returning
+   * This command works exactly like {@link Jedis#sinter(String...) SINTER} but instead of returning
    * the result set, it returns just the cardinality of the result.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest
@@ -7451,7 +7451,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionstore(String, String[]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7466,8 +7466,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see Jedis#zunionstore(String, String[])
-   * @see Jedis#zunionstore(String, ZParams, String[])
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
    * @see Jedis#zinterstore(String, String...)
    * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
@@ -7487,7 +7487,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionstore(String, String[]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7502,8 +7502,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see Jedis#zunionstore(String, String[])
-   * @see Jedis#zunionstore(String, ZParams, String[])
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
    * @see Jedis#zinterstore(String, String...)
    * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
@@ -7562,7 +7562,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionstore(String, String[]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7577,8 +7577,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see Jedis#zunionstore(String, String[])
-   * @see Jedis#zunionstore(String, ZParams, String[])
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
    * @see Jedis#zinterstore(String, String...)
    * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
@@ -7598,7 +7598,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionstore(String, String[]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(String, String...) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7613,8 +7613,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see Jedis#zunionstore(String, String[])
-   * @see Jedis#zunionstore(String, ZParams, String[])
+   * @see Jedis#zunionstore(String, String...)
+   * @see Jedis#zunionstore(String, ZParams, String...)
    * @see Jedis#zinterstore(String, String...)
    * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey

@@ -804,7 +804,7 @@ public interface SortedSetCommands {
 
   KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, int count, String... keys);
 
-  KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys);
+  KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, String... keys);
 
-  KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys);
+  KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, String... keys);
 }

@@ -397,7 +397,7 @@ public interface ListCommands {
 
   KeyValue<String, List<String>> lmpop(ListDirection direction, int count, String... keys);
 
-  KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, String... keys);
+  KeyValue<String, List<String>> blmpop(double timeout, ListDirection direction, String... keys);
 
-  KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys);
+  KeyValue<String, List<String>> blmpop(double timeout, ListDirection direction, int count, String... keys);
 }

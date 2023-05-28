@@ -186,7 +186,7 @@ public interface SortedSetBinaryCommands {
 
   KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, int count, byte[]... keys);
 
-  KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys);
+  KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, byte[]... keys);
 
-  KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys);
+  KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys);
 }

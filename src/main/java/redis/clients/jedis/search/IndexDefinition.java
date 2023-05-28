@@ -16,7 +16,6 @@ public class IndexDefinition implements IParams {
   }
 
   private final Type type;
-  private boolean async = false;
   private String[] prefixes;
   private String filter;
   private String languageField;
@@ -34,15 +33,6 @@ public class IndexDefinition implements IParams {
 
   public Type getType() {
     return type;
-  }
-
-  public boolean isAsync() {
-    return async;
-  }
-
-  public IndexDefinition setAsync(boolean async) {
-    this.async = async;
-    return this;
   }
 
   public String[] getPrefixes() {

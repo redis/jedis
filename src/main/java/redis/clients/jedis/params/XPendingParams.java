@@ -1,10 +1,9 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.IDLE;
-import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.args.RawableFactory.from;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.Rawable;
 
@@ -62,19 +61,16 @@ public class XPendingParams implements IParams {
   }
 
   public XPendingParams start(StreamEntryID start) {
-    if (this.start != null) throw new IllegalStateException("'start' is already set.");
     this.start = from(start.toString());
     return this;
   }
 
   public XPendingParams end(StreamEntryID end) {
-    if (this.end != null) throw new IllegalStateException("'end' is already set.");
     this.end = from(end.toString());
     return this;
   }
 
   public XPendingParams count(int count) {
-    if (this.count != null) throw new IllegalStateException("'count' is already set.");
     this.count = count;
     return this;
   }
@@ -92,16 +88,16 @@ public class XPendingParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (count == null) {
-      throw new IllegalStateException("start, end and count must be set.");
+      throw new IllegalArgumentException("start, end and count must be set.");
     }
     if (start == null) start = from("-");
     if (end == null) end = from("+");
 
     if (idle != null) {
-      args.add(IDLE).add(toByteArray(idle));
+      args.add(Keyword.IDLE).add(idle);
     }
 
-    args.add(start).add(end).add(toByteArray(count));
+    args.add(start).add(end).add(count);
 
     if (consumer != null) {
       args.add(consumer);

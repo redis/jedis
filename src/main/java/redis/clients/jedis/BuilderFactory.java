@@ -395,18 +395,33 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyedListElement> KEYED_LIST_ELEMENT = new Builder<KeyedListElement>() {
+  public static final Builder<KeyValue<String, String>> KEYED_ELEMENT = new Builder<KeyValue<String, String>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedListElement build(Object data) {
+    public KeyValue<String, String> build(Object data) {
       if (data == null) return null;
-      List<byte[]> l = (List<byte[]>) data;
-      return new KeyedListElement(l.get(0), l.get(1));
+      List<Object> l = (List<Object>) data;
+      return KeyValue.of(STRING.build(l.get(0)), STRING.build(l.get(1)));
     }
 
     @Override
     public String toString() {
-      return "KeyedListElement";
+      return "KeyValue<String, String>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], byte[]>> BINARY_KEYED_ELEMENT = new Builder<KeyValue<byte[], byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], byte[]> build(Object data) {
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      return KeyValue.of(BINARY.build(l.get(0)), BINARY.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], byte[]>";
     }
   };
 
@@ -494,20 +509,37 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyedZSetElement> KEYED_ZSET_ELEMENT = new Builder<KeyedZSetElement>() {
+  public static final Builder<KeyValue<String, Tuple>> KEYED_TUPLE = new Builder<KeyValue<String, Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedZSetElement build(Object data) {
-      List<byte[]> l = (List<byte[]>) data; // never null
+    public KeyValue<String, Tuple> build(Object data) {
+      List<Object> l = (List<Object>) data; // never null
       if (l.isEmpty()) {
         return null;
       }
-      return new KeyedZSetElement(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
+      return KeyValue.of(STRING.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
     }
 
     @Override
     public String toString() {
-      return "KeyedZSetElement";
+      return "KeyValue<String, Tuple>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], Tuple>> BINARY_KEYED_TUPLE = new Builder<KeyValue<byte[], Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], Tuple> build(Object data) {
+      List<Object> l = (List<Object>) data; // never null
+      if (l.isEmpty()) {
+        return null;
+      }
+      return KeyValue.of(BINARY.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], Tuple>";
     }
   };
 
@@ -1341,27 +1373,29 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<StreamConsumerInfo>> STREAM_CONSUMER_INFO_LIST = new Builder<List<StreamConsumerInfo>>() {
+  // TODO: rename to STREAM_CONSUMER_INFO_LIST ?
+  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST
+      = new Builder<List<StreamConsumersInfo>>() {
 
     Map<String, Builder> mappingFunctions = createDecoderMap();
 
     private Map<String, Builder> createDecoderMap() {
       Map<String, Builder> tempMappingFunctions = new HashMap<>();
-      tempMappingFunctions.put(StreamConsumerInfo.NAME, STRING);
-      tempMappingFunctions.put(StreamConsumerInfo.IDLE, LONG);
-      tempMappingFunctions.put(StreamConsumerInfo.PENDING, LONG);
+      tempMappingFunctions.put(StreamConsumersInfo.NAME, STRING);
+      tempMappingFunctions.put(StreamConsumersInfo.IDLE, LONG);
+      tempMappingFunctions.put(StreamConsumersInfo.PENDING, LONG);
       return tempMappingFunctions;
 
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public List<StreamConsumerInfo> build(Object data) {
+    public List<StreamConsumersInfo> build(Object data) {
       if (null == data) {
         return null;
       }
 
-      List<StreamConsumerInfo> list = new ArrayList<>();
+      List<StreamConsumersInfo> list = new ArrayList<>();
       List<Object> streamsEntries = (List<Object>) data;
       Iterator<Object> groupsArray = streamsEntries.iterator();
 
@@ -1371,7 +1405,7 @@ public final class BuilderFactory {
 
         Iterator<Object> consumerInfoIterator = groupInfo.iterator();
 
-        StreamConsumerInfo streamGroupInfo = new StreamConsumerInfo(
+        StreamConsumersInfo streamGroupInfo = new StreamConsumersInfo(
             createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
         list.add(streamGroupInfo);
 
@@ -1475,7 +1509,8 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<StreamFullInfo> STREAM_FULL_INFO = new Builder<StreamFullInfo>() {
+  // TODO: raname to STREAM_FULL_INFO ?
+  public static final Builder<StreamFullInfo> STREAM_INFO_FULL = new Builder<StreamFullInfo>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 

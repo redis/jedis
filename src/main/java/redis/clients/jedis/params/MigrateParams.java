@@ -1,11 +1,7 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.AUTH;
-import static redis.clients.jedis.Protocol.Keyword.AUTH2;
-import static redis.clients.jedis.Protocol.Keyword.COPY;
-import static redis.clients.jedis.Protocol.Keyword.REPLACE;
-
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
 
 public class MigrateParams implements IParams {
 
@@ -45,15 +41,15 @@ public class MigrateParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (copy) {
-      args.add(COPY);
+      args.add(Keyword.COPY);
     }
     if (replace) {
-      args.add(REPLACE);
+      args.add(Keyword.REPLACE);
     }
     if (username != null) {
-      args.add(AUTH2).add(username).add(passowrd);
+      args.add(Keyword.AUTH2).add(username).add(passowrd);
     } else if (passowrd != null) {
-      args.add(AUTH).add(passowrd);
+      args.add(Keyword.AUTH).add(passowrd);
     }
   }
 }

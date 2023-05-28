@@ -91,11 +91,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> persist(String key) {
-    return new CommandObject<>(commandArguments(PERSIST).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> persist(byte[] key) {
-    return new CommandObject<>(commandArguments(PERSIST).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> type(String key) {
@@ -852,20 +852,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<KeyedListElement> blpop(double timeout, String key) {
-    return new CommandObject<>(commandArguments(BLPOP).blocking().key(key).add(timeout), BuilderFactory.KEYED_LIST_ELEMENT);
+  public final CommandObject<KeyValue<String, String>> blpop(double timeout, String key) {
+    return new CommandObject<>(commandArguments(BLPOP).blocking().key(key).add(timeout), BuilderFactory.KEYED_ELEMENT);
   }
 
-  public final CommandObject<KeyedListElement> blpop(double timeout, String... keys) {
-    return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_LIST_ELEMENT);
+  public final CommandObject<KeyValue<String, String>> blpop(double timeout, String... keys) {
+    return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ELEMENT);
   }
 
   public final CommandObject<List<byte[]>> blpop(int timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> blpop(double timeout, byte[]... keys) {
-    return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
+  public final CommandObject<KeyValue<byte[], byte[]>> blpop(double timeout, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BLPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_KEYED_ELEMENT);
   }
 
   public final CommandObject<List<String>> brpop(int timeout, String key) {
@@ -876,20 +876,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<KeyedListElement> brpop(double timeout, String key) {
-    return new CommandObject<>(commandArguments(BRPOP).blocking().key(key).add(timeout), BuilderFactory.KEYED_LIST_ELEMENT);
+  public final CommandObject<KeyValue<String, String>> brpop(double timeout, String key) {
+    return new CommandObject<>(commandArguments(BRPOP).blocking().key(key).add(timeout), BuilderFactory.KEYED_ELEMENT);
   }
 
-  public final CommandObject<KeyedListElement> brpop(double timeout, String... keys) {
-    return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_LIST_ELEMENT);
+  public final CommandObject<KeyValue<String, String>> brpop(double timeout, String... keys) {
+    return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.KEYED_ELEMENT);
   }
 
   public final CommandObject<List<byte[]>> brpop(int timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> brpop(double timeout, byte[]... keys) {
-    return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_LIST);
+  public final CommandObject<KeyValue<byte[], byte[]>> brpop(double timeout, byte[]... keys) {
+    return new CommandObject<>(commandArguments(BRPOP).blocking().keys((Object[]) keys).add(timeout), BuilderFactory.BINARY_KEYED_ELEMENT);
   }
 
   public final CommandObject<String> rpoplpush(String srckey, String dstkey) {
@@ -1090,9 +1090,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count), BuilderFactory.STRING_LIST);
   }
 
-  public final CommandObject<Map<String, String>> hrandfieldWithValues(String key, long count) {
+  public final CommandObject<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        proto != RedisProtocol.RESP3 ? BuilderFactory.STRING_MAP : BuilderFactory.STRING_MAP_FROM_PAIRS);
+        proto != RedisProtocol.RESP3 ? BuilderFactory.STRING_PAIR_LIST : BuilderFactory.STRING_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
@@ -1107,9 +1107,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count), BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count) {
+  public final CommandObject<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        proto != RedisProtocol.RESP3 ? BuilderFactory.BINARY_MAP : BuilderFactory.BINARY_MAP_FROM_PAIRS);
+        proto != RedisProtocol.RESP3 ? BuilderFactory.BINARY_PAIR_LIST : BuilderFactory.BINARY_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {
@@ -1472,24 +1472,24 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZPOPMIN).key(key).add(count), getTupleListBuilder());
   }
 
-  public final CommandObject<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
+  public final CommandObject<KeyValue<String, Tuple>> bzpopmax(double timeout, String... keys) {
     return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys).add(timeout),
-        BuilderFactory.KEYED_ZSET_ELEMENT);
+        BuilderFactory.KEYED_TUPLE);
   }
 
-  public final CommandObject<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
+  public final CommandObject<KeyValue<String, Tuple>> bzpopmin(double timeout, String... keys) {
     return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys).add(timeout),
-        BuilderFactory.KEYED_ZSET_ELEMENT);
+        BuilderFactory.KEYED_TUPLE);
   }
 
-  public final CommandObject<List<Object>> bzpopmax(double timeout, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], Tuple>> bzpopmax(double timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZPOPMAX).blocking().keys((Object[]) keys)
-        .add(timeout), BuilderFactory.RAW_OBJECT_LIST);
+        .add(timeout), BuilderFactory.BINARY_KEYED_TUPLE);
   }
 
-  public final CommandObject<List<Object>> bzpopmin(double timeout, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], Tuple>> bzpopmin(double timeout, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZPOPMIN).blocking().keys((Object[]) keys)
-        .add(timeout), BuilderFactory.RAW_OBJECT_LIST);
+        .add(timeout), BuilderFactory.BINARY_KEYED_TUPLE);
   }
 
   public final CommandObject<Long> zcount(String key, double min, double max) {
@@ -2532,7 +2532,7 @@ public class CommandObjects {
       XAutoClaimParams params) {
     return new CommandObject<>(commandArguments(XAUTOCLAIM).key(key).add(group)
         .add(consumerName).add(minIdleTime).add(start).addParams(params)
-        .add(JUSTID), BuilderFactory.STREAM_AUTO_CLAIM_ID_RESPONSE);
+        .add(JUSTID), BuilderFactory.STREAM_AUTO_CLAIM_JUSTID_RESPONSE);
   }
 
   public final CommandObject<List<byte[]>> xclaim(byte[] key, byte[] group,
@@ -4127,6 +4127,7 @@ public class CommandObjects {
   public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
+  // RedisGraph commands
 
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
@@ -4151,10 +4152,10 @@ public class CommandObjects {
     }
     return localRef;
   }
+
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.jsonObjectMapper = jsonObjectMapper;
   }
-  // RedisGraph commands
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
 

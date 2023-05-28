@@ -7,7 +7,6 @@ import java.util.Set;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.KeyValue;
@@ -132,9 +131,9 @@ public interface SortedSetPipelineCommands {
 
   Response<ScanResult<Tuple>> zscan(String key, String cursor, ScanParams params);
 
-  Response<KeyedZSetElement> bzpopmax(double timeout, String... keys);
+  Response<KeyValue<String, Tuple>> bzpopmax(double timeout, String... keys);
 
-  Response<KeyedZSetElement> bzpopmin(double timeout, String... keys);
+  Response<KeyValue<String, Tuple>> bzpopmin(double timeout, String... keys);
 
   Response<Set<String>> zdiff(String... keys);
 

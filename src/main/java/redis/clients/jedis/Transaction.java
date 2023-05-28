@@ -68,9 +68,9 @@ public class Transaction extends TransactionBase {
   }
 
   @Override
-  protected final void processPipelinedResponses() {
+  protected final void processPipelinedResponses(int pipelineLength) {
     // ignore QUEUED or ERROR
-    connection.getMany(1 + getPipelinedResponseLength());
+    connection.getMany(1 + pipelineLength);
   }
 
   @Override

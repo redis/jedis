@@ -241,23 +241,45 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<byte[], byte[]>> BINARY_MAP_FROM_PAIRS = new Builder<Map<byte[], byte[]>>() {
+  public static final Builder<List<Map.Entry<byte[], byte[]>>> BINARY_PAIR_LIST
+      = new Builder<List<Map.Entry<byte[], byte[]>>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public Map<byte[], byte[]> build(Object data) {
-      final List<Object> list = (List<Object>) data;
-      final Map<byte[], byte[]> map = new JedisByteHashMap();
-      for (Object object : list) {
-        final List<byte[]> flat = (List<byte[]>) object;
-        map.put(flat.get(0), flat.get(1));
+    public List<Map.Entry<byte[], byte[]>> build(Object data) {
+      final List<byte[]> flatHash = (List<byte[]>) data;
+      final List<Map.Entry<byte[], byte[]>> pairList = new ArrayList<>();
+      final Iterator<byte[]> iterator = flatHash.iterator();
+      while (iterator.hasNext()) {
+        pairList.add(new AbstractMap.SimpleEntry<>(iterator.next(), iterator.next()));
       }
 
-      return map;
+      return pairList;
     }
 
     @Override
     public String toString() {
-      return "Map<byte[], byte[]>";
+      return "List<Map.Entry<byte[], byte[]>>";
+    }
+  };
+
+  public static final Builder<List<Map.Entry<byte[], byte[]>>> BINARY_PAIR_LIST_FROM_PAIRS
+      = new Builder<List<Map.Entry<byte[], byte[]>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map.Entry<byte[], byte[]>> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      final List<Map.Entry<byte[], byte[]>> pairList = new ArrayList<>();
+      for (Object object : list) {
+        final List<byte[]> flat = (List<byte[]>) object;
+        pairList.add(new AbstractMap.SimpleEntry<>(flat.get(0), flat.get(1)));
+      }
+
+      return pairList;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Map.Entry<byte[], byte[]>>";
     }
   };
 
@@ -307,7 +329,8 @@ public final class BuilderFactory {
     @SuppressWarnings("unchecked")
     public Set<String> build(Object data) {
       if (null == data) return null;
-      return ((List<Object>) data).stream().map(STRING::build).collect(Collectors.toCollection(LinkedHashSet::new));
+      return ((List<Object>) data).stream().map(STRING::build)
+          .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     @Override
@@ -336,19 +359,70 @@ public final class BuilderFactory {
     }
   };
 
-  // TODO: remove ??
-  public static final Builder<KeyedListElement> KEYED_LIST_ELEMENT = new Builder<KeyedListElement>() {
+  public static final Builder<List<Map.Entry<String, String>>> STRING_PAIR_LIST
+      = new Builder<List<Map.Entry<String, String>>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedListElement build(Object data) {
-      if (data == null) return null;
-      List<byte[]> l = (List<byte[]>) data;
-      return new KeyedListElement(l.get(0), l.get(1));
+    public List<Map.Entry<String, String>> build(Object data) {
+      final List<byte[]> flatHash = (List<byte[]>) data;
+      final List<Map.Entry<String, String>> pairList = new ArrayList<>(flatHash.size() / 2);
+      final Iterator<byte[]> iterator = flatHash.iterator();
+      while (iterator.hasNext()) {
+        pairList.add(KeyValue.of(STRING.build(iterator.next()), STRING.build(iterator.next())));
+      }
+
+      return pairList;
     }
 
     @Override
     public String toString() {
-      return "KeyedListElement";
+      return "List<Map.Entry<String, String>>";
+    }
+  };
+
+  public static final Builder<List<Map.Entry<String, String>>> STRING_PAIR_LIST_FROM_PAIRS
+      = new Builder<List<Map.Entry<String, String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map.Entry<String, String>> build(Object data) {
+      return ((List<Object>) data).stream().map(o -> (List<Object>) o)
+          .map(l -> KeyValue.of(STRING.build(l.get(0)), STRING.build(l.get(1))))
+          .collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<Map.Entry<String, String>>";
+    }
+  };
+
+  public static final Builder<KeyValue<String, String>> KEYED_ELEMENT = new Builder<KeyValue<String, String>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<String, String> build(Object data) {
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      return KeyValue.of(STRING.build(l.get(0)), STRING.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<String, String>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], byte[]>> BINARY_KEYED_ELEMENT = new Builder<KeyValue<byte[], byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], byte[]> build(Object data) {
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      return KeyValue.of(BINARY.build(l.get(0)), BINARY.build(l.get(1)));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], byte[]>";
     }
   };
 
@@ -436,20 +510,37 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<KeyedZSetElement> KEYED_ZSET_ELEMENT = new Builder<KeyedZSetElement>() {
+  public static final Builder<KeyValue<String, Tuple>> KEYED_TUPLE = new Builder<KeyValue<String, Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
-    public KeyedZSetElement build(Object data) {
-      List<byte[]> l = (List<byte[]>) data; // never null
+    public KeyValue<String, Tuple> build(Object data) {
+      List<Object> l = (List<Object>) data; // never null
       if (l.isEmpty()) {
         return null;
       }
-      return new KeyedZSetElement(l.get(0), l.get(1), DOUBLE.build(l.get(2)));
+      return KeyValue.of(STRING.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
     }
 
     @Override
     public String toString() {
-      return "KeyedZSetElement";
+      return "KeyValue<String, Tuple>";
+    }
+  };
+
+  public static final Builder<KeyValue<byte[], Tuple>> BINARY_KEYED_TUPLE = new Builder<KeyValue<byte[], Tuple>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public KeyValue<byte[], Tuple> build(Object data) {
+      List<Object> l = (List<Object>) data; // never null
+      if (l.isEmpty()) {
+        return null;
+      }
+      return KeyValue.of(BINARY.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
+    }
+
+    @Override
+    public String toString() {
+      return "KeyValue<byte[], Tuple>";
     }
   };
 
@@ -1103,7 +1194,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_ID_RESPONSE
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_JUSTID_RESPONSE
       = new Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -1283,7 +1374,9 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST = new Builder<List<StreamConsumersInfo>>() {
+  // TODO: rename to STREAM_CONSUMER_INFO_LIST ?
+  public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST
+      = new Builder<List<StreamConsumersInfo>>() {
 
     Map<String, Builder> mappingFunctions = createDecoderMap();
 
@@ -1291,8 +1384,7 @@ public final class BuilderFactory {
       Map<String, Builder> tempMappingFunctions = new HashMap<>();
       tempMappingFunctions.put(StreamConsumersInfo.NAME, STRING);
       tempMappingFunctions.put(StreamConsumersInfo.IDLE, LONG);
-      tempMappingFunctions.put(StreamGroupInfo.PENDING, LONG);
-      tempMappingFunctions.put(StreamGroupInfo.LAST_DELIVERED, STRING);
+      tempMappingFunctions.put(StreamConsumersInfo.PENDING, LONG);
       return tempMappingFunctions;
 
     }
@@ -1329,7 +1421,8 @@ public final class BuilderFactory {
     }
   };
 
-  private static final Builder<List<StreamConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST = new Builder<List<StreamConsumerFullInfo>>() {
+  private static final Builder<List<StreamConsumerFullInfo>> STREAM_CONSUMER_FULL_INFO_LIST
+      = new Builder<List<StreamConsumerFullInfo>>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 
@@ -1357,7 +1450,8 @@ public final class BuilderFactory {
       for (Object streamsEntry : streamsEntries) {
         List<Object> consumerInfoList = (List<Object>) streamsEntry;
         Iterator<Object> consumerInfoIterator = consumerInfoList.iterator();
-        StreamConsumerFullInfo consumerInfo = new StreamConsumerFullInfo(createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
+        StreamConsumerFullInfo consumerInfo = new StreamConsumerFullInfo(
+            createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
         list.add(consumerInfo);
       }
       return list;
@@ -1369,7 +1463,8 @@ public final class BuilderFactory {
     }
   };
 
-  private static final Builder<List<StreamGroupFullInfo>> STREAM_GROUP_FULL_INFO_LIST = new Builder<List<StreamGroupFullInfo>>() {
+  private static final Builder<List<StreamGroupFullInfo>> STREAM_GROUP_FULL_INFO_LIST
+      = new Builder<List<StreamGroupFullInfo>>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 
@@ -1401,8 +1496,8 @@ public final class BuilderFactory {
 
         Iterator<Object> groupInfoIterator = groupInfo.iterator();
 
-        StreamGroupFullInfo groupFullInfo = new StreamGroupFullInfo(createMapFromDecodingFunctions(
-                groupInfoIterator, mappingFunctions));
+        StreamGroupFullInfo groupFullInfo = new StreamGroupFullInfo(
+            createMapFromDecodingFunctions(groupInfoIterator, mappingFunctions));
         list.add(groupFullInfo);
 
       }
@@ -1415,6 +1510,7 @@ public final class BuilderFactory {
     }
   };
 
+  // TODO: raname to STREAM_FULL_INFO ?
   public static final Builder<StreamFullInfo> STREAM_INFO_FULL = new Builder<StreamFullInfo>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();

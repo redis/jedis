@@ -1372,7 +1372,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return One or multiple random fields with values from a hash.
    */
   @Override
-  public Map<byte[], byte[]> hrandfieldWithValues(final byte[] key, final long count) {
+  public List<Map.Entry<byte[], byte[]>> hrandfieldWithValues(final byte[] key, final long count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hrandfieldWithValues(key, count));
   }
@@ -2532,7 +2532,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> blpop(final double timeout, final byte[]... keys) {
+  public KeyValue<byte[], byte[]> blpop(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.blpop(timeout, keys));
   }
 
@@ -2603,7 +2603,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> brpop(final double timeout, final byte[]... keys) {
+  public KeyValue<byte[], byte[]> brpop(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
 
@@ -2632,12 +2632,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Object> bzpopmax(final double timeout, final byte[]... keys) {
+  public KeyValue<byte[], Tuple> bzpopmax(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public List<Object> bzpopmin(final double timeout, final byte[]... keys) {
+  public KeyValue<byte[], Tuple> bzpopmin(final double timeout, final byte[]... keys) {
     return connection.executeCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
@@ -4172,7 +4172,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   @Override
   public long clientKill(ClientKillParams params) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(CLIENT, joinParameters(KILL.getRaw(), params.getByteParams()));
+    connection.sendCommand(new CommandArguments(CLIENT).add(KILL).addParams(params));
     return this.connection.getIntegerReply();
   }
 
@@ -5799,7 +5799,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return one or multiple random fields with values from a hash.
    */
   @Override
-  public Map<String, String> hrandfieldWithValues(final String key, final long count) {
+  public List<Map.Entry<String, String>> hrandfieldWithValues(final String key, final long count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hrandfieldWithValues(key, count));
   }
@@ -6926,7 +6926,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedListElement blpop(final double timeout, final String... keys) {
+  public KeyValue<String, String> blpop(final double timeout, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blpop(timeout, keys));
   }
@@ -7000,7 +7000,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedListElement brpop(final double timeout, final String... keys) {
+  public KeyValue<String, String> brpop(final double timeout, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.brpop(timeout, keys));
   }
@@ -7030,13 +7030,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedZSetElement bzpopmax(double timeout, String... keys) {
+  public KeyValue<String, Tuple> bzpopmax(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public KeyedZSetElement bzpopmin(double timeout, String... keys) {
+  public KeyValue<String, Tuple> bzpopmin(double timeout, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzpopmin(timeout, keys));
   }
@@ -7048,7 +7048,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedListElement blpop(double timeout, String key) {
+  public KeyValue<String, String> blpop(double timeout, String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blpop(timeout, key));
   }
@@ -7060,7 +7060,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyedListElement brpop(double timeout, String key) {
+  public KeyValue<String, String> brpop(double timeout, String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.brpop(timeout, key));
   }
@@ -8768,7 +8768,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String clusterBumpEpoch() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.BUMPEPOCH);
-    return connection.getStatusCodeReply();
+    return connection.getBulkReply();
   }
 
   @Override
@@ -8818,6 +8818,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String clusterMyId() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.MYID);
+    return connection.getBulkReply();
+  }
+
+  @Override
+  public String clusterMyShardId() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.MYSHARDID);
     return connection.getBulkReply();
   }
 

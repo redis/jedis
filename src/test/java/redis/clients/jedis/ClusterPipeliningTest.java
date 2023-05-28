@@ -19,6 +19,7 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -649,9 +650,11 @@ public class ClusterPipeliningTest {
     Response<List<String>> r11 = p.hvals("mynewhash");
     Response<List<String>> r12 = p.hmget("myhash", "field1", "field2");
     Response<String> r13 = p.hrandfield("myotherhash");
-    Response<List<String>> r14 = p.hrandfield("myotherhash", 2);
-    Response<Map<String, String>> r15 = p.hrandfieldWithValues("myotherhash", 2);
+    Response<List<String>> r14 = p.hrandfield("myotherhash", 4);
+    Response<List<String>> r15 = p.hrandfield("myotherhash", -4);
     Response<Long> r16 = p.hstrlen("myhash", "field1");
+    Response<List<Map.Entry<String, String>>> r17 = p.hrandfieldWithValues("myotherhash", 4);
+    Response<List<Map.Entry<String, String>>> r18 = p.hrandfieldWithValues("myotherhash", -4);
 
     p.sync();
     assertEquals(Long.valueOf(1), r1.get());
@@ -666,10 +669,12 @@ public class ClusterPipeliningTest {
     assertEquals(keys, r10.get());
     assertEquals(vals, r11.get());
     assertEquals(vals2, r12.get());
-    assertTrue(hm.keySet().contains(r13.get()));
+    AssertUtil.assertCollectionContains(hm.keySet(), r13.get());
     assertEquals(2, r14.get().size());
-    assertTrue(r15.get().containsKey("field3") && r15.get().containsValue("5"));
+    assertEquals(4, r15.get().size());
     assertEquals(Long.valueOf(5), r16.get());
+    assertEquals(2, r17.get().size());
+    assertEquals(4, r18.get().size());
   }
 
   @Test
@@ -816,8 +821,8 @@ public class ClusterPipeliningTest {
     Response<Long> r3 = p.xlen("mystream");
     Response<List<StreamEntry>> r4 = p.xrange("mystream", streamId1, streamId2);
     Response<List<StreamEntry>> r5 = p.xrange("mystream", streamId1, streamId2, 1);
-    Response<List<StreamEntry>> r6 = p.xrevrange("mystream", streamId1, streamId2);
-    Response<List<StreamEntry>> r7 = p.xrevrange("mystream", streamId1, streamId2, 1);
+    Response<List<StreamEntry>> r6 = p.xrevrange("mystream", streamId2, streamId1);
+    Response<List<StreamEntry>> r7 = p.xrevrange("mystream", streamId2, streamId1, 1);
     Response<String> r8 = p.xgroupCreate("mystream", "group", streamId1, false);
     Response<String> r9 = p.xgroupSetID("mystream", "group", streamId2);
     // More stream commands are missing

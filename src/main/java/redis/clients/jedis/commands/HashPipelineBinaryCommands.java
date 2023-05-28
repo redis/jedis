@@ -42,7 +42,7 @@ public interface HashPipelineBinaryCommands {
 
   Response<List<byte[]>> hrandfield(byte[] key, long count);
 
-  Response<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count);
+  Response<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count);
 
   default Response<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor) {
     return hscan(key, cursor, new ScanParams());

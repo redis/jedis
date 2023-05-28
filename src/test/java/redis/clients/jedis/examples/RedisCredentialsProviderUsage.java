@@ -6,7 +6,7 @@ import redis.clients.jedis.DefaultRedisCredentialsProvider;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
 
-public class RedisCredentialsProviderExample {
+public class RedisCredentialsProviderUsage {
 
   public static void main(String[] args) {
 

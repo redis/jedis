@@ -302,11 +302,15 @@ public class Connection implements Closeable {
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
 
-//  @SuppressWarnings("unchecked")
-//  public List<Object> getUnflushedObjectMultiBulkReply() {
-//    return (List<Object>) readProtocolWithCheckingBroken();
-//  }
-//
+  /**
+   * @deprecated Use {@link Connection#getUnflushedObject()}.
+   */
+  @Deprecated
+  @SuppressWarnings("unchecked")
+  public List<Object> getUnflushedObjectMultiBulkReply() {
+    return (List<Object>) readProtocolWithCheckingBroken();
+  }
+
   @SuppressWarnings("unchecked")
   public Object getUnflushedObject() {
     return readProtocolWithCheckingBroken();
@@ -429,7 +433,14 @@ public class Connection implements Closeable {
         if (obj instanceof JedisDataException) {
           JedisDataException e = (JedisDataException)obj;
           String errorMsg = e.getMessage().toUpperCase();
-          if (errorMsg.contains("UNKNOWN") ||
+          /**
+           * 1. Redis 4.0 and before, we need to ignore `Syntax error`.
+           * 2. Redis 5.0 and later, we need to ignore `Unknown subcommand error`.
+           * 3. Because Jedis allows Jedis jedis = new Jedis() in advance, and jedis.auth(password) later,
+           * we need to ignore `NOAUTH errors`.
+           */
+          if (errorMsg.contains("SYNTAX") ||
+              errorMsg.contains("UNKNOWN") ||
               errorMsg.contains("NOAUTH")) { // TODO: not filter out NOAUTH
             // ignore
           } else {

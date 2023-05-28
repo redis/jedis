@@ -519,13 +519,13 @@ public class ClusterPipeliningTest {
     Response<Long> r1 = p.sadd("my{set}", "hello", "hello", "world", "foo", "bar");
     p.sadd("mynew{set}", "hello", "hello", "world");
     Response<Set<String>> r2 = p.sdiff("my{set}", "mynew{set}");
-    Response<Long> r3 = p.sdiffStore("diffset{set}", "my{set}", "mynew{set}");
+    Response<Long> r3 = p.sdiffstore("diffset{set}", "my{set}", "mynew{set}");
     Response<Set<String>> r4 = p.smembers("diffset{set}");
     Response<Set<String>> r5 = p.sinter("my{set}", "mynew{set}");
-    Response<Long> r6 = p.sinterStore("interset{set}", "my{set}", "mynew{set}");
+    Response<Long> r6 = p.sinterstore("interset{set}", "my{set}", "mynew{set}");
     Response<Set<String>> r7 = p.smembers("interset{set}");
     Response<Set<String>> r8 = p.sunion("my{set}", "mynew{set}");
-    Response<Long> r9 = p.sunionStore("unionset{set}", "my{set}", "mynew{set}");
+    Response<Long> r9 = p.sunionstore("unionset{set}", "my{set}", "mynew{set}");
     Response<Set<String>> r10 = p.smembers("unionset{set}");
     Response<Boolean> r11 = p.sismember("my{set}", "foo");
     Response<List<Boolean>> r12 = p.smismember("my{set}", "foo", "foobar");

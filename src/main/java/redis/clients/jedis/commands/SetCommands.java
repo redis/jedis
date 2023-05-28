@@ -159,7 +159,7 @@ public interface SetCommands {
    * @param keys group of sets
    * @return The number of elements in the resulting set
    */
-  long sdiffStore(String dstkey, String... keys);
+  long sdiffstore(String dstkey, String... keys);
 
   /**
    * Return the members of a set resulting from the intersection of all the sets hold at the
@@ -188,7 +188,7 @@ public interface SetCommands {
    * @param keys group of sets
    * @return The number of elements in the resulting set
    */
-  long sinterStore(String dstkey, String... keys);
+  long sinterstore(String dstkey, String... keys);
 
   /**
    * This command works exactly like {@link SetCommands#sinter(String[]) SINTER} but instead of returning
@@ -198,7 +198,7 @@ public interface SetCommands {
    * @param keys group of sets
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
-  long sinterCard(String... keys);
+  long sintercard(String... keys);
 
   /**
    * This command works exactly like {@link SetCommands#sinter(String[]) SINTER} but instead of returning
@@ -210,7 +210,7 @@ public interface SetCommands {
    * @param keys group of sets
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
-  long sinterCard(int limit, String... keys);
+  long sintercard(int limit, String... keys);
 
   /**
    * Return the members of a set resulting from the union of all the sets hold at the specified
@@ -237,7 +237,7 @@ public interface SetCommands {
    * @param keys group of sets
    * @return The number of elements in the resulting set
    */
-  long sunionStore(String dstkey, String... keys);
+  long sunionstore(String dstkey, String... keys);
 
   /**
    * Move the specified member from the set at srckey to the set at dstkey. This operation is

@@ -333,7 +333,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     Set<String> expected = new HashSet<String>();
     expected.add("b");
 
-    long status = jedis.sinterStore("car", "foo", "bar");
+    long status = jedis.sinterstore("car", "foo", "bar");
     assertEquals(1, status);
 
     assertEquals(expected, jedis.smembers("car"));
@@ -348,7 +348,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     Set<byte[]> bexpected = new HashSet<byte[]>();
     bexpected.add(bb);
 
-    long bstatus = jedis.sinterStore(bcar, bfoo, bbar);
+    long bstatus = jedis.sinterstore(bcar, bfoo, bbar);
     assertEquals(1, bstatus);
 
     assertByteArraySetEquals(bexpected, jedis.smembers(bcar));
@@ -364,9 +364,9 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     jedis.sadd("bar", "b");
     jedis.sadd("bar", "c");
 
-    long card = jedis.sinterCard("foo", "bar");
+    long card = jedis.sintercard("foo", "bar");
     assertEquals(2, card);
-    long limitedCard = jedis.sinterCard(1, "foo", "bar");
+    long limitedCard = jedis.sintercard(1, "foo", "bar");
     assertEquals(1, limitedCard);
 
     // Binary
@@ -377,9 +377,9 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     jedis.sadd(bbar, bb);
     jedis.sadd(bbar, bc);
 
-    long bcard = jedis.sinterCard(bfoo, bbar);
+    long bcard = jedis.sintercard(bfoo, bbar);
     assertEquals(2, bcard);
-    long blimitedCard = jedis.sinterCard(1, bfoo, bbar);
+    long blimitedCard = jedis.sintercard(1, bfoo, bbar);
     assertEquals(1, blimitedCard);
   }
 
@@ -429,7 +429,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     expected.add("b");
     expected.add("c");
 
-    long status = jedis.sunionStore("car", "foo", "bar");
+    long status = jedis.sunionstore("car", "foo", "bar");
     assertEquals(3, status);
 
     assertEquals(expected, jedis.smembers("car"));
@@ -446,7 +446,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     bexpected.add(bc);
     bexpected.add(ba);
 
-    long bstatus = jedis.sunionStore(bcar, bfoo, bbar);
+    long bstatus = jedis.sunionstore(bcar, bfoo, bbar);
     assertEquals(3, bstatus);
 
     assertByteArraySetEquals(bexpected, jedis.smembers(bcar));
@@ -508,7 +508,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     expected.add("x");
     expected.add("b");
 
-    long status = jedis.sdiffStore("tar", "foo", "bar", "car");
+    long status = jedis.sdiffstore("tar", "foo", "bar", "car");
     assertEquals(2, status);
     assertEquals(expected, jedis.smembers("tar"));
 
@@ -527,7 +527,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     bexpected.add(bx);
     bexpected.add(bb);
 
-    long bstatus = jedis.sdiffStore("tar".getBytes(), bfoo, bbar, bcar);
+    long bstatus = jedis.sdiffstore("tar".getBytes(), bfoo, bbar, bcar);
     assertEquals(2, bstatus);
     assertByteArraySetEquals(bexpected, jedis.smembers("tar".getBytes()));
 

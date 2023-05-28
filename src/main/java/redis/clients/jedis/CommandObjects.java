@@ -1222,7 +1222,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SDIFF).keys((Object[]) keys), BuilderFactory.STRING_SET);
   }
 
-  public final CommandObject<Long> sdiffStore(String dstkey, String... keys) {
+  public final CommandObject<Long> sdiffstore(String dstkey, String... keys) {
     return new CommandObject<>(commandArguments(SDIFFSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
@@ -1230,7 +1230,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SDIFF).keys((Object[]) keys), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Long> sdiffStore(byte[] dstkey, byte[]... keys) {
+  public final CommandObject<Long> sdiffstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(SDIFFSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
@@ -1238,15 +1238,15 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SINTER).keys((Object[]) keys), BuilderFactory.STRING_SET);
   }
 
-  public final CommandObject<Long> sinterStore(String dstkey, String... keys) {
+  public final CommandObject<Long> sinterstore(String dstkey, String... keys) {
     return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sinterCard(String... keys) {
+  public final CommandObject<Long> sintercard(String... keys) {
     return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sinterCard(int limit, String... keys) {
+  public final CommandObject<Long> sintercard(int limit, String... keys) {
     return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
   }
 
@@ -1254,15 +1254,15 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SINTER).keys((Object[]) keys), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Long> sinterStore(byte[] dstkey, byte[]... keys) {
+  public final CommandObject<Long> sinterstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sinterCard(byte[]... keys) {
+  public final CommandObject<Long> sintercard(byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> sinterCard(int limit, byte[]... keys) {
+  public final CommandObject<Long> sintercard(int limit, byte[]... keys) {
     return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
   }
 
@@ -1270,7 +1270,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SUNION).keys((Object[]) keys), BuilderFactory.STRING_SET);
   }
 
-  public final CommandObject<Long> sunionStore(String dstkey, String... keys) {
+  public final CommandObject<Long> sunionstore(String dstkey, String... keys) {
     return new CommandObject<>(commandArguments(SUNIONSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
@@ -1278,7 +1278,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SUNION).keys((Object[]) keys), BuilderFactory.BINARY_SET);
   }
 
-  public final CommandObject<Long> sunionStore(byte[] dstkey, byte[]... keys) {
+  public final CommandObject<Long> sunionstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(SUNIONSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
@@ -1534,7 +1534,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams).add(WITHSCORES), getTupleListBuilder());
   }
 
-  public final CommandObject<Long> zrangeStore(String dest, String src, ZRangeParams zRangeParams) {
+  public final CommandObject<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
     return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), BuilderFactory.LONG);
   }
 
@@ -1640,7 +1640,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(ZRANGE).key(key).addParams(zRangeParams).add(WITHSCORES), getTupleListBuilder());
   }
 
-  public final CommandObject<Long> zrangeStore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+  public final CommandObject<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
     return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), BuilderFactory.LONG);
   }
 
@@ -1843,42 +1843,42 @@ public class CommandObjects {
         .addParams(params).add(WITHSCORES), getTupleListBuilder());
   }
 
-  public final CommandObject<Long> zinterStore(String dstkey, String... keys) {
+  public final CommandObject<Long> zinterstore(String dstkey, String... keys) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zinterStore(String dstkey, ZParams params, String... keys) {
+  public final CommandObject<Long> zinterstore(String dstkey, ZParams params, String... keys) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(keys.length).keys((Object[]) keys).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zinterCard(String... keys) {
+  public final CommandObject<Long> zintercard(String... keys) {
     return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
         .keys((Object[]) keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zinterCard(long limit, String... keys) {
+  public final CommandObject<Long> zintercard(long limit, String... keys) {
     return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
         .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zinterStore(byte[] dstkey, byte[]... sets) {
+  public final CommandObject<Long> zinterstore(byte[] dstkey, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zinterStore(byte[] dstkey, ZParams params, byte[]... sets) {
+  public final CommandObject<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zinterCard(byte[]... keys) {
+  public final CommandObject<Long> zintercard(byte[]... keys) {
     return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
         .keys((Object[]) keys), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zinterCard(long limit, byte[]... keys) {
+  public final CommandObject<Long> zintercard(long limit, byte[]... keys) {
     return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
         .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
   }
@@ -1893,12 +1893,12 @@ public class CommandObjects {
         .addParams(params).add(WITHSCORES), getTupleListBuilder());
   }
 
-  public final CommandObject<Long> zunionStore(String dstkey, String... sets) {
+  public final CommandObject<Long> zunionstore(String dstkey, String... sets) {
     return new CommandObject<>(commandArguments(ZUNIONSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zunionStore(String dstkey, ZParams params, String... sets) {
+  public final CommandObject<Long> zunionstore(String dstkey, ZParams params, String... sets) {
     return new CommandObject<>(commandArguments(ZUNIONSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
   }
@@ -1913,12 +1913,12 @@ public class CommandObjects {
         .addParams(params).add(WITHSCORES), getTupleListBuilder());
   }
 
-  public final CommandObject<Long> zunionStore(byte[] dstkey, byte[]... sets) {
+  public final CommandObject<Long> zunionstore(byte[] dstkey, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZUNIONSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> zunionStore(byte[] dstkey, ZParams params, byte[]... sets) {
+  public final CommandObject<Long> zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZUNIONSTORE).key(dstkey)
         .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
   }

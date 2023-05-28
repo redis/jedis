@@ -106,7 +106,7 @@ public interface SortedSetPipelineCommands {
 
   Response<List<Tuple>> zrangeWithScores(String key, ZRangeParams zRangeParams);
 
-  Response<Long> zrangeStore(String dest, String src, ZRangeParams zRangeParams);
+  Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams);
 
   Response<Long> zremrangeByRank(String key, long start, long stop);
 
@@ -142,25 +142,25 @@ public interface SortedSetPipelineCommands {
 
   Response<Long> zdiffStore(String dstKey, String... keys);
 
-  Response<Long> zinterStore(String dstKey, String... sets);
+  Response<Long> zinterstore(String dstKey, String... sets);
 
-  Response<Long> zinterStore(String dstKey, ZParams params, String... sets);
+  Response<Long> zinterstore(String dstKey, ZParams params, String... sets);
 
   Response<List<String>> zinter(ZParams params, String... keys);
 
   Response<List<Tuple>> zinterWithScores(ZParams params, String... keys);
 
-  Response<Long> zinterCard(String... keys);
+  Response<Long> zintercard(String... keys);
 
-  Response<Long> zinterCard(long limit, String... keys);
+  Response<Long> zintercard(long limit, String... keys);
 
   Response<List<String>> zunion(ZParams params, String... keys);
 
   Response<List<Tuple>> zunionWithScores(ZParams params, String... keys);
 
-  Response<Long> zunionStore(String dstKey, String... sets);
+  Response<Long> zunionstore(String dstKey, String... sets);
 
-  Response<Long> zunionStore(String dstKey, ZParams params, String... sets);
+  Response<Long> zunionstore(String dstKey, ZParams params, String... sets);
 
   Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, String... keys);
 

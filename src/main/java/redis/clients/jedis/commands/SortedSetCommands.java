@@ -243,7 +243,7 @@ public interface SortedSetCommands {
    * @param zRangeParams {@link ZRangeParams}
    * @return The number of elements in the resulting sorted set
    */
-  long zrangeStore(String dest, String src, ZRangeParams zRangeParams);
+  long zrangestore(String dest, String src, ZRangeParams zRangeParams);
 
   /**
    * Return a random element from the sorted set value stored at key.
@@ -728,7 +728,7 @@ public interface SortedSetCommands {
    * @param sets group of sets
    * @return The number of elements in the resulting sorted set at dstkey
    */
-  long zinterStore(String dstkey, String... sets);
+  long zinterstore(String dstkey, String... sets);
 
   /**
    * Compute the intersection between all the sets in the given keys. Store the result in dstkey.
@@ -737,7 +737,7 @@ public interface SortedSetCommands {
    * @param sets group of sets
    * @return The number of elements in the resulting sorted set at dstkey
    */
-  long zinterStore(String dstkey, ZParams params, String... sets);
+  long zinterstore(String dstkey, ZParams params, String... sets);
 
   /**
    * Similar to {@link SortedSetCommands#zinter(ZParams, String...) ZINTER}, but
@@ -749,7 +749,7 @@ public interface SortedSetCommands {
    * @param keys group of sets
    * @return The number of elements in the resulting intersection
    */
-  long zinterCard(String... keys);
+  long zintercard(String... keys);
 
   /**
    * Similar to {@link SortedSetCommands#zinter(ZParams, String...) ZINTER}, but
@@ -763,7 +763,7 @@ public interface SortedSetCommands {
    * @param keys group of sets
    * @return The number of elements in the resulting intersection
    */
-  long zinterCard(long limit, String... keys);
+  long zintercard(long limit, String... keys);
 
   /**
    * Compute the union between all the sets in the given keys.
@@ -790,7 +790,7 @@ public interface SortedSetCommands {
    * @param sets group of sets
    * @return The number of elements in the resulting sorted set at dstkey
    */
-  long zunionStore(String dstkey, String... sets);
+  long zunionstore(String dstkey, String... sets);
 
   /**
    * Compute the union between all the sets in the given keys. Store the result in dstkey.
@@ -799,7 +799,7 @@ public interface SortedSetCommands {
    * @param sets group of sets
    * @return The number of elements in the resulting sorted set at dstkey
    */
-  long zunionStore(String dstkey, ZParams params, String... sets);
+  long zunionstore(String dstkey, ZParams params, String... sets);
 
   KeyValue<String, List<Tuple>> zmpop(SortedSetOption option, String... keys);
 

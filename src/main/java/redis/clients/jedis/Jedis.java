@@ -1859,9 +1859,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the resulting set
    */
   @Override
-  public long sinterStore(final byte[] dstkey, final byte[]... keys) {
+  public long sinterstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sinterStore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sinterstore(dstkey, keys));
   }
 
   /**
@@ -1873,9 +1873,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
   @Override
-  public long sinterCard(byte[]... keys) {
+  public long sintercard(byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sinterCard(keys));
+    return connection.executeCommand(commandObjects.sintercard(keys));
   }
 
   /**
@@ -1889,9 +1889,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
   @Override
-  public long sinterCard(int limit, byte[]... keys) {
+  public long sintercard(int limit, byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sinterCard(limit, keys));
+    return connection.executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   /**
@@ -1924,9 +1924,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the resulting set
    */
   @Override
-  public long sunionStore(final byte[] dstkey, final byte[]... keys) {
+  public long sunionstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sunionStore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
   /**
@@ -1963,9 +1963,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the resulting set
    */
   @Override
-  public long sdiffStore(final byte[] dstkey, final byte[]... keys) {
+  public long sdiffstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sdiffStore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sdiffstore(dstkey, keys));
   }
 
   /**
@@ -2189,9 +2189,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long zrangeStore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+  public long zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zrangeStore(dest, src, zRangeParams));
+    return connection.executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -3077,9 +3077,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterStore(byte[], byte[][])} ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][])} ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionStore(byte[], byte[][])} command inserts all elements across all inputs.
+   * {@link Jedis#zunionstore(byte[], byte[][])} command inserts all elements across all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
    * that the score of each element in the sorted set is first multiplied by this weight before
@@ -3098,9 +3098,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the sorted set at dstkey
    */
   @Override
-  public long zunionStore(final byte[] dstkey, final byte[]... sets) {
+  public long zunionstore(final byte[] dstkey, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zunionStore(dstkey, sets));
+    return connection.executeCommand(commandObjects.zunionstore(dstkey, sets));
   }
 
   /**
@@ -3108,9 +3108,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterStore(byte[], byte[][]) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionStore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -3131,9 +3131,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the sorted set at dstkey
    */
   @Override
-  public long zunionStore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
+  public long zunionstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zunionStore(dstkey, params, sets));
+    return connection.executeCommand(commandObjects.zunionstore(dstkey, params, sets));
   }
 
   /**
@@ -3167,9 +3167,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterStore(byte[], byte[][]) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionStore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
+   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
    * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -3189,9 +3189,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the sorted set at dstkey
    */
   @Override
-  public long zinterStore(final byte[] dstkey, final byte[]... sets) {
+  public long zinterstore(final byte[] dstkey, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterStore(dstkey, sets));
+    return connection.executeCommand(commandObjects.zinterstore(dstkey, sets));
   }
 
   /**
@@ -3199,9 +3199,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterStore(byte[], byte[][]) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterstore(byte[], byte[][]) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionStore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
+   * {@link Jedis#zunionstore(byte[], byte[][]) ZUNIONSTORE} command inserts all elements across all
    * inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -3222,21 +3222,21 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the sorted set at dstkey
    */
   @Override
-  public long zinterStore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
+  public long zinterstore(final byte[] dstkey, final ZParams params, final byte[]... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterStore(dstkey, params, sets));
+    return connection.executeCommand(commandObjects.zinterstore(dstkey, params, sets));
   }
 
   @Override
-  public long zinterCard(byte[]... keys) {
+  public long zintercard(byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterCard(keys));
+    return connection.executeCommand(commandObjects.zintercard(keys));
   }
 
   @Override
-  public long zinterCard(long limit, byte[]... keys) {
+  public long zintercard(long limit, byte[]... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterCard(limit, keys));
+    return connection.executeCommand(commandObjects.zintercard(limit, keys));
   }
 
   @Override
@@ -6242,9 +6242,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the resulting set
    */
   @Override
-  public long sinterStore(final String dstkey, final String... keys) {
+  public long sinterstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sinterStore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sinterstore(dstkey, keys));
   }
 
   /**
@@ -6256,9 +6256,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
   @Override
-  public long sinterCard(String... keys) {
+  public long sintercard(String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sinterCard(keys));
+    return connection.executeCommand(commandObjects.sintercard(keys));
   }
 
   /**
@@ -6272,9 +6272,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The cardinality of the set which would result from the intersection of all the given sets
    */
   @Override
-  public long sinterCard(int limit, String... keys) {
+  public long sintercard(int limit, String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sinterCard(limit, keys));
+    return connection.executeCommand(commandObjects.sintercard(limit, keys));
   }
 
   /**
@@ -6307,9 +6307,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the resulting set
    */
   @Override
-  public long sunionStore(final String dstkey, final String... keys) {
+  public long sunionstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sunionStore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
   /**
@@ -6346,9 +6346,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The number of elements in the resulting set
    */
   @Override
-  public long sdiffStore(final String dstkey, final String... keys) {
+  public long sdiffstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.sdiffStore(dstkey, keys));
+    return connection.executeCommand(commandObjects.sdiffstore(dstkey, keys));
   }
 
   /**
@@ -6602,9 +6602,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long zrangeStore(String dest, String src, ZRangeParams zRangeParams) {
+  public long zrangestore(String dest, String src, ZRangeParams zRangeParams) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zrangeStore(dest, src, zRangeParams));
+    return connection.executeCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -7449,9 +7449,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterStore(String, String...) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionStore(String, String[]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(String, String[]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7466,18 +7466,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see Jedis#zunionStore(String, String[])
-   * @see Jedis#zunionStore(String, ZParams, String[])
-   * @see Jedis#zinterStore(String, String...)
-   * @see Jedis#zinterStore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String[])
+   * @see Jedis#zunionstore(String, ZParams, String[])
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @return The number of elements in the sorted set at dstkey
    */
   @Override
-  public long zunionStore(final String dstkey, final String... sets) {
+  public long zunionstore(final String dstkey, final String... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zunionStore(dstkey, sets));
+    return connection.executeCommand(commandObjects.zunionstore(dstkey, sets));
   }
 
   /**
@@ -7485,9 +7485,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterStore(String, String...) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionStore(String, String[]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(String, String[]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7502,19 +7502,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see Jedis#zunionStore(String, String[])
-   * @see Jedis#zunionStore(String, ZParams, String[])
-   * @see Jedis#zinterStore(String, String...)
-   * @see Jedis#zinterStore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String[])
+   * @see Jedis#zunionstore(String, ZParams, String[])
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @param params
    * @return The number of elements in the sorted set at dstkey
    */
   @Override
-  public long zunionStore(final String dstkey, final ZParams params, final String... sets) {
+  public long zunionstore(final String dstkey, final ZParams params, final String... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zunionStore(dstkey, params, sets));
+    return connection.executeCommand(commandObjects.zunionstore(dstkey, params, sets));
   }
 
   /**
@@ -7544,15 +7544,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long zinterCard(String... keys) {
+  public long zintercard(String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterCard(keys));
+    return connection.executeCommand(commandObjects.zintercard(keys));
   }
 
   @Override
-  public long zinterCard(long limit, String... keys) {
+  public long zintercard(long limit, String... keys) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterCard(limit, keys));
+    return connection.executeCommand(commandObjects.zintercard(limit, keys));
   }
 
   /**
@@ -7560,9 +7560,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterStore(String, String...) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionStore(String, String[]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(String, String[]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7577,18 +7577,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see Jedis#zunionStore(String, String[])
-   * @see Jedis#zunionStore(String, ZParams, String[])
-   * @see Jedis#zinterStore(String, String...)
-   * @see Jedis#zinterStore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String[])
+   * @see Jedis#zunionstore(String, ZParams, String[])
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @return The number of elements in the sorted set at dstkey
    */
   @Override
-  public long zinterStore(final String dstkey, final String... sets) {
+  public long zinterstore(final String dstkey, final String... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterStore(dstkey, sets));
+    return connection.executeCommand(commandObjects.zinterstore(dstkey, sets));
   }
 
   /**
@@ -7596,9 +7596,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * dstkey. It is mandatory to provide the number of input keys N, before passing the input keys
    * and the other (optional) arguments.
    * <p>
-   * As the terms imply, the {@link Jedis#zinterStore(String, String...) ZINTERSTORE} command
+   * As the terms imply, the {@link Jedis#zinterstore(String, String...) ZINTERSTORE} command
    * requires an element to be present in each of the given inputs to be inserted in the result. The
-   * {@link Jedis#zunionStore(String, String[]) ZUNIONSTORE} command inserts all elements across
+   * {@link Jedis#zunionstore(String, String[]) ZUNIONSTORE} command inserts all elements across
    * all inputs.
    * <p>
    * Using the WEIGHTS option, it is possible to add weight to each input sorted set. This means
@@ -7613,19 +7613,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * <p>
    * <b>Time complexity:</b> O(N) + O(M log(M)) with N being the sum of the sizes of the input
    * sorted sets, and M being the number of elements in the resulting sorted set
-   * @see Jedis#zunionStore(String, String[])
-   * @see Jedis#zunionStore(String, ZParams, String[])
-   * @see Jedis#zinterStore(String, String...)
-   * @see Jedis#zinterStore(String, ZParams, String...)
+   * @see Jedis#zunionstore(String, String[])
+   * @see Jedis#zunionstore(String, ZParams, String[])
+   * @see Jedis#zinterstore(String, String...)
+   * @see Jedis#zinterstore(String, ZParams, String...)
    * @param dstkey
    * @param sets
    * @param params
    * @return The number of elements in the sorted set at dstkey
    */
   @Override
-  public long zinterStore(final String dstkey, final ZParams params, final String... sets) {
+  public long zinterstore(final String dstkey, final ZParams params, final String... sets) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zinterStore(dstkey, params, sets));
+    return connection.executeCommand(commandObjects.zinterstore(dstkey, params, sets));
   }
 
   @Override

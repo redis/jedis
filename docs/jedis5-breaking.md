@@ -2,16 +2,6 @@
 
 - `StreamConsumersInfo` has been renamed to `StreamConsumerInfo`.
 
-- Following methods have been renamed:
-  - from `sdiffstore` to `sdiffStore`
-  - from `sinterstore` to `sinterStore`
-  - from `sintercard` to `sinterCard`
-  - from `sunionstore` to `sunionStore`
-  - from `zrangestore` to `zrangeStore`
-  - from `zinterstore` to `zinterStore`
-  - from `zintercard` to `zinterCard`
-  - from `zunionstore` to `zunionStore`
-
 - `bzpopmax(double timeout, byte[]... keys)` now returns `List<Object>` (instead of `List<byte[]>`).
   - This is a three element list where the last element is a `Double`.
 

@@ -931,8 +931,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> sdiffStore(String dstKey, String... keys) {
-    return appendCommand(commandObjects.sdiffStore(dstKey, keys));
+  public Response<Long> sdiffstore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 
   @Override
@@ -941,18 +941,18 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> sinterStore(String dstKey, String... keys) {
-    return appendCommand(commandObjects.sinterStore(dstKey, keys));
+  public Response<Long> sinterstore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.sinterstore(dstKey, keys));
   }
 
   @Override
-  public Response<Long> sinterCard(String... keys) {
-    return appendCommand(commandObjects.sinterCard(keys));
+  public Response<Long> sintercard(String... keys) {
+    return appendCommand(commandObjects.sintercard(keys));
   }
 
   @Override
-  public Response<Long> sinterCard(int limit, String... keys) {
-    return appendCommand(commandObjects.sinterCard(limit, keys));
+  public Response<Long> sintercard(int limit, String... keys) {
+    return appendCommand(commandObjects.sintercard(limit, keys));
   }
 
   @Override
@@ -961,8 +961,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> sunionStore(String dstKey, String... keys) {
-    return appendCommand(commandObjects.sunionStore(dstKey, keys));
+  public Response<Long> sunionstore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.sunionstore(dstKey, keys));
   }
 
   @Override
@@ -1061,8 +1061,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> zrangeStore(String dest, String src, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangeStore(dest, src, zRangeParams));
+  public Response<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -1302,13 +1302,13 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> zinterStore(String dstKey, String... sets) {
-    return appendCommand(commandObjects.zinterStore(dstKey, sets));
+  public Response<Long> zinterstore(String dstKey, String... sets) {
+    return appendCommand(commandObjects.zinterstore(dstKey, sets));
   }
 
   @Override
-  public Response<Long> zinterStore(String dstKey, ZParams params, String... sets) {
-    return appendCommand(commandObjects.zinterStore(dstKey, params, sets));
+  public Response<Long> zinterstore(String dstKey, ZParams params, String... sets) {
+    return appendCommand(commandObjects.zinterstore(dstKey, params, sets));
   }
 
   @Override
@@ -1322,13 +1322,13 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> zinterCard(String... keys) {
-    return appendCommand(commandObjects.zinterCard(keys));
+  public Response<Long> zintercard(String... keys) {
+    return appendCommand(commandObjects.zintercard(keys));
   }
 
   @Override
-  public Response<Long> zinterCard(long limit, String... keys) {
-    return appendCommand(commandObjects.zinterCard(limit, keys));
+  public Response<Long> zintercard(long limit, String... keys) {
+    return appendCommand(commandObjects.zintercard(limit, keys));
   }
 
   @Override
@@ -1342,13 +1342,13 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> zunionStore(String dstKey, String... sets) {
-    return appendCommand(commandObjects.zunionStore(dstKey, sets));
+  public Response<Long> zunionstore(String dstKey, String... sets) {
+    return appendCommand(commandObjects.zunionstore(dstKey, sets));
   }
 
   @Override
-  public Response<Long> zunionStore(String dstKey, ZParams params, String... sets) {
-    return appendCommand(commandObjects.zunionStore(dstKey, params, sets));
+  public Response<Long> zunionstore(String dstKey, ZParams params, String... sets) {
+    return appendCommand(commandObjects.zunionstore(dstKey, params, sets));
   }
 
   @Override
@@ -2681,8 +2681,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> sdiffStore(byte[] dstkey, byte[]... keys) {
-    return appendCommand(commandObjects.sdiffStore(dstkey, keys));
+  public Response<Long> sdiffstore(byte[] dstkey, byte[]... keys) {
+    return appendCommand(commandObjects.sdiffstore(dstkey, keys));
   }
 
   @Override
@@ -2691,18 +2691,18 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> sinterStore(byte[] dstkey, byte[]... keys) {
-    return appendCommand(commandObjects.sinterStore(dstkey, keys));
+  public Response<Long> sinterstore(byte[] dstkey, byte[]... keys) {
+    return appendCommand(commandObjects.sinterstore(dstkey, keys));
   }
 
   @Override
-  public Response<Long> sinterCard(byte[]... keys) {
-    return appendCommand(commandObjects.sinterCard(keys));
+  public Response<Long> sintercard(byte[]... keys) {
+    return appendCommand(commandObjects.sintercard(keys));
   }
 
   @Override
-  public Response<Long> sinterCard(int limit, byte[]... keys) {
-    return appendCommand(commandObjects.sinterCard(limit, keys));
+  public Response<Long> sintercard(int limit, byte[]... keys) {
+    return appendCommand(commandObjects.sintercard(limit, keys));
   }
 
   @Override
@@ -2711,8 +2711,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> sunionStore(byte[] dstkey, byte[]... keys) {
-    return appendCommand(commandObjects.sunionStore(dstkey, keys));
+  public Response<Long> sunionstore(byte[] dstkey, byte[]... keys) {
+    return appendCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
   @Override
@@ -2811,8 +2811,8 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> zrangeStore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
-    return appendCommand(commandObjects.zrangeStore(dest, src, zRangeParams));
+  public Response<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
+    return appendCommand(commandObjects.zrangestore(dest, src, zRangeParams));
   }
 
   @Override
@@ -3061,23 +3061,23 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> zinterStore(byte[] dstkey, byte[]... sets) {
-    return appendCommand(commandObjects.zinterStore(dstkey, sets));
+  public Response<Long> zinterstore(byte[] dstkey, byte[]... sets) {
+    return appendCommand(commandObjects.zinterstore(dstkey, sets));
   }
 
   @Override
-  public Response<Long> zinterStore(byte[] dstkey, ZParams params, byte[]... sets) {
-    return appendCommand(commandObjects.zinterStore(dstkey, params, sets));
+  public Response<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
+    return appendCommand(commandObjects.zinterstore(dstkey, params, sets));
   }
 
   @Override
-  public Response<Long> zinterCard(byte[]... keys) {
-    return appendCommand(commandObjects.zinterCard(keys));
+  public Response<Long> zintercard(byte[]... keys) {
+    return appendCommand(commandObjects.zintercard(keys));
   }
 
   @Override
-  public Response<Long> zinterCard(long limit, byte[]... keys) {
-    return appendCommand(commandObjects.zinterCard(limit, keys));
+  public Response<Long> zintercard(long limit, byte[]... keys) {
+    return appendCommand(commandObjects.zintercard(limit, keys));
   }
 
   @Override
@@ -3091,13 +3091,13 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> zunionStore(byte[] dstkey, byte[]... sets) {
-    return appendCommand(commandObjects.zunionStore(dstkey, sets));
+  public Response<Long> zunionstore(byte[] dstkey, byte[]... sets) {
+    return appendCommand(commandObjects.zunionstore(dstkey, sets));
   }
 
   @Override
-  public Response<Long> zunionStore(byte[] dstkey, ZParams params, byte[]... sets) {
-    return appendCommand(commandObjects.zunionStore(dstkey, params, sets));
+  public Response<Long> zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
+    return appendCommand(commandObjects.zunionstore(dstkey, params, sets));
   }
 
   @Override

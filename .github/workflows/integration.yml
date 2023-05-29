@@ -55,7 +55,9 @@ jobs:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
       - name: Make - start
-        run: make start
+        run: |
+          make start
+          sleep 2s
       - name: Docker - mod or stack
         run: docker run -p 52567:6379 -d redis/redis-stack-server:edge
       - name: Test commands - default protocol

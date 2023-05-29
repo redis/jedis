@@ -30,7 +30,7 @@ import redis.clients.jedis.util.KeyValue;
 public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCommands,
     RedisModulePipelineCommands, Closeable {
 
-  @Deprecated protected final CommandObjects commandObjects;
+  protected final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
 
   public PipelineBase(CommandObjects commandObjects) {
@@ -3456,6 +3456,16 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   @Override
   public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
     return appendCommand(commandObjects.jsonSet(key, path, object, params));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path2 path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
   }
 
   @Override

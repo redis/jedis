@@ -9,6 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -184,6 +185,25 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertSame(List.class, client.jsonType("foobar", Path.of(".fooArr")));
     assertSame(boolean.class, client.jsonType("foobar", Path.of(".fooB")));
     assertNull(client.jsonType("foobar", Path.of(".fooErr")));
+  }
+
+  @Test
+  public void testJsonMerge() {
+    // create data
+    List<String> childrens = new ArrayList<>();
+    childrens.add("Child 1");
+    Person person = new Person("John Doe", 25, "123 Main Street", "123-456-7890", childrens);
+    assertEquals("OK", client.jsonSet("test_merge", ROOT_PATH, person));
+
+    // After 5 years:
+    person.age = 30;
+    person.childrens.add("Child 2");
+    person.childrens.add("Child 3");
+
+    // merge the new data
+    assertEquals("OK", client.jsonMerge("test_merge", Path.of((".childrens")), person.childrens));
+    assertEquals("OK", client.jsonMerge("test_merge", Path.of((".age")), person.age));
+    assertEquals(person, client.jsonGet("test_merge", Person.class));
   }
 
   @Test
@@ -501,7 +521,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void testJsonGsonParser() {
-    Person person = new Person("foo", Instant.now());
+    Tick person = new Tick("foo", Instant.now());
 
     // setting the custom json gson parser
     client.setJsonObjectMapper(JsonObjectMapperTestUtil.getCustomGsonObjectMapper());
@@ -514,7 +534,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void testDefaultJsonGsonParserStringsMustBeDifferent() {
-    Person person = new Person("foo", Instant.now());
+    Tick person = new Tick("foo", Instant.now());
 
     // using the default json gson parser which is automatically configured
 
@@ -526,7 +546,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void testJsonJacksonParser() {
-    Person person = new Person("foo", Instant.now());
+    Tick person = new Tick("foo", Instant.now());
 
     // setting the custom json jackson parser
     client.setJsonObjectMapper(JsonObjectMapperTestUtil.getCustomJacksonObjectMapper());

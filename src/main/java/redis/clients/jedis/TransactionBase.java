@@ -53,7 +53,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
 
   /**
    * Creates a new transaction.
-   * 
+   *
    * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
    * called with this object.
    * @param connection connection
@@ -3624,6 +3624,16 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   @Override
   public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
     return appendCommand(commandObjects.jsonSet(key, path, object, params));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path2 path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
   }
 
   @Override

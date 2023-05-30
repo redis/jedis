@@ -2620,13 +2620,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+  public KeyValue<byte[], List<byte[]>> blmpop(double timeout, ListDirection direction, byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+  public KeyValue<byte[], List<byte[]>> blmpop(double timeout, ListDirection direction, int count, byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
@@ -3290,13 +3290,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+  public KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+  public KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
@@ -7018,13 +7018,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, String... keys) {
+  public KeyValue<String, List<String>> blmpop(double timeout, ListDirection direction, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+  public KeyValue<String, List<String>> blmpop(double timeout, ListDirection direction, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
@@ -7679,13 +7679,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+  public KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+  public KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }

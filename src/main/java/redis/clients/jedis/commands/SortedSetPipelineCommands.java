@@ -165,7 +165,7 @@ public interface SortedSetPipelineCommands {
 
   Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys);
 
-  Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys);
+  Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, String... keys);
 
-  Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys);
+  Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, String... keys);
 }

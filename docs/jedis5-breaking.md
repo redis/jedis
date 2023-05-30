@@ -57,6 +57,9 @@
 
 - `getParams()` method is removed from `SortingParams` class.
 
+- All variants of `blmpop` and `bzmpop` methods now take `double timeout` parameter instead of `long timeout` parameter.
+  This is breaking ONLY IF you are using `Long` for timeout.
+
 <!--- Deprecated in Jedis 4 --->
 
 - `quit()` method has been removed from `Connection` and `ServerCommands` interface and implementations.

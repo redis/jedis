@@ -940,12 +940,12 @@ public class CommandObjects {
         .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_STRING_LIST);
   }
 
-  public final CommandObject<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
+  public final CommandObject<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, String... keys) {
     return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
         .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_STRING_LIST);
   }
 
-  public final CommandObject<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+  public final CommandObject<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, int count, String... keys) {
     return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
         .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
         BuilderFactory.KEYED_STRING_LIST);
@@ -961,12 +961,12 @@ public class CommandObjects {
         .add(direction).add(COUNT).add(count), BuilderFactory.KEYED_BINARY_LIST);
   }
 
-  public final CommandObject<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction, byte[]... keys) {
     return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
         .add(keys.length).keys((Object[]) keys).add(direction), BuilderFactory.KEYED_BINARY_LIST);
   }
 
-  public final CommandObject<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction, int count, byte[]... keys) {
     return new CommandObject<>(commandArguments(BLMPOP).blocking().add(timeout)
         .add(keys.length).keys((Object[]) keys).add(direction).add(COUNT).add(count),
         BuilderFactory.KEYED_BINARY_LIST);
@@ -1943,12 +1943,12 @@ public class CommandObjects {
         .add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+  public final CommandObject<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, String... keys) {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option), BuilderFactory.KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+  public final CommandObject<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, String... keys) {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.KEYED_TUPLE_LIST);
   }
@@ -1963,12 +1963,12 @@ public class CommandObjects {
         .add(option).add(COUNT).add(count), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
   }
 
-  public final CommandObject<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+  public final CommandObject<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys) {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
   }

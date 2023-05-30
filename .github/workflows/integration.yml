@@ -54,6 +54,8 @@ jobs:
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
+      - name: sleep 10s
+        run: sleep 10s
       - name: Make - start
         run: |
           make start

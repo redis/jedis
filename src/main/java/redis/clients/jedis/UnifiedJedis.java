@@ -2366,12 +2366,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<String> zdiff(String... keys) {
+  public List<String> zdiff(String... keys) {
     return executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Set<Tuple> zdiffWithScores(String... keys) {
+  public List<Tuple> zdiffWithScores(String... keys) {
     return executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -2381,12 +2381,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zdiff(byte[]... keys) {
+  public List<byte[]> zdiff(byte[]... keys) {
     return executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Set<Tuple> zdiffWithScores(byte[]... keys) {
+  public List<Tuple> zdiffWithScores(byte[]... keys) {
     return executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -2406,12 +2406,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<String> zinter(ZParams params, String... keys) {
+  public List<String> zinter(ZParams params, String... keys) {
     return executeCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Set<Tuple> zinterWithScores(ZParams params, String... keys) {
+  public List<Tuple> zinterWithScores(ZParams params, String... keys) {
     return executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
@@ -2446,22 +2446,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zinter(ZParams params, byte[]... keys) {
+  public List<byte[]> zinter(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Set<Tuple> zinterWithScores(ZParams params, byte[]... keys) {
+  public List<Tuple> zinterWithScores(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
   @Override
-  public Set<String> zunion(ZParams params, String... keys) {
+  public List<String> zunion(ZParams params, String... keys) {
     return executeCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+  public List<Tuple> zunionWithScores(ZParams params, String... keys) {
     return executeCommand(commandObjects.zunionWithScores(params, keys));
   }
 
@@ -2476,12 +2476,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zunion(ZParams params, byte[]... keys) {
+  public List<byte[]> zunion(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Set<Tuple> zunionWithScores(ZParams params, byte[]... keys) {
+  public List<Tuple> zunionWithScores(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zunionWithScores(params, keys));
   }
 

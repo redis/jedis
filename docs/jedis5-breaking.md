@@ -14,6 +14,18 @@
   - `blpop(double timeout, byte[]... keys)`
   - `brpop(double timeout, byte[]... keys)`
 
+- `zdiff(String... keys)` method now returns `List<String>` (instead of `Set<String>`).
+- `zdiff(byte[]... keys)` method now returns `List<byte[]>` (instead of `Set<byte[]>`).
+- Both `zdiffWithScores(String... keys)` and `zdiffWithScores(byte[]... keys)` methods now return `List<Tuple>` (instead of `Set<Tuple>`).
+
+- `zinter(ZParams params, String... keys)` method now returns `List<String>` (instead of `Set<String>`).
+- `zinter(ZParams params, byte[]... keys)` method now returns `List<byte[]>` (instead of `Set<byte[]>`).
+- Both `zinterWithScores(ZParams params, String... keys)` and `zinterWithScores(ZParams params, byte[]... keys)` methods now return `List<Tuple>` (instead of `Set<Tuple>`).
+
+- `zunion(ZParams params, String... keys)` method now returns `List<String>` (instead of `Set<String>`).
+- `zunion(ZParams params, byte[]... keys)` method now returns `List<byte[]>` (instead of `Set<byte[]>`).
+- Both `zunionWithScores(ZParams params, String... keys)` and `zunionWithScores(ZParams params, byte[]... keys)` methods now return `List<Tuple>` (instead of `Set<Tuple>`).
+
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
@@ -30,6 +42,7 @@
   - `BYTE_ARRAY` (use `BINARY`)
   - `BYTE_ARRAY_LIST` (use `BINARY_LIST`)
   - `BINARY_MAP_FROM_PAIRS`
+  - `STRING_ORDERED_SET`
 
 - `Queable` class is removed.
 

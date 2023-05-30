@@ -37,7 +37,7 @@ public interface SetPipelineCommands {
 
   Response<Set<String>> sdiff(String... keys);
 
-  Response<Long> sdiffstore(String dstKey, String... keys);
+  Response<Long> sdiffStore(String dstKey, String... keys);
 
   Response<Set<String>> sinter(String... keys);
 

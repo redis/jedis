@@ -134,15 +134,15 @@ public interface SortedSetBinaryCommands {
 
   KeyValue<byte[], Tuple> bzpopmin(double timeout, byte[]... keys);
 
-  Set<byte[]> zdiff(byte[]... keys);
+  List<byte[]> zdiff(byte[]... keys);
 
-  Set<Tuple> zdiffWithScores(byte[]... keys);
+  List<Tuple> zdiffWithScores(byte[]... keys);
 
   long zdiffStore(byte[] dstkey, byte[]... keys);
 
-  Set<byte[]> zinter(ZParams params, byte[]... keys);
+  List<byte[]> zinter(ZParams params, byte[]... keys);
 
-  Set<Tuple> zinterWithScores(ZParams params, byte[]... keys);
+  List<Tuple> zinterWithScores(ZParams params, byte[]... keys);
 
   long zinterstore(byte[] dstkey, byte[]... sets);
 
@@ -174,9 +174,9 @@ public interface SortedSetBinaryCommands {
    */
   long zintercard(long limit, byte[]... keys);
 
-  Set<byte[]> zunion(ZParams params, byte[]... keys);
+  List<byte[]> zunion(ZParams params, byte[]... keys);
 
-  Set<Tuple> zunionWithScores(ZParams params, byte[]... keys);
+  List<Tuple> zunionWithScores(ZParams params, byte[]... keys);
 
   long zunionstore(byte[] dstkey, byte[]... sets);
 

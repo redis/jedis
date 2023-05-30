@@ -2688,13 +2688,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<byte[]> zdiff(final byte[]... keys) {
+  public List<byte[]> zdiff(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Set<Tuple> zdiffWithScores(final byte[]... keys) {
+  public List<Tuple> zdiffWithScores(final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zdiffWithScores(keys));
   }
@@ -3048,26 +3048,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Add multiple sorted sets, This command is similar to ZUNIONSTORE, but instead of storing the
- resulting sorted set, it is returned to the connection.
+   * resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    * @return The result of the union
    */
   @Override
-  public Set<byte[]> zunion(final ZParams params, final byte[]... keys) {
+  public List<byte[]> zunion(final ZParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zunion(params, keys));
   }
 
   /**
-   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of storing the
-   * resulting sorted set, it is returned to the connection.
+   * Add multiple sorted sets with scores, This command is similar to ZUNIONSTORE, but instead of
+   * storing the resulting sorted set, it is returned to the connection.
    * @param params
    * @param keys
    * @return The result of the union with their scores
    */
   @Override
-  public Set<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
+  public List<Tuple> zunionWithScores(final ZParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zunionWithScores(params, keys));
   }
@@ -3144,7 +3144,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The result of the intersection
    */
   @Override
-  public Set<byte[]> zinter(final ZParams params, final byte[]... keys) {
+  public List<byte[]> zinter(final ZParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zinter(params, keys));
   }
@@ -3157,7 +3157,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return The result of the intersection with scores
    */
   @Override
-  public Set<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
+  public List<Tuple> zinterWithScores(final ZParams params, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zinterWithScores(params, keys));
   }
@@ -6248,7 +6248,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This command works exactly like {@link Jedis#sinter(String[]) SINTER} but instead of returning
+   * This command works exactly like {@link Jedis#sinter(String...) SINTER} but instead of returning
    * the result set, it returns just the cardinality of the result.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest
@@ -6262,7 +6262,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * This command works exactly like {@link Jedis#sinter(String[]) SINTER} but instead of returning
+   * This command works exactly like {@link Jedis#sinter(String...) SINTER} but instead of returning
    * the result set, it returns just the cardinality of the result.
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest
@@ -6434,13 +6434,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Set<String> zdiff(String... keys) {
+  public List<String> zdiff(String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Set<Tuple> zdiffWithScores(String... keys) {
+  public List<Tuple> zdiffWithScores(String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zdiffWithScores(keys));
   }
@@ -7426,7 +7426,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return A set with members of the resulting set
    */
   @Override
-  public Set<String> zunion(ZParams params, String... keys) {
+  public List<String> zunion(ZParams params, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zunion(params, keys));
   }
@@ -7439,7 +7439,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return A set with members of the resulting set with scores
    */
   @Override
-  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+  public List<Tuple> zunionWithScores(ZParams params, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zunionWithScores(params, keys));
   }
@@ -7525,7 +7525,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return A set with members of the resulting set
    */
   @Override
-  public Set<String> zinter(final ZParams params, final String... keys) {
+  public List<String> zinter(final ZParams params, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zinter(params, keys));
   }
@@ -7538,7 +7538,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return A set with members of the resulting set with scores
    */
   @Override
-  public Set<Tuple> zinterWithScores(final ZParams params, final String... keys) {
+  public List<Tuple> zinterWithScores(final ZParams params, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zinterWithScores(params, keys));
   }

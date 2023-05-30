@@ -685,14 +685,14 @@ public interface SortedSetCommands {
    * @param keys group of sets
    * @return The result of the difference
    */
-  Set<String> zdiff(String... keys);
+  List<String> zdiff(String... keys);
 
   /**
    * Compute the difference between all the sets in the given keys. Return the result with scores.
    * @param keys group of sets
    * @return The result of the difference with their scores
    */
-  Set<Tuple> zdiffWithScores(String... keys);
+  List<Tuple> zdiffWithScores(String... keys);
 
   /**
    * Compute the difference between all the sets in the given keys. Store the result in dstkey.
@@ -711,7 +711,7 @@ public interface SortedSetCommands {
    * @param keys group of sets
    * @return The result of the intersection
    */
-  Set<String> zinter(ZParams params, String... keys);
+  List<String> zinter(ZParams params, String... keys);
 
   /**
    * Compute the intersection between all the sets in the given keys. Return the result with scores.
@@ -719,7 +719,7 @@ public interface SortedSetCommands {
    * @param keys group of sets
    * @return The result of the intersection with their scores
    */
-  Set<Tuple> zinterWithScores(ZParams params, String... keys);
+  List<Tuple> zinterWithScores(ZParams params, String... keys);
 
   /**
    * Compute the intersection between all the sets in the given keys. Store the result in dstkey.
@@ -773,7 +773,7 @@ public interface SortedSetCommands {
    * @param keys group of sets
    * @return The result of the union
    */
-  Set<String> zunion(ZParams params, String... keys);
+  List<String> zunion(ZParams params, String... keys);
 
   /**
    * Compute the union between all the sets in the given keys. Return the result with scores.
@@ -781,7 +781,7 @@ public interface SortedSetCommands {
    * @param keys group of sets
    * @return The result of the union with their scores
    */
-  Set<Tuple> zunionWithScores(ZParams params, String... keys);
+  List<Tuple> zunionWithScores(ZParams params, String... keys);
 
   /**
    * Compute the union between all the sets in the given keys. Store the result in dstkey.

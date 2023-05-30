@@ -781,7 +781,7 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<Long> sdiffstore(String dstKey, String... keys) {
+  public Response<Long> sdiffStore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 
@@ -1136,12 +1136,12 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<Set<String>> zdiff(String... keys) {
+  public Response<List<String>> zdiff(String... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zdiffWithScores(String... keys) {
+  public Response<List<Tuple>> zdiffWithScores(String... keys) {
     return appendCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -1161,12 +1161,12 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<Set<String>> zinter(ZParams params, String... keys) {
+  public Response<List<String>> zinter(ZParams params, String... keys) {
     return appendCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
+  public Response<List<Tuple>> zinterWithScores(ZParams params, String... keys) {
     return appendCommand(commandObjects.zinterWithScores(params, keys));
   }
 
@@ -1181,12 +1181,12 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<Set<String>> zunion(ZParams params, String... keys) {
+  public Response<List<String>> zunion(ZParams params, String... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+  public Response<List<Tuple>> zunionWithScores(ZParams params, String... keys) {
     return appendCommand(commandObjects.zunionWithScores(params, keys));
   }
 
@@ -2876,12 +2876,12 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<Set<byte[]>> zdiff(byte[]... keys) {
+  public Response<List<byte[]>> zdiff(byte[]... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zdiffWithScores(byte[]... keys) {
+  public Response<List<Tuple>> zdiffWithScores(byte[]... keys) {
     return appendCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -2891,12 +2891,12 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
+  public Response<List<byte[]>> zinter(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
+  public Response<List<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zinterWithScores(params, keys));
   }
 
@@ -2921,12 +2921,12 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
+  public Response<List<byte[]>> zunion(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
+  public Response<List<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zunionWithScores(params, keys));
   }
 

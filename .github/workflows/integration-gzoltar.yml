@@ -1,0 +1,84 @@
+---
+name: Integration with GZoltar Fault Localization
+
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - "**/*.rst"
+    branches:
+      - master
+      - "[0-9].[0-9]"
+  pull_request:
+    branches:
+      - master
+      - "[0-9].[0-9]"
+  schedule:
+    - cron: "0 1 * * *" # nightly build
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up publishing to maven central
+        uses: actions/setup-java@v2
+        with:
+          java-version: "8"
+          distribution: "temurin"
+      - name: System setup
+        run: |
+          sudo apt update
+          sudo apt install -y stunnel make
+          make system-setup
+      - name: Cache dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+      - name: Maven offline
+        run: |
+          mvn -q dependency:go-offline
+      - name: Run tests
+        run: |
+          TEST="" make test-gzoltar
+        env:
+          JVM_OPTS: -Xmx3200m
+          TERM: dumb
+      - name: sleep 10s
+        run: sleep 10s
+      - name: Make - start
+        run: |
+          make start
+          sleep 2s
+      - name: Docker - mod or stack
+        run: docker run -p 52567:6379 -d redis/redis-stack-server:edge
+      - name: Test commands - default protocol
+        run: mvn -P gzoltar-sufire -Dtest="redis.clients.jedis.commands.**" gzoltar:prepare-agent test
+      - name: Test commands - RESP3 protocol
+        run: mvn -P gzoltar-sufire -DjedisProtocol=3 -Dtest="redis.clients.jedis.commands.**" gzoltar:prepare-agent test
+      - name: Test module commands - default protocol
+        run: mvn -P gzoltar-sufire -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" gzoltar:prepare-agent test
+      - name: Test module commands - RESP3 protocol
+        run: mvn -P gzoltar-sufire -DjedisProtocol=3 -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" gzoltar:prepare-agent test
+      - name: Make - stop
+        run: make stop
+      - name: Generate GZoltar report
+        run: mvn gzoltar:fl-report
+      - name: Enhance GZoltar results
+        uses: GZoltar/gzoltar-feedback-action@main
+        env:
+          NODE_OPTIONS: "--max-old-space-size=16384"
+        with:
+          build-path: "/target/site/gzoltar"
+          sfl-ranking: "[ochiai]"
+          sfl-threshold: "[0.5]"
+          sfl-ranking-order: "ochiai"
+          upload-artifacts: true

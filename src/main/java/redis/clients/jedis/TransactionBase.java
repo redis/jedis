@@ -53,7 +53,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
 
   /**
    * Creates a new transaction.
-   * 
+   *
    * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
    * called with this object.
    * @param connection connection
@@ -773,12 +773,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
+  public Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, String... keys) {
     return appendCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+  public Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, int count, String... keys) {
     return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
 
@@ -938,7 +938,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Long> sdiffstore(String dstKey, String... keys) {
+  public Response<Long> sdiffStore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 
@@ -1284,22 +1284,22 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, String... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, String... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override
-  public Response<Set<String>> zdiff(String... keys) {
+  public Response<List<String>> zdiff(String... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zdiffWithScores(String... keys) {
+  public Response<List<Tuple>> zdiffWithScores(String... keys) {
     return appendCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -1319,12 +1319,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<String>> zinter(ZParams params, String... keys) {
+  public Response<List<String>> zinter(ZParams params, String... keys) {
     return appendCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
+  public Response<List<Tuple>> zinterWithScores(ZParams params, String... keys) {
     return appendCommand(commandObjects.zinterWithScores(params, keys));
   }
 
@@ -1339,12 +1339,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<String>> zunion(ZParams params, String... keys) {
+  public Response<List<String>> zunion(ZParams params, String... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+  public Response<List<Tuple>> zunionWithScores(ZParams params, String... keys) {
     return appendCommand(commandObjects.zunionWithScores(params, keys));
   }
 
@@ -2529,12 +2529,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction, byte[]... keys) {
     return appendCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction, int count, byte[]... keys) {
     return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
 
@@ -3033,22 +3033,22 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, byte[]... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override
-  public Response<Set<byte[]>> zdiff(byte[]... keys) {
+  public Response<List<byte[]>> zdiff(byte[]... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zdiffWithScores(byte[]... keys) {
+  public Response<List<Tuple>> zdiffWithScores(byte[]... keys) {
     return appendCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -3058,12 +3058,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
+  public Response<List<byte[]>> zinter(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
+  public Response<List<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zinterWithScores(params, keys));
   }
 
@@ -3088,12 +3088,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
+  public Response<List<byte[]>> zunion(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
+  public Response<List<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zunionWithScores(params, keys));
   }
 
@@ -3624,6 +3624,16 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   @Override
   public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
     return appendCommand(commandObjects.jsonSet(key, path, object, params));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path2 path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
   }
 
   @Override

@@ -43,6 +43,10 @@ public interface RedisJsonCommands {
 
   String jsonSet(String key, Path path, Object pojo, JsonSetParams params);
 
+  String jsonMerge(String key, Path2 path, Object object);
+
+  String jsonMerge(String key, Path path, Object pojo);
+
   Object jsonGet(String key);
 
   <T> T jsonGet(String key, Class<T> clazz);

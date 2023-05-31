@@ -65,7 +65,7 @@ public interface ListBinaryCommands {
 
   KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, int count, byte[]... keys);
 
-  KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, byte[]... keys);
+  KeyValue<byte[], List<byte[]>> blmpop(double timeout, ListDirection direction, byte[]... keys);
 
-  KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys);
+  KeyValue<byte[], List<byte[]>> blmpop(double timeout, ListDirection direction, int count, byte[]... keys);
 }

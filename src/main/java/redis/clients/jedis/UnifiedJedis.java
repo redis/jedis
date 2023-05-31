@@ -1350,12 +1350,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, String... keys) {
+  public KeyValue<String, List<String>> blmpop(double timeout, ListDirection direction, String... keys) {
     return executeCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public KeyValue<String, List<String>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+  public KeyValue<String, List<String>> blmpop(double timeout, ListDirection direction, int count, String... keys) {
     return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
 
@@ -1370,12 +1370,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+  public KeyValue<byte[], List<byte[]>> blmpop(double timeout, ListDirection direction, byte[]... keys) {
     return executeCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public KeyValue<byte[], List<byte[]>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+  public KeyValue<byte[], List<byte[]>> blmpop(double timeout, ListDirection direction, int count, byte[]... keys) {
     return executeCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
   // List commands
@@ -2366,12 +2366,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<String> zdiff(String... keys) {
+  public List<String> zdiff(String... keys) {
     return executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Set<Tuple> zdiffWithScores(String... keys) {
+  public List<Tuple> zdiffWithScores(String... keys) {
     return executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -2381,12 +2381,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zdiff(byte[]... keys) {
+  public List<byte[]> zdiff(byte[]... keys) {
     return executeCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Set<Tuple> zdiffWithScores(byte[]... keys) {
+  public List<Tuple> zdiffWithScores(byte[]... keys) {
     return executeCommand(commandObjects.zdiffWithScores(keys));
   }
 
@@ -2406,12 +2406,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<String> zinter(ZParams params, String... keys) {
+  public List<String> zinter(ZParams params, String... keys) {
     return executeCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Set<Tuple> zinterWithScores(ZParams params, String... keys) {
+  public List<Tuple> zinterWithScores(ZParams params, String... keys) {
     return executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
@@ -2446,22 +2446,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zinter(ZParams params, byte[]... keys) {
+  public List<byte[]> zinter(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Set<Tuple> zinterWithScores(ZParams params, byte[]... keys) {
+  public List<Tuple> zinterWithScores(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zinterWithScores(params, keys));
   }
 
   @Override
-  public Set<String> zunion(ZParams params, String... keys) {
+  public List<String> zunion(ZParams params, String... keys) {
     return executeCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Set<Tuple> zunionWithScores(ZParams params, String... keys) {
+  public List<Tuple> zunionWithScores(ZParams params, String... keys) {
     return executeCommand(commandObjects.zunionWithScores(params, keys));
   }
 
@@ -2476,12 +2476,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Set<byte[]> zunion(ZParams params, byte[]... keys) {
+  public List<byte[]> zunion(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Set<Tuple> zunionWithScores(ZParams params, byte[]... keys) {
+  public List<Tuple> zunionWithScores(ZParams params, byte[]... keys) {
     return executeCommand(commandObjects.zunionWithScores(params, keys));
   }
 
@@ -2506,12 +2506,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+  public KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, String... keys) {
     return executeCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public KeyValue<String, List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+  public KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, String... keys) {
     return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
@@ -2526,12 +2526,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+  public KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, byte[]... keys) {
     return executeCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public KeyValue<byte[], List<Tuple>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+  public KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys) {
     return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
   // Sorted Set commands
@@ -3903,6 +3903,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String jsonMerge(String key, Path2 path, Object object) {
+    return executeCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
+  public String jsonMerge(String key, Path path, Object pojo) {
+    return executeCommand(commandObjects.jsonMerge(key, path, pojo));
+  }
+
+  @Override
   public Object jsonGet(String key) {
     return executeCommand(commandObjects.jsonGet(key));
   }
@@ -4719,7 +4729,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisGraph commands
 
-  public Object pipelined() {
+  public PipelineBase pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     }

@@ -182,6 +182,57 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void testJsonMerge() {
+    // Test with root path
+    JSONObject json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":25,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
+    assertEquals("OK", client.jsonSet("test_merge", json));
+
+    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
+    assertEquals("OK", client.jsonMerge("test_merge", Path2.of("$"), "{\"person\":{\"age\":30}}"));
+
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge", Path2.of("$")));
+
+    // Test with root path path $.a.b
+    assertEquals("OK", client.jsonMerge("test_merge", Path2.of("$.person.address"), "{\"work\":\"Redis office\"}"));
+    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge", Path2.of("$")));
+
+    // Test with null value to delete a value
+    assertEquals("OK", client.jsonMerge("test_merge", Path2.of("$.person"), "{\"age\":null}"));
+    json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge", Path2.of("$")));
+
+    // cleanup
+    assertEquals(1L, client.del("test_merge"));
+  }
+
+  @Test
+  public void testJsonMergeArray()
+  {
+    // Test merge on an array
+    JSONObject json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}");
+    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), json)));
+    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]")));
+
+    json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
+
+    // assertEquals("{{a={b={c=[f]}}}", client.jsonGet("test_merge_array", Path2.of("$")));
+
+    // Test merge an array on a value
+    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":\"d\"}}}")));
+    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]")));
+    json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
+
+    // Test with null value to delete an array value
+    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}")));
+    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b"), "{\"c\":null}")));
+    json = new JSONObject("{\"a\":{\"b\":{}}}");
+    assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
+  }
+
+  @Test
   public void mgetWithPathWithAllKeysExist() {
     Baz baz1 = new Baz("quuz1", "grault1", "waldo1");
     Baz baz2 = new Baz("quuz2", "grault2", "waldo2");

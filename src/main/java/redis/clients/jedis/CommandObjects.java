@@ -3773,24 +3773,24 @@ public class CommandObjects {
         .addParams(rangeParams), TimeSeriesBuilderFactory.TIMESERIES_ELEMENT_LIST);
   }
 
-  public final CommandObject<Map<String, TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public final CommandObject<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
         getTimeseriesMultiRangeResponseBuilder());
   }
 
-  public final CommandObject<Map<String, TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public final CommandObject<Map<String, TSMRangeElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE)
         .addParams(multiRangeParams), getTimeseriesMultiRangeResponseBuilder());
   }
 
-  public final CommandObject<Map<String, TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public final CommandObject<Map<String, TSMRangeElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
         getTimeseriesMultiRangeResponseBuilder());
   }
 
-  public final CommandObject<Map<String, TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public final CommandObject<Map<String, TSMRangeElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).addParams(multiRangeParams),
         getTimeseriesMultiRangeResponseBuilder());
   }
@@ -3840,7 +3840,7 @@ public class CommandObjects {
         getTimeseriesInfoBuilder());
   }
 
-  private Builder<Map<String, TSKeyedElements>> getTimeseriesMultiRangeResponseBuilder() {
+  private Builder<Map<String, TSMRangeElements>> getTimeseriesMultiRangeResponseBuilder() {
     return proto == RedisProtocol.RESP3 ? TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE_RESP3
         : TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE;
   }

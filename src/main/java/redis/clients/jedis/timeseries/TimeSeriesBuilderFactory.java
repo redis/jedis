@@ -32,38 +32,37 @@ public final class TimeSeriesBuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, TSKeyedElements>> TIMESERIES_MRANGE_RESPONSE
-      = new Builder<Map<String, TSKeyedElements>>() {
+  public static final Builder<Map<String, TSMRangeElements>> TIMESERIES_MRANGE_RESPONSE
+      = new Builder<Map<String, TSMRangeElements>>() {
     @Override
-    public Map<String, TSKeyedElements> build(Object data) {
+    public Map<String, TSMRangeElements> build(Object data) {
       return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
-          .map((tsList) -> new TSKeyedElements(BuilderFactory.STRING.build(tsList.get(0)),
+          .map((tsList) -> new TSMRangeElements(BuilderFactory.STRING.build(tsList.get(0)),
               BuilderFactory.STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
-          .collect(Collectors.toMap(TSKeyedElements::getKey, identity(), (x, y) -> x, LinkedHashMap::new));
+          .collect(Collectors.toMap(TSMRangeElements::getKey, identity(), (x, y) -> x, LinkedHashMap::new));
     }
   };
 
-  // TODO:
-  public static final Builder<Map<String, TSKeyedElements>> TIMESERIES_MRANGE_RESPONSE_RESP3
-      = new Builder<Map<String, TSKeyedElements>>() {
+  public static final Builder<Map<String, TSMRangeElements>> TIMESERIES_MRANGE_RESPONSE_RESP3
+      = new Builder<Map<String, TSMRangeElements>>() {
     @Override
-    public Map<String, TSKeyedElements> build(Object data) {
+    public Map<String, TSMRangeElements> build(Object data) {
       List<Object> dataList = (List<Object>) data;
-      Map<String, TSKeyedElements> map = new LinkedHashMap<>(dataList.size() / 2, 1f);
+      Map<String, TSMRangeElements> map = new LinkedHashMap<>(dataList.size() / 2, 1f);
       for (Iterator<Object> iterator = dataList.iterator(); iterator.hasNext();) {
         String key = BuilderFactory.STRING.build(iterator.next());
         List<Object> valueList = (List<Object>) iterator.next();
-        TSKeyedElements elements;
+        TSMRangeElements elements;
         switch (valueList.size()) {
           case 3:
-            elements = new TSKeyedElements(key,
+            elements = new TSMRangeElements(key,
                 BuilderFactory.STRING_MAP.build(valueList.get(0)),
                 // TODO: valueList.get(1)
                 TIMESERIES_ELEMENT_LIST.build(valueList.get(2)));
             break;
           case 4:
-            elements = new TSKeyedElements(key,
+            elements = new TSMRangeElements(key,
                 BuilderFactory.STRING_MAP.build(valueList.get(0)),
                 // TODO: valueList.get(1)
                 // TODO: valueList.get(2)

@@ -38,13 +38,13 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams);
 
-  Response<Map<String, TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
+  Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
 
-  Response<Map<String, TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams);
+  Response<Map<String, TSMRangeElements>> tsMRange(TSMRangeParams multiRangeParams);
 
-  Response<Map<String, TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
+  Response<Map<String, TSMRangeElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
 
-  Response<Map<String, TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams);
+  Response<Map<String, TSMRangeElements>> tsMRevRange(TSMRangeParams multiRangeParams);
 
   Response<TSElement> tsGet(String key);
 

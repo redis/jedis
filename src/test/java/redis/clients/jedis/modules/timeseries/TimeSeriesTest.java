@@ -614,22 +614,22 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
         .retention(100 * 1000 /*100sec retentionTime*/).labels(labels)));
 
     // Test for empty result
-    Map<String, TSKeyValue<TSElement>> ranges1 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v2");
+    Map<String, TSMGetElement> ranges1 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v2");
     assertEquals(0, ranges1.size());
 
     // Test for empty ranges
-    Map<String, TSKeyValue<TSElement>> ranges2 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(true), "l1=v1");
+    Map<String, TSMGetElement> ranges2 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(true), "l1=v1");
     assertEquals(2, ranges2.size());
-    ArrayList<TSKeyValue<TSElement>> ranges2List = new ArrayList<>(ranges2.values());
+    ArrayList<TSMGetElement> ranges2List = new ArrayList<>(ranges2.values());
     assertEquals(labels, ranges2List.get(0).getLabels());
     assertEquals(labels, ranges2List.get(1).getLabels());
     assertNull(ranges2List.get(0).getValue());
 
     // Test for returned result on MGet
     client.tsAdd("seriesMGet1", 1500, 1.3);
-    Map<String, TSKeyValue<TSElement>> ranges3 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v1");
+    Map<String, TSMGetElement> ranges3 = client.tsMGet(TSMGetParams.multiGetParams().withLabels(false), "l1=v1");
     assertEquals(2, ranges3.size());
-    ArrayList<TSKeyValue<TSElement>> ranges3List = new ArrayList<>(ranges3.values());
+    ArrayList<TSMGetElement> ranges3List = new ArrayList<>(ranges3.values());
     assertEquals(Collections.emptyMap(), ranges3List.get(0).getLabels());
     assertEquals(Collections.emptyMap(), ranges3List.get(1).getLabels());
     assertEquals(new TSElement(1500, 1.3), ranges3List.get(0).getValue());

@@ -3803,7 +3803,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.GET).key(key).addParams(getParams), TimeSeriesBuilderFactory.TIMESERIES_ELEMENT);
   }
 
-  public final CommandObject<Map<String, TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public final CommandObject<Map<String, TSMGetElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MGET).addParams(multiGetParams)
         .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
         proto == RedisProtocol.RESP3 ? TimeSeriesBuilderFactory.TIMESERIES_MGET_RESPONSE_RESP3

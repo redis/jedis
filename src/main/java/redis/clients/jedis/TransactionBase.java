@@ -3989,7 +3989,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Map<String, TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public Response<Map<String, TSMGetElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return appendCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 

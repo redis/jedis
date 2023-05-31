@@ -78,29 +78,28 @@ public final class TimeSeriesBuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, TSKeyValue<TSElement>>> TIMESERIES_MGET_RESPONSE
-      = new Builder<Map<String, TSKeyValue<TSElement>>>() {
+  public static final Builder<Map<String, TSMGetElement>> TIMESERIES_MGET_RESPONSE
+      = new Builder<Map<String, TSMGetElement>>() {
     @Override
-    public Map<String, TSKeyValue<TSElement>> build(Object data) {
+    public Map<String, TSMGetElement> build(Object data) {
       return ((List<Object>) data).stream().map((tsObject) -> (List<Object>) tsObject)
-          .map((tsList) -> new TSKeyValue<>(BuilderFactory.STRING.build(tsList.get(0)),
+          .map((tsList) -> new TSMGetElement(BuilderFactory.STRING.build(tsList.get(0)),
               BuilderFactory.STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT.build(tsList.get(2))))
-          .collect(Collectors.toMap(TSKeyValue::getKey, identity()));
+          .collect(Collectors.toMap(TSMGetElement::getKey, identity()));
     }
   };
 
-  // TODO:
-  public static final Builder<Map<String, TSKeyValue<TSElement>>> TIMESERIES_MGET_RESPONSE_RESP3
-      = new Builder<Map<String, TSKeyValue<TSElement>>>() {
+  public static final Builder<Map<String, TSMGetElement>> TIMESERIES_MGET_RESPONSE_RESP3
+      = new Builder<Map<String, TSMGetElement>>() {
     @Override
-    public Map<String, TSKeyValue<TSElement>> build(Object data) {
+    public Map<String, TSMGetElement> build(Object data) {
       List<Object> dataList = (List<Object>) data;
-      Map<String, TSKeyValue<TSElement>> map = new LinkedHashMap<>(dataList.size());
+      Map<String, TSMGetElement> map = new LinkedHashMap<>(dataList.size());
       for (Iterator<Object> iterator = dataList.iterator(); iterator.hasNext();) {
         String key = BuilderFactory.STRING.build(iterator.next());
         List<Object> valueList = (List<Object>) iterator.next();
-        TSKeyValue<TSElement> value = new TSKeyValue<>(key,
+        TSMGetElement value = new TSMGetElement(key,
             BuilderFactory.STRING_MAP.build(valueList.get(0)),
             TIMESERIES_ELEMENT.build(valueList.get(1)));
         map.put(key, value);

@@ -50,7 +50,7 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<TSElement> tsGet(String key, TSGetParams getParams);
 
-  Response<Map<String, TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters);
+  Response<Map<String, TSMGetElement>> tsMGet(TSMGetParams multiGetParams, String... filters);
 
   Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket);
 

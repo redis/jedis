@@ -209,7 +209,7 @@ public interface RedisTimeSeriesCommands {
    * @param filters secondary indexes
    * @return multi get elements
    */
-  Map<String, TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters);
+  Map<String, TSMGetElement> tsMGet(TSMGetParams multiGetParams, String... filters);
 
   /**
    * {@code TS.CREATERULE sourceKey destKey AGGREGATION aggregationType timeBucket}

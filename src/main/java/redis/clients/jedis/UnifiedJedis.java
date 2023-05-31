@@ -4330,7 +4330,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Map<String, TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public Map<String, TSMGetElement> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return executeCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 

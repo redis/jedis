@@ -11,11 +11,20 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.junit.ComparisonFailure;
+import redis.clients.jedis.RedisProtocol;
 
 public class AssertUtil {
 
   public static void assertOK(String str) {
     assertEquals("OK", str);
+  }
+
+  public static void assertEqualsByProtocol(RedisProtocol protocol, Object expectedResp2, Object expectedResp3, Object actual) {
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals(expectedResp2, actual);
+    } else {
+      assertEquals(expectedResp3, actual);
+    }
   }
 
   public static <T> boolean assertCollectionContains(Collection<T> array, T expected) {

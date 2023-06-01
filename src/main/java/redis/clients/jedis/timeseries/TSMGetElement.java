@@ -25,7 +25,7 @@ public class TSMGetElement extends KeyValue<String, TSElement> {
     return new StringBuilder().append(getClass().getSimpleName())
         .append("{key=").append(getKey())
         .append(", labels=").append(labels)
-        .append(", element = ").append(getElement())
+        .append(", element=").append(getElement())
         .append('}').toString();
   }
 }

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 
 import java.util.*;
 import org.junit.BeforeClass;
@@ -237,7 +238,9 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     Map<String, TSMRangeElements> ranges2 = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
         .aggregation(AggregationType.COUNT, 1).withLabels().filter("l4=v4"));
     assertEquals(1, ranges2.size());
-    assertEquals(labels2, ranges2.values().stream().findAny().get().getLabels());
+    TSMRangeElements elements2 = ranges2.values().stream().findAny().get();
+    assertEquals(labels2, elements2.getLabels());
+    assertEqualsByProtocol(protocol, null, Arrays.asList(AggregationType.COUNT), elements2.getAggregators());
 
     Map<String, String> labels3 = new HashMap<>();
     labels3.put("l3", "v33");
@@ -251,8 +254,10 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     ArrayList<TSMRangeElements> ranges3List = new ArrayList<>(ranges3.values());
     assertEquals(1, ranges3List.get(0).getValue().size());
     assertEquals(labels2, ranges3List.get(0).getLabels());
+    assertEqualsByProtocol(protocol, null, Arrays.asList(AggregationType.AVG), ranges3List.get(0).getAggregators());
     assertEquals(2, ranges3List.get(1).getValue().size());
     assertEquals(labels3, ranges3List.get(1).getLabels());
+    assertEqualsByProtocol(protocol, null, Arrays.asList(AggregationType.AVG), ranges3List.get(1).getAggregators());
 
     assertEquals(800L, client.tsAdd("seriesAdd", 800L, 1.1));
     assertEquals(700L, client.tsAdd("seriesAdd", 700L, 1.1, TSCreateParams.createParams().retention(10000)));

@@ -40,7 +40,8 @@ public final class TimeSeriesBuilderFactory {
           .map((tsList) -> new TSMRangeElements(BuilderFactory.STRING.build(tsList.get(0)),
               BuilderFactory.STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
-          .collect(Collectors.toMap(TSMRangeElements::getKey, identity(), (x, y) -> x, LinkedHashMap::new));
+          .collect(Collectors.toMap(TSMRangeElements::getKey, identity(),
+              (x, y) -> x, LinkedHashMap::new));
     }
   };
 
@@ -56,9 +57,12 @@ public final class TimeSeriesBuilderFactory {
         TSMRangeElements elements;
         switch (valueList.size()) {
           case 3:
+            List<Object> aggrMapObj = (List<Object>) valueList.get(1);
+            assert "aggregators".equalsIgnoreCase(BuilderFactory.STRING.build(aggrMapObj.get(0)));
             elements = new TSMRangeElements(key,
                 BuilderFactory.STRING_MAP.build(valueList.get(0)),
-                // TODO: valueList.get(1)
+                ((List<Object>) aggrMapObj.get(1)).stream().map(BuilderFactory.STRING::build)
+                    .map(AggregationType::safeValueOf).collect(Collectors.toList()),
                 TIMESERIES_ELEMENT_LIST.build(valueList.get(2)));
             break;
           case 4:

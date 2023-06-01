@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.util.SafeEncoder;
 
 public final class TimeSeriesBuilderFactory {
 
@@ -67,12 +68,12 @@ public final class TimeSeriesBuilderFactory {
           case 4:
             List<Object> rdcMapObj = (List<Object>) valueList.get(1);
             assert "reducers".equalsIgnoreCase(BuilderFactory.STRING.build(rdcMapObj.get(0)));
-            List<Object> srcMapObj = (List<Object>) valueList.get(1);
+            List<Object> srcMapObj = (List<Object>) valueList.get(2);
             assert "sources".equalsIgnoreCase(BuilderFactory.STRING.build(srcMapObj.get(0)));
             elements = new TSMRangeElements(key,
                 BuilderFactory.STRING_MAP.build(valueList.get(0)),
-                ((List<Object>) rdcMapObj.get(1)).stream().map(BuilderFactory.STRING::build).collect(Collectors.toList()),
-                BuilderFactory.STRING.build(srcMapObj.get(1)),
+                BuilderFactory.STRING_LIST.build(rdcMapObj.get(1)),
+                BuilderFactory.STRING_LIST.build(srcMapObj.get(1)),
                 TIMESERIES_ELEMENT_LIST.build(valueList.get(3)));
             break;
           default:

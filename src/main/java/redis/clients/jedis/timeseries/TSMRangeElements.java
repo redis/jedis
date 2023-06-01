@@ -9,7 +9,7 @@ public class TSMRangeElements extends KeyValue<String, List<TSElement>> {
   private final Map<String, String> labels;
   private final List<AggregationType> aggregators;
   private final List<String> reducers;
-  private final String sources;
+  private final List<String> sources;
 
   public TSMRangeElements(String key, Map<String, String> labels, List<TSElement> value) {
     super(key, value);
@@ -27,7 +27,7 @@ public class TSMRangeElements extends KeyValue<String, List<TSElement>> {
     this.sources = null;
   }
 
-  public TSMRangeElements(String key, Map<String, String> labels, List<String> reducers, String sources, List<TSElement> value) {
+  public TSMRangeElements(String key, Map<String, String> labels, List<String> reducers, List<String> sources, List<TSElement> value) {
     super(key, value);
     this.labels = labels;
     this.aggregators = null;
@@ -47,7 +47,7 @@ public class TSMRangeElements extends KeyValue<String, List<TSElement>> {
     return reducers;
   }
 
-  public String getSources() {
+  public List<String> getSources() {
     return sources;
   }
 

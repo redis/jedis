@@ -9,6 +9,7 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
+import redis.clients.jedis.util.LazyRawable;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**

@@ -69,16 +69,6 @@ public class AggregationBuilder {
       args.add(field.getField());
       args.add(field.getOrder());
     }
-
-    return this;
-  }
-
-  public AggregationBuilder sortBy(int max, SortedField... fields) {
-    sortBy(fields);
-    if (max > 0) {
-      args.add(SearchKeyword.MAX);
-      args.add(max);
-    }
     return this;
   }
 
@@ -88,6 +78,33 @@ public class AggregationBuilder {
 
   public AggregationBuilder sortByDesc(String field) {
     return sortBy(SortedField.desc(field));
+  }
+
+  /**
+   * {@link AggregationBuilder#sortBy(redis.clients.jedis.search.aggr.SortedField...)}
+   * (or {@link AggregationBuilder#sortByAsc(java.lang.String)}
+   * or {@link AggregationBuilder#sortByDesc(java.lang.String)})
+   * MUST BE called JUST BEFORE this.
+   * @param max limit
+   * @return this
+   */
+  public AggregationBuilder sortByMax(int max) {
+    args.add(SearchKeyword.MAX);
+    args.add(max);
+    return this;
+  }
+
+  /**
+   * Shortcut to {@link AggregationBuilder#sortBy(redis.clients.jedis.search.aggr.SortedField...)}
+   * and {@link AggregationBuilder#sortByMax(int)}.
+   * @param max limit
+   * @param fields sorted fields
+   * @return this
+   */
+  public AggregationBuilder sortBy(int max, SortedField... fields) {
+    sortBy(fields);
+    sortByMax(max);
+    return this;
   }
 
   public AggregationBuilder apply(String projection, String alias) {

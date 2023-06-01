@@ -2,6 +2,7 @@ package redis.clients.jedis.timeseries;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -126,12 +127,79 @@ public class TSInfo {
     }
   };
 
+  // TODO: unify INFO builders
+  public static Builder<TSInfo> TIMESERIES_INFO_RESP3 = new Builder<TSInfo>() {
+    @Override
+    public TSInfo build(Object data) {
+      List<Object> list = (List<Object>) data;
+      Map<String, Object> properties = new HashMap<>();
+      Map<String, String> labels = null;
+      Map<String, Rule> rules = null;
+      List<Map<String, Object>> chunks = null;
+
+      for (int i = 0; i < list.size(); i += 2) {
+        String prop = SafeEncoder.encode((byte[]) list.get(i));
+        Object value = list.get(i + 1);
+        if (value instanceof List) {
+          switch (prop) {
+            case LABELS_PROPERTY:
+              labels = BuilderFactory.STRING_MAP.build(value);
+              value = labels;
+              break;
+            case RULES_PROPERTY:
+              List<Object> rulesDataList = (List<Object>) value;
+              Map<String, List<Object>> rulesValueMap = new HashMap<>(rulesDataList.size() / 2, 1f);
+              rules = new HashMap<>(rulesDataList.size());
+              for (Iterator<Object> iterator = rulesDataList.iterator(); iterator.hasNext();) {
+                String ruleName = BuilderFactory.STRING.build(iterator.next());
+                List<Object> ruleValueList = BuilderFactory.ENCODED_OBJECT_LIST.build(iterator.next());
+                rulesValueMap.put(ruleName, ruleValueList);
+                rules.put(ruleName, new Rule(ruleName, ruleValueList));
+              }
+              value = rulesValueMap;
+              break;
+            case CHUNKS_PROPERTY:
+              List<Object> chunksDataList = (List<Object>) value;
+              List<Map<String, Object>> chunksValueList = new ArrayList<>(chunksDataList.size());
+              chunks = new ArrayList<>(chunksDataList.size());
+              for (Object chunkData : chunksDataList) {
+                Map<String, Object> chunk = BuilderFactory.ENCODED_OBJECT_MAP_FROM_PAIRS.build(chunkData);
+                chunksValueList.add(new HashMap<>(chunk));
+                chunks.add(chunk);
+              }
+              value = chunksValueList;
+              break;
+            default:
+              value = SafeEncoder.encodeObject(value);
+              break;
+          }
+        } else if (value instanceof byte[]) {
+          value = SafeEncoder.encode((byte[]) value);
+          if (DUPLICATE_POLICY_PROPERTY.equals(prop)) {
+            try {
+              value = DuplicatePolicy.valueOf(((String) value).toUpperCase());
+            } catch (Exception e) { }
+          }
+        }
+        properties.put(prop, value);
+      }
+
+      return new TSInfo(properties, labels, rules, chunks);
+    }
+  };
+
   public static class Rule {
 
     private final String compactionKey;
     private final long bucketDuration;
     private final AggregationType aggregator;
     private final long alignmentTimestamp;
+
+    private Rule(String compaction, List<Object> encodedValues) {
+      this(compaction, (Long) encodedValues.get(0),
+          AggregationType.safeValueOf((String) encodedValues.get(1)),
+          (Long) encodedValues.get(2));
+    }
 
     private Rule(String compaction, long bucket, AggregationType aggregation, long alignment) {
       this.compactionKey = compaction;

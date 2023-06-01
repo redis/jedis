@@ -1,8 +1,8 @@
-package redis.clients.jedis.search;
+package redis.clients.jedis.util;
 
 import redis.clients.jedis.args.Rawable;
 
-class LazyRawable implements Rawable {
+public class LazyRawable implements Rawable {
 
   private byte[] raw = null;
 

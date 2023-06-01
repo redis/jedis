@@ -9,6 +9,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.util.LazyRawable;
 
 /**
  * Query represents query parameters and filters to load results from the engine

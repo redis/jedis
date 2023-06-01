@@ -1645,16 +1645,32 @@ public final class BuilderFactory {
       final List<Object> list = (List<Object>) data;
       final Map<String, String> map = new HashMap<>(list.size());
       for (Object object : list) {
-        final List<byte[]> flat = (List<byte[]>) object;
-        map.put(SafeEncoder.encode(flat.get(0)), flat.get(1) != null ? SafeEncoder.encode(flat.get(1)) : null);
+        if (object == null) continue;
+        final List<Object> flat = (List<Object>) object;
+        if (flat.isEmpty()) continue;
+        map.put(STRING.build(flat.get(0)), STRING.build(flat.get(1)));
       }
-
       return map;
     }
 
     @Override
     public String toString() {
       return "Map<String, String>";
+    }
+  };
+
+  public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP_FROM_PAIRS = new Builder<Map<String, Object>>() {
+    @Override
+    public Map<String, Object> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      final Map<String, Object> map = new HashMap<>(list.size(), 1f);
+      for (Object object : list) {
+        if (object == null) continue;
+        final List<Object> flat = (List<Object>) object;
+        if (flat.isEmpty()) continue;
+        map.put(STRING.build(flat.get(0)), ENCODED_OBJECT.build(flat.get(1)));
+      }
+      return map;
     }
   };
 

@@ -1972,6 +1972,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BZMPOP).blocking().add(timeout).add(keys.length)
         .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
   }
+
+  private Builder<List<Tuple>> getTupleListBuilder() {
+    return proto == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_LIST_RESP3 : BuilderFactory.TUPLE_LIST;
+  }
+
+  private Builder<Set<Tuple>> getTupleSetBuilder() {
+    return proto == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_ZSET_RESP3 : BuilderFactory.TUPLE_ZSET;
+  }
   // Sorted Set commands
 
   // Geo commands
@@ -3765,26 +3773,26 @@ public class CommandObjects {
         .addParams(rangeParams), TimeSeriesBuilderFactory.TIMESERIES_ELEMENT_LIST);
   }
 
-  public final CommandObject<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public final CommandObject<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
-        TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+        getTimeseriesMultiRangeResponseBuilder());
   }
 
-  public final CommandObject<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public final CommandObject<Map<String, TSMRangeElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE)
-        .addParams(multiRangeParams), TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+        .addParams(multiRangeParams), getTimeseriesMultiRangeResponseBuilder());
   }
 
-  public final CommandObject<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public final CommandObject<Map<String, TSMRangeElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
-        TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+        getTimeseriesMultiRangeResponseBuilder());
   }
 
-  public final CommandObject<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public final CommandObject<Map<String, TSMRangeElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MREVRANGE).addParams(multiRangeParams),
-        TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE);
+        getTimeseriesMultiRangeResponseBuilder());
   }
 
   public final CommandObject<TSElement> tsGet(String key) {
@@ -3795,9 +3803,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.GET).key(key).addParams(getParams), TimeSeriesBuilderFactory.TIMESERIES_ELEMENT);
   }
 
-  public final CommandObject<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public final CommandObject<Map<String, TSMGetElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MGET).addParams(multiGetParams)
-        .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters), TimeSeriesBuilderFactory.TIMESERIES_MGET_RESPONSE);
+        .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
+        proto == RedisProtocol.RESP3 ? TimeSeriesBuilderFactory.TIMESERIES_MGET_RESPONSE_RESP3
+            : TimeSeriesBuilderFactory.TIMESERIES_MGET_RESPONSE);
   }
 
   public final CommandObject<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType,
@@ -3822,11 +3832,21 @@ public class CommandObjects {
   }
 
   public final CommandObject<TSInfo> tsInfo(String key) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.INFO).key(key), TSInfo.TIMESERIES_INFO);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.INFO).key(key), getTimeseriesInfoBuilder());
   }
 
   public final CommandObject<TSInfo> tsInfoDebug(String key) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.INFO).key(key).add(TimeSeriesKeyword.DEBUG), TSInfo.TIMESERIES_INFO);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.INFO).key(key).add(TimeSeriesKeyword.DEBUG),
+        getTimeseriesInfoBuilder());
+  }
+
+  private Builder<Map<String, TSMRangeElements>> getTimeseriesMultiRangeResponseBuilder() {
+    return proto == RedisProtocol.RESP3 ? TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE_RESP3
+        : TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE;
+  }
+
+  private Builder<TSInfo> getTimeseriesInfoBuilder() {
+    return proto == RedisProtocol.RESP3 ? TSInfo.TIMESERIES_INFO_RESP3 : TSInfo.TIMESERIES_INFO;
   }
   // RedisTimeSeries commands
 
@@ -4203,14 +4223,6 @@ public class CommandObjects {
       return new KeyValue<>(BuilderFactory.LONG.build(list.get(0)), BuilderFactory.BINARY.build(list.get(1)));
     }
   };
-
-  private Builder<List<Tuple>> getTupleListBuilder() {
-    return proto == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_LIST_RESP3 : BuilderFactory.TUPLE_LIST;
-  }
-
-  private Builder<Set<Tuple>> getTupleSetBuilder() {
-    return proto == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_ZSET_RESP3 : BuilderFactory.TUPLE_ZSET;
-  }
 
   private CommandArguments addFlatArgs(CommandArguments args, long... values) {
     for (long value : values) {

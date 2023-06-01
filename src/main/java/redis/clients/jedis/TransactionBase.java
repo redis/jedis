@@ -3959,22 +3959,22 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public Response<Map<String, TSMRangeElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public Response<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<Map<String, TSMRangeElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public Response<Map<String, TSMRangeElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
@@ -3989,7 +3989,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public Response<Map<String, TSMGetElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return appendCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 

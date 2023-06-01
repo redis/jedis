@@ -6,17 +6,19 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.StringJoiner;
 
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.search.FieldName;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.LazyRawable;
 
 /**
  * @author Guy Korland
  */
 public class AggregationBuilder {
 
-  private final List<String> args = new ArrayList<>();
+  private final List<Object> args = new ArrayList<>();
+  private Integer dialect;
   private boolean isWithCursor = false;
 
   public AggregationBuilder(String query) {
@@ -32,26 +34,27 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder load(FieldName... fields) {
-    args.add("LOAD");
-    final int loadCountIndex = args.size();
-    args.add(null);
+    args.add(SearchKeyword.LOAD);
+    LazyRawable rawLoadCount = new LazyRawable();
+    args.add(rawLoadCount);
     int loadCount = 0;
     for (FieldName fn : fields) {
-      loadCount += fn.addCommandEncodedArguments(args);
+      loadCount += fn.addCommandArguments(args);
     }
-    args.set(loadCountIndex, Integer.toString(loadCount));
+    rawLoadCount.setRaw(Protocol.toByteArray(loadCount));
     return this;
   }
 
   public AggregationBuilder loadAll() {
-    args.add("LOAD");
-    args.add("*");
+    args.add(SearchKeyword.LOAD);
+    args.add(Protocol.BYTES_ASTERISK);
     return this;
   }
 
   public AggregationBuilder limit(int offset, int count) {
-    Limit limit = new Limit(offset, count);
-    limit.addArgs(args);
+    args.add(SearchKeyword.LIMIT);
+    args.add(offset);
+    args.add(count);
     return this;
   }
 
@@ -60,7 +63,7 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder sortBy(SortedField... fields) {
-    args.add("SORTBY");
+    args.add(SearchKeyword.SORTBY);
     args.add(Integer.toString(fields.length * 2));
     for (SortedField field : fields) {
       args.add(field.getField());
@@ -88,25 +91,11 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder apply(String projection, String alias) {
-    args.add("APPLY");
+    args.add(SearchKeyword.APPLY);
     args.add(projection);
-    args.add("AS");
+    args.add(SearchKeyword.AS);
     args.add(alias);
     return this;
-  }
-
-  public AggregationBuilder groupBy(Collection<String> fields, Collection<Reducer> reducers) {
-    String[] fieldsArr = new String[fields.size()];
-    Group g = new Group(fields.toArray(fieldsArr));
-    for (Reducer r : reducers) {
-      g.reduce(r);
-    }
-    groupBy(g);
-    return this;
-  }
-
-  public AggregationBuilder groupBy(String field, Reducer... reducers) {
-    return groupBy(Collections.singletonList(field), Arrays.asList(reducers));
   }
 
   public AggregationBuilder groupBy(Group group) {
@@ -115,23 +104,39 @@ public class AggregationBuilder {
     return this;
   }
 
+  public AggregationBuilder groupBy(Collection<String> fields, Collection<Reducer> reducers) {
+    String[] fieldsArr = new String[fields.size()];
+    Group g = new Group(fields.toArray(fieldsArr));
+    reducers.forEach((r) -> g.reduce(r));
+    groupBy(g);
+    return this;
+  }
+
+  public AggregationBuilder groupBy(String field, Reducer... reducers) {
+    return groupBy(Collections.singletonList(field), Arrays.asList(reducers));
+  }
+
   public AggregationBuilder filter(String expression) {
     args.add("FILTER");
     args.add(expression);
     return this;
   }
 
+  public AggregationBuilder cursor(int count) {
+    isWithCursor = true;
+    args.add("WITHCURSOR");
+    args.add("COUNT");
+    args.add(count);
+    return this;
+  }
+
   public AggregationBuilder cursor(int count, long maxIdle) {
     isWithCursor = true;
-    if (count > 0) {
-      args.add("WITHCURSOR");
-      args.add("COUNT");
-      args.add(Integer.toString(count));
-      if (maxIdle < Long.MAX_VALUE && maxIdle >= 0) {
-        args.add("MAXIDLE");
-        args.add(Long.toString(maxIdle));
-      }
-    }
+    args.add("WITHCURSOR");
+    args.add("COUNT");
+    args.add(count);
+    args.add("MAXIDLE");
+    args.add(maxIdle);
     return this;
   }
 
@@ -141,23 +146,18 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder timeout(long timeout) {
-    if (timeout >= 0) {
-      args.add("TIMEOUT");
-      args.add(Long.toString(timeout));
-    }
+    args.add("TIMEOUT");
+    args.add(timeout);
     return this;
   }
 
   public AggregationBuilder params(Map<String, Object> params) {
-    if (params.size() >= 1) {
-      args.add("PARAMS");
-      args.add(Integer.toString(params.size() * 2));
-      for (Map.Entry<String, Object> entry : params.entrySet()) {
-        args.add(entry.getKey());
-        args.add(String.valueOf(entry.getValue()));
-      }
-    }
-
+    args.add("PARAMS");
+    args.add(Integer.toString(params.size() * 2));
+    params.forEach((k, v) -> {
+      args.add(k);
+      args.add(v);
+    });
     return this;
   }
 
@@ -167,7 +167,11 @@ public class AggregationBuilder {
     return this;
   }
 
-  public List<String> getArgs() {
+  public List<Object> getArgs() {
+    if (dialect != null) {
+      args.add(SearchKeyword.DIALECT);
+      args.add(dialect);
+    }
     return Collections.unmodifiableList(args);
   }
 

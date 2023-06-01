@@ -1,5 +1,7 @@
 package redis.clients.jedis.search.aggr;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -8,19 +10,17 @@ import java.util.List;
 public class Reducers {
 
   public static Reducer count() {
-    return new Reducer() {
-      @Override
-      public String getName() {
-        return "COUNT";
+    return new Reducer("COUNT") {
+      @Override protected List<Object> getOwnArgs() {
+        return Collections.emptyList();
       }
     };
   }
 
   private static Reducer singleFieldReducer(String name, String field) {
-    return new Reducer(field) {
-      @Override
-      public String getName() {
-        return name;
+    return new Reducer(name, field) {
+      @Override protected List<Object> getOwnArgs() {
+        return Collections.emptyList();
       }
     };
   }
@@ -54,19 +54,15 @@ public class Reducers {
   }
 
   public static Reducer quantile(String field, double percentile) {
-    return new Reducer(field) {
-      @Override
-      public String getName() {
-        return "QUANTILE";
-      }
-
-      @Override
-      protected List<String> getOwnArgs() {
-        List<String> args = super.getOwnArgs();
-        args.add(Double.toString(percentile));
-        return args;
+    return new Reducer("QUANTILE", field) {
+      @Override protected List<Object> getOwnArgs() {
+        return Arrays.asList(percentile);
       }
     };
+  }
+
+  public static Reducer first_value(String field) {
+    return singleFieldReducer("FIRST_VALUE", field);
   }
 
   /**
@@ -77,27 +73,11 @@ public class Reducers {
    * @return Reducer
    */
   public static Reducer first_value(String field, SortedField sortBy) {
-    return new Reducer(field) {
-      @Override
-      public String getName() {
-        return "FIRST_VALUE";
-      }
-
-      @Override
-      protected List<String> getOwnArgs() {
-        List<String> args = super.getOwnArgs();
-        if (sortBy != null) {
-          args.add("BY");
-          args.add(sortBy.getField());
-          args.add(sortBy.getOrder());
-        }
-        return args;
+    return new Reducer("FIRST_VALUE", field) {
+      @Override protected List<Object> getOwnArgs() {
+        return Arrays.asList("BY", sortBy.getField(), sortBy.getOrder());
       }
     };
-  }
-
-  public static Reducer first_value(String field) {
-    return first_value(field, null);
   }
 
   public static Reducer to_list(String field) {
@@ -105,17 +85,9 @@ public class Reducers {
   }
 
   public static Reducer random_sample(String field, int size) {
-    return new Reducer(field) {
-      @Override
-      public String getName() {
-        return "RANDOM_SAMPLE";
-      }
-
-      @Override
-      protected List<String> getOwnArgs() {
-        List<String> args = super.getOwnArgs();
-        args.add(Integer.toString(size));
-        return args;
+    return new Reducer("RANDOM_SAMPLE", field) {
+      @Override protected List<Object> getOwnArgs() {
+        return Arrays.asList(size);
       }
     };
   }

@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.search.FieldName;
+import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 import redis.clients.jedis.util.LazyRawable;
 
 /**
@@ -76,8 +76,8 @@ public class AggregationBuilder {
   public AggregationBuilder sortBy(int max, SortedField... fields) {
     sortBy(fields);
     if (max > 0) {
-      args.add("MAX");
-      args.add(Integer.toString(max));
+      args.add(SearchKeyword.MAX);
+      args.add(max);
     }
     return this;
   }
@@ -99,7 +99,7 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder groupBy(Group group) {
-    args.add("GROUPBY");
+    args.add(SearchKeyword.GROUPBY);
     group.addArgs(args);
     return this;
   }
@@ -117,43 +117,43 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder filter(String expression) {
-    args.add("FILTER");
+    args.add(SearchKeyword.FILTER);
     args.add(expression);
     return this;
   }
 
   public AggregationBuilder cursor(int count) {
     isWithCursor = true;
-    args.add("WITHCURSOR");
-    args.add("COUNT");
+    args.add(SearchKeyword.WITHCURSOR);
+    args.add(SearchKeyword.COUNT);
     args.add(count);
     return this;
   }
 
   public AggregationBuilder cursor(int count, long maxIdle) {
     isWithCursor = true;
-    args.add("WITHCURSOR");
-    args.add("COUNT");
+    args.add(SearchKeyword.WITHCURSOR);
+    args.add(SearchKeyword.COUNT);
     args.add(count);
-    args.add("MAXIDLE");
+    args.add(SearchKeyword.MAXIDLE);
     args.add(maxIdle);
     return this;
   }
 
   public AggregationBuilder verbatim() {
-    args.add("VERBATIM");
+    args.add(SearchKeyword.VERBATIM);
     return this;
   }
 
   public AggregationBuilder timeout(long timeout) {
-    args.add("TIMEOUT");
+    args.add(SearchKeyword.TIMEOUT);
     args.add(timeout);
     return this;
   }
 
   public AggregationBuilder params(Map<String, Object> params) {
-    args.add("PARAMS");
-    args.add(Integer.toString(params.size() * 2));
+    args.add(SearchKeyword.PARAMS);
+    args.add(params.size() * 2);
     params.forEach((k, v) -> {
       args.add(k);
       args.add(v);
@@ -162,8 +162,7 @@ public class AggregationBuilder {
   }
 
   public AggregationBuilder dialect(int dialect) {
-    args.add("DIALECT");
-    args.add(Integer.toString(dialect));
+    this.dialect = dialect;
     return this;
   }
 

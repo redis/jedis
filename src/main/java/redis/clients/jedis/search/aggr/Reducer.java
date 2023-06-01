@@ -46,7 +46,7 @@ public abstract class Reducer {
     args.addAll(ownArgs);
 
     if (alias != null) {
-      args.add("AS");
+      args.add(SearchKeyword.AS);
       args.add(alias);
     }
   }

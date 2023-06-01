@@ -45,6 +45,7 @@
   - `KeyedListElement`
   - `TSKeyValue`
   - `TSKeyedElements`
+  - `Limit`
 
 - `STREAM_AUTO_CLAIM_ID_RESPONSE` in BuilderFactory has been renamed to `STREAM_AUTO_CLAIM_JUSTID_RESPONSE`.
 
@@ -66,6 +67,20 @@
 - `XPendingParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
 
 - `getParams()` method is removed from `SortingParams` class.
+
+- `addCommandEncodedArguments` and `addCommandBinaryArguments` methods have been removed from `FieldName` class.
+
+- `limit` and `getArgs` methods have been removed from `Group` class.
+
+- `Reducer` abstract class is refactored:
+  - `Reducer(String field)` constructored is removed; `Reducer(String name, String field)` constructor is added.
+  - `Reducer(String name)` constructored is added; it will cause runtime error with older `Reducer(String field)` constructor.
+  - `getName` method is removed.
+  - `getAlias` method is removed.
+  - `setAlias` method is removed; use `as` method.
+  - `setAliasAsField` method is removed.
+  - `getOwnArgs` method is now abstract.
+  - `getArgs` method is removed.
 
 - All variants of `blmpop` and `bzmpop` methods now take `double timeout` parameter instead of `long timeout` parameter.
   This is breaking ONLY IF you are using `Long` for timeout.

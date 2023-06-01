@@ -1,15 +1,14 @@
 package redis.clients.jedis.timeseries;
 
-import static java.util.function.Function.identity;
-
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.util.SafeEncoder;
 
 public final class TimeSeriesBuilderFactory {
 
@@ -40,7 +39,7 @@ public final class TimeSeriesBuilderFactory {
           .map((tsList) -> new TSMRangeElements(BuilderFactory.STRING.build(tsList.get(0)),
               BuilderFactory.STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT_LIST.build(tsList.get(2))))
-          .collect(Collectors.toMap(TSMRangeElements::getKey, identity(),
+          .collect(Collectors.toMap(TSMRangeElements::getKey, Function.identity(),
               (x, y) -> x, LinkedHashMap::new));
     }
   };
@@ -66,10 +65,14 @@ public final class TimeSeriesBuilderFactory {
                 TIMESERIES_ELEMENT_LIST.build(valueList.get(2)));
             break;
           case 4:
+            List<Object> rdcMapObj = (List<Object>) valueList.get(1);
+            assert "reducers".equalsIgnoreCase(BuilderFactory.STRING.build(rdcMapObj.get(0)));
+            List<Object> srcMapObj = (List<Object>) valueList.get(1);
+            assert "sources".equalsIgnoreCase(BuilderFactory.STRING.build(srcMapObj.get(0)));
             elements = new TSMRangeElements(key,
                 BuilderFactory.STRING_MAP.build(valueList.get(0)),
-                // TODO: valueList.get(1)
-                // TODO: valueList.get(2)
+                ((List<Object>) rdcMapObj.get(1)).stream().map(BuilderFactory.STRING::build).collect(Collectors.toList()),
+                BuilderFactory.STRING.build(srcMapObj.get(1)),
                 TIMESERIES_ELEMENT_LIST.build(valueList.get(3)));
             break;
           default:
@@ -89,7 +92,7 @@ public final class TimeSeriesBuilderFactory {
           .map((tsList) -> new TSMGetElement(BuilderFactory.STRING.build(tsList.get(0)),
               BuilderFactory.STRING_MAP_FROM_PAIRS.build(tsList.get(1)),
               TIMESERIES_ELEMENT.build(tsList.get(2))))
-          .collect(Collectors.toMap(TSMGetElement::getKey, identity()));
+          .collect(Collectors.toMap(TSMGetElement::getKey, Function.identity()));
     }
   };
 

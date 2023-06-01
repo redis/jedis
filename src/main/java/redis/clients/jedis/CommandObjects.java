@@ -4172,9 +4172,6 @@ public class CommandObjects {
     this.jsonObjectMapper = jsonObjectMapper;
   }
 
-  /**
-   * If this is set, dialect set in respective params/builders will be ignored.
-   */
   public void setDefaultSearchDialect(int dialect) {
     if (dialect == 0) throw new IllegalArgumentException("DIALECT=0 cannot be set.");
     this.searchDialect.set(dialect);

@@ -4786,4 +4786,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.commandObjects.setJsonObjectMapper(jsonObjectMapper);
   }
+
+  /**
+   * If this is set, dialect set in respective params/builders will be ignored.
+   */
+  public void setDefaultSearchDialect(int dialect) {
+    this.commandObjects.setDefaultSearchDialect(dialect);
+  }
 }

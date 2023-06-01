@@ -70,11 +70,13 @@
 
 - `addCommandEncodedArguments` and `addCommandBinaryArguments` methods have been removed from `FieldName` class.
 
+- `getArgs` method is removed from `AggregationBuilder` class.
+
 - `limit` and `getArgs` methods have been removed from `Group` class.
 
 - `Reducer` abstract class is refactored:
-  - `Reducer(String field)` constructored is removed; `Reducer(String name, String field)` constructor is added.
-  - `Reducer(String name)` constructored is added; it will cause runtime error with older `Reducer(String field)` constructor.
+  - `Reducer(String field)` constructor is removed; `Reducer(String name, String field)` constructor is added.
+  - `Reducer(String name)` constructor is added; it will cause runtime error with older `Reducer(String field)` constructor.
   - `getName` method is removed.
   - `getAlias` method is removed.
   - `setAlias` method is removed; use `as` method.

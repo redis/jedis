@@ -139,7 +139,13 @@ public interface SortedSetPipelineBinaryCommands {
 
   Response<List<Tuple>> zdiffWithScores(byte[]... keys);
 
+  /**
+   * @deprecated Use {@link #zdiffstore(byte..., byte[]...)}.
+   */
+  @Deprecated
   Response<Long> zdiffStore(byte[] dstkey, byte[]... keys);
+
+  Response<Long> zdiffstore(byte[] dstkey, byte[]... keys);
 
   Response<List<byte[]>> zinter(ZParams params, byte[]... keys);
 

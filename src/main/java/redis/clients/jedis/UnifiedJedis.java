@@ -2376,8 +2376,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public long zdiffStore(String dstkey, String... keys) {
     return executeCommand(commandObjects.zdiffStore(dstkey, keys));
+  }
+
+  @Override
+  public long zdiffstore(String dstkey, String... keys) {
+    return executeCommand(commandObjects.zdiffstore(dstkey, keys));
   }
 
   @Override
@@ -2391,8 +2397,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public long zdiffStore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.zdiffStore(dstkey, keys));
+  }
+
+  @Override
+  public long zdiffstore(byte[] dstkey, byte[]... keys) {
+    return executeCommand(commandObjects.zdiffstore(dstkey, keys));
   }
 
   @Override

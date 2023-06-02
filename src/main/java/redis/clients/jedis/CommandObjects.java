@@ -1814,7 +1814,15 @@ public class CommandObjects {
         .add(WITHSCORES), getTupleListBuilder());
   }
 
+  /**
+   * @deprecated Use {@link #zdiffstore(java.lang.String, java.lang.String...)}.
+   */
+  @Deprecated
   public final CommandObject<Long> zdiffStore(String dstkey, String... keys) {
+    return zdiffstore(dstkey, keys);
+  }
+
+  public final CommandObject<Long> zdiffstore(String dstkey, String... keys) {
     return new CommandObject<>(commandArguments(ZDIFFSTORE).key(dstkey)
         .add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
   }
@@ -1828,7 +1836,15 @@ public class CommandObjects {
         .add(WITHSCORES), getTupleListBuilder());
   }
 
+  /**
+   * @deprecated Use {@link #zdiffstore(byte..., byte[]...)}.
+   */
+  @Deprecated
   public final CommandObject<Long> zdiffStore(byte[] dstkey, byte[]... keys) {
+    return zdiffstore(dstkey, keys);
+  }
+
+  public final CommandObject<Long> zdiffstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(ZDIFFSTORE).key(dstkey)
         .add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
   }

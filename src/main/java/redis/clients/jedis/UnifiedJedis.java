@@ -3017,6 +3017,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<StreamConsumerInfo> xinfoConsumers2(String key, String group) {
+    return executeCommand(commandObjects.xinfoConsumers2(key, group));
+  }
+
+  @Override
   public List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
     return executeCommand(commandObjects.xread(xReadParams, streams));
   }

@@ -47,8 +47,6 @@
   - `TSKeyedElements`
   - `Limit`
 
-- `STREAM_AUTO_CLAIM_ID_RESPONSE` in BuilderFactory has been renamed to `STREAM_AUTO_CLAIM_JUSTID_RESPONSE`.
-
 - Following BuilderFactory implementations have been removed:
   - `BYTE_ARRAY` (use `BINARY`)
   - `BYTE_ARRAY_LIST` (use `BINARY_LIST`)

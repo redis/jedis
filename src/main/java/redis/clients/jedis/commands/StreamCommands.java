@@ -227,8 +227,19 @@ public interface StreamCommands {
    * @param group Group name
    * @return List of {@link StreamConsumersInfo} containing information about consumers that belong
    * to the the group
+   * @deprecated Use {@link #xinfoConsumers2(java.lang.String, java.lang.String)}.
    */
+  @Deprecated // keep it till at least Jedis 6/7
   List<StreamConsumersInfo> xinfoConsumers(String key, String group);
+
+  /**
+   * Introspection command used in order to retrieve different information about consumers in the group
+   * @param key Stream name
+   * @param group Group name
+   * @return List of {@link StreamConsumerInfo} containing information about consumers that belong
+   * to the the group
+   */
+  List<StreamConsumerInfo> xinfoConsumers2(String key, String group);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]

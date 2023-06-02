@@ -1198,6 +1198,13 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * @deprecated Use {@link BuilderFactory#STREAM_AUTO_CLAIM_JUSTID_RESPONSE}.
+   */
+  @Deprecated
+  public static final Builder<Map.Entry<StreamEntryID, List<StreamEntryID>>> STREAM_AUTO_CLAIM_ID_RESPONSE
+      = STREAM_AUTO_CLAIM_JUSTID_RESPONSE;
+
   public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE
       = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
     @Override
@@ -1358,7 +1365,10 @@ public final class BuilderFactory {
     }
   };
 
-  // TODO: rename to STREAM_CONSUMER_INFO_LIST ?
+  /**
+   * @deprecated Use {@link BuilderFactory#STREAM_CONSUMER_INFO_LIST}.
+   */
+  @Deprecated
   public static final Builder<List<StreamConsumersInfo>> STREAM_CONSUMERS_INFO_LIST
       = new Builder<List<StreamConsumersInfo>>() {
 
@@ -1402,6 +1412,51 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<StreamConsumersInfo>";
+    }
+  };
+
+  public static final Builder<List<StreamConsumerInfo>> STREAM_CONSUMER_INFO_LIST
+      = new Builder<List<StreamConsumerInfo>>() {
+
+    Map<String, Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+      Map<String, Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(StreamConsumerInfo.NAME, STRING);
+      tempMappingFunctions.put(StreamConsumerInfo.IDLE, LONG);
+      tempMappingFunctions.put(StreamConsumerInfo.PENDING, LONG);
+      return tempMappingFunctions;
+
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<StreamConsumerInfo> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<StreamConsumerInfo> list = new ArrayList<>();
+      List<Object> streamsEntries = (List<Object>) data;
+      Iterator<Object> groupsArray = streamsEntries.iterator();
+
+      while (groupsArray.hasNext()) {
+
+        List<Object> groupInfo = (List<Object>) groupsArray.next();
+
+        Iterator<Object> consumerInfoIterator = groupInfo.iterator();
+
+        StreamConsumerInfo streamConsumerInfo = new StreamConsumerInfo(
+            createMapFromDecodingFunctions(consumerInfoIterator, mappingFunctions));
+        list.add(streamConsumerInfo);
+      }
+
+      return list;
+    }
+
+    @Override
+    public String toString() {
+      return "List<StreamConsumerInfo>";
     }
   };
 
@@ -1494,8 +1549,7 @@ public final class BuilderFactory {
     }
   };
 
-  // TODO: raname to STREAM_FULL_INFO ?
-  public static final Builder<StreamFullInfo> STREAM_INFO_FULL = new Builder<StreamFullInfo>() {
+  public static final Builder<StreamFullInfo> STREAM_FULL_INFO = new Builder<StreamFullInfo>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
 
@@ -1530,6 +1584,12 @@ public final class BuilderFactory {
       return "StreamFullInfo";
     }
   };
+
+  /**
+   * @deprecated Use {@link BuilderFactory#STREAM_FULL_INFO}.
+   */
+  @Deprecated
+  public static final Builder<StreamFullInfo> STREAM_INFO_FULL = STREAM_FULL_INFO;
 
   public static final Builder<StreamPendingSummary> STREAM_PENDING_SUMMARY = new Builder<StreamPendingSummary>() {
     @Override

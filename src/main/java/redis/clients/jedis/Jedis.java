@@ -9454,6 +9454,11 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<StreamConsumerInfo> xinfoConsumers2(String key, String group) {
+    return connection.executeCommand(commandObjects.xinfoConsumers2(key, group));
+  }
+
+  @Override
   public Object fcall(final byte[] name, final List<byte[]> keys, final List<byte[]> args) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.fcall(name, keys, args));

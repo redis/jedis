@@ -1516,6 +1516,11 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
+  public Response<List<StreamConsumerInfo>> xinfoConsumers2(String key, String group) {
+    return appendCommand(commandObjects.xinfoConsumers2(key, group));
+  }
+
+  @Override
   public Response<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
     return appendCommand(commandObjects.xread(xReadParams, streams));
   }

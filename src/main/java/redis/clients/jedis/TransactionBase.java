@@ -1304,8 +1304,14 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  @Deprecated
   public Response<Long> zdiffStore(String dstKey, String... keys) {
     return appendCommand(commandObjects.zdiffStore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Long> zdiffstore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.zdiffstore(dstKey, keys));
   }
 
   @Override
@@ -3058,8 +3064,14 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  @Deprecated
   public Response<Long> zdiffStore(byte[] dstkey, byte[]... keys) {
     return appendCommand(commandObjects.zdiffStore(dstkey, keys));
+  }
+
+  @Override
+  public Response<Long> zdiffstore(byte[] dstkey, byte[]... keys) {
+    return appendCommand(commandObjects.zdiffstore(dstkey, keys));
   }
 
   @Override

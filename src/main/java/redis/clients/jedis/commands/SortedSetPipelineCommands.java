@@ -139,7 +139,13 @@ public interface SortedSetPipelineCommands {
 
   Response<List<Tuple>> zdiffWithScores(String... keys);
 
+  /**
+   * @deprecated Use {@link #zdiffstore(java.lang.String, java.lang.String...)}.
+   */
+  @Deprecated
   Response<Long> zdiffStore(String dstKey, String... keys);
+
+  Response<Long> zdiffstore(String dstKey, String... keys);
 
   Response<Long> zinterstore(String dstKey, String... sets);
 

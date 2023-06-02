@@ -177,13 +177,13 @@
 //
 //  @Test
 //  @Override
-//  public void zdiffStore() {
+//  public void zdiffstore() {
 //    jedis.zadd("foo{:}", 1.0, "a");
 //    jedis.zadd("foo{:}", 2.0, "b");
 //    jedis.zadd("bar{:}", 1.0, "a");
 //
-//    assertEquals(0, jedis.zdiffStore("{bar}3", "{bar}1", "{bar}2"));
-//    assertEquals(1, jedis.zdiffStore("bar{:}3", "foo{:}", "bar{:}"));
+//    assertEquals(0, jedis.zdiffstore("{bar}3", "{bar}1", "{bar}2"));
+//    assertEquals(1, jedis.zdiffstore("bar{:}3", "foo{:}", "bar{:}"));
 //    assertEquals(Collections.singletonList("b"), jedis.zrange("bar{:}3", 0, -1));
 //  }
 //

@@ -699,8 +699,18 @@ public interface SortedSetCommands {
    * @param dstkey
    * @param keys group of sets
    * @return The number of elements in the resulting sorted set at dstkey.
+   * @deprecated Use {@link #zdiffstore(java.lang.String, java.lang.String...)}.
    */
+  @Deprecated
   long zdiffStore(String dstkey, String... keys);
+
+  /**
+   * Compute the difference between all the sets in the given keys. Store the result in dstkey.
+   * @param dstkey
+   * @param keys group of sets
+   * @return The number of elements in the resulting sorted set at dstkey.
+   */
+  long zdiffstore(String dstkey, String... keys);
 
   /**
    * Compute the intersection between all the sets in the given keys.

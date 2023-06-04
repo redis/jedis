@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.jedis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
 
@@ -35,11 +36,12 @@ public class ModuleTest extends JedisCommandsTestBase {
     List<Module> modules = jedis.moduleList();
 
     assertEquals("testmodule", modules.get(0).getName());
+    assertEquals("testmodule", modules.get(0).getInfo().get("name"));
 
     Object output = jedis.sendCommand(ModuleCommand.SIMPLE);
     assertTrue((Long) output > 0);
 
     assertEquals("OK", jedis.moduleUnload("testmodule"));
-    assertEquals(0, jedis.moduleList().size());
+    assertEquals(Collections.emptyList(), jedis.moduleList());
   }
 }

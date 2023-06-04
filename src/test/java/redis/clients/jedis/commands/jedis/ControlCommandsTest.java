@@ -207,21 +207,23 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void configGet() {
-    List<String> info = jedis.configGet("m*");
+    Map<String, String> info = jedis.configGet("m*");
     assertNotNull(info);
     assertFalse(info.isEmpty());
-    assertTrue(info.size() % 2 == 0);
-    List<byte[]> infoBinary = jedis.configGet("m*".getBytes());
+//    assertTrue(info.size() % 2 == 0);
+    Map<byte[], byte[]> infoBinary = jedis.configGet("m*".getBytes());
     assertNotNull(infoBinary);
     assertFalse(infoBinary.isEmpty());
-    assertTrue(infoBinary.size() % 2 == 0);
+//    assertTrue(infoBinary.size() % 2 == 0);
   }
 
   @Test
   public void configSet() {
-    List<String> info = jedis.configGet("maxmemory");
-    assertEquals("maxmemory", info.get(0));
-    String memory = info.get(1);
+    Map<String, String> info = jedis.configGet("maxmemory");
+//    assertEquals("maxmemory", info.get(0));
+//    String memory = info.get(1);
+    String memory = info.get("maxmemory");
+    assertNotNull(memory);
     assertEquals("OK", jedis.configSet("maxmemory", "200"));
     assertEquals("OK", jedis.configSet("maxmemory", memory));
   }
@@ -229,9 +231,11 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void configSetBinary() {
     byte[] maxmemory = SafeEncoder.encode("maxmemory");
-    List<byte[]> info = jedis.configGet(maxmemory);
-    assertArrayEquals(maxmemory, info.get(0));
-    byte[] memory = info.get(1);
+    Map<byte[], byte[]> info = jedis.configGet(maxmemory);
+//    assertArrayEquals(maxmemory, info.get(0));
+//    byte[] memory = info.get(1);
+    byte[] memory = info.get(maxmemory);
+    assertNotNull(memory);
     assertEquals("OK", jedis.configSet(maxmemory, Protocol.toByteArray(200)));
     assertEquals("OK", jedis.configSet(maxmemory, memory));
   }
@@ -239,15 +243,15 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void configGetSetMulti() {
     String[] params = new String[]{"hash-max-listpack-entries", "set-max-intset-entries", "zset-max-listpack-entries"};
-    List<String> info = jedis.configGet(params);
-    assertEquals(6, info.size());
-    assertEquals("OK", jedis.configSet(info.toArray(new String[6])));
+    Map<String, String> info = jedis.configGet(params);
+    assertEquals(3, info.size());
+    assertEquals("OK", jedis.configSet(info));
 
     byte[][] bparams = new byte[][]{SafeEncoder.encode("hash-max-listpack-entries"),
       SafeEncoder.encode("set-max-intset-entries"), SafeEncoder.encode("zset-max-listpack-entries")};
-    List<byte[]> binfo = jedis.configGet(bparams);
-    assertEquals(6, binfo.size());
-    assertEquals("OK", jedis.configSet(binfo.toArray(new byte[6][])));
+    Map<byte[], byte[]> binfo = jedis.configGet(bparams);
+    assertEquals(3, binfo.size());
+    assertEquals("OK", jedis.configSetBinary(binfo));
   }
 
   @Test

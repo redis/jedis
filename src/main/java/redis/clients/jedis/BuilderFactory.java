@@ -966,6 +966,11 @@ public final class BuilderFactory {
       }
 
       for (List<Object> moduleResp : objectList) {
+        if (moduleResp.get(0) instanceof KeyValue) {
+          responses.add(new Module(STRING.build(((KeyValue) moduleResp.get(0)).getValue()),
+              LONG.build(((KeyValue) moduleResp.get(1)).getValue()).intValue()));
+          continue;
+        }
         Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)),
             ((Long) moduleResp.get(3)).intValue());
         responses.add(m);

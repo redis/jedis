@@ -1661,7 +1661,7 @@ public final class BuilderFactory {
             }
           }
         } else {
-          for (int i = 0; i < objectList.size(); i++) {
+          for (int i = 0; i < objectList.size(); i += 2) {
             if ("matches".equalsIgnoreCase(STRING.build(objectList.get(i)))) {
               addMatchedPosition(matchedPositions, objectList.get(i + 1));
             } else if ("len".equalsIgnoreCase(STRING.build(objectList.get(i)))) {

@@ -9189,7 +9189,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<Module> moduleList() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.MODULE, LIST);
-    return BuilderFactory.MODULE_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.MODULE_LIST.build(connection.getOne());
   }
 
   @Override

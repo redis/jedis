@@ -934,29 +934,44 @@ public final class BuilderFactory {
       return map;
     }
   };
-
-  public static final Builder<List<Map<String, Object>>> ENCODED_OBJECT_MAP_LIST = new Builder<List<Map<String, Object>>>() {
-    @Override
-    public List<Map<String, Object>> build(Object data) {
-      if (data == null) return null;
-      List<Object> list = (List<Object>) data;
-      if (list.isEmpty()) return Collections.emptyList();
-
-      return list.stream().map(ENCODED_OBJECT_MAP::build).collect(Collectors.toList());
-    }
-
-    @Override
-    public String toString() {
-      return "List<Map<String, Object>>";
-    }
-  };
+//
+//  public static final Builder<List<Map<String, Object>>> ENCODED_OBJECT_MAP_LIST = new Builder<List<Map<String, Object>>>() {
+//    @Override
+//    public List<Map<String, Object>> build(Object data) {
+//      if (data == null) return null;
+//      List<Object> list = (List<Object>) data;
+//      if (list.isEmpty()) return Collections.emptyList();
+//
+//      return list.stream().map(ENCODED_OBJECT_MAP::build).collect(Collectors.toList());
+//    }
+//
+//    @Override
+//    public String toString() {
+//      return "List<Map<String, Object>>";
+//    }
+//  };
 
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
     public List<Module> build(Object data) {
-      List<Map<String, Object>> list = ENCODED_OBJECT_MAP_LIST.build(data);
-      if (list == null) return null;
-      return list.stream().map(Module::new).collect(Collectors.toList());
+      if (data == null) {
+        return null;
+      }
+
+      List<List<Object>> objectList = (List<List<Object>>) data;
+
+      List<Module> responses = new ArrayList<>(objectList.size());
+      if (objectList.isEmpty()) {
+        return responses;
+      }
+
+      for (List<Object> moduleResp : objectList) {
+        Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)),
+            ((Long) moduleResp.get(3)).intValue());
+        responses.add(m);
+      }
+
+      return responses;
     }
 
     @Override

@@ -20,6 +20,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisMetaInfo;
 import redis.clients.jedis.util.RedisInputStream;
@@ -370,6 +371,23 @@ public class Connection implements Closeable {
     return responses;
   }
 
+  /**
+   * Check if the client name libname, libver, characters are legal
+   * @param info the name
+   * @return Returns true if legal, false throws exception
+   * @throws JedisException if characters illegal
+   */
+  private static boolean validateClientInfo(String info) {
+    for (int i = 0; i < info.length(); i++) {
+      char c = info.charAt(i);
+      if (c < '!' || c > '~') {
+        throw new JedisValidationException("client info cannot contain spaces, "
+            + "newlines or special characters.");
+      }
+    }
+    return true;
+  }
+
   private void initializeFromClientConfig(JedisClientConfig config) {
     try {
       connect();
@@ -387,9 +405,12 @@ public class Connection implements Closeable {
 
         Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
         if (credentialsProvider instanceof RedisCredentialsProvider) {
-          ((RedisCredentialsProvider) credentialsProvider).prepare();
-          auth(credentialsProvider);
-          ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+          try {
+            ((RedisCredentialsProvider) credentialsProvider).prepare();
+            auth(credentialsProvider);
+          } finally {
+            ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+          }
         } else {
           auth(credentialsProvider);
         }
@@ -398,28 +419,27 @@ public class Connection implements Closeable {
           hello(protocol);
         }
       }
-      /// HELLO and AUTH
-
-      List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
 
       int dbIndex = config.getDatabase();
       if (dbIndex > 0) {
-        fireAndForgetMsg.add(new CommandArguments(Command.SELECT).add(Protocol.toByteArray(dbIndex)));
+        select(dbIndex);
       }
 
+      List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
+
       String clientName = config.getClientName();
-      if (doClientName && clientName != null) {
+      if (doClientName && clientName != null && validateClientInfo(clientName)) {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
       }
 
       String libName = JedisMetaInfo.getArtifactId();
-      if (libName != null) {
+      if (libName != null && validateClientInfo(libName)) {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
             .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));
       }
 
       String libVersion = JedisMetaInfo.getVersion();
-      if (libVersion != null) {
+      if (libVersion != null && validateClientInfo(libVersion)) {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
             .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
       }
@@ -427,30 +447,9 @@ public class Connection implements Closeable {
       for (CommandArguments arg : fireAndForgetMsg) {
         sendCommand(arg);
       }
-
-      List<Object> objects = getMany(fireAndForgetMsg.size());
-      for (Object obj : objects) {
-        if (obj instanceof JedisDataException) {
-          JedisDataException e = (JedisDataException)obj;
-          String errorMsg = e.getMessage().toUpperCase();
-          /**
-           * 1. Redis 4.0 and before, we need to ignore `Syntax error`.
-           * 2. Redis 5.0 and later, we need to ignore `Unknown subcommand error`.
-           * 3. Because Jedis allows Jedis jedis = new Jedis() in advance, and jedis.auth(password) later,
-           * we need to ignore `NOAUTH errors`.
-           */
-          if (errorMsg.contains("SYNTAX") ||
-              errorMsg.contains("UNKNOWN") ||
-              errorMsg.contains("NOAUTH")) { // TODO: not filter out NOAUTH
-            // ignore
-          } else {
-            throw e;
-          }
-        }
-      }
+      getMany(fireAndForgetMsg.size());
     } catch (JedisException je) {
       try {
-        setBroken();
         disconnect();
       } catch (Exception e) {
         // the first exception 'je' will be thrown
@@ -502,6 +501,11 @@ public class Connection implements Closeable {
     // handled in RedisCredentialsProvider.cleanUp()
 
     getStatusCodeReply(); // OK
+  }
+
+  public String select(final int index) {
+    sendCommand(Protocol.Command.SELECT, Protocol.toByteArray(index));
+    return getStatusCodeReply();
   }
 
   public boolean ping() {

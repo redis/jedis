@@ -16,6 +16,7 @@ on:
     branches:
       - master
       - '[0-9].[0-9]'
+      - '[0-9].x'
   schedule:
     - cron: '0 1 * * *' # nightly build
 

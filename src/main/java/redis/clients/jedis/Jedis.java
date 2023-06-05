@@ -8416,28 +8416,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<String> aclCat() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, CAT);
-    return BuilderFactory.STRING_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
   @Override
   public List<String> aclCat(String category) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, CAT.name(), category);
-    return BuilderFactory.STRING_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
   @Override
   public List<AccessControlLogEntry> aclLog() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LOG);
-    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getOne());
   }
 
   @Override
   public List<AccessControlLogEntry> aclLog(int limit) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LOG.getRaw(), toByteArray(limit));
-    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getOne());
   }
 
   @Override

@@ -1611,7 +1611,7 @@ public final class BuilderFactory {
         mapKey = STRING.build(kv.getKey());
         rawValue = kv.getValue();
       } else {
-        mapKey = STRING.build(iterator.next());
+        mapKey = STRING.build(tempObject);
         rawValue = iterator.next();
       }
 

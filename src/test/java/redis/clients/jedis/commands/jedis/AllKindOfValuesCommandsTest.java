@@ -33,6 +33,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisProtocolUtil;
 
 public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -976,7 +977,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponsePing() {
-      assertEquals("PONG", SafeEncoder.encodeObject(jedis.sendCommand(PING)));
+    assertEquals("PONG", SafeEncoder.encodeObject(jedis.sendCommand(PING)));
   }
 
   @Test
@@ -986,7 +987,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     entries.put("foo2", "bar2");
     jedis.hset("hash:test:encode", entries);
 
-    if (protocol != RedisProtocol.RESP3) {
+    if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {
       List encodeObj = (List) SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
 
       assertEquals(4, encodeObj.size());
@@ -1013,7 +1014,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
     Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
 
-    if (protocol != RedisProtocol.RESP3) {
+    if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {
       List encodeObj = (List) SafeEncoder.encodeObject(obj);
 
       assertThat(encodeObj.size(), Matchers.greaterThanOrEqualTo(14));
@@ -1041,7 +1042,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
       entryAsList.add("bar");
 
       assertEquals(entryAsList, ((List) findValueFromMapAsKeyValueList(encodeObj, "first-entry")).get(1));
-      assertEquals(entryAsList, ((List) findValueFromMapAsKeyValueList(encodeObj, "last-entry")).get(1));      
+      assertEquals(entryAsList, ((List) findValueFromMapAsKeyValueList(encodeObj, "last-entry")).get(1));
     }
   }
 

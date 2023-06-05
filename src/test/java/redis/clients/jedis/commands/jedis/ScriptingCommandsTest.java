@@ -24,6 +24,7 @@ import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 import redis.clients.jedis.util.ClientKillerUtil;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisProtocolUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class ScriptingCommandsTest extends JedisCommandsTestBase {
@@ -389,7 +390,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertEquals(functionCode, response.getLibraryCode());
 
     // Binary
-    if (protocol != RedisProtocol.RESP3) {
+    if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {
 
       List<Object> bresponse = (List<Object>) jedis.functionListBinary().get(0);
       assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));

@@ -5,13 +5,11 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.util.RedisProtocolUtil;
 
 public class PooledCommandsTestHelper {
 
   private static final HostAndPort nodeInfo = HostAndPorts.getRedisServers().get(0);
-  private static final RedisProtocol protocol = RedisProtocolUtil.getRedisProtocol();
 
   private static Jedis node;
 
@@ -23,7 +21,7 @@ public class PooledCommandsTestHelper {
 
     //return new JedisPooled(nodeInfo.getHost(), nodeInfo.getPort(), null, "foobared");
     return new JedisPooled(nodeInfo, DefaultJedisClientConfig.builder()
-        .protocol(protocol).password("foobared").build());
+        .protocol(RedisProtocolUtil.getRedisProtocol()).password("foobared").build());
   }
 
   static void clearData() {

@@ -3526,6 +3526,10 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE_LIST);
   }
 
+  public final CommandObject<List<List<Class<?>>>> jsonTypeResp3(String key, Path2 path) {
+    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3);
+  }
+
   public final CommandObject<Class<?>> jsonType(String key, Path path) {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE);
   }

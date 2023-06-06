@@ -60,6 +60,13 @@ public final class JsonBuilderFactory {
     }
   };
 
+  public static final Builder<List<List<Class<?>>>> JSON_TYPE_RESPONSE_RESP3 = new Builder<List<List<Class<?>>>>() {
+    @Override
+    public List<List<Class<?>>> build(Object data) {
+      return ((List<Object>) data).stream().map(JSON_TYPE_LIST::build).collect(Collectors.toList());
+    }
+  };
+
   public static final Builder<Object> JSON_OBJECT_CORE = new Builder<Object>() {
     @Override
     public Object build(Object data) {

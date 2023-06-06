@@ -4030,6 +4030,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<List<Class<?>>> jsonTypeResp3(String key, Path2 path) {
+    return executeCommand(commandObjects.jsonTypeResp3(key, path));
+  }
+
+  @Override
   public Class<?> jsonType(String key, Path path) {
     return executeCommand(commandObjects.jsonType(key, path));
   }

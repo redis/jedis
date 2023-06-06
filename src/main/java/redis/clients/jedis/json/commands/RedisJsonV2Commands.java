@@ -59,6 +59,8 @@ public interface RedisJsonV2Commands {
 
   List<Class<?>> jsonType(String key, Path2 path);
 
+  List<List<Class<?>>> jsonTypeResp3(String key, Path2 path);
+
   List<Long> jsonStrAppend(String key, Path2 path, Object string);
 
   List<Long> jsonStrLen(String key, Path2 path);

@@ -69,6 +69,10 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
     assertJsonGetSingleElement(expected, reply.get(0).get(0));
   }
 
+  private static void assertJsonTypeReplySingleElement(Class expected, List<List<Class<?>>> reply) {
+    assertSame(expected, reply.get(0).get(0));
+  }
+
   @Test
   public void basicSetGetShouldSucceed() {
 
@@ -210,13 +214,13 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
   @Test
   public void typeChecksShouldSucceed() {
     jsonClient.jsonSet("foobar", ROOT_PATH, new JSONObject(gson.toJson(new FooBarObject())));
-    assertEquals(singletonList(Object.class), jsonClient.jsonType("foobar", ROOT_PATH));
-    assertEquals(singletonList(String.class), jsonClient.jsonType("foobar", Path2.of(".foo")));
-    assertEquals(singletonList(int.class), jsonClient.jsonType("foobar", Path2.of(".fooI")));
-    assertEquals(singletonList(float.class), jsonClient.jsonType("foobar", Path2.of(".fooF")));
-    assertEquals(singletonList(List.class), jsonClient.jsonType("foobar", Path2.of(".fooArr")));
-    assertEquals(singletonList(boolean.class), jsonClient.jsonType("foobar", Path2.of(".fooB")));
-    assertEquals(Collections.emptyList(), jsonClient.jsonType("foobar", Path2.of(".fooErr")));
+    assertJsonTypeReplySingleElement(Object.class, jsonClient.jsonTypeResp3("foobar", ROOT_PATH));
+    assertJsonTypeReplySingleElement(String.class, jsonClient.jsonTypeResp3("foobar", Path2.of(".foo")));
+    assertJsonTypeReplySingleElement(int.class, jsonClient.jsonTypeResp3("foobar", Path2.of(".fooI")));
+    assertJsonTypeReplySingleElement(float.class, jsonClient.jsonTypeResp3("foobar", Path2.of(".fooF")));
+    assertJsonTypeReplySingleElement(List.class, jsonClient.jsonTypeResp3("foobar", Path2.of(".fooArr")));
+    assertJsonTypeReplySingleElement(boolean.class, jsonClient.jsonTypeResp3("foobar", Path2.of(".fooB")));
+    assertEquals(singletonList(Collections.emptyList()), jsonClient.jsonTypeResp3("foobar", Path2.of(".fooErr")));
   }
 
   @Test

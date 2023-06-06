@@ -53,6 +53,8 @@
   - `BINARY_MAP_FROM_PAIRS`
   - `STRING_ORDERED_SET`
 
+- `RedisJsonCommands` and `RedisJsonPipelineCommands` interfaces have been moved into `redis.clients.jedis.json.commands` package.
+
 - `Queable` class is removed.
 
 - `Params` abstract class is removed.

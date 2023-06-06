@@ -67,7 +67,7 @@ public final class JsonBuilderFactory {
     }
   };
 
-  public static final Builder<Object> JSON_OBJECT_CORE = new Builder<Object>() {
+  private static final Builder<Object> JSON_OBJECT_CORE = new Builder<Object>() {
     @Override
     public Object build(Object data) {
       if (data == null) {
@@ -99,9 +99,9 @@ public final class JsonBuilderFactory {
       if (data == null) {
         return null;
       }
-      if (data instanceof List) {
-        return ((List) data).stream().map(JSON_OBJECT::build).collect(Collectors.toList());
-      }
+//      if (data instanceof List) {
+//        return ((List) data).stream().map(JSON_OBJECT::build).collect(Collectors.toList());
+//      }
 
       if (!(data instanceof byte[])) {
         return data;

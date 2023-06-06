@@ -33,7 +33,7 @@ public interface RedisJsonV2Commands {
 
   String jsonMerge(String key, Path2 path, Object object);
 
-  Object jsonGet(String key);
+  Object jsonGet(String key); // both ver
 
   Object jsonGet(String key, Path2... paths);
 
@@ -43,9 +43,11 @@ public interface RedisJsonV2Commands {
 
   List<JSONArray> jsonMGet(Path2 path, String... keys);
 
-  long jsonDel(String key);
+  long jsonDel(String key); // both ver
 
   long jsonDel(String key, Path2 path);
+
+  long jsonClear(String key); // no test
 
   long jsonClear(String key, Path2 path);
 
@@ -80,8 +82,6 @@ public interface RedisJsonV2Commands {
   List<Long> jsonArrTrim(String key, Path2 path, int start, int stop);
 
   List<Long> jsonObjLen(String key, Path2 path);
-
-  List<String> jsonObjKeys(String key);
 
   List<List<String>> jsonObjKeys(String key, Path2 path);
 

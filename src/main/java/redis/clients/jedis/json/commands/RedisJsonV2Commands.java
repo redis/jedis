@@ -1,4 +1,4 @@
-package redis.clients.jedis.commands;
+package redis.clients.jedis.json.commands;
 
 import java.util.List;
 import org.json.JSONArray;

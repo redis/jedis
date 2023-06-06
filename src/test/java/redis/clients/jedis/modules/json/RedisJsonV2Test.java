@@ -17,10 +17,10 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.commands.RedisJsonV2Commands;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.commands.RedisJsonV2Commands;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 public class RedisJsonV2Test extends RedisModuleCommandsTestBase {

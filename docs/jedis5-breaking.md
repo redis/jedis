@@ -87,8 +87,6 @@
 
 - `quit()` method has been removed from `Connection` and `ServerCommands` interface and implementations.
 
-- `select(int index)` method has been removed from `Connection`.
-
 - `updatePassword(String password)` method has been removed from `JedisClientConfig` and implementations.
 
 - `setPassword(String password)` method has been removed from both `JedisFactory` and `ConnectionFactory` classes.

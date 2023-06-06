@@ -3453,11 +3453,21 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> jsonGet(String key, Path2... paths) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), JsonBuilderFactory.JSON_OBJECT);
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths),
+        JsonBuilderFactory.JSON_OBJECT);
   }
 
   public final CommandObject<Object> jsonGet(String key, Path... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new JsonObjectBuilder<>(Object.class));
+  }
+
+  public final CommandObject<List<List<Object>>> jsonGetResp3(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), JsonBuilderFactory.JSON_GET_RESPONSE_RESP3);
+  }
+
+  public final CommandObject<List<List<Object>>> jsonGetResp3(String key, Path2... paths) {
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths),
+        JsonBuilderFactory.JSON_GET_RESPONSE_RESP3);
   }
 
   public final CommandObject<String> jsonGetAsPlainString(String key, Path path) {
@@ -4218,6 +4228,7 @@ public class CommandObjects {
 
     @Override
     public T build(Object data) {
+      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
       return getJsonObjectMapper().fromJson(BuilderFactory.STRING.build(data), clazz);
     }
   }

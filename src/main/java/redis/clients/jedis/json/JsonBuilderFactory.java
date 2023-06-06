@@ -60,9 +60,10 @@ public final class JsonBuilderFactory {
     }
   };
 
-  public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
+  public static final Builder<Object> JSON_OBJECT_CORE = new Builder<Object>() {
     @Override
     public Object build(Object data) {
+      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
       if (data == null) {
         return null;
       }
@@ -70,7 +71,6 @@ public final class JsonBuilderFactory {
       if (!(data instanceof byte[])) {
         return data;
       }
-
       String str = STRING.build(data);
       if (str.charAt(0) == '{') {
         try {
@@ -84,6 +84,58 @@ public final class JsonBuilderFactory {
         }
       }
       return str;
+    }
+  };
+
+  public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
+    @Override
+    public Object build(Object data) {
+      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
+      if (data == null) {
+        return null;
+      }
+      if (data instanceof List) {
+        return ((List) data).stream().map(JSON_OBJECT::build).collect(Collectors.toList());
+      }
+
+      if (!(data instanceof byte[])) {
+        return data;
+      }
+      String str = STRING.build(data);
+      if (str.charAt(0) == '{') {
+        try {
+          return new JSONObject(str);
+        } catch (Exception ex) {
+        }
+      } else if (str.charAt(0) == '[') {
+        try {
+          return new JSONArray(str);
+        } catch (Exception ex) {
+        }
+      }
+      return str;
+    }
+  };
+
+  public static final Builder<List<List<Object>>> JSON_GET_RESPONSE_RESP3
+      = new Builder<List<List<Object>>>() {
+    @Override
+    public List<List<Object>> build(Object data) {
+      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
+      if (data == null) {
+        return null;
+      }
+
+      List<List<Object>> superList = (List<List<Object>>) data;
+      List<List<Object>> returnList = new ArrayList<>(superList.size());
+      for (List<Object> subList : superList) {
+        List<Object> list = new ArrayList<>(subList.size());
+        for (Object object : subList) {
+          list.add(JSON_OBJECT_CORE.build(object));
+        }
+        returnList.add(list);
+      }
+      return returnList;
     }
   };
 

@@ -26,7 +26,7 @@ import redis.clients.jedis.json.commands.RedisJsonV2Commands;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.RedisProtocolUtil;
 
-public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
+public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
 
   private static final Gson gson = new Gson();
 
@@ -34,7 +34,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @BeforeClass
   public static void prepare() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
     RedisModuleCommandsTestBase.prepare();
   }
 
@@ -45,28 +45,52 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     this.jsonClient = super.client;
   }
 
+  private static void assertJsonGetSingleElement(Object expected, Object replyObject) {
+    if (expected instanceof String) {
+      assertEquals("\"" + expected + "\"", replyObject);
+    } else if (expected instanceof JSONObject) {
+      assertJsonObjectEquals((JSONObject) expected, replyObject);
+    } else if (expected instanceof JSONArray) {
+      assertJsonArrayEquals((JSONArray) expected, replyObject);
+    } else {
+      assertEquals(expected, replyObject);
+    }
+  }
+
+  private static void assertJsonGetMultipleElement(List expectedList, List replyList) {
+    assertEquals("expectedList and replyList are of different sizes.", expectedList.size(), replyList.size());
+    final int size = expectedList.size();
+    for (int index = 0; index < size; index++) {
+      assertJsonGetSingleElement(expectedList.get(index), replyList.get(index));
+    }
+  }
+
+  private static void assertJsonGetReplySingleElement(Object expected, List<List<Object>> reply) {
+    assertJsonGetSingleElement(expected, reply.get(0).get(0));
+  }
+
   @Test
   public void basicSetGetShouldSucceed() {
 
     // naive set with a path
 //    jsonClient.jsonSet("null", null, ROOT_PATH);
     jsonClient.jsonSetWithEscape("null", ROOT_PATH, (Object) null);
-    assertJsonArrayEquals(jsonArray((Object) null), jsonClient.jsonGet("null", ROOT_PATH));
+    assertJsonGetReplySingleElement(null, jsonClient.jsonGetResp3("null", ROOT_PATH));
 
     // real scalar value and no path
     jsonClient.jsonSetWithEscape("str", "strong");
-    assertEquals("strong", jsonClient.jsonGet("str"));
+    assertJsonGetReplySingleElement("strong", jsonClient.jsonGetResp3("str"));
 
     // a slightly more complex object
     IRLObject obj = new IRLObject();
     jsonClient.jsonSetWithEscape("obj", obj);
-    Object expected = gson.fromJson(gson.toJson(obj), Object.class);
-    assertTrue(expected.equals(jsonClient.jsonGet("obj")));
+    assertJsonObjectEquals(new JSONObject(gson.toJson(obj)),
+        jsonClient.jsonGetResp3("obj").get(0).get(0));
 
     // check an update
     Path2 p = Path2.of(".str");
     jsonClient.jsonSet("obj", p, gson.toJson("strung"));
-    assertJsonArrayEquals(jsonArray("strung"), jsonClient.jsonGet("obj", p));
+    assertJsonGetReplySingleElement("strung", jsonClient.jsonGetResp3("obj", p));
   }
 
   @Test
@@ -74,7 +98,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSetWithEscape("obj", new IRLObject());
     Path2 p = Path2.of(".str");
     jsonClient.jsonSetWithEscape("obj", p, "strangle", JsonSetParams.jsonSetParams().xx());
-    assertJsonArrayEquals(jsonArray("strangle"), jsonClient.jsonGet("obj", p));
+    assertJsonGetReplySingleElement("strangle", jsonClient.jsonGetResp3("obj", p));
   }
 
   @Test
@@ -82,7 +106,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("obj", gson.toJson(new IRLObject()));
     Path2 p = Path2.of(".none");
     jsonClient.jsonSet("obj", p, gson.toJson("strangle"), JsonSetParams.jsonSetParams().nx());
-    assertJsonArrayEquals(jsonArray("strangle"), jsonClient.jsonGet("obj", p));
+    assertJsonGetReplySingleElement("strangle", jsonClient.jsonGetResp3("obj", p));
   }
 
   @Test
@@ -91,7 +115,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("obj1", new JSONObject(objStr));
 //    jsonClient.jsonSet("obj1", "strangle", JsonSetParams.jsonSetParams().xx());
     jsonClient.jsonSetWithEscape("obj1", (Object) "strangle", JsonSetParams.jsonSetParams().xx());
-    assertJsonArrayEquals(jsonArray("strangle"), jsonClient.jsonGet("obj1", ROOT_PATH));
+    assertJsonGetReplySingleElement("strangle", jsonClient.jsonGetResp3("obj1", ROOT_PATH));
   }
 
   @Test
@@ -119,9 +143,9 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     // check multiple paths
     IRLObject obj = new IRLObject();
     jsonClient.jsonSetWithEscape("obj", obj);
-    JSONObject result = (JSONObject) jsonClient.jsonGet("obj", Path2.of("bool"), Path2.of("str"));
-    assertJsonArrayEquals(jsonArray(true), result.get("$.bool"));
-    assertJsonArrayEquals(jsonArray("string"), result.get("$.str"));
+    List<List<Object>> result = jsonClient.jsonGetResp3("obj", Path2.of("bool"), Path2.of("str"));
+    assertJsonGetSingleElement(true, result.get(0).get(0));
+    assertJsonGetSingleElement("string", result.get(1).get(0));
   }
 
   @Test
@@ -132,7 +156,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     inner.put("foo", "Jane");
     obj.put("bar", inner);
     jsonClient.jsonSet("multi", obj);
-    assertJsonArrayEquals(jsonArray("John", "Jane"), jsonClient.jsonGet("multi", new Path2("..foo")));
+    assertJsonGetMultipleElement(Arrays.asList("John", "Jane"), jsonClient.jsonGetResp3("multi", new Path2("..foo")).get(0));
   }
 
   @Test
@@ -143,26 +167,26 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
     Path2 pbool = Path2.of(".bool");
     // check initial value
-    assertJsonArrayEquals(jsonArray(true), jsonClient.jsonGet("obj", pbool));
+    assertJsonGetReplySingleElement(true, jsonClient.jsonGetResp3("obj", pbool));
 
     // true -> false
     jsonClient.jsonToggle("obj", pbool);
-    assertJsonArrayEquals(jsonArray(false), jsonClient.jsonGet("obj", pbool));
+    assertJsonGetReplySingleElement(false, jsonClient.jsonGetResp3("obj", pbool));
 
     // false -> true
     jsonClient.jsonToggle("obj", pbool);
-    assertJsonArrayEquals(jsonArray(true), jsonClient.jsonGet("obj", pbool));
+    assertJsonGetReplySingleElement(true, jsonClient.jsonGetResp3("obj", pbool));
 
     // ignore non-boolean field
     Path2 pstr = Path2.of(".str");
     assertEquals(singletonList(null), jsonClient.jsonToggle("obj", pstr));
-    assertJsonArrayEquals(jsonArray("string"), jsonClient.jsonGet("obj", pstr));
+    assertJsonGetReplySingleElement("string", jsonClient.jsonGetResp3("obj", pstr));
   }
 
   @Test
   public void getAbsent() {
     jsonClient.jsonSetWithEscape("test", ROOT_PATH, "foo");
-    assertJsonArrayEquals(jsonArray(), jsonClient.jsonGet("test", Path2.of(".bar")));
+    assertEquals(singletonList(Collections.emptyList()), jsonClient.jsonGetResp3("test", Path2.of(".bar")));
   }
 
   @Test
@@ -204,17 +228,17 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\"},\"phone\":\"123-456-7890\"}}");
     assertEquals("OK", jsonClient.jsonMerge("test_merge", Path2.of("$"), "{\"person\":{\"age\":30}}"));
 
-    assertJsonArrayEquals(jsonArray(json), jsonClient.jsonGet("test_merge", Path2.of("$")));
+    assertJsonGetReplySingleElement(json, jsonClient.jsonGetResp3("test_merge", Path2.of("$")));
 
     // Test with root path path $.a.b
     assertEquals("OK", jsonClient.jsonMerge("test_merge", Path2.of("$.person.address"), "{\"work\":\"Redis office\"}"));
     json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"age\":30,\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
-    assertJsonArrayEquals(jsonArray(json), jsonClient.jsonGet("test_merge", Path2.of("$")));
+    assertJsonGetReplySingleElement(json, jsonClient.jsonGetResp3("test_merge", Path2.of("$")));
 
     // Test with null value to delete a value
     assertEquals("OK", jsonClient.jsonMerge("test_merge", Path2.of("$.person"), "{\"age\":null}"));
     json = new JSONObject("{\"person\":{\"name\":\"John Doe\",\"address\":{\"home\":\"123 Main Street\",\"work\":\"Redis office\"},\"phone\":\"123-456-7890\"}}");
-    assertJsonArrayEquals(jsonArray(json), jsonClient.jsonGet("test_merge", Path2.of("$")));
+    assertJsonGetReplySingleElement(json, jsonClient.jsonGetResp3("test_merge", Path2.of("$")));
 
     // cleanup
     assertEquals(1L, client.del("test_merge"));
@@ -229,7 +253,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals("OK", jsonClient.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]"));
 
     json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
-    assertJsonArrayEquals(jsonArray(json), jsonClient.jsonGet("test_merge_array", Path2.of("$")));
+    assertJsonGetReplySingleElement(json, jsonClient.jsonGetResp3("test_merge_array", Path2.of("$")));
 
     // assertEquals("{{a={b={c=[f]}}}", jsonClient.jsonGet("test_merge_array", Path2.of("$")));
 
@@ -237,13 +261,13 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals("OK", jsonClient.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":\"d\"}}}"));
     assertEquals("OK", jsonClient.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]"));
     json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
-    assertJsonArrayEquals(jsonArray(json), jsonClient.jsonGet("test_merge_array", Path2.of("$")));
+    assertJsonGetReplySingleElement(json, jsonClient.jsonGetResp3("test_merge_array", Path2.of("$")));
 
     // Test with null value to delete an array value
     assertEquals("OK", jsonClient.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}"));
     assertEquals("OK", jsonClient.jsonMerge("test_merge_array", Path2.of("$.a.b"), "{\"c\":null}"));
     json = new JSONObject("{\"a\":{\"b\":{}}}");
-    assertJsonArrayEquals(jsonArray(json), jsonClient.jsonGet("test_merge_array", Path2.of("$")));
+    assertJsonGetReplySingleElement(json, jsonClient.jsonGetResp3("test_merge_array", Path2.of("$")));
   }
 
   @Test
@@ -299,7 +323,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     // ignore non-array
     Path2 strPath = Path2.of(".foo");
     assertEquals(0L, jsonClient.jsonClear("foobar", strPath));
-    assertJsonArrayEquals(jsonArray("bar"), jsonClient.jsonGet("foobar", strPath));
+    assertJsonGetReplySingleElement("bar", jsonClient.jsonGetResp3("foobar", strPath));
   }
 
   @Test
@@ -313,7 +337,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
     assertEquals(1L, jsonClient.jsonClear("qux", objPath));
 //    assertEquals(new Baz(null, null, null), jsonClient.jsonGet("qux", objPath));
-    assertJsonArrayEquals(jsonArray(new JSONObject()), jsonClient.jsonGet("qux", objPath));
+    assertJsonGetReplySingleElement(new JSONObject(), jsonClient.jsonGetResp3("qux", objPath));
   }
 
   @Test
@@ -322,7 +346,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(6L), jsonClient.jsonArrAppend("test_arrappend", Path2.of(".b"), 4, 5, 6));
 
-    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3, 4, 5, 6)), jsonClient.jsonGet("test_arrappend", Path2.of(".b")));
+    assertJsonGetReplySingleElement(jsonArray(1, 2, 3, 4, 5, 6), jsonClient.jsonGetResp3("test_arrappend", Path2.of(".b")));
   }
 
   @Test
@@ -334,7 +358,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(6L), jsonClient.jsonArrAppend("test_arrappend", Path2.of(".b"), fooObject, trueObject, nullObject));
 
-    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3, "foo", true, null)), jsonClient.jsonGet("test_arrappend", Path2.of(".b")));
+    assertJsonGetReplySingleElement(jsonArray(1, 2, 3, "foo", true, null), jsonClient.jsonGetResp3("test_arrappend", Path2.of(".b")));
   }
 
   @Test
@@ -343,7 +367,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(4L), jsonClient.jsonArrAppendWithEscape("test_arrappend", Path2.of(".c.d"), "foo", true, null));
 
-    assertJsonArrayEquals(jsonArray(jsonArray("ello", "foo", true, null)), jsonClient.jsonGet("test_arrappend", Path2.of(".c.d")));
+    assertJsonGetReplySingleElement(jsonArray("ello", "foo", true, null), jsonClient.jsonGetResp3("test_arrappend", Path2.of(".c.d")));
   }
 
   @Test
@@ -352,7 +376,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("test_arrappend", ROOT_PATH, new JSONObject(json));
     assertEquals(singletonList(3L), jsonClient.jsonArrAppendWithEscape("test_arrappend", Path2.of(".c.d"), "a", "b", "c"));
 
-    assertJsonArrayEquals(jsonArray(jsonArray("a", "b", "c")), jsonClient.jsonGet("test_arrappend", Path2.of(".c.d")));
+    assertJsonGetReplySingleElement(jsonArray("a", "b", "c"), jsonClient.jsonGetResp3("test_arrappend", Path2.of(".c.d")));
   }
 
   @Test
@@ -400,8 +424,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("test_arrinsert", ROOT_PATH, new JSONArray(json));
     assertEquals(singletonList(8L), jsonClient.jsonArrInsertWithEscape("test_arrinsert", ROOT_PATH, 1, "foo"));
 
-    assertJsonArrayEquals(jsonArray(jsonArray("hello", "foo", "world", true, 1, 3, null, false)),
-        jsonClient.jsonGet("test_arrinsert", ROOT_PATH));
+    assertJsonGetReplySingleElement(jsonArray("hello", "foo", "world", true, 1, 3, null, false),
+        jsonClient.jsonGetResp3("test_arrinsert", ROOT_PATH));
   }
 
   @Test
@@ -410,8 +434,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("test_arrinsert", ROOT_PATH, new JSONArray(json));
     assertEquals(singletonList(8L), jsonClient.jsonArrInsertWithEscape("test_arrinsert", ROOT_PATH, -1, "foo"));
 
-    assertJsonArrayEquals(jsonArray(jsonArray("hello", "world", true, 1, 3, null, "foo", false)),
-        jsonClient.jsonGet("test_arrinsert", ROOT_PATH));
+    assertJsonGetReplySingleElement(jsonArray("hello", "world", true, 1, 3, null, "foo", false),
+        jsonClient.jsonGetResp3("test_arrinsert", ROOT_PATH));
   }
 
   @Test
@@ -428,7 +452,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("arr", ROOT_PATH, new JSONArray(new int[]{0, 1, 2, 3, 4}));
     assertEquals(singletonList(3L), jsonClient.jsonArrTrim("arr", ROOT_PATH, 1, 3));
 //    assertArrayEquals(new Integer[]{1, 2, 3}, jsonClient.jsonGet("arr", Integer[].class, ROOT_PATH));
-    assertJsonArrayEquals(jsonArray(jsonArray(1, 2, 3)), jsonClient.jsonGet("arr", ROOT_PATH));
+    assertJsonGetReplySingleElement(jsonArray(1, 2, 3), jsonClient.jsonGetResp3("arr", ROOT_PATH));
   }
 
   @Test
@@ -436,7 +460,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 //    jsonClient.jsonSet("str", ROOT_PATH, "foo");
     jsonClient.jsonSet("str", ROOT_PATH, gson.toJson("foo"));
     assertEquals(singletonList(6L), jsonClient.jsonStrAppend("str", ROOT_PATH, "bar"));
-    assertEquals("foobar", jsonClient.jsonGet("str"));
+    assertJsonGetReplySingleElement("foobar", jsonClient.jsonGetResp3("str"));
   }
 
   @Test
@@ -500,7 +524,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals("true", arr.get(4));
   }
 
-  private void assertJsonArrayEquals(JSONArray a, Object _b) {
+  private static void assertJsonArrayEquals(JSONArray a, Object _b) {
     if (!(_b instanceof JSONArray)) {
       fail("Actual value is not JSONArray.");
     }
@@ -526,7 +550,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     }
   }
 
-  private void assertJsonObjectEquals(JSONObject a, Object _b) {
+  private static void assertJsonObjectEquals(JSONObject a, Object _b) {
     if (!(_b instanceof JSONObject)) {
       fail("Actual value is not JSONObject.");
     }

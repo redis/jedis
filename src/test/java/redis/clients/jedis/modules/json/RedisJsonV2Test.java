@@ -455,8 +455,6 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals(Collections.emptyList(), client.jsonDebugMemory("json", ROOT_PATH));
 
     client.jsonSet("json", new JSONObject("{ foo: 'bar', bar: { foo: 10 }}"));
-    // it is okay as long as any 'long' is returned
-    client.jsonDebugMemory("json");
     assertEquals(1, client.jsonDebugMemory("json", ROOT_PATH).size());
     assertEquals(2, client.jsonDebugMemory("json", Path2.of("$..foo")).size());
     assertEquals(1, client.jsonDebugMemory("json", Path2.of("$..bar")).size());

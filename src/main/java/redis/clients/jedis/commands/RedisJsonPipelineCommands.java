@@ -1,9 +1,12 @@
-package redis.clients.jedis.json;
+package redis.clients.jedis.commands;
 
 import org.json.JSONArray;
 import redis.clients.jedis.Response;
 
 import java.util.List;
+import redis.clients.jedis.json.JsonSetParams;
+import redis.clients.jedis.json.Path;
+import redis.clients.jedis.json.Path2;
 
 public interface RedisJsonPipelineCommands {
 

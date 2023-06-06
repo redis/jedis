@@ -472,10 +472,10 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
   @Test
   public void numIncrBy() {
     jsonClient.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
-    assertJsonArrayEquals(jsonArray((Object) null), jsonClient.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
-    assertJsonArrayEquals(jsonArray(null, 4, 7, null), jsonClient.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
-    assertJsonArrayEquals(jsonArray((Object) null), jsonClient.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
-    assertJsonArrayEquals(jsonArray(), jsonClient.jsonNumIncrBy("doc", Path2.of("..c"), 0d));
+    assertEquals(Collections.singletonList(null), jsonClient.jsonNumIncrByResp3("doc", Path2.of(".a"), 1d));
+    assertEquals(Arrays.asList(null, 4d, 7d, null), jsonClient.jsonNumIncrByResp3("doc", Path2.of("..a"), 2d));
+    assertEquals(Collections.singletonList(null), jsonClient.jsonNumIncrByResp3("doc", Path2.of("..b"), 0d));
+    assertEquals(Collections.emptyList(), jsonClient.jsonNumIncrByResp3("doc", Path2.of("..c"), 0d));
   }
 
   @Test

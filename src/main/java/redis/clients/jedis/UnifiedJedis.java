@@ -4070,6 +4070,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Double> jsonNumIncrByResp3(String key, Path2 path, double value) {
+    return executeCommand(commandObjects.jsonNumIncrByResp3(key, path, value));
+  }
+
+  @Override
   public double jsonNumIncrBy(String key, Path path, double value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }

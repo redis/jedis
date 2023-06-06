@@ -211,8 +211,8 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   {
     // Test merge on an array
     JSONObject json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}");
-    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), json)));
-    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]")));
+    assertEquals("OK", client.jsonSet("test_merge_array", Path2.of("$"), json));
+    assertEquals("OK", client.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]"));
 
     json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
     assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
@@ -220,14 +220,14 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     // assertEquals("{{a={b={c=[f]}}}", client.jsonGet("test_merge_array", Path2.of("$")));
 
     // Test merge an array on a value
-    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":\"d\"}}}")));
-    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]")));
+    assertEquals("OK", client.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":\"d\"}}}"));
+    assertEquals("OK", client.jsonMerge("test_merge_array", Path2.of("$.a.b.c"), "[\"f\"]"));
     json = new JSONObject("{\"a\":{\"b\":{\"c\":[\"f\"]}}}");
     assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
 
     // Test with null value to delete an array value
-    assertEquals("OK", (client.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}")));
-    assertEquals("OK", (client.jsonMerge("test_merge_array", Path2.of("$.a.b"), "{\"c\":null}")));
+    assertEquals("OK", client.jsonSet("test_merge_array", Path2.of("$"), "{\"a\":{\"b\":{\"c\":[\"d\",\"e\"]}}}"));
+    assertEquals("OK", client.jsonMerge("test_merge_array", Path2.of("$.a.b"), "{\"c\":null}"));
     json = new JSONObject("{\"a\":{\"b\":{}}}");
     assertJsonArrayEquals(jsonArray(json), client.jsonGet("test_merge_array", Path2.of("$")));
   }

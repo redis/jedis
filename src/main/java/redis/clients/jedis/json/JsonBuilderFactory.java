@@ -70,7 +70,6 @@ public final class JsonBuilderFactory {
   public static final Builder<Object> JSON_OBJECT_CORE = new Builder<Object>() {
     @Override
     public Object build(Object data) {
-      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
       if (data == null) {
         return null;
       }
@@ -97,7 +96,6 @@ public final class JsonBuilderFactory {
   public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {
-      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
       if (data == null) {
         return null;
       }
@@ -128,7 +126,6 @@ public final class JsonBuilderFactory {
       = new Builder<List<List<Object>>>() {
     @Override
     public List<List<Object>> build(Object data) {
-      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
       if (data == null) {
         return null;
       }

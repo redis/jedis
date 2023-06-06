@@ -4236,7 +4236,6 @@ public class CommandObjects {
 
     @Override
     public T build(Object data) {
-      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(data));
       return getJsonObjectMapper().fromJson(BuilderFactory.STRING.build(data), clazz);
     }
   }

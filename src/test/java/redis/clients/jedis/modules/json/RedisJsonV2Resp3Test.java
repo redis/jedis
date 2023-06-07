@@ -9,8 +9,6 @@ import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Assume;
@@ -80,16 +78,18 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
 //    jsonClient.jsonSet("null", null, ROOT_PATH);
     jsonClient.jsonSetWithEscape("null", ROOT_PATH, (Object) null);
     assertJsonGetReplySingleElement(null, jsonClient.jsonGetResp3("null", ROOT_PATH));
+    assertNull(jsonClient.jsonGet("null"));
 
     // real scalar value and no path
     jsonClient.jsonSetWithEscape("str", "strong");
     assertJsonGetReplySingleElement("strong", jsonClient.jsonGetResp3("str"));
+    assertEquals("strong", jsonClient.jsonGet("str"));
 
     // a slightly more complex object
     IRLObject obj = new IRLObject();
     jsonClient.jsonSetWithEscape("obj", obj);
-    assertJsonObjectEquals(new JSONObject(gson.toJson(obj)),
-        jsonClient.jsonGetResp3("obj").get(0).get(0));
+    assertJsonGetReplySingleElement(new JSONObject(gson.toJson(obj)), jsonClient.jsonGetResp3("obj"));
+    assertEquals(gson.toJson(obj), gson.toJson(jsonClient.jsonGet("obj")));
 
     // check an update
     Path2 p = Path2.of(".str");
@@ -337,10 +337,9 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
 
     jsonClient.jsonSet("qux", gson.toJson(qux));
     Path2 objPath = Path2.of(".baz");
-//    assertEquals(baz, jsonClient.jsonGet("qux", objPath));
+    assertJsonGetReplySingleElement(new JSONObject(gson.toJson(baz)), jsonClient.jsonGetResp3("qux", objPath));
 
     assertEquals(1L, jsonClient.jsonClear("qux", objPath));
-//    assertEquals(new Baz(null, null, null), jsonClient.jsonGet("qux", objPath));
     assertJsonGetReplySingleElement(new JSONObject(), jsonClient.jsonGetResp3("qux", objPath));
   }
 
@@ -455,7 +454,6 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
 //    jsonClient.jsonSet("arr", ROOT_PATH, new int[]{0, 1, 2, 3, 4});
     jsonClient.jsonSet("arr", ROOT_PATH, new JSONArray(new int[]{0, 1, 2, 3, 4}));
     assertEquals(singletonList(3L), jsonClient.jsonArrTrim("arr", ROOT_PATH, 1, 3));
-//    assertArrayEquals(new Integer[]{1, 2, 3}, jsonClient.jsonGet("arr", Integer[].class, ROOT_PATH));
     assertJsonGetReplySingleElement(jsonArray(1, 2, 3), jsonClient.jsonGetResp3("arr", ROOT_PATH));
   }
 
@@ -465,6 +463,7 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
     jsonClient.jsonSet("str", ROOT_PATH, gson.toJson("foo"));
     assertEquals(singletonList(6L), jsonClient.jsonStrAppend("str", ROOT_PATH, "bar"));
     assertJsonGetReplySingleElement("foobar", jsonClient.jsonGetResp3("str"));
+    assertEquals("foobar", jsonClient.jsonGet("str"));
   }
 
   @Test
@@ -524,7 +523,7 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
     assertNull(arr.get(1));
     assertEquals(Long.valueOf(3), arr.get(2));
     //assertEquals("2.5", arr.get(3));
-    MatcherAssert.assertThat(arr.get(3), Matchers.isOneOf("2.5", 2.5));
+    assertEquals(2.5, arr.get(3));
     assertEquals("true", arr.get(4));
   }
 

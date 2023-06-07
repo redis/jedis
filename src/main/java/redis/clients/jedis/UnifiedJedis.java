@@ -3954,11 +3954,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 //    return executeCommand(commandObjects.jsonGetResp3(key, paths));
 //  }
 
-  @Override
-  public List<List<Object>> jsonGetResp3(String key) {
-    return executeCommand(commandObjects.jsonGetResp3(key));
-  }
-
+//  @Override
+//  public List<List<Object>> jsonGetResp3(String key) {
+//    return executeCommand(commandObjects.jsonGetResp3(key));
+//  }
+//
   @Override
   public List<List<Object>> jsonGetResp3(String key, Path2... paths) {
     return executeCommand(commandObjects.jsonGetResp3(key, paths));

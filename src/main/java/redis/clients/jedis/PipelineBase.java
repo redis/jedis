@@ -3511,6 +3511,11 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
+  public Response<List<List<Object>>> jsonGetResp3(String key, Path2... paths) {
+    return appendCommand(commandObjects.jsonGetResp3(key, paths));
+  }
+
+  @Override
   public Response<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
     return appendCommand(commandObjects.jsonMGet(path, keys));
   }
@@ -3576,6 +3581,11 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
+  public Response<List<List<Class<?>>>> jsonTypeResp3(String key, Path2 path) {
+    return appendCommand(commandObjects.jsonTypeResp3(key, path));
+  }
+
+  @Override
   public Response<Long> jsonStrAppend(String key, Object string) {
     return appendCommand(commandObjects.jsonStrAppend(key, string));
   }
@@ -3613,6 +3623,11 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   @Override
   public Response<Double> jsonNumIncrBy(String key, Path path, double value) {
     return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
+  }
+
+  @Override
+  public Response<List<Double>> jsonNumIncrByResp3(String key, Path2 path, double value) {
+    return appendCommand(commandObjects.jsonNumIncrByResp3(key, path, value));
   }
 
   @Override

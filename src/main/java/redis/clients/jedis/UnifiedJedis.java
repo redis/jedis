@@ -3948,11 +3948,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public Object jsonGet(String key, Path... paths) {
     return executeCommand(commandObjects.jsonGet(key, paths));
   }
-
-  @Override
-  public List<Object> jsonGetResp3(String key, Path... paths) {
-    return executeCommand(commandObjects.jsonGetResp3(key, paths));
-  }
+//
+//  @Override
+//  public List<Object> jsonGetResp3(String key, Path... paths) {
+//    return executeCommand(commandObjects.jsonGetResp3(key, paths));
+//  }
 
   @Override
   public List<List<Object>> jsonGetResp3(String key) {
@@ -3973,16 +3973,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public <T> T jsonGet(String key, Class<T> clazz, Path... paths) {
     return executeCommand(commandObjects.jsonGet(key, clazz, paths));
   }
-
-  @Override
-  public List<Object> jsonGetResp3(String key, Map<Path, Class<?>> paths) {
-    return executeCommand(commandObjects.jsonGetResp3(key, paths));
-  }
-
-  @Override
-  public <T> T jsonGetResp3(String key, Class<T> clazz, Path path) {
-    return executeCommand(commandObjects.jsonGetResp3(key, clazz, path));
-  }
+//
+//  @Override
+//  public List<Object> jsonGetResp3(String key, Map<Path, Class<?>> paths) {
+//    return executeCommand(commandObjects.jsonGetResp3(key, paths));
+//  }
+//
+//  @Override
+//  public <T> T jsonGetResp3(String key, Class<T> clazz, Path path) {
+//    return executeCommand(commandObjects.jsonGetResp3(key, clazz, path));
+//  }
 
   @Override
   public List<JSONArray> jsonMGet(Path2 path, String... keys) {
@@ -4098,11 +4098,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public double jsonNumIncrBy(String key, Path path, double value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
-
-  @Override
-  public List<Double> jsonNumIncrByResp3(String key, Path path, double value) {
-    return executeCommand(commandObjects.jsonNumIncrByResp3(key, path, value));
-  }
+//
+//  @Override
+//  public List<Double> jsonNumIncrByResp3(String key, Path path, double value) {
+//    return executeCommand(commandObjects.jsonNumIncrByResp3(key, path, value));
+//  }
 
   @Override
   public List<Long> jsonArrAppend(String key, Path2 path, Object... objects) {

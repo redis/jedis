@@ -1,8 +1,6 @@
 package redis.clients.jedis.json.commands;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 
@@ -29,16 +27,16 @@ public interface RedisJsonV1Commands {
   <T> T jsonGet(String key, Class<T> clazz);
 
   Object jsonGet(String key, Path... paths);
-
-  List<Object> jsonGetResp3(String key, Path... paths);
+//
+//  List<Object> jsonGetResp3(String key, Path... paths);
 
   String jsonGetAsPlainString(String key, Path path);
 
   <T> T jsonGet(String key, Class<T> clazz, Path... paths);
-
-  List<Object> jsonGetResp3(String key, Map<Path, Class<?>> paths);
-
-  <T> T jsonGetResp3(String key, Class<T> clazz, Path path);
+//
+//  List<Object> jsonGetResp3(String key, Map<Path, Class<?>> paths);
+//
+//  <T> T jsonGetResp3(String key, Class<T> clazz, Path path);
 
   default <T> List<T> jsonMGet(Class<T> clazz, String... keys) {
     return jsonMGet(Path.ROOT_PATH, clazz, keys);
@@ -69,8 +67,8 @@ public interface RedisJsonV1Commands {
   Long jsonStrLen(String key, Path path);
 
   double jsonNumIncrBy(String key, Path path, double value);
-
-  List<Double> jsonNumIncrByResp3(String key, Path path, double value);
+//
+//  List<Double> jsonNumIncrByResp3(String key, Path path, double value);
 
   Long jsonArrAppend(String key, Path path, Object... pojos);
 

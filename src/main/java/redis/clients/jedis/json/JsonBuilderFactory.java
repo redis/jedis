@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
-import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.exceptions.JedisException;
 
 public final class JsonBuilderFactory {
@@ -44,21 +43,21 @@ public final class JsonBuilderFactory {
       return "Class<?>";
     }
   };
-
-  public static final Builder<Class<?>> JSON_TYPE_V1_RESP3 = new Builder<Class<?>>() {
-    @Override
-    public Class<?> build(Object data) {
-      if (data == null) return null;
-      List<Object> list = (List<Object>) data;
-      if (list.isEmpty()) return null;
-      return JSON_TYPE.build(list.get(0));
-    }
-
-    @Override
-    public String toString() {
-      return "Class<?>";
-    }
-  };
+//
+//  public static final Builder<Class<?>> JSON_TYPE_V1_RESP3 = new Builder<Class<?>>() {
+//    @Override
+//    public Class<?> build(Object data) {
+//      if (data == null) return null;
+//      List<Object> list = (List<Object>) data;
+//      if (list.isEmpty()) return null;
+//      return JSON_TYPE.build(list.get(0));
+//    }
+//
+//    @Override
+//    public String toString() {
+//      return "Class<?>";
+//    }
+//  };
 
   public static final Builder<List<Class<?>>> JSON_TYPE_LIST = new Builder<List<Class<?>>>() {
     @Override
@@ -83,41 +82,12 @@ public final class JsonBuilderFactory {
     }
   };
 
-  private static final Builder<Object> JSON_OBJECT_CORE = new Builder<Object>() {
-    @Override
-    public Object build(Object data) {
-      if (data == null) {
-        return null;
-      }
-
-      if (!(data instanceof byte[])) {
-        return data;
-      }
-      String str = STRING.build(data);
-      if (str.charAt(0) == '{') {
-        try {
-          return new JSONObject(str);
-        } catch (Exception ex) {
-        }
-      } else if (str.charAt(0) == '[') {
-        try {
-          return new JSONArray(str);
-        } catch (Exception ex) {
-        }
-      }
-      return str;
-    }
-  };
-
   public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {
       if (data == null) {
         return null;
       }
-//      if (data instanceof List) {
-//        return ((List) data).stream().map(JSON_OBJECT::build).collect(Collectors.toList());
-//      }
 
       if (!(data instanceof byte[])) {
         return data;
@@ -151,7 +121,7 @@ public final class JsonBuilderFactory {
       for (List<Object> subList : superList) {
         List<Object> list = new ArrayList<>(subList.size());
         for (Object object : subList) {
-          list.add(JSON_OBJECT_CORE.build(object));
+          list.add(JSON_OBJECT.build(object));
         }
         returnList.add(list);
       }
@@ -185,18 +155,6 @@ public final class JsonBuilderFactory {
       return list.stream().map(o -> JSON_ARRAY.build(o)).collect(Collectors.toList());
     }
   };
-
-//  public static final Builder<List<Object>> JSON_GET_V1_RESP3 = new Builder<List<Object>>() {
-//    @Override
-//    public List<Object> build(Object data) {
-//      if (data == null) return null;
-//      List<List<Object>> list = (List<List<Object>>) data;
-//      return list.stream().map(l -> {
-//        if (l == null || l.isEmpty()) return null;
-//        return BuilderFactory.ENCODED_OBJECT.build(l.get(0));
-//      }).collect(Collectors.toList());
-//    }
-//  };
 
   private JsonBuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");

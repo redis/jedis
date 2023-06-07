@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.exceptions.JedisException;
 
 public final class JsonBuilderFactory {
@@ -36,6 +37,21 @@ public final class JsonBuilderFactory {
         default:
           throw new JedisException("Unknown type: " + str);
       }
+    }
+
+    @Override
+    public String toString() {
+      return "Class<?>";
+    }
+  };
+
+  public static final Builder<Class<?>> JSON_TYPE_V1_RESP3 = new Builder<Class<?>>() {
+    @Override
+    public Class<?> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return null;
+      return JSON_TYPE.build(list.get(0));
     }
 
     @Override
@@ -169,6 +185,18 @@ public final class JsonBuilderFactory {
       return list.stream().map(o -> JSON_ARRAY.build(o)).collect(Collectors.toList());
     }
   };
+
+//  public static final Builder<List<Object>> JSON_GET_V1_RESP3 = new Builder<List<Object>>() {
+//    @Override
+//    public List<Object> build(Object data) {
+//      if (data == null) return null;
+//      List<List<Object>> list = (List<List<Object>>) data;
+//      return list.stream().map(l -> {
+//        if (l == null || l.isEmpty()) return null;
+//        return BuilderFactory.ENCODED_OBJECT.build(l.get(0));
+//      }).collect(Collectors.toList());
+//    }
+//  };
 
   private JsonBuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");

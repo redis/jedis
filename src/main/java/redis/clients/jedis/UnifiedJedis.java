@@ -3950,6 +3950,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Object> jsonGetResp3(String key, Path... paths) {
+    return executeCommand(commandObjects.jsonGetResp3(key, paths));
+  }
+
+  @Override
   public List<List<Object>> jsonGetResp3(String key) {
     return executeCommand(commandObjects.jsonGetResp3(key));
   }
@@ -3967,6 +3972,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public <T> T jsonGet(String key, Class<T> clazz, Path... paths) {
     return executeCommand(commandObjects.jsonGet(key, clazz, paths));
+  }
+
+  @Override
+  public List<Object> jsonGetResp3(String key, Map<Path, Class<?>> paths) {
+    return executeCommand(commandObjects.jsonGetResp3(key, paths));
+  }
+
+  @Override
+  public <T> T jsonGetResp3(String key, Class<T> clazz, Path path) {
+    return executeCommand(commandObjects.jsonGetResp3(key, clazz, path));
   }
 
   @Override
@@ -4082,6 +4097,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public double jsonNumIncrBy(String key, Path path, double value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
+  }
+
+  @Override
+  public List<Double> jsonNumIncrByResp3(String key, Path path, double value) {
+    return executeCommand(commandObjects.jsonNumIncrByResp3(key, path, value));
   }
 
   @Override

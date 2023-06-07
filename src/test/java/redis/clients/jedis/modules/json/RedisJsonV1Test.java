@@ -51,7 +51,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     // naive set with a path
 //    jsonClient.jsonSet("null", null, ROOT_PATH);
     jsonClient.jsonSet("null", ROOT_PATH, (Object) null);
-    assertNull(client.jsonGet("null", String.class, ROOT_PATH));
+    assertNull(jsonClient.jsonGet("null", String.class, ROOT_PATH));
 
     // real scalar value and no path
     jsonClient.jsonSet("str", ROOT_PATH, "strong");
@@ -61,7 +61,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     IRLObject obj = new IRLObject();
     jsonClient.jsonSet("obj", ROOT_PATH, obj);
     Object expected = gson.fromJson(gson.toJson(obj), Object.class);
-    assertTrue(expected.equals(client.jsonGet("obj")));
+    assertTrue(expected.equals(jsonClient.jsonGet("obj")));
 
     // check an update
     Path p = Path.of(".str");
@@ -97,14 +97,14 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
   public void setExistingPathOnlyIfNotExistsShouldFail() {
     jsonClient.jsonSet("obj", ROOT_PATH, new IRLObject());
     Path p = Path.of(".str");
-    assertNull(client.jsonSet("obj", p, "strangle", JsonSetParams.jsonSetParams().nx()));
+    assertNull(jsonClient.jsonSet("obj", p, "strangle", JsonSetParams.jsonSetParams().nx()));
   }
 
   @Test
   public void setNonExistingPathOnlyIfExistsShouldFail() {
     jsonClient.jsonSet("obj", ROOT_PATH, new IRLObject());
     Path p = Path.of(".none");
-    assertNull(client.jsonSet("obj", p, "strangle", JsonSetParams.jsonSetParams().xx()));
+    assertNull(jsonClient.jsonSet("obj", p, "strangle", JsonSetParams.jsonSetParams().xx()));
   }
 
   @Test(expected = JedisDataException.class)
@@ -119,7 +119,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     IRLObject obj = new IRLObject();
     jsonClient.jsonSetLegacy("obj", obj);
     Object expected = gson.fromJson(gson.toJson(obj), Object.class);
-    assertTrue(expected.equals(client.jsonGet("obj", Object.class, Path.of("bool"), Path.of("str"))));
+    assertTrue(expected.equals(jsonClient.jsonGet("obj", Object.class, Path.of("bool"), Path.of("str"))));
   }
 
   @Test
@@ -128,7 +128,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     IRLObject obj = new IRLObject();
     jsonClient.jsonSetLegacy("obj", obj);
     Object expected = gson.fromJson(gson.toJson(obj), Object.class);
-    assertTrue(expected.equals(client.jsonGet("obj", Object.class, Path.of("bool"), Path.of("str"))));
+    assertTrue(expected.equals(jsonClient.jsonGet("obj", Object.class, Path.of("bool"), Path.of("str"))));
   }
 
   @Test
@@ -139,15 +139,15 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
     Path pbool = Path.of(".bool");
     // check initial value
-    assertTrue(client.jsonGet("obj", Boolean.class, pbool));
+    assertTrue(jsonClient.jsonGet("obj", Boolean.class, pbool));
 
     // true -> false
     jsonClient.jsonToggle("obj", pbool);
-    assertFalse(client.jsonGet("obj", Boolean.class, pbool));
+    assertFalse(jsonClient.jsonGet("obj", Boolean.class, pbool));
 
     // false -> true
     jsonClient.jsonToggle("obj", pbool);
-    assertTrue(client.jsonGet("obj", Boolean.class, pbool));
+    assertTrue(jsonClient.jsonGet("obj", Boolean.class, pbool));
 
     // ignore non-boolean field
     Path pstr = Path.of(".str");
@@ -186,7 +186,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void typeChecksShouldSucceed() {
-    assertNull(client.jsonType("foobar"));
+    assertNull(jsonClient.jsonType("foobar"));
     jsonClient.jsonSet("foobar", ROOT_PATH, new FooBarObject());
     assertSame(Object.class, jsonClient.jsonType("foobar"));
     assertSame(Object.class, jsonClient.jsonType("foobar", ROOT_PATH));
@@ -195,7 +195,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     assertSame(float.class, jsonClient.jsonType("foobar", Path.of(".fooF")));
     assertSame(List.class, jsonClient.jsonType("foobar", Path.of(".fooArr")));
     assertSame(boolean.class, jsonClient.jsonType("foobar", Path.of(".fooB")));
-    assertNull(client.jsonType("foobar", Path.of(".fooErr")));
+    assertNull(jsonClient.jsonType("foobar", Path.of(".fooErr")));
   }
 
   @Test
@@ -270,7 +270,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void arrLenDefaultPath() {
-    assertNull(client.jsonArrLen("array"));
+    assertNull(jsonClient.jsonArrLen("array"));
     jsonClient.jsonSetLegacy("array", new int[]{1, 2, 3});
     assertEquals(Long.valueOf(3), jsonClient.jsonArrLen("array"));
   }
@@ -450,7 +450,7 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void strLen() {
-    assertNull(client.jsonStrLen("str"));
+    assertNull(jsonClient.jsonStrLen("str"));
     jsonClient.jsonSet("str", ROOT_PATH, "foo");
     assertEquals(Long.valueOf(3), jsonClient.jsonStrLen("str"));
     assertEquals(Long.valueOf(3), jsonClient.jsonStrLen("str", ROOT_PATH));
@@ -464,10 +464,10 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void obj() {
-    assertNull(client.jsonObjLen("doc"));
-    assertNull(client.jsonObjKeys("doc"));
-    assertNull(client.jsonObjLen("doc", ROOT_PATH));
-    assertNull(client.jsonObjKeys("doc", ROOT_PATH));
+    assertNull(jsonClient.jsonObjLen("doc"));
+    assertNull(jsonClient.jsonObjKeys("doc"));
+    assertNull(jsonClient.jsonObjLen("doc", ROOT_PATH));
+    assertNull(jsonClient.jsonObjKeys("doc", ROOT_PATH));
 
     String json = "{\"a\":[3], \"nested\": {\"a\": {\"b\":2, \"c\": 1}}}";
     jsonClient.jsonSetWithPlainString("doc", ROOT_PATH, json);
@@ -500,8 +500,8 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void resp() {
-    assertNull(client.jsonResp("resp"));
-    assertNull(client.jsonResp("resp", ROOT_PATH));
+    assertNull(jsonClient.jsonResp("resp"));
+    assertNull(jsonClient.jsonResp("resp", ROOT_PATH));
 
     String json = "{\"foo\": {\"hello\":\"world\"}, \"bar\": [null, 3, 2.5, true]}";
     jsonClient.jsonSetWithPlainString("resp", ROOT_PATH, json);

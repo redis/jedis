@@ -163,7 +163,7 @@ public class TSInfo {
               List<Map<String, Object>> chunksValueList = new ArrayList<>(chunksDataList.size());
               chunks = new ArrayList<>(chunksDataList.size());
               for (Object chunkData : chunksDataList) {
-                Map<String, Object> chunk = BuilderFactory.ENCODED_OBJECT_MAP_FROM_PAIRS.build(chunkData);
+                Map<String, Object> chunk = BuilderFactory.ENCODED_OBJECT_MAP.build(chunkData);
                 chunksValueList.add(new HashMap<>(chunk));
                 chunks.add(chunk);
               }

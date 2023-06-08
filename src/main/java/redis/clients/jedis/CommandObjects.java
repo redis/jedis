@@ -4,6 +4,7 @@ import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -40,6 +41,7 @@ public class CommandObjects {
   }
 
   private volatile JsonObjectMapper jsonObjectMapper;
+  private final AtomicInteger searchDialect = new AtomicInteger(0);
 
   private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
 
@@ -3198,32 +3200,34 @@ public class CommandObjects {
 
   public final CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
-        .add(query).addParams(params), new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), true));
+        .add(query).addParams(params.dialectOptional(searchDialect.get())), new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), true));
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, Query query) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).addParams(query),
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
+        .addParams(query.dialectOptional(searchDialect.get())),
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true));
   }
 
   public final CommandObject<SearchResult> ftSearch(byte[] indexName, Query query) {
-    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).addParams(query),
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
+        .addParams(query.dialectOptional(searchDialect.get())),
         new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), false));
   }
 
   public final CommandObject<String> ftExplain(String indexName, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.EXPLAIN), indexName)
-        .addParams(query), BuilderFactory.STRING);
+        .addParams(query.dialectOptional(searchDialect.get())), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<String>> ftExplainCLI(String indexName, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.EXPLAINCLI), indexName)
-        .addParams(query), BuilderFactory.STRING_LIST);
+        .addParams(query.dialectOptional(searchDialect.get())), BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.AGGREGATE), indexName)
-        .addObjects(aggr.getArgs()), !aggr.isWithCursor() ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
+        .addParams(aggr.dialectOptional(searchDialect.get())), !aggr.isWithCursor() ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
         : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
@@ -3242,7 +3246,7 @@ public class CommandObjects {
       String indexName, FTProfileParams profileParams, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.AGGREGATE).addParams(profileParams).add(SearchKeyword.QUERY)
-        .addObjects(aggr.getArgs()), new SearchProfileResponseBuilder<>(!aggr.isWithCursor()
+        .addParams(aggr.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(!aggr.isWithCursor()
             ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
             : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
   }
@@ -3251,16 +3255,16 @@ public class CommandObjects {
       String indexName, FTProfileParams profileParams, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
-        .addParams(query), new SearchProfileResponseBuilder<>(new SearchResultBuilder(
-            !query.getNoContent(), query.getWithScores(), true)));
+        .addParams(query.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(
+            new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true)));
   }
 
   public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
       String indexName, FTProfileParams profileParams, String query, FTSearchParams searchParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
-        .addParams(searchParams), new SearchProfileResponseBuilder<>(new SearchResultBuilder(
-            !searchParams.getNoContent(), searchParams.getWithScores(), true)));
+        .addParams(searchParams.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(
+            new SearchResultBuilder(!searchParams.getNoContent(), searchParams.getWithScores(), true)));
   }
 
   public final CommandObject<String> ftDropIndex(String indexName) {
@@ -3316,7 +3320,7 @@ public class CommandObjects {
   public final CommandObject<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query,
       FTSpellCheckParams spellCheckParams) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SPELLCHECK), index).add(query)
-        .addParams(spellCheckParams), SearchBuilderFactory.SEARCH_SPELLCHECK_RESPONSE);
+        .addParams(spellCheckParams.dialectOptional(searchDialect.get())), SearchBuilderFactory.SEARCH_SPELLCHECK_RESPONSE);
   }
 
   public final CommandObject<Map<String, Object>> ftInfo(String indexName) {
@@ -4190,6 +4194,11 @@ public class CommandObjects {
 
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.jsonObjectMapper = jsonObjectMapper;
+  }
+
+  public void setDefaultSearchDialect(int dialect) {
+    if (dialect == 0) throw new IllegalArgumentException("DIALECT=0 cannot be set.");
+    this.searchDialect.set(dialect);
   }
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {

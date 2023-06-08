@@ -70,6 +70,8 @@
 
 - `addCommandEncodedArguments` and `addCommandBinaryArguments` methods have been removed from `FieldName` class.
 
+- `getArgs` method is removed from `AggregationBuilder` class.
+
 - `limit` and `getArgs` methods have been removed from `Group` class.
 
 - `Reducer` abstract class is refactored:

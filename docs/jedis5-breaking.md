@@ -35,8 +35,8 @@
   - `tsMRevRange(TSMRangeParams multiRangeParams)`
 
 - `jsonNumIncrBy(String key, Path2 path, double value)` method now returns `Object` instead of `JSONArray`.
-  - Previously when it was returning JSONArray, would still JSONArray. So simple type casting should be enough to handle this changes.
-  - It will return `List<Double>` when running under RESP3 protocol.
+  - Previously when it was returning JSONArray, returned would still be JSONArray. So simple type casting should be enough to handle this change.
+  - The returning object will be `List<Double>` when running under RESP3 protocol.
 
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
 

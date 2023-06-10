@@ -3460,15 +3460,6 @@ public class CommandObjects {
   public final CommandObject<Object> jsonGet(String key, Path... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), JSON_GENERIC_OBJECT);
   }
-//
-//  public final CommandObject<List<Object>> jsonGetResp3(String key, Path... paths) {
-//    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths),
-//        JSON_GENERIC_OBJECT_LIST_RESP3);
-//  }
-//
-//  public final CommandObject<List<List<Object>>> jsonGetResp3(String key) {
-//    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), JsonBuilderFactory.JSON_GET_RESPONSE_RESP3);
-//  }
 
   public final CommandObject<List<List<Object>>> jsonGetResp3(String key, Path2... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths),
@@ -3482,17 +3473,6 @@ public class CommandObjects {
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz, Path... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new JsonObjectBuilder<>(clazz));
   }
-//
-//  public final CommandObject<List<Object>> jsonGetResp3(String key, Map<Path, Class<?>> paths) {
-//    List<Class<?>> clazz = new ArrayList<>(paths.size());
-//    CommandArguments args = commandArguments(JsonCommand.GET).key(key);
-//    paths.forEach( (k, v) -> { args.add(k); clazz.add(v); });
-//    return new CommandObject<>(args, new JsonObjectListResp3Builder(clazz));
-//  }
-//
-//  public final <T> CommandObject<T> jsonGetResp3(String key, Class<T> clazz, Path path) {
-//    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).add(path), new JsonObjectObjectResp3Builder<>(clazz));
-//  }
 
   public final CommandObject<List<JSONArray>> jsonMGet(Path2 path, String... keys) {
     return new CommandObject<>(commandArguments(JsonCommand.MGET).keys((Object[]) keys).add(path), JsonBuilderFactory.JSON_ARRAY_LIST);
@@ -3535,13 +3515,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Class<?>> jsonType(String key) {
-//    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key), getJsonTypeV1Builder());
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key), JsonBuilderFactory.JSON_TYPE);
-  }
-
-  public final CommandObject<Class<?>> jsonType(String key, Path path) {
-//    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), getJsonTypeV1Builder());
-    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE);
   }
 
   public final CommandObject<List<Class<?>>> jsonType(String key, Path2 path) {
@@ -3552,11 +3526,10 @@ public class CommandObjects {
   public final CommandObject<List<List<Class<?>>>> jsonTypeResp3(String key, Path2 path) {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3);
   }
-//
-//  private Builder<Class<?>> getJsonTypeV1Builder() {
-//    if (proto == RedisProtocol.RESP3) return JsonBuilderFactory.JSON_TYPE_V1_RESP3;
-//    return JsonBuilderFactory.JSON_TYPE;
-//  }
+
+  public final CommandObject<Class<?>> jsonType(String key, Path path) {
+    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE);
+  }
 
   public final CommandObject<Long> jsonStrAppend(String key, Object string) {
     return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(
@@ -3597,10 +3570,6 @@ public class CommandObjects {
   public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
   }
-//
-//  public final CommandObject<List<Double>> jsonNumIncrByResp3(String key, Path path, double value) {
-//    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE_LIST);
-//  }
 
   public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
@@ -4269,8 +4238,14 @@ public class CommandObjects {
     }
   }
 
+  /**
+   * {@link JsonObjectBuilder} for {@code Object.class}.
+   */
   private final Builder<Object> JSON_GENERIC_OBJECT = new JsonObjectBuilder<>(Object.class);
 
+  /**
+   * The common {@code Object.class} parser for RESP3 and older protocol.
+   */
   private final Builder<Object> JSON_GENERIC_OBJECT_COMMON = new Builder<Object>() {
     @Override
     public Object build(Object data) {
@@ -4303,85 +4278,6 @@ public class CommandObjects {
       return list.stream().map(s -> getJsonObjectMapper().fromJson(s, clazz)).collect(Collectors.toList());
     }
   }
-//
-//  private class JsonObjectListResp3Builder extends Builder<List<Object>> {
-//
-//    private final List<Class<?>> clazz;
-//
-//    public JsonObjectListResp3Builder(List<Class<?>> clazz) {
-//      this.clazz = clazz;
-//    }
-//
-//    @Override
-//    public List<Object> build(Object data) {
-//      if (data == null) return null;
-//      List<List<Object>> rawDataList = (List<List<Object>>) data;
-//      assert clazz.size() == rawDataList.size();
-//      final int size = clazz.size();
-//      List<Object> returnList = new ArrayList<>(size);
-//      for (int i = 0; i < size; i++) {
-//        List<Object> innerList = rawDataList.get(i);
-//        if (innerList.isEmpty()) {
-//          returnList.add(null);
-//          continue;
-//        }
-//        Object rawObject = innerList.get(0);
-//        if (!(rawObject instanceof byte[])) {
-//          returnList.add(rawObject);
-//          continue;
-//        }
-//        returnList.add(getJsonObjectMapper()
-//            .fromJson(BuilderFactory.STRING.build(rawObject), clazz.get(i)));
-//      }
-//      return returnList;
-//    }
-//  }
-//
-//  private class JsonObjectObjectResp3Builder<T> extends Builder<T> {
-//
-//    private final Class<T> clazz;
-//
-//    public JsonObjectObjectResp3Builder(Class<T> clazz) {
-//      this.clazz = clazz;
-//    }
-//
-//    @Override
-//    public T build(Object data) {
-//      if (data == null) return null;
-//      List<List<Object>> rawDataList = (List<List<Object>>) data;
-//      assert 1 == rawDataList.size();
-//      List<Object> innerList = rawDataList.get(0);
-//      if (innerList.isEmpty()) return null;
-//      Object rawObject = innerList.get(0);
-//      if (!(rawObject instanceof byte[])) return (T) rawObject;
-//      return getJsonObjectMapper().fromJson(BuilderFactory.STRING.build(rawObject), clazz);
-//    }
-//  }
-//
-//  private final Builder<List<Object>> JSON_GENERIC_OBJECT_LIST_RESP3 = new Builder<List<Object>>() {
-//    @Override
-//    public List<Object> build(Object data) {
-//      if (data == null) return null;
-//      List<List<Object>> rawDataList = (List<List<Object>>) data;
-//      final int size = rawDataList.size();
-//      List<Object> returnList = new ArrayList<>(size);
-//      for (int i = 0; i < size; i++) {
-//        List<Object> innerList = rawDataList.get(i);
-//        if (innerList.isEmpty()) {
-//          returnList.add(null);
-//          continue;
-//        }
-//        Object rawObject = innerList.get(0);
-//        if (!(rawObject instanceof byte[])) {
-//          returnList.add(rawObject);
-//          continue;
-//        }
-//        returnList.add(getJsonObjectMapper()
-//            .fromJson(BuilderFactory.STRING.build(rawObject), Object.class));
-//      }
-//      return returnList;
-//    }
-//  };
 
   private static final Builder<Map.Entry<Long, byte[]>> BLOOM_SCANDUMP_RESPONSE = new Builder<Map.Entry<Long, byte[]>>() {
     @Override

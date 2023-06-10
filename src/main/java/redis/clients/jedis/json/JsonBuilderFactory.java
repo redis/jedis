@@ -44,21 +44,6 @@ public final class JsonBuilderFactory {
       return "Class<?>";
     }
   };
-//
-//  public static final Builder<Class<?>> JSON_TYPE_V1_RESP3 = new Builder<Class<?>>() {
-//    @Override
-//    public Class<?> build(Object data) {
-//      if (data == null) return null;
-//      List<Object> list = (List<Object>) data;
-//      if (list.isEmpty()) return null;
-//      return JSON_TYPE.build(list.get(0));
-//    }
-//
-//    @Override
-//    public String toString() {
-//      return "Class<?>";
-//    }
-//  };
 
   public static final Builder<List<Class<?>>> JSON_TYPE_LIST = new Builder<List<Class<?>>>() {
     @Override

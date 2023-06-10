@@ -27,16 +27,10 @@ public interface RedisJsonV1Commands {
   <T> T jsonGet(String key, Class<T> clazz);
 
   Object jsonGet(String key, Path... paths);
-//
-//  List<Object> jsonGetResp3(String key, Path... paths);
 
   String jsonGetAsPlainString(String key, Path path);
 
   <T> T jsonGet(String key, Class<T> clazz, Path... paths);
-//
-//  List<Object> jsonGetResp3(String key, Map<Path, Class<?>> paths);
-//
-//  <T> T jsonGetResp3(String key, Class<T> clazz, Path path);
 
   default <T> List<T> jsonMGet(Class<T> clazz, String... keys) {
     return jsonMGet(Path.ROOT_PATH, clazz, keys);

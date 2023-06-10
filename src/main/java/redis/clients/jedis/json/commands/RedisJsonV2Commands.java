@@ -37,8 +37,6 @@ public interface RedisJsonV2Commands {
 
   Object jsonGet(String key, Path2... paths);
 
-//  List<List<Object>> jsonGetResp3(String key); // both ver
-//
   List<List<Object>> jsonGetResp3(String key, Path2... paths);
 
   default List<JSONArray> jsonMGet(String... keys) {

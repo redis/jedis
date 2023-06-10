@@ -61,8 +61,6 @@ public interface RedisJsonV1Commands {
   Long jsonStrLen(String key, Path path);
 
   double jsonNumIncrBy(String key, Path path, double value);
-//
-//  List<Double> jsonNumIncrByResp3(String key, Path path, double value);
 
   Long jsonArrAppend(String key, Path path, Object... pojos);
 

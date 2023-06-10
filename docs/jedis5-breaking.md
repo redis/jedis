@@ -34,6 +34,10 @@
   - `tsMRevRange(long fromTimestamp, long toTimestamp, String... filters)`
   - `tsMRevRange(TSMRangeParams multiRangeParams)`
 
+- `jsonNumIncrBy(String key, Path2 path, double value)` method now returns `Object` instead of `JSONArray`.
+  - Previously when it was returning JSONArray, would still JSONArray. So simple type casting should be enough to handle this changes.
+  - It will return `List<Double>` when running under RESP3 protocol.
+
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).

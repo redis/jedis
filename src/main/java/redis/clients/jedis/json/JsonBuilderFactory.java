@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.exceptions.JedisException;
 
 public final class JsonBuilderFactory {
@@ -82,6 +83,14 @@ public final class JsonBuilderFactory {
     }
   };
 
+  public static final Builder<List<Class<?>>> JSON_TYPE_RESPONSE_RESP3_COMPATIBLE = new Builder<List<Class<?>>>() {
+    @Override
+    public List<Class<?>> build(Object data) {
+      List<List<Class<?>>> fullReply = JSON_TYPE_RESPONSE_RESP3.build(data);
+      return fullReply == null ? null : fullReply.get(0);
+    }
+  };
+
   public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {
@@ -112,20 +121,18 @@ public final class JsonBuilderFactory {
       = new Builder<List<List<Object>>>() {
     @Override
     public List<List<Object>> build(Object data) {
-      if (data == null) {
-        return null;
-      }
-
+      if (data == null) return null;
       List<List<Object>> superList = (List<List<Object>>) data;
-      List<List<Object>> returnList = new ArrayList<>(superList.size());
-      for (List<Object> subList : superList) {
-        List<Object> list = new ArrayList<>(subList.size());
-        for (Object object : subList) {
-          list.add(JSON_OBJECT.build(object));
-        }
-        returnList.add(list);
-      }
-      return returnList;
+      return superList.stream().map(subList -> {
+        return subList.stream().map(JSON_OBJECT::build).collect(Collectors.toList());
+      }).collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<Object> JSON_GET_RESPONSE_RESP3_COMPATIBLE = new Builder<Object>() {
+    @Override
+    public Object build(Object data) {
+      return JSON_GET_RESPONSE_RESP3.build(data);
     }
   };
 
@@ -142,6 +149,15 @@ public final class JsonBuilderFactory {
         // just to make it safe for com.vaadin.external.google:android-json library
         throw new JedisException(ex);
       }
+    }
+  };
+
+  public static final Builder<Object> JSON_ARRAY_OR_DOUBLE_LIST = new Builder<Object>() {
+    @Override
+    public Object build(Object data) {
+      if (data == null) return null;
+      if (data instanceof List) return BuilderFactory.DOUBLE_LIST.build(data);
+      return JSON_ARRAY.build(data);
     }
   };
 

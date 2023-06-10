@@ -78,23 +78,24 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
 //    jsonClient.jsonSet("null", null, ROOT_PATH);
     jsonClient.jsonSetWithEscape("null", ROOT_PATH, (Object) null);
     assertJsonGetReplySingleElement(null, jsonClient.jsonGetResp3("null", ROOT_PATH));
-    assertNull(jsonClient.jsonGet("null"));
+    assertNull(jsonClient.jsonGet("null")); // compatible
 
     // real scalar value and no path
     jsonClient.jsonSetWithEscape("str", "strong");
     assertJsonGetReplySingleElement("strong", jsonClient.jsonGetResp3("str"));
-    assertEquals("strong", jsonClient.jsonGet("str"));
+    assertEquals("strong", jsonClient.jsonGet("str")); // compatible
 
     // a slightly more complex object
     IRLObject obj = new IRLObject();
     jsonClient.jsonSetWithEscape("obj", obj);
     assertJsonGetReplySingleElement(new JSONObject(gson.toJson(obj)), jsonClient.jsonGetResp3("obj"));
-    assertEquals(gson.toJson(obj), gson.toJson(jsonClient.jsonGet("obj")));
+    assertEquals(gson.toJson(obj), gson.toJson(jsonClient.jsonGet("obj"))); // compatible
 
     // check an update
     Path2 p = Path2.of(".str");
     jsonClient.jsonSet("obj", p, gson.toJson("strung"));
     assertJsonGetReplySingleElement("strung", jsonClient.jsonGetResp3("obj", p));
+    assertJsonGetReplySingleElement("strung", (List<List<Object>>) jsonClient.jsonGet("obj", p)); // cast
   }
 
   @Test
@@ -221,6 +222,18 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
     assertJsonTypeReplySingleElement(List.class, jsonClient.jsonTypeResp3("foobar", Path2.of(".fooArr")));
     assertJsonTypeReplySingleElement(boolean.class, jsonClient.jsonTypeResp3("foobar", Path2.of(".fooB")));
     assertEquals(singletonList(Collections.emptyList()), jsonClient.jsonTypeResp3("foobar", Path2.of(".fooErr")));
+  }
+
+  @Test
+  public void typeChecksShouldSucceedCompatible() {
+    jsonClient.jsonSet("foobar", ROOT_PATH, new JSONObject(gson.toJson(new FooBarObject())));
+    assertEquals(singletonList(Object.class), jsonClient.jsonType("foobar", ROOT_PATH));
+    assertEquals(singletonList(String.class), jsonClient.jsonType("foobar", Path2.of(".foo")));
+    assertEquals(singletonList(int.class), jsonClient.jsonType("foobar", Path2.of(".fooI")));
+    assertEquals(singletonList(float.class), jsonClient.jsonType("foobar", Path2.of(".fooF")));
+    assertEquals(singletonList(List.class), jsonClient.jsonType("foobar", Path2.of(".fooArr")));
+    assertEquals(singletonList(boolean.class), jsonClient.jsonType("foobar", Path2.of(".fooB")));
+    assertEquals(Collections.emptyList(), jsonClient.jsonType("foobar", Path2.of(".fooErr")));
   }
 
   @Test
@@ -479,6 +492,15 @@ public class RedisJsonV2Resp3Test extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList(null, 4d, 7d, null), jsonClient.jsonNumIncrByResp3("doc", Path2.of("..a"), 2d));
     assertEquals(Collections.singletonList(null), jsonClient.jsonNumIncrByResp3("doc", Path2.of("..b"), 0d));
     assertEquals(Collections.emptyList(), jsonClient.jsonNumIncrByResp3("doc", Path2.of("..c"), 0d));
+  }
+
+  @Test
+  public void numIncrByCompatible() {
+    jsonClient.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
+    assertEquals(Collections.singletonList(null), jsonClient.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
+    assertEquals(Arrays.asList(null, 4d, 7d, null), jsonClient.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
+    assertEquals(Collections.singletonList(null), jsonClient.jsonNumIncrBy("doc", Path2.of("..b"), 0d));
+    assertEquals(Collections.emptyList(), jsonClient.jsonNumIncrBy("doc", Path2.of("..c"), 0d));
   }
 
   @Test

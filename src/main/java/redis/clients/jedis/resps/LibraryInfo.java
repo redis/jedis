@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.SafeEncoder;
 
 //[library_name=mylib, engine=LUA, functions=[[name=myfunc, description=null, flags=[]]], library_code=#!LUA name=mylib 
 // redis.register_function('myfunc', function(keys, args) return args[1] end)]

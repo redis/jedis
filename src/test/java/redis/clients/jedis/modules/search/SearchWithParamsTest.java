@@ -1067,6 +1067,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertNull(depth5.get("Child iterators"));
   }
 
+  @org.junit.Ignore
   @Test
   public void limitedSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));

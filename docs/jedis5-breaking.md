@@ -26,6 +26,12 @@
 - `zunion(ZParams params, byte[]... keys)` method now returns `List<byte[]>` (instead of `Set<byte[]>`).
 - Both `zunionWithScores(ZParams params, String... keys)` and `zunionWithScores(ZParams params, byte[]... keys)` methods now return `List<Tuple>` (instead of `Set<Tuple>`).
 
+- Both `configGet(String pattern)` and `configGet(String... patterns)` methods now return `Map<String, String>` instead of `List<String>`.
+- Both `configGet(byte[] pattern)` and `configGet(byte[]... patterns)` methods now return `Map<byte[], byte[]>` instead of `List<byte[]>`.
+
+- New `aclDelUser(String... names)` method replaces `aclDelUser(String name)` and `aclDelUser(String name, String... names)` methods.
+- New `aclDelUser(byte[]... names)` method replaces `aclDelUser(byte[] name)` and `aclDelUser(byte[] name, byte[]... names)` methods.
+
 - `tsMGet(TSMGetParams multiGetParams, String... filters)` method now returns `Map<String, TSMGetElement>` instead of `List<TSKeyValue<TSElement>>`.
 
 - Following methods now return `Map<String, TSMRangeElements>` instead of `List<TSKeyedElements>`:
@@ -73,6 +79,8 @@
 - `getParams()` method is removed from `SortingParams` class.
 
 - `addCommandEncodedArguments` and `addCommandBinaryArguments` methods have been removed from `FieldName` class.
+
+- `getArgs` method is removed from `AggregationBuilder` class.
 
 - `limit` and `getArgs` methods have been removed from `Group` class.
 

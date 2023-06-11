@@ -94,7 +94,6 @@ public abstract class JedisShardedPubSubBase<T> {
           final T enmesg = (bmesg == null) ? null : encode(bmesg);
           onSMessage(enchannel, enmesg);
         } else {
-          System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(resp));
           throw new JedisException("Unknown message type: " + firstObj);
         }
       } else {

@@ -100,10 +100,12 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void timeoutConnection() throws Exception {
+    final String TIMEOUT_STR = "timeout";
+
     Jedis jedis = new Jedis("localhost", 6379, 15000);
     jedis.auth("foobared");
     // read current config
-    final String timeout = jedis.configGet("timeout").get(1);
+    final String timeout = jedis.configGet(TIMEOUT_STR).get(TIMEOUT_STR);
     try {
       jedis.configSet("timeout", "1");
       Thread.sleep(5000);
@@ -118,7 +120,7 @@ public class JedisTest extends JedisCommandsTestBase {
       // reset config
       jedis = new Jedis("localhost", 6379);
       jedis.auth("foobared");
-      jedis.configSet("timeout", timeout);
+      jedis.configSet(TIMEOUT_STR, timeout);
       jedis.close();
     }
   }

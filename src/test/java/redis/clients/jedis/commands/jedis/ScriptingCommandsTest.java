@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.args.FunctionRestorePolicy;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -22,6 +23,8 @@ import redis.clients.jedis.exceptions.JedisNoScriptException;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 import redis.clients.jedis.util.ClientKillerUtil;
+import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisProtocolUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class ScriptingCommandsTest extends JedisCommandsTestBase {
@@ -387,19 +390,37 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertEquals(functionCode, response.getLibraryCode());
 
     // Binary
-    List<Object> bresponse = (List<Object>) jedis.functionListBinary().get(0);
-    assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+    if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {
 
-    bresponse = (List<Object>) jedis.functionListWithCodeBinary().get(0);
-    assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
-    assertNotNull(bresponse.get(7));
+      List<Object> bresponse = (List<Object>) jedis.functionListBinary().get(0);
+      assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
 
-    bresponse = (List<Object>) jedis.functionList(library.getBytes()).get(0);
-    assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+      bresponse = (List<Object>) jedis.functionListWithCodeBinary().get(0);
+      assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+      assertNotNull(bresponse.get(7));
 
-    bresponse = (List<Object>) jedis.functionListWithCode(library.getBytes()).get(0);
-    assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
-    assertNotNull(bresponse.get(7));
+      bresponse = (List<Object>) jedis.functionList(library.getBytes()).get(0);
+      assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+
+      bresponse = (List<Object>) jedis.functionListWithCode(library.getBytes()).get(0);
+      assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));
+      assertNotNull(bresponse.get(7));
+    } else {
+
+      List<KeyValue> bresponse = (List<KeyValue>) jedis.functionListBinary().get(0);
+      assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(0).getValue());
+
+      bresponse = (List<KeyValue>) jedis.functionListWithCodeBinary().get(0);
+      assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(0).getValue());
+      assertNotNull(bresponse.get(3));
+
+      bresponse = (List<KeyValue>) jedis.functionList(library.getBytes()).get(0);
+      assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(0).getValue());
+
+      bresponse = (List<KeyValue>) jedis.functionListWithCode(library.getBytes()).get(0);
+      assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(0).getValue());
+      assertNotNull(bresponse.get(3));
+    }
   }
 
   @Test

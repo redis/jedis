@@ -23,8 +23,7 @@ public abstract class JedisCommandsTestBase {
   public void setUp() throws Exception {
 //    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
     jedis = new Jedis(hnp, DefaultJedisClientConfig.builder()
-        .protocol(RedisProtocolUtil.getRedisProtocol())
-        .timeoutMillis(500).password("foobared").build());
+        .protocol(RedisProtocolUtil.getRedisProtocol()).timeoutMillis(500).password("foobared").build());
     jedis.flushAll();
   }
 
@@ -36,7 +35,6 @@ public abstract class JedisCommandsTestBase {
   protected Jedis createJedis() {
 //    return new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
     return new Jedis(hnp, DefaultJedisClientConfig.builder()
-        .protocol(RedisProtocolUtil.getRedisProtocol())
-        .password("foobared").build());
+        .protocol(RedisProtocolUtil.getRedisProtocol()).password("foobared").build());
   }
 }

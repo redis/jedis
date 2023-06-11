@@ -10,6 +10,7 @@ import java.util.Locale;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -133,7 +134,6 @@ public final class Protocol {
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
     //System.out.println((char) b);
-    int num;
     switch (b) {
       case PLUS_BYTE:
         return is.readLineBytes();
@@ -141,9 +141,7 @@ public final class Protocol {
       case EQUAL_BYTE:
         return processBulkReply(is);
       case ASTERISK_BYTE:
-        num = is.readIntCrLf();
-        if (num == -1) return null;
-        return processMultiBulkReply(num, is);
+        return processMultiBulkReply(is);
       case UNDERSCORE_BYTE:
         return is.readNullCrLf();
       case HASH_BYTE:
@@ -155,17 +153,11 @@ public final class Protocol {
       case LEFT_BRACE_BYTE:
         return is.readBigIntegerCrLf();
       case PERCENT_BYTE: // TODO: currently just to start working with HELLO
-        num = is.readIntCrLf();
-        if (num == -1) return null;
-        return processMultiBulkReply(2 * num, is);
+        return processMapKeyValueReply(is);
       case TILDE_BYTE: // TODO:
-        num = is.readIntCrLf();
-        if (num == -1) return null;
-        return processMultiBulkReply(num, is);
+        return processMultiBulkReply(is);
       case GREATER_THAN_BYTE:
-        num = is.readIntCrLf();
-        if (num == -1) return null;
-        return processMultiBulkReply(num, is);
+        return processMultiBulkReply(is);
       case MINUS_BYTE:
         processError(is);
         return null;
@@ -198,9 +190,10 @@ public final class Protocol {
     return read;
   }
 
-  // private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-  private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
-    // final int num = is.readIntCrLf();
+  private static List<Object> processMultiBulkReply(final RedisInputStream is) {
+  // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
+    final int num = is.readIntCrLf();
+    if (num == -1) return null;
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
@@ -208,6 +201,18 @@ public final class Protocol {
       } catch (JedisDataException e) {
         ret.add(e);
       }
+    }
+    return ret;
+  }
+
+  // private static List<Object> processMultiBulkReply(final RedisInputStream is) {
+  // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
+  private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
+    final int num = is.readIntCrLf();
+    if (num == -1) return null;
+    final List<KeyValue> ret = new ArrayList<>(num);
+    for (int i = 0; i < num; i++) {
+      ret.add(new KeyValue(process(is), process(is)));
     }
     return ret;
   }

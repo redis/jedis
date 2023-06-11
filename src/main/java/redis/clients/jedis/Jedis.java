@@ -3572,17 +3572,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Bulk reply.
    */
   @Override
-  public List<byte[]> configGet(final byte[] pattern) {
+  public Map<byte[], byte[]> configGet(final byte[] pattern) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.CONFIG, Keyword.GET.getRaw(), pattern);
-    return connection.getBinaryMultiBulkReply();
+    return BuilderFactory.BINARY_MAP.build(connection.getOne());
   }
 
   @Override
-  public List<byte[]> configGet(byte[]... patterns) {
+  public Map<byte[], byte[]> configGet(byte[]... patterns) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.CONFIG, joinParameters(Keyword.GET.getRaw(), patterns));
-    return connection.getBinaryMultiBulkReply();
+    return BuilderFactory.BINARY_MAP.build(connection.getOne());
   }
 
   /**
@@ -3668,6 +3668,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String configSet(final byte[]... parameterValues) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.CONFIG, joinParameters(Keyword.SET.getRaw(), parameterValues));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String configSetBinary(Map<byte[], byte[]> parameterValues) {
+    checkIsInMultiOrPipeline();
+    CommandArguments args = new CommandArguments(Command.CONFIG).add(Keyword.SET);
+    parameterValues.forEach((k, v) -> args.add(k).add(v));
+    connection.sendCommand(args);
     return connection.getStatusCodeReply();
   }
 
@@ -4109,23 +4118,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String aclSetUser(byte[] name, byte[]... keys) {
+  public String aclSetUser(byte[] name, byte[]... rules) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, joinParameters(SETUSER.getRaw(), name, keys));
+    connection.sendCommand(ACL, joinParameters(SETUSER.getRaw(), name, rules));
     return connection.getStatusCodeReply();
   }
 
   @Override
-  public long aclDelUser(byte[] name) {
+  public long aclDelUser(byte[]... names) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, DELUSER.getRaw(), name);
-    return connection.getIntegerReply();
-  }
-
-  @Override
-  public long aclDelUser(byte[] name, byte[]... names) {
-    checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, joinParameters(DELUSER.getRaw(), name, names));
+    connection.sendCommand(ACL, joinParameters(DELUSER.getRaw(), names));
     return connection.getIntegerReply();
   }
 
@@ -7864,17 +7866,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @return Bulk reply.
    */
   @Override
-  public List<String> configGet(final String pattern) {
+  public Map<String, String> configGet(final String pattern) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.CONFIG, Keyword.GET.name(), pattern);
-    return connection.getMultiBulkReply();
+    return BuilderFactory.STRING_MAP.build(connection.getOne());
   }
 
   @Override
-  public List<String> configGet(String... patterns) {
+  public Map<String, String> configGet(String... patterns) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.CONFIG, joinParameters(Keyword.GET.name(), patterns));
-    return connection.getMultiBulkReply();
+    return BuilderFactory.STRING_MAP.build(connection.getOne());
   }
 
   /**
@@ -7917,6 +7919,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String configSet(final String... parameterValues) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.CONFIG, joinParameters(Keyword.SET.name(), parameterValues));
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
+  public String configSet(Map<String, String> parameterValues) {
+    checkIsInMultiOrPipeline();
+    CommandArguments args = new CommandArguments(Command.CONFIG).add(Keyword.SET);
+    parameterValues.forEach((k, v) -> args.add(k).add(v));
+    connection.sendCommand(args);
     return connection.getStatusCodeReply();
   }
 
@@ -8360,23 +8371,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public String aclSetUser(String name, String... params) {
+  public String aclSetUser(String name, String... rules) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, joinParameters(SETUSER.name(), name, params));
+    connection.sendCommand(ACL, joinParameters(SETUSER.name(), name, rules));
     return connection.getStatusCodeReply();
   }
 
   @Override
-  public long aclDelUser(final String name) {
+  public long aclDelUser(final String... names) {
     checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, DELUSER.name(), name);
-    return connection.getIntegerReply();
-  }
-
-  @Override
-  public long aclDelUser(final String name, String... names) {
-    checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, joinParameters(DELUSER.name(), name, names));
+    connection.sendCommand(ACL, joinParameters(DELUSER.name(), names));
     return connection.getIntegerReply();
   }
 
@@ -8384,7 +8388,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public AccessControlUser aclGetUser(final String name) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, GETUSER.name(), name);
-    return BuilderFactory.ACCESS_CONTROL_USER.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.ACCESS_CONTROL_USER.build(connection.getOne());
   }
 
   @Override
@@ -8412,28 +8416,28 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<String> aclCat() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, CAT);
-    return BuilderFactory.STRING_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
   @Override
   public List<String> aclCat(String category) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, CAT.name(), category);
-    return BuilderFactory.STRING_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.STRING_LIST.build(connection.getOne());
   }
 
   @Override
   public List<AccessControlLogEntry> aclLog() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LOG);
-    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getOne());
   }
 
   @Override
   public List<AccessControlLogEntry> aclLog(int limit) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LOG.getRaw(), toByteArray(limit));
-    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.ACCESS_CONTROL_LOG_ENTRY_LIST.build(connection.getOne());
   }
 
   @Override
@@ -9185,7 +9189,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<Module> moduleList() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.MODULE, LIST);
-    return BuilderFactory.MODULE_LIST.build(connection.getObjectMultiBulkReply());
+    return BuilderFactory.MODULE_LIST.build(connection.getOne());
   }
 
   @Override

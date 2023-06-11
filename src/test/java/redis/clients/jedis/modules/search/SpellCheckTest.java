@@ -61,8 +61,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   public void basicSpellCheck() {
     client.ftCreate(index, TextField.of("name"), TextField.of("body"));
     client.hset("doc1", toMap("name", "name1", "body", "body1"));
-    client.hset("doc1", toMap("name", "name2", "body", "body2"));
-    client.hset("doc1", toMap("name", "name2", "body", "name2"));
+    client.hset("doc2", toMap("name", "name2", "body", "body2"));
+    client.hset("doc3", toMap("name", "name2", "body", "name2"));
 
     Map<String, Map<String, Double>> reply = client.ftSpellCheck(index, "name");
     assertEquals(Collections.singleton("name"), reply.keySet());

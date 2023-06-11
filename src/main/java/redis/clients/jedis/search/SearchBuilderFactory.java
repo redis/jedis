@@ -3,15 +3,18 @@ package redis.clients.jedis.search;
 import static redis.clients.jedis.BuilderFactory.STRING;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.util.DoublePrecision;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class SearchBuilderFactory {
@@ -147,7 +150,18 @@ public final class SearchBuilderFactory {
 
     @Override
     public Map<String, Map<String, Double>> build(Object data) {
-      List<Object> rawTerms = (List<Object>) data;
+      List rawTerms = (List) data;
+      if (rawTerms.isEmpty()) return Collections.emptyMap();
+
+      if (rawTerms.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) rawTerms).stream().collect(Collectors.toMap(
+            rawTerm -> STRING.build(rawTerm.getKey()),
+            rawTerm -> ((List<KeyValue>) rawTerm.getValue()).stream().collect(
+                  Collectors.toMap(entry -> STRING.build(entry.getKey()),
+                      entry -> BuilderFactory.DOUBLE.build(entry.getValue()))),
+            (x, y) -> x, LinkedHashMap::new));
+      }
+
       Map<String, Map<String, Double>> returnTerms = new LinkedHashMap<>(rawTerms.size());
 
       for (Object rawTerm : rawTerms) {

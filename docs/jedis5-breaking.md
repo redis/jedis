@@ -53,6 +53,8 @@
   - `BINARY_MAP_FROM_PAIRS`
   - `STRING_ORDERED_SET`
 
+- `RedisJsonCommands` and `RedisJsonPipelineCommands` interfaces have been moved into `redis.clients.jedis.json.commands` package.
+
 - `Queable` class is removed.
 
 - `Params` abstract class is removed.
@@ -67,6 +69,8 @@
 - `getParams()` method is removed from `SortingParams` class.
 
 - `addCommandEncodedArguments` and `addCommandBinaryArguments` methods have been removed from `FieldName` class.
+
+- `getArgs` method is removed from `AggregationBuilder` class.
 
 - `limit` and `getArgs` methods have been removed from `Group` class.
 
@@ -86,8 +90,6 @@
 <!--- Deprecated in Jedis 4 --->
 
 - `quit()` method has been removed from `Connection` and `ServerCommands` interface and implementations.
-
-- `select(int index)` method has been removed from `Connection`.
 
 - `updatePassword(String password)` method has been removed from `JedisClientConfig` and implementations.
 

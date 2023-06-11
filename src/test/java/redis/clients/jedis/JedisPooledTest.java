@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -99,6 +100,18 @@ public class JedisPooledTest {
         .clientName("my_shiny_client_name").build());
         Connection jedis = pool.getPool().getResource()) {
       assertEquals("my_shiny_client_name", new Jedis(jedis).clientGetname());
+    }
+  }
+
+  @Test
+  public void invalidClientName() {
+    try (JedisPooled pool = new JedisPooled(hnp, DefaultJedisClientConfig.builder()
+        .clientName("invalid client name").build());
+         Connection jedis = pool.getPool().getResource()) {
+    } catch (Exception e) {
+      if (!e.getMessage().startsWith("client info cannot contain space")) {
+        Assert.fail("invalid client name test fail");
+      }
     }
   }
 
@@ -194,7 +207,12 @@ public class JedisPooledTest {
       @Override
       public RedisCredentials get() {
         if (!validPassword.get()) {
-          return new RedisCredentials() { };
+          return new RedisCredentials() {
+            @Override
+            public char[] getPassword() {
+              return "invalidPass".toCharArray();
+            }
+          };
         }
 
         return new RedisCredentials() {

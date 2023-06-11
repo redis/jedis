@@ -13,6 +13,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -216,6 +217,17 @@ public class JedisPoolTest {
         "foobared", 0, "my_shiny_client_name"); Jedis jedis = pool.getResource()) {
 
       assertEquals("my_shiny_client_name", jedis.clientGetname());
+    }
+  }
+
+  @Test
+  public void invalidClientName() {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+        "foobared", 0, "invalid client name"); Jedis jedis = pool.getResource()) {
+    } catch (Exception e) {
+      if (!e.getMessage().startsWith("client info cannot contain space")) {
+        Assert.fail("invalid client name test fail");
+      }
     }
   }
 

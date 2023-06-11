@@ -23,7 +23,7 @@ public class FtAggregateIteration extends JedisCommandIterationBase<AggregationR
     super(connectionProvider, SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
     if (!aggr.isWithCursor()) throw new IllegalArgumentException("cursor must be set");
     this.indexName = indexName;
-    this.args = new CommandArguments(SearchProtocol.SearchCommand.AGGREGATE).add(this.indexName).addObjects(aggr.getArgs());
+    this.args = new CommandArguments(SearchProtocol.SearchCommand.AGGREGATE).add(this.indexName).addParams(aggr);
   }
 
   @Override

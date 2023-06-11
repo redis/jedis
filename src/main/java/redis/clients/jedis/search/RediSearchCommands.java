@@ -130,5 +130,5 @@ public interface RediSearchCommands {
 
   long ftSugLen(String key);
 
-  List<String> ftList();
+  Set<String> ftList();
 }

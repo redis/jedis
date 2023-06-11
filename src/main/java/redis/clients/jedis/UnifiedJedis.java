@@ -3878,7 +3878,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> ftList() {
+  public Set<String> ftList() {
     return executeCommand(commandObjects.ftList());
   }
   // RediSearch commands

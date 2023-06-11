@@ -3396,8 +3396,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.SUGLEN).key(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<String>> ftList() {
-    return new CommandObject<>(commandArguments(SearchCommand._LIST), BuilderFactory.STRING_LIST);
+  public final CommandObject<Set<String>> ftList() {
+    return new CommandObject<>(commandArguments(SearchCommand._LIST), BuilderFactory.STRING_SET);
   }
   // RediSearch commands
 

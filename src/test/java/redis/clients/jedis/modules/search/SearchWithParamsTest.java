@@ -1096,7 +1096,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void list() {
-    assertEquals(Collections.emptyList(), client.ftList());
+    assertEquals(Collections.emptySet(), client.ftList());
 
     final int count = 20;
     Set<String> names = new HashSet<>();
@@ -1105,7 +1105,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertOK(client.ftCreate(name, TextField.of("t" + i)));
       names.add(name);
     }
-    assertEquals(names, new HashSet<>(client.ftList()));
+    assertEquals(names, client.ftList());
   }
 
   @Test

@@ -934,22 +934,6 @@ public final class BuilderFactory {
       return map;
     }
   };
-//
-//  public static final Builder<List<Map<String, Object>>> ENCODED_OBJECT_MAP_LIST = new Builder<List<Map<String, Object>>>() {
-//    @Override
-//    public List<Map<String, Object>> build(Object data) {
-//      if (data == null) return null;
-//      List<Object> list = (List<Object>) data;
-//      if (list.isEmpty()) return Collections.emptyList();
-//
-//      return list.stream().map(ENCODED_OBJECT_MAP::build).collect(Collectors.toList());
-//    }
-//
-//    @Override
-//    public String toString() {
-//      return "List<Map<String, Object>>";
-//    }
-//  };
 
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
@@ -1883,5 +1867,4 @@ public final class BuilderFactory {
   private BuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");
   }
-
 }

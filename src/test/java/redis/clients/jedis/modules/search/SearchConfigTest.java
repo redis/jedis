@@ -25,9 +25,9 @@ public class SearchConfigTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void config() {
-    Map<String, String> map = client.ftConfigGet("TIMEOUT");
+    Map<String, Object> map = client.ftConfigGet("TIMEOUT");
     assertEquals(1, map.size());
-    String value = map.get("TIMEOUT");
+    String value = (String) map.get("TIMEOUT");
     assertNotNull(value);
 
     assertEquals("OK", client.ftConfigSet("timeout", value));

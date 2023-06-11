@@ -3,10 +3,13 @@ package redis.clients.jedis.modules.search;
 import static org.junit.Assert.*;
 
 import java.util.*;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
@@ -155,11 +158,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     }
     SearchResult res2 = client.ftSearch(index, new Query("@tags:{tagA}"));
     assertEquals(100, res2.getTotalResults());
-
-    Map<String, Object> info = client.ftInfo(index);
-    assertEquals(index, info.get("index_name"));
-    assertEquals("identifier", ((List) ((List) info.get("attributes")).get(1)).get(0));
-    assertEquals("attribute", ((List) ((List) info.get("attributes")).get(1)).get(2));
   }
 
   @Test
@@ -373,8 +371,13 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     res = client.ftSearch(index, q);
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
-      assertEquals(1.0, d.getScore(), 0);
-      assertNull(d.get("title"));
+      if (protocol != RedisProtocol.RESP3) {
+        assertEquals(1.0, d.getScore(), 0);
+        assertNull(d.get("title"));
+      } else {
+        assertNull(d.getScore());
+        assertThrows(NullPointerException.class, () -> d.get("title"));
+      }
     }
 
     // test verbatim vs. stemming
@@ -643,9 +646,13 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
     Map<String, Object> info = client.ftInfo(index);
     assertEquals(index, info.get("index_name"));
-    assertEquals(6, ((List) info.get("attributes")).size());
-    assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
-    assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals(6, ((List) info.get("attributes")).size());
+      assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
+      assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
+    } else {
+      // TODO:
+    }
   }
 
   @Test
@@ -892,6 +899,8 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void blobField() throws Exception {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 

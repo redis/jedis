@@ -58,9 +58,9 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<List<String>> explainCLI = p.ftExplainCLI(index, new Query("@title:title_val"));
     Response<Map<String, Object>> info = p.ftInfo(index);
     Response<String> configSet = p.ftConfigSet("timeout", "100");
-    Response<Map<String, String>> configGet = p.ftConfigGet("*");
+    Response<Map<String, Object>> configGet = p.ftConfigGet("*");
     Response<String> configSetIndex = p.ftConfigSet(index, "timeout", "100");
-    Response<Map<String, String>> configGetIndex = p.ftConfigGet(index, "*");
+    Response<Map<String, Object>> configGetIndex = p.ftConfigGet(index, "*");
     Response<String> synUpdate = p.ftSynUpdate(index, "foo", "bar");
     Response<Map<String, List<String>>> synDump = p.ftSynDump(index);
 

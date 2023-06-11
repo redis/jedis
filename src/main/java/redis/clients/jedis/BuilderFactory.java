@@ -1705,7 +1705,15 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
-      final List<Object> list = (List<Object>) data;
+      final List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) list).stream()
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+                kv -> STRING.build(kv.getValue())));
+      }
+
       final Map<String, String> map = new HashMap<>(list.size());
       for (Object object : list) {
         if (object == null) continue;

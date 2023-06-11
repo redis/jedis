@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
@@ -136,9 +137,9 @@ public class TSInfo {
       Map<String, Rule> rules = null;
       List<Map<String, Object>> chunks = null;
 
-      for (KeyValue kv : list) {
-        String prop = BuilderFactory.STRING.build(kv.getKey());
-        Object value = kv.getValue();
+      for (KeyValue propertyValue : list) {
+        String prop = BuilderFactory.STRING.build(propertyValue.getKey());
+        Object value = propertyValue.getValue();
         if (value instanceof List) {
           switch (prop) {
             case LABELS_PROPERTY:
@@ -158,17 +159,13 @@ public class TSInfo {
               value = rulesValueMap;
               break;
             case CHUNKS_PROPERTY:
-              List<List<List<Object>>> chunksDataList = (List<List<List<Object>>>) value;
+              List<List<KeyValue>> chunksDataList = (List<List<KeyValue>>) value;
               List<Map<String, Object>> chunksValueList = new ArrayList<>(chunksDataList.size());
               chunks = new ArrayList<>(chunksDataList.size());
-              for (List<List<Object>> chunkDataAsList : chunksDataList) {
-                Map<String, Object> chunk = new HashMap<>();
-                for (List<Object> chunkDataInnerList : chunkDataAsList) {
-                  for (Object chunkDataInnerInnerObject : chunkDataInnerList) {
-                    KeyValue cikv = (KeyValue) chunkDataInnerInnerObject;
-                    chunk.put(BuilderFactory.STRING.build(cikv.getKey()), BuilderFactory.ENCODED_OBJECT.build(cikv.getValue()));
-                  }
-                }
+              for (List<KeyValue> chunkDataAsList : chunksDataList) {
+                Map<String, Object> chunk = chunkDataAsList.stream()
+                    .collect(Collectors.toMap(kv -> BuilderFactory.STRING.build(kv.getKey()),
+                        kv -> BuilderFactory.ENCODED_OBJECT.build(kv.getValue())));
                 chunksValueList.add(chunk);
                 chunks.add(chunk);
               }

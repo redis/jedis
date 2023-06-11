@@ -2,13 +2,14 @@ package redis.clients.jedis.timeseries;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.util.DoublePrecision;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class TSInfo {
@@ -127,19 +128,18 @@ public class TSInfo {
     }
   };
 
-  // TODO: unify INFO builders
   public static Builder<TSInfo> TIMESERIES_INFO_RESP3 = new Builder<TSInfo>() {
     @Override
     public TSInfo build(Object data) {
-      List<Object> list = (List<Object>) data;
+      List<KeyValue> list = (List<KeyValue>) data;
       Map<String, Object> properties = new HashMap<>();
       Map<String, String> labels = null;
       Map<String, Rule> rules = null;
       List<Map<String, Object>> chunks = null;
 
-      for (int i = 0; i < list.size(); i += 2) {
-        String prop = SafeEncoder.encode((byte[]) list.get(i));
-        Object value = list.get(i + 1);
+      for (KeyValue propertyValue : list) {
+        String prop = BuilderFactory.STRING.build(propertyValue.getKey());
+        Object value = propertyValue.getValue();
         if (value instanceof List) {
           switch (prop) {
             case LABELS_PROPERTY:
@@ -147,24 +147,26 @@ public class TSInfo {
               value = labels;
               break;
             case RULES_PROPERTY:
-              List<Object> rulesDataList = (List<Object>) value;
-              Map<String, List<Object>> rulesValueMap = new HashMap<>(rulesDataList.size() / 2, 1f);
+              List<KeyValue> rulesDataList = (List<KeyValue>) value;
+              Map<String, List<Object>> rulesValueMap = new HashMap<>(rulesDataList.size(), 1f);
               rules = new HashMap<>(rulesDataList.size());
-              for (Iterator<Object> iterator = rulesDataList.iterator(); iterator.hasNext();) {
-                String ruleName = BuilderFactory.STRING.build(iterator.next());
-                List<Object> ruleValueList = BuilderFactory.ENCODED_OBJECT_LIST.build(iterator.next());
+              for (KeyValue rkv : rulesDataList) {
+                String ruleName = BuilderFactory.STRING.build(rkv.getKey());
+                List<Object> ruleValueList = BuilderFactory.ENCODED_OBJECT_LIST.build(rkv.getValue());
                 rulesValueMap.put(ruleName, ruleValueList);
                 rules.put(ruleName, new Rule(ruleName, ruleValueList));
               }
               value = rulesValueMap;
               break;
             case CHUNKS_PROPERTY:
-              List<Object> chunksDataList = (List<Object>) value;
+              List<List<KeyValue>> chunksDataList = (List<List<KeyValue>>) value;
               List<Map<String, Object>> chunksValueList = new ArrayList<>(chunksDataList.size());
               chunks = new ArrayList<>(chunksDataList.size());
-              for (Object chunkData : chunksDataList) {
-                Map<String, Object> chunk = BuilderFactory.ENCODED_OBJECT_MAP.build(chunkData);
-                chunksValueList.add(new HashMap<>(chunk));
+              for (List<KeyValue> chunkDataAsList : chunksDataList) {
+                Map<String, Object> chunk = chunkDataAsList.stream()
+                    .collect(Collectors.toMap(kv -> BuilderFactory.STRING.build(kv.getKey()),
+                        kv -> BuilderFactory.ENCODED_OBJECT.build(kv.getValue())));
+                chunksValueList.add(chunk);
                 chunks.add(chunk);
               }
               value = chunksValueList;
@@ -174,7 +176,7 @@ public class TSInfo {
               break;
           }
         } else if (value instanceof byte[]) {
-          value = SafeEncoder.encode((byte[]) value);
+          value = BuilderFactory.STRING.build(value);
           if (DUPLICATE_POLICY_PROPERTY.equals(prop)) {
             try {
               value = DuplicatePolicy.valueOf(((String) value).toUpperCase());

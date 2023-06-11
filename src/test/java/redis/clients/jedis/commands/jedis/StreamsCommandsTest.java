@@ -500,7 +500,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void xack() {
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map = new HashMap<>();
     map.put("f1", "v1");
     jedis.xadd("xack-stream", (StreamEntryID) null, map);
 

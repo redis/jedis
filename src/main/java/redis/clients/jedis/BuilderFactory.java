@@ -63,19 +63,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP = new Builder<Map<String, Object>>() {
-    @Override
-    public Map<String, Object> build(Object data) {
-      final List list = (List) data;
-      final Map<String, Object> map = new HashMap<>(list.size() / 2, 1f);
-      final Iterator iterator = list.iterator();
-      while (iterator.hasNext()) {
-        map.put(STRING.build(iterator.next()), ENCODED_OBJECT.build(iterator.next()));
-      }
-      return map;
-    }
-  };
-
   public static final Builder<Long> LONG = new Builder<Long>() {
     @Override
     public Long build(Object data) {
@@ -221,26 +208,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<byte[], byte[]>> BINARY_MAP = new Builder<Map<byte[], byte[]>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public Map<byte[], byte[]> build(Object data) {
-      final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<byte[], byte[]> hash = new JedisByteHashMap();
-      final Iterator<byte[]> iterator = flatHash.iterator();
-      while (iterator.hasNext()) {
-        hash.put(iterator.next(), iterator.next());
-      }
-
-      return hash;
-    }
-
-    @Override
-    public String toString() {
-      return "Map<byte[], byte[]>";
-    }
-  };
-
   public static final Builder<List<Map.Entry<byte[], byte[]>>> BINARY_PAIR_LIST
       = new Builder<List<Map.Entry<byte[], byte[]>>>() {
     @Override
@@ -323,18 +290,86 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP = new Builder<Map<String, Object>>() {
+    @Override
+    public Map<String, Object> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        final Map<String, Object> map = new HashMap<>(list.size(), 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          KeyValue kv = (KeyValue) iterator.next();
+          map.put(STRING.build(kv.getKey()), ENCODED_OBJECT.build(kv.getValue()));
+        }
+        return map;
+      } else {
+        final Map<String, Object> map = new HashMap<>(list.size() / 2, 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(STRING.build(iterator.next()), ENCODED_OBJECT.build(iterator.next()));
+        }
+        return map;
+      }
+    }
+  };
+
+  public static final Builder<Map<byte[], byte[]>> BINARY_MAP = new Builder<Map<byte[], byte[]>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<byte[], byte[]> build(Object data) {
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        final Map<byte[], byte[]> map = new JedisByteHashMap();
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          KeyValue kv = (KeyValue) iterator.next();
+          map.put(BINARY.build(kv.getKey()), BINARY.build(kv.getValue()));
+        }
+        return map;
+      } else {
+        final Map<byte[], byte[]> map = new JedisByteHashMap();
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(BINARY.build(iterator.next()), BINARY.build(iterator.next()));
+        }
+        return map;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<byte[], byte[]>";
+    }
+  };
+
   public static final Builder<Map<String, String>> STRING_MAP = new Builder<Map<String, String>>() {
     @Override
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
-      final List<byte[]> flatHash = (List<byte[]>) data;
-      final Map<String, String> hash = new HashMap<>(flatHash.size() / 2, 1f);
-      final Iterator<byte[]> iterator = flatHash.iterator();
-      while (iterator.hasNext()) {
-        hash.put(SafeEncoder.encode(iterator.next()), SafeEncoder.encode(iterator.next()));
-      }
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
 
-      return hash;
+      if (list.get(0) instanceof KeyValue) {
+        final Map<String, String> map = new HashMap<>(list.size(), 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          KeyValue kv = (KeyValue) iterator.next();
+          map.put(STRING.build(kv.getKey()), STRING.build(kv.getValue()));
+        }
+        return map;
+      } else {
+        final Map<String, String> map = new HashMap<>(list.size() / 2, 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(STRING.build(iterator.next()), STRING.build(iterator.next()));
+        }
+        return map;
+      }
     }
 
     @Override
@@ -852,20 +887,26 @@ public final class BuilderFactory {
   public static final Builder<Map<String, CommandDocument>> COMMAND_DOCS_RESPONSE = new Builder<Map<String, CommandDocument>>() {
     @Override
     public Map<String, CommandDocument> build(Object data) {
-      if (data == null) {
-        return null;
-      }
-
+      if (data == null) return null;
       List<Object> list = (List<Object>) data;
-      Map<String, CommandDocument> map = new HashMap<>(list.size() / 2, 1f);
+      if (list.isEmpty()) return Collections.emptyMap();
 
-      for (int i = 0; i < list.size();) {
-        String name = STRING.build(list.get(i++));
-        CommandDocument doc = CommandDocument.COMMAND_DOCUMENT_BUILDER.build(list.get(i++));
-        map.put(name, doc);
+      if (list.get(0) instanceof KeyValue) {
+        final Map<String, CommandDocument> map = new HashMap<>(list.size(), 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          KeyValue kv = (KeyValue) iterator.next();
+          map.put(STRING.build(kv.getKey()), new CommandDocument(ENCODED_OBJECT_MAP.build(kv.getValue())));
+        }
+        return map;
+      } else {
+        final Map<String, CommandDocument> map = new HashMap<>(list.size() / 2, 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(STRING.build(iterator.next()), new CommandDocument(ENCODED_OBJECT_MAP.build(iterator.next())));
+        }
+        return map;
       }
-
-      return map;
     }
   };
 
@@ -909,6 +950,11 @@ public final class BuilderFactory {
       }
 
       for (List<Object> moduleResp : objectList) {
+        if (moduleResp.get(0) instanceof KeyValue) {
+          responses.add(new Module(STRING.build(((KeyValue) moduleResp.get(0)).getValue()),
+              LONG.build(((KeyValue) moduleResp.get(1)).getValue()).intValue()));
+          continue;
+        }
         Module m = new Module(SafeEncoder.encode((byte[]) moduleResp.get(1)),
             ((Long) moduleResp.get(3)).intValue());
         responses.add(m);
@@ -927,74 +973,17 @@ public final class BuilderFactory {
    * Create a AccessControlUser object from the ACL GETUSER reply.
    */
   public static final Builder<AccessControlUser> ACCESS_CONTROL_USER = new Builder<AccessControlUser>() {
-    @SuppressWarnings("unchecked")
     @Override
     public AccessControlUser build(Object data) {
-      if (data == null) {
-        return null;
-      }
-
-      List<Object> objectList = (List<Object>) data;
-      if (objectList.isEmpty()) {
-        return null;
-      }
-
-      AccessControlUser accessControlUser = new AccessControlUser();
-
-      // flags
-      List<Object> flags = (List<Object>) objectList.get(1);
-      for (Object f : flags) {
-        accessControlUser.addFlag(SafeEncoder.encode((byte[]) f));
-      }
-
-      // passwords
-      List<Object> passwords = (List<Object>) objectList.get(3);
-      for (Object p : passwords) {
-        accessControlUser.addPassword(SafeEncoder.encode((byte[]) p));
-      }
-
-      // commands
-      accessControlUser.setCommands(SafeEncoder.encode((byte[]) objectList.get(5)));
-
-      // Redis 7 -->
-      boolean withSelectors = objectList.size() >= 12;
-      if (!withSelectors) {
-
-        // keys
-        List<Object> keys = (List<Object>) objectList.get(7);
-        for (Object k : keys) {
-          accessControlUser.addKey(SafeEncoder.encode((byte[]) k));
-        }
-
-        // Redis 6.2 -->
-        // channels
-        if (objectList.size() >= 10) {
-          List<Object> channels = (List<Object>) objectList.get(9);
-          for (Object channel : channels) {
-            accessControlUser.addChannel(SafeEncoder.encode((byte[]) channel));
-          }
-        }
-
-      } else {
-        // TODO: Proper implementation of ACL V2.
-
-        // keys
-        accessControlUser.addKeys(SafeEncoder.encode((byte[]) objectList.get(7)));
-
-        // channels
-        accessControlUser.addChannels(SafeEncoder.encode((byte[]) objectList.get(9)));
-      }
-
-      // selectors
-      // TODO: Proper implementation of ACL V2.
-      return accessControlUser;
+      Map<String, Object> map = ENCODED_OBJECT_MAP.build(data);
+      if (map == null) return null;
+      return new AccessControlUser(map);
     }
 
     @Override
     public String toString() {
       return "AccessControlUser";
     }
-
   };
 
   /**
@@ -1210,41 +1199,24 @@ public final class BuilderFactory {
     @Override
     public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
       if (data == null) return null;
-      List streamObjects = (List) data;
+      List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyList();
 
-      List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamObjects.size());
-      for (Object streamObj : streamObjects) {
-        List<Object> stream = (List<Object>) streamObj;
-        String streamKey = STRING.build(stream.get(0));
-        List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(stream.get(1));
-        result.add(KeyValue.of(streamKey, streamEntries));
+      if (list.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) list).stream()
+            .map(kv -> new KeyValue<>(STRING.build(kv.getKey()),
+                STREAM_ENTRY_LIST.build(kv.getValue())))
+            .collect(Collectors.toList());
+      } else {
+        List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(list.size());
+        for (Object streamObj : list) {
+          List<Object> stream = (List<Object>) streamObj;
+          String streamKey = STRING.build(stream.get(0));
+          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(stream.get(1));
+          result.add(KeyValue.of(streamKey, streamEntries));
+        }
+        return result;
       }
-
-      return result;
-    }
-
-    @Override
-    public String toString() {
-      return "List<Entry<String, List<StreamEntry>>>";
-    }
-  };
-
-  public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE_RESP3
-      = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
-    @Override
-    public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
-      if (data == null) return null;
-      List streamObjects = (List) data;
-
-      List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(streamObjects.size() / 2);
-      Iterator iter = streamObjects.iterator();
-      while (iter.hasNext()) {
-        String streamKey = STRING.build(iter.next());
-        List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(iter.next());
-        result.add(KeyValue.of(streamKey, streamEntries));
-      }
-
-      return result;
     }
 
     @Override
@@ -1628,18 +1600,32 @@ public final class BuilderFactory {
   private static Map<String, Object> createMapFromDecodingFunctions(Iterator<Object> iterator,
       Map<String, Builder> mappingFunctions, Collection<Builder> backupBuilders) {
 
+    if (!iterator.hasNext()) {
+      return Collections.emptyMap();
+    }
+
     Map<String, Object> resultMap = new HashMap<>();
     while (iterator.hasNext()) {
+      final Object tempObject = iterator.next();
+      final String mapKey;
+      final Object rawValue;
 
-      String mapKey = STRING.build(iterator.next());
+      if (tempObject instanceof KeyValue) {
+        KeyValue kv = (KeyValue) tempObject;
+        mapKey = STRING.build(kv.getKey());
+        rawValue = kv.getValue();
+      } else {
+        mapKey = STRING.build(tempObject);
+        rawValue = iterator.next();
+      }
+
       if (mappingFunctions.containsKey(mapKey)) {
-        resultMap.put(mapKey, mappingFunctions.get(mapKey).build(iterator.next()));
+        resultMap.put(mapKey, mappingFunctions.get(mapKey).build(rawValue));
       } else { // For future - if we don't find an element in our builder map
-        Object unknownData = iterator.next();
         Collection<Builder> builders = backupBuilders != null ? backupBuilders : mappingFunctions.values();
         for (Builder b : builders) {
           try {
-            resultMap.put(mapKey, b.build(unknownData));
+            resultMap.put(mapKey, b.build(rawValue));
             break;
           } catch (ClassCastException e) {
             // We continue with next builder
@@ -1668,32 +1654,49 @@ public final class BuilderFactory {
         List<MatchedPosition> matchedPositions = new ArrayList<>();
 
         List<Object> objectList = (List<Object>) data;
-        if ("matches".equalsIgnoreCase(STRING.build(objectList.get(0)))) {
-          List<Object> matches = (List<Object>)objectList.get(1);
-          for (Object obj : matches) {
-            if (obj instanceof List<?>) {
-              List<Object> positions = (List<Object>) obj;
-              Position a = new Position(
-                  LONG.build(((List<Object>) positions.get(0)).get(0)),
-                  LONG.build(((List<Object>) positions.get(0)).get(1))
-              );
-              Position b = new Position(
-                  LONG.build(((List<Object>) positions.get(1)).get(0)),
-                  LONG.build(((List<Object>) positions.get(1)).get(1))
-              );
-              long matchLen = 0;
-              if (positions.size() >= 3) {
-                matchLen = LONG.build(positions.get(2));
-              }
-              matchedPositions.add(new MatchedPosition(a, b, matchLen));
+        if (objectList.get(0) instanceof KeyValue) {
+          Iterator iterator = objectList.iterator();
+          while (iterator.hasNext()) {
+            KeyValue kv = (KeyValue) iterator.next();
+            if ("matches".equalsIgnoreCase(STRING.build(kv.getKey()))) {
+              addMatchedPosition(matchedPositions, kv.getValue());
+            } else if ("len".equalsIgnoreCase(STRING.build(kv.getKey()))) {
+              len = LONG.build(kv.getValue());
+            }
+          }
+        } else {
+          for (int i = 0; i < objectList.size(); i += 2) {
+            if ("matches".equalsIgnoreCase(STRING.build(objectList.get(i)))) {
+              addMatchedPosition(matchedPositions, objectList.get(i + 1));
+            } else if ("len".equalsIgnoreCase(STRING.build(objectList.get(i)))) {
+              len = LONG.build(objectList.get(i + 1));
             }
           }
         }
 
-        if ("len".equalsIgnoreCase(STRING.build(objectList.get(2)))) {
-          len = LONG.build(objectList.get(3));
-        }
         return new LCSMatchResult(matchedPositions, len);
+      }
+    }
+
+    private void addMatchedPosition(List<MatchedPosition> matchedPositions, Object o) {
+      List<Object> matches = (List<Object>) o;
+      for (Object obj : matches) {
+        if (obj instanceof List<?>) {
+          List<Object> positions = (List<Object>) obj;
+          Position a = new Position(
+              LONG.build(((List<Object>) positions.get(0)).get(0)),
+              LONG.build(((List<Object>) positions.get(0)).get(1))
+          );
+          Position b = new Position(
+              LONG.build(((List<Object>) positions.get(1)).get(0)),
+              LONG.build(((List<Object>) positions.get(1)).get(1))
+          );
+          long matchLen = 0;
+          if (positions.size() >= 3) {
+            matchLen = LONG.build(positions.get(2));
+          }
+          matchedPositions.add(new MatchedPosition(a, b, matchLen));
+        }
       }
     }
   };
@@ -1864,5 +1867,4 @@ public final class BuilderFactory {
   private BuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");
   }
-
 }

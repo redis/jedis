@@ -1,6 +1,7 @@
 package redis.clients.jedis.search;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import redis.clients.jedis.Builder;
@@ -27,7 +28,7 @@ public class SearchResult {
   }
 
   public List<Document> getDocuments() {
-    return documents;
+    return Collections.unmodifiableList(documents);
   }
 
   public static class SearchResultBuilder extends Builder<SearchResult> {

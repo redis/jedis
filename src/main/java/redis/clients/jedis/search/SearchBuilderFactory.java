@@ -12,27 +12,11 @@ import java.util.stream.Collectors;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.util.DoublePrecision;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class SearchBuilderFactory {
-
-  public static final Builder<AggregationResult> SEARCH_AGGREGATION_RESULT = new Builder<AggregationResult>() {
-    @Override
-    public AggregationResult build(Object data) {
-      return new AggregationResult(data);
-    }
-  };
-
-  public static final Builder<AggregationResult> SEARCH_AGGREGATION_RESULT_WITH_CURSOR = new Builder<AggregationResult>() {
-    @Override
-    public AggregationResult build(Object data) {
-      List<Object> list = (List<Object>) data;
-      return new AggregationResult(list.get(0), (long) list.get(1));
-    }
-  };
 
   public static final Builder<Map<String, Object>> SEARCH_PROFILE_PROFILE = new Builder<Map<String, Object>>() {
 

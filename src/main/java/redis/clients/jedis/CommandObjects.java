@@ -3232,14 +3232,14 @@ public class CommandObjects {
 
   public final CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.AGGREGATE), indexName)
-        .addParams(aggr.dialectOptional(searchDialect.get())), !aggr.isWithCursor() ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
-        : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+        .addParams(aggr.dialectOptional(searchDialect.get())), !aggr.isWithCursor() ? AggregationResult.SEARCH_AGGREGATION_RESULT
+        : AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
   public final CommandObject<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
     return new CommandObject<>(commandArguments(SearchCommand.CURSOR).add(SearchKeyword.READ)
         .add(indexName).add(cursorId).add(SearchKeyword.COUNT).add(count),
-        SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+        AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
   public final CommandObject<String> ftCursorDel(String indexName, long cursorId) {
@@ -3251,10 +3251,9 @@ public class CommandObjects {
       String indexName, FTProfileParams profileParams, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.AGGREGATE).addParams(profileParams).add(SearchKeyword.QUERY)
-        .addParams(aggr.dialectOptional(searchDialect.get())), getSearchResultBuilder(
-            () -> new SearchProfileResponseBuilder<>(!aggr.isWithCursor()
-            ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
-            : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR)));
+        .addParams(aggr.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(
+        !aggr.isWithCursor() ? AggregationResult.SEARCH_AGGREGATION_RESULT
+        : AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
   }
 
   public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(

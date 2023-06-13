@@ -10,6 +10,7 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.args.*;
@@ -23,8 +24,6 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
-// SLOW
-// TODO: make it fast
 public class ClusterPipeliningTest {
 
   private static final String LOCAL_IP = "127.0.0.1";
@@ -36,13 +35,13 @@ public class ClusterPipeliningTest {
   private static Jedis node2;
   private static Jedis node3;
 
-  private HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
-  private HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
-  private HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
+  private static HostAndPort nodeInfo1 = HostAndPorts.getClusterServers().get(0);
+  private static HostAndPort nodeInfo2 = HostAndPorts.getClusterServers().get(1);
+  private static HostAndPort nodeInfo3 = HostAndPorts.getClusterServers().get(2);
   private Set<HostAndPort> nodes = new HashSet<>(Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3));
 
-  @Before
-  public void setUp() throws InterruptedException {
+  @BeforeClass
+  public static void setUp() throws InterruptedException {
     node1 = new Jedis(nodeInfo1);
     node1.auth("cluster");
     node1.flushAll();
@@ -81,19 +80,28 @@ public class ClusterPipeliningTest {
     JedisClusterTestUtil.waitForClusterReady(node1, node2, node3);
   }
 
+  @Before
+  public void prepare() {
+    node1.flushAll();
+    node2.flushAll();
+    node3.flushAll();
+  }
+
+  @After
+  public void cleanUp() {
+    node1.flushDB();
+    node2.flushDB();
+    node3.flushDB();
+  }
+
   @AfterClass
-  public static void cleanUp() {
+  public static void tearDown() throws InterruptedException {
     node1.flushDB();
     node2.flushDB();
     node3.flushDB();
     node1.clusterReset(ClusterResetType.SOFT);
     node2.clusterReset(ClusterResetType.SOFT);
     node3.clusterReset(ClusterResetType.SOFT);
-  }
-
-  @After
-  public void tearDown() throws InterruptedException {
-    cleanUp();
   }
 
   @Test

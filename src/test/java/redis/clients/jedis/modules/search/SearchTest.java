@@ -899,7 +899,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void blobField() throws Exception {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // not supporting
 
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));

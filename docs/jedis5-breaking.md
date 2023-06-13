@@ -44,6 +44,8 @@
 
 - Both `ftConfigGet(String option)` and `ftConfigGet(String indexName, String option)` methods now return `Map<String, Object>` instead of `Map<String, String>`.
 
+- `ftList()` method now returns `Set<String>` instead of `List<String>`.
+
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
 - All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.

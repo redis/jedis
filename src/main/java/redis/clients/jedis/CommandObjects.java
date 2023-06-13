@@ -4214,6 +4214,8 @@ public class CommandObjects {
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
 
+    private static final String PROFILE_STR = "profile";
+
     private final Builder<T> replyBuilder;
 
     public SearchProfileResponseBuilder(Builder<T> replyBuilder) {
@@ -4222,7 +4224,18 @@ public class CommandObjects {
 
     @Override
     public Map.Entry<T, Map<String, Object>> build(Object data) {
-      List<Object> list = (List<Object>) data;
+      List list = (List) data;
+      if (list == null || list.isEmpty()) return null;
+
+      if (list.get(0) instanceof KeyValue) {
+        for (KeyValue keyValue : (List<KeyValue>) data) {
+          if (PROFILE_STR.equals(BuilderFactory.STRING.build(keyValue.getKey()))) {
+            return KeyValue.of(replyBuilder.build(data),
+                BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(keyValue.getValue()));
+          }
+        }
+      }
+
       return KeyValue.of(replyBuilder.build(list.get(0)),
           SearchBuilderFactory.SEARCH_PROFILE_PROFILE.build(list.get(1)));
     }

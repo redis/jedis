@@ -949,30 +949,42 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void searchProfile() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending discussion
-
     assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
 
-    Map<String, String> map = new HashMap<>();
-    map.put("t1", "foo");
-    map.put("t2", "bar");
-    client.hset("doc1", map);
+    Map<String, String> hash = new HashMap<>();
+    hash.put("t1", "foo");
+    hash.put("t2", "bar");
+    client.hset("doc1", hash);
 
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+    Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "foo", FTSearchParams.searchParams());
-    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+
+    SearchResult result = reply.getKey();
+    assertEquals(1, result.getTotalResults());
+    assertEquals(Collections.singletonList("doc1"), result.getDocuments().stream().map(Document::getId).collect(Collectors.toList()));
+
+    Map<String, Object> profile = reply.getValue();
+    Map<String, Object> iteratorsProfile;
+    if (protocol != RedisProtocol.RESP3) {
+      iteratorsProfile = (Map<String, Object>) profile.get("Iterators profile");
+    } else {
+      List iteratorsProfileList = (List) profile.get("Iterators profile");
+      assertEquals(1, iteratorsProfileList.size());
+      iteratorsProfile = (Map<String, Object>) iteratorsProfileList.get(0);
+    }
     assertEquals("TEXT", iteratorsProfile.get("Type"));
     assertEquals("foo", iteratorsProfile.get("Term"));
     assertEquals(1L, iteratorsProfile.get("Counter"));
     assertEquals(1L, iteratorsProfile.get("Size"));
     assertSame(Double.class, iteratorsProfile.get("Time").getClass());
+
+    assertEquals(Arrays.asList("Index", "Scorer", "Sorter", "Loader"),
+        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
+            .map(map -> map.get("Type")).collect(Collectors.toList()));
   }
 
   @Test
   public void vectorSearchProfile() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending discussion
-
     assertOK(client.ftCreate(index, VectorField.builder().fieldName("v")
         .algorithm(VectorAlgorithm.FLAT).addAttribute("TYPE", "FLOAT32")
         .addAttribute("DIM", 2).addAttribute("DISTANCE_METRIC", "L2").build(),
@@ -986,20 +998,28 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", "aaaaaaaa")
         .sortBy("__v_score", SortingOrder.ASC).noContent().dialect(2);
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+    Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "*=>[KNN 3 @v $vec]", searchParams);
-    assertEquals(3, profile.getKey().getTotalResults());
+    assertEquals(3, reply.getKey().getTotalResults());
 
-    assertEquals(Arrays.asList(4, 2, 1).toString(), profile.getKey().getDocuments()
+    assertEquals(Arrays.asList(4, 2, 1).toString(), reply.getKey().getDocuments()
         .stream().map(Document::getId).collect(Collectors.toList()).toString());
 
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
-    assertEquals("VECTOR", iteratorsProfile.get("Type"));
-    assertEquals(3L, iteratorsProfile.get("Counter"));
+    Map<String, Object> profile = reply.getValue();
 
-    List<Map<String, Object>> resultProcessorsProfile = (List<Map<String, Object>>) profile.getValue().get("Result processors profile");
-    // assertEquals("Vector Similarity Scores Loader", resultProcessorsProfile.get(1).get("Type")); // Changed to "Metrics Applier"
-    assertEquals(3l, resultProcessorsProfile.get(1).get("Counter"));
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("VECTOR", ((Map<String, Object>) profile.get("Iterators profile")).get("Type"));
+    } else {
+      assertEquals(Arrays.asList("VECTOR"),
+          ((List<Map<String, Object>>) profile.get("Iterators profile")).stream()
+              .map(map -> map.get("Type")).collect(Collectors.toList()));
+    }
+
+    List<Map<String, Object>> resultProcessorsProfile
+        = (List<Map<String, Object>>) reply.getValue().get("Result processors profile");
+    assertEquals(3, resultProcessorsProfile.size());
+    assertEquals("Index", resultProcessorsProfile.get(0).get("Type"));
+    assertEquals("Sorter", resultProcessorsProfile.get(2).get("Type"));
   }
 
   @Test
@@ -1015,10 +1035,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.hset("2", Collections.singletonMap("t", "foo2"));
     client.hset("3", Collections.singletonMap("t", "foo3"));
 
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+    Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
     // Warning=Max prefix expansion reached
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    Map<String, Object> iteratorsProfile = (Map<String, Object>) reply.getValue().get("Iterators profile");
     assertEquals("Max prefix expansion reached", iteratorsProfile.get("Warning"));
 
     client.ftConfigSet(configParam, configValue);

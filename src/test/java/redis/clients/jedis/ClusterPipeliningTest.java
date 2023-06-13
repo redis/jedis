@@ -88,14 +88,14 @@ public class ClusterPipeliningTest {
   }
 
   @After
-  public void tearDown() throws InterruptedException {
+  public void cleanUp() {
     node1.flushDB();
     node2.flushDB();
     node3.flushDB();
   }
 
   @AfterClass
-  public static void cleanUp() {
+  public static void tearDown() throws InterruptedException {
     node1.flushDB();
     node2.flushDB();
     node3.flushDB();

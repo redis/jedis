@@ -388,8 +388,10 @@ public final class BuilderFactory {
         if (list.isEmpty()) return Collections.emptyMap();
 
         if (list.get(0) instanceof KeyValue) {
-          return ((List<KeyValue>) data).stream().collect(Collectors.toMap(
-              kv -> STRING.build(kv.getKey()), kv -> this.build(kv.getValue())));
+          return ((List<KeyValue>) data).stream()
+              .filter(kv -> kv != null && kv.getKey() != null && kv.getValue() != null)
+              .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+                  kv -> this.build(kv.getValue())));
         } else {
           return list.stream().map(this::build).collect(Collectors.toList());
         }

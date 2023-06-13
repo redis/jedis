@@ -1024,24 +1024,26 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void maxPrefixExpansionSearchProfile() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending update
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // crashing
 
     final String configParam = "MAXPREFIXEXPANSIONS";
     String configValue = (String) client.ftConfigGet(configParam).get(configParam);
-    client.ftConfigSet(configParam, "2");
+    try {
+      client.ftConfigSet(configParam, "2");
 
-    assertOK(client.ftCreate(index, TextField.of("t")));
-    client.hset("1", Collections.singletonMap("t", "foo1"));
-    client.hset("2", Collections.singletonMap("t", "foo2"));
-    client.hset("3", Collections.singletonMap("t", "foo3"));
+      assertOK(client.ftCreate(index, TextField.of("t")));
+      client.hset("1", Collections.singletonMap("t", "foo1"));
+      client.hset("2", Collections.singletonMap("t", "foo2"));
+      client.hset("3", Collections.singletonMap("t", "foo3"));
 
-    Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
-        FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
-    // Warning=Max prefix expansion reached
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) reply.getValue().get("Iterators profile");
-    assertEquals("Max prefix expansion reached", iteratorsProfile.get("Warning"));
-
-    client.ftConfigSet(configParam, configValue);
+      Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
+          FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
+      // Warning=Max prefix expansion reached
+      Map<String, Object> iteratorsProfile = (Map<String, Object>) reply.getValue().get("Iterators profile");
+      assertEquals("Max prefix expansion reached", iteratorsProfile.get("Warning"));
+    } finally {
+      client.ftConfigSet(configParam, configValue);
+    }
   }
 
   @Test

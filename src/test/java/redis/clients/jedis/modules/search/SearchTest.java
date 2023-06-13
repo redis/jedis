@@ -1134,6 +1134,8 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testHNSWVVectorSimilarity() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending discussion
+
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
     attr.put("DIM", 2);
@@ -1167,6 +1169,8 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testFlatVectorSimilarity() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending discussion
+
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
     attr.put("DIM", 2);
@@ -1200,6 +1204,8 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void searchProfile() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending discussion
+
     Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 

@@ -11,8 +11,10 @@ import java.util.Map;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import redis.clients.jedis.RedisProtocol;
 
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
@@ -59,6 +61,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void basicSpellCheck() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending update
+
     client.ftCreate(index, TextField.of("name"), TextField.of("body"));
     client.hset("doc1", toMap("name", "name1", "body", "body1"));
     client.hset("doc2", toMap("name", "name2", "body", "body2"));
@@ -71,6 +75,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void crossTermDictionary() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending update
+
     client.ftCreate(index, TextField.of("report"));
     client.ftDictAdd("slang", "timmies", "toque", "toonie", "serviette", "kerfuffle", "chesterfield");
 

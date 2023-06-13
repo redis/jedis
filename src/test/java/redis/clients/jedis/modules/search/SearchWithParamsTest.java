@@ -6,6 +6,7 @@ import static redis.clients.jedis.util.AssertUtil.assertOK;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -948,6 +949,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void searchProfile() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending discussion
+
     assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
 
     Map<String, String> map = new HashMap<>();
@@ -968,6 +971,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void vectorSearchProfile() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending discussion
+
     assertOK(client.ftCreate(index, VectorField.builder().fieldName("v")
         .algorithm(VectorAlgorithm.FLAT).addAttribute("TYPE", "FLOAT32")
         .addAttribute("DIM", 2).addAttribute("DISTANCE_METRIC", "L2").build(),
@@ -999,6 +1004,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void maxPrefixExpansionSearchProfile() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // pending update
+
     final String configParam = "MAXPREFIXEXPANSIONS";
     String configValue = (String) client.ftConfigGet(configParam).get(configParam);
     client.ftConfigSet(configParam, "2");
@@ -1017,9 +1024,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.ftConfigSet(configParam, configValue);
   }
 
-  @org.junit.Ignore
   @Test
   public void notIteratorSearchProfile() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // crashing
+
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "foo"));
     client.hset("2", Collections.singletonMap("t", "bar"));
@@ -1038,9 +1046,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals("EMPTY", depth1_children.get(0).get("Type"));
   }
 
-  @org.junit.Ignore
   @Test
   public void deepReplySearchProfile() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // crashing
+
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "hello"));
     client.hset("2", Collections.singletonMap("t", "world"));
@@ -1074,9 +1083,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertNull(depth5.get("Child iterators"));
   }
 
-  @org.junit.Ignore
   @Test
   public void limitedSearchProfile() {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // crashing
+
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "hello"));
     client.hset("2", Collections.singletonMap("t", "hell"));

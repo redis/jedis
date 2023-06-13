@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,8 +38,6 @@ public abstract class MultiNodePipelineBase extends PipelineBase
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Connection> connections;
   private volatile boolean syncing = false;
-
-  private final ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
 
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     super(commandObjects);
@@ -104,6 +103,8 @@ public abstract class MultiNodePipelineBase extends PipelineBase
     }
     syncing = true;
 
+    ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
+
     CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
@@ -134,6 +135,15 @@ public abstract class MultiNodePipelineBase extends PipelineBase
       countDownLatch.await();
     } catch (InterruptedException e) {
       log.error("Thread is interrupted during sync.", e);
+    }
+
+    executorService.shutdown();
+    try {
+      if (!executorService.awaitTermination(5, TimeUnit.MINUTES)) {
+        executorService.shutdownNow();
+      }
+    } catch (InterruptedException e) {
+      executorService.shutdownNow();
     }
 
     syncing = false;

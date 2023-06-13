@@ -3335,7 +3335,7 @@ public class CommandObjects {
 
   public final CommandObject<Map<String, Object>> ftInfo(String indexName) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.INFO), indexName),
-        BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP);
+        protocol == RedisProtocol.RESP3 ? BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP : BuilderFactory.ENCODED_OBJECT_MAP);
   }
 
   public final CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {

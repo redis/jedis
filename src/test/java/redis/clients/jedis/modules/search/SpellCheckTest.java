@@ -52,7 +52,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   @Test
   public void dictionaryBySampleKey() {
     assertEquals(3L, client.ftDictAddBySampleKey(index, "dict", "foo", "bar", "hello world"));
-    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDumpBySampleKey(index, "dict"));
+    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")),
+        client.ftDictDumpBySampleKey(index, "dict"));
     assertEquals(3L, client.ftDictDelBySampleKey(index, "dict", "foo", "bar", "hello world"));
     assertEquals(Collections.emptySet(), client.ftDictDumpBySampleKey(index, "dict"));
   }
@@ -74,7 +75,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
     client.ftCreate(index, TextField.of("report"));
     client.ftDictAdd("slang", "timmies", "toque", "toonie", "serviette", "kerfuffle", "chesterfield");
 
-    Map<String, Map<String, Double>> expected = Collections.singletonMap("tooni", Collections.singletonMap("toonie", 0d));
+    Map<String, Map<String, Double>> expected = Collections.singletonMap("tooni",
+        Collections.singletonMap("toonie", 0d));
     assertEquals(expected, client.ftSpellCheck(index, "Tooni toque kerfuffle",
         FTSpellCheckParams.spellCheckParams().includeTerm("slang").excludeTerm("slang")));
   }
@@ -92,6 +94,7 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
     JedisDataException error = Assert.assertThrows(JedisDataException.class,
         () -> client.ftSpellCheck(index, "Tooni toque kerfuffle",
             FTSpellCheckParams.spellCheckParams().dialect(0)));
-    MatcherAssert.assertThat(error.getMessage(), Matchers.containsString("DIALECT requires a non negative integer"));
+    MatcherAssert.assertThat(error.getMessage(),
+        Matchers.containsString("DIALECT requires a non negative integer"));
   }
 }

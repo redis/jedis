@@ -137,7 +137,7 @@ public final class SearchBuilderFactory {
   public static final Builder<Map<String, Map<String, Double>>> SEARCH_SPELLCHECK_RESPONSE
       = new Builder<Map<String, Map<String, Double>>>() {
 
-    private final String TERM = "TERM";
+    private static final String TERM = "TERM";
 
     @Override
     public Map<String, Map<String, Double>> build(Object data) {
@@ -147,9 +147,9 @@ public final class SearchBuilderFactory {
       if (rawTerms.get(0) instanceof KeyValue) {
         return ((List<KeyValue>) rawTerms).stream().collect(Collectors.toMap(
             rawTerm -> STRING.build(rawTerm.getKey()),
-            rawTerm -> ((List<KeyValue>) rawTerm.getValue()).stream().collect(
-                  Collectors.toMap(entry -> STRING.build(entry.getKey()),
-                      entry -> BuilderFactory.DOUBLE.build(entry.getValue()))),
+            rawTerm -> ((List<List<KeyValue>>) rawTerm.getValue()).stream()
+                .collect(Collectors.toMap(entry -> STRING.build(entry.get(0).getKey()),
+                      entry -> BuilderFactory.DOUBLE.build(entry.get(0).getValue()))),
             (x, y) -> x, LinkedHashMap::new));
       }
 

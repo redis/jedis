@@ -1061,4 +1061,40 @@ public class ClusterPipeliningTest {
       assertThrows(UnsupportedOperationException.class, () -> cluster.multi());
     }
   }
+
+  @Test(timeout = 10_000L)
+  public void multiple() {
+    final int maxTotal = 100;
+    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+    poolConfig.setMaxTotal(maxTotal);
+    try (JedisCluster cluster = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG, 5, poolConfig)) {
+      for (int i = 0; i < maxTotal; i++) {
+        assertThreadsCount();
+        String s = Integer.toString(i);
+        try (ClusterPipeline pipeline = cluster.pipelined()) {
+          pipeline.set(s, s);
+          pipeline.sync();
+        }
+        assertThreadsCount();
+      }
+    }
+  }
+
+  private static void assertThreadsCount() {
+    // Get the root thread group
+    final ThreadGroup rootGroup = Thread.currentThread().getThreadGroup().getParent();
+
+    // Create a buffer to store the thread information
+    final Thread[] threads = new Thread[rootGroup.activeCount()];
+
+    // Enumerate all threads into the buffer
+    rootGroup.enumerate(threads);
+
+    // Assert information about threads
+    final int count = (int) Arrays.stream(threads)
+        .filter(thread -> thread != null && thread.getName() != null
+            && thread.getName().startsWith("pool-"))
+        .count();
+    assertTrue(count < 9);
+  }
 }

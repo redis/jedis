@@ -58,8 +58,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   private final CommandObjects commandObjects;
   private GraphCommandObjects graphCommandObjects;
 
-  private final ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
-
   public MultiNodePipelineBase(CommandObjects commandObjects) {
     pipelinedResponses = new LinkedHashMap<>();
     connections = new LinkedHashMap<>();
@@ -121,6 +119,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     }
     syncing = true;
 
+    ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
+
     CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
@@ -152,6 +152,8 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     } catch (InterruptedException e) {
       log.error("Thread is interrupted during sync.", e);
     }
+
+    executorService.shutdownNow();
 
     syncing = false;
   }

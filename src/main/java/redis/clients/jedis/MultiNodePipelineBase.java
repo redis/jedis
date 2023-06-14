@@ -137,14 +137,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase
       log.error("Thread is interrupted during sync.", e);
     }
 
-    executorService.shutdown();
-    try {
-      if (!executorService.awaitTermination(5, TimeUnit.MINUTES)) {
-        executorService.shutdownNow();
-      }
-    } catch (InterruptedException e) {
-      executorService.shutdownNow();
-    }
+    executorService.shutdownNow();
 
     syncing = false;
   }

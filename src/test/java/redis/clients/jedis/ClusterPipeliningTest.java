@@ -1062,7 +1062,7 @@ public class ClusterPipeliningTest {
     }
   }
 
-  @Test(timeout = 10 * 1000L)
+  @Test(timeout = 10_000L)
   public void multiple() {
     final int maxTotal = 100;
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
@@ -1092,8 +1092,8 @@ public class ClusterPipeliningTest {
 
     // Assert information about threads
     final int count = (int) Arrays.stream(threads)
-        .filter(thread -> thread.getName()
-        .startsWith("pool-"))
+        .filter(thread -> thread != null && thread.getName() != null
+            && thread.getName().startsWith("pool-"))
         .count();
     assertTrue(count < 9);
   }

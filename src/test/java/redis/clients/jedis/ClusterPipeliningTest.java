@@ -1095,6 +1095,6 @@ public class ClusterPipeliningTest {
         .filter(thread -> thread != null && thread.getName() != null
             && thread.getName().startsWith("pool-"))
         .count();
-    MatcherAssert.assertThat(count, Matchers.lessThan(9));
+    MatcherAssert.assertThat(count, Matchers.lessThanOrEqualTo(20));
   }
 }

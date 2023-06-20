@@ -285,6 +285,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @EnabledOnRedis({RedisType.REDIS_UNSTABLE, RedisType.REDIS_7})
   public void smismember() {
     jedis.sadd("foo", "a", "b");
 

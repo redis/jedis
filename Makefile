@@ -442,7 +442,7 @@ stop:
 
 test: compile-module start
 	sleep 2
-	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
+	mvn -Dredisversion=${REDIS_VERSION} -Dtest=${SKIP_SSL}${TEST} clean compile test
 	make stop
 
 package: start

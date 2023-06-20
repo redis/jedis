@@ -21,7 +21,7 @@ public class CustomExecutionCondition implements ExecutionCondition {
         if (optional.isPresent()) {
             List<RedisType> typeList = Arrays.asList(optional.get().value());
             String type = System.getProperty("redisversion");
-            if (type.isEmpty()) type = "REDIS_UNSTABLE";
+            if (type == null || type.isEmpty()) type = "REDIS_UNSTABLE";
 
             RedisType Redis_type = null;
             try {

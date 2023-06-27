@@ -20,12 +20,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
+import redis.clients.jedis.exceptions.AbortedTransactionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.tests.HostAndPortUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class TransactionCommandsTest extends JedisCommandTestBase {
@@ -405,6 +408,31 @@ public class TransactionCommandsTest extends JedisCommandTestBase {
     }
     assertEquals("bar", r.get());
     assertEquals("1", SafeEncoder.encode((byte[]) x.get()));
+  }
+
+  @Test
+  public void transactionResponseWithFailedCommands() {
+    try (Jedis slave = new Jedis(HostAndPortUtil.getRedisServers().get(4),
+        DefaultJedisClientConfig.builder().password("foobared").build())) {
+      Transaction t = slave.multi();
+      t.set("foo", "bar");
+      try {
+        t.exec();
+        fail("We expect exception here!");
+      } catch (AbortedTransactionException e) {
+        // that is fine we should be here
+        assertEquals(
+            "Transaction aborted. At least one command failed to be queued. Cause READONLY You can't write against a read only replica.",
+            e.getMessage());
+      }
+      // subsequent transactions should work
+      t = slave.multi();
+      Response<String> notExistingResponse = t.get("notExistingResponse");
+      List<Object> result = t.exec();
+      assertNull(notExistingResponse.get());
+      assertEquals(1, result.size());
+      assertNull(result.get(0));
+    }
   }
 
   @Test

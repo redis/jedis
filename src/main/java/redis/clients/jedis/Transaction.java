@@ -3,7 +3,7 @@ package redis.clients.jedis;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
-
+import redis.clients.jedis.exceptions.AbortedTransactionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 /**
@@ -38,8 +38,9 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
   }
 
   public List<Object> exec() {
-    // Discard QUEUED or ERROR
-    client.getMany(getPipelinedResponseLength());
+    List<Object> queuedCommands = client.getMany(getPipelinedResponseLength());
+    discardTransactionOnQueuedCommandErrors(queuedCommands);
+
     client.exec();
     inTransaction = false;
 
@@ -55,6 +56,7 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
         formatted.add(e);
       }
     }
+
     return formatted;
   }
 
@@ -63,8 +65,8 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
    */
   @Deprecated
   public List<Response<?>> execGetResponse() {
-    // Discard QUEUED or ERROR
-    client.getMany(getPipelinedResponseLength());
+    List<Object> queuedCommands = client.getMany(getPipelinedResponseLength());
+    discardTransactionOnQueuedCommandErrors(queuedCommands);
     client.exec();
     inTransaction = false;
 
@@ -120,5 +122,20 @@ public class Transaction extends MultiKeyPipelineBase implements Closeable {
   @Deprecated
   public Response<String> watch(byte[]... keys) throws UnsupportedOperationException {
     throw new UnsupportedOperationException(WATCH_INSIDE_MULTI_MESSAGE);
+  }
+
+  private void discardTransactionOnQueuedCommandErrors(List<Object> queuedCommands) {
+    queuedCommands
+        .stream()
+        .filter(JedisDataException.class::isInstance)
+        .map(JedisDataException.class::cast)
+        .findFirst()
+        .ifPresent(e -> {
+          client.discard();
+          inTransaction = false;
+          clean();
+          client.getStatusCodeReply();
+          throw new AbortedTransactionException("Transaction aborted. At least one command failed to be queued. Cause " + e.getMessage(), e);
+        });
   }
 }

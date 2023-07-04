@@ -220,7 +220,7 @@ public class SearchQuickstartExample {
         assertEquals("Validate total results", 10, result1.size());
         // REMOVE_END
 
-        // STEP_START query_single_term
+        // STEP_START query_single_term_all_fields
         Query query2 = new Query("@model:Jigger");
         List < Document > result2 = jedis.ftSearch(
             "idx:bicycle", query2).getDocuments();
@@ -231,7 +231,7 @@ public class SearchQuickstartExample {
         assertEquals("Validate bike id", "bicycle:0", result2.get(0).getId());
         // REMOVE_END
 
-        // STEP_START query_single_term_limit_fields
+        // STEP_START query_single_term
         Query query3 = new Query("@model:Jigger").returnFields("price");
         List < Document > result3 = jedis.ftSearch(
             "idx:bicycle", query3).getDocuments();
@@ -251,6 +251,17 @@ public class SearchQuickstartExample {
         // STEP_END
         // REMOVE_START
         assertEquals("Validate bike id", "bicycle:5", result4.get(0).getId());
+        // REMOVE_END
+
+        // STEP_START query_exact_matching
+        Query query5 = new Query("@brand:\"Noka Bikes\"");
+        List < Document > result5 = jedis.ftSearch(
+            "idx:bicycle", query5).getDocuments();
+        System.out.println(result5);
+        // Prints: [id:bicycle:4, score: 1.0, payload:null, properties:[$={"brand":"Noka Bikes","model":"Kahuna","price":3200,"description":"Whether you want to try your hand at XC racing or are looking for a lively trail bike that's just as inspiring on the climbs as it is over rougher ground, the Wilder is one heck of a bike built specifically for short women. Both the frames and components have been tweaked to include a women’s saddle, different bars and unique colourway.","condition":"used"}]]
+        // STEP_END
+        // REMOVE_START
+        assertEquals("Validate bike id", "bicycle:4", result5.get(0).getId());
         // REMOVE_END
 
         jedis.close();

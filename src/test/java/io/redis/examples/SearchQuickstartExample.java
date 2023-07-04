@@ -22,7 +22,7 @@ class Bicycle {
     public String description;
     public String condition;
 
-    public Bicycle(String brand, String model, BigDecimal price, String description, String condition) {
+    public Bicycle(String brand, String model, BigDecimal price, String condition, String description) {
         this.brand = brand;
         this.model = model;
         this.price = price;
@@ -213,13 +213,8 @@ public class SearchQuickstartExample {
         // STEP_START wildcard_query
         Query query1 = new Query("*");
         List < Document > result1 = jedis.ftSearch("idx:bicycle", query1).getDocuments();
-System.out.println("Result1:\n------------------\n");
         System.out.println(result1);
-        // Prints: [id:bicycle:6, score: 1.0, payload:null, properties:[
-        // $={"brand":"Moore PLC","model":"Award Race","price":3790.76,
-        // "description":"This olive folding bike features a carbon frame and 27.5 inch wheels.
-        // This folding bike is perfect for compact storage and transportation.","condition":"new"}]
-        // ]
+        // Prints: [id:bicycle:1, score: 1.0, payload:null, properties:[$={"brand":"Bicyk","...
         // STEP_END
         // REMOVE_START
         assertEquals("Validate total results", 10, result1.size());
@@ -229,9 +224,8 @@ System.out.println("Result1:\n------------------\n");
         Query query2 = new Query("@model:Jigger");
         List < Document > result2 = jedis.ftSearch(
             "idx:bicycle", query2).getDocuments();
-System.out.println("Result2:\n------------------\n");
         System.out.println(result2);
-        // Prints: [id:bicycle:9, score: 1.0, payload:null, properties:[price=3833.71]]
+        // Prints: [id:bicycle:0, score: 1.0, payload:null, properties:[$={"brand":"Velorim","model":"Jigger","price":270,"description":"Small and powerful, the Jigger is the best ride for the smallest of tikes! This is the tiniest kids’ pedal bike on the market available without a coaster brake, the Jigger is the vehicle of choice for the rare tenacious little rider raring to go.","condition":"new"}]]
         // STEP_END
         // REMOVE_START
         assertEquals("Validate bike id", "bicycle:0", result2.get(0).getId());
@@ -241,9 +235,8 @@ System.out.println("Result2:\n------------------\n");
         Query query3 = new Query("@model:Jigger").returnFields("price");
         List < Document > result3 = jedis.ftSearch(
             "idx:bicycle", query3).getDocuments();
-System.out.println("Result3:\n------------------\n");
         System.out.println(result3);
-        // Prints: [id:bicycle:9, score: 1.0, payload:null, properties:[price=3833.71]]
+        // Prints: [id:bicycle:0, score: 1.0, payload:null, properties:[price=270]]
         // STEP_END
         // REMOVE_START
         assertEquals("Validate cargo bike id", "bicycle:0", result3.get(0).getId());
@@ -253,9 +246,8 @@ System.out.println("Result3:\n------------------\n");
         Query query4 = new Query("basic @price:[500 1000]");
         List < Document > result4 = jedis.ftSearch(
             "idx:bicycle", query4).getDocuments();
-System.out.println("Result3:\n------------------\n");
-        System.out.println(result3);
-        // Prints: [id:bicycle:9, score: 1.0, payload:null, properties:[price=3833.71]]
+        System.out.println(result4);
+        // Prints: [id:bicycle:5, score: 1.0, payload:null, properties:[$={"brand":"Breakout","model":"XBN 2.1 Alloy","price":810,"description":"The XBN 2.1 Alloy is our entry-level road bike – but that’s not to say that it’s a basic machine. With an internal weld aluminium frame, a full carbon fork, and the slick-shifting Claris gears from Shimano’s, this is a bike which doesn’t break the bank and delivers craved performance.","condition":"new"}]]
         // STEP_END
         // REMOVE_START
         assertEquals("Validate bike id", "bicycle:5", result4.get(0).getId());

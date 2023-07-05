@@ -213,14 +213,14 @@ public class SearchQuickstartExample {
         // STEP_START wildcard_query
         Query query1 = new Query("*");
         List < Document > result1 = jedis.ftSearch("idx:bicycle", query1).getDocuments();
-        System.out.println(result1);
-        // Prints: [id:bicycle:1, score: 1.0, payload:null, properties:[$={"brand":"Bicyk","...
+        System.out.println("Documents found:" + result1.size());
+        // Prints: Documents found: 10
         // STEP_END
         // REMOVE_START
         assertEquals("Validate total results", 10, result1.size());
         // REMOVE_END
 
-        // STEP_START query_single_term_all_fields
+        // STEP_START query_single_term
         Query query2 = new Query("@model:Jigger");
         List < Document > result2 = jedis.ftSearch(
             "idx:bicycle", query2).getDocuments();
@@ -231,7 +231,7 @@ public class SearchQuickstartExample {
         assertEquals("Validate bike id", "bicycle:0", result2.get(0).getId());
         // REMOVE_END
 
-        // STEP_START query_single_term
+        // STEP_START query_single_term_limit_fields
         Query query3 = new Query("@model:Jigger").returnFields("price");
         List < Document > result3 = jedis.ftSearch(
             "idx:bicycle", query3).getDocuments();
@@ -263,6 +263,24 @@ public class SearchQuickstartExample {
         // REMOVE_START
         assertEquals("Validate bike id", "bicycle:4", result5.get(0).getId());
         // REMOVE_END
+
+
+        // STEP_START simple_aggregation
+        AggregationBuilder ab = new AggregationBuilder("*")
+                .groupBy("@condition", Reducers.count().as("count"));
+        AggregationResult ar = jedis.ftAggregate("idx:bicycle", ab);
+        for (int i = 0; i < ar.getTotalResults(); i++) {
+            System.out.println(
+                    ar.getRow(i).getString("condition")
+                            + " - "
+                            + ar.getRow(i).getString("count"));
+        }
+        // Prints:
+        // refurbished - 1
+        // used - 5
+        // new - 4
+        assertEquals("Validate aggregation results", 3, ar.getTotalResults());
+        // STEP_END
 
         jedis.close();
     }

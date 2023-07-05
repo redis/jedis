@@ -7,6 +7,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.Map;
+
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -212,6 +215,16 @@ public class ClusterCommandsTest {
   }
 
   @Test
+  public void clusterMyId() {
+    MatcherAssert.assertThat(node1.clusterMyId(), Matchers.not(Matchers.isEmptyOrNullString()));
+  }
+
+  @Test
+  public void clusterMyShardId() {
+    MatcherAssert.assertThat(node1.clusterMyShardId(), Matchers.not(Matchers.isEmptyOrNullString()));
+  }
+
+  @Test
   public void testClusterEpoch() {
     try {
       assertEquals("OK", node1.clusterSetConfigEpoch(1));
@@ -222,7 +235,7 @@ public class ClusterCommandsTest {
 
   @Test
   public void ClusterBumpEpoch() {
-    node1.clusterBumpEpoch();
+    MatcherAssert.assertThat(node1.clusterBumpEpoch(), Matchers.matchesPattern("^BUMPED|STILL [0-9]+$"));
   }
 
 }

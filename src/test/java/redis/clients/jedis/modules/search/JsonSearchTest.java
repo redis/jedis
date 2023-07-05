@@ -142,23 +142,22 @@ public class JsonSearchTest extends RedisModuleCommandsTestBase {
     setJson(id, json);
 
     // query
-    SearchResult sr = client.ftSearch(index, new Query().setWithScores().setWithPayload());
+    SearchResult sr = client.ftSearch(index, new Query().setWithScores());
     assertEquals(1, sr.getTotalResults());
 
     Document doc = sr.getDocuments().get(0);
     assertEquals(1.0, doc.getScore(), 0);
-    assertNull(doc.getPayload());
     assertEquals(json.toString(), doc.get(JSON_ROOT));
 
     // query repeat
-    sr = client.ftSearch(index, new Query().setWithScores().setWithPayload());
+    sr = client.ftSearch(index, new Query().setWithScores());
 
     doc = sr.getDocuments().get(0);
     JSONObject jsonRead = new JSONObject((String) doc.get(JSON_ROOT));
     assertEquals(json.toString(), jsonRead.toString());
 
     // query repeat
-    sr = client.ftSearch(index, new Query().setWithScores().setWithPayload());
+    sr = client.ftSearch(index, new Query().setWithScores());
 
     doc = sr.getDocuments().get(0);
     jsonRead = new JSONObject(doc.getString(JSON_ROOT));

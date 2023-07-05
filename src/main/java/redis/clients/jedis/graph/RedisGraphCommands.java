@@ -113,7 +113,7 @@ public interface RedisGraphCommands {
   /**
    * Returns a list containing up to 10 of the slowest queries issued against the given graph ID.
    */
-  List<List<String>> graphSlowlog(String graphName);
+  List<List<Object>> graphSlowlog(String graphName);
 
   String graphConfigSet(String configName, Object value);
 

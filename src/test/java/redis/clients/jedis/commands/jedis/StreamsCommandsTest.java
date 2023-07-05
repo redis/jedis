@@ -7,9 +7,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static redis.clients.jedis.resps.StreamGroupInfo.*;
-import static redis.clients.jedis.resps.StreamInfo.*;
-import static redis.clients.jedis.resps.StreamConsumersInfo.IDLE;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -18,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import redis.clients.jedis.BuilderFactory;
@@ -501,7 +500,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void xack() {
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map = new HashMap<>();
     map.put("f1", "v1");
     jedis.xadd("xack-stream", (StreamEntryID) null, map);
 
@@ -604,7 +603,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
-            null, null, 3, "xpendeing-consumer");
+        XPendingParams.xPendingParams().count(3).consumer("xpendeing-consumer"));
+
     // Sleep for 100ms so we can claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -634,7 +634,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpendeing-stream", "xpendeing-group",
-      null, null, 3, "xpendeing-consumer");
+        XPendingParams.xPendingParams().count(3).consumer("xpendeing-consumer"));
     // Sleep for 100ms so we can claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -663,7 +663,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+        XPendingParams.xPendingParams().count(3).consumer("xpending-consumer"));
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -693,7 +693,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+        XPendingParams.xPendingParams().count(3).consumer("xpending-consumer"));
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -725,7 +725,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+        XPendingParams.xPendingParams().count(3).consumer("xpending-consumer"));
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -755,7 +755,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Get the pending event
     List<StreamPendingEntry> pendingRange = jedis.xpending("xpending-stream", "xpending-group",
-            null, null, 3, "xpending-consumer");
+        XPendingParams.xPendingParams().count(3).consumer("xpending-consumer"));
     // Sleep for 100ms so we can auto claim events pending for more than 50ms
     try {
       Thread.sleep(100);
@@ -767,7 +767,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     List<Object> streamEntrys = jedis.xautoclaimJustId(SafeEncoder.encode("xpending-stream"),
             SafeEncoder.encode("xpending-group"), SafeEncoder.encode("xpending-consumer2"),
             50, SafeEncoder.encode(new StreamEntryID().toString()), new XAutoClaimParams().count(1));
-    Map.Entry<StreamEntryID, List<StreamEntryID>> res = BuilderFactory.STREAM_AUTO_CLAIM_ID_RESPONSE.build(streamEntrys);
+    Map.Entry<StreamEntryID, List<StreamEntryID>> res = BuilderFactory.STREAM_AUTO_CLAIM_JUSTID_RESPONSE.build(streamEntrys);
     assertEquals(1, res.getValue().size());
     assertEquals(pendingRange.get(0).getID().getTime(), res.getValue().get(0).getTime());
     assertEquals(pendingRange.get(0).getID().getSequence(), res.getValue().get(0).getSequence());
@@ -803,16 +803,16 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     List<StreamGroupInfo> groupInfo = jedis.xinfoGroups(STREAM_NAME);
     List<StreamConsumersInfo> consumersInfo = jedis.xinfoConsumers(STREAM_NAME, G1);
+    List<StreamConsumerInfo> consumerInfo = jedis.xinfoConsumers2(STREAM_NAME, G1);
 
     // Stream info test
-    assertEquals(2L, streamInfo.getStreamInfo().get(LENGTH));
-    assertEquals(1L, streamInfo.getStreamInfo().get(RADIX_TREE_KEYS));
-    assertEquals(2L, streamInfo.getStreamInfo().get(RADIX_TREE_NODES));
-    assertEquals(0L, streamInfo.getStreamInfo().get(GROUPS));
-    assertEquals(V1, ((StreamEntry) streamInfo.getStreamInfo().get(FIRST_ENTRY)).getFields()
-        .get(F1));
-    assertEquals(V2, ((StreamEntry) streamInfo.getStreamInfo().get(LAST_ENTRY)).getFields().get(F1));
-    assertEquals(id2, streamInfo.getStreamInfo().get(LAST_GENERATED_ID));
+    assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.LENGTH));
+    assertEquals(1L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_KEYS));
+    assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_NODES));
+    assertEquals(0L, streamInfo.getStreamInfo().get(StreamInfo.GROUPS));
+    assertEquals(V1, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.FIRST_ENTRY)).getFields().get(F1));
+    assertEquals(V2, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.LAST_ENTRY)).getFields().get(F1));
+    assertEquals(id2, streamInfo.getStreamInfo().get(StreamInfo.LAST_GENERATED_ID));
 
     // Using getters
     assertEquals(2, streamInfo.getLength());
@@ -825,10 +825,10 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Group info test
     assertEquals(1, groupInfo.size());
-    assertEquals(G1, groupInfo.get(0).getGroupInfo().get(NAME));
-    assertEquals(1L, groupInfo.get(0).getGroupInfo().get(CONSUMERS));
-    assertEquals(0L, groupInfo.get(0).getGroupInfo().get(PENDING));
-    assertEquals(id2, groupInfo.get(0).getGroupInfo().get(LAST_DELIVERED));
+    assertEquals(G1, groupInfo.get(0).getGroupInfo().get(StreamGroupInfo.NAME));
+    assertEquals(1L, groupInfo.get(0).getGroupInfo().get(StreamGroupInfo.CONSUMERS));
+    assertEquals(0L, groupInfo.get(0).getGroupInfo().get(StreamGroupInfo.PENDING));
+    assertEquals(id2, groupInfo.get(0).getGroupInfo().get(StreamGroupInfo.LAST_DELIVERED));
 
     // Using getters
     assertEquals(1, groupInfo.size());
@@ -837,16 +837,29 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, groupInfo.get(0).getPending());
     assertEquals(id2, groupInfo.get(0).getLastDeliveredId());
 
-    // Consumer info test
+    // Consumers info test
     assertEquals(MY_CONSUMER,
-      consumersInfo.get(0).getConsumerInfo().get(redis.clients.jedis.resps.StreamConsumersInfo.NAME));
+      consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.NAME));
     assertEquals(0L, consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.PENDING));
-    assertTrue((Long) consumersInfo.get(0).getConsumerInfo().get(IDLE) > 0);
+    assertTrue((Long) consumersInfo.get(0).getConsumerInfo().get(StreamConsumersInfo.IDLE) > 0);
 
     // Using getters
     assertEquals(MY_CONSUMER, consumersInfo.get(0).getName());
     assertEquals(0L, consumersInfo.get(0).getPending());
-    assertTrue(consumersInfo.get(0).getIdle() > 0);
+    MatcherAssert.assertThat(consumersInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
+    MatcherAssert.assertThat(consumersInfo.get(0).getInactive(), Matchers.any(Long.class));
+
+    // Consumer info test
+    assertEquals(MY_CONSUMER,
+      consumerInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.NAME));
+    assertEquals(0L, consumerInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.PENDING));
+    assertTrue((Long) consumerInfo.get(0).getConsumerInfo().get(StreamConsumerInfo.IDLE) > 0);
+
+    // Using getters
+    assertEquals(MY_CONSUMER, consumerInfo.get(0).getName());
+    assertEquals(0L, consumerInfo.get(0).getPending());
+    MatcherAssert.assertThat(consumerInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
+    MatcherAssert.assertThat(consumerInfo.get(0).getInactive(), Matchers.any(Long.class));
 
     // test with more groups and consumers
     jedis.xgroupCreate(STREAM_NAME, G2, StreamEntryID.LAST_ENTRY, false);
@@ -856,9 +869,11 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     List<StreamGroupInfo> manyGroupsInfo = jedis.xinfoGroups(STREAM_NAME);
     List<StreamConsumersInfo> manyConsumersInfo = jedis.xinfoConsumers(STREAM_NAME, G2);
+    List<StreamConsumerInfo> manyConsumerInfo = jedis.xinfoConsumers2(STREAM_NAME, G2);
 
     assertEquals(2, manyGroupsInfo.size());
     assertEquals(2, manyConsumersInfo.size());
+    assertEquals(2, manyConsumerInfo.size());
 
     StreamFullInfo streamInfoFull = jedis.xinfoStreamFull(STREAM_NAME);
 
@@ -917,6 +932,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, group.getConsumers().size());
     StreamConsumerFullInfo consumer = group.getConsumers().get(0);
     assertEquals("xreadGroup-consumer", consumer.getName());
+    MatcherAssert.assertThat(consumer.getSeenTime(), Matchers.greaterThanOrEqualTo(0L));
+    MatcherAssert.assertThat(consumer.getActiveTime(), Matchers.greaterThanOrEqualTo(0L));
     assertEquals(1, consumer.getPending().size());
     List<Object> consumerPendingEntry = consumer.getPending().get(0);
     assertEquals(id1, consumerPendingEntry.get(0));

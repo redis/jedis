@@ -93,6 +93,8 @@ public interface ClusterCommands {
 
   String clusterMyId();
 
+  String clusterMyShardId();
+
   /**
    * return the information of all such peer links as an array, where each array element is a map that contains
    * attributes and their values for an individual link.

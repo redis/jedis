@@ -9,6 +9,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.util.LazyRawable;
 
 /**
  * Query represents query parameters and filters to load results from the engine
@@ -418,6 +419,18 @@ public class FTSearchParams implements IParams {
    */
   public FTSearchParams dialect(int dialect) {
     this.dialect = dialect;
+    return this;
+  }
+
+  /**
+   * This method will not replace the dialect if it has been already set.
+   * @param dialect dialect
+   * @return this
+   */
+  public FTSearchParams dialectOptional(int dialect) {
+    if (dialect != 0 && this.dialect == null) {
+      this.dialect = dialect;
+    }
     return this;
   }
 

@@ -122,15 +122,6 @@ public interface StreamPipelineCommands {
   Response<StreamPendingSummary> xpending(String key, String groupName);
 
   /**
-   * XPENDING key group [start end count] [consumer]
-   *
-   * @deprecated Use {@link StreamPipelineCommands#xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)}.
-   */
-  @Deprecated
-  Response<List<StreamPendingEntry>> xpending(String key, String groupName, StreamEntryID start,
-      StreamEntryID end, int count, String consumerName);
-
-  /**
    * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
    */
   Response<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params);
@@ -217,12 +208,6 @@ public interface StreamPipelineCommands {
   Response<StreamFullInfo> xinfoStreamFull(String key, int count);
 
   /**
-   * @deprecated Use {@link StreamPipelineCommands#xinfoGroups(java.lang.String)}.
-   */
-  @Deprecated
-  Response<List<StreamGroupInfo>> xinfoGroup(String key);
-
-  /**
    * Introspection command used in order to retrieve different information about groups in the stream
    * @param key Stream name
    * @return List of {@link StreamGroupInfo} containing information about groups
@@ -235,8 +220,19 @@ public interface StreamPipelineCommands {
    * @param group Group name
    * @return List of {@link StreamConsumersInfo} containing information about consumers that belong
    * to the the group
+   * @deprecated Use {@link #xinfoConsumers2(java.lang.String, java.lang.String)}.
    */
+  @Deprecated // keep it till at least Jedis 6/7
   Response<List<StreamConsumersInfo>> xinfoConsumers(String key, String group);
+
+  /**
+   * Introspection command used in order to retrieve different information about consumers in the group
+   * @param key Stream name
+   * @param group Group name
+   * @return List of {@link StreamConsumerInfo} containing information about consumers that belong
+   * to the the group
+   */
+  Response<List<StreamConsumerInfo>> xinfoConsumers2(String key, String group);
 
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]

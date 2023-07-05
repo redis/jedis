@@ -6,16 +6,20 @@ import org.junit.After;
 import org.junit.Before;
 import redis.clients.jedis.Connection;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.RedisProtocolUtil;
 
 public abstract class RedisModuleCommandsTestBase {
 
-  protected static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
+  private static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
   protected static final HostAndPort hnp = HostAndPort.from(address);
+  protected final RedisProtocol protocol = RedisProtocolUtil.getRedisProtocol();
 
   protected UnifiedJedis client;
 
@@ -37,7 +41,7 @@ public abstract class RedisModuleCommandsTestBase {
     try (Jedis jedis = new Jedis(hnp)) {
       jedis.flushAll();
     }
-    client = new UnifiedJedis(hnp);
+    client = new UnifiedJedis(hnp, DefaultJedisClientConfig.builder().protocol(protocol).build());
   }
 
   @After
@@ -48,8 +52,8 @@ public abstract class RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 //    client.close();
 //  }
-
-  protected static Connection createConnection() {
-    return new Connection(hnp);
-  }
+//
+//  protected static Connection createConnection() {
+//    return new Connection(hnp);
+//  }
 }

@@ -35,15 +35,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     this.jedisSocketFactory = jedisSocketFactory;
   }
 
-  /**
-   * @deprecated Use {@link RedisCredentialsProvider} through
-   * {@link JedisClientConfig#getCredentialsProvider()}.
-   */
-  @Deprecated
-  public void setPassword(final String password) {
-    this.clientConfig.updatePassword(password);
-  }
-
   @Override
   public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
     // what to do ??

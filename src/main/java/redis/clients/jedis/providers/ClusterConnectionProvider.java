@@ -19,6 +19,8 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class ClusterConnectionProvider implements ConnectionProvider {
 
+  private static final String INIT_NO_ERROR_PROPERTY = "jedis.cluster.initNoError";
+
   protected final JedisClusterInfoCache cache;
 
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig) {
@@ -53,6 +55,9 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       }
     }
 
+    if (System.getProperty(INIT_NO_ERROR_PROPERTY) != null) {
+      return;
+    }
     JedisClusterOperationException uninitializedException
         = new JedisClusterOperationException("Could not initialize cluster slots cache.");
     uninitializedException.addSuppressed(firstException);

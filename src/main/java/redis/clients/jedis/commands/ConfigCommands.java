@@ -1,6 +1,6 @@
 package redis.clients.jedis.commands;
 
-import java.util.List;
+import java.util.Map;
 
 /**
  * The interface about managing configuration parameters of Redis server.
@@ -13,7 +13,7 @@ public interface ConfigCommands {
    * @param pattern name of Redis server's configuration
    * @return config value of Redis server
    */
-  List<String> configGet(String pattern);
+  Map<String, String> configGet(String pattern);
 
   /**
    * Used to read the configuration parameters of Redis server.
@@ -21,7 +21,7 @@ public interface ConfigCommands {
    * @param patterns names of Redis server's configuration
    * @return values of Redis server's configuration
    */
-  List<String> configGet(String... patterns);
+  Map<String, String> configGet(String... patterns);
 
   /**
    * Used to read the configuration parameters of Redis server.
@@ -29,7 +29,7 @@ public interface ConfigCommands {
    * @param pattern name of Redis server's configuration
    * @return value of Redis server's configuration
    */
-  List<byte[]> configGet(byte[] pattern);
+  Map<byte[], byte[]> configGet(byte[] pattern);
 
   /**
    * Used to read the configuration parameters of Redis server.
@@ -37,7 +37,7 @@ public interface ConfigCommands {
    * @param patterns names of Redis server's configuration
    * @return values of Redis server's configuration
    */
-  List<byte[]> configGet(byte[]... patterns);
+  Map<byte[], byte[]> configGet(byte[]... patterns);
 
   /**
    * Used in order to reconfigure the Redis server at run time without
@@ -52,6 +52,8 @@ public interface ConfigCommands {
 
   String configSet(String... parameterValues);
 
+  String configSet(Map<String, String> parameterValues);
+
   /**
    * Used in order to reconfigure the Redis server at run time without
    * the need to restart.
@@ -64,6 +66,8 @@ public interface ConfigCommands {
   String configSet(byte[] parameter, byte[] value);
 
   String configSet(byte[]... parameterValues);
+
+  String configSetBinary(Map<byte[], byte[]> parameterValues);
 
   /**
    * Resets the statistics reported by Redis using the INFO command.

@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -102,7 +101,7 @@ public class ACLJedisPoolTest {
         "fizzbuzz", Protocol.DEFAULT_DATABASE, "repairable-pool");
     try (Jedis jedis = pool.getResource()) {
       jedis.set("foo", "0");
-      jedis.quit();
+      jedis.disconnect();
     }
 
     try (Jedis jedis = pool.getResource()) {
@@ -269,51 +268,5 @@ public class ACLJedisPoolTest {
 
   private int getClientCount(final String clientList) {
     return clientList.split("\n").length;
-  }
-
-  @Test
-  public void testResetInvalidPassword() {
-    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000,
-        "acljedis", "fizzbuzz", 0, "my_shiny_client_name") { };
-
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
-      Jedis obj1_ref;
-      try (Jedis obj1_1 = pool.getResource()) {
-        obj1_ref = obj1_1;
-        obj1_1.set("foo", "bar");
-        assertEquals("bar", obj1_1.get("foo"));
-        assertEquals(1, pool.getNumActive());
-      }
-      assertEquals(0, pool.getNumActive());
-      try (Jedis obj1_2 = pool.getResource()) {
-        assertSame(obj1_ref, obj1_2);
-        assertEquals(1, pool.getNumActive());
-        factory.setPassword("wrong password");
-        try (Jedis obj2 = pool.getResource()) {
-          fail("Should not get resource from pool");
-        } catch (JedisException e) { }
-        assertEquals(1, pool.getNumActive());
-      }
-      assertEquals(0, pool.getNumActive());
-    }
-  }
-
-  @Test
-  public void testResetValidPassword() {
-    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000,
-        "acljedis", "bad password", 0, "my_shiny_client_name") { };
-
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
-      try (Jedis obj1 = pool.getResource()) {
-        fail("Should not get resource from pool");
-      } catch (JedisException e) { }
-      assertEquals(0, pool.getNumActive());
-
-      factory.setPassword("fizzbuzz");
-      try (Jedis obj2 = pool.getResource()) {
-        obj2.set("foo", "bar");
-        assertEquals("bar", obj2.get("foo"));
-      }
-    }
   }
 }

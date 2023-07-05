@@ -3,6 +3,10 @@ package redis.clients.jedis.util;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
+/**
+ * @deprecated Sharding/Sharded feature will be removed in next major release.
+ */
+@Deprecated
 public interface Hashing {
   Hashing MURMUR_HASH = new MurmurHash();
   ThreadLocal<MessageDigest> md5Holder = new ThreadLocal<>();

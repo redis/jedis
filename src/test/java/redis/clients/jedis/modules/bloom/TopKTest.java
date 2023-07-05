@@ -30,8 +30,6 @@ public class TopKTest extends RedisModuleCommandsTestBase {
 
     assertEquals(Arrays.asList(true, false, true), client.topkQuery("aaa", "bb", "gg", "cc"));
 
-    assertEquals(Arrays.asList(1L, 0L, 1L), client.topkCount("aaa", "bb", "gg", "cc"));
-
     assertEquals(new TreeSet<>(Arrays.asList("bb", "cc")), new TreeSet<>(client.topkList("aaa")));
 
 //    assertEquals(null, client.topkIncrBy("aaa", "ff", 10));

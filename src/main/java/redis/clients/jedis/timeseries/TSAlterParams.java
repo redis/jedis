@@ -26,14 +26,6 @@ public class TSAlterParams implements IParams {
     return new TSAlterParams();
   }
 
-  /**
-   * @deprecated Use {@link TSAlterParams#retention(long)}.
-   */
-  @Deprecated
-  public TSAlterParams retentionTime(long retentionTime) {
-    return retention(retentionTime);
-  }
-
   public TSAlterParams retention(long retentionPeriod) {
     this.retentionPeriod = retentionPeriod;
     return this;

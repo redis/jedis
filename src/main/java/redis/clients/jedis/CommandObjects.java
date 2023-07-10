@@ -5,6 +5,8 @@ import static redis.clients.jedis.Protocol.Keyword.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
@@ -50,6 +52,7 @@ public class CommandObjects {
     return protocol;
   }
 
+  private Lock mapperLock = new ReentrantLock(true);    
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(0);
 
@@ -4424,25 +4427,25 @@ public class CommandObjects {
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
    * default implementation will be created and returned.
-   * <p>This process of checking whether or not
-   * the instance reference exists follows <a
-   * href="https://en.wikipedia.org/wiki/Double-checked_locking#Usage_in_Java"
-   * target="_blank">'double-checked lock optimization'</a> approach to reduce the overhead of
-   * acquiring a lock by testing the lock criteria (the "lock hint") before acquiring the lock.</p>
+   *
    * @return the JsonObjectMapper instance reference
    * @see DefaultGsonObjectMapper
    */
   private JsonObjectMapper getJsonObjectMapper() {
-    JsonObjectMapper localRef = this.jsonObjectMapper;
-    if (Objects.isNull(localRef)) {
-      synchronized (this) {
-        localRef = this.jsonObjectMapper;
-        if (Objects.isNull(localRef)) {
-          this.jsonObjectMapper = localRef = new DefaultGsonObjectMapper();
-        }
+      JsonObjectMapper localRef = this.jsonObjectMapper;
+      if (Objects.isNull(localRef)) {
+          mapperLock.lock();
+          
+          try {
+              localRef = this.jsonObjectMapper;
+              if (Objects.isNull(localRef)) {
+                  this.jsonObjectMapper = localRef = new DefaultGsonObjectMapper();
+              }
+          } finally {
+              mapperLock.unlock();
+          }
       }
-    }
-    return localRef;
+      return localRef;
   }
 
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {

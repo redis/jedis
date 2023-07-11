@@ -1,5 +1,4 @@
-//EXAMPLE: hash_example
-//HIDE_START
+//EXAMPLE: hash_tutorial
 package io.redis.examples;
 
 import redis.clients.jedis.UnifiedJedis;
@@ -15,11 +14,10 @@ public class HashExample {
   public void run() {
     try (UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379")) {
       //REMOVE_START
-      jedis.del("bike:1", "bike:2", "bike:2:stats");
+      jedis.del("bike:1", "bike:1:stats");
       //REMOVE_END
 
-      //HIDE_END
-      //STEP_START set_get_getall
+      //STEP_START set_get_all
       var res1 = jedis.hset("bike:1", Map.of(
           "model", "Deimos", //
           "brand", "Ergonom", //
@@ -69,55 +67,33 @@ public class HashExample {
       assertEquals(4972, res7);
       //REMOVE_END
 
-      //STEP_START example_set_get
-      var res8 = jedis.hset("bike:2", Map.of(
-          "model", "Vanth", //
-          "brand", "Tots", //
-          "type", "eBikes", //
-          "price", "4971"
-      ));
+  
 
-      System.out.println(res8); // 4
-      var res9 = jedis.hget("bike:2", "model");
-      System.out.println(res9); // Vanth
-      var res10 = jedis.hgetAll("bike:2");
-      System.out.println(res10); // {type=eBikes, brand=Tots, price=4971, model=Vanth}
-      //STEP_END
-
-      //REMOVE_START
-      assertEquals(4, res8);
-      assertEquals("Vanth", res9);
-      assertEquals("Vanth", res10.get("model"));
-      assertEquals("Tots", res10.get("brand"));
-      assertEquals("eBikes", res10.get("type"));
-      assertEquals("4971", res10.get("price"));
-      //REMOVE_END
-
-      //STEP_START incryby_get_mget
-      var res11 = jedis.hincrBy("bike:2:stats", "rides", 1);
+      //STEP_START incrby_get_mget
+      var res8 = jedis.hincrBy("bike:1:stats", "rides", 1);
+      System.out.println(res8); // 1
+      var res9 = jedis.hincrBy("bike:1:stats", "rides", 1);
+      System.out.println(res9); // 2
+      var res10 = jedis.hincrBy("bike:1:stats", "rides", 1);
+      System.out.println(res10); // 3
+      var res11 = jedis.hincrBy("bike:1:stats", "crashes", 1);
       System.out.println(res11); // 1
-      var res12 = jedis.hincrBy("bike:2:stats", "rides", 1);
-      System.out.println(res12); // 2
-      var res13 = jedis.hincrBy("bike:2:stats", "rides", 1);
+      var res12 = jedis.hincrBy("bike:1:stats", "owners", 1);
+      System.out.println(res12); // 1
+      var res13 = jedis.hget("bike:1:stats", "rides");
       System.out.println(res13); // 3
-      var res14 = jedis.hincrBy("bike:2:stats", "crashes", 1);
-      System.out.println(res14); // 1
-      var res15 = jedis.hincrBy("bike:2:stats", "owners", 1);
-      System.out.println(res15); // 1
-      var res16 = jedis.hget("bike:2:stats", "rides");
-      System.out.println(res16); // 3
-      var res17 = jedis.hmget("bike:2:stats", "crashes", "owners");
-      System.out.println(res17); // [1, 1]
+      var res14 = jedis.hmget("bike:1:stats", "crashes", "owners");
+      System.out.println(res14); // [1, 1]
       //STEP_END
 
       //REMOVE_START
+      assertEquals(1, res8);
+      assertEquals(2, res9);
+      assertEquals(3, res10);
       assertEquals(1, res11);
-      assertEquals(2, res12);
-      assertEquals(3, res13);
-      assertEquals(1, res14);
-      assertEquals(1, res15);
-      assertEquals("3", res16);
-      assertEquals("[1, 1]", res17.toString());
+      assertEquals(1, res12);
+      assertEquals("3", res13);
+      assertEquals("[1, 1]", res14.toString());
       //REMOVE_END
     }
   }

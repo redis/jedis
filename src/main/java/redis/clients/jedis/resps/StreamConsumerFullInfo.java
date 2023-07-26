@@ -7,7 +7,7 @@ import redis.clients.jedis.StreamEntryID;
 
 /**
  * This class holds information about a stream consumer with command
- * {@code xinfo stream mystream full}. They can be access via getters. There is also
+ * {@code xinfo stream mystream full}. They can be accessed via getters. There is also
  * {@link StreamConsumerFullInfo#getConsumerInfo()} method that returns a generic {@link Map} in
  * case more info are returned from the server.
  */

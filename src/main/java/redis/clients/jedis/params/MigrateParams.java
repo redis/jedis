@@ -8,7 +8,7 @@ public class MigrateParams implements IParams {
   private boolean copy = false;
   private boolean replace = false;
   private String username = null;
-  private String passowrd = null;
+  private String password = null;
 
   public MigrateParams() {
   }
@@ -28,13 +28,13 @@ public class MigrateParams implements IParams {
   }
 
   public MigrateParams auth(String password) {
-    this.passowrd = password;
+    this.password = password;
     return this;
   }
 
   public MigrateParams auth2(String username, String password) {
     this.username = username;
-    this.passowrd = password;
+    this.password = password;
     return this;
   }
 
@@ -47,9 +47,9 @@ public class MigrateParams implements IParams {
       args.add(Keyword.REPLACE);
     }
     if (username != null) {
-      args.add(Keyword.AUTH2).add(username).add(passowrd);
-    } else if (passowrd != null) {
-      args.add(Keyword.AUTH).add(passowrd);
+      args.add(Keyword.AUTH2).add(username).add(password);
+    } else if (password != null) {
+      args.add(Keyword.AUTH).add(password);
     }
   }
 }

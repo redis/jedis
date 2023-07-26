@@ -29,10 +29,10 @@ The most recent version of this library supports redis version [5.0](https://git
 
 The table below highlights version compatibility of the most-recent library versions and Redis versions. Compatibility means communication features, and Redis command capabilities.
 
-| Library version | Supported redis versions |
-|-----------------|-------------------|
-| 3.9+ | 5.0 and 6.2 Family of releases |
-| >= 4.0 | Version 5.0 to current |
+| Library version | Supported redis versions       |
+|-----------------|--------------------------------|
+| 3.9+            | 5.0 and 6.2 Family of releases |
+| >= 4.0          | Version 5.0 to current         |
 
 ## Getting started
 
@@ -78,7 +78,7 @@ for the complete list of supported commands.
 
 ### Easier way of using connection pool
 
-Using a *try-with-resources* block for each command may be cumbursome, so you may consider using JedisPooled.
+Using a *try-with-resources* block for each command may be cumbersome, so you may consider using JedisPooled.
 
 ```java
 JedisPooled jedis = new JedisPooled("localhost", 6379);

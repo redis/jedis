@@ -1,9 +1,9 @@
 //EXAMPLE: geo_tutorial
 package io.redis.examples;
 
-//REMOVE_START
-
+// REMOVE_START
 import org.junit.Test;
+// REMOVE_END
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.GeoUnit;
@@ -52,7 +52,7 @@ public class GeoExample {
       System.out.println(members); // [station:1, station:2, station:3]
       // STEP_END
 
-      //REMOVE_START
+      // REMOVE_START
       assertEquals("[station:1, station:2, station:3]", members.toString());
       // REMOVE_END
     }

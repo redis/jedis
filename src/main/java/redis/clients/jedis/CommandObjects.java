@@ -3453,19 +3453,12 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> jsonGet(String key, Path2... paths) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths),
-        //proto != RedisProtocol.RESP3 ? JsonBuilderFactory.JSON_OBJECT : JsonBuilderFactory.JSON_GET_RESPONSE_RESP3_COMPATIBLE);
-        JsonBuilderFactory.JSON_OBJECT);
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), JsonBuilderFactory.JSON_OBJECT);
   }
 
   public final CommandObject<Object> jsonGet(String key, Path... paths) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), JSON_GENERIC_OBJECT);
   }
-
-//  public final CommandObject<List<List<Object>>> jsonGetResp3(String key, Path2... paths) {
-//    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths),
-//        JsonBuilderFactory.JSON_GET_RESPONSE_RESP3);
-//  }
 
   public final CommandObject<String> jsonGetAsPlainString(String key, Path path) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).add(path), BuilderFactory.STRING);
@@ -3524,10 +3517,6 @@ public class CommandObjects {
         proto != RedisProtocol.RESP3 ? JsonBuilderFactory.JSON_TYPE_LIST : JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3_COMPATIBLE);
   }
 
-//  public final CommandObject<List<List<Class<?>>>> jsonTypeResp3(String key, Path2 path) {
-//    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3);
-//  }
-
   public final CommandObject<Class<?>> jsonType(String key, Path path) {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE);
   }
@@ -3563,10 +3552,6 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),
         JsonBuilderFactory.JSON_ARRAY_OR_DOUBLE_LIST);
   }
-
-//  public final CommandObject<List<Double>> jsonNumIncrByResp3(String key, Path2 path, double value) {
-//    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE_LIST);
-//  }
 
   public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
@@ -4248,24 +4233,6 @@ public class CommandObjects {
    * {@link JsonObjectBuilder} for {@code Object.class}.
    */
   private final Builder<Object> JSON_GENERIC_OBJECT = new JsonObjectBuilder<>(Object.class);
-
-//  /**
-//   * The common {@code Object.class} parser for RESP3 and older protocol.
-//   */
-//  private final Builder<Object> JSON_GENERIC_OBJECT_COMMON = new Builder<Object>() {
-//    @Override
-//    public Object build(Object data) {
-//      if (data == null) return null;
-//      if (data instanceof List) {
-//        List<List<Object>> list = (List<List<Object>>) data;
-//        if (list.isEmpty()) return null;
-//        List<Object> innerList = list.get(0);
-//        if (list.isEmpty()) return null;
-//        return JSON_GENERIC_OBJECT.build(innerList.get(0));
-//      }
-//      return JSON_GENERIC_OBJECT.build(data);
-//    }
-//  };
 
   private class JsonObjectListBuilder<T> extends Builder<List<T>> {
 

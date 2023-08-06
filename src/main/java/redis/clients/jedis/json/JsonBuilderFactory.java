@@ -102,25 +102,6 @@ public final class JsonBuilderFactory {
     }
   };
 
-//  public static final Builder<List<List<Object>>> JSON_GET_RESPONSE_RESP3
-//      = new Builder<List<List<Object>>>() {
-//    @Override
-//    public List<List<Object>> build(Object data) {
-//      if (data == null) return null;
-//      List<List<Object>> superList = (List<List<Object>>) data;
-//      return superList.stream().map(subList -> {
-//        return subList.stream().map(JSON_OBJECT::build).collect(Collectors.toList());
-//      }).collect(Collectors.toList());
-//    }
-//  };
-
-//  public static final Builder<Object> JSON_GET_RESPONSE_RESP3_COMPATIBLE = new Builder<Object>() {
-//    @Override
-//    public Object build(Object data) {
-//      return JSON_GET_RESPONSE_RESP3.build(data);
-//    }
-//  };
-
   public static final Builder<JSONArray> JSON_ARRAY = new Builder<JSONArray>() {
     @Override
     public JSONArray build(Object data) {

@@ -34,7 +34,6 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
   public static void prepare() {
-    //Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
     RedisModuleCommandsTestBase.prepare();
   }
 

@@ -138,14 +138,21 @@ public final class SearchBuilderFactory {
       = new Builder<Map<String, Map<String, Double>>>() {
 
     private static final String TERM = "TERM";
+    private static final String RESULTS = "results";
 
     @Override
     public Map<String, Map<String, Double>> build(Object data) {
-      List rawTerms = (List) data;
-      if (rawTerms.isEmpty()) return Collections.emptyMap();
+      List rawDataList = (List) data;
+      if (rawDataList.isEmpty()) return Collections.emptyMap();
 
-      if (rawTerms.get(0) instanceof KeyValue) {
-        return ((List<KeyValue>) rawTerms).stream().collect(Collectors.toMap(
+      if (rawDataList.get(0) instanceof KeyValue) {
+        KeyValue rawData = (KeyValue) rawDataList.get(0);
+        String header = STRING.build(rawData.getKey());
+        if (!RESULTS.equals(header)) {
+          throw new IllegalStateException("Unrecognized header: " + header);
+        }
+
+        return ((List<KeyValue>) rawData.getValue()).stream().collect(Collectors.toMap(
             rawTerm -> STRING.build(rawTerm.getKey()),
             rawTerm -> ((List<List<KeyValue>>) rawTerm.getValue()).stream()
                 .collect(Collectors.toMap(entry -> STRING.build(entry.get(0).getKey()),
@@ -153,10 +160,10 @@ public final class SearchBuilderFactory {
             (x, y) -> x, LinkedHashMap::new));
       }
 
-      Map<String, Map<String, Double>> returnTerms = new LinkedHashMap<>(rawTerms.size());
+      Map<String, Map<String, Double>> returnTerms = new LinkedHashMap<>(rawDataList.size());
 
-      for (Object rawTerm : rawTerms) {
-        List<Object> rawElements = (List<Object>) rawTerm;
+      for (Object rawData : rawDataList) {
+        List<Object> rawElements = (List<Object>) rawData;
 
         String header = STRING.build(rawElements.get(0));
         if (!TERM.equals(header)) {

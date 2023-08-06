@@ -34,7 +34,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
   public static void prepare() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    //Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
     RedisModuleCommandsTestBase.prepare();
   }
 
@@ -92,6 +92,8 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void jsonV1() {
+    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");
     hm1.put("oh", "snap");

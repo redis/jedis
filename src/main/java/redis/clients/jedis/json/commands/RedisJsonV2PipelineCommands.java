@@ -38,7 +38,7 @@ public interface RedisJsonV2PipelineCommands {
 
   Response<Object> jsonGet(String key, Path2... paths);
 
-  Response<List<List<Object>>> jsonGetResp3(String key, Path2... paths);
+//  Response<List<List<Object>>> jsonGetResp3(String key, Path2... paths);
 
   default Response<List<JSONArray>> jsonMGet(String... keys) {
     return jsonMGet(Path2.ROOT_PATH, keys);
@@ -58,7 +58,7 @@ public interface RedisJsonV2PipelineCommands {
 
   Response<List<Class<?>>> jsonType(String key, Path2 path);
 
-  Response<List<List<Class<?>>>> jsonTypeResp3(String key, Path2 path);
+//  Response<List<List<Class<?>>>> jsonTypeResp3(String key, Path2 path);
 
   Response<List<Long>> jsonStrAppend(String key, Path2 path, Object string);
 
@@ -66,7 +66,7 @@ public interface RedisJsonV2PipelineCommands {
 
   Response<Object> jsonNumIncrBy(String key, Path2 path, double value);
 
-  Response<List<Double>> jsonNumIncrByResp3(String key, Path2 path, double value);
+//  Response<List<Double>> jsonNumIncrByResp3(String key, Path2 path, double value);
 
   Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects);
 

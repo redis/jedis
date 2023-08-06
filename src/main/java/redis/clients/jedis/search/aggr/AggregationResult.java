@@ -84,11 +84,12 @@ public class AggregationResult {
 
     private static final String TOTAL_RESULTS_STR = "total_results";
     private static final String RESULTS_STR = "results";
-    private static final String FIELDS_STR = "fields";
+    // private static final String FIELDS_STR = "fields";
+    private static final String FIELDS_STR = "extra_attributes";
 
     @Override
     public AggregationResult build(Object data) {
-//      return new AggregationResult(data);
+      // return new AggregationResult(data);
       List list = (List) data;
 
       if (list.get(0) instanceof KeyValue) {
@@ -144,7 +145,7 @@ public class AggregationResult {
     @Override
     public AggregationResult build(Object data) {
       List<Object> list = (List<Object>) data;
-//      return new AggregationResult(list.get(0), (long) list.get(1));
+      // return new AggregationResult(list.get(0), (long) list.get(1));
       AggregationResult r = SEARCH_AGGREGATION_RESULT.build(list.get(0));
       r.setCursorId((Long) list.get(1));
       return r;

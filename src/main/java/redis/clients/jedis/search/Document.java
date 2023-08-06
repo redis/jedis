@@ -138,7 +138,8 @@ public class Document implements Serializable {
 
     private static final String ID_STR = "id";
     private static final String SCORE_STR = "score";
-    private static final String FIELDS_STR = "fields";
+    // private static final String FIELDS_STR = "fields";
+    private static final String FIELDS_STR = "extra_attributes";
 
     @Override
     public Document build(Object data) {

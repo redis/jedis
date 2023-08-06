@@ -4249,23 +4249,23 @@ public class CommandObjects {
    */
   private final Builder<Object> JSON_GENERIC_OBJECT = new JsonObjectBuilder<>(Object.class);
 
-  /**
-   * The common {@code Object.class} parser for RESP3 and older protocol.
-   */
-  private final Builder<Object> JSON_GENERIC_OBJECT_COMMON = new Builder<Object>() {
-    @Override
-    public Object build(Object data) {
-      if (data == null) return null;
-      if (data instanceof List) {
-        List<List<Object>> list = (List<List<Object>>) data;
-        if (list.isEmpty()) return null;
-        List<Object> innerList = list.get(0);
-        if (list.isEmpty()) return null;
-        return JSON_GENERIC_OBJECT.build(innerList.get(0));
-      }
-      return JSON_GENERIC_OBJECT.build(data);
-    }
-  };
+//  /**
+//   * The common {@code Object.class} parser for RESP3 and older protocol.
+//   */
+//  private final Builder<Object> JSON_GENERIC_OBJECT_COMMON = new Builder<Object>() {
+//    @Override
+//    public Object build(Object data) {
+//      if (data == null) return null;
+//      if (data instanceof List) {
+//        List<List<Object>> list = (List<List<Object>>) data;
+//        if (list.isEmpty()) return null;
+//        List<Object> innerList = list.get(0);
+//        if (list.isEmpty()) return null;
+//        return JSON_GENERIC_OBJECT.build(innerList.get(0));
+//      }
+//      return JSON_GENERIC_OBJECT.build(data);
+//    }
+//  };
 
   private class JsonObjectListBuilder<T> extends Builder<List<T>> {
 

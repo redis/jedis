@@ -1067,7 +1067,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals("TEXT", depth0_children.get(0).get("Type"));
     Map<String, Object> depth1 = depth0_children.get(1);
     assertEquals("NOT", depth1.get("Type"));
-    assertEquals("EMPTY", ((Map<String, Object>) depth1.get("Child iterator")).get("Type"));
+    if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {
+      List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
+      assertEquals(1, depth1_children.size());
+      assertEquals("EMPTY", depth1_children.get(0).get("Type"));
+    } else {
+      assertEquals("EMPTY", ((Map<String, Object>) depth1.get("Child iterator")).get("Type"));
+    }
   }
 
   @Test

@@ -6,7 +6,6 @@ import static redis.clients.jedis.util.AssertUtil.assertOK;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -20,7 +19,6 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
-import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisProtocolUtil;
 
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {

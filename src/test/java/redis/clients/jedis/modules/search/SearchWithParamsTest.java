@@ -20,6 +20,7 @@ import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
+import redis.clients.jedis.util.KeyValue;
 
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
@@ -567,12 +568,12 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     Map<String, Object> info = client.ftInfo(index);
     assertEquals(index, info.get("index_name"));
+    assertEquals(6, ((List) info.get("attributes")).size());
     if (protocol != RedisProtocol.RESP3) {
-      assertEquals(6, ((List) info.get("attributes")).size());
       assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
       assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
     } else {
-      // TODO:
+      assertEquals(0L, ((Map) info.get("cursor_stats")).get("global_idle"));
     }
   }
 

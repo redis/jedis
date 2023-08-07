@@ -31,6 +31,12 @@ public class SearchResult {
     return Collections.unmodifiableList(documents);
   }
 
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + "{Total results:" + totalResults
+        + ", Documents:" + documents + "}";
+  }
+
   public static class SearchResultBuilder extends Builder<SearchResult> {
 
     private final boolean hasContent;

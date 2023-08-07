@@ -1025,8 +1025,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void maxPrefixExpansionSearchProfile() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // crashing
-
     final String configParam = "MAXPREFIXEXPANSIONS";
     String configValue = (String) client.ftConfigGet(configParam).get(configParam);
     try {
@@ -1040,8 +1038,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
           FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
       // Warning=Max prefix expansion reached
-      Map<String, Object> iteratorsProfile = (Map<String, Object>) reply.getValue().get("Iterators profile");
-      assertEquals("Max prefix expansion reached", iteratorsProfile.get("Warning"));
+      assertEquals("Max prefix expansion reached",
+          ((Map) ((List) reply.getValue().get("Iterators profile")).get(0)).get("Warning"));
     } finally {
       client.ftConfigSet(configParam, configValue);
     }

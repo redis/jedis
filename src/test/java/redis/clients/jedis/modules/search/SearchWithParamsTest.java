@@ -1046,9 +1046,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void notIteratorSearchProfile() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // crashing
-
+  public void noContentSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "foo"));
     client.hset("2", Collections.singletonMap("t", "bar"));
@@ -1056,15 +1054,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "foo -@t:baz", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    Map<String, Object> depth0 = ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
     assertEquals("INTERSECT", depth0.get("Type"));
     List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
     assertEquals("TEXT", depth0_children.get(0).get("Type"));
     Map<String, Object> depth1 = depth0_children.get(1);
     assertEquals("NOT", depth1.get("Type"));
-    List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
-    assertEquals(1, depth1_children.size());
-    assertEquals("EMPTY", depth1_children.get(0).get("Type"));
+    assertEquals("EMPTY", ((Map<String, Object>) depth1.get("Child iterator")).get("Type"));
   }
 
   @Test

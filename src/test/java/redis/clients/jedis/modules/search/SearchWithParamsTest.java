@@ -1039,8 +1039,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
           FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
       // Warning=Max prefix expansion reached
-      assertEquals("Max prefix expansion reached",
-          ((Map) ((List) reply.getValue().get("Iterators profile")).get(0)).get("Warning"));
+      if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {
+        assertEquals("Max prefix expansion reached",
+            ((Map) reply.getValue().get("Iterators profile")).get("Warning"));
+      } else {
+        assertEquals("Max prefix expansion reached",
+            ((Map) ((List) reply.getValue().get("Iterators profile")).get(0)).get("Warning"));
+      }
     } finally {
       client.ftConfigSet(configParam, configValue);
     }
@@ -1055,7 +1060,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "foo -@t:baz", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+    Map<String, Object> depth0 = RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3
+        ? (Map<String, Object>) profile.getValue().get("Iterators profile")
+        : ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+
     assertEquals("INTERSECT", depth0.get("Type"));
     List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
     assertEquals("TEXT", depth0_children.get(0).get("Type"));
@@ -1074,7 +1082,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         = client.ftProfileSearch(index, FTProfileParams.profileParams(),
             "hello(hello(hello(hello(hello(hello)))))", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+    Map<String, Object> depth0 = RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3
+        ? (Map<String, Object>) profile.getValue().get("Iterators profile")
+        : ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+
     assertEquals("INTERSECT", depth0.get("Type"));
     List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
     assertEquals("TEXT", depth0_children.get(0).get("Type"));
@@ -1110,14 +1121,16 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams().limited(), "%hell% hel*", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+    Map<String, Object> depth0 = RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3
+        ? (Map<String, Object>) profile.getValue().get("Iterators profile")
+        : ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+
     assertEquals("INTERSECT", depth0.get("Type"));
     assertEquals(3L, depth0.get("Counter"));
 
     List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
     assertFalse(depth0_children.isEmpty());
     for (Map<String, Object> depth1 : depth0_children) {
-      System.out.println(depth1);
       assertEquals("UNION", depth1.get("Type"));
       assertNotNull(depth1.get("Query type"));
       if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {

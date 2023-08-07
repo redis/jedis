@@ -78,7 +78,7 @@ for the complete list of supported commands.
 
 ### Easier way of using connection pool
 
-Using a *try-with-resources* block for each command may be cumbursome, so you may consider using JedisPooled.
+Using a *try-with-resources* block for each command may be cumbersome, so you may consider using JedisPooled.
 
 ```java
 JedisPooled jedis = new JedisPooled("localhost", 6379);

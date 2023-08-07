@@ -1065,8 +1065,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void deepReplySearchProfile() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // crashing
-
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "hello"));
     client.hset("2", Collections.singletonMap("t", "world"));
@@ -1075,7 +1073,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         = client.ftProfileSearch(index, FTProfileParams.profileParams(),
             "hello(hello(hello(hello(hello(hello)))))", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    Map<String, Object> depth0 = ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
     assertEquals("INTERSECT", depth0.get("Type"));
     List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
     assertEquals("TEXT", depth0_children.get(0).get("Type"));

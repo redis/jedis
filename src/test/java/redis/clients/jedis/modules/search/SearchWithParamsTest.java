@@ -21,6 +21,7 @@ import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.RedisProtocolUtil;
 
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
@@ -1100,8 +1101,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void limitedSearchProfile() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // crashing
-
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "hello"));
     client.hset("2", Collections.singletonMap("t", "hell"));
@@ -1111,18 +1110,23 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams().limited(), "%hell% hel*", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    Map<String, Object> depth0 = ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
     assertEquals("INTERSECT", depth0.get("Type"));
     assertEquals(3L, depth0.get("Counter"));
 
     List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
     assertFalse(depth0_children.isEmpty());
     for (Map<String, Object> depth1 : depth0_children) {
+      System.out.println(depth1);
       assertEquals("UNION", depth1.get("Type"));
       assertNotNull(depth1.get("Query type"));
-      List depth1_children = (List) depth1.get("Child iterators");
-      assertEquals(1, depth1_children.size());
-      assertSame(String.class, depth1_children.get(0).getClass());
+      if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {
+        List depth1_children = (List) depth1.get("Child iterators");
+        assertEquals(1, depth1_children.size());
+        assertSame(String.class, depth1_children.get(0).getClass());
+      } else {
+        assertSame(String.class, depth1.get("Child iterators").getClass());
+      }
     }
   }
 

@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.BeforeClass;

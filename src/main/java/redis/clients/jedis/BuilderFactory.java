@@ -442,7 +442,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "Map<String, String>";
+      return "Map<String, Long>";
     }
   };
 

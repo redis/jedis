@@ -4584,6 +4584,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map<String, Long> topkListWithCount(String key) {
+    return executeCommand(commandObjects.topkListWithCount(key));
+  }
+
+  @Override
   public Map<String, Object> topkInfo(String key) {
     return executeCommand(commandObjects.topkInfo(key));
   }

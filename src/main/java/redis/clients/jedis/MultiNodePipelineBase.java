@@ -4232,6 +4232,11 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
   }
 
   @Override
+  public Response<Map<String, Long>> topkListWithCount(String key) {
+    return appendCommand(commandObjects.topkListWithCount(key));
+  }
+
+  @Override
   public Response<Map<String, Object>> topkInfo(String key) {
     return appendCommand(commandObjects.topkInfo(key));
   }

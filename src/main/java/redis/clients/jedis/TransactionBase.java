@@ -4281,6 +4281,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Map<String, Long>> topkListWithCount(String key) {
+    return appendCommand(commandObjects.topkListWithCount(key));
+  }
+
+  @Override
   public Response<Map<String, Object>> topkInfo(String key) {
     return appendCommand(commandObjects.topkInfo(key));
   }

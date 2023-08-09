@@ -1,5 +1,6 @@
 package redis.clients.jedis.bloom.commands;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,18 @@ public interface TopKFilterCommands {
   List<String> topkAdd(String key, String... items);
 
   /**
+   * {@code TOPK.INCRBY {key} {item} {increment}}
+   *
+   * @param key
+   * @param item
+   * @param increment
+   * @return item dropped from list
+   */
+  default String topkIncrBy(String key, String item, long increment) {
+    return topkIncrBy(key, Collections.singletonMap(item, increment)).get(0);
+  }
+
+  /**
    * {@code TOPK.INCRBY {key} {item} {increment} [{item} {increment} ...]}
    *
    * @param key
@@ -60,6 +73,14 @@ public interface TopKFilterCommands {
    * @return k (or less) items in Top K list
    */
   List<String> topkList(String key);
+
+  /**
+   * {@code TOPK.LIST {key} WITHCOUNT}
+   *
+   * @param key
+   * @return k (or less) items in Top K list
+   */
+  Map<String, Long> topkListWithCount(String key);
 
   /**
    * {@code TOPK.INFO {key}}

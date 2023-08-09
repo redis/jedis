@@ -4056,6 +4056,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TopKCommand.LIST).key(key), BuilderFactory.STRING_LIST);
   }
 
+  public final CommandObject<Map<String, Long>> topkListWithCount(String key) {
+    return new CommandObject<>(commandArguments(TopKCommand.LIST).key(key)
+        .add(RedisBloomKeyword.WITHCOUNT), BuilderFactory.STRING_LONG_MAP);
+  }
+
   public final CommandObject<Map<String, Object>> topkInfo(String key) {
     return new CommandObject<>(commandArguments(TopKCommand.INFO).key(key), BuilderFactory.ENCODED_OBJECT_MAP);
   }

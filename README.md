@@ -30,10 +30,10 @@ The most recent version of this library supports redis version [5.0](https://git
 The table below highlights version compatibility of the most-recent library versions and Redis versions. Compatibility means communication features, and Redis command capabilities.
 
 
-| Library version | Supported redis versions | JDK Compatibility  |
-|-----------------|-------------------|-------------------|
-| 3.9+ | 5.0 and 6.2 Family of releases | 8, 11 |
-| >= 4.0 | Version 5.0 to current | 8, 11, 17 |
+| Library version | Supported redis versions       | JDK Compatibility |
+|-----------------|--------------------------------|-------------------|
+| 3.9+            | 5.0 and 6.2 Family of releases | 8, 11             |
+| >= 4.0          | Version 5.0 to current         | 8, 11, 17         |
 
 ## Getting started
 

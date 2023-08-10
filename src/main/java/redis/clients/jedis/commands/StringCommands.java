@@ -172,7 +172,7 @@ public interface StringCommands extends BitCommands {
 
   /**
    * <b><a href="http://redis.io/commands/mset">MSet Command</a></b>
-   * Set the the respective keys to the respective values. MSET will replace old values with new
+   * Set the respective keys to the respective values. MSET will replace old values with new
    * values, while {@link StringCommands#msetnx(String...) MSETNX} will not perform any operation at all even
    * if just a single key already exists.
    * <p>
@@ -213,10 +213,10 @@ public interface StringCommands extends BitCommands {
    * Increment the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the increment operation.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -230,10 +230,10 @@ public interface StringCommands extends BitCommands {
    * INCRBY work just like {@link StringCommands#incr(String) INCR} but instead to increment by 1 the
    * increment is integer.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -267,10 +267,10 @@ public interface StringCommands extends BitCommands {
    * Decrement the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the decrement operation.
    * <p>
-   * DECR commands are limited to 64 bit signed integers.
+   * DECR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -284,10 +284,10 @@ public interface StringCommands extends BitCommands {
    * DECRBY work just like {@link StringCommands#decr(String) DECR} but instead to decrement by 1 the
    * decrement is integer.
    * <p>
-   * DECRBY commands are limited to 64 bit signed integers.
+   * DECRBY commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)

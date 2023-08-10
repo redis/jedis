@@ -334,7 +334,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
     UNKNOWN,
     NULL,
     STRING,
-    INTEGER, // 64 bit long.
+    INTEGER, // 64-bit long.
     BOOLEAN,
     DOUBLE,
     ARRAY,

@@ -63,7 +63,7 @@ public interface Record {
    *
    * @param key header key
    *
-   * @return <code>true</code> if the the key exists
+   * @return <code>true</code> if the key exists
    */
   boolean containsKey(String key);
 

@@ -219,7 +219,7 @@ public interface StreamPipelineCommands {
    * @param key Stream name
    * @param group Group name
    * @return List of {@link StreamConsumersInfo} containing information about consumers that belong
-   * to the the group
+   * to the group
    * @deprecated Use {@link #xinfoConsumers2(java.lang.String, java.lang.String)}.
    */
   @Deprecated // keep it till at least Jedis 6/7
@@ -230,7 +230,7 @@ public interface StreamPipelineCommands {
    * @param key Stream name
    * @param group Group name
    * @return List of {@link StreamConsumerInfo} containing information about consumers that belong
-   * to the the group
+   * to the group
    */
   Response<List<StreamConsumerInfo>> xinfoConsumers2(String key, String group);
 

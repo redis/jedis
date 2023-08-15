@@ -79,7 +79,7 @@ public class JedisPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared", 0,
-        "closable-resuable-pool", false, null, null, null)) {
+        "closable-reusable-pool", false, null, null, null)) {
 
       Jedis jedis = pool.getResource();
       jedis.set("hello", "jedis");

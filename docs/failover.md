@@ -152,7 +152,7 @@ FailoverReporter reporter = new FailoverReporter();
 provider.setClusterFailoverPostProcessor(reporter);
 ```
 
-The provider will call your `accept` whenver a faoliver occurs.
+The provider will call your `accept` whenever a faoliver occurs.
 
 ## Failing back
 

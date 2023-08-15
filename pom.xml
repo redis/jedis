@@ -19,7 +19,7 @@
 			<name>Jedis Mailing List</name>
 			<post>jedis_redis@googlegroups.com</post>
 			<archive>
-				http://groups.google.com/group/jedis_redis
+				https://groups.google.com/group/jedis_redis
 			</archive>
 		</mailingList>
 	</mailingLists>
@@ -27,14 +27,14 @@
 	<licenses>
 		<license>
 			<name>MIT</name>
-			<url>http://github.com/redis/jedis/raw/master/LICENSE.txt</url>
+			<url>https://github.com/redis/jedis/blob/master/LICENSE</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<issueManagement>
 		<system>github</system>
-		<url>http://github.com/redis/jedis/issues</url>
+		<url>https://github.com/redis/jedis/issues</url>
 	</issueManagement>
 
 	<scm>
@@ -65,7 +65,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20230227</version>
+			<version>20230618</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

@@ -59,7 +59,7 @@ public interface RedisJsonV2Commands {
 
   List<Long> jsonStrLen(String key, Path2 path);
 
-  JSONArray jsonNumIncrBy(String key, Path2 path, double value);
+  Object jsonNumIncrBy(String key, Path2 path, double value);
 
   List<Long> jsonArrAppend(String key, Path2 path, Object... objects);
 

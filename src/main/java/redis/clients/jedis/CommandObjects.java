@@ -3460,7 +3460,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> jsonGet(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new JsonObjectBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key),
+        protocol != RedisProtocol.RESP3 ? JSON_GENERIC_OBJECT : JsonBuilderFactory.JSON_OBJECT);
   }
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {
@@ -3472,7 +3473,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> jsonGet(String key, Path... paths) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), new JsonObjectBuilder<>(Object.class));
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key).addObjects((Object[]) paths), JSON_GENERIC_OBJECT);
   }
 
   public final CommandObject<String> jsonGetAsPlainString(String key, Path path) {
@@ -3528,7 +3529,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Class<?>>> jsonType(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path),
+        protocol != RedisProtocol.RESP3 ? JsonBuilderFactory.JSON_TYPE_LIST : JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3_COMPATIBLE);
   }
 
   public final CommandObject<Class<?>> jsonType(String key, Path path) {
@@ -3562,8 +3564,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
-    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), JsonBuilderFactory.JSON_ARRAY);
+  public final CommandObject<Object> jsonNumIncrBy(String key, Path2 path, double value) {
+    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),
+        JsonBuilderFactory.JSON_ARRAY_OR_DOUBLE_LIST);
   }
 
   public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {
@@ -4259,6 +4262,11 @@ public class CommandObjects {
       return getJsonObjectMapper().fromJson(BuilderFactory.STRING.build(data), clazz);
     }
   }
+
+  /**
+   * {@link JsonObjectBuilder} for {@code Object.class}.
+   */
+  private final Builder<Object> JSON_GENERIC_OBJECT = new JsonObjectBuilder<>(Object.class);
 
   private class JsonObjectListBuilder<T> extends Builder<List<T>> {
 

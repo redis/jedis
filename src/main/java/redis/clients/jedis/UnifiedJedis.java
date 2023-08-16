@@ -4056,7 +4056,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public JSONArray jsonNumIncrBy(String key, Path2 path, double value) {
+  public Object jsonNumIncrBy(String key, Path2 path, double value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 

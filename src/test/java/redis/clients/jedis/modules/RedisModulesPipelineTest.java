@@ -14,16 +14,19 @@ import java.util.Map;
 import java.util.Collections;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
+import redis.clients.jedis.util.RedisProtocolUtil;
 
 public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
@@ -88,6 +91,8 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void jsonV1() {
+    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");
     hm1.put("oh", "snap");

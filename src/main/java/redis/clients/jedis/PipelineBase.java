@@ -3607,7 +3607,7 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
-  public Response<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
+  public Response<Object> jsonNumIncrBy(String key, Path2 path, double value) {
     return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 

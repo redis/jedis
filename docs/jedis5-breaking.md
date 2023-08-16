@@ -40,6 +40,10 @@
   - `tsMRevRange(long fromTimestamp, long toTimestamp, String... filters)`
   - `tsMRevRange(TSMRangeParams multiRangeParams)`
 
+- `jsonNumIncrBy(String key, Path2 path, double value)` method now returns `Object` instead of `JSONArray`.
+  - Previously when it was returning JSONArray, returned would still be JSONArray. So simple type casting should be enough to handle this change.
+  - The returning object will be `List<Double>` when running under RESP3 protocol.
+
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
 
 - Both `ftConfigGet(String option)` and `ftConfigGet(String indexName, String option)` methods now return `Map<String, Object>` instead of `Map<String, String>`.

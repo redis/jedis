@@ -290,32 +290,6 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP = new Builder<Map<String, Object>>() {
-    @Override
-    public Map<String, Object> build(Object data) {
-      if (data == null) return null;
-      final List<Object> list = (List<Object>) data;
-      if (list.isEmpty()) return Collections.emptyMap();
-
-      if (list.get(0) instanceof KeyValue) {
-        final Map<String, Object> map = new HashMap<>(list.size(), 1f);
-        final Iterator iterator = list.iterator();
-        while (iterator.hasNext()) {
-          KeyValue kv = (KeyValue) iterator.next();
-          map.put(STRING.build(kv.getKey()), ENCODED_OBJECT.build(kv.getValue()));
-        }
-        return map;
-      } else {
-        final Map<String, Object> map = new HashMap<>(list.size() / 2, 1f);
-        final Iterator iterator = list.iterator();
-        while (iterator.hasNext()) {
-          map.put(STRING.build(iterator.next()), ENCODED_OBJECT.build(iterator.next()));
-        }
-        return map;
-      }
-    }
-  };
-
   public static final Builder<Map<byte[], byte[]>> BINARY_MAP = new Builder<Map<byte[], byte[]>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -375,6 +349,63 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "Map<String, String>";
+    }
+  };
+
+  public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP = new Builder<Map<String, Object>>() {
+    @Override
+    public Map<String, Object> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        final Map<String, Object> map = new HashMap<>(list.size(), 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          KeyValue kv = (KeyValue) iterator.next();
+          map.put(STRING.build(kv.getKey()), ENCODED_OBJECT.build(kv.getValue()));
+        }
+        return map;
+      } else {
+        final Map<String, Object> map = new HashMap<>(list.size() / 2, 1f);
+        final Iterator iterator = list.iterator();
+        while (iterator.hasNext()) {
+          map.put(STRING.build(iterator.next()), ENCODED_OBJECT.build(iterator.next()));
+        }
+        return map;
+      }
+    }
+  };
+
+  public static final Builder<Object> AGGRESSIVE_ENCODED_OBJECT = new Builder<Object>() {
+    @Override
+    public Object build(Object data) {
+      if (data == null) return null;
+
+      if (data instanceof List) {
+        final List list = (List) data;
+        if (list.isEmpty()) return Collections.emptyMap();
+
+        if (list.get(0) instanceof KeyValue) {
+          return ((List<KeyValue>) data).stream()
+              .filter(kv -> kv != null && kv.getKey() != null && kv.getValue() != null)
+              .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+                  kv -> this.build(kv.getValue())));
+        } else {
+          return list.stream().map(this::build).collect(Collectors.toList());
+        }
+      } else if (data instanceof byte[]) {
+        return STRING.build(data);
+      }
+      return data;
+    }
+  };
+
+  public static final Builder<Map<String, Object>> AGGRESSIVE_ENCODED_OBJECT_MAP = new Builder<Map<String, Object>>() {
+    @Override
+    public Map<String, Object> build(Object data) {
+      return (Map<String, Object>) AGGRESSIVE_ENCODED_OBJECT.build(data);
     }
   };
 
@@ -1736,8 +1767,45 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public Map<String, String> build(Object data) {
-      final List<Object> list = (List<Object>) data;
+      final List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) list).stream()
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+                kv -> STRING.build(kv.getValue())));
+      }
+
       final Map<String, String> map = new HashMap<>(list.size());
+      for (Object object : list) {
+        if (object == null) continue;
+        final List<Object> flat = (List<Object>) object;
+        if (flat.isEmpty()) continue;
+        map.put(STRING.build(flat.get(0)), STRING.build(flat.get(1)));
+      }
+      return map;
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, String>";
+    }
+  };
+
+  public static final Builder<Map<String, Object>> ENCODED_OBJECT_MAP_FROM_PAIRS = new Builder<Map<String, Object>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> build(Object data) {
+      final List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) list).stream()
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+                kv -> ENCODED_OBJECT.build(kv.getValue())));
+      }
+
+      final Map<String, Object> map = new HashMap<>(list.size());
       for (Object object : list) {
         if (object == null) continue;
         final List<Object> flat = (List<Object>) object;

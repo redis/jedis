@@ -5,6 +5,7 @@ import static redis.clients.jedis.Protocol.Keyword.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,10 +35,14 @@ import redis.clients.jedis.util.KeyValue;
 
 public class CommandObjects {
 
-  private RedisProtocol proto;
+  private RedisProtocol protocol;
 
   protected void setProtocol(RedisProtocol proto) {
-    this.proto = proto;
+    this.protocol = proto;
+  }
+
+  protected RedisProtocol getProtocol() {
+    return protocol;
   }
 
   private volatile JsonObjectMapper jsonObjectMapper;
@@ -1094,7 +1099,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        proto != RedisProtocol.RESP3 ? BuilderFactory.STRING_PAIR_LIST : BuilderFactory.STRING_PAIR_LIST_FROM_PAIRS);
+        protocol != RedisProtocol.RESP3 ? BuilderFactory.STRING_PAIR_LIST : BuilderFactory.STRING_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
@@ -1111,7 +1116,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        proto != RedisProtocol.RESP3 ? BuilderFactory.BINARY_PAIR_LIST : BuilderFactory.BINARY_PAIR_LIST_FROM_PAIRS);
+        protocol != RedisProtocol.RESP3 ? BuilderFactory.BINARY_PAIR_LIST : BuilderFactory.BINARY_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {
@@ -1992,11 +1997,11 @@ public class CommandObjects {
   }
 
   private Builder<List<Tuple>> getTupleListBuilder() {
-    return proto == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_LIST_RESP3 : BuilderFactory.TUPLE_LIST;
+    return protocol == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_LIST_RESP3 : BuilderFactory.TUPLE_LIST;
   }
 
   private Builder<Set<Tuple>> getTupleSetBuilder() {
-    return proto == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_ZSET_RESP3 : BuilderFactory.TUPLE_ZSET;
+    return protocol == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_ZSET_RESP3 : BuilderFactory.TUPLE_ZSET;
   }
   // Sorted Set commands
 
@@ -3190,24 +3195,29 @@ public class CommandObjects {
 
   public final CommandObject<SearchResult> ftSearch(String indexName, String query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).add(query),
-        new SearchResultBuilder(true, false, true));
+        getSearchResultBuilder(() -> new SearchResultBuilder(true, false, true)));
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, String query, FTSearchParams params) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
-        .add(query).addParams(params.dialectOptional(searchDialect.get())), new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), true));
+        .add(query).addParams(params.dialectOptional(searchDialect.get())),
+        getSearchResultBuilder(() -> new SearchResultBuilder(!params.getNoContent(), params.getWithScores(), true)));
   }
 
   public final CommandObject<SearchResult> ftSearch(String indexName, Query query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
-        .addParams(query.dialectOptional(searchDialect.get())),
-        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true));
+        .addParams(query.dialectOptional(searchDialect.get())), getSearchResultBuilder(() -> 
+        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true)));
   }
 
+  @Deprecated
   public final CommandObject<SearchResult> ftSearch(byte[] indexName, Query query) {
+    if (protocol == RedisProtocol.RESP3) {
+      throw new UnsupportedOperationException("binary ft.search is not implemented with resp3.");
+    }
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName)
-        .addParams(query.dialectOptional(searchDialect.get())),
-        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), false));
+        .addParams(query.dialectOptional(searchDialect.get())), getSearchResultBuilder(() -> 
+        new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), false)));
   }
 
   public final CommandObject<String> ftExplain(String indexName, Query query) {
@@ -3222,14 +3232,14 @@ public class CommandObjects {
 
   public final CommandObject<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.AGGREGATE), indexName)
-        .addParams(aggr.dialectOptional(searchDialect.get())), !aggr.isWithCursor() ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
-        : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+        .addParams(aggr.dialectOptional(searchDialect.get())), !aggr.isWithCursor() ? AggregationResult.SEARCH_AGGREGATION_RESULT
+        : AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
   public final CommandObject<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
     return new CommandObject<>(commandArguments(SearchCommand.CURSOR).add(SearchKeyword.READ)
         .add(indexName).add(cursorId).add(SearchKeyword.COUNT).add(count),
-        SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+        AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
   }
 
   public final CommandObject<String> ftCursorDel(String indexName, long cursorId) {
@@ -3241,9 +3251,9 @@ public class CommandObjects {
       String indexName, FTProfileParams profileParams, AggregationBuilder aggr) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.AGGREGATE).addParams(profileParams).add(SearchKeyword.QUERY)
-        .addParams(aggr.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(!aggr.isWithCursor()
-            ? SearchBuilderFactory.SEARCH_AGGREGATION_RESULT
-            : SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
+        .addParams(aggr.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(
+        !aggr.isWithCursor() ? AggregationResult.SEARCH_AGGREGATION_RESULT
+        : AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR));
   }
 
   public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
@@ -3251,7 +3261,7 @@ public class CommandObjects {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY)
         .addParams(query.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(
-            new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true)));
+            getSearchResultBuilder(() -> new SearchResultBuilder(!query.getNoContent(), query.getWithScores(), true))));
   }
 
   public final CommandObject<Map.Entry<SearchResult, Map<String, Object>>> ftProfileSearch(
@@ -3259,7 +3269,12 @@ public class CommandObjects {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.PROFILE), indexName)
         .add(SearchKeyword.SEARCH).addParams(profileParams).add(SearchKeyword.QUERY).add(query)
         .addParams(searchParams.dialectOptional(searchDialect.get())), new SearchProfileResponseBuilder<>(
-            new SearchResultBuilder(!searchParams.getNoContent(), searchParams.getWithScores(), true)));
+            getSearchResultBuilder(() -> new SearchResultBuilder(!searchParams.getNoContent(), searchParams.getWithScores(), true))));
+  }
+
+  private Builder<SearchResult> getSearchResultBuilder(Supplier<Builder<SearchResult>> resp2) {
+    if (protocol == RedisProtocol.RESP3) return SearchResult.SEARCH_RESULT_BUILDER;
+    return resp2.get();
   }
 
   public final CommandObject<String> ftDropIndex(String indexName) {
@@ -3320,7 +3335,7 @@ public class CommandObjects {
 
   public final CommandObject<Map<String, Object>> ftInfo(String indexName) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.INFO), indexName),
-        BuilderFactory.ENCODED_OBJECT_MAP);
+        protocol == RedisProtocol.RESP3 ? BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP : BuilderFactory.ENCODED_OBJECT_MAP);
   }
 
   public final CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
@@ -3340,11 +3355,12 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.ALIASDEL).add(aliasName), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Map<String, String>> ftConfigGet(String option) {
-    return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.GET).add(option), BuilderFactory.STRING_MAP_FROM_PAIRS);
+  public final CommandObject<Map<String, Object>> ftConfigGet(String option) {
+    return new CommandObject<>(commandArguments(SearchCommand.CONFIG).add(SearchKeyword.GET).add(option),
+        protocol == RedisProtocol.RESP3 ? BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP : BuilderFactory.ENCODED_OBJECT_MAP_FROM_PAIRS);
   }
 
-  public final CommandObject<Map<String, String>> ftConfigGet(String indexName, String option) {
+  public final CommandObject<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return directSearchCommand(ftConfigGet(option), indexName);
   }
 
@@ -3396,8 +3412,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SearchCommand.SUGLEN).key(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<String>> ftList() {
-    return new CommandObject<>(commandArguments(SearchCommand._LIST), BuilderFactory.STRING_LIST);
+  public final CommandObject<Set<String>> ftList() {
+    return new CommandObject<>(commandArguments(SearchCommand._LIST), BuilderFactory.STRING_SET);
   }
   // RediSearch commands
 
@@ -3829,7 +3845,7 @@ public class CommandObjects {
   public final CommandObject<Map<String, TSMGetElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MGET).addParams(multiGetParams)
         .add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
-        proto == RedisProtocol.RESP3 ? TimeSeriesBuilderFactory.TIMESERIES_MGET_RESPONSE_RESP3
+        protocol == RedisProtocol.RESP3 ? TimeSeriesBuilderFactory.TIMESERIES_MGET_RESPONSE_RESP3
             : TimeSeriesBuilderFactory.TIMESERIES_MGET_RESPONSE);
   }
 
@@ -3864,12 +3880,12 @@ public class CommandObjects {
   }
 
   private Builder<Map<String, TSMRangeElements>> getTimeseriesMultiRangeResponseBuilder() {
-    return proto == RedisProtocol.RESP3 ? TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE_RESP3
+    return protocol == RedisProtocol.RESP3 ? TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE_RESP3
         : TimeSeriesBuilderFactory.TIMESERIES_MRANGE_RESPONSE;
   }
 
   private Builder<TSInfo> getTimeseriesInfoBuilder() {
-    return proto == RedisProtocol.RESP3 ? TSInfo.TIMESERIES_INFO_RESP3 : TSInfo.TIMESERIES_INFO;
+    return protocol == RedisProtocol.RESP3 ? TSInfo.TIMESERIES_INFO_RESP3 : TSInfo.TIMESERIES_INFO;
   }
   // RedisTimeSeries commands
 
@@ -4203,6 +4219,8 @@ public class CommandObjects {
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
 
+    private static final String PROFILE_STR = "profile";
+
     private final Builder<T> replyBuilder;
 
     public SearchProfileResponseBuilder(Builder<T> replyBuilder) {
@@ -4211,7 +4229,18 @@ public class CommandObjects {
 
     @Override
     public Map.Entry<T, Map<String, Object>> build(Object data) {
-      List<Object> list = (List<Object>) data;
+      List list = (List) data;
+      if (list == null || list.isEmpty()) return null;
+
+      if (list.get(0) instanceof KeyValue) {
+        for (KeyValue keyValue : (List<KeyValue>) data) {
+          if (PROFILE_STR.equals(BuilderFactory.STRING.build(keyValue.getKey()))) {
+            return KeyValue.of(replyBuilder.build(data),
+                BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(keyValue.getValue()));
+          }
+        }
+      }
+
       return KeyValue.of(replyBuilder.build(list.get(0)),
           SearchBuilderFactory.SEARCH_PROFILE_PROFILE.build(list.get(1)));
     }

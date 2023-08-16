@@ -3655,7 +3655,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @return search iteration
    */
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, String query, FTSearchParams params) {
-    return new FtSearchIteration(provider, batchSize, indexName, query, params);
+    return new FtSearchIteration(provider, commandObjects.getProtocol(), batchSize, indexName, query, params);
   }
 
   @Override
@@ -3671,10 +3671,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @return search iteration
    */
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, Query query) {
-    return new FtSearchIteration(provider, batchSize, indexName, query);
+    return new FtSearchIteration(provider, commandObjects.getProtocol(), batchSize, indexName, query);
   }
 
   @Override
+  @Deprecated
   public SearchResult ftSearch(byte[] indexName, Query query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3818,12 +3819,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Map<String, String> ftConfigGet(String option) {
+  public Map<String, Object> ftConfigGet(String option) {
     return executeCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
-  public Map<String, String> ftConfigGet(String indexName, String option) {
+  public Map<String, Object> ftConfigGet(String indexName, String option) {
     return executeCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
@@ -3878,7 +3879,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> ftList() {
+  public Set<String> ftList() {
     return executeCommand(commandObjects.ftList());
   }
   // RediSearch commands

@@ -42,6 +42,10 @@
 
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
 
+- Both `ftConfigGet(String option)` and `ftConfigGet(String indexName, String option)` methods now return `Map<String, Object>` instead of `Map<String, String>`.
+
+- `ftList()` method now returns `Set<String>` instead of `List<String>`.
+
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
 - All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.
@@ -73,6 +77,10 @@
 - `XPendingParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
 
 - `getParams()` method is removed from `SortingParams` class.
+
+- Both `SEARCH_AGGREGATION_RESULT` and `SEARCH_AGGREGATION_RESULT_WITH_CURSOR` implementations from `SearchBuilderFactory` class have been moved to `AggregationResult` class.
+
+- All `AggregationResult` constructors have been made `private`.
 
 - `addCommandEncodedArguments` and `addCommandBinaryArguments` methods have been removed from `FieldName` class.
 

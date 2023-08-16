@@ -3461,7 +3461,7 @@ public class CommandObjects {
 
   public final CommandObject<Object> jsonGet(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key),
-        proto != RedisProtocol.RESP3 ? JSON_GENERIC_OBJECT : JsonBuilderFactory.JSON_OBJECT);
+        protocol != RedisProtocol.RESP3 ? JSON_GENERIC_OBJECT : JsonBuilderFactory.JSON_OBJECT);
   }
 
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {
@@ -3530,7 +3530,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Class<?>>> jsonType(String key, Path2 path) {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path),
-        proto != RedisProtocol.RESP3 ? JsonBuilderFactory.JSON_TYPE_LIST : JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3_COMPATIBLE);
+        protocol != RedisProtocol.RESP3 ? JsonBuilderFactory.JSON_TYPE_LIST : JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3_COMPATIBLE);
   }
 
   public final CommandObject<Class<?>> jsonType(String key, Path path) {

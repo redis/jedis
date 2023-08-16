@@ -31,8 +31,8 @@ public class JedisSentinelPool extends Pool<Jedis> {
   private final Object initPoolLock = new Object();
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
-      final JedisClientConfig masteClientConfig, final JedisClientConfig sentinelClientConfig) {
-    this(masterName, sentinels, new JedisFactory(masteClientConfig), sentinelClientConfig);
+      final JedisClientConfig masterClientConfig, final JedisClientConfig sentinelClientConfig) {
+    this(masterName, sentinels, new JedisFactory(masterClientConfig), sentinelClientConfig);
   }
 
   public JedisSentinelPool(String masterName, Set<String> sentinels,
@@ -167,9 +167,9 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
-      final GenericObjectPoolConfig<Jedis> poolConfig, final JedisClientConfig masteClientConfig,
+      final GenericObjectPoolConfig<Jedis> poolConfig, final JedisClientConfig masterClientConfig,
       final JedisClientConfig sentinelClientConfig) {
-    this(masterName, sentinels, poolConfig, new JedisFactory(masteClientConfig), sentinelClientConfig);
+    this(masterName, sentinels, poolConfig, new JedisFactory(masterClientConfig), sentinelClientConfig);
   }
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,

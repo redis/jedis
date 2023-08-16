@@ -55,8 +55,8 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
 
   @Override
   public int compareTo(StreamEntryID other) {
-    int timeComapre = Long.compare(this.time, other.time);
-    return timeComapre != 0 ? timeComapre : Long.compare(this.sequence, other.sequence);
+    int timeCompare = Long.compare(this.time, other.time);
+    return timeCompare != 0 ? timeCompare : Long.compare(this.sequence, other.sequence);
   }
 
   public long getTime() {

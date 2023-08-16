@@ -50,6 +50,7 @@ public interface RediSearchCommands {
 
   SearchResult ftSearch(String indexName, Query query);
 
+  @Deprecated
   SearchResult ftSearch(byte[] indexName, Query query);
 
   String ftExplain(String indexName, Query query);
@@ -106,9 +107,9 @@ public interface RediSearchCommands {
 
   String ftAliasDel(String aliasName);
 
-  Map<String, String> ftConfigGet(String option);
+  Map<String, Object> ftConfigGet(String option);
 
-  Map<String, String> ftConfigGet(String indexName, String option);
+  Map<String, Object> ftConfigGet(String indexName, String option);
 
   String ftConfigSet(String option, String value);
 
@@ -130,5 +131,5 @@ public interface RediSearchCommands {
 
   long ftSugLen(String key);
 
-  List<String> ftList();
+  Set<String> ftList();
 }

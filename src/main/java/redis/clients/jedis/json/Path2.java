@@ -1,7 +1,7 @@
 package redis.clients.jedis.json;
 
 /**
- * Path is a ReJSON path, representing a valid path into an object
+ * Path is a RedisJSON v2 path, representing a valid path or a multi-path into an object.
  */
 public class Path2 {
 

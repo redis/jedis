@@ -4699,76 +4699,91 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   // RedisGraph commands
   @Override
+  @Deprecated
   public ResultSet graphQuery(String name, String query) {
     return executeCommand(graphCommandObjects.graphQuery(name, query));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphReadonlyQuery(String name, String query) {
     return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphQuery(String name, String query, long timeout) {
     return executeCommand(graphCommandObjects.graphQuery(name, query, timeout));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphReadonlyQuery(String name, String query, long timeout) {
     return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphQuery(String name, String query, Map<String, Object> params) {
     return executeCommand(graphCommandObjects.graphQuery(name, query, params));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params) {
     return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphQuery(String name, String query, Map<String, Object> params, long timeout) {
     return executeCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
     return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
   }
 
   @Override
+  @Deprecated
   public String graphDelete(String name) {
     return executeCommand(graphCommandObjects.graphDelete(name));
   }
 
   @Override
+  @Deprecated
   public List<String> graphList() {
     return executeCommand(commandObjects.graphList());
   }
 
   @Override
+  @Deprecated
   public List<String> graphProfile(String graphName, String query) {
     return executeCommand(commandObjects.graphProfile(graphName, query));
   }
 
   @Override
+  @Deprecated
   public List<String> graphExplain(String graphName, String query) {
     return executeCommand(commandObjects.graphExplain(graphName, query));
   }
 
   @Override
+  @Deprecated
   public List<List<Object>> graphSlowlog(String graphName) {
     return executeCommand(commandObjects.graphSlowlog(graphName));
   }
 
   @Override
+  @Deprecated
   public String graphConfigSet(String configName, Object value) {
     return executeCommand(commandObjects.graphConfigSet(configName, value));
   }
 
   @Override
+  @Deprecated
   public Map<String, Object> graphConfigGet(String configName) {
     return executeCommand(commandObjects.graphConfigGet(configName));
   }

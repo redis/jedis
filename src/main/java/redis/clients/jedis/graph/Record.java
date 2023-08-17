@@ -6,7 +6,10 @@ import java.util.List;
  * Container for RedisGraph result values.
  *
  * List records are returned from RedisGraph statement execution, contained within a ResultSet.
+ *
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 public interface Record {
 
   /**

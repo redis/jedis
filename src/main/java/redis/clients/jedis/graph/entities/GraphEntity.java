@@ -5,7 +5,9 @@ import java.util.*;
 /**
  * This is an abstract class for representing a graph entity. A graph entity has an id and a set of
  * properties. The properties are mapped and accessed by their names.
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 public abstract class GraphEntity {
 
   protected long id;

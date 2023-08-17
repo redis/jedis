@@ -67,6 +67,11 @@
   - `BINARY_MAP_FROM_PAIRS`
   - `STRING_ORDERED_SET`
 
+- Following methods supporting JSON.RESP command have been removed:
+  - `jsonResp(String key)`
+  - `jsonResp(String key, Path path)`
+  - `jsonResp(String key, Path2 path)`
+
 - `RedisJsonCommands` and `RedisJsonPipelineCommands` interfaces have been moved into `redis.clients.jedis.json.commands` package.
 
 - `Queable` class is removed.

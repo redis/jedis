@@ -3724,18 +3724,6 @@ public class CommandObjects {
   public final CommandObject<List<Long>> jsonDebugMemory(String key, Path2 path) {
     return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG_LIST);
   }
-
-  public final CommandObject<List<Object>> jsonResp(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key), BuilderFactory.ENCODED_OBJECT_LIST);
-  }
-
-  public final CommandObject<List<Object>> jsonResp(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key).add(path), BuilderFactory.ENCODED_OBJECT_LIST);
-  }
-
-  public final CommandObject<List<List<Object>>> jsonResp(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key).add(path), BuilderFactory.ENCODED_OBJECT_LIST_LIST);
-  }
   // RedisJSON commands
 
   // RedisTimeSeries commands

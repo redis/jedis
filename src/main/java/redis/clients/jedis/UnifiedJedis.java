@@ -4219,21 +4219,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public List<Long> jsonDebugMemory(String key, Path2 path) {
     return executeCommand(commandObjects.jsonDebugMemory(key, path));
   }
-
-  @Override
-  public List<Object> jsonResp(String key) {
-    return executeCommand(commandObjects.jsonResp(key));
-  }
-
-  @Override
-  public List<Object> jsonResp(String key, Path path) {
-    return executeCommand(commandObjects.jsonResp(key, path));
-  }
-
-  @Override
-  public List<List<Object>> jsonResp(String key, Path2 path) {
-    return executeCommand(commandObjects.jsonResp(key, path));
-  }
   // RedisJSON commands
 
   // RedisTimeSeries commands

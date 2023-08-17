@@ -86,6 +86,4 @@ public interface RedisJsonV2Commands {
   List<List<String>> jsonObjKeys(String key, Path2 path);
 
   List<Long> jsonDebugMemory(String key, Path2 path);
-
-  List<List<Object>> jsonResp(String key, Path2 path);
 }

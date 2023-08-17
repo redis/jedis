@@ -4187,26 +4187,32 @@ public class CommandObjects {
   // RedisBloom commands
 
   // RedisGraph commands
+  @Deprecated
   public final CommandObject<List<String>> graphList() {
     return new CommandObject<>(commandArguments(GraphCommand.LIST), BuilderFactory.STRING_LIST);
   }
 
+  @Deprecated
   public final CommandObject<List<String>> graphProfile(String graphName, String query) {
     return new CommandObject<>(commandArguments(GraphCommand.PROFILE).key(graphName).add(query), BuilderFactory.STRING_LIST);
   }
 
+  @Deprecated
   public final CommandObject<List<String>> graphExplain(String graphName, String query) {
     return new CommandObject<>(commandArguments(GraphCommand.EXPLAIN).key(graphName).add(query), BuilderFactory.STRING_LIST);
   }
 
+  @Deprecated
   public final CommandObject<List<List<Object>>> graphSlowlog(String graphName) {
     return new CommandObject<>(commandArguments(GraphCommand.SLOWLOG).key(graphName), BuilderFactory.ENCODED_OBJECT_LIST_LIST);
   }
 
+  @Deprecated
   public final CommandObject<String> graphConfigSet(String configName, Object value) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.SET).add(configName).add(value), BuilderFactory.STRING);
   }
 
+  @Deprecated
   public final CommandObject<Map<String, Object>> graphConfigGet(String configName) {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }

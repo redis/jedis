@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.Map;
 import redis.clients.jedis.Response;
 
+/**
+ * @deprecated Redis Graph support is deprecated.
+ */
+@Deprecated
 public interface RedisGraphPipelineCommands {
 
   Response<ResultSet> graphQuery(String name, String query);

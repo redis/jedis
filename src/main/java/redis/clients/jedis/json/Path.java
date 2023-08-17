@@ -1,8 +1,10 @@
 package redis.clients.jedis.json;
 
 /**
- * Path is a ReJSON path, representing a valid path into an object
+ * Path is a RedisJSON (v1) path, representing a valid path into an object.
+ * @deprecated RedisJSON (v1) support is deprecated.
  */
+@Deprecated
 public class Path {
 
   public static final Path ROOT_PATH = new Path(".");

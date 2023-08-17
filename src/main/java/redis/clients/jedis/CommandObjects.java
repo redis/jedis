@@ -3464,6 +3464,7 @@ public class CommandObjects {
         protocol != RedisProtocol.RESP3 ? JSON_GENERIC_OBJECT : JsonBuilderFactory.JSON_OBJECT);
   }
 
+  @Deprecated
   public final <T> CommandObject<T> jsonGet(String key, Class<T> clazz) {
     return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), new JsonObjectBuilder<>(clazz));
   }
@@ -3524,6 +3525,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.TOGGLE).key(key).add(path), BuilderFactory.STRING);
   }
 
+  @Deprecated
   public final CommandObject<Class<?>> jsonType(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key), JsonBuilderFactory.JSON_TYPE);
   }
@@ -3537,6 +3539,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path), JsonBuilderFactory.JSON_TYPE);
   }
 
+  @Deprecated
   public final CommandObject<Long> jsonStrAppend(String key, Object string) {
     return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(
         getJsonObjectMapper().toJson(string)), BuilderFactory.LONG);
@@ -3552,6 +3555,7 @@ public class CommandObjects {
         getJsonObjectMapper().toJson(string)), BuilderFactory.LONG);
   }
 
+  @Deprecated
   public final CommandObject<Long> jsonStrLen(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key), BuilderFactory.LONG);
   }
@@ -3637,10 +3641,12 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.LONG);
   }
 
+  @Deprecated
   public final CommandObject<Object> jsonArrPop(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key), new JsonObjectBuilder<>(Object.class));
   }
 
+  @Deprecated
   public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key), new JsonObjectBuilder<>(clazz));
   }
@@ -3669,6 +3675,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new JsonObjectBuilder<>(clazz));
   }
 
+  @Deprecated
   public final CommandObject<Long> jsonArrLen(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key), BuilderFactory.LONG);
   }
@@ -3689,6 +3696,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
   }
 
+  @Deprecated
   public final CommandObject<Long> jsonObjLen(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key), BuilderFactory.LONG);
   }
@@ -3701,6 +3709,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), BuilderFactory.LONG_LIST);
   }
 
+  @Deprecated
   public final CommandObject<List<String>> jsonObjKeys(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.OBJKEYS).key(key), BuilderFactory.STRING_LIST);
   }
@@ -3713,6 +3722,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.OBJKEYS).key(key).add(path), BuilderFactory.STRING_LIST_LIST);
   }
 
+  @Deprecated
   public final CommandObject<Long> jsonDebugMemory(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key), BuilderFactory.LONG);
   }

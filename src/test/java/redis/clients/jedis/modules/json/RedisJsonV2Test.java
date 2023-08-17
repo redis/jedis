@@ -507,32 +507,6 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     assertEquals(1, jsonClient.jsonDebugMemory("json", Path2.of("$..bar")).size());
   }
 
-  @Test
-  public void resp() {
-    assertNull(jsonClient.jsonResp("resp", ROOT_PATH));
-
-    String json = "{\"foo\": {\"hello\":\"world\"}, \"bar\": [null, 3, 2.5, true]}";
-    jsonClient.jsonSet("resp", ROOT_PATH, json);
-
-    List<List<Object>> fullResp = jsonClient.jsonResp("resp", ROOT_PATH);
-    assertEquals(1, fullResp.size());
-
-    List<Object> resp = fullResp.get(0);
-    assertEquals("{", resp.get(0));
-
-    assertEquals("foo", resp.get(1));
-    assertEquals(Arrays.asList("{", "hello", "world"), resp.get(2));
-
-    assertEquals("bar", resp.get(3));
-    List<Object> arr = (List<Object>) resp.get(4);
-    assertEquals("[", arr.get(0));
-    assertNull(arr.get(1));
-    assertEquals(Long.valueOf(3), arr.get(2));
-    //assertEquals("2.5", arr.get(3));
-    MatcherAssert.assertThat(arr.get(3), Matchers.isOneOf("2.5", 2.5));
-    assertEquals("true", arr.get(4));
-  }
-
   private void assertJsonArrayEquals(JSONArray a, Object _b) {
     if (!(_b instanceof JSONArray)) {
       fail("Actual value is not JSONArray.");

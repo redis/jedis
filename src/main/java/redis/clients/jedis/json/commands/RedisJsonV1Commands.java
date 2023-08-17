@@ -97,8 +97,4 @@ public interface RedisJsonV1Commands {
   long jsonDebugMemory(String key);
 
   long jsonDebugMemory(String key, Path path);
-
-  List<Object> jsonResp(String key);
-
-  List<Object> jsonResp(String key, Path path);
 }

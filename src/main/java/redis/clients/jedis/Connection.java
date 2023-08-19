@@ -460,6 +460,7 @@ public class Connection implements Closeable {
 
   private void helloOrAuth(final RedisProtocol protocol, final RedisCredentials credentials,
       final String clientName, final AtomicBoolean clientNamePending) {
+
     if (credentials == null || credentials.getPassword() == null) {
       if (protocol != null) {
         sendCommand(Protocol.Command.HELLO, encode(protocol.version()));
@@ -485,13 +486,13 @@ public class Connection implements Closeable {
             sendCommand(Protocol.Command.HELLO, encode(protocol.version()),
                 Protocol.Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
           }
-          getOne();
+          getOne(); // Map
           clientNamePending.set(false);
         } else { // getUser() == null
-          sendCommand(Protocol.Command.HELLO, encode(protocol.version()));
-          getOne();
           sendCommand(Protocol.Command.AUTH, rawPass);
-          getOne();
+          getStatusCodeReply(); // OK
+          sendCommand(Protocol.Command.HELLO, encode(protocol.version()));
+          getOne(); // Map
         }
       } else { // protocol == null
         if (credentials.getUser() != null) {

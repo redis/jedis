@@ -80,4 +80,22 @@ public interface JedisClientConfig {
     return null;
   }
 
+  public interface ClientSetInfoConfig {
+
+    default boolean disable() {
+      return false;
+    }
+
+    default String libNameSuffix() {
+      return null;
+    }
+
+    default String libVerSuffix() {
+      return null;
+    }
+  }
+
+  default ClientSetInfoConfig getClientSetInfoConfig() {
+    return null;
+  }
 }

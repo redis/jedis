@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
+import redis.clients.jedis.JedisClientConfig.ClientSetInfoConfig;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
@@ -24,10 +25,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final HostAndPortMapper hostAndPortMapper;
 
+  private final ClientSetInfoConfig clientSetInfoConfig;
+
   private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
       String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
-      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper) {
+      HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper,
+      ClientSetInfoConfig clientSetInfoConfig) {
     this.redisProtocol = protocol;
     this.connectionTimeoutMillis = connectionTimeoutMillis;
     this.socketTimeoutMillis = soTimeoutMillis;
@@ -40,6 +44,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.sslParameters = sslParameters;
     this.hostnameVerifier = hostnameVerifier;
     this.hostAndPortMapper = hostAndPortMapper;
+    this.clientSetInfoConfig = clientSetInfoConfig;
   }
 
   @Override
@@ -113,6 +118,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return hostAndPortMapper;
   }
 
+  @Override
+  public ClientSetInfoConfig getClientSetInfoConfig() {
+    return clientSetInfoConfig;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -138,6 +148,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private HostAndPortMapper hostAndPortMapper = null;
 
+    private ClientSetInfoConfig clientSetInfoConfig = null;
+
     private Builder() {
     }
 
@@ -149,7 +161,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
       return new DefaultJedisClientConfig(redisProtocol, connectionTimeoutMillis, socketTimeoutMillis,
           blockingSocketTimeoutMillis, credentialsProvider, database, clientName, ssl,
-          sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
+          sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, clientSetInfoConfig);
     }
 
     /**
@@ -239,6 +251,60 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.hostAndPortMapper = hostAndPortMapper;
       return this;
     }
+
+    public Builder clientSetInfoConfig(ClientSetInfoConfig setInfoConfig) {
+      this.clientSetInfoConfig = setInfoConfig;
+      return this;
+    }
+  }
+
+  public static SetInfoBuilder setInfoBuilder() {
+    return new SetInfoBuilder();
+  }
+
+  public static class SetInfoBuilder {
+
+    private boolean disable = false;
+    private String libNameSuffix = null;
+    private String libVerSuffix = null;
+
+    private SetInfoBuilder() {
+    }
+
+    public ClientSetInfoConfig build() {
+      return new ClientSetInfoConfig() {
+
+        @Override
+        public boolean disable() {
+          return disable;
+        }
+
+        @Override
+        public String libVerSuffix() {
+          return libNameSuffix;
+        }
+
+        @Override
+        public String libNameSuffix() {
+          return libVerSuffix;
+        }
+      };
+    }
+
+    public SetInfoBuilder disable() {
+      this.disable = true;
+      return this;
+    }
+
+    public SetInfoBuilder libNameSuffix(String suffix) {
+      this.libNameSuffix = suffix;
+      return this;
+    }
+
+    public SetInfoBuilder libVerSuffix(String suffix) {
+      this.libVerSuffix = suffix;
+      return this;
+    }
   }
 
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
@@ -248,7 +314,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return new DefaultJedisClientConfig(null,
         connectionTimeoutMillis, soTimeoutMillis, blockingSocketTimeoutMillis,
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)), database,
-        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper);
+        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, null);
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
@@ -256,6 +322,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         copy.getConnectionTimeoutMillis(), copy.getSocketTimeoutMillis(),
         copy.getBlockingSocketTimeoutMillis(), copy.getCredentialsProvider(),
         copy.getDatabase(), copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(),
-        copy.getSslParameters(), copy.getHostnameVerifier(), copy.getHostAndPortMapper());
+        copy.getSslParameters(), copy.getHostnameVerifier(), copy.getHostAndPortMapper(),
+        copy.getClientSetInfoConfig());
   }
 }

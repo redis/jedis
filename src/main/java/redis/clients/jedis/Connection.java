@@ -11,7 +11,6 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
@@ -395,34 +394,24 @@ public class Connection implements Closeable {
 
       protocol = config.getRedisProtocol();
 
-      AtomicBoolean clientNamePending = new AtomicBoolean(false);
-      String clientName = config.getClientName();
-      if (clientName != null){
-        validateClientInfo(clientName);
-        clientNamePending.set(true);
-      }
-
-      Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
+      final Supplier<RedisCredentials> credentialsProvider = config.getCredentialsProvider();
       if (credentialsProvider instanceof RedisCredentialsProvider) {
-
+        final RedisCredentialsProvider redisCredentialsProvider = (RedisCredentialsProvider) credentialsProvider;
         try {
-          ((RedisCredentialsProvider) credentialsProvider).prepare();
-          helloOrAuth(protocol, credentialsProvider.get(), clientName, clientNamePending);
+          redisCredentialsProvider.prepare();
+          helloOrAuth(protocol, redisCredentialsProvider.get());
         } finally {
-          ((RedisCredentialsProvider) credentialsProvider).cleanUp();
+          redisCredentialsProvider.cleanUp();
         }
-      } else if (credentialsProvider != null) {
-
-        helloOrAuth(protocol, credentialsProvider.get(), clientName, clientNamePending);
       } else {
-
-        helloOrAuth(protocol, new DefaultRedisCredentials(config.getUser(), config.getPassword()),
-            clientName, clientNamePending);
+        helloOrAuth(protocol, credentialsProvider != null ? credentialsProvider.get()
+            : new DefaultRedisCredentials(config.getUser(), config.getPassword()));
       }
 
       List<CommandArguments> fireAndForgetMsg = new ArrayList<>();
 
-      if (clientNamePending.get()) {
+      String clientName = config.getClientName();
+      if (clientName != null && validateClientInfo(clientName)) {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
       }
 
@@ -458,12 +447,11 @@ public class Connection implements Closeable {
     }
   }
 
-  private void helloOrAuth(final RedisProtocol protocol, final RedisCredentials credentials,
-      final String clientName, final AtomicBoolean clientNamePending) {
+  private void helloOrAuth(final RedisProtocol protocol, final RedisCredentials credentials) {
 
     if (credentials == null || credentials.getPassword() == null) {
       if (protocol != null) {
-        sendCommand(Protocol.Command.HELLO, encode(protocol.version()));
+        sendCommand(Command.HELLO, encode(protocol.version()));
         getOne();
       }
       return;
@@ -478,27 +466,20 @@ public class Connection implements Closeable {
       /// actual HELLO or AUTH -->
       if (protocol != null) {
         if (credentials.getUser() != null) {
-          if (clientName != null) {
-            sendCommand(Protocol.Command.HELLO, encode(protocol.version()),
-                Protocol.Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass,
-                Protocol.Keyword.SETNAME.getRaw(), encode(clientName));
-          } else {
-            sendCommand(Protocol.Command.HELLO, encode(protocol.version()),
-                Protocol.Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
-          }
+          sendCommand(Command.HELLO, encode(protocol.version()),
+              Keyword.AUTH.getRaw(), encode(credentials.getUser()), rawPass);
           getOne(); // Map
-          clientNamePending.set(false);
-        } else { // getUser() == null
-          sendCommand(Protocol.Command.AUTH, rawPass);
+        } else {
+          sendCommand(Command.AUTH, rawPass);
           getStatusCodeReply(); // OK
-          sendCommand(Protocol.Command.HELLO, encode(protocol.version()));
+          sendCommand(Command.HELLO, encode(protocol.version()));
           getOne(); // Map
         }
       } else { // protocol == null
         if (credentials.getUser() != null) {
-          sendCommand(Protocol.Command.AUTH, encode(credentials.getUser()), rawPass);
+          sendCommand(Command.AUTH, encode(credentials.getUser()), rawPass);
         } else {
-          sendCommand(Protocol.Command.AUTH, rawPass);
+          sendCommand(Command.AUTH, rawPass);
         }
         getStatusCodeReply(); // OK
         // setnamePending unchanged
@@ -514,12 +495,12 @@ public class Connection implements Closeable {
   }
 
   public String select(final int index) {
-    sendCommand(Protocol.Command.SELECT, Protocol.toByteArray(index));
+    sendCommand(Command.SELECT, Protocol.toByteArray(index));
     return getStatusCodeReply();
   }
 
   public boolean ping() {
-    sendCommand(Protocol.Command.PING);
+    sendCommand(Command.PING);
     String status = getStatusCodeReply();
     if (!"PONG".equals(status)) {
       throw new JedisException(status);

@@ -482,7 +482,6 @@ public class Connection implements Closeable {
           sendCommand(Command.AUTH, rawPass);
         }
         getStatusCodeReply(); // OK
-        // setnamePending unchanged
       }
       /// <-- actual HELLO or AUTH
     } finally {

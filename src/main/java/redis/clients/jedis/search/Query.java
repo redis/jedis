@@ -418,6 +418,7 @@ public class Query implements IParams {
     return this;
   }
 
+  @Deprecated
   public boolean getWithPayloads() {
     return _withPayloads;
   }

@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.util.LinkedList;
 import java.util.Queue;
 
+@Deprecated
 public class Queable {
 
   private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();

@@ -4162,16 +4162,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public List<Object> jsonResp(String key) {
     return executeCommand(commandObjects.jsonResp(key));
   }
 
   @Override
+  @Deprecated
   public List<Object> jsonResp(String key, Path path) {
     return executeCommand(commandObjects.jsonResp(key, path));
   }
 
   @Override
+  @Deprecated
   public List<List<Object>> jsonResp(String key, Path2 path) {
     return executeCommand(commandObjects.jsonResp(key, path));
   }

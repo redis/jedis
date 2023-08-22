@@ -35,6 +35,7 @@ public class FieldName implements IParams {
     return this;
   }
 
+  @Deprecated
   public int addCommandEncodedArguments(List<String> args) {
     args.add(name);
     if (attribute == null) {
@@ -46,6 +47,7 @@ public class FieldName implements IParams {
     return 3;
   }
 
+  @Deprecated
   public int addCommandBinaryArguments(List<byte[]> args) {
     args.add(SafeEncoder.encode(name));
     if (attribute == null) {

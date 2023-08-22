@@ -4,7 +4,9 @@ import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * This class is used to represent a SortedSet element when it is returned with respective key name.
+ * @deprecated This class will be removed in next major released.
  */
+@Deprecated
 public class KeyedZSetElement extends Tuple {
 
   private final String key;

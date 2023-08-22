@@ -5,7 +5,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * This class is used to represent a List element when it is returned with respective key name.
- * @deprecated Use {@link KeyValue}.
+ * @deprecated This class will be removed in next major released. Use {@link KeyValue}.
  */
 @Deprecated
 public class KeyedListElement extends KeyValue<String, String> {

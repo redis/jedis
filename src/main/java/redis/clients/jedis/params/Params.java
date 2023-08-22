@@ -9,6 +9,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.util.SafeEncoder;
 
+@Deprecated
 public abstract class Params {
 
   private Map<String, Object> params;

@@ -6,7 +6,9 @@ import java.util.List;
 
 /**
  * Created by mnunberg on 2/22/18.
+ * @deprecated This class will be removed in next major released.
  */
+@Deprecated
 public class Limit {
 
   public static final Limit NO_LIMIT = new Limit(0, 0);

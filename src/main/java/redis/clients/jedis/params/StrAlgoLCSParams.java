@@ -3,6 +3,7 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 
+@Deprecated
 public class StrAlgoLCSParams extends Params implements IParams {
 
     private static final String IDX = "idx";

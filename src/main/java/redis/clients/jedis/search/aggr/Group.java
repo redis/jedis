@@ -22,6 +22,7 @@ public class Group {
     return this;
   }
 
+  @Deprecated
   public Group limit(Limit limit) {
     this.limit = limit;
     return this;
@@ -43,6 +44,7 @@ public class Group {
     args.addAll(limit.getArgs());
   }
 
+  @Deprecated
   public List<String> getArgs() {
     List<String> args = new ArrayList<>();
     addArgs(args);

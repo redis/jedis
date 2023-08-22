@@ -70,6 +70,7 @@ public class SortingParams implements IParams {
     return this;
   }
 
+  @Deprecated
   public Collection<byte[]> getParams() {
     return Collections.unmodifiableCollection(params);
   }

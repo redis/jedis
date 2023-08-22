@@ -1,5 +1,24 @@
 # Jedis 5 Breaking Changes
 
+- All variants of `blmpop` and `bzmpop` methods now take `double timeout` parameter instead of `long timeout` parameter.
+  This is breaking ONLY IF you are using `Long` for timeout.
+
+- `Reducer` abstract class is refactored:
+  - **`Reducer(String field)` constructor is removed; `Reducer(String name, String field)` constructor is added.**
+  - **`Reducer(String name)` constructor is added; it will cause runtime error with older `Reducer(String field)` constructor.**
+  - `getName` method is removed.
+  - `getAlias` method is removed.
+  - `setAlias` method is removed; use `as` method.
+  - `setAliasAsField` method is removed.
+  - `getOwnArgs` method is now abstract.
+  - `getArgs` method is removed.
+
+- `quit()` method has been removed from `Connection` and `ServerCommands` interface and implementations.
+
+- `updatePassword(String password)` method has been removed from `JedisClientConfig` and implementations.
+
+- `setPassword(String password)` method has been removed from both `JedisFactory` and `ConnectionFactory` classes.
+
 - Both `bzpopmax(double timeout, String... keys)` and `bzpopmin(double timeout, String... keys)` now return `KeyValue<String, Tuple>` (instead of `KeyedZSetElement`).
 
 - Both `bzpopmax(double timeout, byte[]... keys)` and `bzpopmin(double timeout, byte[]... keys)` now return `KeyValue<byte[], Tuple>` (instead of `List<byte[]>`).
@@ -41,7 +60,7 @@
   - `tsMRevRange(TSMRangeParams multiRangeParams)`
 
 - `jsonNumIncrBy(String key, Path2 path, double value)` method now returns `Object` instead of `JSONArray`.
-  - Previously when it was returning JSONArray, returned would still be JSONArray. So simple type casting should be enough to handle this change.
+  - The returning object would still be JSONArray for all previous cases. So simple type casting is enough to handle this change.
   - The returning object will be `List<Double>` when running under RESP3 protocol.
 
 - `getAgeSeconds()` in `AccessControlLogEntry` now returns `Double` instead of `String`.
@@ -52,7 +71,23 @@
 
 - `graphSlowlog(String graphName)` now returns `List<List<Object>>` (instead of `List<List<String>>`).
 
-- All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.
+- `CommandListFilterByParams` now throws `IllegalArgumentException` (instead of `JedisDataException`) in case of unfulfilling filter.
+
+- `FailoverParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
+
+- `XPendingParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
+
+- `get()` option has been removed from `SetParams`.  Following methods have been added in Jedis/UnifiedJedis for convenience:
+  - `setGet(String key, String value)` method has been added in `StringCommands` interface.
+  - `setGet(byte[] key, byte[] value)` method has been added in `StringBinaryCommands` interface.
+
+- `xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName)` method has been removed from everywhere.
+  - Use `xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)` instead.
+
+- `xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName)` method has been removed from everywhere.
+  - Use `xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)` instead.
+
+- `retentionTime(long retentionTime)` method in `TSAlterParams` has been removed. Use `retention(long)` method instead.
 
 - Following classes have been removed:
   - `KeyedZSetElement`
@@ -67,6 +102,10 @@
   - `BINARY_MAP_FROM_PAIRS`
   - `STRING_ORDERED_SET`
 
+- All _payload_ related parameters are removed from _search_ related classes; namely `Document`, `IndexDefinition`, `Query`.
+
+- `topkCount(String key, String... items)` method has been removed from everywhere.
+
 - Following methods supporting JSON.RESP command have been removed:
   - `jsonResp(String key)`
   - `jsonResp(String key, Path path)`
@@ -79,56 +118,21 @@
 - `Params` abstract class is removed.
   - `toString()` support used by its sub-classes is now unavailable.
 
-- `CommandListFilterByParams` now throws `IllegalArgumentException` (instead of `JedisDataException`) in case of unfulfilling filter.
-
-- `FailoverParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
-
-- `XPendingParams` now throws `IllegalArgumentException` (instead of `IllegalStateException`) in case of unfulfilling optional arguments.
-
 - `getParams()` method is removed from `SortingParams` class.
 
 - Both `SEARCH_AGGREGATION_RESULT` and `SEARCH_AGGREGATION_RESULT_WITH_CURSOR` implementations from `SearchBuilderFactory` class have been moved to `AggregationResult` class.
 
 - All `AggregationResult` constructors have been made `private`.
 
+- `getArgs()`, `getArgsString()` and `serializeRedisArgs(List<byte[]> redisArgs)` methods have been removed from `AggregationBuilder`.
+
+- `totalResults` variable in `AggregationResult` has been made private. Use `getTotalResults()` method instead.
+
+- `getArgs()` and `limit(Limit limit)` methods have been removed from `Group` class.
+
 - `addCommandEncodedArguments` and `addCommandBinaryArguments` methods have been removed from `FieldName` class.
 
-- `getArgs` method is removed from `AggregationBuilder` class.
-
-- `limit` and `getArgs` methods have been removed from `Group` class.
-
-- `Reducer` abstract class is refactored:
-  - `Reducer(String field)` constructor is removed; `Reducer(String name, String field)` constructor is added.
-  - `Reducer(String name)` constructor is added; it will cause runtime error with older `Reducer(String field)` constructor.
-  - `getName` method is removed.
-  - `getAlias` method is removed.
-  - `setAlias` method is removed; use `as` method.
-  - `setAliasAsField` method is removed.
-  - `getOwnArgs` method is now abstract.
-  - `getArgs` method is removed.
-
-- All variants of `blmpop` and `bzmpop` methods now take `double timeout` parameter instead of `long timeout` parameter.
-  This is breaking ONLY IF you are using `Long` for timeout.
-
-<!--- Deprecated in Jedis 4 --->
-
-- `quit()` method has been removed from `Connection` and `ServerCommands` interface and implementations.
-
-- `updatePassword(String password)` method has been removed from `JedisClientConfig` and implementations.
-
-- `setPassword(String password)` method has been removed from both `JedisFactory` and `ConnectionFactory` classes.
-
-- `get()` option has been removed from `SetParams`.  Following methods have been added in Jedis/UnifiedJedis for convenience:
-  - `setGet(String key, String value)` method has been added in `StringCommands` interface.
-  - `setGet(byte[] key, byte[] value)` method has been added in `StringBinaryCommands` interface.
-
-- `xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName)` method has been removed from everywhere.
-  - Use `xpending(java.lang.String, java.lang.String, redis.clients.jedis.params.XPendingParams)` instead.
-
-- `xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName)` method has been removed from everywhere.
-  - Use `xpending(byte[], byte[], redis.clients.jedis.params.XPendingParams)` instead.
-
-- `topkCount(String key, String... items)` method has been removed from everywhere.
+- `addObjects(int[] ints)` method has been removed from `CommandArguments`.
 
 - Following methods have been removed:
   - `strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params)`
@@ -136,7 +140,7 @@
   - `strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params)`
   - `strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params)`
 
-- `StrAlgoLCSParams` has been removed.
+- `StrAlgoLCSParams` class has been removed.
 
 - Following methods have been removed from all Pipeline classes:
   - `ftCursorRead(String indexName, long cursorId, int count)`
@@ -146,14 +150,6 @@
   - `ftAliasAdd(String aliasName, String indexName)`
   - `ftAliasUpdate(String aliasName, String indexName)`
   - `ftAliasDel(String aliasName)`
-
-- `addObjects(int[] ints)` method has been removed from `CommandArguments`.
-
-- `getArgsString()` and `serializeRedisArgs(List<byte[]> redisArgs)` methods have been removed from `AggregationBuilder`.
-
-- `totalResults` variable in `AggregationResult` has been made private. Use `getTotalResults()` method instead.
-
-- `retentionTime(long retentionTime)` method in `TSAlterParams` has been removed. Use `retention(long)` method instead.
 
 - `JedisSentineled(String masterName, Set<HostAndPort> sentinels, JedisClientConfig masterClientConfig, JedisClientConfig sentinelClientConfig)` and
 `JedisSentineled(String masterName, Set<HostAndPort> sentinels, GenericObjectPoolConfig<Connection> poolConfig, JedisClientConfig masterClientConfig, JedisClientConfig sentinelClientConfig)`

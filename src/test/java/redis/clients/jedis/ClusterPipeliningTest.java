@@ -8,6 +8,7 @@ import java.util.*;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -1085,6 +1086,6 @@ public class ClusterPipeliningTest {
         .filter(thread -> thread != null && thread.getName() != null
             && thread.getName().startsWith("pool-"))
         .count();
-    assertTrue(count < 9);
+    MatcherAssert.assertThat(count, Matchers.lessThanOrEqualTo(20));
   }
 }

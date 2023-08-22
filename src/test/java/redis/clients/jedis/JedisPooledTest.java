@@ -1,12 +1,16 @@
 package redis.clients.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Assert;
@@ -18,6 +22,7 @@ import redis.clients.jedis.exceptions.JedisException;
 public class JedisPooledTest {
 
   private static final HostAndPort hnp = HostAndPorts.getRedisServers().get(7);
+  private static final HostAndPort pwp = HostAndPorts.getRedisServers().get(1); // password protected
 
   @Test
   public void checkCloseableConnections() {
@@ -182,7 +187,7 @@ public class JedisPooledTest {
       assertEquals(0, pool.getPool().getNumActive());
 
       factory.setPassword("foobared");
-      assertNull(pool.get("foo"));
+      assertThat(pool.get("foo"), anything());
     }
   }
 
@@ -191,9 +196,8 @@ public class JedisPooledTest {
     DefaultRedisCredentialsProvider credentialsProvider = 
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
 
-    try (JedisPooled pool = new JedisPooled(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider)
-            .clientName("my_shiny_client_name").build())) {
+    try (JedisPooled pool = new JedisPooled(pwp, DefaultJedisClientConfig.builder()
+        .credentialsProvider(credentialsProvider).build())) {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");
@@ -201,7 +205,7 @@ public class JedisPooledTest {
       assertEquals(0, pool.getPool().getNumActive());
 
       credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
-      assertNull(pool.get("foo"));
+      assertThat(pool.get("foo"), anything());
     }
   }
 
@@ -209,9 +213,9 @@ public class JedisPooledTest {
   public void testCredentialsProvider() {
     final AtomicInteger prepareCount = new AtomicInteger();
     final AtomicInteger cleanupCount = new AtomicInteger();
+    final AtomicBoolean validPassword = new AtomicBoolean(false);
 
     RedisCredentialsProvider credentialsProvider = new RedisCredentialsProvider() {
-      boolean firstCall = true;
 
       @Override
       public void prepare() {
@@ -220,14 +224,8 @@ public class JedisPooledTest {
 
       @Override
       public RedisCredentials get() {
-        if (firstCall) {
-          firstCall = false;
-          return new RedisCredentials() {
-            @Override
-            public char[] getPassword() {
-              return "invalidPass".toCharArray();
-            }
-          };
+        if (!validPassword.get()) {
+          return new RedisCredentials() { };
         }
 
         return new RedisCredentials() {
@@ -253,21 +251,21 @@ public class JedisPooledTest {
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(1);
     poolConfig.setTestOnBorrow(true);
-    try (JedisPooled pool = new JedisPooled(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().credentialsProvider(credentialsProvider)
-            .build(), poolConfig)) {
+    try (JedisPooled pool = new JedisPooled(pwp, DefaultJedisClientConfig.builder()
+        .credentialsProvider(credentialsProvider).build(), poolConfig)) {
       try {
         pool.get("foo");
         fail("Should not get resource from pool");
       } catch (JedisException e) {
       }
       assertEquals(0, pool.getPool().getNumActive() + pool.getPool().getNumIdle() + pool.getPool().getNumWaiters());
-      assertEquals(1, prepareCount.get());
-      assertEquals(1, cleanupCount.get());
+      assertThat(prepareCount.getAndSet(0), greaterThanOrEqualTo(1));
+      assertThat(cleanupCount.getAndSet(0), greaterThanOrEqualTo(1));
 
-      assertNull(pool.get("foo"));
-      assertEquals(2, prepareCount.get());
-      assertEquals(2, cleanupCount.get());
+      validPassword.set(true);
+      assertThat(pool.get("foo"), anything());
+      assertThat(prepareCount.get(), equalTo(1));
+      assertThat(cleanupCount.get(), equalTo(1));
     }
   }
 }

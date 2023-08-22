@@ -280,12 +280,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         }
 
         @Override
-        public String libVerSuffix() {
+        public String libNameSuffix() {
           return libNameSuffix;
         }
 
         @Override
-        public String libNameSuffix() {
+        public String libVerSuffix() {
           return libVerSuffix;
         }
       };

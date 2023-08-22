@@ -324,8 +324,8 @@ public class JedisTest extends JedisCommandsTestBase {
         .clientSetInfoConfig(setInfoConfig).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
-      assertFalse(info.contains("lib-name=" + JedisMetaInfo.getArtifactId() + libNameSuffix));
-      assertFalse(info.contains("lib-ver=" + JedisMetaInfo.getVersion() + libVerSuffix));
+      assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId() + libNameSuffix));
+      assertTrue(info.contains("lib-ver=" + JedisMetaInfo.getVersion() + libVerSuffix));
     }
   }
 

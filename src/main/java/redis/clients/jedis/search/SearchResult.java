@@ -35,6 +35,7 @@ public class SearchResult {
     private final boolean hasPayloads;
     private final boolean decode;
 
+    @Deprecated
     public SearchResultBuilder(boolean hasContent, boolean hasScores, boolean hasPayloads, boolean decode) {
       this.hasContent = hasContent;
       this.hasScores = hasScores;

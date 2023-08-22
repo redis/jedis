@@ -100,6 +100,7 @@ public class IndexDefinition implements IParams {
     return this;
   }
 
+  @Deprecated
   public String getPayloadField() {
     return payloadField;
   }

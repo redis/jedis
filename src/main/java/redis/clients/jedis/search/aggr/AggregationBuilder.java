@@ -167,6 +167,7 @@ public class AggregationBuilder {
     return this;
   }
 
+  @Deprecated
   public List<String> getArgs() {
     return Collections.unmodifiableList(args);
   }

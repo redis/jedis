@@ -167,9 +167,12 @@ public interface RedisJsonCommands {
 
   List<Long> jsonDebugMemory(String key, Path2 path);
 
+  @Deprecated
   List<Object> jsonResp(String key);
 
+  @Deprecated
   List<Object> jsonResp(String key, Path path);
 
+  @Deprecated
   List<List<Object>> jsonResp(String key, Path2 path);
 }

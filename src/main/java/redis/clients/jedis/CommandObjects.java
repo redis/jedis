@@ -3711,14 +3711,17 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG_LIST);
   }
 
+  @Deprecated
   public final CommandObject<List<Object>> jsonResp(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key), BuilderFactory.ENCODED_OBJECT_LIST);
   }
 
+  @Deprecated
   public final CommandObject<List<Object>> jsonResp(String key, Path path) {
     return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key).add(path), BuilderFactory.ENCODED_OBJECT_LIST);
   }
 
+  @Deprecated
   public final CommandObject<List<List<Object>>> jsonResp(String key, Path2 path) {
     return new CommandObject<>(commandArguments(JsonCommand.RESP).key(key).add(path), BuilderFactory.ENCODED_OBJECT_LIST_LIST);
   }

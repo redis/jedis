@@ -205,6 +205,10 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * @deprecated Use {@link BuilderFactory#BINARY}.
+   */
+  @Deprecated
   public static final Builder<byte[]> BYTE_ARRAY = new Builder<byte[]>() {
     @Override
     public byte[] build(Object data) {
@@ -217,6 +221,10 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * @deprecated {@link BuilderFactory#BINARY_LIST}.
+   */
+  @Deprecated
   public static final Builder<List<byte[]>> BYTE_ARRAY_LIST = new Builder<List<byte[]>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -335,6 +343,7 @@ public final class BuilderFactory {
     }
   };
 
+  @Deprecated
   public static final Builder<Set<String>> STRING_ORDERED_SET = new Builder<Set<String>>() {
     @Override
     @SuppressWarnings("unchecked")

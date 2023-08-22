@@ -21,11 +21,13 @@ public class AggregationResult {
 
   private long cursorId = -1;
 
+  @Deprecated
   public AggregationResult(Object resp, long cursorId) {
     this(resp);
     this.cursorId = cursorId;
   }
 
+  @Deprecated
   public AggregationResult(Object resp) {
     List<Object> list = (List<Object>) SafeEncoder.encodeObject(resp);
 

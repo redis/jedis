@@ -33,11 +33,18 @@ public class BitPosParams implements IParams {
     return this;
   }
 
+  /**
+   * {@link BitPosParams#start(long) START} must be set for END option.
+   */
   public BitPosParams end(long end) {
     this.end = end;
     return this;
   }
 
+  /**
+   * Both {@link BitPosParams#start(long) START} and {@link BitPosParams#end(long) END} both must be
+   * set for MODIFIER option.
+   */
   public BitPosParams modifier(BitCountOption modifier) {
     this.modifier = modifier;
     return this;

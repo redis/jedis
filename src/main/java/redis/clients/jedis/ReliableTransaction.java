@@ -15,6 +15,7 @@ public class ReliableTransaction extends TransactionBase {
    * Creates a new transaction.
    * 
    * A MULTI command will be executed. WATCH/UNWATCH/MULTI commands must not be called with this object.
+   * @param connection connection
    */
   public ReliableTransaction(Connection connection) {
     super(connection);
@@ -31,6 +32,20 @@ public class ReliableTransaction extends TransactionBase {
    */
   public ReliableTransaction(Connection connection, boolean doMulti) {
     super(connection, doMulti);
+  }
+
+  /**
+   * Creates a new transaction.
+   *
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param closeConnection should the 'connection' be closed when 'close()' is called?
+   */
+  public ReliableTransaction(Connection connection, boolean doMulti, boolean closeConnection) {
+    super(connection, doMulti, closeConnection);
   }
 
   @Override
@@ -50,7 +65,7 @@ public class ReliableTransaction extends TransactionBase {
   }
 
   @Override
-  protected final void processPipelinedResponses() {
+  protected final void processPipelinedResponses(int pipelineLength) {
     // do nothing
   }
 

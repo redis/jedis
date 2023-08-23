@@ -17,7 +17,7 @@ public class ConnectionTest {
   }
 
   @Test(expected = JedisConnectionException.class)
-  public void checkUnkownHost() {
+  public void checkUnknownHost() {
     client = new Connection("someunknownhost", Protocol.DEFAULT_PORT);
     client.connect();
   }

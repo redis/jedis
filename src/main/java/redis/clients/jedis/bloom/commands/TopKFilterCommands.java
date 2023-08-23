@@ -1,5 +1,6 @@
 package redis.clients.jedis.bloom.commands;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,18 @@ public interface TopKFilterCommands {
   List<String> topkAdd(String key, String... items);
 
   /**
+   * {@code TOPK.INCRBY {key} {item} {increment}}
+   *
+   * @param key
+   * @param item
+   * @param increment
+   * @return item dropped from list
+   */
+  default String topkIncrBy(String key, String item, long increment) {
+    return topkIncrBy(key, Collections.singletonMap(item, increment)).get(0);
+  }
+
+  /**
    * {@code TOPK.INCRBY {key} {item} {increment} [{item} {increment} ...]}
    *
    * @param key
@@ -54,23 +67,20 @@ public interface TopKFilterCommands {
   List<Boolean> topkQuery(String key, String... items);
 
   /**
-   * {@code TOPK.COUNT {key} {item ...}}
-   *
-   * @param key
-   * @param items
-   * @return count for item
-   * @deprecated As of RedisBloom 2.4, this command is regarded as deprecated.
-   */
-  @Deprecated
-  List<Long> topkCount(String key, String... items);
-
-  /**
    * {@code TOPK.LIST {key}}
    *
    * @param key
    * @return k (or less) items in Top K list
    */
   List<String> topkList(String key);
+
+  /**
+   * {@code TOPK.LIST {key} WITHCOUNT}
+   *
+   * @param key
+   * @return k (or less) items in Top K list
+   */
+  Map<String, Long> topkListWithCount(String key);
 
   /**
    * {@code TOPK.INFO {key}}

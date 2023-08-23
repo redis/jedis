@@ -9,9 +9,8 @@ import java.util.List;
  */
 public class Group {
 
-  private final List<Reducer> reducers = new ArrayList<>();
   private final List<String> fields = new ArrayList<>();
-  private Limit limit = new Limit(0, 0);
+  private final List<Reducer> reducers = new ArrayList<>();
 
   public Group(String... fields) {
     this.fields.addAll(Arrays.asList(fields));
@@ -22,30 +21,11 @@ public class Group {
     return this;
   }
 
-  public Group limit(Limit limit) {
-    this.limit = limit;
-    return this;
-  }
+  public void addArgs(List<Object> args) {
 
-  public void addArgs(List<String> args) {
-    args.add(Integer.toString(fields.size()));
+    args.add(fields.size());
     args.addAll(fields);
-    for (Reducer r : reducers) {
-      args.add("REDUCE");
-      args.add(r.getName());
-      r.addArgs(args);
-      String alias = r.getAlias();
-      if (alias != null && !alias.isEmpty()) {
-        args.add("AS");
-        args.add(alias);
-      }
-    }
-    args.addAll(limit.getArgs());
-  }
 
-  public List<String> getArgs() {
-    List<String> args = new ArrayList<>();
-    addArgs(args);
-    return args;
+    reducers.forEach((r) -> r.addArgs(args));
   }
 }

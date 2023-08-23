@@ -93,6 +93,8 @@ public interface ClusterCommands {
 
   String clusterMyId();
 
+  String clusterMyShardId();
+
   /**
    * return the information of all such peer links as an array, where each array element is a map that contains
    * attributes and their values for an individual link.
@@ -106,7 +108,7 @@ public interface ClusterCommands {
    * Takes a list of slot ranges (specified by start and end slots) to assign to the node
    *
    * @param ranges slots range
-   * @return OK if the command was successful. Otherwise an error is returned.
+   * @return OK if the command was successful. Otherwise, an error is returned.
    */
   String clusterAddSlotsRange(int... ranges);
 
@@ -114,7 +116,7 @@ public interface ClusterCommands {
    * Takes a list of slot ranges (specified by start and end slots) to remove to the node.
    *
    * @param ranges slots range
-   * @return OK if the command was successful. Otherwise an error is returned.
+   * @return OK if the command was successful. Otherwise, an error is returned.
    */
   String clusterDelSlotsRange(int... ranges);
 }

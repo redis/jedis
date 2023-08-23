@@ -21,6 +21,7 @@ public class Transaction extends TransactionBase {
    * 
    * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
    * called with this object.
+   * @param connection connection
    */
   public Transaction(Connection connection) {
     super(connection);
@@ -41,6 +42,21 @@ public class Transaction extends TransactionBase {
     this.jedis = null;
   }
 
+  /**
+   * Creates a new transaction.
+   *
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param closeConnection should the 'connection' be closed when 'close()' is called?
+   */
+  public Transaction(Connection connection, boolean doMulti, boolean closeConnection) {
+    super(connection, doMulti, closeConnection);
+    this.jedis = null;
+  }
+
   @Override
   protected final void processMultiResponse() {
     // do nothing
@@ -52,9 +68,9 @@ public class Transaction extends TransactionBase {
   }
 
   @Override
-  protected final void processPipelinedResponses() {
+  protected final void processPipelinedResponses(int pipelineLength) {
     // ignore QUEUED or ERROR
-    connection.getMany(1 + getPipelinedResponseLength());
+    connection.getMany(1 + pipelineLength);
   }
 
   @Override

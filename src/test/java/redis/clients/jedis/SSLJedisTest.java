@@ -52,8 +52,8 @@ public class SSLJedisTest {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390), DefaultJedisClientConfig
-        .builder().ssl(true).build())) {
+    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390),
+        DefaultJedisClientConfig.builder().ssl(true).build())) {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }
@@ -63,11 +63,11 @@ public class SSLJedisTest {
   public void connectWithConfigInterface() {
     try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390),
         new JedisClientConfig() {
-      @Override
-      public boolean isSsl() {
-        return true;
-      }
-    })) {
+          @Override
+          public boolean isSsl() {
+            return true;
+          }
+        })) {
       jedis.auth("foobared");
       assertEquals("PONG", jedis.ping());
     }

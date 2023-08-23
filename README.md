@@ -23,6 +23,18 @@ We'd love your contributions!
 You can also **contribute documentation** -- or anything to improve Jedis. Please see
 [contribution guideline](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) for more details.
 
+## Supported Redis versions
+
+The most recent version of this library supports redis version [5.0](https://github.com/redis/redis/blob/5.0/00-RELEASENOTES), [6.0](https://github.com/redis/redis/blob/6.0/00-RELEASENOTES), [6.2](https://github.com/redis/redis/blob/6.2/00-RELEASENOTES), and [7.0](https://github.com/redis/redis/blob/7.0/00-RELEASENOTES).
+
+The table below highlights version compatibility of the most-recent library versions and Redis versions. Compatibility means communication features, and Redis command capabilities.
+
+
+| Library version | Supported redis versions       | JDK Compatibility |
+|-----------------|--------------------------------|-------------------|
+| 3.9+            | 5.0 and 6.2 Family of releases | 8, 11             |
+| >= 4.0          | Version 5.0 to current         | 8, 11, 17         |
+
 ## Getting started
 
 To get started with Jedis, first add it as a dependency in your Java project. If you're using Maven, that looks like this:
@@ -31,7 +43,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>4.3.0</version>
+    <version>4.4.3</version>
 </dependency>
 ```
 
@@ -67,7 +79,7 @@ for the complete list of supported commands.
 
 ### Easier way of using connection pool
 
-Using a *try-with-resources* block for each command may be cumbursome, so you may consider using JedisPooled.
+Using a *try-with-resources* block for each command may be cumbersome, so you may consider using JedisPooled.
 
 ```java
 JedisPooled jedis = new JedisPooled("localhost", 6379);
@@ -97,18 +109,30 @@ Now you can use the `JedisCluster` instance and send commands like you would wit
 jedis.sadd("planets", "Mars");
 ```
 
-## Using Redis modules
+## Failover
 
-Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
-[RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+Jedis supports retry and failover for your Redis deployments. This is useful when:
 
-See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.
+1. You have more than one Redis deployment. This might include two independent Redis servers or two or more Redis databases replicated across multiple [active-active Redis Enterprise](https://docs.redis.com/latest/rs/databases/active-active/) clusters.
+2. You want your application to connect to one deployment at a time and to fail over to the next available deployment if the first deployment becomes unavailable.
+
+For the complete failover configuration options and examples, see the [Jedis failover docs](docs/failover.md).
 
 ## Documentation
 
 The [Jedis wiki](http://github.com/redis/jedis/wiki) contains several useful articles for using Jedis.
 
 You can also check the [latest Jedis Javadocs](https://www.javadoc.io/doc/redis.clients/jedis/latest/index.html).
+
+Some specific use-case examples can be found in [`redis.clients.jedis.examples`
+package](src/test/java/redis/clients/jedis/examples/) of the test source codes.
+
+## Using Redis modules
+
+Jedis includes support for [Redis modules](https://redis.io/docs/modules/) such as
+[RedisJSON](https://oss.redis.com/redisjson/) and [RediSearch](https://oss.redis.com/redisearch/).
+
+See the [RedisJSON Jedis](docs/redisjson.md) or [RediSearch Jedis](docs/redisearch.md) for details.
 
 ## Troubleshooting
 

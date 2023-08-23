@@ -11,10 +11,12 @@ on:
     branches:
       - master
       - '[0-9].[0-9]'
+      - '[0-9].x'
   pull_request:
     branches:
       - master
       - '[0-9].[0-9]'
+      - '[0-9].x'
   schedule:
     - cron: '0 1 * * *' # nightly build
 
@@ -45,16 +47,33 @@ jobs:
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline
+      - name: Build docs
+        run: |
+          mvn javadoc:jar
       - name: Run tests
         run: |
           TEST="" make test
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
-      - name: redismod docker
-        run: docker run -p 52567:6379 -d redislabs/redismod:edge
-      - name: Run tests
+      - name: sleep 10s
+        run: sleep 10s
+      - name: Make - start
+        run: |
+          make start
+          sleep 2s
+      - name: Docker - mod or stack
+        run: docker run -p 52567:6379 -d redis/redis-stack-server:edge
+      - name: Test commands - default protocol
+        run: mvn -Dtest="redis.clients.jedis.commands.**" test
+      - name: Test commands - RESP3 protocol
+        run: mvn -DjedisProtocol=3 -Dtest="redis.clients.jedis.commands.**" test
+      - name: Test module commands - default protocol
         run: mvn -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
+      - name: Test module commands - RESP3 protocol
+        run: mvn -DjedisProtocol=3 -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
+      - name: Make - stop
+        run: make stop
       - name: Codecov
         run: |
           bash <(curl -s https://codecov.io/bash)

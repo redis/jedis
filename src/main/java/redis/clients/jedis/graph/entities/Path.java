@@ -5,7 +5,9 @@ import java.util.Objects;
 
 /**
  * This class represents a path in the graph.
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 public final class Path {
 
     private final List<Node> nodes;

@@ -1,12 +1,10 @@
 package redis.clients.jedis;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -18,8 +16,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -210,9 +208,13 @@ public class PipeliningTest extends JedisCommandsTestBase {
 
   @Test
   public void pipelineSelect() {
+    jedis.set("foo", "bar");
+    jedis.swapDB(0, 1);
     Pipeline p = jedis.pipelined();
+    p.get("foo");
     p.select(1);
-    p.sync();
+    p.get("foo");
+    assertEquals(Arrays.<Object>asList(null, "OK", "bar"), p.syncAndReturnAll());
   }
 
   @Test
@@ -279,8 +281,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
 //    Response<List<Object>> r3 = p.exec();
 //    List<Object> result = p.syncAndReturnAll();
 //
-//    assertEquals(new Long(-1), r1.get());
-//    assertEquals(new Long(-3), r2.get());
+//    assertEquals(Long.valueOf(-1), r1.get());
+//    assertEquals(Long.valueOf(-3), r2.get());
 //
 //    assertEquals(4, result.size());
 //
@@ -291,11 +293,11 @@ public class PipeliningTest extends JedisCommandsTestBase {
 //    // 4th result is a list with the results from the multi
 //    @SuppressWarnings("unchecked")
 //    List<Object> multiResult = (List<Object>) result.get(3);
-//    assertEquals(new Long(-1), multiResult.get(0));
-//    assertEquals(new Long(-3), multiResult.get(1));
+//    assertEquals(Long.valueOf(-1), multiResult.get(0));
+//    assertEquals(Long.valueOf(-3), multiResult.get(1));
 //
-//    assertEquals(new Long(-1), r3.get().get(0));
-//    assertEquals(new Long(-3), r3.get().get(1));
+//    assertEquals(Long.valueOf(-1), r3.get().get(0));
+//    assertEquals(Long.valueOf(-3), r3.get().get(1));
 //
 //  }
 //
@@ -466,6 +468,19 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void waitAof() {
+    Pipeline p = jedis.pipelined();
+    p.set("wait", "aof");
+    p.waitAOF(1L, 0L, 0L);
+    p.sync();
+
+    try (Jedis j = new Jedis(HostAndPorts.getRedisServers().get(4))) {
+      j.auth("foobared");
+      assertEquals("aof", j.get("wait"));
+    }
+  }
+
+  @Test
   public void setGet() {
     Pipeline p = jedis.pipelined();
     Response<String> _ok = p.set("hello", "world");
@@ -566,8 +581,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.sync();
 
     List<?> results = (List<?>) result.get();
-    assertThat((List<String>) results.get(0), listWithItem("key1"));
-    assertThat((List<Long>) results.get(1), listWithItem(2L));
+    MatcherAssert.assertThat((List<String>) results.get(0), Matchers.hasItem("key1"));
+    MatcherAssert.assertThat((List<Long>) results.get(1), Matchers.hasItem(2L));
   }
 
   @Test
@@ -580,8 +595,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.sync();
 
     List<?> results = (List<?>) result.get();
-    assertThat((List<byte[]>) results.get(0), listWithItem(bKey));
-    assertThat((List<Long>) results.get(1), listWithItem(2L));
+    MatcherAssert.assertThat((List<byte[]>) results.get(0), Matchers.hasItem(bKey));
+    MatcherAssert.assertThat((List<Long>) results.get(1), Matchers.hasItem(2L));
   }
 
   @Test
@@ -852,8 +867,4 @@ public class PipeliningTest extends JedisCommandsTestBase {
 //    assertTrue(firstKey.equals(value1) || firstKey.equals(value2));
 //    assertTrue(secondKey.equals(value1) || secondKey.equals(value2));
 //  }
-
-  private <T> Matcher<Iterable<? super T>> listWithItem(T expected) {
-    return CoreMatchers.<T> hasItem(equalTo(expected));
-  }
 }

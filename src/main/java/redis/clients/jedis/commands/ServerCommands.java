@@ -5,6 +5,7 @@ import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ShutdownParams;
+import redis.clients.jedis.util.KeyValue;
 
 public interface ServerCommands {
 
@@ -21,18 +22,19 @@ public interface ServerCommands {
   byte[] echo(byte[] arg);
 
   /**
-   * Ask the server to close the connection. The connection is closed as soon as all pending replies
-   * have been written to the client.
-   * @return OK
-   */
-  String quit();
-
-  /**
    * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
    * for this operation is O(N), N being the number of keys in the database.
    * @return OK
    */
   String flushDB();
+
+  /**
+   * Delete all the keys of the currently selected DB. This command never fails. The time-complexity
+   * for this operation is O(N), N being the number of keys in the database.
+   * @param flushMode can be SYNC or ASYNC
+   * @return OK
+   */
+  String flushDB(FlushMode flushMode);
 
   /**
    * Delete all the keys of all the existing databases, not just the currently selected one.
@@ -68,7 +70,7 @@ public interface ServerCommands {
    * The SAVE commands performs a synchronous save of the dataset producing a point in time snapshot
    * of all the data inside the Redis instance, in the form of an RDB file. You almost never want to
    * call SAVE in production environments where it will block all the other clients. Instead usually
-   * BGSAVE is used. However in case of issues preventing Redis to create the background saving
+   * BGSAVE is used. However, in case of issues preventing Redis to create the background saving
    * child (for instance errors in the fork(2) system call), the SAVE command can be a good last
    * resort to perform the dump of the latest dataset.
    * @return result of the save
@@ -114,15 +116,9 @@ public interface ServerCommands {
    */
   void shutdown() throws JedisException;
 
-  /**
-   * @see SaveMode
-   * @param saveMode modifier to alter the data save behavior of SHUTDOWN. {@code null} would
-   * trigger the default behavior.
-   * @throws JedisException
-   * @deprecated Use {@link ServerCommands#shutdown(redis.clients.jedis.params.ShutdownParams)}.
-   */
-  @Deprecated
-  void shutdown(SaveMode saveMode) throws JedisException;
+  default void shutdown(SaveMode saveMode) throws JedisException {
+    shutdown(ShutdownParams.shutdownParams().saveMode(saveMode));
+  }
 
   /**
    * @see SaveMode
@@ -200,7 +196,7 @@ public interface ServerCommands {
   String replicaofNoOne();
 
   /**
-   * Syncrhonous replication of Redis as described here: http://antirez.com/news/66.
+   * Synchronous replication of Redis as described here: http://antirez.com/news/66.
    * <p>
    * Blocks until all the previous write commands are successfully transferred and acknowledged by
    * at least the specified number of replicas. If the timeout, specified in milliseconds, is
@@ -214,6 +210,20 @@ public interface ServerCommands {
    *         current connection
    */
   long waitReplicas(int replicas, long timeout);
+
+  /**
+   * Blocks the current client until all the previous write commands are acknowledged as having been
+   * fsynced to the AOF of the local Redis and/or at least the specified number of replicas.
+   * <a href="https://redis.io/commands/waitaof/">Redis Documentation</a>
+   * @param numLocal Number of local instances that are required to acknowledge the sync (0 or 1),
+   *                 cannot be non-zero if the local Redis does not have AOF enabled
+   * @param numReplicas Number of replicas that are required to acknowledge the sync
+   * @param timeout Timeout in millis of the operation - if 0 timeout is unlimited. If the timeout is reached,
+   *                the command returns even if the specified number of acknowledgments has not been met.
+   * @return KeyValue where Key is number of local Redises (0 or 1) that have fsynced to AOF all writes
+   * performed in the context of the current connection, and the value is the number of replicas that have acknowledged doing the same.
+   */
+  KeyValue<Long, Long> waitAOF(long numLocal, long numReplicas, long timeout);
 
   String lolwut();
 

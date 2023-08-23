@@ -6,6 +6,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * @deprecated Redis Graph support is deprecated.
+ */
+@Deprecated
 public class RedisGraphQueryUtil {
 
   public static final List<String> DUMMY_LIST = Collections.emptyList();
@@ -22,7 +26,9 @@ public class RedisGraphQueryUtil {
    * @param query - query
    * @param params - query parameters
    * @return query with parameters header
+   * @deprecated Redis Graph support is deprecated.
    */
+  @Deprecated
   public static String prepareQuery(String query, Map<String, Object> params) {
     StringBuilder sb = new StringBuilder("CYPHER ");
     for (Map.Entry<String, Object> entry : params.entrySet()) {

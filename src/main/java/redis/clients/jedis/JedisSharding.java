@@ -6,6 +6,10 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.providers.ShardedConnectionProvider;
 import redis.clients.jedis.util.Hashing;
 
+/**
+ * @deprecated Sharding/Sharded feature will be removed in next major release.
+ */
+@Deprecated
 public class JedisSharding extends UnifiedJedis {
 
   public static final Pattern DEFAULT_KEY_TAG_PATTERN = Pattern.compile("\\{(.+?)\\}");
@@ -16,20 +20,24 @@ public class JedisSharding extends UnifiedJedis {
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig) {
     this(new ShardedConnectionProvider(shards, clientConfig));
+    setProtocol(clientConfig);
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig));
+    setProtocol(clientConfig);
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig, Hashing algo) {
     this(new ShardedConnectionProvider(shards, clientConfig, algo));
+    setProtocol(clientConfig);
   }
 
   public JedisSharding(List<HostAndPort> shards, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, Hashing algo) {
     this(new ShardedConnectionProvider(shards, clientConfig, poolConfig, algo));
+    setProtocol(clientConfig);
   }
 
   public JedisSharding(ShardedConnectionProvider provider) {
@@ -40,8 +48,22 @@ public class JedisSharding extends UnifiedJedis {
     super(provider, tagPattern);
   }
 
+  private void setProtocol(JedisClientConfig clientConfig) {
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto == RedisProtocol.RESP3) commandObjects.setProtocol(proto);
+  }
+
   @Override
   public ShardedPipeline pipelined() {
     return new ShardedPipeline((ShardedConnectionProvider) provider);
+  }
+
+  /**
+   * @return nothing
+   * @throws UnsupportedOperationException
+   */
+  @Override
+  public Transaction multi() {
+    throw new UnsupportedOperationException();
   }
 }

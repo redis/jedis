@@ -13,6 +13,7 @@ import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.InvalidURIException;
@@ -78,7 +79,7 @@ public class JedisPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(), 2000, "foobared", 0,
-        "closable-resuable-pool", false, null, null, null)) {
+        "closable-reusable-pool", false, null, null, null)) {
 
       Jedis jedis = pool.getResource();
       jedis.set("hello", "jedis");
@@ -97,7 +98,7 @@ public class JedisPoolTest {
     try (Jedis jedis = pool.getResource()) {
       jedis.auth("foobared");
       jedis.set("foo", "0");
-      jedis.quit();
+      jedis.disconnect();
     }
 
     try (Jedis jedis = pool.getResource()) {
@@ -216,6 +217,17 @@ public class JedisPoolTest {
         "foobared", 0, "my_shiny_client_name"); Jedis jedis = pool.getResource()) {
 
       assertEquals("my_shiny_client_name", jedis.clientGetname());
+    }
+  }
+
+  @Test
+  public void invalidClientName() {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort(), 2000,
+        "foobared", 0, "invalid client name"); Jedis jedis = pool.getResource()) {
+    } catch (Exception e) {
+      if (!e.getMessage().startsWith("client info cannot contain space")) {
+        Assert.fail("invalid client name test fail");
+      }
     }
   }
 
@@ -393,9 +405,11 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void testResetInvalidPassword() {
-    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000,
-        "foobared", 0, "my_shiny_client_name") { };
+  public void testResetInvalidCredentials() {
+    DefaultRedisCredentialsProvider credentialsProvider
+        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "foobared"));
+    JedisFactory factory = new JedisFactory(hnp, DefaultJedisClientConfig.builder()
+        .credentialsProvider(credentialsProvider).clientName("my_shiny_client_name").build());
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       Jedis obj1_ref;
@@ -409,7 +423,7 @@ public class JedisPoolTest {
       try (Jedis obj1_2 = pool.getResource()) {
         assertSame(obj1_ref, obj1_2);
         assertEquals(1, pool.getNumActive());
-        factory.setPassword("wrong password");
+        credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "wrong password"));
         try (Jedis obj2 = pool.getResource()) {
           fail("Should not get resource from pool");
         } catch (JedisException e) { }
@@ -420,9 +434,11 @@ public class JedisPoolTest {
   }
 
   @Test
-  public void testResetValidPassword() {
-    JedisFactory factory = new JedisFactory(hnp.getHost(), hnp.getPort(), 2000, 2000,
-        "bad password", 0, "my_shiny_client_name") { };
+  public void testResetValidCredentials() {
+    DefaultRedisCredentialsProvider credentialsProvider
+        = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
+    JedisFactory factory = new JedisFactory(hnp, DefaultJedisClientConfig.builder()
+        .credentialsProvider(credentialsProvider).clientName("my_shiny_client_name").build());
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       try (Jedis obj1 = pool.getResource()) {
@@ -430,7 +446,7 @@ public class JedisPoolTest {
       } catch (JedisException e) { }
       assertEquals(0, pool.getNumActive());
 
-      factory.setPassword("foobared");
+      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, "foobared"));
       try (Jedis obj2 = pool.getResource()) {
         obj2.set("foo", "bar");
         assertEquals("bar", obj2.get("foo"));

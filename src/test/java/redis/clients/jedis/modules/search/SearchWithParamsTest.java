@@ -4,12 +4,13 @@ import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -163,11 +164,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     }
     SearchResult res2 = client.ftSearch(index, "@tags:{tagA}");
     assertEquals(100, res2.getTotalResults());
-
-    Map<String, Object> info = client.ftInfo(index);
-    assertEquals(index, info.get("index_name"));
-    assertEquals("identifier", ((List) ((List) info.get("attributes")).get(1)).get(0));
-    assertEquals("attribute", ((List) ((List) info.get("attributes")).get(1)).get(2));
   }
 
   @Test
@@ -371,8 +367,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         FTSearchParams.searchParams().noContent());
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
-      assertEquals(1.0, d.getScore(), 0);
-      assertNull(d.get("title"));
+      if (protocol != RedisProtocol.RESP3) {
+        assertEquals(1.0, d.getScore(), 0);
+        assertNull(d.get("title"));
+      } else {
+        assertNull(d.getScore());
+        assertThrows(NullPointerException.class, () -> d.get("title"));
+      }
     }
 
     // test verbatim vs. stemming
@@ -566,8 +567,12 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Map<String, Object> info = client.ftInfo(index);
     assertEquals(index, info.get("index_name"));
     assertEquals(6, ((List) info.get("attributes")).size());
-    assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
-    assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
+      assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
+    } else {
+      assertEquals(0L, ((Map) info.get("cursor_stats")).get("global_idle"));
+    }
   }
 
   @Test
@@ -945,20 +950,36 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void searchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
 
-    Map<String, String> map = new HashMap<>();
-    map.put("t1", "foo");
-    map.put("t2", "bar");
-    client.hset("doc1", map);
+    Map<String, String> hash = new HashMap<>();
+    hash.put("t1", "foo");
+    hash.put("t2", "bar");
+    client.hset("doc1", hash);
 
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+    Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "foo", FTSearchParams.searchParams());
-    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
+
+    SearchResult result = reply.getKey();
+    assertEquals(1, result.getTotalResults());
+    assertEquals(Collections.singletonList("doc1"), result.getDocuments().stream().map(Document::getId).collect(Collectors.toList()));
+
+    Map<String, Object> profile = reply.getValue();
+    Map<String, Object> iteratorsProfile;
+    if (protocol != RedisProtocol.RESP3) {
+      iteratorsProfile = (Map<String, Object>) profile.get("Iterators profile");
+    } else {
+      List iteratorsProfileList = (List) profile.get("Iterators profile");
+      assertEquals(1, iteratorsProfileList.size());
+      iteratorsProfile = (Map<String, Object>) iteratorsProfileList.get(0);
+    }
     assertEquals("TEXT", iteratorsProfile.get("Type"));
     assertEquals("foo", iteratorsProfile.get("Term"));
     assertEquals(1L, iteratorsProfile.get("Counter"));
     assertEquals(1L, iteratorsProfile.get("Size"));
     assertSame(Double.class, iteratorsProfile.get("Time").getClass());
+
+    assertEquals(Arrays.asList("Index", "Scorer", "Sorter", "Loader"),
+        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
+            .map(map -> map.get("Type")).collect(Collectors.toList()));
   }
 
   @Test
@@ -976,44 +997,59 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     FTSearchParams searchParams = FTSearchParams.searchParams().addParam("vec", "aaaaaaaa")
         .sortBy("__v_score", SortingOrder.ASC).noContent().dialect(2);
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
+    Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "*=>[KNN 3 @v $vec]", searchParams);
-    assertEquals(3, profile.getKey().getTotalResults());
+    assertEquals(3, reply.getKey().getTotalResults());
 
-    assertEquals(Arrays.asList(4, 2, 1).toString(), profile.getKey().getDocuments()
+    assertEquals(Arrays.asList(4, 2, 1).toString(), reply.getKey().getDocuments()
         .stream().map(Document::getId).collect(Collectors.toList()).toString());
 
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
-    assertEquals("VECTOR", iteratorsProfile.get("Type"));
-    assertEquals(3L, iteratorsProfile.get("Counter"));
+    Map<String, Object> profile = reply.getValue();
 
-    List<Map<String, Object>> resultProcessorsProfile = (List<Map<String, Object>>) profile.getValue().get("Result processors profile");
-    assertEquals("Vector Similarity Scores Loader", resultProcessorsProfile.get(1).get("Type"));
-    assertEquals(3l, resultProcessorsProfile.get(1).get("Counter"));
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("VECTOR", ((Map<String, Object>) profile.get("Iterators profile")).get("Type"));
+    } else {
+      assertEquals(Arrays.asList("VECTOR"),
+          ((List<Map<String, Object>>) profile.get("Iterators profile")).stream()
+              .map(map -> map.get("Type")).collect(Collectors.toList()));
+    }
+
+    List<Map<String, Object>> resultProcessorsProfile
+        = (List<Map<String, Object>>) reply.getValue().get("Result processors profile");
+    assertEquals(3, resultProcessorsProfile.size());
+    assertEquals("Index", resultProcessorsProfile.get(0).get("Type"));
+    assertEquals("Sorter", resultProcessorsProfile.get(2).get("Type"));
   }
 
   @Test
   public void maxPrefixExpansionSearchProfile() {
     final String configParam = "MAXPREFIXEXPANSIONS";
-    String configValue = client.ftConfigGet(configParam).get(configParam);
-    client.ftConfigSet(configParam, "2");
+    String configValue = (String) client.ftConfigGet(configParam).get(configParam);
+    try {
+      client.ftConfigSet(configParam, "2");
 
-    assertOK(client.ftCreate(index, TextField.of("t")));
-    client.hset("1", Collections.singletonMap("t", "foo1"));
-    client.hset("2", Collections.singletonMap("t", "foo2"));
-    client.hset("3", Collections.singletonMap("t", "foo3"));
+      assertOK(client.ftCreate(index, TextField.of("t")));
+      client.hset("1", Collections.singletonMap("t", "foo1"));
+      client.hset("2", Collections.singletonMap("t", "foo2"));
+      client.hset("3", Collections.singletonMap("t", "foo3"));
 
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
-        FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
-    // Warning=Max prefix expansion reached
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
-    assertEquals("Max prefix expansion reached", iteratorsProfile.get("Warning"));
-
-    client.ftConfigSet(configParam, configValue);
+      Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
+          FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
+      // Warning=Max prefix expansion reached
+      if (protocol != RedisProtocol.RESP3) {
+        assertEquals("Max prefix expansion reached",
+            ((Map) reply.getValue().get("Iterators profile")).get("Warning"));
+      } else {
+        assertEquals("Max prefix expansion reached",
+            ((Map) ((List) reply.getValue().get("Iterators profile")).get(0)).get("Warning"));
+      }
+    } finally {
+      client.ftConfigSet(configParam, configValue);
+    }
   }
 
   @Test
-  public void notIteratorSearchProfile() {
+  public void noContentSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
     client.hset("1", Collections.singletonMap("t", "foo"));
     client.hset("2", Collections.singletonMap("t", "bar"));
@@ -1021,15 +1057,22 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "foo -@t:baz", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    Map<String, Object> depth0 = protocol != RedisProtocol.RESP3
+        ? (Map<String, Object>) profile.getValue().get("Iterators profile")
+        : ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+
     assertEquals("INTERSECT", depth0.get("Type"));
     List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
     assertEquals("TEXT", depth0_children.get(0).get("Type"));
     Map<String, Object> depth1 = depth0_children.get(1);
     assertEquals("NOT", depth1.get("Type"));
-    List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
-    assertEquals(1, depth1_children.size());
-    assertEquals("EMPTY", depth1_children.get(0).get("Type"));
+    if (protocol != RedisProtocol.RESP3) {
+      List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
+      assertEquals(1, depth1_children.size());
+      assertEquals("EMPTY", depth1_children.get(0).get("Type"));
+    } else {
+      assertEquals("EMPTY", ((Map<String, Object>) depth1.get("Child iterator")).get("Type"));
+    }
   }
 
   @Test
@@ -1042,7 +1085,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         = client.ftProfileSearch(index, FTProfileParams.profileParams(),
             "hello(hello(hello(hello(hello(hello)))))", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    Map<String, Object> depth0 = protocol != RedisProtocol.RESP3
+        ? (Map<String, Object>) profile.getValue().get("Iterators profile")
+        : ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+
     assertEquals("INTERSECT", depth0.get("Type"));
     List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
     assertEquals("TEXT", depth0_children.get(0).get("Type"));
@@ -1078,7 +1124,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams().limited(), "%hell% hel*", FTSearchParams.searchParams().noContent());
 
-    Map<String, Object> depth0 = (Map<String, Object>) profile.getValue().get("Iterators profile");
+    Map<String, Object> depth0 = protocol != RedisProtocol.RESP3
+        ? (Map<String, Object>) profile.getValue().get("Iterators profile")
+        : ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
+
     assertEquals("INTERSECT", depth0.get("Type"));
     assertEquals(3L, depth0.get("Counter"));
 
@@ -1087,15 +1136,19 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     for (Map<String, Object> depth1 : depth0_children) {
       assertEquals("UNION", depth1.get("Type"));
       assertNotNull(depth1.get("Query type"));
-      List depth1_children = (List) depth1.get("Child iterators");
-      assertEquals(1, depth1_children.size());
-      assertSame(String.class, depth1_children.get(0).getClass());
+      if (protocol != RedisProtocol.RESP3) {
+        List depth1_children = (List) depth1.get("Child iterators");
+        assertEquals(1, depth1_children.size());
+        assertSame(String.class, depth1_children.get(0).getClass());
+      } else {
+        assertSame(String.class, depth1.get("Child iterators").getClass());
+      }
     }
   }
 
   @Test
   public void list() {
-    assertEquals(Collections.emptyList(), client.ftList());
+    assertEquals(Collections.emptySet(), client.ftList());
 
     final int count = 20;
     Set<String> names = new HashSet<>();
@@ -1104,13 +1157,57 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       assertOK(client.ftCreate(name, TextField.of("t" + i)));
       names.add(name);
     }
-    assertEquals(names, new HashSet<>(client.ftList()));
+    assertEquals(names, client.ftList());
   }
 
   @Test
   public void broadcast() {
-    Map<?, Supplier<String>> reply = client.broadcast().ftCreate(index, TextField.of("t"));
-    assertEquals(1, reply.size());
-    assertOK(reply.values().stream().findFirst().get().get());
+    String reply = client.ftCreate(index, TextField.of("t"));
+    assertOK(reply);
+  }
+
+  @Test
+  public void searchIteration() {
+    assertOK(client.ftCreate(index, FTCreateParams.createParams(),
+        TextField.of("first"), TextField.of("last"), NumericField.of("age")));
+
+    client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
+    client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
+    client.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
+    client.hset("student:3333", toMap("first", "El", "last", "Mark", "age", "17"));
+    client.hset("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", "21"));
+    client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
+    client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
+
+    FtSearchIteration search = client.ftSearchIteration(3, index, "*", FTSearchParams.searchParams());
+    int total = 0;
+    while (!search.isIterationCompleted()) {
+      SearchResult result = search.nextBatch();
+      int count = result.getDocuments().size();
+      assertThat(count, Matchers.lessThanOrEqualTo(3));
+      total += count;
+    }
+    assertEquals(7, total);
+  }
+
+  @Test
+  public void searchIterationCollect() {
+    assertOK(client.ftCreate(index, FTCreateParams.createParams(),
+        TextField.of("first"), TextField.of("last"), NumericField.of("age")));
+
+    client.hset("profesor:5555", toMap("first", "Albert", "last", "Blue", "age", "55"));
+    client.hset("student:1111", toMap("first", "Joe", "last", "Dod", "age", "18"));
+    client.hset("pupil:2222", toMap("first", "Jen", "last", "Rod", "age", "14"));
+    client.hset("student:3333", toMap("first", "El", "last", "Mark", "age", "17"));
+    client.hset("pupil:4444", toMap("first", "Pat", "last", "Shu", "age", "21"));
+    client.hset("student:5555", toMap("first", "Joen", "last", "Ko", "age", "20"));
+    client.hset("teacher:6666", toMap("first", "Pat", "last", "Rod", "age", "20"));
+
+    ArrayList<Document> collect = new ArrayList<>();
+    client.ftSearchIteration(3, index, "*", FTSearchParams.searchParams()).collect(collect);
+    assertEquals(7, collect.size());
+    assertEquals(Arrays.asList("profesor:5555", "student:1111", "pupil:2222", "student:3333",
+        "pupil:4444", "student:5555", "teacher:6666").stream().collect(Collectors.toSet()),
+        collect.stream().map(Document::getId).collect(Collectors.toSet()));
   }
 }

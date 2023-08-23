@@ -1,9 +1,6 @@
 package redis.clients.jedis.modules.search;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertThrows;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,6 +8,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -52,7 +52,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   @Test
   public void dictionaryBySampleKey() {
     assertEquals(3L, client.ftDictAddBySampleKey(index, "dict", "foo", "bar", "hello world"));
-    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")), client.ftDictDumpBySampleKey(index, "dict"));
+    assertEquals(new HashSet<>(Arrays.asList("foo", "bar", "hello world")),
+        client.ftDictDumpBySampleKey(index, "dict"));
     assertEquals(3L, client.ftDictDelBySampleKey(index, "dict", "foo", "bar", "hello world"));
     assertEquals(Collections.emptySet(), client.ftDictDumpBySampleKey(index, "dict"));
   }
@@ -61,8 +62,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   public void basicSpellCheck() {
     client.ftCreate(index, TextField.of("name"), TextField.of("body"));
     client.hset("doc1", toMap("name", "name1", "body", "body1"));
-    client.hset("doc1", toMap("name", "name2", "body", "body2"));
-    client.hset("doc1", toMap("name", "name2", "body", "name2"));
+    client.hset("doc2", toMap("name", "name2", "body", "body2"));
+    client.hset("doc3", toMap("name", "name2", "body", "name2"));
 
     Map<String, Map<String, Double>> reply = client.ftSpellCheck(index, "name");
     assertEquals(Collections.singleton("name"), reply.keySet());
@@ -74,7 +75,8 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
     client.ftCreate(index, TextField.of("report"));
     client.ftDictAdd("slang", "timmies", "toque", "toonie", "serviette", "kerfuffle", "chesterfield");
 
-    Map<String, Map<String, Double>> expected = Collections.singletonMap("tooni", Collections.singletonMap("toonie", 0d));
+    Map<String, Map<String, Double>> expected = Collections.singletonMap("tooni",
+        Collections.singletonMap("toonie", 0d));
     assertEquals(expected, client.ftSpellCheck(index, "Tooni toque kerfuffle",
         FTSpellCheckParams.spellCheckParams().includeTerm("slang").excludeTerm("slang")));
   }
@@ -82,16 +84,17 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
   @Test
   public void distanceBound() {
     client.ftCreate(index, TextField.of("name"), TextField.of("body"));
-    assertThrows(JedisDataException.class, () -> client.ftSpellCheck(index, "name",
+    Assert.assertThrows(JedisDataException.class, () -> client.ftSpellCheck(index, "name",
         FTSpellCheckParams.spellCheckParams().distance(0)));
   }
 
   @Test
   public void dialectBound() {
     client.ftCreate(index, TextField.of("t"));
-    JedisDataException error = assertThrows(JedisDataException.class,
+    JedisDataException error = Assert.assertThrows(JedisDataException.class,
         () -> client.ftSpellCheck(index, "Tooni toque kerfuffle",
             FTSpellCheckParams.spellCheckParams().dialect(0)));
-    assertThat(error.getMessage(), containsString("DIALECT requires a non negative integer"));
+    MatcherAssert.assertThat(error.getMessage(),
+        Matchers.containsString("DIALECT requires a non negative integer"));
   }
 }

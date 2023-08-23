@@ -101,7 +101,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
   }
 
   /**
-   * {@link #setHostAndPort(redis.clients.jedis.HostAndPort) setHostAndPort} must be called later.
+   * {@link JedisFactory#setHostAndPort(redis.clients.jedis.HostAndPort) setHostAndPort} must be called later.
    */
   JedisFactory(final JedisClientConfig clientConfig) {
     this.clientConfig = clientConfig;
@@ -130,6 +130,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
         .database(JedisURIHelper.getDBIndex(uri)).clientName(clientName)
+        .protocol(JedisURIHelper.getRedisProtocol(uri))
         .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(sslSocketFactory)
         .sslParameters(sslParameters).hostnameVerifier(hostnameVerifier).build();
     this.jedisSocketFactory = new DefaultJedisSocketFactory(new HostAndPort(uri.getHost(), uri.getPort()), this.clientConfig);
@@ -140,10 +141,6 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
       throw new IllegalStateException("setHostAndPort method has limited capability.");
     }
     ((DefaultJedisSocketFactory) jedisSocketFactory).updateHostAndPort(hostAndPort);
-  }
-
-  public void setPassword(final String password) {
-    this.clientConfig.updatePassword(password);
   }
 
   @Override
@@ -159,14 +156,6 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     final Jedis jedis = pooledJedis.getObject();
     if (jedis.isConnected()) {
       try {
-        // need a proper test, probably with mock
-        if (!jedis.isBroken()) {
-          jedis.quit();
-        }
-      } catch (RuntimeException e) {
-        logger.debug("Error while QUIT", e);
-      }
-      try {
         jedis.close();
       } catch (RuntimeException e) {
         logger.debug("Error while close", e);
@@ -179,21 +168,9 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     Jedis jedis = null;
     try {
       jedis = new Jedis(jedisSocketFactory, clientConfig);
-      jedis.connect();
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
-      if (jedis != null) {
-        try {
-          jedis.quit();
-        } catch (RuntimeException e) {
-          logger.debug("Error while QUIT", e);
-        }
-        try {
-          jedis.close();
-        } catch (RuntimeException e) {
-          logger.debug("Error while close", e);
-        }
-      }
+      logger.debug("Error while makeObject", je);
       throw je;
     }
   }

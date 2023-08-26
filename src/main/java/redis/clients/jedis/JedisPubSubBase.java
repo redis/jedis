@@ -1,11 +1,9 @@
 package redis.clients.jedis;
 
-import static java.util.stream.Collectors.*;
 import static redis.clients.jedis.Protocol.ResponseKeyword.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisException;
@@ -138,8 +136,7 @@ public abstract class JedisPubSubBase<T> {
           final T enchannel = (bchannel == null) ? null : encode(bchannel);
           final Object bmesg = listReply.get(2);
           if (bmesg instanceof List) {
-            final List<T> enmesgs = ((List<byte[]>) bmesg).stream().map(this::encode).collect(toList());
-            enmesgs.forEach(msg -> onMessage(enchannel, msg));
+            ((List<byte[]>) bmesg).stream().map(this::encode).forEach(msg -> onMessage(enchannel, msg));
           } else {
             final T enmesg = (bmesg == null) ? null : encode((byte[]) bmesg);
             onMessage(enchannel, enmesg);

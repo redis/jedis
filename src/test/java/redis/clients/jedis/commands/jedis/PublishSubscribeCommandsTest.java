@@ -21,6 +21,7 @@ import org.junit.Test;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -31,6 +32,20 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
         try {
           Jedis j = createJedis();
           j.publish(channel, message);
+          j.disconnect();
+        } catch (Exception ex) {
+        }
+      }
+    });
+    t.start();
+  }
+
+  private void setKeyValue(final String key, final String value) {
+    Thread t = new Thread(new Runnable() {
+      public void run() {
+        try {
+          Jedis j = createJedis();
+          j.set(key, value);
           j.disconnect();
         } catch (Exception ex) {
         }
@@ -455,6 +470,28 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
     };
 
     jedis.subscribe(pubsub, SafeEncoder.encode("foo"));
+  }
+
+  @Test
+  public void binarySubscribeToKeySpaceInvalidateChannel() {
+    final String keySpaceChannel = "__redis__:invalidate";
+    final String keyPrefix = "barPrefix:";
+    final String key = keyPrefix+"bar";
+    final BinaryJedisPubSub pubsub = new BinaryJedisPubSub() {
+      public void onMessage(byte[] channel, byte[] message) {
+        assertArrayEquals(SafeEncoder.encode(keySpaceChannel), channel);
+        assertArrayEquals(SafeEncoder.encode(key), message);
+        unsubscribe(channel);
+      }
+
+      public void onSubscribe(byte[] channel, int subscribedChannels) {
+        setKeyValue(key,"foo");
+      }
+    };
+    // get client id
+    String clientId = String.valueOf(jedis.clientId());
+    jedis.sendCommand(Protocol.Command.CLIENT,"TRACKING","ON","REDIRECT",clientId,"BCAST","PREFIX",keyPrefix);
+    jedis.subscribe(pubsub, SafeEncoder.encode(keySpaceChannel));
   }
 
   @Test(expected = JedisException.class)

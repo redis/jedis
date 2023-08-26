@@ -338,7 +338,7 @@ public final class Protocol {
   public static enum ResponseKeyword implements Rawable {
 
     SUBSCRIBE, PSUBSCRIBE, UNSUBSCRIBE, PUNSUBSCRIBE, MESSAGE, PMESSAGE, PONG,
-    SSUBSCRIBE, SUNSUBSCRIBE, SMESSAGE;
+    SSUBSCRIBE, SUNSUBSCRIBE, SMESSAGE, INVALIDATE;
 
     private final byte[] raw;
 

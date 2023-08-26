@@ -11,6 +11,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class JedisPubSubBase<T> {
 
+  private static final byte[] INVALIDATE_CHANNEL = SafeEncoder.encode("__redis__:invalidate");
   private int subscribedChannels = 0;
   private volatile Connection client;
 
@@ -163,6 +164,14 @@ public abstract class JedisPubSubBase<T> {
           final byte[] bpattern = (byte[]) listReply.get(1);
           final T enpattern = (bpattern == null) ? null : encode(bpattern);
           onPong(enpattern);
+        } else if (Arrays.equals(INVALIDATE.getRaw(), resp)) {
+          final T enchannel = encode(INVALIDATE_CHANNEL);
+          final List<byte[]> bkeys = (List<byte[]>) listReply.get(1);
+          if (bkeys == null) {
+            onMessage(enchannel, null);
+          } else {
+            bkeys.stream().map(this::encode).forEach(msg -> onMessage(enchannel, msg));
+          }
         } else {
           throw new JedisException("Unknown message type: " + firstObj);
         }

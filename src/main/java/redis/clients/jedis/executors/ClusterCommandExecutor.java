@@ -43,30 +43,29 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
     boolean isErrored = false;
     T reply = null;
-    JedisBroadcastException holder = new JedisBroadcastException();
+    JedisBroadcastException bcastError = new JedisBroadcastException();
     for (Map.Entry<String, ConnectionPool> entry : connectionMap.entrySet()) {
       HostAndPort node = HostAndPort.from(entry.getKey());
       ConnectionPool pool = entry.getValue();
       try (Connection connection = pool.getResource()) {
-        try {
-          T aReply = execute(connection, commandObject);
-          holder.addReply(node, aReply);
-          if (isErrored) { // already errored
-          } else if (reply == null) {
-            reply = aReply; // ok
-          } else if (reply.equals(aReply)) {
-            // ok
-          } else {
-            isErrored = true;
-            reply = null;
-          }
-        } catch (JedisDataException anError) {
-          holder.addError(node, anError);
+        T aReply = execute(connection, commandObject);
+        bcastError.addReply(node, aReply);
+        if (isErrored) { // already errored
+        } else if (reply == null) {
+          reply = aReply; // ok
+        } else if (reply.equals(aReply)) {
+          // ok
+        } else {
+          isErrored = true;
+          reply = null;
         }
+      } catch (Exception anError) {
+        bcastError.addReply(node, anError);
+        isErrored = true;
       }
     }
     if (isErrored) {
-      throw holder;
+      throw bcastError;
     }
     return reply;
   }

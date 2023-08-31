@@ -1,5 +1,9 @@
 package redis.clients.jedis.exceptions;
 
+/**
+ * @deprecated This will be removed in next major release.
+ */
+@Deprecated
 public class AbortedTransactionException extends JedisDataException {
 
   public AbortedTransactionException(final String message) {

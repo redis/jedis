@@ -24,4 +24,9 @@ public class JedisSentineled extends UnifiedJedis {
   public HostAndPort getCurrentMaster() {
     return ((SentineledConnectionProvider) provider).getCurrentMaster();
   }
+
+  @Override
+  public Pipeline pipelined() {
+    return (Pipeline) super.pipelined();
+  }
 }

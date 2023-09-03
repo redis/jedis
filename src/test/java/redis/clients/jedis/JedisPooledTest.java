@@ -1,15 +1,14 @@
 package redis.clients.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anything;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -255,4 +254,41 @@ public class JedisPooledTest {
       assertThat(cleanupCount.get(), equalTo(1));
     }
   }
+
+  @Test
+  public void testNewJedis() {
+    HostAndPort hostAndPortTest = HostAndPorts.getRedisServers().get(0);
+    try (JedisPooled pool = new JedisPooled(hostAndPortTest)) {
+      Jedis jedis = pool.newJedis();
+      assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hostAndPortTest.getHost()));
+      assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hostAndPortTest.getPort()));
+      assertThat(jedis.time(), notNullValue());
+    }
+  }
+
+  @Test
+  public void testWithJedisDo() {
+    HostAndPort hostAndPortTest = HostAndPorts.getRedisServers().get(0);
+    try (JedisPooled pool = new JedisPooled(hostAndPortTest)) {
+      pool.withJedisDo(jedis -> {
+        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hostAndPortTest.getHost()));
+        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hostAndPortTest.getPort()));
+        assertThat(jedis.time(), notNullValue());
+      });
+    }
+  }
+
+  @Test
+  public void testWithJedisGet() {
+    HostAndPort hostAndPortTest = HostAndPorts.getRedisServers().get(0);
+    try (JedisPooled pool = new JedisPooled(hostAndPortTest)) {
+      List<String> result = pool.withJedisGet(jedis -> {
+        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hostAndPortTest.getHost()));
+        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hostAndPortTest.getPort()));
+        return jedis.time();
+      });
+      assertThat(result,notNullValue());
+    }
+  }
+
 }

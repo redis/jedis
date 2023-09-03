@@ -1,5 +1,8 @@
 package redis.clients.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
@@ -8,6 +11,7 @@ import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
@@ -453,4 +457,30 @@ public class JedisPoolTest {
       }
     }
   }
+
+  @Test
+  public void testWithJedisDo() {
+    HostAndPort hpTest = HostAndPorts.getRedisServers().get(0);
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hpTest.getHost(), hpTest.getPort())) {
+      pool.withJedisDo(jedis -> {
+        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hpTest.getHost()));
+        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hpTest.getPort()));
+        assertThat(jedis.time(), notNullValue());
+      });
+    }
+  }
+
+  @Test
+  public void testWithJedisGet() {
+    HostAndPort hpTest = HostAndPorts.getRedisServers().get(0);
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hpTest.getHost(), hpTest.getPort())) {
+      List<String> result = pool.withJedisGet(jedis -> {
+        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hpTest.getHost()));
+        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hpTest.getPort()));
+        return jedis.time();
+      });
+      assertThat(result,notNullValue());
+    }
+  }
+
 }

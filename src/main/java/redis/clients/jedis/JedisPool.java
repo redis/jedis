@@ -395,13 +395,13 @@ public class JedisPool extends Pool<Jedis> {
     }
   }
 
-  void withJedisDo(Consumer<Jedis> consumer) {
+  public void withJedisDo(Consumer<Jedis> consumer) {
     try (Jedis jedis = getResource()) {
       consumer.accept(jedis);
     }
   }
 
-  <K> K withJedisGet(Function<Jedis, K> function) {
+  public <K> K withJedisGet(Function<Jedis, K> function) {
     try (Jedis jedis = getResource()) {
       return function.apply(jedis);
     }

@@ -404,15 +404,19 @@ public class JedisPooled extends UnifiedJedis {
     return (Pipeline) super.pipelined();
   }
 
-  void withJedisDo(Consumer<Jedis> consumer) {
-    try (Connection connection = getPool().getResource()) {
-      consumer.accept(new Jedis(connection));
+  public Jedis newJedis() {
+    return new Jedis(getPool().getResource());
+  }
+
+  public void withJedisDo(Consumer<Jedis> consumer) {
+    try (Jedis jedis = newJedis()) {
+      consumer.accept(jedis);
     }
   }
 
-  <K> K withJedisGet(Function<Jedis, K> function) {
-    try (Connection connection = getPool().getResource()) {
-      return function.apply(new Jedis(connection));
+  public <K> K withJedisGet(Function<Jedis, K> function) {
+    try (Jedis jedis = newJedis()) {
+      return function.apply(jedis);
     }
   }
 

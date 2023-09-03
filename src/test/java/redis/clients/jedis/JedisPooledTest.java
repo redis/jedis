@@ -257,22 +257,20 @@ public class JedisPooledTest {
 
   @Test
   public void testNewJedis() {
-    HostAndPort hostAndPortTest = HostAndPorts.getRedisServers().get(0);
-    try (JedisPooled pool = new JedisPooled(hostAndPortTest)) {
+    try (JedisPooled pool = new JedisPooled(hnp)) {
       Jedis jedis = pool.newJedis();
-      assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hostAndPortTest.getHost()));
-      assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hostAndPortTest.getPort()));
+      assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hnp.getHost()));
+      assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hnp.getPort()));
       assertThat(jedis.time(), notNullValue());
     }
   }
 
   @Test
   public void testWithJedisDo() {
-    HostAndPort hostAndPortTest = HostAndPorts.getRedisServers().get(0);
-    try (JedisPooled pool = new JedisPooled(hostAndPortTest)) {
+    try (JedisPooled pool = new JedisPooled(hnp)) {
       pool.withJedisDo(jedis -> {
-        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hostAndPortTest.getHost()));
-        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hostAndPortTest.getPort()));
+        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hnp.getHost()));
+        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hnp.getPort()));
         assertThat(jedis.time(), notNullValue());
       });
     }
@@ -280,11 +278,10 @@ public class JedisPooledTest {
 
   @Test
   public void testWithJedisGet() {
-    HostAndPort hostAndPortTest = HostAndPorts.getRedisServers().get(0);
-    try (JedisPooled pool = new JedisPooled(hostAndPortTest)) {
+    try (JedisPooled pool = new JedisPooled(hnp)) {
       List<String> result = pool.withJedisGet(jedis -> {
-        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hostAndPortTest.getHost()));
-        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hostAndPortTest.getPort()));
+        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hnp.getHost()));
+        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hnp.getPort()));
         return jedis.time();
       });
       assertThat(result,notNullValue());

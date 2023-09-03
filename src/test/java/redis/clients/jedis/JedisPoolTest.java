@@ -460,11 +460,11 @@ public class JedisPoolTest {
 
   @Test
   public void testWithJedisDo() {
-    HostAndPort hpTest = HostAndPorts.getRedisServers().get(0);
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hpTest.getHost(), hpTest.getPort())) {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort())) {
       pool.withJedisDo(jedis -> {
-        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hpTest.getHost()));
-        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hpTest.getPort()));
+        jedis.auth("foobared");
+        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hnp.getHost()));
+        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hnp.getPort()));
         assertThat(jedis.time(), notNullValue());
       });
     }
@@ -472,11 +472,11 @@ public class JedisPoolTest {
 
   @Test
   public void testWithJedisGet() {
-    HostAndPort hpTest = HostAndPorts.getRedisServers().get(0);
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hpTest.getHost(), hpTest.getPort())) {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), hnp.getHost(), hnp.getPort())) {
       List<String> result = pool.withJedisGet(jedis -> {
-        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hpTest.getHost()));
-        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hpTest.getPort()));
+        jedis.auth("foobared");
+        assertThat(jedis.getClient().getHostAndPort().getHost(), equalTo(hnp.getHost()));
+        assertThat(jedis.getClient().getHostAndPort().getPort(), equalTo(hnp.getPort()));
         return jedis.time();
       });
       assertThat(result,notNullValue());

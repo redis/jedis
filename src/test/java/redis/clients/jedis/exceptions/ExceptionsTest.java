@@ -20,33 +20,6 @@ public class ExceptionsTest {
   }
 
   @Test
-  public void abortedTransaction() {
-    try {
-      throw new AbortedTransactionException(MESSAGE);
-    } catch (Exception e) {
-      assertSame(AbortedTransactionException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertNull(e.getCause());
-    }
-
-    try {
-      throw new AbortedTransactionException(CAUSE);
-    } catch (Exception e) {
-      assertSame(AbortedTransactionException.class, e.getClass());
-      assertEquals(CAUSE, e.getCause());
-      assertEquals(CAUSE.toString(), e.getMessage());
-    }
-
-    try {
-      throw new AbortedTransactionException(MESSAGE, CAUSE);
-    } catch (Exception e) {
-      assertSame(AbortedTransactionException.class, e.getClass());
-      assertEquals(MESSAGE, e.getMessage());
-      assertEquals(CAUSE, e.getCause());
-    }
-  }
-
-  @Test
   public void invalidURI() {
     try {
       throw new InvalidURIException(MESSAGE);

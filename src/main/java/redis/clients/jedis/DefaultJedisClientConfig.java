@@ -266,7 +266,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private boolean disable = false;
     private String libNameSuffix = null;
-    private String libVerSuffix = null;
 
     private SetInfoBuilder() {
     }
@@ -283,11 +282,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         public String libNameSuffix() {
           return libNameSuffix;
         }
-
-        @Override
-        public String libVerSuffix() {
-          return libVerSuffix;
-        }
       };
     }
 
@@ -298,11 +292,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public SetInfoBuilder libNameSuffix(String suffix) {
       this.libNameSuffix = suffix;
-      return this;
-    }
-
-    public SetInfoBuilder libVerSuffix(String suffix) {
-      this.libVerSuffix = suffix;
       return this;
     }
   }

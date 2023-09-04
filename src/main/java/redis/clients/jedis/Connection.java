@@ -432,10 +432,6 @@ public class Connection implements Closeable {
 
         String libVersion = JedisMetaInfo.getVersion();
         if (libVersion != null && validateClientInfo(libVersion)) {
-          String libVerSuffix = setInfoConfig.libVerSuffix();
-          if (libVerSuffix != null && validateClientInfo(libVerSuffix)) {
-            libVersion = libVersion + libVerSuffix;
-          }
           fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
               .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
         }

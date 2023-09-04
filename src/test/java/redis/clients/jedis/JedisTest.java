@@ -317,15 +317,13 @@ public class JedisTest extends JedisCommandsTestBase {
   @Test
   public void clientSetInfoCustom() {
     final String libNameSuffix = "-for-redis";
-    final String libVerSuffix = "-custom";
     ClientSetInfoConfig setInfoConfig = DefaultJedisClientConfig.setInfoBuilder()
-        .libNameSuffix(libNameSuffix).libVerSuffix(libVerSuffix).build();
+        .libNameSuffix(libNameSuffix).build();
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
         .clientSetInfoConfig(setInfoConfig).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
       assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId() + libNameSuffix));
-      assertTrue(info.contains("lib-ver=" + JedisMetaInfo.getVersion() + libVerSuffix));
     }
   }
 

@@ -89,10 +89,6 @@ public interface JedisClientConfig {
     default String libNameSuffix() {
       return null;
     }
-
-    default String libVerSuffix() {
-      return null;
-    }
   }
 
   default ClientSetInfoConfig getClientSetInfoConfig() {

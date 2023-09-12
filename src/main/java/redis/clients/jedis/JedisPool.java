@@ -12,6 +12,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
 
@@ -404,6 +405,28 @@ public class JedisPool extends Pool<Jedis> {
   public <K> K withJedisGet(Function<Jedis, K> function) {
     try (Jedis jedis = getResource()) {
       return function.apply(jedis);
+    }
+  }
+
+  ConnectionProvider asConnectionProvider(){
+    return new JedisPoolConnectionProvider();
+  }
+
+  private class JedisPoolConnectionProvider implements ConnectionProvider {
+
+    @Override
+    public Connection getConnection() {
+      return JedisPool.this.getResource().getConnection();
+    }
+
+    @Override
+    public Connection getConnection(CommandArguments args) {
+      return getConnection();
+    }
+
+    @Override
+    public void close() throws Exception {
+      JedisPool.this.close();
     }
   }
 

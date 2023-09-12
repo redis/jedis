@@ -18,7 +18,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import redis.clients.jedis.JedisClientConfig.ClientSetInfoConfig;
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -305,7 +304,7 @@ public class JedisTest extends JedisCommandsTestBase {
   public void clientSetInfoDisable() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
         .clientSetInfoConfig(new ClientSetInfoConfig() {
-          @Override public boolean disable() { return true; }
+          @Override public boolean isDisable() { return true; }
         }).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
@@ -317,7 +316,7 @@ public class JedisTest extends JedisCommandsTestBase {
   @Test
   public void clientSetInfoCustom() {
     final String libNameSuffix = "-for-redis";
-    ClientSetInfoConfig setInfoConfig = DefaultJedisClientConfig.setInfoBuilder()
+    ClientSetInfoConfig setInfoConfig = DefaultClientSetInfoConfig.builder()
         .libNameSuffix(libNameSuffix).build();
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
         .clientSetInfoConfig(setInfoConfig).build())) {

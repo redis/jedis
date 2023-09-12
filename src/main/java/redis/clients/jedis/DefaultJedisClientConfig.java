@@ -4,7 +4,6 @@ import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-import redis.clients.jedis.JedisClientConfig.ClientSetInfoConfig;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
 
@@ -254,44 +253,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public Builder clientSetInfoConfig(ClientSetInfoConfig setInfoConfig) {
       this.clientSetInfoConfig = setInfoConfig;
-      return this;
-    }
-  }
-
-  public static SetInfoBuilder setInfoBuilder() {
-    return new SetInfoBuilder();
-  }
-
-  public static class SetInfoBuilder {
-
-    private boolean disable = false;
-    private String libNameSuffix = null;
-
-    private SetInfoBuilder() {
-    }
-
-    public ClientSetInfoConfig build() {
-      return new ClientSetInfoConfig() {
-
-        @Override
-        public boolean disable() {
-          return disable;
-        }
-
-        @Override
-        public String libNameSuffix() {
-          return libNameSuffix;
-        }
-      };
-    }
-
-    public SetInfoBuilder disable() {
-      this.disable = true;
-      return this;
-    }
-
-    public SetInfoBuilder libNameSuffix(String suffix) {
-      this.libNameSuffix = suffix;
       return this;
     }
   }

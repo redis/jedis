@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-import redis.clients.jedis.JedisClientConfig.ClientSetInfoConfig;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.ClientAttributeOption;
@@ -419,10 +418,10 @@ public class Connection implements Closeable {
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
       if (setInfoConfig == null) setInfoConfig = new ClientSetInfoConfig() { };
 
-      if (!setInfoConfig.disable()) {
+      if (!setInfoConfig.isDisable()) {
         String libName = JedisMetaInfo.getArtifactId();
         if (libName != null && validateClientInfo(libName)) {
-          String libNameSuffix = setInfoConfig.libNameSuffix();
+          String libNameSuffix = setInfoConfig.getLibNameSuffix();
           if (libNameSuffix != null && validateClientInfo(libNameSuffix)) {
             libName = libName + libNameSuffix;
           }

@@ -80,17 +80,10 @@ public interface JedisClientConfig {
     return null;
   }
 
-  public interface ClientSetInfoConfig {
-
-    default boolean disable() {
-      return false;
-    }
-
-    default String libNameSuffix() {
-      return null;
-    }
-  }
-
+  /**
+   * Modify the behavior of internally executing CLIENT SETINFO command.
+   * @return CLIENT SETINFO config
+   */
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return null;
   }

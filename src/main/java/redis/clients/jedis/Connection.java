@@ -418,7 +418,7 @@ public class Connection implements Closeable {
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
       if (setInfoConfig == null) setInfoConfig = new ClientSetInfoConfig() { };
 
-      if (!setInfoConfig.isDisable()) {
+      if (!setInfoConfig.isDisabled()) {
         String libName = JedisMetaInfo.getArtifactId();
         if (libName != null && validateClientInfo(libName)) {
           String libNameSuffix = setInfoConfig.getLibNameSuffix();

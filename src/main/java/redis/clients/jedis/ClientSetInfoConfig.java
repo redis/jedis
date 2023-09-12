@@ -5,7 +5,7 @@ package redis.clients.jedis;
  */
 public interface ClientSetInfoConfig {
 
-  default boolean isDisable() {
+  default boolean isDisabled() {
     return false;
   }
 

@@ -2,18 +2,18 @@ package redis.clients.jedis;
 
 public final class DefaultClientSetInfoConfig implements ClientSetInfoConfig {
 
-  private final boolean disable;
+  private final boolean disabled;
 
   private final String libNameSuffix;
 
-  private DefaultClientSetInfoConfig(boolean disable, String libNameSuffix) {
-    this.disable = disable;
+  private DefaultClientSetInfoConfig(boolean disabled, String libNameSuffix) {
+    this.disabled = disabled;
     this.libNameSuffix = libNameSuffix;
   }
 
   @Override
-  public boolean isDisable() {
-    return disable;
+  public boolean isDisabled() {
+    return disabled;
   }
 
   @Override

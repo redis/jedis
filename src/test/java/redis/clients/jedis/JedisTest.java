@@ -304,7 +304,7 @@ public class JedisTest extends JedisCommandsTestBase {
   public void clientSetInfoDisable() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
         .clientSetInfoConfig(new ClientSetInfoConfig() {
-          @Override public boolean isDisable() { return true; }
+          @Override public boolean isDisabled() { return true; }
         }).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();

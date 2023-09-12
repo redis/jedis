@@ -9,6 +9,9 @@ public interface ClientSetInfoConfig {
     return false;
   }
 
+  /**
+   * If provided, this suffix will be enclosed by braces {@code ()}.
+   */
   default String getLibNameSuffix() {
     return null;
   }

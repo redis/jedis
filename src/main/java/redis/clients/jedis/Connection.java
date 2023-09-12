@@ -423,7 +423,7 @@ public class Connection implements Closeable {
         if (libName != null && validateClientInfo(libName)) {
           String libNameSuffix = setInfoConfig.getLibNameSuffix();
           if (libNameSuffix != null && validateClientInfo(libNameSuffix)) {
-            libName = libName + libNameSuffix;
+            libName = libName + '(' + libNameSuffix + ')';
           }
           fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
               .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));

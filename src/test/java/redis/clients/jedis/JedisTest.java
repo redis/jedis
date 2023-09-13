@@ -22,6 +22,7 @@ import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
+import redis.clients.jedis.util.JedisMetaInfo;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisTest extends JedisCommandsTestBase {
@@ -286,6 +287,44 @@ public class JedisTest extends JedisCommandsTestBase {
   public void checkDisconnectOnQuit() {
     jedis.disconnect();
     assertFalse(jedis.isConnected());
+  }
+
+  @Test
+  public void clientSetInfoDefault() {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
+        .build())) {
+      assertEquals("PONG", jedis.ping());
+      String info = jedis.clientInfo();
+      assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId()));
+      assertTrue(info.contains("lib-ver=" + JedisMetaInfo.getVersion()));
+    }
+  }
+
+  @Test
+  public void clientSetInfoDisable() {
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
+        .clientSetInfoConfig(new ClientSetInfoConfig() {
+          @Override public boolean isDisabled() { return true; }
+        }).build())) {
+      assertEquals("PONG", jedis.ping());
+      String info = jedis.clientInfo();
+      assertFalse(info.contains("lib-name=" + JedisMetaInfo.getArtifactId()));
+      assertFalse(info.contains("lib-ver=" + JedisMetaInfo.getVersion()));
+    }
+  }
+
+  @Test
+  public void clientSetInfoCustom() {
+    final String libNameSuffix = "for-redis";
+    ClientSetInfoConfig setInfoConfig = DefaultClientSetInfoConfig.builder()
+        .libNameSuffix(libNameSuffix).build();
+    try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
+        .clientSetInfoConfig(setInfoConfig).build())) {
+      assertEquals("PONG", jedis.ping());
+      String info = jedis.clientInfo();
+      assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId() + '(' + libNameSuffix + ')'));
+      assertTrue(info.contains("lib-ver=" + JedisMetaInfo.getVersion()));
+    }
   }
 
 }

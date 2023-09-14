@@ -147,7 +147,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private HostAndPortMapper hostAndPortMapper = null;
 
-    private ClientSetInfoConfig clientSetInfoConfig = null;
+    private ClientSetInfoConfig clientSetInfoConfig = ClientSetInfoConfig.DEFAULT;
 
     private Builder() {
     }

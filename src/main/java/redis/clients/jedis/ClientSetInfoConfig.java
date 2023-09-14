@@ -1,18 +1,41 @@
 package redis.clients.jedis;
 
-/**
- * This interface is to modify the behavior of internally executing CLIENT SETINFO command.
- */
-public interface ClientSetInfoConfig {
+public final class ClientSetInfoConfig {
 
-  default boolean isDisabled() {
-    return false;
+  private final boolean disabled;
+
+  private final String libNameSuffix;
+
+  public ClientSetInfoConfig() {
+    this(false, null);
   }
 
-  /**
-   * If provided, this suffix will be enclosed by braces {@code ()}.
-   */
-  default String getLibNameSuffix() {
-    return null;
+  public ClientSetInfoConfig(boolean disabled) {
+    this(disabled, null);
+  }
+
+  public ClientSetInfoConfig(String libNameSuffix) {
+    this(false, libNameSuffix);
+  }
+
+  private ClientSetInfoConfig(boolean disabled, String libNameSuffix) {
+    this.disabled = disabled;
+    this.libNameSuffix = libNameSuffix;
+  }
+
+  public final boolean isDisabled() {
+    return disabled;
+  }
+
+  public final String getLibNameSuffix() {
+    return libNameSuffix;
+  }
+
+  public static final ClientSetInfoConfig DEFAULT = new ClientSetInfoConfig();
+
+  public static final ClientSetInfoConfig DISABLED = new ClientSetInfoConfig(true);
+
+  public static ClientSetInfoConfig withLibNameSuffix(String suffix) {
+    return new ClientSetInfoConfig(suffix);
   }
 }

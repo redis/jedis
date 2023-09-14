@@ -422,7 +422,7 @@ public class Connection implements Closeable {
         String libName = JedisMetaInfo.getArtifactId();
         if (libName != null && validateClientInfo(libName)) {
           String libNameSuffix = setInfoConfig.getLibNameSuffix();
-          if (libNameSuffix != null && validateClientInfo(libNameSuffix)) {
+          if (libNameSuffix != null) { // validation is moved into ClientSetInfoConfig constructor
             libName = libName + '(' + libNameSuffix + ')';
           }
           fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)

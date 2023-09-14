@@ -292,7 +292,7 @@ public class JedisTest extends JedisCommandsTestBase {
   @Test
   public void clientSetInfoDefault() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
-        .build())) {
+        .clientSetInfoConfig(ClientSetInfoConfig.DEFAULT).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
       assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId()));
@@ -301,11 +301,9 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void clientSetInfoDisable() {
+  public void clientSetInfoDisabled() {
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
-        .clientSetInfoConfig(new ClientSetInfoConfig() {
-          @Override public boolean isDisabled() { return true; }
-        }).build())) {
+        .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
       assertFalse(info.contains("lib-name=" + JedisMetaInfo.getArtifactId()));
@@ -314,10 +312,9 @@ public class JedisTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void clientSetInfoCustom() {
+  public void clientSetInfoLibNameSuffix() {
     final String libNameSuffix = "for-redis";
-    ClientSetInfoConfig setInfoConfig = DefaultClientSetInfoConfig.builder()
-        .libNameSuffix(libNameSuffix).build();
+    ClientSetInfoConfig setInfoConfig = ClientSetInfoConfig.withLibNameSuffix(libNameSuffix);
     try (Jedis jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared")
         .clientSetInfoConfig(setInfoConfig).build())) {
       assertEquals("PONG", jedis.ping());

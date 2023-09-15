@@ -922,6 +922,7 @@ public final class BuilderFactory {
             } else if (info instanceof Long) {
               // score
               resp.setRawScore(LONG.build(info));
+              resp.setHashRawScore(LONG.build(info));
             } else {
               // distance
               resp.setDistance(DOUBLE.build(info));

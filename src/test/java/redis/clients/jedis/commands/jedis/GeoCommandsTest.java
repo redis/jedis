@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.jedis;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -190,6 +191,7 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, members.size());
     response = members.get(0);
     assertEquals(3479447370796909L, response.getRawScore());
+    assertEquals(new BigInteger("3479447370796909"), response.getHashRawScore().getValue());
 
     // sort, count 1, any
     members = jedis.georadius("Sicily", 15, 37, 200, GeoUnit.KM, GeoRadiusParam.geoRadiusParam()

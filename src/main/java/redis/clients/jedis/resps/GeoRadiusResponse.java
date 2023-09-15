@@ -1,8 +1,10 @@
 package redis.clients.jedis.resps;
 
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.Unsigned52BitInteger;
 import redis.clients.jedis.util.SafeEncoder;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 
 public class GeoRadiusResponse {
@@ -10,6 +12,7 @@ public class GeoRadiusResponse {
   private double distance;
   private GeoCoordinate coordinate;
   private long rawScore;
+  private Unsigned52BitInteger hashRawScore;
 
   public GeoRadiusResponse(byte[] member) {
     this.member = member;
@@ -45,6 +48,14 @@ public class GeoRadiusResponse {
 
   public void setRawScore(long rawScore) {
     this.rawScore = rawScore;
+  }
+
+  public void setHashRawScore(Long rawScore){
+    this.hashRawScore = new Unsigned52BitInteger(rawScore);
+  }
+
+  public Unsigned52BitInteger getHashRawScore(){
+    return  this.hashRawScore;
   }
 
   @Override

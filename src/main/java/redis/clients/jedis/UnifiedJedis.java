@@ -3658,7 +3658,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @return search iteration
    */
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, String query, FTSearchParams params) {
-    return new FtSearchIteration(provider, batchSize, indexName, query, params);
+    return new FtSearchIteration(provider, commandObjects.getProtocol(), batchSize, indexName, query, params);
   }
 
   @Override
@@ -3674,10 +3674,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @return search iteration
    */
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, Query query) {
-    return new FtSearchIteration(provider, batchSize, indexName, query);
+    return new FtSearchIteration(provider, commandObjects.getProtocol(), batchSize, indexName, query);
   }
 
   @Override
+  @Deprecated
   public SearchResult ftSearch(byte[] indexName, Query query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3821,12 +3822,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Map<String, String> ftConfigGet(String option) {
+  public Map<String, Object> ftConfigGet(String option) {
     return executeCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
-  public Map<String, String> ftConfigGet(String indexName, String option) {
+  public Map<String, Object> ftConfigGet(String indexName, String option) {
     return executeCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
@@ -3881,7 +3882,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> ftList() {
+  public Set<String> ftList() {
     return executeCommand(commandObjects.ftList());
   }
   // RediSearch commands
@@ -3898,11 +3899,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public String jsonSet(String key, Path path, Object pojo) {
     return executeCommand(commandObjects.jsonSet(key, path, pojo));
   }
 
   @Override
+  @Deprecated
   public String jsonSetWithPlainString(String key, Path path, String string) {
     return executeCommand(commandObjects.jsonSetWithPlainString(key, path, string));
   }
@@ -3918,6 +3921,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public String jsonSet(String key, Path path, Object pojo, JsonSetParams params) {
     return executeCommand(commandObjects.jsonSet(key, path, pojo, params));
   }
@@ -3928,6 +3932,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public String jsonMerge(String key, Path path, Object pojo) {
     return executeCommand(commandObjects.jsonMerge(key, path, pojo));
   }
@@ -3938,6 +3943,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public <T> T jsonGet(String key, Class<T> clazz) {
     return executeCommand(commandObjects.jsonGet(key, clazz));
   }
@@ -3948,16 +3954,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Object jsonGet(String key, Path... paths) {
     return executeCommand(commandObjects.jsonGet(key, paths));
   }
 
   @Override
+  @Deprecated
   public String jsonGetAsPlainString(String key, Path path) {
     return executeCommand(commandObjects.jsonGetAsPlainString(key, path));
   }
 
   @Override
+  @Deprecated
   public <T> T jsonGet(String key, Class<T> clazz, Path... paths) {
     return executeCommand(commandObjects.jsonGet(key, clazz, paths));
   }
@@ -3968,6 +3977,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public <T> List<T> jsonMGet(Path path, Class<T> clazz, String... keys) {
     return executeCommand(commandObjects.jsonMGet(path, clazz, keys));
   }
@@ -3983,6 +3993,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public long jsonDel(String key, Path path) {
     return executeCommand(commandObjects.jsonDel(key, path));
   }
@@ -3998,6 +4009,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public long jsonClear(String key, Path path) {
     return executeCommand(commandObjects.jsonClear(key, path));
   }
@@ -4008,11 +4020,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public String jsonToggle(String key, Path path) {
     return executeCommand(commandObjects.jsonToggle(key, path));
   }
 
   @Override
+  @Deprecated
   public Class<?> jsonType(String key) {
     return executeCommand(commandObjects.jsonType(key));
   }
@@ -4023,11 +4037,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Class<?> jsonType(String key, Path path) {
     return executeCommand(commandObjects.jsonType(key, path));
   }
 
   @Override
+  @Deprecated
   public long jsonStrAppend(String key, Object string) {
     return executeCommand(commandObjects.jsonStrAppend(key, string));
   }
@@ -4038,11 +4054,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public long jsonStrAppend(String key, Path path, Object string) {
     return executeCommand(commandObjects.jsonStrAppend(key, path, string));
   }
 
   @Override
+  @Deprecated
   public Long jsonStrLen(String key) {
     return executeCommand(commandObjects.jsonStrLen(key));
   }
@@ -4053,16 +4071,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Long jsonStrLen(String key, Path path) {
     return executeCommand(commandObjects.jsonStrLen(key, path));
   }
 
   @Override
-  public JSONArray jsonNumIncrBy(String key, Path2 path, double value) {
+  public Object jsonNumIncrBy(String key, Path2 path, double value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 
   @Override
+  @Deprecated
   public double jsonNumIncrBy(String key, Path path, double value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
@@ -4078,6 +4098,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Long jsonArrAppend(String key, Path path, Object... pojos) {
     return executeCommand(commandObjects.jsonArrAppend(key, path, pojos));
   }
@@ -4093,6 +4114,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public long jsonArrIndex(String key, Path path, Object scalar) {
     return executeCommand(commandObjects.jsonArrIndex(key, path, scalar));
   }
@@ -4108,16 +4130,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public long jsonArrInsert(String key, Path path, int index, Object... pojos) {
     return executeCommand(commandObjects.jsonArrInsert(key, path, index, pojos));
   }
 
   @Override
+  @Deprecated
   public Object jsonArrPop(String key) {
     return executeCommand(commandObjects.jsonArrPop(key));
   }
 
   @Override
+  @Deprecated
   public <T> T jsonArrPop(String key, Class<T> clazz) {
     return executeCommand(commandObjects.jsonArrPop(key, clazz));
   }
@@ -4128,11 +4153,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Object jsonArrPop(String key, Path path) {
     return executeCommand(commandObjects.jsonArrPop(key, path));
   }
 
   @Override
+  @Deprecated
   public <T> T jsonArrPop(String key, Class<T> clazz, Path path) {
     return executeCommand(commandObjects.jsonArrPop(key, clazz, path));
   }
@@ -4143,16 +4170,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Object jsonArrPop(String key, Path path, int index) {
     return executeCommand(commandObjects.jsonArrPop(key, path, index));
   }
 
   @Override
+  @Deprecated
   public <T> T jsonArrPop(String key, Class<T> clazz, Path path, int index) {
     return executeCommand(commandObjects.jsonArrPop(key, clazz, path, index));
   }
 
   @Override
+  @Deprecated
   public Long jsonArrLen(String key) {
     return executeCommand(commandObjects.jsonArrLen(key));
   }
@@ -4163,6 +4193,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Long jsonArrLen(String key, Path path) {
     return executeCommand(commandObjects.jsonArrLen(key, path));
   }
@@ -4173,16 +4204,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public Long jsonArrTrim(String key, Path path, int start, int stop) {
     return executeCommand(commandObjects.jsonArrTrim(key, path, start, stop));
   }
 
   @Override
+  @Deprecated
   public Long jsonObjLen(String key) {
     return executeCommand(commandObjects.jsonObjLen(key));
   }
 
   @Override
+  @Deprecated
   public Long jsonObjLen(String key, Path path) {
     return executeCommand(commandObjects.jsonObjLen(key, path));
   }
@@ -4193,11 +4227,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public List<String> jsonObjKeys(String key) {
     return executeCommand(commandObjects.jsonObjKeys(key));
   }
 
   @Override
+  @Deprecated
   public List<String> jsonObjKeys(String key, Path path) {
     return executeCommand(commandObjects.jsonObjKeys(key, path));
   }
@@ -4208,11 +4244,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Deprecated
   public long jsonDebugMemory(String key) {
     return executeCommand(commandObjects.jsonDebugMemory(key));
   }
 
   @Override
+  @Deprecated
   public long jsonDebugMemory(String key, Path path) {
     return executeCommand(commandObjects.jsonDebugMemory(key, path));
   }
@@ -4220,21 +4258,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<Long> jsonDebugMemory(String key, Path2 path) {
     return executeCommand(commandObjects.jsonDebugMemory(key, path));
-  }
-
-  @Override
-  public List<Object> jsonResp(String key) {
-    return executeCommand(commandObjects.jsonResp(key));
-  }
-
-  @Override
-  public List<Object> jsonResp(String key, Path path) {
-    return executeCommand(commandObjects.jsonResp(key, path));
-  }
-
-  @Override
-  public List<List<Object>> jsonResp(String key, Path2 path) {
-    return executeCommand(commandObjects.jsonResp(key, path));
   }
   // RedisJSON commands
 
@@ -4587,6 +4610,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map<String, Long> topkListWithCount(String key) {
+    return executeCommand(commandObjects.topkListWithCount(key));
+  }
+
+  @Override
   public Map<String, Object> topkInfo(String key) {
     return executeCommand(commandObjects.topkInfo(key));
   }
@@ -4674,76 +4702,91 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   // RedisGraph commands
   @Override
+  @Deprecated
   public ResultSet graphQuery(String name, String query) {
     return executeCommand(graphCommandObjects.graphQuery(name, query));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphReadonlyQuery(String name, String query) {
     return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphQuery(String name, String query, long timeout) {
     return executeCommand(graphCommandObjects.graphQuery(name, query, timeout));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphReadonlyQuery(String name, String query, long timeout) {
     return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, timeout));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphQuery(String name, String query, Map<String, Object> params) {
     return executeCommand(graphCommandObjects.graphQuery(name, query, params));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params) {
     return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphQuery(String name, String query, Map<String, Object> params, long timeout) {
     return executeCommand(graphCommandObjects.graphQuery(name, query, params, timeout));
   }
 
   @Override
+  @Deprecated
   public ResultSet graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
     return executeCommand(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout));
   }
 
   @Override
+  @Deprecated
   public String graphDelete(String name) {
     return executeCommand(graphCommandObjects.graphDelete(name));
   }
 
   @Override
+  @Deprecated
   public List<String> graphList() {
     return executeCommand(commandObjects.graphList());
   }
 
   @Override
+  @Deprecated
   public List<String> graphProfile(String graphName, String query) {
     return executeCommand(commandObjects.graphProfile(graphName, query));
   }
 
   @Override
+  @Deprecated
   public List<String> graphExplain(String graphName, String query) {
     return executeCommand(commandObjects.graphExplain(graphName, query));
   }
 
   @Override
+  @Deprecated
   public List<List<Object>> graphSlowlog(String graphName) {
     return executeCommand(commandObjects.graphSlowlog(graphName));
   }
 
   @Override
+  @Deprecated
   public String graphConfigSet(String configName, Object value) {
     return executeCommand(commandObjects.graphConfigSet(configName, value));
   }
 
   @Override
+  @Deprecated
   public Map<String, Object> graphConfigGet(String configName) {
     return executeCommand(commandObjects.graphConfigGet(configName));
   }

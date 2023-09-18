@@ -3466,6 +3466,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
+  @Deprecated
   public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3546,12 +3547,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<Map<String, String>> ftConfigGet(String option) {
+  public Response<Map<String, Object>> ftConfigGet(String option) {
     return appendCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
-  public Response<Map<String, String>> ftConfigGet(String indexName, String option) {
+  public Response<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return appendCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
@@ -3774,7 +3775,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<JSONArray> jsonNumIncrBy(String key, Path2 path, double value) {
+  public Response<Object> jsonNumIncrBy(String key, Path2 path, double value) {
     return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 
@@ -4225,6 +4226,11 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   @Override
   public Response<List<String>> topkList(String key) {
     return appendCommand(commandObjects.topkList(key));
+  }
+
+  @Override
+  public Response<Map<String, Long>> topkListWithCount(String key) {
+    return appendCommand(commandObjects.topkListWithCount(key));
   }
 
   @Override

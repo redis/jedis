@@ -128,7 +128,7 @@ public class RedisInputStream extends FilterInputStream {
 
   /**
    * Slow path in case a line of bytes cannot be read in one #fill() operation. This is still faster
-   * than creating the StrinbBuilder, String, then encoding as byte[] in Protocol, then decoding
+   * than creating the StringBuilder, String, then encoding as byte[] in Protocol, then decoding
    * back into a String.
    */
   private byte[] readLineBytesSlowly() {
@@ -236,7 +236,7 @@ public class RedisInputStream extends FilterInputStream {
   }
 
   /**
-   * This methods assumes there are required bytes to be read. If we cannot read anymore bytes an
+   * This method assumes there are required bytes to be read. If we cannot read anymore bytes an
    * exception is thrown to quickly ascertain that the stream was smaller than expected.
    */
   private void ensureFill() throws JedisConnectionException {

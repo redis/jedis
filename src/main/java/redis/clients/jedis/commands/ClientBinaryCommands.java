@@ -46,7 +46,7 @@ public interface ClientBinaryCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format.
+   * in a mostly human-readable format.
    *
    * @return All clients info connected to redis-server
    */
@@ -54,7 +54,7 @@ public interface ClientBinaryCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format filter by client type.
+   * in a mostly human-readable format filter by client type.
    *
    * @return all clients info connected to redis-server
    */
@@ -62,7 +62,7 @@ public interface ClientBinaryCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format filter by client ids.
+   * in a mostly human-readable format filter by client ids.
    *
    * @param clientIds Unique 64-bit client IDs
    * @return All clients info connected to redis-server
@@ -71,7 +71,7 @@ public interface ClientBinaryCommands {
 
   /**
    * Returns information and statistics about the current client connection
-   * in a mostly human readable format.
+   * in a mostly human-readable format.
    *
    * @return Information and statistics about the current client connection
    */

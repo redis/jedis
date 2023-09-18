@@ -60,7 +60,7 @@ public interface RedisJsonV2PipelineCommands {
 
   Response<List<Long>> jsonStrLen(String key, Path2 path);
 
-  Response<JSONArray> jsonNumIncrBy(String key, Path2 path, double value);
+  Response<Object> jsonNumIncrBy(String key, Path2 path, double value);
 
   Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects);
 

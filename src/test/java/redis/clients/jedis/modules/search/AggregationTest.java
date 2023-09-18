@@ -11,11 +11,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.search.FieldName;
@@ -27,6 +30,7 @@ import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 import redis.clients.jedis.search.aggr.SortedField;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
+import redis.clients.jedis.search.FTProfileParams;
 import redis.clients.jedis.search.aggr.FtAggregateIteration;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TextField;
@@ -121,6 +125,52 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 
     assertEquals("abc", rows.get(1).get("name"));
     assertEquals("10", rows.get(1).get("sum"));
+  }
+
+  @Test
+  public void testAggregations2Profile() {
+    Schema sc = new Schema();
+    sc.addSortableTextField("name", 1.0);
+    sc.addSortableNumericField("count");
+    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+
+    addDocument(new Document("data1").set("name", "abc").set("count", 10));
+    addDocument(new Document("data2").set("name", "def").set("count", 5));
+    addDocument(new Document("data3").set("name", "def").set("count", 25));
+
+    AggregationBuilder aggr = new AggregationBuilder()
+        .groupBy("@name", Reducers.sum("@count").as("sum"))
+        .sortBy(10, SortedField.desc("@sum"));
+
+    Map.Entry<AggregationResult, Map<String, Object>> reply
+        = client.ftProfileAggregate(index, FTProfileParams.profileParams(), aggr);
+
+    // actual search
+    AggregationResult result = reply.getKey();
+    assertEquals(2, result.getTotalResults());
+
+    List<Row> rows = result.getRows();
+    assertEquals("def", rows.get(0).get("name"));
+    assertEquals("30", rows.get(0).get("sum"));
+    assertNull(rows.get(0).get("nosuchcol"));
+
+    assertEquals("abc", rows.get(1).get("name"));
+    assertEquals("10", rows.get(1).get("sum"));
+
+    // profile
+    Map<String, Object> profile = reply.getValue();
+
+    assertEquals(Arrays.asList("Index", "Grouper", "Sorter"),
+        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
+            .map(map -> map.get("Type")).collect(Collectors.toList()));
+
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("WILDCARD", ((Map<String, Object>) profile.get("Iterators profile")).get("Type"));
+    } else {
+      assertEquals(Arrays.asList("WILDCARD"),
+          ((List<Map<String, Object>>) profile.get("Iterators profile")).stream()
+              .map(map -> map.get("Type")).collect(Collectors.toList()));
+    }
   }
 
   @Test

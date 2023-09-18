@@ -4,7 +4,9 @@ import java.util.Objects;
 
 /**
  * A Graph entity property. Has a name, type, and value.
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 public class Property<T> {
 
   private final String name;

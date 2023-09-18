@@ -1,5 +1,9 @@
 package redis.clients.jedis.graph;
 
+/**
+ * @deprecated Redis Graph support is deprecated.
+ */
+@Deprecated
 public interface Statistics {
 
   int nodesCreated();

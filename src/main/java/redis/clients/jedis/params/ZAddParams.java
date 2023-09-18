@@ -5,7 +5,7 @@ import redis.clients.jedis.Protocol.Keyword;
 
 public class ZAddParams implements IParams {
 
-  private Keyword existance;
+  private Keyword existence;
   private Keyword comparison;
   private boolean change;
 
@@ -21,16 +21,16 @@ public class ZAddParams implements IParams {
    * @return ZAddParams
    */
   public ZAddParams nx() {
-    this.existance = Keyword.NX;
+    this.existence = Keyword.NX;
     return this;
   }
 
   /**
-   * Only set the key if it already exist.
+   * Only set the key if it already exists.
    * @return ZAddParams
    */
   public ZAddParams xx() {
-    this.existance = Keyword.XX;
+    this.existence = Keyword.XX;
     return this;
   }
 
@@ -64,8 +64,8 @@ public class ZAddParams implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
-    if (existance != null) {
-      args.add(existance);
+    if (existence != null) {
+      args.add(existence);
     }
     if (comparison != null) {
       args.add(comparison);

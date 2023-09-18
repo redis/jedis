@@ -1,10 +1,11 @@
 package redis.clients.jedis.modules.bloom;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.TreeSet;
+import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -30,12 +31,20 @@ public class TopKTest extends RedisModuleCommandsTestBase {
 
     assertEquals(Arrays.asList(true, false, true), client.topkQuery("aaa", "bb", "gg", "cc"));
 
-    assertEquals(new TreeSet<>(Arrays.asList("bb", "cc")), new TreeSet<>(client.topkList("aaa")));
+    assertEquals(Arrays.asList("bb", "cc"), client.topkList("aaa"));
 
-//    assertEquals(null, client.topkIncrBy("aaa", "ff", 10));
+    Map<String, Long> listWithCount = client.topkListWithCount("aaa");
+    assertEquals(2, listWithCount.size());
+    listWithCount.forEach((item, count) -> {
+      assertTrue(Arrays.asList("bb", "cc").contains(item));
+      assertEquals(Long.valueOf(1), count);
+    });
+
+    assertEquals(null, client.topkIncrBy("aaa", "ff", 5));
+    assertEquals(Arrays.asList("ff", "bb", "cc"), client.topkList("aaa"));
+
     assertEquals(Collections.<String>singletonList(null),
-        client.topkIncrBy("aaa", Collections.singletonMap("ff", 10L)));
-
-    assertEquals(new TreeSet<>(Arrays.asList("bb", "cc", "ff")), new TreeSet<>(client.topkList("aaa")));
+        client.topkIncrBy("aaa", Collections.singletonMap("ff", 8L)));
+    assertEquals(Long.valueOf(13), client.topkListWithCount("aaa").get("ff"));
   }
 }

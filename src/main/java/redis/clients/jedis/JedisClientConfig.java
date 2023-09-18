@@ -85,6 +85,6 @@ public interface JedisClientConfig {
    * @return CLIENT SETINFO config
    */
   default ClientSetInfoConfig getClientSetInfoConfig() {
-    return null;
+    return ClientSetInfoConfig.DEFAULT;
   }
 }

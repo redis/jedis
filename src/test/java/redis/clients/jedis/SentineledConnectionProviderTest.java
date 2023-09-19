@@ -5,8 +5,10 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 
+import org.junit.runners.MethodSorters;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
@@ -16,6 +18,7 @@ import static org.junit.Assert.*;
 /**
  * @see JedisSentinelPoolTest
  */
+@FixMethodOrder(MethodSorters.JVM)
 public class SentineledConnectionProviderTest {
 
   private static final String MASTER_NAME = "mymaster";
@@ -176,7 +179,7 @@ public class SentineledConnectionProviderTest {
       sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
 
       try {
-        Thread.sleep(10000);
+        Thread.sleep(20000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -204,7 +207,7 @@ public class SentineledConnectionProviderTest {
       sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
 
       try {
-        Thread.sleep(10000);
+        Thread.sleep(20000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
@@ -232,7 +235,7 @@ public class SentineledConnectionProviderTest {
       sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
 
       try {
-        Thread.sleep(10000);
+        Thread.sleep(20000);
       } catch (InterruptedException e) {
         e.printStackTrace();
       }

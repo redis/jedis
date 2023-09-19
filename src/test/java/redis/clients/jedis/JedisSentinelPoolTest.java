@@ -5,13 +5,16 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.Before;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
 
+import org.junit.runners.MethodSorters;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 import static org.junit.Assert.*;
 
+@FixMethodOrder(MethodSorters.JVM)
 public class JedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "mymaster";
@@ -189,19 +192,18 @@ public class JedisSentinelPoolTest {
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
             "foobared", 2);
-    Jedis jedis = pool.getResource();
-    HostAndPort hostPort1 = jedis.connection.getHostAndPort();
+    HostAndPort hostPort1 = pool.getResource().connection.getHostAndPort();
 
     Jedis sentinel = new Jedis(sentinel1);
     sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
     try {
-      Thread.sleep(10000);
+      Thread.sleep(20000); // sleep. let the failover finish
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
 
-    HostAndPort hostPort2 = jedis.connection.getHostAndPort();
-    jedis.close();
+    HostAndPort hostPort2 = pool.getResource().connection.getHostAndPort();
+
     pool.destroy();
     assertNotEquals(hostPort1, hostPort2);
   }
@@ -215,45 +217,45 @@ public class JedisSentinelPoolTest {
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
             "foobared", 2);
-    Jedis jedis = pool.getResource();
-    HostAndPort hostPort1 = jedis.connection.getHostAndPort();
+    HostAndPort hostPort1 = pool.getResource().connection.getHostAndPort();
 
     Jedis sentinel = new Jedis(sentinel1);
     sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
     try {
-      Thread.sleep(10000);
+      Thread.sleep(20000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
 
-    HostAndPort hostPort2 = jedis.connection.getHostAndPort();
-    jedis.close();
+    HostAndPort hostPort2 = pool.getResource().connection.getHostAndPort();
+
     pool.destroy();
     assertNotEquals(hostPort1, hostPort2);
   }
 
   @Test
-  public void testALlSentinelMasterListener() {
+  public void testALLSentinelMasterListener() {
     // case 2: subscribe on ,active on
     SentinelPoolConfig config = new SentinelPoolConfig();
     config.setEnableActiveDetectListener(true);
     config.setEnableDefaultSubscribeListener(true);
+    config.setActiveDetectIntervalTimeMillis(5*1000);
+    config.setSubscribeRetryWaitTimeMillis(5*1000);
 
     JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000,
             "foobared", 2);
-    Jedis jedis = pool.getResource();
-    HostAndPort hostPort1 = jedis.connection.getHostAndPort();
+    HostAndPort hostPort1 = pool.getResource().connection.getHostAndPort();
 
     Jedis sentinel = new Jedis(sentinel1);
     sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
     try {
-      Thread.sleep(10000);
+      Thread.sleep(20000);
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
 
-    HostAndPort hostPort2 = jedis.connection.getHostAndPort();
-    jedis.close();
+    HostAndPort hostPort2 = pool.getResource().connection.getHostAndPort();
+
     pool.destroy();
     assertNotEquals(hostPort1, hostPort2);
   }

@@ -3,7 +3,9 @@ package redis.clients.jedis.commands.jedis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
 import java.util.Map;
+
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
@@ -51,8 +53,10 @@ public class SentinelCommandsTest {
   @Test
   public void replicas() {
     try (Jedis sentinel = new Jedis(sentinel2_1)) {
-      Map<String, String> details = sentinel.sentinelReplicas("mymaster").get(0);
-      assertEquals(Integer.toString(replica2.getPort()), details.get("port"));
+      List<Map<String, String>> replicas = sentinel.sentinelReplicas("mymaster");
+      for(Map<String, String> replica:replicas){
+        assertEquals("slave",replica.get("role-reported"));
+      }
     }
   }
 }

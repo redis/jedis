@@ -57,7 +57,7 @@ public class RediSearchUtil {
     return bytes;
   }
 
-  public static final Set<Character> TAG_ESCAPE_CHARS = new HashSet<>(Arrays.asList(//
+  private static final Set<Character> ESCAPE_CHARS = new HashSet<>(Arrays.asList(//
       ',', '.', '<', '>', '{', '}', '[', //
       ']', '"', '\'', ':', ';', '!', '@', //
       '#', '$', '%', '^', '&', '*', '(', //
@@ -77,7 +77,7 @@ public class RediSearchUtil {
 
     StringBuilder sb = new StringBuilder();
     for (char ch : chars) {
-      if (TAG_ESCAPE_CHARS.contains(ch)
+      if (ESCAPE_CHARS.contains(ch)
           || (querying && ch == ' ')) {
         sb.append("\\");
       }

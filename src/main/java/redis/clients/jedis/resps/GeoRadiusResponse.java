@@ -4,8 +4,10 @@ import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class GeoRadiusResponse {
+
   private byte[] member;
   private double distance;
   private GeoCoordinate coordinate;
@@ -23,6 +25,10 @@ public class GeoRadiusResponse {
     this.coordinate = coordinate;
   }
 
+  public void setRawScore(long rawScore) {
+    this.rawScore = rawScore;
+  }
+
   public byte[] getMember() {
     return member;
   }
@@ -31,20 +37,28 @@ public class GeoRadiusResponse {
     return SafeEncoder.encode(member);
   }
 
+  /**
+   * @return The distance of the returned item from the specified center. The distance is returned
+   * in the same unit as the unit specified as the radius argument of the command.
+   */
   public double getDistance() {
     return distance;
   }
 
+  /**
+   * @return The longitude,latitude coordinates of the matching item.
+   */
   public GeoCoordinate getCoordinate() {
     return coordinate;
   }
 
+  /**
+   * @return The raw geohash-encoded sorted set score of the item, in the form of a 52 bit unsigned
+   * integer. This is only useful for low level hacks or debugging and is otherwise of little
+   * interest for the general user.
+   */
   public long getRawScore() {
     return rawScore;
-  }
-
-  public void setRawScore(long rawScore) {
-    this.rawScore = rawScore;
   }
 
   @Override
@@ -61,5 +75,15 @@ public class GeoRadiusResponse {
     return Double.compare(distance, response.getDistance()) == 0
             && rawScore == response.getRawScore() && coordinate.equals(response.coordinate)
             && Arrays.equals(member, response.getMember());
+  }
+
+  @Override
+  public int hashCode() {
+    int hash = 7;
+    hash = 67 * hash + Arrays.hashCode(this.member);
+    hash = 67 * hash + (int) (Double.doubleToLongBits(this.distance) ^ (Double.doubleToLongBits(this.distance) >>> 32));
+    hash = 67 * hash + Objects.hashCode(this.coordinate);
+    hash = 67 * hash + (int) (this.rawScore ^ (this.rawScore >>> 32));
+    return hash;
   }
 }

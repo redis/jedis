@@ -2,9 +2,12 @@ package redis.clients.jedis.search;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.Arrays;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -52,6 +55,39 @@ public class RediSearchUtil {
     byte[] bytes = new byte[Float.BYTES * input.length];
     ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().put(input);
     return bytes;
+  }
+
+  public static final Set<Character> TAG_ESCAPE_CHARS = new HashSet<>(Arrays.asList(//
+      ',', '.', '<', '>', '{', '}', '[', //
+      ']', '"', '\'', ':', ';', '!', '@', //
+      '#', '$', '%', '^', '&', '*', '(', //
+      ')', '-', '+', '=', '~', '|' //
+  ));
+
+  public static String escape(String text) {
+    return escape(text, false);
+  }
+
+  public static String escapeQuery(String query) {
+    return escape(query, true);
+  }
+
+  public static String escape(String text, boolean querying) {
+    char[] chars = text.toCharArray();
+
+    StringBuilder sb = new StringBuilder();
+    for (char ch : chars) {
+      if (TAG_ESCAPE_CHARS.contains(ch)
+          || (querying && ch == ' ')) {
+        sb.append("\\");
+      }
+      sb.append(ch);
+    }
+    return sb.toString();
+  }
+
+  public static String unescape(String text) {
+    return text.replace("\\", "");
   }
 
   private RediSearchUtil() {

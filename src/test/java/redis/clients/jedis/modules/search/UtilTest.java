@@ -9,7 +9,7 @@ public class UtilTest {
   @Test
   public void floatArrayToByteArray() {
     float[] floats = new float[]{0.2f};
-    byte[] bytes = RediSearchUtil.ToByteArray(floats);
+    byte[] bytes = RediSearchUtil.toByteArray(floats);
     byte[] expected = new byte[]{-51, -52, 76, 62};
     Assert.assertArrayEquals(expected, bytes);
   }

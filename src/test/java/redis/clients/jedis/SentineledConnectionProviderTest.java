@@ -1,9 +1,5 @@
 package redis.clients.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.fail;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,6 +10,8 @@ import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+
+import static org.junit.Assert.*;
 
 /**
  * @see JedisSentinelPoolTest
@@ -159,6 +157,90 @@ public class SentineledConnectionProviderTest {
         new Jedis(conn2).set("foo", "bar");
         assertEquals("bar", jedis.get("foo"));
       }
+    }
+  }
+
+  @Test
+  public void testSentinelMasterSubscribeListener() {
+    SentinelPoolConfig config = new SentinelPoolConfig();
+    config.setEnableActiveDetectListener(false);
+    config.setEnableDefaultSubscribeListener(true);
+
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
+            DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+            config, sentinels, DefaultJedisClientConfig.builder().build())) {
+
+      HostAndPort master1 = jedis.provider.getConnection().getHostAndPort();
+
+      Jedis sentinel = new Jedis(sentinel1);
+      sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
+
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      HostAndPort master2 = jedis.provider.getConnection().getHostAndPort();
+
+      assertNotEquals(master1, master2);
+
+    }
+  }
+
+  @Test
+  public void testSentinelMasterActiveDetectListener() {
+    SentinelPoolConfig config = new SentinelPoolConfig();
+    config.setEnableActiveDetectListener(true);
+    config.setEnableDefaultSubscribeListener(false);
+
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
+            DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+            config, sentinels, DefaultJedisClientConfig.builder().build())) {
+
+      HostAndPort master1 = jedis.provider.getConnection().getHostAndPort();
+
+      Jedis sentinel = new Jedis(sentinel1);
+      sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
+
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      HostAndPort master2 = jedis.provider.getConnection().getHostAndPort();
+
+      assertNotEquals(master1, master2);
+
+    }
+  }
+
+  @Test
+  public void testALlSentinelMasterListener() {
+    SentinelPoolConfig config = new SentinelPoolConfig();
+    config.setEnableActiveDetectListener(true);
+    config.setEnableDefaultSubscribeListener(true);
+
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME,
+            DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
+            config, sentinels, DefaultJedisClientConfig.builder().build())) {
+
+      HostAndPort master1 = jedis.provider.getConnection().getHostAndPort();
+
+      Jedis sentinel = new Jedis(sentinel1);
+      sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
+
+      try {
+        Thread.sleep(10000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      HostAndPort master2 = jedis.provider.getConnection().getHostAndPort();
+
+      assertNotEquals(master1, master2);
+
     }
   }
 }

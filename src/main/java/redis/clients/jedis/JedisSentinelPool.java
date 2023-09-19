@@ -1,11 +1,9 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -24,7 +22,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
   private final JedisClientConfig sentinelClientConfig;
 
-  protected final Collection<MasterListener> masterListeners = new ArrayList<>();
+  protected final Collection<SentinelMasterListener> masterListeners = new ArrayList<>();
 
   private volatile HostAndPort currentHostMaster;
   
@@ -181,7 +179,10 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
     HostAndPort master = initSentinels(sentinels, masterName);
     initMaster(master);
+    initMasterListeners(sentinels,masterName);
   }
+
+
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
       final GenericObjectPoolConfig<Jedis> poolConfig, final JedisFactory factory,
@@ -193,6 +194,52 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
     HostAndPort master = initSentinels(sentinels, masterName);
     initMaster(master);
+    initMasterListeners(sentinels,masterName,poolConfig);
+  }
+
+  private void initMasterListeners(Set<HostAndPort> sentinels, String masterName) {
+    initMasterListeners(sentinels,masterName,null);
+  }
+
+  private void initMasterListeners(Set<HostAndPort> sentinels, String masterName, GenericObjectPoolConfig<Jedis> poolConfig) {
+
+    LOG.info("Init master node listener {}", masterName);
+    SentinelPoolConfig jedisSentinelPoolConfig = null;
+    if (poolConfig instanceof SentinelPoolConfig) {
+      jedisSentinelPoolConfig = ((SentinelPoolConfig) poolConfig);
+    } else {
+      jedisSentinelPoolConfig = new SentinelPoolConfig();
+    }
+
+    for (HostAndPort sentinel : sentinels) {
+      if (jedisSentinelPoolConfig.isEnableActiveDetectListener()) {
+        masterListeners.add(new SentinelMasterActiveDetectListener(currentHostMaster,
+                sentinel,
+                sentinelClientConfig,
+                masterName,
+                jedisSentinelPoolConfig.getActiveDetectIntervalTimeMillis()
+        ) {
+          @Override
+          public void onChange(HostAndPort hostAndPort) {
+            initMaster(hostAndPort);
+          }
+        });
+      }
+
+      if (jedisSentinelPoolConfig.isEnableDefaultSubscribeListener()) {
+        masterListeners.add(new SentinelMasterSubscribeListener(masterName,
+                sentinel,
+                sentinelClientConfig,
+                jedisSentinelPoolConfig.getSubscribeRetryWaitTimeMillis()) {
+          @Override
+          public void onChange(HostAndPort hostAndPort) {
+            initMaster(hostAndPort);
+          }
+        });
+      }
+    }
+
+    masterListeners.forEach(SentinelMasterListener::start);
   }
 
   private static Set<HostAndPort> parseHostAndPorts(Set<String> strings) {
@@ -201,10 +248,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
   @Override
   public void destroy() {
-    for (MasterListener m : masterListeners) {
-      m.shutdown();
-    }
-
+    masterListeners.forEach(SentinelMasterListener::shutdown);
     super.destroy();
   }
 
@@ -271,17 +315,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
       }
     }
 
-    LOG.info("Redis master running at {}, starting Sentinel listeners...", master);
-
-    for (HostAndPort sentinel : sentinels) {
-
-      MasterListener masterListener = new MasterListener(masterName, sentinel.getHost(), sentinel.getPort());
-      // whether MasterListener threads are alive or not, process can be stopped
-      masterListener.setDaemon(true);
-      masterListeners.add(masterListener);
-      masterListener.start();
-    }
-
+    LOG.info("Redis master running at {}", master);
     return master;
   }
 
@@ -320,115 +354,6 @@ public class JedisSentinelPool extends Pool<Jedis> {
       } catch (RuntimeException e) {
         returnBrokenResource(resource);
         LOG.debug("Resource is returned to the pool as broken", e);
-      }
-    }
-  }
-
-  protected class MasterListener extends Thread {
-
-    protected String masterName;
-    protected String host;
-    protected int port;
-    protected long subscribeRetryWaitTimeMillis = 5000;
-    protected volatile Jedis j;
-    protected AtomicBoolean running = new AtomicBoolean(false);
-
-    protected MasterListener() {
-    }
-
-    public MasterListener(String masterName, String host, int port) {
-      super(String.format("MasterListener-%s-[%s:%d]", masterName, host, port));
-      this.masterName = masterName;
-      this.host = host;
-      this.port = port;
-    }
-
-    public MasterListener(String masterName, String host, int port,
-        long subscribeRetryWaitTimeMillis) {
-      this(masterName, host, port);
-      this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
-    }
-
-    @Override
-    public void run() {
-
-      running.set(true);
-
-      while (running.get()) {
-
-        try {
-          // double check that it is not being shutdown
-          if (!running.get()) {
-            break;
-          }
-          
-          final HostAndPort hostPort = new HostAndPort(host, port);
-          j = new Jedis(hostPort, sentinelClientConfig);
-
-          // code for active refresh
-          List<String> masterAddr = j.sentinelGetMasterAddrByName(masterName);
-          if (masterAddr == null || masterAddr.size() != 2) {
-            LOG.warn("Can not get master addr, master name: {}. Sentinel: {}.", masterName,
-                hostPort);
-          } else {
-            initMaster(toHostAndPort(masterAddr));
-          }
-
-          j.subscribe(new JedisPubSub() {
-            @Override
-            public void onMessage(String channel, String message) {
-              LOG.debug("Sentinel {} published: {}.", hostPort, message);
-
-              String[] switchMasterMsg = message.split(" ");
-
-              if (switchMasterMsg.length > 3) {
-
-                if (masterName.equals(switchMasterMsg[0])) {
-                  initMaster(toHostAndPort(Arrays.asList(switchMasterMsg[3], switchMasterMsg[4])));
-                } else {
-                  LOG.debug(
-                    "Ignoring message on +switch-master for master name {}, our master name is {}",
-                    switchMasterMsg[0], masterName);
-                }
-
-              } else {
-                LOG.error("Invalid message received on Sentinel {} on channel +switch-master: {}",
-                    hostPort, message);
-              }
-            }
-          }, "+switch-master");
-
-        } catch (JedisException e) {
-
-          if (running.get()) {
-            LOG.error("Lost connection to Sentinel at {}:{}. Sleeping 5000ms and retrying.", host,
-              port, e);
-            try {
-              Thread.sleep(subscribeRetryWaitTimeMillis);
-            } catch (InterruptedException e1) {
-              LOG.error("Sleep interrupted: ", e1);
-            }
-          } else {
-            LOG.debug("Unsubscribing from Sentinel at {}:{}", host, port);
-          }
-        } finally {
-          if (j != null) {
-            j.close();
-          }
-        }
-      }
-    }
-
-    public void shutdown() {
-      try {
-        LOG.debug("Shutting down listener on {}:{}", host, port);
-        running.set(false);
-        // This isn't good, the Jedis object is not thread safe
-        if (j != null) {
-          j.close();
-        }
-      } catch (RuntimeException e) {
-        LOG.error("Caught exception while shutting down: ", e);
       }
     }
   }

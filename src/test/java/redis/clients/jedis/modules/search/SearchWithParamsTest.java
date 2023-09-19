@@ -1225,4 +1225,11 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     SearchResult resultEscaped = client.ftSearch(index, RediSearchUtil.escapeQuery("hello-world"));
     assertEquals(1, resultEscaped.getTotalResults());
   }
+
+  @Test
+  public void escapeMapUtil() {
+    client.hset("doc2", RediSearchUtil.toStringMap(Collections.singletonMap("txt", "hello-world"), true));
+    assertNotEquals("hello-world", client.hget("doc2", "txt"));
+    assertEquals("hello-world", RediSearchUtil.unescape(client.hget("doc2", "txt")));
+  }
 }

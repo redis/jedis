@@ -21,6 +21,18 @@ public class RediSearchUtil {
    * @return map with string value
    */
   public static Map<String, String> toStringMap(Map<String, Object> input) {
+    return toStringMap(input, false);
+  }
+
+  /**
+   * Jedis' {@code hset} methods do not support {@link Object}s as values. This method eases process
+   * of converting a {@link Map} with Objects as values so that the returning Map can be set to a
+   * {@code hset} method.
+   * @param input map with object value
+   * @param stringEscape whether to escape the String objects
+   * @return map with string value
+   */
+  public static Map<String, String> toStringMap(Map<String, Object> input, boolean stringEscape) {
     Map<String, String> output = new HashMap<>(input.size());
     for (Map.Entry<String, Object> entry : input.entrySet()) {
       String key = entry.getKey();
@@ -35,9 +47,9 @@ public class RediSearchUtil {
         redis.clients.jedis.GeoCoordinate geo = (redis.clients.jedis.GeoCoordinate) obj;
         str = geo.getLongitude() + "," + geo.getLatitude();
       } else if (obj instanceof String) {
-        str = (String) obj;
+        str = stringEscape ? escape((String) obj) : (String) obj;
       } else {
-        str = obj.toString();
+        str = String.valueOf(obj);
       }
       output.put(key, str);
     }

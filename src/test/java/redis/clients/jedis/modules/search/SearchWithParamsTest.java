@@ -1210,4 +1210,26 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         "pupil:4444", "student:5555", "teacher:6666").stream().collect(Collectors.toSet()),
         collect.stream().map(Document::getId).collect(Collectors.toSet()));
   }
+
+  @Test
+  public void escapeUtil() {
+    assertOK(client.ftCreate(index, TextField.of("txt")));
+
+    client.hset("doc1", "txt", RediSearchUtil.escape("hello-world"));
+    assertNotEquals("hello-world", client.hget("doc1", "txt"));
+    assertEquals("hello-world", RediSearchUtil.unescape(client.hget("doc1", "txt")));
+
+    SearchResult resultNoEscape = client.ftSearch(index, "hello-world");
+    assertEquals(0, resultNoEscape.getTotalResults());
+
+    SearchResult resultEscaped = client.ftSearch(index, RediSearchUtil.escapeQuery("hello-world"));
+    assertEquals(1, resultEscaped.getTotalResults());
+  }
+
+  @Test
+  public void escapeMapUtil() {
+    client.hset("doc2", RediSearchUtil.toStringMap(Collections.singletonMap("txt", "hello-world"), true));
+    assertNotEquals("hello-world", client.hget("doc2", "txt"));
+    assertEquals("hello-world", RediSearchUtil.unescape(client.hget("doc2", "txt")));
+  }
 }

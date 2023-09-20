@@ -36,6 +36,7 @@ public abstract class SentinelMasterActiveDetectListener extends Thread
     this.jedisClientConfig = jedisClientConfig;
     this.masterName = masterName;
     this.activeDetectIntervalTimeMillis = activeDetectIntervalTimeMillis;
+    this.setDaemon(true);
   }
 
   @Override

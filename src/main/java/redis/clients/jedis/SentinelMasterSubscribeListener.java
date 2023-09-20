@@ -33,6 +33,7 @@ public abstract class SentinelMasterSubscribeListener extends Thread
     this.sentinel = sentinel;
     this.sentinelClientConfig = sentinelClientConfig;
     this.subscribeRetryWaitTimeMillis = subscribeRetryWaitTimeMillis;
+    this.setDaemon(true);
   }
 
   @Override

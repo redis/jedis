@@ -202,7 +202,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
   private void initMasterListeners(Set<HostAndPort> sentinels, String masterName,
       GenericObjectPoolConfig<Jedis> poolConfig) {
 
-    LOG.info("Init master node listener {}", masterName);
+    LOG.info("Starting Sentinel listeners for {}...", masterName);
     SentinelPoolConfig jedisSentinelPoolConfig = null;
     if (poolConfig instanceof SentinelPoolConfig) {
       jedisSentinelPoolConfig = ((SentinelPoolConfig) poolConfig);
@@ -232,7 +232,6 @@ public class JedisSentinelPool extends Pool<Jedis> {
         });
       }
     }
-
     masterListeners.forEach(SentinelMasterListener::start);
   }
 

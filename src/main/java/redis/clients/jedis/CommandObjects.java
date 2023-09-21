@@ -3193,6 +3193,27 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> ftAliasAdd(String aliasName, String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.ALIASADD).add(aliasName).add(indexName), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> ftAliasUpdate(String aliasName, String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.ALIASUPDATE).add(aliasName).add(indexName), BuilderFactory.STRING);
+  }
+
+   public final CommandObject<String> ftAliasDel(String aliasName) {
+    return new CommandObject<>(commandArguments(SearchCommand.ALIASDEL).add(aliasName), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> ftDropIndex(String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> ftDropIndexDD(String indexName) {
+    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD),
+        BuilderFactory.STRING);
+  }
+
   public final CommandObject<SearchResult> ftSearch(String indexName, String query) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SEARCH), indexName).add(query),
         getSearchResultBuilder(() -> new SearchResultBuilder(true, false, true)));
@@ -3277,15 +3298,6 @@ public class CommandObjects {
     return resp2.get();
   }
 
-  public final CommandObject<String> ftDropIndex(String indexName) {
-    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> ftDropIndexDD(String indexName) {
-    return new CommandObject<>(commandArguments(SearchCommand.DROPINDEX).add(indexName).add(SearchKeyword.DD),
-        BuilderFactory.STRING);
-  }
-
   public final CommandObject<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.SYNUPDATE), indexName)
         .add(synonymGroupId).addObjects((Object[]) terms), BuilderFactory.STRING);
@@ -3341,18 +3353,6 @@ public class CommandObjects {
   public final CommandObject<Set<String>> ftTagVals(String indexName, String fieldName) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(commandArguments(SearchCommand.TAGVALS), indexName)
         .add(fieldName), BuilderFactory.STRING_SET);
-  }
-
-  public final CommandObject<String> ftAliasAdd(String aliasName, String indexName) {
-    return new CommandObject<>(commandArguments(SearchCommand.ALIASADD).add(aliasName).add(indexName), BuilderFactory.STRING);
-  }
-
-  public final CommandObject<String> ftAliasUpdate(String aliasName, String indexName) {
-    return new CommandObject<>(commandArguments(SearchCommand.ALIASUPDATE).add(aliasName).add(indexName), BuilderFactory.STRING);
-  }
-
-   public final CommandObject<String> ftAliasDel(String aliasName) {
-    return new CommandObject<>(commandArguments(SearchCommand.ALIASDEL).add(aliasName), BuilderFactory.STRING);
   }
 
   public final CommandObject<Map<String, Object>> ftConfigGet(String option) {

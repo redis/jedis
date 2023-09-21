@@ -3284,6 +3284,31 @@ public abstract class PipelineBase implements PipelineCommands, PipelineBinaryCo
   }
 
   @Override
+  public Response<String> ftAliasAdd(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasDel(String aliasName) {
+    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public Response<String> ftDropIndex(String indexName) {
+    return appendCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public Response<String> ftDropIndexDD(String indexName) {
+    return appendCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
   public Response<SearchResult> ftSearch(String indexName, String query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }

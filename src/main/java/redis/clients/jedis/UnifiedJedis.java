@@ -3637,6 +3637,31 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String ftAliasAdd(String aliasName, String indexName) {
+    return checkAndBroadcastCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public String ftAliasUpdate(String aliasName, String indexName) {
+    return checkAndBroadcastCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public String ftAliasDel(String aliasName) {
+    return checkAndBroadcastCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public String ftDropIndex(String indexName) {
+    return checkAndBroadcastCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public String ftDropIndexDD(String indexName) {
+    return checkAndBroadcastCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
   public SearchResult ftSearch(String indexName, String query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3734,16 +3759,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String ftDropIndex(String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftDropIndex(indexName));
-  }
-
-  @Override
-  public String ftDropIndexDD(String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftDropIndexDD(indexName));
-  }
-
-  @Override
   public String ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
     return executeCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
   }
@@ -3801,21 +3816,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Set<String> ftTagVals(String indexName, String fieldName) {
     return executeCommand(commandObjects.ftTagVals(indexName, fieldName));
-  }
-
-  @Override
-  public String ftAliasAdd(String aliasName, String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasAdd(aliasName, indexName));
-  }
-
-  @Override
-  public String ftAliasUpdate(String aliasName, String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
-  }
-
-  @Override
-  public String ftAliasDel(String aliasName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasDel(aliasName));
   }
 
   @Override

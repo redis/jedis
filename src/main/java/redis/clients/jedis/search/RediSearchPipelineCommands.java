@@ -41,6 +41,16 @@ public interface RediSearchPipelineCommands {
 
   Response<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields);
 
+  Response<String> ftAliasAdd(String aliasName, String indexName);
+
+  Response<String> ftAliasUpdate(String aliasName, String indexName);
+
+  Response<String> ftAliasDel(String aliasName);
+
+  Response<String> ftDropIndex(String indexName);
+
+  Response<String> ftDropIndexDD(String indexName);
+
   default Response<SearchResult> ftSearch(String indexName) {
     return ftSearch(indexName, "*");
   }

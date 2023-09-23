@@ -99,7 +99,7 @@ public class GearsLibraryInfo {
 
       String apiVersion = null;
       List<String> clusterFunctions = Collections.emptyList();
-      String code = "";
+      String code = null;
       String configuration = null;
       String engine = null;
       List<FunctionInfo> functions = Collections.emptyList();
@@ -156,7 +156,7 @@ public class GearsLibraryInfo {
         int offset = withCode ? 2 : 0;
         apiVersion = STRING.build(list.get(1));
         clusterFunctions = STRING_LIST.build(list.get(3));
-        code = withCode ? STRING.build(list.get(5)) : "";
+        code = withCode ? STRING.build(list.get(5)) : null;
         configuration = STRING.build(list.get(5 + offset));
         engine = STRING.build(list.get(7 + offset));
         functions = FUNCTION_INFO_LIST.build(list.get(9 + offset));

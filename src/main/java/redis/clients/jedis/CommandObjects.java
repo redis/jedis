@@ -2688,27 +2688,27 @@ public class CommandObjects {
 
   // Scripting commands
   public final CommandObject<Object> eval(String script) {
-    return new CommandObject<>(commandArguments(EVAL).add(script).add(0), BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVAL).add(script).add(0), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> eval(String script, String sampleKey) {
-    return new CommandObject<>(commandArguments(EVAL).add(script).add(0).processKey(sampleKey), BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVAL).add(script).add(0).processKey(sampleKey), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> eval(String script, int keyCount, String... params) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(keyCount)
         .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
-        BuilderFactory.ENCODED_OBJECT);
+        BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> eval(String script, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(EVAL).add(script).add(keys.size())
-        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
+        .keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalReadonly(String script, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keys.size())
-        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
+        .keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> eval(byte[] script) {
@@ -2736,27 +2736,27 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> evalsha(String sha1) {
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(String sha1, String sampleKey) {
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0).processKey(sampleKey), BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(0).processKey(sampleKey), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(String sha1, int keyCount, String... params) {
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keyCount)
         .addObjects((Object[]) params).processKeys(Arrays.copyOf(params, keyCount)),
-        BuilderFactory.ENCODED_OBJECT);
+        BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(String sha1, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keys.size())
-        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
+        .keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keys.size())
-        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
+        .keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(byte[] sha1) {
@@ -2853,12 +2853,12 @@ public class CommandObjects {
 
   public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size())
-        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
+        .keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> fcallReadonly(String name, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keys.size())
-        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
+        .keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<String> functionDelete(String libraryName) {
@@ -4206,12 +4206,12 @@ public class CommandObjects {
 
   public final CommandObject<Object> tFunctionCall(String library, String function, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(GearsCommand.TFCALL).add(library + "." + function)
-        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
+        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
     return new CommandObject<>(commandArguments(GearsCommand.TFCALLASYNC).add(library + "." + function)
-        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
+        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
   // RedisGears commands
 

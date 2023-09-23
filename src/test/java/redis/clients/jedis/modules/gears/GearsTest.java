@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.gears.TFunctionListParams;
 import redis.clients.jedis.gears.TFunctionLoadParams;
@@ -28,7 +29,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import redis.clients.jedis.RedisProtocol;
 
 public class GearsTest extends RedisModuleCommandsTestBase {
 
@@ -36,8 +36,6 @@ public class GearsTest extends RedisModuleCommandsTestBase {
 
   private static final String[] LIBRARIES_ARRAY = new String[]{
       "streamTriggers", "withFlags", "pingpong", "keyspaceTriggers", "hashitout", "withConfig"};
-
-  private static final List<String> ALL_LIBRARIES = Arrays.asList(LIBRARIES_ARRAY);
 
   @BeforeClass
   public static void prepare() {

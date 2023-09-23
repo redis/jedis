@@ -1,9 +1,7 @@
 package redis.clients.jedis.modules.gears;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -24,7 +22,6 @@ import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
-//@Ignore
 public class GearsTest extends RedisModuleCommandsTestBase {
   private static final String BAD_FUNCTION = "All Your Base Are Belong to Us";
   private static final int NUMBER_OF_LIBS = 6;
@@ -35,9 +32,14 @@ public class GearsTest extends RedisModuleCommandsTestBase {
     RedisModuleCommandsTestBase.prepare();
   }
 
-  //@Before
   @After
-  public void deleteFunctions() {
+  @Override
+  public void tearDown() throws Exception {
+    deleteFunctions(); // delete functions before closing connections
+    super.tearDown();
+  }
+
+  protected void deleteFunctions() {
     List<GearsLibraryInfo> libraries = client.tFunctionList();
     libraries.stream().map(GearsLibraryInfo::getName).forEach(library -> client.tFunctionDelete(library));
   }

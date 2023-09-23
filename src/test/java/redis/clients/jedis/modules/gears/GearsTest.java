@@ -477,7 +477,6 @@ public class GearsTest extends RedisModuleCommandsTestBase {
 
     List<String> argsAfter = Arrays.asList("Dictionary2", "Gallina", "Hen");
     Object result = client.tFunctionCall("withConfig", "hset", Collections.emptyList(), argsAfter);
-    System.out.println(result);
 
     Map<String, String> dict1 = client.hgetAll("Dictionary1");
     Map<String, String> dict2 = client.hgetAll("Dictionary2");

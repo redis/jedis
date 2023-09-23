@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
+import static redis.clients.jedis.gears.RedisGearsProtocol.GearsCommand.TFCALL;
+import static redis.clients.jedis.gears.RedisGearsProtocol.GearsCommand.TFCALLASYNC;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,6 +18,11 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.gears.RedisGearsProtocol.GearsKeyword;
+import redis.clients.jedis.gears.RedisGearsProtocol.GearsCommand;
+import redis.clients.jedis.gears.TFunctionListParams;
+import redis.clients.jedis.gears.TFunctionLoadParams;
+import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
@@ -4217,6 +4224,51 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(GraphCommand.CONFIG).add(GraphKeyword.GET).add(configName), BuilderFactory.ENCODED_OBJECT_MAP);
   }
   // RedisGraph commands
+
+  // RedisGears commands
+
+  public final CommandObject<String> tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
+    CommandArguments args = commandArguments(GearsCommand.TFUNCTION);
+    args.add(GearsKeyword.LOAD.getValue());
+    params.addParams(args);
+    args.add(libraryCode);
+
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> tFunctionDelete(String libraryName) {
+    CommandArguments args = commandArguments(GearsCommand.TFUNCTION);
+    args.add(GearsKeyword.DELETE.getValue());
+    args.add(libraryName);
+
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<List<GearsLibraryInfo>> tFunctionList(TFunctionListParams params) {
+    CommandArguments args = commandArguments(GearsCommand.TFUNCTION);
+    args.add(GearsKeyword.LIST.getValue());
+    params.addParams(args);
+
+    return new CommandObject<>(args, BuilderFactory.GEARS_LIBRARY_LIST);
+  }
+
+  public final CommandObject<Object> tFunctionCall(String library, String function, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(TFCALL).add(library+"."+function).add(keysArray.length)
+      .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+      BuilderFactory.ENCODED_OBJECT);
+  }
+
+  public final CommandObject<Object> tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
+    String[] keysArray = keys.toArray(new String[keys.size()]);
+    String[] argsArray = args.toArray(new String[args.size()]);
+    return new CommandObject<>(commandArguments(TFCALLASYNC).add(library+"."+function).add(keysArray.length)
+      .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
+      BuilderFactory.ENCODED_OBJECT);
+  }
+
+  // RedisGears commands
 
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with

@@ -2,8 +2,6 @@ package redis.clients.jedis;
 
 import static redis.clients.jedis.Protocol.Command.*;
 import static redis.clients.jedis.Protocol.Keyword.*;
-import static redis.clients.jedis.gears.RedisGearsProtocol.GearsCommand.TFCALL;
-import static redis.clients.jedis.gears.RedisGearsProtocol.GearsCommand.TFCALLASYNC;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,10 +16,8 @@ import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.gears.RedisGearsProtocol.GearsKeyword;
-import redis.clients.jedis.gears.RedisGearsProtocol.GearsCommand;
-import redis.clients.jedis.gears.TFunctionListParams;
-import redis.clients.jedis.gears.TFunctionLoadParams;
+import redis.clients.jedis.gears.*;
+import redis.clients.jedis.gears.RedisGearsProtocol.*;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.graph.GraphProtocol.*;
 import redis.clients.jedis.json.*;
@@ -2706,19 +2702,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> eval(String script, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(EVAL).add(script).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVAL).add(script).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalReadonly(String script, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> eval(byte[] script) {
@@ -2736,19 +2726,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> eval(byte[] script, List<byte[]> keys, List<byte[]> args) {
-    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
-    byte[][] argsArray = args.toArray(new byte[args.size()][]);
-    return new CommandObject<>(commandArguments(EVAL).add(script).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(EVAL).add(script).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> evalReadonly(byte[] script, List<byte[]> keys, List<byte[]> args) {
-    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
-    byte[][] argsArray = args.toArray(new byte[args.size()][]);
-    return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(EVAL_RO).add(script).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(String sha1) {
@@ -2766,19 +2750,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> evalsha(String sha1, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalshaReadonly(String sha1, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> evalsha(byte[] sha1) {
@@ -2796,19 +2774,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> evalsha(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
-    byte[][] argsArray = args.toArray(new byte[args.size()][]);
-    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(EVALSHA).add(sha1).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> evalshaReadonly(byte[] sha1, List<byte[]> keys, List<byte[]> args) {
-    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
-    byte[][] argsArray = args.toArray(new byte[args.size()][]);
-    return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(EVALSHA_RO).add(sha1).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<List<Boolean>> scriptExists(List<String> sha1s) {
@@ -2880,19 +2852,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(FCALL).add(name).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> fcallReadonly(String name, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<String> functionDelete(String libraryName) {
@@ -2900,21 +2866,21 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<LibraryInfo>> functionList() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST), BuilderFactory.LIBRARY_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST), LibraryInfo.LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<List<LibraryInfo>> functionList(String libraryNamePattern) {
     return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
-        .add(libraryNamePattern), BuilderFactory.LIBRARY_LIST);
+        .add(libraryNamePattern), LibraryInfo.LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<List<LibraryInfo>> functionListWithCode() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(WITHCODE), LibraryInfo.LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
     return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
-        .add(libraryNamePattern).add(WITHCODE), BuilderFactory.LIBRARY_LIST);
+        .add(libraryNamePattern).add(WITHCODE), LibraryInfo.LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<String> functionLoad(String functionCode) {
@@ -2946,19 +2912,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
-    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
-    byte[][] argsArray = args.toArray(new byte[args.size()][]);
-    return new CommandObject<>(commandArguments(FCALL).add(name).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(FCALL).add(name).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> fcallReadonly(byte[] name, List<byte[]> keys, List<byte[]> args) {
-    byte[][] keysArray = keys.toArray(new byte[keys.size()][]);
-    byte[][] argsArray = args.toArray(new byte[args.size()][]);
-    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keysArray.length)
-        .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-        BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(FCALL_RO).add(name).add(keys.size())
+        .keys(keys).addObjects(args), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<String> functionDelete(byte[] libraryName) {
@@ -4045,11 +4005,13 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> cmsInitByDim(String key, long width, long depth) {
-    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYDIM).key(key).add(width).add(depth), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYDIM).key(key).add(width)
+        .add(depth), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> cmsInitByProb(String key, double error, double probability) {
-    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error).add(probability), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error)
+        .add(probability), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
@@ -4059,7 +4021,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Long>> cmsQuery(String key, String... items) {
-    return new CommandObject<>(commandArguments(CountMinSketchCommand.QUERY).key(key).addObjects((Object[]) items), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.QUERY).key(key)
+        .addObjects((Object[]) items), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<String> cmsMerge(String destKey, String... keys) {
@@ -4226,48 +4189,30 @@ public class CommandObjects {
   // RedisGraph commands
 
   // RedisGears commands
-
   public final CommandObject<String> tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
-    CommandArguments args = commandArguments(GearsCommand.TFUNCTION);
-    args.add(GearsKeyword.LOAD.getValue());
-    params.addParams(args);
-    args.add(libraryCode);
-
-    return new CommandObject<>(args, BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.LOAD)
+        .addParams(params).add(libraryCode), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> tFunctionDelete(String libraryName) {
-    CommandArguments args = commandArguments(GearsCommand.TFUNCTION);
-    args.add(GearsKeyword.DELETE.getValue());
-    args.add(libraryName);
-
-    return new CommandObject<>(args, BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.DELETE)
+        .add(libraryName), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<GearsLibraryInfo>> tFunctionList(TFunctionListParams params) {
-    CommandArguments args = commandArguments(GearsCommand.TFUNCTION);
-    args.add(GearsKeyword.LIST.getValue());
-    params.addParams(args);
-
-    return new CommandObject<>(args, BuilderFactory.GEARS_LIBRARY_LIST);
+    return new CommandObject<>(commandArguments(GearsCommand.TFUNCTION).add(GearsKeyword.LIST)
+        .addParams(params), GearsLibraryInfo.GEARS_LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<Object> tFunctionCall(String library, String function, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(TFCALL).add(library+"."+function).add(keysArray.length)
-      .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-      BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(GearsCommand.TFCALL).add(library + "." + function)
+        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
   }
 
   public final CommandObject<Object> tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
-    String[] keysArray = keys.toArray(new String[keys.size()]);
-    String[] argsArray = args.toArray(new String[args.size()]);
-    return new CommandObject<>(commandArguments(TFCALLASYNC).add(library+"."+function).add(keysArray.length)
-      .keys((Object[]) keysArray).addObjects((Object[]) argsArray),
-      BuilderFactory.ENCODED_OBJECT);
+    return new CommandObject<>(commandArguments(GearsCommand.TFCALLASYNC).add(library + "." + function)
+        .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.ENCODED_OBJECT);
   }
-
   // RedisGears commands
 
   /**

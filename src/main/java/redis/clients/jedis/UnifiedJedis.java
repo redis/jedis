@@ -4792,6 +4792,33 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisGraph commands
 
+  // RedisGears commands
+  @Override
+  public String tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
+    return executeCommand(commandObjects.tFunctionLoad(libraryCode, params));
+  }
+
+  @Override
+  public String tFunctionDelete(String libraryName) {
+    return executeCommand(commandObjects.tFunctionDelete(libraryName));
+  }
+
+  @Override
+  public List<GearsLibraryInfo> tFunctionList(TFunctionListParams params) {
+    return executeCommand(commandObjects.tFunctionList(params));
+  }
+
+  @Override
+  public Object tFunctionCall(String library, String function, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.tFunctionCall(library, function, keys, args));
+  }
+
+  @Override
+  public Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.tFunctionCallAsync(library, function, keys, args));
+  }
+  // RedisGears commands
+
   public PipelineBase pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
@@ -4853,43 +4880,4 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public void setDefaultSearchDialect(int dialect) {
     this.commandObjects.setDefaultSearchDialect(dialect);
   }
-
-  // RedisGears commands
-
-  @Override
-  public String tFunctionLoad(String libraryCode) {
-    return executeCommand(commandObjects.tFunctionLoad(libraryCode, TFunctionLoadParams.loadParams()));
-  }
-
-  @Override
-  public String tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
-    return executeCommand(commandObjects.tFunctionLoad(libraryCode, params));
-  }
-
-  @Override
-  public String tFunctionDelete(String libraryName) {
-    return executeCommand(commandObjects.tFunctionDelete(libraryName));
-  }
-
-  @Override
-  public List<GearsLibraryInfo> tFunctionList() {
-    return executeCommand(commandObjects.tFunctionList(TFunctionListParams.listParams()));
-  }
-
-  @Override
-  public List<GearsLibraryInfo> tFunctionList(TFunctionListParams params) {
-    return executeCommand(commandObjects.tFunctionList(params));
-  }
-
-  @Override
-  public Object tFunctionCall(String library, String function, List<String> keys, List<String> args) {
-    return executeCommand(commandObjects.tFunctionCall(library, function, keys, args));
-  }
-
-  @Override
-  public Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
-    return executeCommand(commandObjects.tFunctionCallAsync(library, function, keys, args));
-  }
-
-  // RedisGears commands
 }

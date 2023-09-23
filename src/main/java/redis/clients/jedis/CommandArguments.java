@@ -82,6 +82,11 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
+  public final CommandArguments keys(Collection keys) {
+    keys.forEach(key -> key(key));
+    return this;
+  }
+
   public final CommandArguments addParams(IParams params) {
     params.addParams(this);
     return this;

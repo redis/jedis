@@ -1,8 +1,8 @@
 package redis.clients.jedis.modules.gears;
 
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -42,8 +42,14 @@ public class GearsTest extends RedisModuleCommandsTestBase {
     RedisModuleCommandsTestBase.prepare();
   }
 
-  @Before
-  public void deleteFunctions() {
+  @After
+  @Override
+  public void tearDown() throws Exception {
+    deleteFunctions(); // delete functions before closing connections
+    super.tearDown();
+  }
+
+  protected void deleteFunctions() {
     List<GearsLibraryInfo> libraries = client.tFunctionList();
     libraries.stream().map(GearsLibraryInfo::getName).forEach(library -> client.tFunctionDelete(library));
   }

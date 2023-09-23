@@ -5,6 +5,7 @@ import redis.clients.jedis.util.KeyValue;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static redis.clients.jedis.BuilderFactory.*;
 import static redis.clients.jedis.gears.resps.FunctionInfo.FUNCTION_INFO_LIST;
@@ -89,7 +90,7 @@ public class GearsLibraryInfo {
     return user;
   }
 
-  public static final Builder<GearsLibraryInfo> LIBRARY_BUILDER = new Builder<GearsLibraryInfo>() {
+  public static final Builder<GearsLibraryInfo> GEARS_LIBRARY_INFO = new Builder<GearsLibraryInfo>() {
     @Override
     public GearsLibraryInfo build(Object data) {
       if (data == null) return null;
@@ -169,4 +170,13 @@ public class GearsLibraryInfo {
       return new GearsLibraryInfo(apiVersion, clusterFunctions, code, configuration, engine, functions, keyspaceTriggers, name, pendingAsyncCalls, pendingJobs, streamTriggers, user);
     }
   };
+
+  public static final Builder<List<GearsLibraryInfo>> GEARS_LIBRARY_INFO_LIST = new Builder<List<GearsLibraryInfo>>() {
+    @Override
+    public List<GearsLibraryInfo> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return list.stream().map(o -> GearsLibraryInfo.GEARS_LIBRARY_INFO.build(o)).collect(Collectors.toList());
+    }
+  };
+
 }

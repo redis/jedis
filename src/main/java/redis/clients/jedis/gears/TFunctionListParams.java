@@ -18,7 +18,7 @@ public class TFunctionListParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (withCode) {
-      args.add(GearsKeyword.WITHCODE.getValue());
+      args.add(GearsKeyword.WITHCODE);
     }
 
     if (verbose > 0 && verbose < 4) {
@@ -28,8 +28,7 @@ public class TFunctionListParams implements IParams {
     }
 
     if (libraryName != null) {
-      args.add(GearsKeyword.LIBRARY);
-      args.add(libraryName);
+      args.add(GearsKeyword.LIBRARY).add(libraryName);
     }
   }
 

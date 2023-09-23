@@ -15,12 +15,11 @@ public class TFunctionLoadParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (replace) {
-      args.add(GearsKeyword.REPLACE.getValue());
+      args.add(GearsKeyword.REPLACE);
     }
 
     if (config != null && !config.isEmpty()) {
-      args.add(GearsKeyword.CONFIG.getValue());
-      args.add(config);
+      args.add(GearsKeyword.CONFIG).add(config);
     }
   }
 
@@ -29,7 +28,7 @@ public class TFunctionLoadParams implements IParams {
     return this;
   }
 
-  public TFunctionLoadParams withConfig(String config) {
+  public TFunctionLoadParams config(String config) {
     this.config = config;
     return this;
   }

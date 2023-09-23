@@ -1,18 +1,21 @@
 package redis.clients.jedis.gears;
 
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class RedisGearsProtocol {
+
   public enum GearsCommand implements ProtocolCommand {
-    TFUNCTION("TFUNCTION"),
-    TFCALL("TFCALL"),
-    TFCALLASYNC("TFCALLASYNC");
+
+    TFUNCTION,
+    TFCALL,
+    TFCALLASYNC;
 
     private final byte[] raw;
 
-    GearsCommand(String alt) {
-      raw = SafeEncoder.encode(alt);
+    private GearsCommand() {
+      this.raw = SafeEncoder.encode(name());
     }
 
     @Override
@@ -21,24 +24,26 @@ public class RedisGearsProtocol {
     }
   }
 
-  public enum GearsKeyword {
-    CONFIG("CONFIG"),
-    REPLACE("REPLACE"),
-    LOAD("LOAD"),
-    DELETE("DELETE"),
-    LIST("LIST"),
-    WITHCODE("WITHCODE"),
-    LIBRARY("LIBRARY"),
-    VERBOSE("VERBOSE");
+  public enum GearsKeyword implements Rawable {
 
-    private final String value;
+    CONFIG,
+    REPLACE,
+    LOAD,
+    DELETE,
+    LIST,
+    WITHCODE,
+    LIBRARY,
+    VERBOSE;
 
-    GearsKeyword(String value) {
-      this.value = value;
+    private final byte[] raw;
+
+    private GearsKeyword() {
+      this.raw = SafeEncoder.encode(name());
     }
 
-    public String getValue() {
-      return value;
+    @Override
+    public byte[] getRaw() {
+      return raw;
     }
   }
 }

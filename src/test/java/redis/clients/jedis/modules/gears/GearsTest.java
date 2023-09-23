@@ -3,14 +3,13 @@ package redis.clients.jedis.modules.gears;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.RedisProtocol;
+
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.gears.TFunctionListParams;
 import redis.clients.jedis.gears.TFunctionLoadParams;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.RedisProtocolUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -474,7 +473,7 @@ public class GearsTest extends RedisModuleCommandsTestBase {
     client.tFunctionCall("withConfig", "hset", Collections.emptyList(), argsBefore);
 
     String config = "{\"last_modified_field_name\":\"changed_on\"}";
-    client.tFunctionLoad(readLibrary("withConfig.js"), TFunctionLoadParams.loadParams().replace().withConfig(config));
+    client.tFunctionLoad(readLibrary("withConfig.js"), TFunctionLoadParams.loadParams().replace().config(config));
 
     List<String> argsAfter = Arrays.asList("Dictionary2", "Gallina", "Hen");
     Object result = client.tFunctionCall("withConfig", "hset", Collections.emptyList(), argsAfter);

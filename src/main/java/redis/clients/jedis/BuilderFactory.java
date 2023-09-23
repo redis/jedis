@@ -5,7 +5,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
 import redis.clients.jedis.resps.LCSMatchResult.Position;
@@ -1822,21 +1821,11 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<LibraryInfo>> LIBRARY_LIST = new Builder<List<LibraryInfo>>() {
-    @Override
-    public List<LibraryInfo> build(Object data) {
-      List<Object> list = (List<Object>) data;
-      return list.stream().map(o -> LibraryInfo.LIBRARY_BUILDER.build(o)).collect(Collectors.toList());
-    }
-  };
-
-  public static final Builder<List<GearsLibraryInfo>> GEARS_LIBRARY_LIST = new Builder<List<GearsLibraryInfo>>() {
-    @Override
-    public List<GearsLibraryInfo> build(Object data) {
-      List<Object> list = (List<Object>) data;
-      return list.stream().map(o -> GearsLibraryInfo.LIBRARY_BUILDER.build(o)).collect(Collectors.toList());
-    }
-  };
+  /**
+   * @deprecated Use {@link LibraryInfo#LIBRARY_INFO_LIST}.
+   */
+  @Deprecated
+  public static final Builder<List<LibraryInfo>> LIBRARY_LIST = LibraryInfo.LIBRARY_INFO_LIST;
 
   public static final Builder<List<List<String>>> STRING_LIST_LIST = new Builder<List<List<String>>>() {
     @Override

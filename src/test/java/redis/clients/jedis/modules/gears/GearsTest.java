@@ -12,7 +12,6 @@ import redis.clients.jedis.gears.TFunctionListParams;
 import redis.clients.jedis.gears.TFunctionLoadParams;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
-import redis.clients.jedis.util.KeyValue;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -429,44 +428,21 @@ public class GearsTest extends RedisModuleCommandsTestBase {
 
     Object result = client.tFunctionCall("hashitout", "hashy", Collections.singletonList("hash1"),
         Collections.emptyList());
-    assertEquals(ArrayList.class, result.getClass());
-    List<Object> list = (List) result;
-    assertFalse(list.isEmpty());
-    boolean isResp3 = list.get(0) instanceof KeyValue;
 
-    assertEquals(isResp3 ? 7 : 14, list.size());
+    final Map<String, String> asMap;
 
     if (protocol != RedisProtocol.RESP3) {
-      List<String> asList = (List) result;
-      int indexOfJava = asList.indexOf("Java");
-      assertTrue(indexOfJava >= 0);
-      assertEquals("James Gosling", asList.get(indexOfJava + 1));
-      int indexOfJavaScript = asList.indexOf("JavaScript");
-      assertTrue(indexOfJavaScript >= 0);
-      assertEquals("Brendan Eich", asList.get(indexOfJavaScript + 1));
-      int indexOfC = asList.indexOf("C");
-      assertTrue(indexOfC >= 0);
-      assertEquals("Dennis Ritchie", asList.get(indexOfC + 1));
-      int indexOfRuby = asList.indexOf("Ruby");
-      assertTrue(indexOfRuby >= 0);
-      assertEquals("Yukihiro Matsumoto", asList.get(indexOfRuby + 1));
-      int indexOfPython = asList.indexOf("Python");
-      assertTrue(indexOfPython >= 0);
-      assertEquals("Guido van Rossum", asList.get(indexOfPython + 1));
-      int indexOfCPP = asList.indexOf("C++");
-      assertTrue(indexOfCPP >= 0);
-      assertEquals("Bjarne Stroustrup", asList.get(indexOfCPP + 1));
-      int indexOfLastUpdated = asList.indexOf("__last_updated__");
-      assertTrue(indexOfLastUpdated >= 0);
-      assertTrue(Integer.parseInt(asList.get(indexOfLastUpdated + 1)) > 0);
+      final List<String> asList = (List) result;
+      asMap = flatMapToMap(asList);
+
     } else {
-      for (KeyValue kv : (List<KeyValue<String, Object>>) result) {
-        if (!kv.getKey().toString().equalsIgnoreCase("__last_updated__")) {
-          assertTrue(payload.containsKey(kv.getKey()));
-          assertEquals(payload.get(kv.getKey()), kv.getValue());
-        }
-      }
+      asMap = (Map) result;
     }
+
+    payload.forEach((language, author) -> {
+      assertThat(asMap, Matchers.hasEntry(language, author));
+    });
+    assertThat(Long.parseLong(asMap.get("__last_updated__")), Matchers.greaterThan(0L));
   }
 
   @Test
@@ -539,5 +515,13 @@ public class GearsTest extends RedisModuleCommandsTestBase {
     libraryConditions.put("withConfig", new ArrayList<>());
 
     return libraryConditions;
+  }
+
+  private static Map flatMapToMap(List list) {
+    Map map = new HashMap(list.size() / 2);
+    for (int i = 0; i < list.size(); i += 2) {
+      map.put(list.get(i), list.get(i + 1));
+    }
+    return map;
   }
 }

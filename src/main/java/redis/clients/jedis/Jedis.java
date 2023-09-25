@@ -329,6 +329,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return this.db;
   }
 
+  public List<Object> hello3() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(HELLO, "3");
+    return connection.getObjectMultiBulkReply();
+  }
+
+  public void clientTrackingOnBCast(JedisPubSub jedisPubSub) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "tracking", "on", "bcast");
+    connection.getBulkReply();
+    jedisPubSub.processInvalidateMessages(connection);
+  }
+
   /**
    * @return <code>PONG</code>
    */

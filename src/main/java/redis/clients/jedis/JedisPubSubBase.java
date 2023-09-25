@@ -84,6 +84,19 @@ public abstract class JedisPubSubBase<T> {
     return subscribedChannels;
   }
 
+  public final void processInvalidateMessages(Connection client) {
+    this.client = client;
+    this.client.setTimeoutInfinite();
+    // avoid do-while jump out
+    this.subscribedChannels = 1;
+    try {
+      process();
+    } finally {
+      this.subscribedChannels = 0;
+      this.client.rollbackTimeout();
+    }
+  }
+
   public final void proceed(Connection client, T... channels) {
     this.client = client;
     this.client.setTimeoutInfinite();
@@ -159,6 +172,16 @@ public abstract class JedisPubSubBase<T> {
           final byte[] bpattern = (byte[]) listReply.get(1);
           final T enpattern = (bpattern == null) ? null : encode(bpattern);
           onPong(enpattern);
+        } else if(Arrays.equals("invalidate".getBytes(), resp)){
+          Object invalidateObj = listReply.get(1);
+          if(invalidateObj instanceof byte[]) {
+            onMessage(encode("invalidate".getBytes()), encode((byte[]) invalidateObj));
+          } else if (invalidateObj instanceof List) {
+            List<byte[]> invalidateKeys = (List<byte[]>) invalidateObj;
+            for (byte[] invalidateKey : invalidateKeys) {
+              onMessage(encode("invalidate".getBytes()), encode(invalidateKey));
+            }
+          }
         } else {
           throw new JedisException("Unknown message type: " + firstObj);
         }

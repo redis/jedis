@@ -1,6 +1,7 @@
 package redis.clients.jedis.examples;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
@@ -15,7 +16,6 @@ import redis.clients.jedis.search.schemafields.GeoShapeField;
 
 import static java.util.Collections.singletonMap;
 import static org.junit.Assert.assertEquals;
-import org.locationtech.jts.geom.Geometry;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 /**

@@ -19,7 +19,7 @@ import org.locationtech.jts.geom.Geometry;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 /**
- * Since RediSearch 2.8, it is possible to do more advanced GEO querying with GEOSHAPE fields.
+ * Since RediSearch 2.8.4, it is possible to do more advanced GEO querying with GEOSHAPE fields.
  *
  * We can use any object/library which produces
  * <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">
@@ -54,7 +54,8 @@ public class GeoShapeFieldsUsageInRediSearch {
 
     // creating index
     client.ftCreate("geometry-index",
-        GeoShapeField.of("geometry", GeoShapeField.CoordinateSystem.SPHERICAL) // 'FLAT' Coordinate system also available
+        GeoShapeField.of("geometry", GeoShapeField.CoordinateSystem.SPHERICAL) // 'SPHERICAL' is for geographic (lon, lat).
+                                                   // 'FLAT' coordinate system also available for cartesian (X,Y).
     );
 
     // preparing data
@@ -82,7 +83,7 @@ public class GeoShapeFieldsUsageInRediSearch {
     );
 
     SearchResult res = client.ftSearch("geometry-index",
-        "@geometry:[within $poly]", // querying 'within' condition;
+        "@geometry:[within $poly]", // querying 'within' condition.
                                     // RediSearch also supports 'contains' condition.
         FTSearchParams.searchParams()
             .addParam("poly", within)
@@ -101,5 +102,5 @@ public class GeoShapeFieldsUsageInRediSearch {
     }
   }
 
-  // As of RediSearch 2.8, only POLYGON and POINT objects are supported.
+  // Note: As of RediSearch 2.8.4, only POLYGON and POINT objects are supported.
 }

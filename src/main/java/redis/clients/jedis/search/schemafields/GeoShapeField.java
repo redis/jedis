@@ -8,7 +8,15 @@ import redis.clients.jedis.search.FieldName;
 public class GeoShapeField extends SchemaField {
 
   public enum CoordinateSystem {
+
+    /**
+     * For cartesian (X,Y).
+     */
     FLAT,
+
+    /**
+     * For geographic (lon, lat).
+     */
     SPHERICAL
   }
 

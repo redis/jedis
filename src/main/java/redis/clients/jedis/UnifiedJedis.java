@@ -3318,12 +3318,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(String functionCode) {
-    return executeCommand(commandObjects.functionLoad(functionCode));
+    return checkAndBroadcastCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(String functionCode) {
-    return executeCommand(commandObjects.functionLoadReplace(functionCode));
+    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
@@ -3373,12 +3373,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(byte[] functionCode) {
-    return executeCommand(commandObjects.functionLoad(functionCode));
+    return checkAndBroadcastCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(byte[] functionCode) {
-    return executeCommand(commandObjects.functionLoadReplace(functionCode));
+    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override

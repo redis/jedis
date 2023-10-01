@@ -1,19 +1,16 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.Protocol.Keyword.MESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PMESSAGE;
-import static redis.clients.jedis.Protocol.Keyword.PONG;
-import static redis.clients.jedis.Protocol.Keyword.PSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.PUNSUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.SUBSCRIBE;
-import static redis.clients.jedis.Protocol.Keyword.UNSUBSCRIBE;
-
 import java.util.Arrays;
 import java.util.List;
 
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
+
+import static redis.clients.jedis.Protocol.Keyword.*;
 
 public abstract class BinaryJedisPubSub {
+  private static final byte[] INVALIDATE_CHANNEL = SafeEncoder.encode("__redis__:invalidate");
+
   private int subscribedChannels = 0;
   private Client client;
 
@@ -114,8 +111,12 @@ public abstract class BinaryJedisPubSub {
         onUnsubscribe(bchannel, subscribedChannels);
       } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
         final byte[] bchannel = (byte[]) reply.get(1);
-        final byte[] bmesg = (byte[]) reply.get(2);
-        onMessage(bchannel, bmesg);
+        final Object bmesg = reply.get(2);
+        if (bmesg instanceof List) {
+          ((List<byte[]>) bmesg).forEach(msg -> onMessage(bchannel, msg));
+        } else {
+          onMessage(bchannel, (byte[])bmesg);
+        }
       } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final byte[] bchannel = (byte[]) reply.get(2);
@@ -132,6 +133,13 @@ public abstract class BinaryJedisPubSub {
       } else if (Arrays.equals(PONG.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         onPong(bpattern);
+      }  else if (Arrays.equals(INVALIDATE.getRaw(), resp)) {
+        final List<byte[]> bkeys = (List<byte[]>) reply.get(1);
+        if (bkeys == null) {
+          onMessage(INVALIDATE_CHANNEL, null);
+        } else {
+          bkeys.forEach(msg -> onMessage(INVALIDATE_CHANNEL, msg));
+        }
       } else {
         throw new JedisException("Unknown message type: " + firstObj);
       }

@@ -501,8 +501,8 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   @Test
   public void testJsonWithAlias() {
     Schema sc = new Schema()
-        .addTextField("$.name", 1.0).as("name")
-        .addNumericField("$.num").as("num");
+            .addTextField("$.name", 1.0).as("name")
+            .addNumericField("$.num").as("num");
 
     IndexDefinition definition = new IndexDefinition(IndexDefinition.Type.JSON).setPrefixes("king:");
 

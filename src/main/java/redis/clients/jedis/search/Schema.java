@@ -226,6 +226,7 @@ public class Schema {
     private final double weight;
     private final boolean nostem;
     private final String phonetic;
+    private final boolean withSuffixTrie;
 
     public TextField(String name) {
       this(name, 1.0);
@@ -252,17 +253,27 @@ public class Schema {
     }
 
     public TextField(String name, double weight, boolean sortable, boolean nostem, boolean noindex, String phonetic) {
+      this(name, weight, sortable, nostem, noindex, phonetic, false);
+    }
+
+    public TextField(String name, double weight, boolean sortable, boolean nostem, boolean noindex, String phonetic, boolean withSuffixTrie) {
       super(name, FieldType.TEXT, sortable, noindex);
       this.weight = weight;
       this.nostem = nostem;
       this.phonetic = phonetic;
+      this.withSuffixTrie = withSuffixTrie;
     }
 
     public TextField(FieldName name, double weight, boolean sortable, boolean nostem, boolean noindex, String phonetic) {
+      this(name, weight, sortable, nostem, noindex, phonetic, false);
+    }
+
+    public TextField(FieldName name, double weight, boolean sortable, boolean nostem, boolean noindex, String phonetic, boolean withSuffixTrie) {
       super(name, FieldType.TEXT, sortable, noindex);
       this.weight = weight;
       this.nostem = nostem;
       this.phonetic = phonetic;
+      this.withSuffixTrie = withSuffixTrie;
     }
 
     @Override
@@ -278,12 +289,15 @@ public class Schema {
         args.add("PHONETIC");
         args.add(this.phonetic);
       }
+      if (withSuffixTrie) {
+        args.add("WITHSUFFIXTRIE");
+      }
     }
 
     @Override
     public String toString() {
       return "TextField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
-          + ", weight=" + weight + ", nostem=" + nostem + ", phonetic='" + phonetic + "'}";
+          + ", weight=" + weight + ", nostem=" + nostem + ", phonetic='" + phonetic + ", withSuffixTrie='" + withSuffixTrie + "'}";
     }
   }
 
@@ -291,6 +305,7 @@ public class Schema {
 
     private final String separator;
     private final boolean caseSensitive;
+    private final boolean withSuffixTrie;
 
     public TagField(String name) {
       this(name, null);
@@ -313,9 +328,14 @@ public class Schema {
     }
 
     public TagField(String name, String separator, boolean caseSensitive, boolean sortable) {
+      this(name, separator, caseSensitive, sortable, false);
+    }
+
+    public TagField(String name, String separator, boolean caseSensitive, boolean sortable, boolean withSuffixTrie) {
       super(name, FieldType.TAG, sortable);
       this.separator = separator;
       this.caseSensitive = caseSensitive;
+      this.withSuffixTrie = withSuffixTrie;
     }
 
     public TagField(FieldName name, String separator, boolean sortable) {
@@ -323,9 +343,14 @@ public class Schema {
     }
 
     public TagField(FieldName name, String separator, boolean caseSensitive, boolean sortable) {
+      this(name, separator, caseSensitive, sortable, false);
+    }
+
+    public TagField(FieldName name, String separator, boolean caseSensitive, boolean sortable, boolean withSuffixTrie) {
       super(name, FieldType.TAG, sortable, false);
       this.separator = separator;
       this.caseSensitive = caseSensitive;
+      this.withSuffixTrie = withSuffixTrie;
     }
 
     @Override
@@ -337,12 +362,15 @@ public class Schema {
       if (caseSensitive) {
         args.add("CASESENSITIVE");
       }
+      if (withSuffixTrie) {
+        args.add("WITHSUFFIXTRIE");
+      }
     }
 
     @Override
     public String toString() {
       return "TagField{name='" + fieldName + "', type=" + type + ", sortable=" + sortable + ", noindex=" + noIndex
-          + ", separator='" + separator + ", caseSensitive='" + caseSensitive + "'}";
+          + ", separator='" + separator + ", caseSensitive='" + caseSensitive + ", withSuffixTrie='" + withSuffixTrie + "'}";
     }
   }
 

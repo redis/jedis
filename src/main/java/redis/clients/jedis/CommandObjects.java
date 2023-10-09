@@ -2402,24 +2402,24 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(XREVRANGE).key(key).add(end).add(start).add(COUNT).add(count), BuilderFactory.STREAM_ENTRY_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end) {
+  public final CommandObject<List<Object>> xrange(byte[] key, byte[] start, byte[] end) {
     return new CommandObject<>(commandArguments(XRANGE).key(key).add(start == null ? "-" : start).add(end == null ? "+" : end),
-        BuilderFactory.BINARY_LIST);
+        BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count) {
+  public final CommandObject<List<Object>> xrange(byte[] key, byte[] start, byte[] end, int count) {
     return new CommandObject<>(commandArguments(XRANGE).key(key).add(start == null ? "-" : start).add(end == null ? "+" : end)
-        .add(COUNT).add(count), BuilderFactory.BINARY_LIST);
+        .add(COUNT).add(count), BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start) {
+  public final CommandObject<List<Object>> xrevrange(byte[] key, byte[] end, byte[] start) {
     return new CommandObject<>(commandArguments(XREVRANGE).key(key).add(end == null ? "+" : end).add(start == null ? "-" : start),
-        BuilderFactory.BINARY_LIST);
+        BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+  public final CommandObject<List<Object>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     return new CommandObject<>(commandArguments(XREVRANGE).key(key).add(end == null ? "+" : end).add(start == null ? "-" : start)
-        .add(COUNT).add(count), BuilderFactory.BINARY_LIST);
+        .add(COUNT).add(count), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<Long> xack(String key, String group, StreamEntryID... ids) {
@@ -2660,7 +2660,7 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE);
   }
 
-  public final CommandObject<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+  public final CommandObject<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.key(entry.getKey());
@@ -2668,10 +2668,10 @@ public class CommandObjects {
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.add(entry.getValue());
     }
-    return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
+    return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
 
-  public final CommandObject<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer,
+  public final CommandObject<List<Object>> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     CommandArguments args = commandArguments(XREADGROUP)
         .add(GROUP).add(groupName).add(consumer)
@@ -2682,7 +2682,7 @@ public class CommandObjects {
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.add(entry.getValue());
     }
-    return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
+    return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
   }
   // Stream commands
 

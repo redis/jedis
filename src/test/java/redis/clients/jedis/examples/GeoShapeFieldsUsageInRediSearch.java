@@ -19,14 +19,13 @@ import static org.junit.Assert.assertEquals;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 /**
- * Since RediSearch 2.8.4, it is possible to do more advanced GEO querying with GEOSHAPE fields.
+ * As of RediSearch 2.8.4, advanced GEO querying with GEOSHAPE fields is supported.
  *
- * We can use any object/library which produces
- * <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry">
- * Well-known text (WKT)</a> in {@code toString()} method.
+ * Any object/library producing a
+ * <a href="https://en.wikipedia.org/wiki/Well-known_text_representation_of_geometry"> well-known
+ * text (WKT)</a> in {@code toString()} method can be used.
  *
- * For this purpose of this example we will use
- * <a href="https://github.com/locationtech/jts">JTS</a> library.
+ * This example uses the <a href="https://github.com/locationtech/jts">JTS</a> library.
  * <pre>
  * {@code
  * <dependency>
@@ -44,7 +43,7 @@ public class GeoShapeFieldsUsageInRediSearch {
     // We'll create geometry objects with GeometryFactory
     final GeometryFactory factory = new GeometryFactory();
 
-    final String host = "<HOST>";
+    final String host = "localhost";
     final int port = 6379;
     final HostAndPort address = new HostAndPort(host, port);
 

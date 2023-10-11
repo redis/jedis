@@ -73,6 +73,21 @@
 			<version>2.10.1</version>
 		</dependency>
 
+		<!-- UNIX socket connection support -->
+		<dependency>
+			<groupId>com.kohlschutter.junixsocket</groupId>
+			<artifactId>junixsocket-core</artifactId>
+			<version>2.8.1</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+		<!-- Well-known text representation of geometry in RediSearch support -->
+		<dependency>
+			<groupId>org.locationtech.jts</groupId>
+			<artifactId>jts-core</artifactId>
+			<version>1.19.0</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -89,13 +104,6 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>${slf4j.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.kohlschutter.junixsocket</groupId>
-			<artifactId>junixsocket-core</artifactId>
-			<version>2.8.1</version>
-			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

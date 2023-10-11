@@ -19,6 +19,9 @@ import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
+import redis.clients.jedis.gears.TFunctionListParams;
+import redis.clients.jedis.gears.TFunctionLoadParams;
+import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
@@ -3055,22 +3058,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+  public List<Object> xrange(byte[] key, byte[] start, byte[] end) {
     return executeCommand(commandObjects.xrange(key, start, end));
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
+  public List<Object> xrange(byte[] key, byte[] start, byte[] end, int count) {
     return executeCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
-  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+  public List<Object> xrevrange(byte[] key, byte[] end, byte[] start) {
     return executeCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
-  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+  public List<Object> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     return executeCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
@@ -3175,12 +3178,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+  public List<Object> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
-  public List<byte[]> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+  public List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
   // Stream commands
@@ -3318,12 +3321,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(String functionCode) {
-    return executeCommand(commandObjects.functionLoad(functionCode));
+    return checkAndBroadcastCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(String functionCode) {
-    return executeCommand(commandObjects.functionLoadReplace(functionCode));
+    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
@@ -3373,12 +3376,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String functionLoad(byte[] functionCode) {
-    return executeCommand(commandObjects.functionLoad(functionCode));
+    return checkAndBroadcastCommand(commandObjects.functionLoad(functionCode));
   }
 
   @Override
   public String functionLoadReplace(byte[] functionCode) {
-    return executeCommand(commandObjects.functionLoadReplace(functionCode));
+    return checkAndBroadcastCommand(commandObjects.functionLoadReplace(functionCode));
   }
 
   @Override
@@ -3637,6 +3640,31 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String ftAliasAdd(String aliasName, String indexName) {
+    return checkAndBroadcastCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public String ftAliasUpdate(String aliasName, String indexName) {
+    return checkAndBroadcastCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public String ftAliasDel(String aliasName) {
+    return checkAndBroadcastCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public String ftDropIndex(String indexName) {
+    return checkAndBroadcastCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public String ftDropIndexDD(String indexName) {
+    return checkAndBroadcastCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
   public SearchResult ftSearch(String indexName, String query) {
     return executeCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3734,16 +3762,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String ftDropIndex(String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftDropIndex(indexName));
-  }
-
-  @Override
-  public String ftDropIndexDD(String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftDropIndexDD(indexName));
-  }
-
-  @Override
   public String ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
     return executeCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
   }
@@ -3801,21 +3819,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Set<String> ftTagVals(String indexName, String fieldName) {
     return executeCommand(commandObjects.ftTagVals(indexName, fieldName));
-  }
-
-  @Override
-  public String ftAliasAdd(String aliasName, String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasAdd(aliasName, indexName));
-  }
-
-  @Override
-  public String ftAliasUpdate(String aliasName, String indexName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
-  }
-
-  @Override
-  public String ftAliasDel(String aliasName) {
-    return checkAndBroadcastCommand(commandObjects.ftAliasDel(aliasName));
   }
 
   @Override
@@ -4788,6 +4791,33 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.graphConfigGet(configName));
   }
   // RedisGraph commands
+
+  // RedisGears commands
+  @Override
+  public String tFunctionLoad(String libraryCode, TFunctionLoadParams params) {
+    return executeCommand(commandObjects.tFunctionLoad(libraryCode, params));
+  }
+
+  @Override
+  public String tFunctionDelete(String libraryName) {
+    return executeCommand(commandObjects.tFunctionDelete(libraryName));
+  }
+
+  @Override
+  public List<GearsLibraryInfo> tFunctionList(TFunctionListParams params) {
+    return executeCommand(commandObjects.tFunctionList(params));
+  }
+
+  @Override
+  public Object tFunctionCall(String library, String function, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.tFunctionCall(library, function, keys, args));
+  }
+
+  @Override
+  public Object tFunctionCallAsync(String library, String function, List<String> keys, List<String> args) {
+    return executeCommand(commandObjects.tFunctionCallAsync(library, function, keys, args));
+  }
+  // RedisGears commands
 
   public PipelineBase pipelined() {
     if (provider == null) {

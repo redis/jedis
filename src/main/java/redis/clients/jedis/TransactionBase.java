@@ -3135,22 +3135,22 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end) {
+  public Response<List<Object>> xrange(byte[] key, byte[] start, byte[] end) {
     return appendCommand(commandObjects.xrange(key, start, end));
   }
 
   @Override
-  public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count) {
+  public Response<List<Object>> xrange(byte[] key, byte[] start, byte[] end, int count) {
     return appendCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
-  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start) {
+  public Response<List<Object>> xrevrange(byte[] key, byte[] end, byte[] start) {
     return appendCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
-  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+  public Response<List<Object>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     return appendCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
@@ -3255,12 +3255,12 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   }
 
   @Override
-  public Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+  public Response<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     return appendCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
-  public Response<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+  public Response<List<Object>> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
@@ -3448,6 +3448,31 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
   @Override
   public Response<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
     return appendCommand(commandObjects.ftAlter(indexName, schemaFields));
+  }
+
+  @Override
+  public Response<String> ftAliasAdd(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasDel(String aliasName) {
+    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public Response<String> ftDropIndex(String indexName) {
+    return appendCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public Response<String> ftDropIndexDD(String indexName) {
+    return appendCommand(commandObjects.ftDropIndexDD(indexName));
   }
 
   @Override

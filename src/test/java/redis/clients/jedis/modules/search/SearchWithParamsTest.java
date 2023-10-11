@@ -9,6 +9,13 @@ import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
+
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
@@ -331,6 +338,100 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         FTSearchParams.searchParams()
             .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM)));
     assertEquals(2, res.getTotalResults());
+  }
+
+  @Test
+  public void geoShapeFilterSpherical() throws ParseException {
+    final WKTReader reader = new WKTReader();
+    final GeometryFactory factory = new GeometryFactory();
+
+    assertOK(client.ftCreate(index, GeoShapeField.of("geom", GeoShapeField.CoordinateSystem.SPHERICAL)));
+
+    // polygon type
+    final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
+        new Coordinate(34.9001, 29.7100), new Coordinate(34.9100, 29.7100),
+        new Coordinate(34.9100, 29.7001), new Coordinate(34.9001, 29.7001)});
+    client.hset("small", RediSearchUtil.toStringMap(Collections.singletonMap("geom", small)));
+
+    final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
+        new Coordinate(34.9001, 29.7200), new Coordinate(34.9200, 29.7200),
+        new Coordinate(34.9200, 29.7001), new Coordinate(34.9001, 29.7001)});
+    client.hset("large", RediSearchUtil.toStringMap(Collections.singletonMap("geom", large)));
+
+    // within condition
+    final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(34.9000, 29.7000),
+        new Coordinate(34.9000, 29.7150), new Coordinate(34.9150, 29.7150),
+        new Coordinate(34.9150, 29.7000), new Coordinate(34.9000, 29.7000)});
+
+    SearchResult res = client.ftSearch(index, "@geom:[within $poly]",
+        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+    assertEquals(1, res.getTotalResults());
+    assertEquals(1, res.getDocuments().size());
+    assertEquals(small, reader.read(res.getDocuments().get(0).getString("geom")));
+
+    // contains condition
+    final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(34.9002, 29.7002),
+        new Coordinate(34.9002, 29.7050), new Coordinate(34.9050, 29.7050),
+        new Coordinate(34.9050, 29.7002), new Coordinate(34.9002, 29.7002)});
+
+    res = client.ftSearch(index, "@geom:[contains $poly]",
+        FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
+    assertEquals(2, res.getTotalResults());
+    assertEquals(2, res.getDocuments().size());
+
+    // point type
+    final Point point = factory.createPoint(new Coordinate(34.9010, 29.7010));
+    client.hset("point", RediSearchUtil.toStringMap(Collections.singletonMap("geom", point)));
+
+    res = client.ftSearch(index, "@geom:[within $poly]",
+        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+    assertEquals(2, res.getTotalResults());
+    assertEquals(2, res.getDocuments().size());
+  }
+
+  @Test
+  public void geoShapeFilterFlat() throws ParseException {
+    final WKTReader reader = new WKTReader();
+    final GeometryFactory factory = new GeometryFactory();
+
+    assertOK(client.ftCreate(index, GeoShapeField.of("geom", GeoShapeField.CoordinateSystem.FLAT)));
+
+    // polygon type
+    final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
+        new Coordinate(1, 100), new Coordinate(100, 100), new Coordinate(100, 1), new Coordinate(1, 1)});
+    client.hset("small", RediSearchUtil.toStringMap(Collections.singletonMap("geom", small)));
+
+    final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
+        new Coordinate(1, 200), new Coordinate(200, 200), new Coordinate(200, 1), new Coordinate(1, 1)});
+    client.hset("large", RediSearchUtil.toStringMap(Collections.singletonMap("geom", large)));
+
+    // within condition
+    final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(0, 0),
+        new Coordinate(0, 150), new Coordinate(150, 150), new Coordinate(150, 0), new Coordinate(0, 0)});
+
+    SearchResult res = client.ftSearch(index, "@geom:[within $poly]",
+        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+    assertEquals(1, res.getTotalResults());
+    assertEquals(1, res.getDocuments().size());
+    assertEquals(small, reader.read(res.getDocuments().get(0).getString("geom")));
+
+    // contains condition
+    final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(2, 2),
+        new Coordinate(2, 50), new Coordinate(50, 50), new Coordinate(50, 2), new Coordinate(2, 2)});
+
+    res = client.ftSearch(index, "@geom:[contains $poly]",
+        FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
+    assertEquals(2, res.getTotalResults());
+    assertEquals(2, res.getDocuments().size());
+
+    // point type
+    final Point point = factory.createPoint(new Coordinate(10, 10));
+    client.hset("point", RediSearchUtil.toStringMap(Collections.singletonMap("geom", point)));
+
+    res = client.ftSearch(index, "@geom:[within $poly]",
+        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+    assertEquals(2, res.getTotalResults());
+    assertEquals(2, res.getDocuments().size());
   }
 
   @Test
@@ -1209,5 +1310,27 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(Arrays.asList("profesor:5555", "student:1111", "pupil:2222", "student:3333",
         "pupil:4444", "student:5555", "teacher:6666").stream().collect(Collectors.toSet()),
         collect.stream().map(Document::getId).collect(Collectors.toSet()));
+  }
+
+  @Test
+  public void escapeUtil() {
+    assertOK(client.ftCreate(index, TextField.of("txt")));
+
+    client.hset("doc1", "txt", RediSearchUtil.escape("hello-world"));
+    assertNotEquals("hello-world", client.hget("doc1", "txt"));
+    assertEquals("hello-world", RediSearchUtil.unescape(client.hget("doc1", "txt")));
+
+    SearchResult resultNoEscape = client.ftSearch(index, "hello-world");
+    assertEquals(0, resultNoEscape.getTotalResults());
+
+    SearchResult resultEscaped = client.ftSearch(index, RediSearchUtil.escapeQuery("hello-world"));
+    assertEquals(1, resultEscaped.getTotalResults());
+  }
+
+  @Test
+  public void escapeMapUtil() {
+    client.hset("doc2", RediSearchUtil.toStringMap(Collections.singletonMap("txt", "hello-world"), true));
+    assertNotEquals("hello-world", client.hget("doc2", "txt"));
+    assertEquals("hello-world", RediSearchUtil.unescape(client.hget("doc2", "txt")));
   }
 }

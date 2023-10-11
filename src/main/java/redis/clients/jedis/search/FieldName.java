@@ -35,6 +35,14 @@ public class FieldName implements IParams {
     return this;
   }
 
+  public final String getName() {
+    return name;
+  }
+
+  public final String getAttribute() {
+    return attribute;
+  }
+
   @Deprecated
   public int addCommandEncodedArguments(List<String> args) {
     args.add(name);
@@ -73,11 +81,6 @@ public class FieldName implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     addCommandArguments(args);
-  }
-
-  @Deprecated // TODO: remove?
-  String getName() {
-    return name;
   }
 
   @Override

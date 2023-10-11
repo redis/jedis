@@ -16,13 +16,13 @@ public interface StreamPipelineBinaryCommands {
 
   Response<Long> xlen(byte[] key);
 
-  Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end);
+  Response<List<Object>> xrange(byte[] key, byte[] start, byte[] end);
 
-  Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count);
+  Response<List<Object>> xrange(byte[] key, byte[] start, byte[] end, int count);
 
-  Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start);
+  Response<List<Object>> xrevrange(byte[] key, byte[] end, byte[] start);
 
-  Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
+  Response<List<Object>> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
   Response<Long> xack(byte[] key, byte[] group, byte[]... ids);
 
@@ -75,9 +75,9 @@ public interface StreamPipelineBinaryCommands {
 
   Response<List<Object>> xinfoConsumers(byte[] key, byte[] group);
 
-  Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
+  Response<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
-  Response<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
-      Map.Entry<byte[], byte[]>... streams);
+  Response<List<Object>> xreadGroup(byte[] groupName, byte[] consumer,
+      XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams);
 
 }

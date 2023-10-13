@@ -185,6 +185,11 @@ public class AggregationBuilder implements IParams {
     return this;
   }
 
+  public AggregationBuilder setLanguage(String language){
+    aggrArgs.add(SearchProtocol.SearchKeyword.LANGUAGE);
+    aggrArgs.add(language);
+  }
+
   /**
    * This method will not replace the dialect if it has been already set.
    * @param dialect dialect

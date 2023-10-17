@@ -351,12 +351,12 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
         new Coordinate(34.9001, 29.7100), new Coordinate(34.9100, 29.7100),
         new Coordinate(34.9100, 29.7001), new Coordinate(34.9001, 29.7001)});
-    client.hset("small", RediSearchUtil.toStringMap(Collections.singletonMap("geom", small)));
+    client.hset("small", "geom", small.toString());
 
     final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
         new Coordinate(34.9001, 29.7200), new Coordinate(34.9200, 29.7200),
         new Coordinate(34.9200, 29.7001), new Coordinate(34.9001, 29.7001)});
-    client.hset("large", RediSearchUtil.toStringMap(Collections.singletonMap("geom", large)));
+    client.hset("large", "geom", large.toString());
 
     // within condition
     final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(34.9000, 29.7000),
@@ -381,7 +381,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     // point type
     final Point point = factory.createPoint(new Coordinate(34.9010, 29.7010));
-    client.hset("point", RediSearchUtil.toStringMap(Collections.singletonMap("geom", point)));
+    client.hset("point", "geom", point.toString());
 
     res = client.ftSearch(index, "@geom:[within $poly]",
         FTSearchParams.searchParams().addParam("poly", within).dialect(3));
@@ -399,11 +399,11 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     // polygon type
     final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
         new Coordinate(1, 100), new Coordinate(100, 100), new Coordinate(100, 1), new Coordinate(1, 1)});
-    client.hset("small", RediSearchUtil.toStringMap(Collections.singletonMap("geom", small)));
+    client.hset("small", "geom", small.toString());
 
     final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
         new Coordinate(1, 200), new Coordinate(200, 200), new Coordinate(200, 1), new Coordinate(1, 1)});
-    client.hset("large", RediSearchUtil.toStringMap(Collections.singletonMap("geom", large)));
+    client.hset("large", "geom", large.toString());
 
     // within condition
     final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(0, 0),
@@ -426,7 +426,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     // point type
     final Point point = factory.createPoint(new Coordinate(10, 10));
-    client.hset("point", RediSearchUtil.toStringMap(Collections.singletonMap("geom", point)));
+    client.hset("point", "geom", point.toString());
 
     res = client.ftSearch(index, "@geom:[within $poly]",
         FTSearchParams.searchParams().addParam("poly", within).dialect(3));
@@ -1130,9 +1130,9 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       client.ftConfigSet(configParam, "2");
 
       assertOK(client.ftCreate(index, TextField.of("t")));
-      client.hset("1", Collections.singletonMap("t", "foo1"));
-      client.hset("2", Collections.singletonMap("t", "foo2"));
-      client.hset("3", Collections.singletonMap("t", "foo3"));
+      client.hset("1", "t", "foo1");
+      client.hset("2", "t", "foo2");
+      client.hset("3", "t", "foo3");
 
       Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
           FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
@@ -1152,8 +1152,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void noContentSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
-    client.hset("1", Collections.singletonMap("t", "foo"));
-    client.hset("2", Collections.singletonMap("t", "bar"));
+    client.hset("1", "t", "foo");
+    client.hset("2", "t", "bar");
 
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "foo -@t:baz", FTSearchParams.searchParams().noContent());
@@ -1179,8 +1179,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void deepReplySearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
-    client.hset("1", Collections.singletonMap("t", "hello"));
-    client.hset("2", Collections.singletonMap("t", "world"));
+    client.hset("1", "t", "hello");
+    client.hset("2", "t", "world");
 
     Map.Entry<SearchResult, Map<String, Object>> profile
         = client.ftProfileSearch(index, FTProfileParams.profileParams(),
@@ -1217,10 +1217,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void limitedSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
-    client.hset("1", Collections.singletonMap("t", "hello"));
-    client.hset("2", Collections.singletonMap("t", "hell"));
-    client.hset("3", Collections.singletonMap("t", "help"));
-    client.hset("4", Collections.singletonMap("t", "helowa"));
+    client.hset("1", "t", "hello");
+    client.hset("2", "t", "hell");
+    client.hset("3", "t", "help");
+    client.hset("4", "t", "helowa");
 
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams().limited(), "%hell% hel*", FTSearchParams.searchParams().noContent());

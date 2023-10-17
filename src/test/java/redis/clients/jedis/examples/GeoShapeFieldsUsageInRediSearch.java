@@ -1,5 +1,8 @@
 package redis.clients.jedis.examples;
 
+import java.util.Collections;
+import org.junit.Assert;
+
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -11,12 +14,9 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.search.FTSearchParams;
+import redis.clients.jedis.search.RediSearchUtil;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.schemafields.GeoShapeField;
-
-import static java.util.Collections.singletonMap;
-import static org.junit.Assert.assertEquals;
-import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 /**
  * As of RediSearch 2.8.4, advanced GEO querying with GEOSHAPE fields is supported.
@@ -64,7 +64,8 @@ public class GeoShapeFieldsUsageInRediSearch {
         new Coordinate(34.9100, 29.7001), new Coordinate(34.9001, 29.7001)}
     );
 
-    client.hset("small", toStringMap(singletonMap("geometry", small))); // setting data
+    // client.hset("small", RediSearchUtil.toStringMap(Collections.singletonMap("geometry", small))); // setting data
+    client.hset("small", "geometry", small.toString()); // simplified setting data
 
     final Polygon large = factory.createPolygon(
         new Coordinate[]{new Coordinate(34.9001, 29.7001),
@@ -72,7 +73,8 @@ public class GeoShapeFieldsUsageInRediSearch {
         new Coordinate(34.9200, 29.7001), new Coordinate(34.9001, 29.7001)}
     );
 
-    client.hset("large", toStringMap(singletonMap("geometry", large))); // setting data
+    // client.hset("large", RediSearchUtil.toStringMap(Collections.singletonMap("geometry", large))); // setting data
+    client.hset("large", "geometry", large.toString()); // simplified setting data
 
     // searching
     final Polygon within = factory.createPolygon(
@@ -88,14 +90,14 @@ public class GeoShapeFieldsUsageInRediSearch {
             .addParam("poly", within)
             .dialect(3) // DIALECT '3' is required for this query
     ); 
-    assertEquals(1, res.getTotalResults());
-    assertEquals(1, res.getDocuments().size());
+    Assert.assertEquals(1, res.getTotalResults());
+    Assert.assertEquals(1, res.getDocuments().size());
 
     // We can parse geometry objects with WKTReader
     try {
       final WKTReader reader = new WKTReader();
       Geometry object = reader.read(res.getDocuments().get(0).getString("geometry"));
-      assertEquals(small, object);
+      Assert.assertEquals(small, object);
     } catch (ParseException ex) {
       ex.printStackTrace(System.err);
     }

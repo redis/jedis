@@ -22,7 +22,6 @@ import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
-import redis.clients.jedis.util.JedisMetaInfo;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisTest extends JedisCommandsTestBase {

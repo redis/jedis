@@ -13,9 +13,9 @@ import static org.junit.Assert.assertNotEquals;
 /**
  * In order to simulate the scenario of active/standby switching. this test case will effect all the
  * sentinel test case, you can run this test case separately
+ * ZSentinelMasterListenerTest start with "Z" to ensure this test case should be run as last one
  */
-@Ignore
-public class SentinelMasterListenerTest {
+public class ZSentinelMasterListenerTest {
   private static final String MASTER_NAME = "mymaster";
 
   public static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(0);

@@ -192,6 +192,9 @@
 					<excludes>
 						<exclude>**/examples/*Example.java</exclude>
 					</excludes>
+					<runOrder>
+						alphabetical
+					</runOrder>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
 			</plugin>

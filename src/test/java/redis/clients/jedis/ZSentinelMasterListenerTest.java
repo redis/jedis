@@ -1,7 +1,7 @@
 package redis.clients.jedis;
 
+import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 
@@ -25,8 +25,6 @@ public class ZSentinelMasterListenerTest {
   public final Set<String> sentinels = new HashSet<>();
 
   public final Set<HostAndPort> hostAndPortsSentinels = new HashSet<>();
-
-  private static final long WAIT_FAILOVER_TIMES_MILLS = 10000;
 
   @Before
   public void setUp() throws Exception {
@@ -68,18 +66,31 @@ public class ZSentinelMasterListenerTest {
     Jedis sentinel = new Jedis(sentinel1);
     sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
 
-    try {
-      Thread.sleep(WAIT_FAILOVER_TIMES_MILLS);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
+    for (int i = 0; i < 10; i++) {
+      HostAndPort masterGetFromPool2 = pool.getResource().connection.getHostAndPort();
+      if (!masterGetFromPool2.equals(masterGetFromPool)) {
+        break;
+      }
+      try {
+        Thread.sleep(5000);
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
     }
 
     HostAndPort masterGetFromPool2 = pool.getResource().connection.getHostAndPort();
     HostAndPort masterGetFromProvider2 = jedisSentineled.provider.getConnection().getHostAndPort();
-
-    pool.destroy();
     assertEquals(masterGetFromPool2, masterGetFromPool2);
     assertNotEquals(masterGetFromPool, masterGetFromPool2);
     assertNotEquals(masterGetFromProvider, masterGetFromProvider2);
+
+    pool.destroy();
   }
+
+  @After
+  public void restoreMaster() throws Exception {
+    Jedis sentinel = new Jedis(sentinel1);
+    sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
+  }
+
 }

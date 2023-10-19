@@ -124,16 +124,6 @@ public interface StreamCommands {
   long xgroupDelConsumer(String key, String groupName, String consumerName);
 
   /**
-   * XPENDING key group
-   */
-  StreamPendingSummary xpending(String key, String groupName);
-
-  /**
-   * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
-   */
-  List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params);
-
-  /**
    * XDEL key ID [ID ...]
    */
   long xdel(String key, StreamEntryID... ids);
@@ -147,6 +137,16 @@ public interface StreamCommands {
    * XTRIM key MAXLEN|MINID [=|~] threshold [LIMIT count]
    */
   long xtrim(String key, XTrimParams params);
+
+  /**
+   * XPENDING key group
+   */
+  StreamPendingSummary xpending(String key, String groupName);
+
+  /**
+   * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
+   */
+  List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params);
 
   /**
    * {@code XCLAIM key group consumer min-idle-time <ID-1> ... <ID-N>

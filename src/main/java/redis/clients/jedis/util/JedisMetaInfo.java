@@ -15,10 +15,12 @@ public class JedisMetaInfo {
 
   static {
     Properties p = new Properties();
-    try (InputStream in = JedisMetaInfo.class.getClassLoader().getResourceAsStream("pom.properties")) {
+    try (InputStream in = JedisMetaInfo.class.getClassLoader()
+        .getResourceAsStream("redis/clients/jedis/pom.properties")) {
       p.load(in);
     } catch (Exception e) {
-      LoggerFactory.getLogger(JedisMetaInfo.class).error("Load Jedis meta info from pom.properties failed", e);
+      LoggerFactory.getLogger(JedisMetaInfo.class)
+          .error("Load Jedis meta info from pom.properties failed", e);
     }
 
     groupId = p.getProperty("groupId", null);

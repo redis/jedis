@@ -6,7 +6,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Jedis Meta info load version groupId
+ * @deprecated {@link JedisMetaInfo} will be moved into parent package ({@code redis.clients.jedis})
+ *             and will be package private.
  */
+@Deprecated
 public class JedisMetaInfo {
 
   private static final String groupId;

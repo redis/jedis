@@ -1,4 +1,4 @@
-package redis.clients.jedis.util;
+package redis.clients.jedis;
 
 import java.io.InputStream;
 import java.util.Properties;
@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Jedis Meta info load version groupId
  */
-public class JedisMetaInfo {
+class JedisMetaInfo {
 
   private static final String groupId;
   private static final String artifactId;

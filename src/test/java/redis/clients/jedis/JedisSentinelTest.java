@@ -33,10 +33,10 @@ public class JedisSentinelTest {
   protected static HostAndPort sentinelForFailover = HostAndPorts.getSentinelServers().get(2);
   protected static HostAndPort masterForFailover = HostAndPorts.getRedisServers().get(5);
 
-  private final Set<String> sentinels = new HashSet<>();
+  public final Set<String> sentinels = new HashSet<>();
 
   @Before
-  public void setup() throws InterruptedException {
+  public void setUp() throws Exception {
     sentinels.clear();
     sentinels.add(sentinelForFailover.toString());
   }
@@ -93,14 +93,6 @@ public class JedisSentinelTest {
       HostAndPort currentMaster = new HostAndPort(masterHostAndPort.get(0),
           Integer.parseInt(masterHostAndPort.get(1)));
 
-      // get master node from pool connection
-      SentinelPoolConfig config = new SentinelPoolConfig();
-      config.setEnableActiveDetectListener(true);
-      config.setEnableDefaultSubscribeListener(false);
-      JedisSentinelPool pool = new JedisSentinelPool(FAILOVER_MASTER_NAME, sentinels, config, 1000,
-        "foobared", 2);
-      HostAndPort masterGetFromPoolBefore = pool.getResource().connection.getHostAndPort();
-
       JedisSentinelTestUtil.waitForNewPromotedMaster(FAILOVER_MASTER_NAME, j, j2);
 
       masterHostAndPort = j.sentinelGetMasterAddrByName(FAILOVER_MASTER_NAME);
@@ -108,14 +100,38 @@ public class JedisSentinelTest {
           Integer.parseInt(masterHostAndPort.get(1)));
 
       assertNotEquals(newMaster, currentMaster);
+    } finally {
+      j.close();
+      j2.close();
+    }
+  }
 
-      Thread.sleep(6000);
+  @Test
+  public void testSentinelMasterListener() throws InterruptedException {
+    Jedis j = new Jedis(sentinelForFailover);
+    Jedis j2 = new Jedis(sentinelForFailover);
+
+    SentinelPoolConfig config = new SentinelPoolConfig();
+    config.setEnableActiveDetectListener(true);
+    config.setEnableDefaultSubscribeListener(true);
+    config.setActiveDetectIntervalTimeMillis(5 * 1000);
+    config.setSubscribeRetryWaitTimeMillis(5 * 1000);
+
+    JedisSentinelPool pool = new JedisSentinelPool(FAILOVER_MASTER_NAME, sentinels, config, 1000,
+        "foobared", 2);
+
+    try {
+      HostAndPort masterGetFromPoolBefore = pool.getResource().connection.getHostAndPort();
+
+      JedisSentinelTestUtil.waitForNewPromotedMaster(FAILOVER_MASTER_NAME, j, j2);
 
       HostAndPort masterGetFromPoolCurrent = pool.getResource().connection.getHostAndPort();
+
       assertNotEquals(masterGetFromPoolBefore, masterGetFromPoolCurrent);
     } finally {
       j.close();
       j2.close();
+      pool.destroy();
     }
   }
 

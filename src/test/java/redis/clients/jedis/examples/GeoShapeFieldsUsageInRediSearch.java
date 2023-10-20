@@ -87,7 +87,7 @@ public class GeoShapeFieldsUsageInRediSearch {
         FTSearchParams.searchParams()
             .addParam("poly", within)
             .dialect(3) // DIALECT '3' is required for this query
-    );
+    ); 
     assertEquals(1, res.getTotalResults());
     assertEquals(1, res.getDocuments().size());
 

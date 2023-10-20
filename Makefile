@@ -138,6 +138,7 @@ define REDIS12_CONF
 daemonize yes
 protected-mode no
 port 6390
+bind 127.0.0.1
 requirepass foobared
 masterauth foobared
 pidfile /tmp/redis12.pid
@@ -150,13 +151,14 @@ define REDIS13_CONF
 daemonize yes
 protected-mode no
 port 6391
+bind 127.0.0.1
 requirepass foobared
 masterauth foobared
 pidfile /tmp/redis13.pid
 logfile /tmp/redis13.log
 save ""
 appendonly no
-slaveof localhost 6390
+slaveof 127.0.0.1 6390
 endef
 
 # SENTINELS

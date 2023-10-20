@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.util.JedisSentinelTestUtil;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +26,7 @@ public class SentinelMasterListenerTest {
 
     SentinelPoolConfig config = new SentinelPoolConfig();
     config.setEnableActiveDetectListener(true);
-    config.setEnableDefaultSubscribeListener(true);
+    config.setEnableDefaultSubscribeListener(false);
     config.setActiveDetectIntervalTimeMillis(5 * 1000);
     config.setSubscribeRetryWaitTimeMillis(5 * 1000);
 
@@ -36,10 +35,9 @@ public class SentinelMasterListenerTest {
 
     try {
       HostAndPort masterGetFromPoolBefore = pool.getResource().connection.getHostAndPort();
-
       sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", FAILOVER_MASTER_NAME);
 
-      // ensure fail over
+      // more than 5seconds ensure fail over be detect
       Thread.sleep(10000);
 
       HostAndPort masterGetFromPoolCurrent = pool.getResource().connection.getHostAndPort();

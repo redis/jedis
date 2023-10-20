@@ -35,13 +35,12 @@ public class SentinelMasterListenerTest {
 
     try {
       HostAndPort masterGetFromPoolBefore = pool.getResource().connection.getHostAndPort();
-      sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", FAILOVER_MASTER_NAME);
+      sentinel.sentinelFailover(FAILOVER_MASTER_NAME);
 
       // more than 5seconds ensure fail over be detect
       Thread.sleep(10000);
 
       HostAndPort masterGetFromPoolCurrent = pool.getResource().connection.getHostAndPort();
-
       assertNotEquals(masterGetFromPoolBefore, masterGetFromPoolCurrent);
     } finally {
       sentinel.close();

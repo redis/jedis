@@ -21,15 +21,15 @@ public final class HostAndPorts {
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 8));
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 9));
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 10));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 11));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 12));
+    redisHostAndPortList.add(new HostAndPort("127.0.0.1", Protocol.DEFAULT_PORT + 11));
+    redisHostAndPortList.add(new HostAndPort("127.0.0.1", Protocol.DEFAULT_PORT + 12));
 
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 2));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 3));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 4));
-    sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 5));
+    sentinelHostAndPortList.add(new HostAndPort("127.0.0.1", Protocol.DEFAULT_SENTINEL_PORT + 5));
 
     clusterHostAndPortList.add(new HostAndPort("localhost", 7379));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7380));

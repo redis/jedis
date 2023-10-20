@@ -431,8 +431,8 @@ start: stunnel cleanup
 	@sleep 0.5
 	echo "$$REDIS_SENTINEL5" > /tmp/sentinel5.conf && redis-server /tmp/sentinel5.conf --sentinel
 	@sleep 0.5
-	echo "$$REDIS_SENTINEL6" > /tmp/sentinel5.conf && redis-server /tmp/sentinel6.conf --sentinel
-    @sleep 0.5
+	echo "$$REDIS_SENTINEL6" > /tmp/sentinel6.conf && redis-server /tmp/sentinel6.conf --sentinel
+	@sleep 0.5
 	echo "$$REDIS_CLUSTER_NODE1_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE2_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -

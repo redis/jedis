@@ -23,8 +23,7 @@ public class SentinelMasterListenerTest {
 
   @Test
   public void failover() throws InterruptedException {
-    Jedis j = new Jedis(sentinelForFailover);
-    Jedis j2 = new Jedis(sentinelForFailover);
+    Jedis sentinel = new Jedis(sentinelForFailover);
 
     SentinelPoolConfig config = new SentinelPoolConfig();
     config.setEnableActiveDetectListener(true);
@@ -38,14 +37,16 @@ public class SentinelMasterListenerTest {
     try {
       HostAndPort masterGetFromPoolBefore = pool.getResource().connection.getHostAndPort();
 
-      JedisSentinelTestUtil.waitForNewPromotedMaster(FAILOVER_MASTER_NAME, j, j2);
+      sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", FAILOVER_MASTER_NAME);
+
+      // ensure fail over
+      Thread.sleep(10000);
 
       HostAndPort masterGetFromPoolCurrent = pool.getResource().connection.getHostAndPort();
 
       assertNotEquals(masterGetFromPoolBefore, masterGetFromPoolCurrent);
     } finally {
-      j.close();
-      j2.close();
+      sentinel.close();
       pool.destroy();
     }
   }

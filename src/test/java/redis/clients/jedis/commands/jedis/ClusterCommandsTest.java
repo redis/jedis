@@ -190,6 +190,39 @@ public class ClusterCommandsTest {
   }
 
   @Test
+  public void clusterShards() {
+    assertEquals("OK", node1.clusterAddSlots(3100, 3101, 3102));
+
+    List<Object> shards = node1.clusterShards();
+    assertNotNull(shards);
+    assertTrue(shards.size() > 0);
+
+    for (Object shardInfoObj : shards) {
+      assertNotNull(shardInfoObj);
+      List<Object> shardInfo = (List<Object>) shardInfoObj;
+      assertTrue(shardInfo.size() >= 4);
+
+      assertTrue(shardInfo.get(0) instanceof byte[]);
+      assertEquals("slots", new String((byte[]) shardInfo.get(0)));
+
+      List<Object> slots = (List<Object>) shardInfo.get(1);
+      for (Object slotInfoObj : slots) {
+        assertTrue(slotInfoObj instanceof Long);
+      }
+
+      assertTrue(shardInfo.get(2) instanceof byte[]);
+      assertEquals("nodes", new String((byte[]) shardInfo.get(2)));
+
+      List<Object> nodes = (List<Object>) shardInfo.get(3);
+      for (Object nodeInfoObj : nodes) {
+        List<Object> nodeInfo = (List<Object>) nodeInfoObj;
+        assertTrue(nodeInfo.size() >= 14);
+      }
+    }
+    node1.clusterDelSlots(3100, 3101, 3102);
+  }
+
+  @Test
   public void clusterLinks() throws InterruptedException {
     List<Map<String, Object>> links = node1.clusterLinks();
     assertNotNull(links);

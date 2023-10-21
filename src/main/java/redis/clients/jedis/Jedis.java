@@ -8826,9 +8826,17 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  @Deprecated
   public List<Object> clusterSlots() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.SLOTS);
+    return connection.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public List<Object> clusterShards() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.SHARDS);
     return connection.getObjectMultiBulkReply();
   }
 

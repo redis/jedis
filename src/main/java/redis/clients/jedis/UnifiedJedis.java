@@ -164,6 +164,15 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (proto != null) commandObjects.setProtocol(proto);
   }
 
+  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration,
+      boolean topologyRefreshEnabled, Duration topologyRefreshPeriod) {
+    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig, topologyRefreshEnabled,
+        topologyRefreshPeriod), maxAttempts, maxTotalRetriesDuration);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
+  }
+
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this.provider = provider;
     this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);

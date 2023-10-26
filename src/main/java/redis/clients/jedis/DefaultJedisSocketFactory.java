@@ -70,7 +70,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
         socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
 
-        socket.connect(new InetSocketAddress(host.getHostAddress(), hostAndPort.getPort()), connectionTimeout);
+        socket.connect(new InetSocketAddress(host, hostAndPort.getPort()), connectionTimeout);
         return socket;
       } catch (Exception e) {
         jce.addSuppressed(e);

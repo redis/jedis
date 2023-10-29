@@ -1,4 +1,4 @@
-package redis.clients.jedis.executors;
+package redis.clients.jedis.activeactive;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.decorators.Decorators;
@@ -6,7 +6,7 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.activeactive.CircuitBreakerFailoverBase;
+import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 

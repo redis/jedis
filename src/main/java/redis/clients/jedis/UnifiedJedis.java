@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.activeactive.MultiClusterFailoverPipeline;
+import redis.clients.jedis.activeactive.CircuitBreakerCommandExecutor;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;

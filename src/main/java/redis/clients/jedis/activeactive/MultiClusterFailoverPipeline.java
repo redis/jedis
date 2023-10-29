@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.activeactive;
 
 import java.io.Closeable;
 import java.util.LinkedList;
@@ -6,10 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import redis.clients.jedis.activeactive.CircuitBreakerFailoverConnectionProvider;
-import redis.clients.jedis.commands.PipelineBinaryCommands;
-import redis.clients.jedis.commands.PipelineCommands;
-import redis.clients.jedis.commands.RedisModulePipelineCommands;
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.PipelineBase;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.KeyValue;
@@ -19,8 +24,7 @@ import redis.clients.jedis.util.KeyValue;
  * {@link MultiClusterFailoverPipeline#sync() SYNC}
  * (or {@link MultiClusterFailoverPipeline#close() CLOSE}) gets called.
  */
-public class MultiClusterFailoverPipeline extends PipelineBase
-    implements PipelineCommands, PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
+public class MultiClusterFailoverPipeline extends PipelineBase implements Closeable {
 
   private final CircuitBreakerFailoverConnectionProvider provider;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
@@ -46,6 +50,7 @@ public class MultiClusterFailoverPipeline extends PipelineBase
   @Override
   public void close() {
     sync();
+    // connection prepared and closed (in try-with-resources) in sync()
   }
 
   /**
@@ -55,23 +60,16 @@ public class MultiClusterFailoverPipeline extends PipelineBase
    */
   @Override
   public void sync() {
-    if (!hasPipelinedResponse()) return;
+    if (commands.isEmpty()) return;
 
     try (Connection connection = provider.getConnection()) {
-      for (KeyValue<CommandArguments, Response<?>> command : commands) {
-        connection.sendCommand(command.getKey());
-      }
-      // connection.flush(); // following flushes anyway
-      
-      List<Object> unformatted = connection.getMany(commands.size());
-      for (Object o : unformatted) {
-        commands.poll().getValue().set(o);
-      }
-    }
-  }
 
-  public final boolean hasPipelinedResponse() {
-    return commands.size() > 0;
+      commands.forEach((command) -> connection.sendCommand(command.getKey()));
+      // following connection.getMany(int) flushes anyway, so no flush here.
+
+      List<Object> unformatted = connection.getMany(commands.size());
+      unformatted.forEach((rawReply) -> commands.poll().getValue().set(rawReply));
+    }
   }
 
   public Response<Long> waitReplicas(int replicas, long timeout) {

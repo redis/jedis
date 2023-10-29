@@ -15,7 +15,7 @@ import redis.clients.jedis.util.KeyValue;
 public class ClusterCommandObjects extends CommandObjects {
 
   @Override
-  protected ClusterCommandArguments commandArguments(ProtocolCommand command) {
+  public ClusterCommandArguments commandArguments(ProtocolCommand command) { // TODO: restrict access??
     return new ClusterCommandArguments(command);
   }
 

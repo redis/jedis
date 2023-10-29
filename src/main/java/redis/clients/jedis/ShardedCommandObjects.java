@@ -33,7 +33,7 @@ public class ShardedCommandObjects extends CommandObjects {
   }
 
   @Override
-  protected ShardedCommandArguments commandArguments(ProtocolCommand command) {
+  public ShardedCommandArguments commandArguments(ProtocolCommand command) { // TODO: restrict access??
     return new ShardedCommandArguments(algo, tagPattern, command);
   }
 

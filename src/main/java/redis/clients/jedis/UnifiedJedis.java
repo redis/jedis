@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.activeactive.MultiClusterFailoverPipeline;
+import redis.clients.jedis.activeactive.MultiClusterPipeline;
 import redis.clients.jedis.activeactive.CircuitBreakerCommandExecutor;
 import java.net.URI;
 import java.time.Duration;
@@ -4825,7 +4825,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterFailoverPipeline((MultiClusterPooledConnectionProvider) provider);
+      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider);
     } else {
       return new Pipeline(provider.getConnection(), true);
     }

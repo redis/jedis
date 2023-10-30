@@ -11,8 +11,14 @@ public abstract class TransactionBase extends PipeliningBase implements Closeabl
 
   public abstract void multi();
 
+  /**
+   * Must be called before {@link TransactionBase#multi() MULTI}.
+   */
   public abstract String watch(final String... keys);
 
+  /**
+   * Must be called before {@link TransactionBase#multi() MULTI}.
+   */
   public abstract String watch(final byte[]... keys);
 
   public abstract String unwatch();

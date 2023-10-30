@@ -21,15 +21,14 @@ import redis.clients.jedis.util.KeyValue;
 
 /**
  * This is high memory dependent solution as all the appending commands will be hold in memory until
- * {@link MultiClusterFailoverPipeline#sync() SYNC}
- * (or {@link MultiClusterFailoverPipeline#close() CLOSE}) gets called.
+ * {@link MultiClusterPipeline#sync() SYNC} (or {@link MultiClusterPipeline#close() CLOSE}) gets called.
  */
-public class MultiClusterFailoverPipeline extends PipelineBase implements Closeable {
+public class MultiClusterPipeline extends PipelineBase implements Closeable {
 
   private final CircuitBreakerFailoverConnectionProvider provider;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
-  public MultiClusterFailoverPipeline(MultiClusterPooledConnectionProvider provider) {
+  public MultiClusterPipeline(MultiClusterPooledConnectionProvider provider) {
     super(new CommandObjects());
     try (Connection connection = provider.getConnection()) { // we don't need a healthy connection now
       RedisProtocol proto = connection.getRedisProtocol();
@@ -40,7 +39,7 @@ public class MultiClusterFailoverPipeline extends PipelineBase implements Closea
   }
 
   @Override
-  public final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
+  protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     CommandArguments args = commandObject.getArguments();
     Response<T> response = new Response<>(commandObject.getBuilder());
     commands.add(KeyValue.of(args, response));
@@ -54,9 +53,8 @@ public class MultiClusterFailoverPipeline extends PipelineBase implements Closea
   }
 
   /**
-   * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to
-   * get return values from pipelined commands, capture the different Response&lt;?&gt; of the
-   * commands you execute.
+   * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to get return values
+   * from pipelined commands, capture the different Response&lt;?&gt; of the commands you execute.
    */
   @Override
   public void sync() {

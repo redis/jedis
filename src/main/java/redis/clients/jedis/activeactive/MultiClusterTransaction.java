@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.ResultSet;
+import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.KeyValue;
 
 /**
@@ -37,7 +38,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * called with this object.
    * @param provider
    */
-  public MultiClusterTransaction(CircuitBreakerFailoverConnectionProvider provider) {
+  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider) {
     this(provider, true);
   }
 
@@ -48,13 +49,14 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param provider
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
-  public MultiClusterTransaction(CircuitBreakerFailoverConnectionProvider provider, boolean doMulti) {
+  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti) {
     try (Connection connection = provider.getConnection()) { // we don't need a healthy connection now
       RedisProtocol proto = connection.getRedisProtocol();
       if (proto != null) this.commandObjects.setProtocol(proto);
     }
 
-    this.provider = provider;
+    this.provider = new CircuitBreakerFailoverConnectionProvider(provider);
+
     if (doMulti) multi();
   }
 

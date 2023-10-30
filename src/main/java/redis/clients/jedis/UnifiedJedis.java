@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
+import redis.clients.jedis.activeactive.MultiClusterTransaction;
 
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
@@ -4831,9 +4832,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
-  public Transaction multi() {
+  public TransactionBase multi() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
+      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider);
     }
     return new Transaction(provider.getConnection(), true, true);
   }

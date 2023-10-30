@@ -4822,6 +4822,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisGears commands
 
+  /**
+   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
+   */
   public PipelineBase pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
@@ -4832,7 +4835,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
-  public TransactionBase multi() {
+  public AbstractTransaction multi() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {

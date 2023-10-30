@@ -1,7 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.activeactive.MultiClusterPipeline;
-import redis.clients.jedis.activeactive.CircuitBreakerCommandExecutor;
 import java.net.URI;
 import java.time.Duration;
 import java.util.List;
@@ -10,8 +8,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
-import redis.clients.jedis.activeactive.MultiClusterTransaction;
 
+import redis.clients.jedis.activeactive.CircuitBreakerCommandExecutor;
+import redis.clients.jedis.activeactive.MultiClusterPipeline;
+import redis.clients.jedis.activeactive.MultiClusterTransaction;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;

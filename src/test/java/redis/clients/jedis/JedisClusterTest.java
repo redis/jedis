@@ -741,17 +741,17 @@ public class JedisClusterTest extends JedisClusterTestBase {
     }
   }
 
-  @Test
+  @Test(timeout = 30_000)
   public void clusterPeriodTopologyRefreshTest() throws Exception {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(nodeInfo1);
     jedisClusterNode.add(nodeInfo2);
     jedisClusterNode.add(nodeInfo3);
 
-    // we set topologyRefreshPeriod is 5s
-    Duration topologyRefreshPeriod = Duration.ofSeconds(3);
+    // we set topologyRefreshPeriod is 1s
+    Duration topologyRefreshPeriod = Duration.ofSeconds(1);
     try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_CLIENT_CONFIG, DEFAULT_POOL_CONFIG,
-        topologyRefreshPeriod, DEFAULT_REDIRECTIONS, Duration.ofSeconds(1000))) {
+        topologyRefreshPeriod, DEFAULT_REDIRECTIONS, Duration.ofSeconds(10))) {
       assertEquals(3, cluster.getClusterNodes().size());
       cleanUp(); // cleanup and add node4
 

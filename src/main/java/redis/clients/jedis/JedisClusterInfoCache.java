@@ -25,6 +25,8 @@ import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
+import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
+
 public class JedisClusterInfoCache {
 
   private static final Logger logger = LoggerFactory.getLogger(JedisClusterInfoCache.class);
@@ -106,11 +108,13 @@ public class JedisClusterInfoCache {
 
   public void discoverClusterNodesAndSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
-    if (slotsInfo.isEmpty()) {
-      throw new JedisClusterOperationException("Cluster slots list is empty.");
-    }
-    if (!checkClusterSlotSequence(slotsInfo)) {
-      throw new JedisClusterOperationException("Cluster slots have holes.");
+    if (System.getProperty(INIT_NO_ERROR_PROPERTY) == null) {
+      if (slotsInfo.isEmpty()) {
+        throw new JedisClusterOperationException("Cluster slots list is empty.");
+      }
+      if (!checkClusterSlotSequence(slotsInfo)) {
+        throw new JedisClusterOperationException("Cluster slots have holes.");
+      }
     }
     w.lock();
     try {
@@ -193,11 +197,13 @@ public class JedisClusterInfoCache {
 
   private void discoverClusterSlots(Connection jedis) {
     List<Object> slotsInfo = executeClusterSlots(jedis);
-    if (slotsInfo.isEmpty()) {
-      throw new JedisClusterOperationException("Cluster slots list is empty.");
-    }
-    if (!checkClusterSlotSequence(slotsInfo)) {
-      throw new JedisClusterOperationException("Cluster slots have holes.");
+    if (System.getProperty(INIT_NO_ERROR_PROPERTY) == null) {
+      if (slotsInfo.isEmpty()) {
+        throw new JedisClusterOperationException("Cluster slots list is empty.");
+      }
+      if (!checkClusterSlotSequence(slotsInfo)) {
+        throw new JedisClusterOperationException("Cluster slots have holes.");
+      }
     }
     w.lock();
     try {

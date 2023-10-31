@@ -12,6 +12,8 @@ import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
 
+  public static final String INIT_NO_ERROR_PROPERTY = "jedis.cluster.initNoError";
+
   /**
    * Default timeout in milliseconds.
    */

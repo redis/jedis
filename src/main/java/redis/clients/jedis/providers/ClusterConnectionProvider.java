@@ -18,9 +18,9 @@ import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 
-public class ClusterConnectionProvider implements ConnectionProvider {
+import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
 
-  private static final String INIT_NO_ERROR_PROPERTY = "jedis.cluster.initNoError";
+public class ClusterConnectionProvider implements ConnectionProvider {
 
   protected final JedisClusterInfoCache cache;
 

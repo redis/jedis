@@ -196,10 +196,10 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, boolean topologyRefreshEnabled,
-      Duration topologyRefreshPeriod, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshEnabled,
-        topologyRefreshPeriod), maxAttempts, maxTotalRetriesDuration);
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
+        maxAttempts, maxTotalRetriesDuration);
   }
 
   public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,

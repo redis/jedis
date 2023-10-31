@@ -36,9 +36,8 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, boolean topologyRefreshEnabled, Duration topologyRefreshPeriod) {
-    this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes, topologyRefreshEnabled,
-        topologyRefreshPeriod);
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
+    this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes, topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 

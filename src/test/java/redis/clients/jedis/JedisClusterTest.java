@@ -749,10 +749,9 @@ public class JedisClusterTest extends JedisClusterTestBase {
     jedisClusterNode.add(nodeInfo3);
 
     // we set topologyRefreshPeriod is 5s
-    boolean topologyRefreshEnabled = true;
     Duration topologyRefreshPeriod = Duration.ofSeconds(3);
     try (JedisCluster cluster = new JedisCluster(jedisClusterNode, DEFAULT_CLIENT_CONFIG, DEFAULT_POOL_CONFIG,
-        DEFAULT_REDIRECTIONS, Duration.ofSeconds(1000), topologyRefreshEnabled, topologyRefreshPeriod)) {
+        topologyRefreshPeriod, DEFAULT_REDIRECTIONS, Duration.ofSeconds(1000))) {
       assertEquals(3, cluster.getClusterNodes().size());
       cleanUp(); // cleanup and add node4
 

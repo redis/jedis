@@ -27,8 +27,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
   private static final Logger logger = LoggerFactory.getLogger(JedisClusterInfoCache.class);
-  private static final boolean DEFAULT_TOPOLOGY_REFRESH_ENABLED = false;
-  private static final Duration DEFAULT_TOPOLOGY_REFRESH_PERIOD = Duration.ofSeconds(60);
+  private static final Duration DEFAULT_TOPOLOGY_REFRESH_PERIOD = null;
 
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
   private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
@@ -45,7 +44,6 @@ public class JedisClusterInfoCache {
 
   private static final int MASTER_NODE_INDEX = 2;
 
-  private final boolean topologyRefreshEnabled;
   private final Duration topologyRefreshPeriod;
 
   /**
@@ -63,25 +61,23 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, null, startNodes, DEFAULT_TOPOLOGY_REFRESH_ENABLED, DEFAULT_TOPOLOGY_REFRESH_PERIOD);
+    this(clientConfig, null, startNodes, DEFAULT_TOPOLOGY_REFRESH_PERIOD);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, poolConfig, startNodes, DEFAULT_TOPOLOGY_REFRESH_ENABLED, DEFAULT_TOPOLOGY_REFRESH_PERIOD);
+    this(clientConfig, poolConfig, startNodes, DEFAULT_TOPOLOGY_REFRESH_PERIOD);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
-      final boolean topologyRefreshEnabled, final Duration topologyRefreshPeriod) {
+      final Duration topologyRefreshPeriod) {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
     this.startNodes = startNodes;
-    this.topologyRefreshEnabled = topologyRefreshEnabled;
     this.topologyRefreshPeriod = topologyRefreshPeriod;
-    if (topologyRefreshEnabled) {
-      logger.info("Cluster topology refresh start, period: {}, startNodes: {}",
-          topologyRefreshPeriod.toString(), startNodes);
+    if (topologyRefreshPeriod != null) {
+      logger.info("Cluster topology refresh start, period: {}, startNodes: {}", topologyRefreshPeriod, startNodes);
       topologyRefreshExecutor = Executors.newSingleThreadScheduledExecutor();
       topologyRefreshExecutor.scheduleWithFixedDelay(new TopologyRefreshTask(), topologyRefreshPeriod.toMillis(),
           topologyRefreshPeriod.toMillis(), TimeUnit.MILLISECONDS);
@@ -380,7 +376,7 @@ public class JedisClusterInfoCache {
 
   public void close() {
     reset();
-    if (topologyRefreshEnabled && topologyRefreshExecutor != null) {
+    if (topologyRefreshPeriod != null && topologyRefreshExecutor != null) {
       logger.info("Cluster topology refresh shutdown, startNodes: {}", startNodes);
       topologyRefreshExecutor.shutdownNow();
     }

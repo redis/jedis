@@ -25,9 +25,8 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-      GenericObjectPoolConfig<Connection> poolConfig, boolean topologyRefreshEnabled, Duration topologyRefreshPeriod) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig,
-            topologyRefreshEnabled, topologyRefreshPeriod),
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
         createClusterCommandObjects(clientConfig.getRedisProtocol()));
     this.closeable = this.provider;
   }

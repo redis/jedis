@@ -26,8 +26,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisClusterInfoCache {
+
   private static final Logger logger = LoggerFactory.getLogger(JedisClusterInfoCache.class);
-  private static final Duration DEFAULT_TOPOLOGY_REFRESH_PERIOD = null;
 
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
   private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
@@ -49,7 +49,7 @@ public class JedisClusterInfoCache {
   /**
    * The single thread executor for the topology refresh task.
    */
-  private ScheduledExecutorService topologyRefreshExecutor = null;
+  private final ScheduledExecutorService topologyRefreshExecutor;
 
   class TopologyRefreshTask implements Runnable {
     @Override
@@ -61,12 +61,12 @@ public class JedisClusterInfoCache {
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, null, startNodes, DEFAULT_TOPOLOGY_REFRESH_PERIOD);
+    this(clientConfig, null, startNodes);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, poolConfig, startNodes, DEFAULT_TOPOLOGY_REFRESH_PERIOD);
+    this(clientConfig, poolConfig, startNodes, null);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
@@ -376,7 +376,7 @@ public class JedisClusterInfoCache {
 
   public void close() {
     reset();
-    if (topologyRefreshPeriod != null && topologyRefreshExecutor != null) {
+    if (topologyRefreshExecutor != null) {
       logger.info("Cluster topology refresh shutdown, startNodes: {}", startNodes);
       topologyRefreshExecutor.shutdownNow();
     }

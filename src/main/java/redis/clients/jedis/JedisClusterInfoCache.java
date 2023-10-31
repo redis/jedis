@@ -44,12 +44,10 @@ public class JedisClusterInfoCache {
 
   private static final int MASTER_NODE_INDEX = 2;
 
-  private final Duration topologyRefreshPeriod;
-
   /**
    * The single thread executor for the topology refresh task.
    */
-  private final ScheduledExecutorService topologyRefreshExecutor;
+  private ScheduledExecutorService topologyRefreshExecutor = null;
 
   class TopologyRefreshTask implements Runnable {
     @Override
@@ -75,7 +73,6 @@ public class JedisClusterInfoCache {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
     this.startNodes = startNodes;
-    this.topologyRefreshPeriod = topologyRefreshPeriod;
     if (topologyRefreshPeriod != null) {
       logger.info("Cluster topology refresh start, period: {}, startNodes: {}", topologyRefreshPeriod, startNodes);
       topologyRefreshExecutor = Executors.newSingleThreadScheduledExecutor();

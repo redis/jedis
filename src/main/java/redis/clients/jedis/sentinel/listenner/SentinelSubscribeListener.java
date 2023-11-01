@@ -1,22 +1,27 @@
-package redis.clients.jedis;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import redis.clients.jedis.exceptions.JedisException;
+package redis.clients.jedis.sentinel.listenner;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.exceptions.JedisException;
+
 /**
  * subscribe failover message from "+switch-master" channel , the default listener mode use this
- * @see SentinelMasterActiveDetectListener active detect master node .in case of the subscribe
+ * @see SentinelActiveDetectListener active detect master node .in case of the subscribe
  *      message lost
  */
-public abstract class SentinelMasterSubscribeListener extends Thread
-    implements SentinelMasterListener {
+public abstract class SentinelSubscribeListener extends Thread
+    implements SentinelListener {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SentinelMasterSubscribeListener.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SentinelSubscribeListener.class);
 
   private String masterName;
   private HostAndPort sentinel;
@@ -25,9 +30,9 @@ public abstract class SentinelMasterSubscribeListener extends Thread
   private volatile Jedis j;
   private AtomicBoolean running = new AtomicBoolean(false);
 
-  public SentinelMasterSubscribeListener(String masterName, HostAndPort sentinel,
+  public SentinelSubscribeListener(String masterName, HostAndPort sentinel,
       JedisClientConfig sentinelClientConfig, long subscribeRetryWaitTimeMillis) {
-    super(String.format("SentinelMaterSubscribeListener-%s-[%s:%d]", masterName, sentinel.getHost(),
+    super(String.format("SentinelSubscribeListener-%s-[%s:%d]", masterName, sentinel.getHost(),
       sentinel.getPort()));
     this.masterName = masterName;
     this.sentinel = sentinel;

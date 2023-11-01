@@ -12,6 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.sentinel.listenner.SentinelActiveDetectListener;
+import redis.clients.jedis.sentinel.listenner.SentinelListener;
+import redis.clients.jedis.sentinel.listenner.SentinelSubscribeListener;
 import redis.clients.jedis.util.Pool;
 
 public class JedisSentinelPool extends Pool<Jedis> {
@@ -22,7 +25,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
   private final JedisClientConfig sentinelClientConfig;
 
-  private final Collection<SentinelMasterListener> masterListeners = new ArrayList<>();
+  private final Collection<SentinelListener> masterListeners = new ArrayList<>();
 
   private volatile HostAndPort currentHostMaster;
   
@@ -213,7 +216,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     for (HostAndPort sentinel : sentinels) {
       if (jedisSentinelPoolConfig.isEnableActiveDetectListener()) {
         masterListeners.add(
-          new SentinelMasterActiveDetectListener(currentHostMaster, sentinel, sentinelClientConfig,
+          new SentinelActiveDetectListener(currentHostMaster, sentinel, sentinelClientConfig,
               masterName, jedisSentinelPoolConfig.getActiveDetectIntervalTimeMillis()) {
             @Override
             public void onChange(HostAndPort hostAndPort) {
@@ -223,7 +226,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
       }
 
       if (jedisSentinelPoolConfig.isEnableDefaultSubscribeListener()) {
-        masterListeners.add(new SentinelMasterSubscribeListener(masterName, sentinel,
+        masterListeners.add(new SentinelSubscribeListener(masterName, sentinel,
             sentinelClientConfig, jedisSentinelPoolConfig.getSubscribeRetryWaitTimeMillis()) {
           @Override
           public void onChange(HostAndPort hostAndPort) {
@@ -232,7 +235,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
         });
       }
     }
-    masterListeners.forEach(SentinelMasterListener::start);
+    masterListeners.forEach(SentinelListener::start);
   }
 
   private static Set<HostAndPort> parseHostAndPorts(Set<String> strings) {
@@ -241,7 +244,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
   @Override
   public void destroy() {
-    masterListeners.forEach(SentinelMasterListener::shutdown);
+    masterListeners.forEach(SentinelListener::shutdown);
     super.destroy();
   }
 

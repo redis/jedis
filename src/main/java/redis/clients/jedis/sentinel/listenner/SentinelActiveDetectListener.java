@@ -1,21 +1,25 @@
-package redis.clients.jedis;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package redis.clients.jedis.sentinel.listenner;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
+
 /**
  * active detect master node .in case of the subscribe message lost
- * @see SentinelMasterSubscribeListener subscribe failover message from "+switch-master" channel
+ * @see SentinelSubscribeListener subscribe failover message from "+switch-master" channel
  */
-public abstract class SentinelMasterActiveDetectListener extends Thread
-    implements SentinelMasterListener {
+public abstract class SentinelActiveDetectListener extends Thread
+    implements SentinelListener {
 
   private static final Logger LOG = LoggerFactory
-      .getLogger(SentinelMasterActiveDetectListener.class);
+      .getLogger(SentinelActiveDetectListener.class);
 
   private List<String> currentHostMaster;
   private HostAndPort sentinel;
@@ -26,9 +30,9 @@ public abstract class SentinelMasterActiveDetectListener extends Thread
   private AtomicBoolean running = new AtomicBoolean(false);
   private volatile Jedis j;
 
-  public SentinelMasterActiveDetectListener(HostAndPort currentHostMaster, HostAndPort sentinel,
+  public SentinelActiveDetectListener(HostAndPort currentHostMaster, HostAndPort sentinel,
       JedisClientConfig jedisClientConfig, String masterName, long activeDetectIntervalTimeMillis) {
-    super(String.format("SentinelMasterActiveDetectListener-%s-[%s:%d]", masterName,
+    super(String.format("SentinelActiveDetectListener-%s-[%s:%d]", masterName,
       sentinel.getHost(), sentinel.getPort()));
     this.currentHostMaster = Arrays.asList(currentHostMaster.getHost(),
       String.valueOf(currentHostMaster.getPort()));

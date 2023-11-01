@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
@@ -16,14 +15,12 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.SentinelMasterActiveDetectListener;
-import redis.clients.jedis.SentinelMasterListener;
-import redis.clients.jedis.SentinelMasterSubscribeListener;
 import redis.clients.jedis.SentinelPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.IOUtils;
+import redis.clients.jedis.sentinel.listenner.SentinelActiveDetectListener;
+import redis.clients.jedis.sentinel.listenner.SentinelListener;
+import redis.clients.jedis.sentinel.listenner.SentinelSubscribeListener;
 
 public class SentineledConnectionProvider implements ConnectionProvider {
 
@@ -41,7 +38,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private final GenericObjectPoolConfig<Connection> masterPoolConfig;
 
-  private final Collection<SentinelMasterListener> sentinelListeners = new ArrayList<>();
+  private final Collection<SentinelListener> sentinelListeners = new ArrayList<>();
 
   private final JedisClientConfig sentinelClientConfig;
 
@@ -95,7 +92,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     for (HostAndPort sentinel : sentinels) {
       if (jedisSentinelPoolConfig.isEnableActiveDetectListener()) {
         sentinelListeners.add(
-          new SentinelMasterActiveDetectListener(currentMaster, sentinel, sentinelClientConfig,
+          new SentinelActiveDetectListener(currentMaster, sentinel, sentinelClientConfig,
               masterName, jedisSentinelPoolConfig.getActiveDetectIntervalTimeMillis()) {
             @Override
             public void onChange(HostAndPort hostAndPort) {
@@ -105,7 +102,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
       }
 
       if (jedisSentinelPoolConfig.isEnableDefaultSubscribeListener()) {
-        sentinelListeners.add(new SentinelMasterSubscribeListener(masterName, sentinel,
+        sentinelListeners.add(new SentinelSubscribeListener(masterName, sentinel,
             sentinelClientConfig, jedisSentinelPoolConfig.getSubscribeRetryWaitTimeMillis()) {
           @Override
           public void onChange(HostAndPort hostAndPort) {
@@ -115,7 +112,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
       }
     }
 
-    sentinelListeners.forEach(SentinelMasterListener::start);
+    sentinelListeners.forEach(SentinelListener::start);
   }
 
   @Override
@@ -130,7 +127,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   @Override
   public void close() {
-    sentinelListeners.forEach(SentinelMasterListener::shutdown);
+    sentinelListeners.forEach(SentinelListener::shutdown);
     pool.close();
   }
 

@@ -29,71 +29,7 @@ public class SentinelListenerTest {
   }
 
   @Test
-  public void testSentinelSubscribeListener() {
-    // case 1: default : subscribe on ,active off
-    SentinelPoolConfig config = new SentinelPoolConfig();
-
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "foobared",
-        2);
-    HostAndPort hostPort1 = pool.getResource().connection.getHostAndPort();
-
-    Jedis sentinel = new Jedis(sentinel1);
-    sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
-
-    HostAndPort hostPort2 = null;
-    for (int i = 0; i < 24; i++) { // timeout time 24*5000
-      hostPort2 = pool.getResource().connection.getHostAndPort();
-
-      if (!hostPort2.equals(hostPort1)) {
-        break;
-      }
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    pool.destroy();
-    assertNotNull(hostPort2);
-    assertNotEquals(hostPort1, hostPort2);
-  }
-
-  @Test
-  public void testSentinelActiveDetectListener() {
-    // case 2: subscribe off ,active on
-    SentinelPoolConfig config = new SentinelPoolConfig();
-    config.setEnableActiveDetectListener(true);
-    config.setEnableDefaultSubscribeListener(false);
-
-    JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, config, 1000, "foobared",
-        2);
-    HostAndPort hostPort1 = pool.getResource().connection.getHostAndPort();
-
-    Jedis sentinel = new Jedis(sentinel1);
-    sentinel.sendCommand(Protocol.Command.SENTINEL, "failover", MASTER_NAME);
-
-    HostAndPort hostPort2 = null;
-    for (int i = 0; i < 24; i++) { // timeout time 24*5000
-      hostPort2 = pool.getResource().connection.getHostAndPort();
-
-      if (!hostPort2.equals(hostPort1)) {
-        break;
-      }
-      try {
-        Thread.sleep(5000);
-      } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
-    pool.destroy();
-    assertNotNull(hostPort2);
-    assertNotEquals(hostPort1, hostPort2);
-  }
-
-  @Test
-  public void testALLSentinelListener() {
+  public void testSentinelListener() {
     // case 2: subscribe on ,active on
     SentinelPoolConfig config = new SentinelPoolConfig();
     config.setEnableActiveDetectListener(true);

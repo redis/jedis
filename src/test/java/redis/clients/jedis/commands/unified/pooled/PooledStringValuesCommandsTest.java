@@ -13,7 +13,7 @@ public class PooledStringValuesCommandsTest extends StringValuesCommandsTestBase
   }
 
   @AfterClass
-  public static void closeCluster() {
+  public static void cleanUp() {
     jedis.close();
   }
 

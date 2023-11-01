@@ -1,3 +1,12 @@
+<!--
+Github issues should be used to report bugs and for detailed feature requests. 
+Everything else belongs in the [Jedis Google Group](https://groups.google.com/g/jedis_redis) 
+or [Jedis Github Discussions](https://github.com/redis/jedis/discussions).
+
+Please post general questions to Google Groups or Github discussions. 
+These can be closed without response when posted to Github issues.
+-->
+
 ### Expected behavior
 
 Write here what you're expecting ...

@@ -19,6 +19,10 @@ import redis.clients.jedis.ShardedCommandArguments;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Hashing;
 
+/**
+ * @deprecated Sharding/Sharded feature will be removed in next major release.
+ */
+@Deprecated
 public class ShardedConnectionProvider implements ConnectionProvider {
 
   private final TreeMap<Long, HostAndPort> nodes = new TreeMap<>();
@@ -42,7 +46,7 @@ public class ShardedConnectionProvider implements ConnectionProvider {
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
       Hashing algo) {
-    this(shards, clientConfig, new GenericObjectPoolConfig<Connection>(), algo);
+    this(shards, clientConfig, null, algo);
   }
 
   public ShardedConnectionProvider(List<HostAndPort> shards, JedisClientConfig clientConfig,
@@ -69,7 +73,8 @@ public class ShardedConnectionProvider implements ConnectionProvider {
     ConnectionPool existingPool = resources.get(nodeKey);
     if (existingPool != null) return existingPool;
 
-    ConnectionPool nodePool = new ConnectionPool(node, clientConfig, poolConfig);
+    ConnectionPool nodePool = poolConfig == null ? new ConnectionPool(node, clientConfig)
+        : new ConnectionPool(node, clientConfig, poolConfig);
     resources.put(nodeKey, nodePool);
     return nodePool;
   }
@@ -156,5 +161,10 @@ public class ShardedConnectionProvider implements ConnectionProvider {
       return nodes.get(nodes.firstKey());
     }
     return tail.get(tail.firstKey());
+  }
+
+  @Override
+  public Map<String, ConnectionPool> getConnectionMap() {
+    return Collections.unmodifiableMap(resources);
   }
 }

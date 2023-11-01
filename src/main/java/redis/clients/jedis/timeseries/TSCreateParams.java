@@ -3,13 +3,17 @@ package redis.clients.jedis.timeseries;
 import static redis.clients.jedis.Protocol.toByteArray;
 import static redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesKeyword.*;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
+/**
+ * Represents optional arguments of TS.CREATE command.
+ */
 public class TSCreateParams implements IParams {
 
-  private Long retentionTime;
+  private Long retentionPeriod;
   private boolean uncompressed;
   private boolean compressed;
   private Long chunkSize;
@@ -23,8 +27,8 @@ public class TSCreateParams implements IParams {
     return new TSCreateParams();
   }
 
-  public TSCreateParams retention(long retentionTime) {
-    this.retentionTime = retentionTime;
+  public TSCreateParams retention(long retentionPeriod) {
+    this.retentionPeriod = retentionPeriod;
     return this;
   }
 
@@ -48,16 +52,33 @@ public class TSCreateParams implements IParams {
     return this;
   }
 
+  /**
+   * Set label-value pairs
+   *
+   * @param labels label-value pairs
+   * @return the object itself
+   */
   public TSCreateParams labels(Map<String, String> labels) {
     this.labels = labels;
+    return this;
+  }
+
+  /**
+   * Add label-value pair. Multiple pairs can be added through chaining.
+   */
+  public TSCreateParams label(String label, String value) {
+    if (this.labels == null) {
+      this.labels = new LinkedHashMap<>();
+    }
+    this.labels.put(label, value);
     return this;
   }
 
   @Override
   public void addParams(CommandArguments args) {
 
-    if (retentionTime != null) {
-      args.add(RETENTION).add(toByteArray(retentionTime));
+    if (retentionPeriod != null) {
+      args.add(RETENTION).add(toByteArray(retentionPeriod));
     }
 
     if (uncompressed) {

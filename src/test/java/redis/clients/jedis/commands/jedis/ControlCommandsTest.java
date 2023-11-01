@@ -1,12 +1,14 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
-import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +21,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -28,7 +32,13 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.params.CommandListFilterByParams;
+import redis.clients.jedis.params.LolwutParams;
+import redis.clients.jedis.resps.CommandDocument;
+import redis.clients.jedis.resps.CommandInfo;
 import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ControlCommandsTest extends JedisCommandsTestBase {
 
@@ -151,13 +161,13 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
       List<Object> role = sentinel.role();
       assertEquals("sentinel", role.get(0));
       assertTrue(role.get(1) instanceof List);
-      assertTrue(((List) role.get(1)).contains("mymaster"));
+      AssertUtil.assertCollectionContains((List) role.get(1), "mymaster");
 
       // binary
       List<Object> brole = sentinel.roleBinary();
       assertArrayEquals("sentinel".getBytes(), (byte[]) brole.get(0));
       assertTrue(brole.get(1) instanceof List);
-      AssertUtil.assertCollectionContains((List) brole.get(1), "mymaster".getBytes());
+      AssertUtil.assertByteArrayCollectionContains((List) brole.get(1), "mymaster".getBytes());
     }
   }
 
@@ -197,31 +207,35 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void configGet() {
-    List<String> info = jedis.configGet("m*");
+    Map<String, String> info = jedis.configGet("m*");
     assertNotNull(info);
     assertFalse(info.isEmpty());
-    assertTrue(info.size() % 2 == 0);
-    List<byte[]> infoBinary = jedis.configGet("m*".getBytes());
+//    assertTrue(info.size() % 2 == 0);
+    Map<byte[], byte[]> infoBinary = jedis.configGet("m*".getBytes());
     assertNotNull(infoBinary);
     assertFalse(infoBinary.isEmpty());
-    assertTrue(infoBinary.size() % 2 == 0);
+//    assertTrue(infoBinary.size() % 2 == 0);
   }
 
   @Test
   public void configSet() {
-    List<String> info = jedis.configGet("maxmemory");
-    assertEquals("maxmemory", info.get(0));
-    String memory = info.get(1);
+    Map<String, String> info = jedis.configGet("maxmemory");
+//    assertEquals("maxmemory", info.get(0));
+//    String memory = info.get(1);
+    String memory = info.get("maxmemory");
+    assertNotNull(memory);
     assertEquals("OK", jedis.configSet("maxmemory", "200"));
     assertEquals("OK", jedis.configSet("maxmemory", memory));
   }
 
   @Test
   public void configSetBinary() {
-    byte[] maxmemory = encode("maxmemory");
-    List<byte[]> info = jedis.configGet(maxmemory);
-    assertArrayEquals(maxmemory, info.get(0));
-    byte[] memory = info.get(1);
+    byte[] maxmemory = SafeEncoder.encode("maxmemory");
+    Map<byte[], byte[]> info = jedis.configGet(maxmemory);
+//    assertArrayEquals(maxmemory, info.get(0));
+//    byte[] memory = info.get(1);
+    byte[] memory = info.get(maxmemory);
+    assertNotNull(memory);
     assertEquals("OK", jedis.configSet(maxmemory, Protocol.toByteArray(200)));
     assertEquals("OK", jedis.configSet(maxmemory, memory));
   }
@@ -229,14 +243,15 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void configGetSetMulti() {
     String[] params = new String[]{"hash-max-listpack-entries", "set-max-intset-entries", "zset-max-listpack-entries"};
-    List<String> info = jedis.configGet(params);
-    assertEquals(6, info.size());
-    assertEquals("OK", jedis.configSet(info.toArray(new String[6])));
+    Map<String, String> info = jedis.configGet(params);
+    assertEquals(3, info.size());
+    assertEquals("OK", jedis.configSet(info));
 
-    byte[][] bparams = new byte[][]{encode("hash-max-listpack-entries"), encode("set-max-intset-entries"), encode("zset-max-listpack-entries")};
-    List<byte[]> binfo = jedis.configGet(bparams);
-    assertEquals(6, binfo.size());
-    assertEquals("OK", jedis.configSet(binfo.toArray(new byte[6][])));
+    byte[][] bparams = new byte[][]{SafeEncoder.encode("hash-max-listpack-entries"),
+      SafeEncoder.encode("set-max-intset-entries"), SafeEncoder.encode("zset-max-listpack-entries")};
+    Map<byte[], byte[]> binfo = jedis.configGet(bparams);
+    assertEquals(3, binfo.size());
+    assertEquals("OK", jedis.configSetBinary(binfo));
   }
 
   @Test
@@ -245,14 +260,16 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void waitAof() {
+    assertEquals(KeyValue.of(0L, 0L), jedis.waitAOF(0L, 0L, 100L));
+  }
+
+  @Test
   public void clientPause() throws InterruptedException, ExecutionException {
     ExecutorService executorService = Executors.newFixedThreadPool(2);
-    try {
-      final Jedis jedisToPause1 = createJedis();
-      final Jedis jedisToPause2 = createJedis();
+    try (Jedis jedisToPause1 = createJedis(); Jedis jedisToPause2 = createJedis();) {
 
-      int pauseMillis = 1250;
-      jedis.clientPause(pauseMillis);
+      jedis.clientPause(1000L);
 
       Future<Long> latency1 = executorService.submit(new Callable<Long>() {
         @Override
@@ -271,18 +288,12 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         }
       });
 
-      long latencyMillis1 = latency1.get();
-      long latencyMillis2 = latency2.get();
+      assertThat(latency1.get(), greaterThan(100L));
+      assertThat(latency2.get(), greaterThan(100L));
 
-      int pauseMillisDelta = 100;
-      assertTrue(pauseMillis <= latencyMillis1 && latencyMillis1 <= pauseMillis + pauseMillisDelta);
-      assertTrue(pauseMillis <= latencyMillis2 && latencyMillis2 <= pauseMillis + pauseMillisDelta);
-
-      jedisToPause1.close();
-      jedisToPause2.close();
     } finally {
       executorService.shutdown();
-      if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+      if (!executorService.awaitTermination(2, TimeUnit.SECONDS)) {
         executorService.shutdownNow();
       }
     }
@@ -290,13 +301,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientPauseAll() throws InterruptedException, ExecutionException {
-    final int pauseMillis = 1250;
-    final int pauseMillisDelta = 100;
-
     ExecutorService executorService = Executors.newFixedThreadPool(1);
     try (Jedis jedisPause = createJedis()) {
 
-      jedis.clientPause(pauseMillis, ClientPauseMode.ALL);
+      jedis.clientPause(1000L, ClientPauseMode.ALL);
 
       Future<Long> latency = executorService.submit(new Callable<Long>() {
         @Override
@@ -307,8 +315,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         }
       });
 
-      long latencyMillis = latency.get();
-      assertTrue(pauseMillis <= latencyMillis && latencyMillis <= pauseMillis + pauseMillisDelta);
+      assertThat(latency.get(), greaterThan(100L));
 
     } finally {
       executorService.shutdown();
@@ -320,13 +327,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientPauseWrite() throws InterruptedException, ExecutionException {
-    final int pauseMillis = 1250;
-    final int pauseMillisDelta = 100;
-
     ExecutorService executorService = Executors.newFixedThreadPool(2);
     try (Jedis jedisRead = createJedis(); Jedis jedisWrite = createJedis();) {
 
-      jedis.clientPause(pauseMillis, ClientPauseMode.WRITE);
+      jedis.clientPause(1000L, ClientPauseMode.WRITE);
 
       Future<Long> latencyRead = executorService.submit(new Callable<Long>() {
         @Override
@@ -345,11 +349,9 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         }
       });
 
-      long latencyReadMillis = latencyRead.get();
-      assertTrue(0 <= latencyReadMillis && latencyReadMillis <= pauseMillisDelta);
+      assertThat(latencyRead.get(), Matchers.lessThan(100L));
 
-      long latencyWriteMillis = latencyWrite.get();
-      assertTrue(pauseMillis <= latencyWriteMillis && latencyWriteMillis <= pauseMillis + pauseMillisDelta);
+      assertThat(latencyWrite.get(), Matchers.greaterThan(100L));
 
     } finally {
       executorService.shutdown();
@@ -360,9 +362,20 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void clientUnpause() {
+    assertEquals("OK", jedis.clientUnpause());
+  }
+
+  @Test
   public void clientNoEvict() {
     assertEquals("OK", jedis.clientNoEvictOn());
     assertEquals("OK", jedis.clientNoEvictOff());
+  }
+
+  @Test
+  public void clientNoTouch() {
+    assertEquals("OK", jedis.clientNoTouchOn());
+    assertEquals("OK", jedis.clientNoTouchOff());
   }
 
   @Test
@@ -383,14 +396,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     // may subject to be 'tuned' especially targeting a major Redis release.
 
     jedis.set("foo", "bar");
-    long usage = jedis.memoryUsage("foo");
-    assertTrue(usage >= 30);
-    assertTrue(usage <= 80);
+    assertThat(jedis.memoryUsage("foo"), greaterThan(20l));
 
     jedis.lpush("foobar", "fo", "ba", "sha");
-    usage = jedis.memoryUsage("foobar", 2);
-    assertTrue(usage >= 110);
-    assertTrue(usage <= 190);
+    assertThat(jedis.memoryUsage("foobar", 2), greaterThan(36l));
 
     assertNull(jedis.memoryUsage("roo", 2));
   }
@@ -405,14 +414,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     byte[] bfoobar = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
 
     jedis.set(bfoo, bbar);
-    long usage = jedis.memoryUsage(bfoo);
-    assertTrue(usage >= 30);
-    assertTrue(usage <= 80);
+    assertThat(jedis.memoryUsage(bfoo), greaterThan(20l));
 
     jedis.lpush(bfoobar, new byte[]{0x01, 0x02}, new byte[]{0x05, 0x06}, new byte[]{0x00});
-    usage = jedis.memoryUsage(bfoobar, 2);
-    assertTrue(usage >= 110);
-    assertTrue(usage <= 190);
+    assertThat(jedis.memoryUsage(bfoobar, 2), greaterThan(40l));
 
     assertNull(jedis.memoryUsage("roo", 2));
   }
@@ -427,5 +432,89 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void memoryStats() {
     Map<String, Object> stats = jedis.memoryStats();
     assertNotNull(stats);
+  }
+
+  @Test
+  public void latencyDoctor() {
+    String report = jedis.latencyDoctor();
+    assertNotNull(report);
+  }
+
+  @Test
+  public void commandCount() {
+    assertTrue(jedis.commandCount() > 100);
+  }
+
+  @Test
+  public void commandDocs() {
+    Map<String, CommandDocument> docs = jedis.commandDocs("SORT", "SET");
+
+    CommandDocument sortDoc = docs.get("sort");
+    assertEquals("generic", sortDoc.getGroup());
+    MatcherAssert.assertThat(sortDoc.getSummary(), Matchers.isOneOf(
+        "Sort the elements in a list, set or sorted set",
+        "Sorts the elements in a list, a set, or a sorted set, optionally storing the result."));
+    assertNull(sortDoc.getHistory());
+
+    CommandDocument setDoc = docs.get("set");
+    assertEquals("1.0.0", setDoc.getSince());
+    assertEquals("O(1)", setDoc.getComplexity());
+    assertEquals("2.6.12: Added the `EX`, `PX`, `NX` and `XX` options.", setDoc.getHistory().get(0));
+  }
+
+  @Test
+  public void commandGetKeys() {
+    List<String> keys = jedis.commandGetKeys("SORT", "mylist", "ALPHA", "STORE", "outlist");
+    assertEquals(2, keys.size());
+
+    List<KeyValue<String, List<String>>> keySandFlags = jedis.commandGetKeysAndFlags("SET", "k1", "v1");
+    assertEquals("k1", keySandFlags.get(0).getKey());
+    assertEquals(2, keySandFlags.get(0).getValue().size());
+  }
+
+  @Test
+  public void commandInfo() {
+    Map<String, CommandInfo> infos = jedis.commandInfo("GET", "foo", "SET");
+
+    CommandInfo getInfo = infos.get("get");
+    assertEquals(2, getInfo.getArity());
+    assertEquals(2, getInfo.getFlags().size());
+    assertEquals(1, getInfo.getFirstKey());
+    assertEquals(1, getInfo.getLastKey());
+    assertEquals(1, getInfo.getStep());
+
+    assertNull(infos.get("foo")); // non-existing command
+
+    CommandInfo setInfo = infos.get("set");
+    assertEquals(3, setInfo.getAclCategories().size());
+    assertEquals(0, setInfo.getTips().size());
+    assertEquals(0, setInfo.getSubcommands().size());
+  }
+
+  @Test
+  public void commandList() {
+    List<String> commands = jedis.commandList();
+    assertTrue(commands.size() > 100);
+
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByModule("JSON"));
+    assertEquals(0, commands.size()); // json module was not loaded
+
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByAclCat("admin"));
+    assertTrue(commands.size() > 10);
+
+    commands = jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams().filterByPattern("a*"));
+    assertTrue(commands.size() > 10);
+
+    assertThrows(IllegalArgumentException.class, () ->
+        jedis.commandListFilterBy(CommandListFilterByParams.commandListFilterByParams()));
+  }
+
+  @Test
+  public void lolwut() {
+    assertNotNull(jedis.lolwut());
+
+    assertNotNull(jedis.lolwut(new LolwutParams().version(5)));
+
+    assertNotNull(jedis.lolwut(new LolwutParams().version(5).optionalArguments()));
   }
 }

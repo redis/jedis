@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
@@ -45,7 +46,7 @@ public interface ClientBinaryCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format.
+   * in a mostly human-readable format.
    *
    * @return All clients info connected to redis-server
    */
@@ -53,7 +54,7 @@ public interface ClientBinaryCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format filter by client type.
+   * in a mostly human-readable format filter by client type.
    *
    * @return all clients info connected to redis-server
    */
@@ -61,7 +62,7 @@ public interface ClientBinaryCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format filter by client ids.
+   * in a mostly human-readable format filter by client ids.
    *
    * @param clientIds Unique 64-bit client IDs
    * @return All clients info connected to redis-server
@@ -70,11 +71,20 @@ public interface ClientBinaryCommands {
 
   /**
    * Returns information and statistics about the current client connection
-   * in a mostly human readable format.
+   * in a mostly human-readable format.
    *
    * @return Information and statistics about the current client connection
    */
   byte[] clientInfoBinary();
+
+  /**
+   * client set info command
+   * Since redis 7.2
+   * @param attr the attr option
+   * @param value the value
+   * @return OK or error
+   */
+  String clientSetInfo(ClientAttributeOption attr, byte[] value);
 
   /**
    * Assigns a name to the current connection.
@@ -132,6 +142,12 @@ public interface ClientBinaryCommands {
    * @return The command returns OK or an error if the timeout is invalid.
    */
   String clientPause(long timeout, ClientPauseMode mode);
+
+  /**
+   * CLIENT UNPAUSE is used to resume command processing for all clients that were paused by CLIENT PAUSE.
+   * @return OK
+   */
+  String clientUnpause();
 
   /**
    * Turn on the client eviction mode for the current connection.

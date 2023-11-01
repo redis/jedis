@@ -22,4 +22,28 @@ public class GraphValuesTest extends RedisModuleCommandsTestBase {
     Record r = rs.iterator().next();
     assertEquals(Double.POSITIVE_INFINITY, r.getValue(0), 0d);
   }
+
+  @Test
+  public void parseInfinity2() {
+    ResultSet rs = client.graphQuery("db", "RETURN cot(0)");
+    assertEquals(1, rs.size());
+    Record r = rs.iterator().next();
+    assertEquals(Double.POSITIVE_INFINITY, r.getValue(0), 0d);
+  }
+
+  @Test
+  public void parseNaN() {
+    ResultSet rs = client.graphQuery("db", "RETURN asin(-1.1)");
+    assertEquals(1, rs.size());
+    Record r = rs.iterator().next();
+    assertEquals(Double.NaN, r.getValue(0), 0d);
+  }
+
+  @Test
+  public void parseMinusNaN() {
+    ResultSet rs = client.graphQuery("db", "RETURN sqrt(-1)");
+    assertEquals(1, rs.size());
+    Record r = rs.iterator().next();
+    assertEquals(Double.NaN, r.getValue(0), 0d);
+  }
 }

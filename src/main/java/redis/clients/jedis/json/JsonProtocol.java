@@ -9,6 +9,7 @@ public class JsonProtocol {
     DEL("JSON.DEL"),
     GET("JSON.GET"),
     MGET("JSON.MGET"),
+    MERGE("JSON.MERGE"),
     SET("JSON.SET"),
     TYPE("JSON.TYPE"),
     STRAPPEND("JSON.STRAPPEND"),
@@ -22,7 +23,10 @@ public class JsonProtocol {
     ARRTRIM("JSON.ARRTRIM"),
     CLEAR("JSON.CLEAR"),
     TOGGLE("JSON.TOGGLE"),
-    DEBUG("JSON.DEBUG");
+    OBJKEYS("JSON.OBJKEYS"),
+    OBJLEN("JSON.OBJLEN"),
+    DEBUG("JSON.DEBUG"),
+    RESP("JSON.RESP");
 
     private final byte[] raw;
 

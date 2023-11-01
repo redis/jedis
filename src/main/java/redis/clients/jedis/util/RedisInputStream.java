@@ -13,6 +13,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
@@ -45,6 +46,21 @@ public class RedisInputStream extends FilterInputStream {
   public byte readByte() throws JedisConnectionException {
     ensureFill();
     return buf[count++];
+  }
+
+  private void ensureCrLf() {
+    final byte[] buf = this.buf;
+
+    ensureFill();
+    if (buf[count++] == '\r') {
+
+      ensureFill();
+      if (buf[count++] == '\n') {
+        return;
+      }
+    }
+
+    throw new JedisConnectionException("Unexpected character!");
   }
 
   public String readLine() {
@@ -112,7 +128,7 @@ public class RedisInputStream extends FilterInputStream {
 
   /**
    * Slow path in case a line of bytes cannot be read in one #fill() operation. This is still faster
-   * than creating the StrinbBuilder, String, then encoding as byte[] in Protocol, then decoding
+   * than creating the StringBuilder, String, then encoding as byte[] in Protocol, then decoding
    * back into a String.
    */
   private byte[] readLineBytesSlowly() {
@@ -145,6 +161,25 @@ public class RedisInputStream extends FilterInputStream {
     }
 
     return bout == null ? new byte[0] : bout.toByteArray();
+  }
+
+  public Object readNullCrLf() {
+    ensureCrLf();
+    return null;
+  }
+
+  public boolean readBooleanCrLf() {
+    final byte[] buf = this.buf;
+
+    ensureFill();
+    final byte b = buf[count++];
+
+    ensureCrLf();
+    switch (b) {
+      case 't': return true;
+      case 'f': return false;
+      default: throw new JedisConnectionException("Unexpected character!");
+    }
   }
 
   public int readIntCrLf() {
@@ -182,6 +217,14 @@ public class RedisInputStream extends FilterInputStream {
     return (isNeg ? -value : value);
   }
 
+  public double readDoubleCrLf() {
+    return DoublePrecision.parseFloatingPointNumber(readLine());
+  }
+
+  public BigInteger readBigIntegerCrLf() {
+    return new BigInteger(readLine());
+  }
+
   @Override
   public int read(byte[] b, int off, int len) throws JedisConnectionException {
     ensureFill();
@@ -193,7 +236,7 @@ public class RedisInputStream extends FilterInputStream {
   }
 
   /**
-   * This methods assumes there are required bytes to be read. If we cannot read anymore bytes an
+   * This method assumes there are required bytes to be read. If we cannot read anymore bytes an
    * exception is thrown to quickly ascertain that the stream was smaller than expected.
    */
   private void ensureFill() throws JedisConnectionException {

@@ -2,13 +2,16 @@ package redis.clients.jedis.executors;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPool;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
@@ -35,6 +38,39 @@ public class ClusterCommandExecutor implements CommandExecutor {
   }
 
   @Override
+  public final <T> T broadcastCommand(CommandObject<T> commandObject) {
+    Map<String, ConnectionPool> connectionMap = provider.getConnectionMap();
+
+    boolean isErrored = false;
+    T reply = null;
+    JedisBroadcastException bcastError = new JedisBroadcastException();
+    for (Map.Entry<String, ConnectionPool> entry : connectionMap.entrySet()) {
+      HostAndPort node = HostAndPort.from(entry.getKey());
+      ConnectionPool pool = entry.getValue();
+      try (Connection connection = pool.getResource()) {
+        T aReply = execute(connection, commandObject);
+        bcastError.addReply(node, aReply);
+        if (isErrored) { // already errored
+        } else if (reply == null) {
+          reply = aReply; // ok
+        } else if (reply.equals(aReply)) {
+          // ok
+        } else {
+          isErrored = true;
+          reply = null;
+        }
+      } catch (Exception anError) {
+        bcastError.addReply(node, anError);
+        isErrored = true;
+      }
+    }
+    if (isErrored) {
+      throw bcastError;
+    }
+    return reply;
+  }
+
+  @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
@@ -54,7 +90,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
           connection = provider.getConnection(commandObject.getArguments());
         }
 
-        return connection.executeCommand(commandObject);
+        return execute(connection, commandObject);
 
       } catch (JedisClusterOperationException jnrcne) {
         throw jnrcne;
@@ -93,6 +129,14 @@ public class ClusterCommandExecutor implements CommandExecutor {
         = new JedisClusterOperationException("No more cluster attempts left.");
     maxAttemptsException.addSuppressed(lastException);
     throw maxAttemptsException;
+  }
+
+  /**
+   * WARNING: This method is accessible for the purpose of testing.
+   * This should not be used or overriden.
+   */
+  protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
+    return connection.executeCommand(commandObject);
   }
 
   /**
@@ -141,9 +185,14 @@ public class ClusterCommandExecutor implements CommandExecutor {
       throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
     }
 
-    return millisLeft / (attemptsLeft * (attemptsLeft + 1));
+    long maxBackOff = millisLeft / (attemptsLeft * attemptsLeft);
+    return ThreadLocalRandom.current().nextLong(maxBackOff + 1);
   }
 
+  /**
+   * WARNING: This method is accessible for the purpose of testing.
+   * This should not be used or overriden.
+   */
   protected void sleep(long sleepMillis) {
     try {
       TimeUnit.MILLISECONDS.sleep(sleepMillis);

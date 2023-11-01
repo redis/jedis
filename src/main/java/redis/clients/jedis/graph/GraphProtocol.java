@@ -4,13 +4,20 @@ import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
+@Deprecated
 public class GraphProtocol {
 
+  @Deprecated
   public enum GraphCommand implements ProtocolCommand {
 
     QUERY,
     RO_QUERY,
-    DELETE;
+    DELETE,
+    LIST,
+    PROFILE,
+    EXPLAIN,
+    SLOWLOG,
+    CONFIG;
 
     private final byte[] raw;
 
@@ -24,10 +31,13 @@ public class GraphProtocol {
     }
   }
 
+  @Deprecated
   public enum GraphKeyword implements Rawable {
 
     CYPHER,
     TIMEOUT,
+    SET,
+    GET,
     __COMPACT("--COMPACT");
 
     private final byte[] raw;

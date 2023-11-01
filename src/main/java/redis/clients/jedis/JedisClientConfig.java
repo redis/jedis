@@ -1,10 +1,15 @@
 package redis.clients.jedis;
 
+import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 public interface JedisClientConfig {
+
+  default RedisProtocol getRedisProtocol() {
+    return null;
+  }
 
   /**
    * @return Connection timeout in milliseconds
@@ -39,7 +44,9 @@ public interface JedisClientConfig {
     return null;
   }
 
-  default void updatePassword(String password) {
+  default Supplier<RedisCredentials> getCredentialsProvider() {
+    return new DefaultRedisCredentialsProvider(
+        new DefaultRedisCredentials(getUser(), getPassword()));
   }
 
   default int getDatabase() {
@@ -73,4 +80,11 @@ public interface JedisClientConfig {
     return null;
   }
 
+  /**
+   * Modify the behavior of internally executing CLIENT SETINFO command.
+   * @return CLIENT SETINFO config
+   */
+  default ClientSetInfoConfig getClientSetInfoConfig() {
+    return ClientSetInfoConfig.DEFAULT;
+  }
 }

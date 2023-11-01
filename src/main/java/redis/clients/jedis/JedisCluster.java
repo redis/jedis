@@ -4,8 +4,11 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.executors.ClusterCommandExecutor;
+
+import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
 
@@ -99,6 +102,12 @@ public class JedisCluster extends UnifiedJedis {
     this(nodes, DefaultJedisClientConfig.builder().user(user).password(password).build());
   }
 
+  public JedisCluster(Set<HostAndPort> nodes, String user, String password,
+      HostAndPortMapper hostAndPortMap) {
+    this(nodes, DefaultJedisClientConfig.builder().user(user).password(password)
+        .hostAndPortMapper(hostAndPortMap).build());
+  }
+
   public JedisCluster(Set<HostAndPort> nodes, final GenericObjectPoolConfig<Connection> poolConfig) {
     this(nodes, DEFAULT_TIMEOUT, DEFAULT_MAX_ATTEMPTS, poolConfig);
   }
@@ -123,8 +132,8 @@ public class JedisCluster extends UnifiedJedis {
     this(clusterNodes, connectionTimeout, soTimeout, maxAttempts, password, null, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout,
-      int soTimeout, int maxAttempts, String password, String clientName,
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout, int soTimeout,
+      int maxAttempts, String password, String clientName,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(clusterNodes, connectionTimeout, soTimeout, maxAttempts, null, password, clientName,
         poolConfig);
@@ -138,9 +147,9 @@ public class JedisCluster extends UnifiedJedis {
         maxAttempts, poolConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout,
-      int soTimeout, int infiniteSoTimeout, int maxAttempts, String user, String password,
-      String clientName, GenericObjectPoolConfig<Connection> poolConfig) {
+  public JedisCluster(Set<HostAndPort> clusterNodes, int connectionTimeout, int soTimeout,
+      int infiniteSoTimeout, int maxAttempts, String user, String password, String clientName,
+      GenericObjectPoolConfig<Connection> poolConfig) {
     this(clusterNodes, DefaultJedisClientConfig.builder().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)
         .user(user).password(password).clientName(clientName).build(), maxAttempts, poolConfig);
@@ -168,7 +177,8 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
-      int maxAttempts, Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
+      int maxAttempts, Duration maxTotalRetriesDuration,
+      GenericObjectPoolConfig<Connection> poolConfig) {
     super(clusterNodes, clientConfig, poolConfig, maxAttempts, maxTotalRetriesDuration);
   }
 
@@ -180,15 +190,57 @@ public class JedisCluster extends UnifiedJedis {
     super(clusterNodes, clientConfig, maxAttempts);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
     super(clusterNodes, clientConfig, maxAttempts, maxTotalRetriesDuration);
   }
 
+  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
+    super(provider, maxAttempts, maxTotalRetriesDuration);
+  }
+
   public Map<String, ConnectionPool> getClusterNodes() {
-    return ((ClusterCommandExecutor) executor).provider.getNodes();
+    return ((ClusterConnectionProvider) provider).getNodes();
   }
 
   public Connection getConnectionFromSlot(int slot) {
-    return ((ClusterCommandExecutor) executor).provider.getConnectionFromSlot(slot);
+    return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);
+  }
+
+  // commands
+  public long spublish(String channel, String message) {
+    return executeCommand(commandObjects.spublish(channel, message));
+  }
+
+  public long spublish(byte[] channel, byte[] message) {
+    return executeCommand(commandObjects.spublish(channel, message));
+  }
+
+  public void ssubscribe(final JedisShardedPubSub jedisPubSub, final String... channels) {
+    try (Connection connection = getConnectionFromSlot(JedisClusterCRC16.getSlot(channels[0]))) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+
+  public void ssubscribe(BinaryJedisShardedPubSub jedisPubSub, final byte[]... channels) {
+    try (Connection connection = getConnectionFromSlot(JedisClusterCRC16.getSlot(channels[0]))) {
+      jedisPubSub.proceed(connection, channels);
+    }
+  }
+  // commands
+
+  @Override
+  public ClusterPipeline pipelined() {
+    return new ClusterPipeline((ClusterConnectionProvider) provider, (ClusterCommandObjects) commandObjects);
+  }
+
+  /**
+   * @return nothing
+   * @throws UnsupportedOperationException
+   */
+  @Override
+  public Transaction multi() {
+    throw new UnsupportedOperationException();
   }
 }

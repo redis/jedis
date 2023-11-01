@@ -242,104 +242,22 @@ public class CuckooTest extends RedisModuleCommandsTestBase {
     assertTrue(ex.getMessage().contains("ERR not found"));
   }
 
-//  @Test
-//  public void testScanDump() {
-//    client.cfReserve("cuckoo24", CFReserveParams.reserveParams()//
-//        .withCapacity(100)  //
-//        .bucketSize(50)  //
-//        .build());
-//    
-//    client.cfAdd("cuckoo24", "a");
-//
-//    long iter = 0;
-//    List<Map.Entry<Long, byte[]>> chunks = new ArrayList<>();
-//    while (true) {
-//      Map.Entry<Long, byte[]> chunksData = client.cfScanDump("cuckoo24", iter);
-//      iter = chunksData.getKey();
-//      if (iter == 0) {
-//        break;
-//      }
-//      chunks.add(chunksData);
-//    }
-//
-//    client.delete("cuckoo24");
-//
-//    // Load it back
-//    chunks.forEach(chunksData -> client.cfLoadChunk("cuckoo24", chunksData));
-//
-//    // check the bucket size
-//    Map<String, Object> info = client.cfInfo("cuckoo24");
-//
-//    // check the retrieved filter properties
-//    assertEquals(1L, info.get("Number of items inserted"));
-//    assertEquals(50L, info.get("Bucket size"));
-//    assertEquals(0L, info.get("Number of items deleted"));
-//
-//    // check for existing items
-//    assertTrue(client.cfExists("cuckoo24", "a"));
-//  }
-//  
-//  @Test
-//  public void testScanDumpWithIterator() {
-//    client.cfReserve("cuckoo25", CFReserveParams.reserveParams()//
-//        .withCapacity(200)  //
-//        .bucketSize(50)  //
-//        .build());
-//    
-//    client.cfAdd("cuckoo25", "b");
-//    
-//    List<Map.Entry<Long, byte[]>> chunks = new ArrayList<>();
-//    Iterator<Map.Entry<Long, byte[]>> i = client.cfScanDumpIterator("cuckoo25");
-//    while (i.hasNext()) {
-//      chunks.add(i.next());
-//    }
-//
-//    client.delete("cuckoo25");
-//
-//    // Load it back
-//    chunks.forEach(chunksData -> {
-//      client.cfLoadChunk("cuckoo25", chunksData);
-//    });
-//
-//    // check the bucket size
-//    Map<String, Object> info = client.cfInfo("cuckoo25");
-//
-//    // check the retrieved filter properties
-//    assertEquals(1L, info.get("Number of items inserted"));
-//    assertEquals(50L, info.get("Bucket size"));
-//    assertEquals(0L, info.get("Number of items deleted"));
-//
-//    // check for existing items
-//    assertTrue(client.cfExists("cuckoo25", "b"));
-//  }
-//  
-//  @Test
-//  public void testScanDumpWithStream() {
-//    client.cfReserve("cuckoo26", CFReserveParams.reserveParams()//
-//        .withCapacity(100)  //
-//        .bucketSize(50)  //
-//        .build());
-//    
-//    client.cfAdd("cuckoo26", "c");
-//    
-//    List<Map.Entry<Long, byte[]>> chunks = client.cfScanDumpStream("cuckoo26").collect(Collectors.toList());
-//    
-//    client.delete("cuckoo26");
-//
-//    // Load it back
-//    chunks.forEach(chunksData -> {
-//      client.cfLoadChunk("cuckoo26", chunksData);
-//    });
-//
-//    // check the bucket size
-//    Map<String, Object> info = client.cfInfo("cuckoo26");
-//
-//    // check the retrieved filter properties
-//    assertEquals(1L, info.get("Number of items inserted"));
-//    assertEquals(50L, info.get("Bucket size"));
-//    assertEquals(0L, info.get("Number of items deleted"));
-//
-//    // check for existing items
-//    assertTrue(client.cfExists("cuckoo26", "c"));
-//  }
+  @Test(timeout = 2000L)
+  public void testScanDumpAndLoadChunk() {
+    client.cfReserve("cuckoo24", 100L /*capacity*/, CFReserveParams.reserveParams().bucketSize(50));
+    client.cfAdd("cuckoo24-dump", "a");
+
+    long iterator = 0;
+    while (true) {
+      Map.Entry<Long, byte[]> chunkData = client.cfScanDump("cuckoo24-dump", iterator);
+      iterator = chunkData.getKey();
+      if (iterator == 0L) break;
+      assertEquals("OK", client.cfLoadChunk("cuckoo24-load", iterator, chunkData.getValue()));
+    }
+
+    // check for properties
+    assertEquals(client.cfInfo("cuckoo24-dump"), client.cfInfo("cuckoo24-load"));
+    // check for existing items
+    assertTrue(client.cfExists("cuckoo24-load", "a"));
+  }
 }

@@ -1,10 +1,7 @@
 package redis.clients.jedis.params;
 
-import static redis.clients.jedis.Protocol.Keyword.CH;
-import static redis.clients.jedis.Protocol.Keyword.NX;
-import static redis.clients.jedis.Protocol.Keyword.XX;
-
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol.Keyword;
 
 public class GeoAddParams implements IParams {
 
@@ -50,13 +47,13 @@ public class GeoAddParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     if (nx) {
-      args.add(NX);
+      args.add(Keyword.NX);
     } else if (xx) {
-      args.add(XX);
+      args.add(Keyword.XX);
     }
 
     if (ch) {
-      args.add(CH);
+      args.add(Keyword.CH);
     }
   }
 

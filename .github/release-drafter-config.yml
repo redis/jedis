@@ -1,23 +1,26 @@
-name-template: '$NEXT_MAJOR_VERSION'
-tag-template: 'v$NEXT_MAJOR_VERSION'
+name-template: '$NEXT_MINOR_VERSION'
+tag-template: 'v$NEXT_MINOR_VERSION'
 autolabeler:
-  - label: 'chore'
+  - label: 'maintenance'
     files:
       - '*.md'
       - '.github/*'
   - label: 'bug'
     branch:
       - '/bug-.+'
-  - label: 'chore'
+  - label: 'maintenance'
     branch:
-      - '/chore-.+'
+      - '/maintenance-.+'
   - label: 'feature'
     branch:
       - '/feature-.+'
 categories:
-  - title: 'Breaking Changes'
+  - title: '🔥 Breaking Changes'
     labels:
       - 'breakingchange'
+  - title: '🧪 Experimental Features'
+    labels:
+      - 'experimental'
   - title: '🚀 New Features'
     labels:
       - 'feature'
@@ -29,12 +32,15 @@ categories:
       - 'bug'
       - 'BUG'
   - title: '🧰 Maintenance'
-    label: 'chore'
+    labels:
+      - 'maintenance'
+      - 'dependencies'
+      - 'testing'
 change-template: '- $TITLE (#$NUMBER)'
 exclude-labels:
   - 'skip-changelog'
 template: |
-  ## Changes
+  # Changes
 
   $CHANGES
 

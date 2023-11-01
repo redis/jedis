@@ -42,7 +42,7 @@ public interface HashPipelineCommands {
 
   Response<List<String>> hrandfield(String key, long count);
 
-  Response<Map<String, String>> hrandfieldWithValues(String key, long count);
+  Response<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count);
 
   default Response<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor) {
     return hscan(key, cursor, new ScanParams());

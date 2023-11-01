@@ -8,16 +8,15 @@ import static redis.clients.jedis.Protocol.Command.WATCH;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import org.json.JSONArray;
 
 import redis.clients.jedis.args.*;
-import redis.clients.jedis.bloom.BFInsertParams;
-import redis.clients.jedis.bloom.BFReserveParams;
-import redis.clients.jedis.bloom.CFInsertParams;
-import redis.clients.jedis.bloom.CFReserveParams;
+import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
 import redis.clients.jedis.commands.PipelineCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -29,21 +28,22 @@ import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
-import redis.clients.jedis.search.IndexOptions;
-import redis.clients.jedis.search.Query;
-import redis.clients.jedis.search.Schema;
-import redis.clients.jedis.search.SearchResult;
+import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
 
-public abstract class TransactionBase extends Queable implements PipelineCommands,
-    PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
+public abstract class TransactionBase implements PipelineCommands, PipelineBinaryCommands,
+    RedisModulePipelineCommands, Closeable {
 
+  private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
   protected final Connection connection;
+  private final boolean closeConnection;
   private final CommandObjects commandObjects;
   private final GraphCommandObjects graphCommandObjects;
 
@@ -51,15 +51,43 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   private boolean inWatch = false;
   private boolean inMulti = false;
 
+  /**
+   * Creates a new transaction.
+   *
+   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
+   * called with this object.
+   * @param connection connection
+   */
   public TransactionBase(Connection connection) {
     this(connection, true);
   }
 
   /**
-   * If you want to WATCH/UNWATCH keys before MULTI command you should do {@code doMulti = true}.
+   * Creates a new transaction.
+   *
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   public TransactionBase(Connection connection, boolean doMulti) {
+    this(connection, doMulti, false);
+  }
+
+  /**
+   * Creates a new transaction.
+   *
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param closeConnection should the 'connection' be closed when 'close()' is called?
+   */
+  public TransactionBase(Connection connection, boolean doMulti, boolean closeConnection) {
     this.connection = connection;
+    this.closeConnection = closeConnection;
     this.commandObjects = new CommandObjects();
     this.graphCommandObjects = new GraphCommandObjects(this.connection);
     if (doMulti) multi();
@@ -99,12 +127,20 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     connection.sendCommand(commandObject.getArguments());
     processAppendStatus();
-    return enqueResponse(commandObject.getBuilder());
+    Response<T> response = new Response<>(commandObject.getBuilder());
+    pipelinedResponses.add(response);
+    return response;
   }
 
   @Override
   public final void close() {
-    clear();
+    try {
+      clear();
+    } finally {
+      if (closeConnection) {
+        connection.close();
+      }
+    }
   }
 
   public final void clear() {
@@ -118,7 +154,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     }
   }
 
-  protected abstract void processPipelinedResponses();
+  protected abstract void processPipelinedResponses(int pipelineLength);
 
   public List<Object> exec() {
     if (!inMulti) {
@@ -126,19 +162,21 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     }
 
     try {
-      processPipelinedResponses();
+      processPipelinedResponses(pipelinedResponses.size());
       connection.sendCommand(EXEC);
 
       List<Object> unformatted = connection.getObjectMultiBulkReply();
       if (unformatted == null) {
-        clean();
+        pipelinedResponses.clear();
         return null;
       }
 
       List<Object> formatted = new ArrayList<>(unformatted.size());
       for (Object o : unformatted) {
         try {
-          formatted.add(generateResponse(o).get());
+          Response<?> response = pipelinedResponses.poll();
+          response.set(o);
+          formatted.add(response.get());
         } catch (JedisDataException e) {
           formatted.add(e);
         }
@@ -150,7 +188,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     } finally {
       inMulti = false;
       inWatch = false;
-      clean();
+      pipelinedResponses.clear();
     }
   }
 
@@ -160,7 +198,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     }
 
     try {
-      processPipelinedResponses();
+      processPipelinedResponses(pipelinedResponses.size());
       connection.sendCommand(DISCARD);
       return connection.getStatusCodeReply();
     } catch (JedisConnectionException jce) {
@@ -169,7 +207,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     } finally {
       inMulti = false;
       inWatch = false;
-      clean();
+      pipelinedResponses.clear();
     }
   }
 
@@ -409,6 +447,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<String> setGet(String key, String value, SetParams params) {
+    return appendCommand(commandObjects.setGet(key, value, params));
+  }
+
+  @Override
   public Response<String> getDel(String key) {
     return appendCommand(commandObjects.getDel(key));
   }
@@ -554,11 +597,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<LCSMatchResult> strAlgoLCSKeys(String keyA, String keyB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
-  @Override
   public Response<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
     return appendCommand(commandObjects.lcs(keyA, keyB, params));
   }
@@ -670,7 +708,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyedListElement> blpop(double timeout, String key) {
+  public Response<KeyValue<String, String>> blpop(double timeout, String key) {
     return appendCommand(commandObjects.blpop(timeout, key));
   }
 
@@ -680,7 +718,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyedListElement> brpop(double timeout, String key) {
+  public Response<KeyValue<String, String>> brpop(double timeout, String key) {
     return appendCommand(commandObjects.brpop(timeout, key));
   }
 
@@ -690,7 +728,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyedListElement> blpop(double timeout, String... keys) {
+  public Response<KeyValue<String, String>> blpop(double timeout, String... keys) {
     return appendCommand(commandObjects.blpop(timeout, keys));
   }
 
@@ -700,7 +738,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyedListElement> brpop(double timeout, String... keys) {
+  public Response<KeyValue<String, String>> brpop(double timeout, String... keys) {
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
@@ -735,12 +773,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys) {
+  public Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, String... keys) {
     return appendCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys) {
+  public Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, int count, String... keys) {
     return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
 
@@ -825,7 +863,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Map<String, String>> hrandfieldWithValues(String key, long count) {
+  public Response<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count) {
     return appendCommand(commandObjects.hrandfieldWithValues(key, count));
   }
 
@@ -900,7 +938,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Long> sdiffstore(String dstKey, String... keys) {
+  public Response<Long> sdiffStore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 
@@ -987,6 +1025,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Long> zrevrank(String key, String member) {
     return appendCommand(commandObjects.zrevrank(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrankWithScore(String key, String member) {
+    return appendCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrevrankWithScore(String key, String member) {
+    return appendCommand(commandObjects.zrevrankWithScore(key, member));
   }
 
   @Override
@@ -1216,12 +1264,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyedZSetElement> bzpopmax(double timeout, String... keys) {
+  public Response<KeyValue<String, Tuple>> bzpopmax(double timeout, String... keys) {
     return appendCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public Response<KeyedZSetElement> bzpopmin(double timeout, String... keys) {
+  public Response<KeyValue<String, Tuple>> bzpopmin(double timeout, String... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
@@ -1236,28 +1284,34 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys) {
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, String... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys) {
+  public Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, String... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override
-  public Response<Set<String>> zdiff(String... keys) {
+  public Response<List<String>> zdiff(String... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zdiffWithScores(String... keys) {
+  public Response<List<Tuple>> zdiffWithScores(String... keys) {
     return appendCommand(commandObjects.zdiffWithScores(keys));
   }
 
   @Override
+  @Deprecated
   public Response<Long> zdiffStore(String dstKey, String... keys) {
     return appendCommand(commandObjects.zdiffStore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Long> zdiffstore(String dstKey, String... keys) {
+    return appendCommand(commandObjects.zdiffstore(dstKey, keys));
   }
 
   @Override
@@ -1271,12 +1325,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Set<String>> zinter(ZParams params, String... keys) {
+  public Response<List<String>> zinter(ZParams params, String... keys) {
     return appendCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys) {
+  public Response<List<Tuple>> zinterWithScores(ZParams params, String... keys) {
     return appendCommand(commandObjects.zinterWithScores(params, keys));
   }
 
@@ -1291,12 +1345,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Set<String>> zunion(ZParams params, String... keys) {
+  public Response<List<String>> zunion(ZParams params, String... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys) {
+  public Response<List<Tuple>> zunionWithScores(ZParams params, String... keys) {
     return appendCommand(commandObjects.zunionWithScores(params, keys));
   }
 
@@ -1561,11 +1615,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<StreamPendingEntry>> xpending(String key, String groupName, StreamEntryID start, StreamEntryID end, int count, String consumerName) {
-    return appendCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
-  @Override
   public Response<List<StreamPendingEntry>> xpending(String key, String groupName, XPendingParams params) {
     return appendCommand(commandObjects.xpending(key, groupName, params));
   }
@@ -1621,12 +1670,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  @Deprecated
-  public Response<List<StreamGroupInfo>> xinfoGroup(String key) {
-    return appendCommand(commandObjects.xinfoGroup(key));
-  }
-
-  @Override
   public Response<List<StreamGroupInfo>> xinfoGroups(String key) {
     return appendCommand(commandObjects.xinfoGroups(key));
   }
@@ -1634,6 +1677,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
     return appendCommand(commandObjects.xinfoConsumers(key, group));
+  }
+
+  @Override
+  public Response<List<StreamConsumerInfo>> xinfoConsumers2(String key, String group) {
+    return appendCommand(commandObjects.xinfoConsumers2(key, group));
   }
 
   @Override
@@ -1690,6 +1738,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Long>> waitAOF(String sampleKey, long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
   }
 
   @Override
@@ -1859,10 +1912,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   public Response<Long> publish(String channel, String message) {
     return appendCommand(commandObjects.publish(channel, message));
-  }
-
-  public Response<LCSMatchResult> strAlgoLCSStrings(String strA, String strB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
   }
 
   @Override
@@ -2086,7 +2135,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Map<byte[], byte[]>> hrandfieldWithValues(byte[] key, long count) {
+  public Response<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count) {
     return appendCommand(commandObjects.hrandfieldWithValues(key, count));
   }
 
@@ -2446,7 +2495,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<byte[]>> blpop(double timeout, byte[]... keys) {
+  public Response<KeyValue<byte[], byte[]>> blpop(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.blpop(timeout, keys));
   }
 
@@ -2456,7 +2505,7 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<byte[]>> brpop(double timeout, byte[]... keys) {
+  public Response<KeyValue<byte[], byte[]>> brpop(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.brpop(timeout, keys));
   }
 
@@ -2491,12 +2540,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, byte[]... keys) {
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction, byte[]... keys) {
     return appendCommand(commandObjects.blmpop(timeout, direction, keys));
   }
 
   @Override
-  public Response<KeyValue<byte[], List<byte[]>>> blmpop(long timeout, ListDirection direction, int count, byte[]... keys) {
+  public Response<KeyValue<byte[], List<byte[]>>> blmpop(double timeout, ListDirection direction, int count, byte[]... keys) {
     return appendCommand(commandObjects.blmpop(timeout, direction, count, keys));
   }
 
@@ -2504,13 +2553,14 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(commandObjects.publish(channel, message));
   }
 
-  public Response<LCSMatchResult> strAlgoLCSStrings(byte[] strA, byte[] strB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSStrings(strA, strB, params));
-  }
-
   @Override
   public Response<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(sampleKey, replicas, timeout));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Long>> waitAOF(byte[] sampleKey, long numLocal, long numReplicas, long timeout) {
+    return appendCommand(commandObjects.waitAOF(sampleKey, numLocal, numReplicas, timeout));
   }
 
   @Override
@@ -2739,6 +2789,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<KeyValue<Long, Double>> zrankWithScore(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.zrankWithScore(key, member));
+  }
+
+  @Override
+  public Response<KeyValue<Long, Double>> zrevrankWithScore(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.zrevrankWithScore(key, member));
+  }
+
+  @Override
   public Response<List<byte[]>> zrange(byte[] key, long start, long stop) {
     return appendCommand(commandObjects.zrange(key, start, stop));
   }
@@ -2964,12 +3024,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<byte[]>> bzpopmax(double timeout, byte[]... keys) {
+  public Response<KeyValue<byte[], Tuple>> bzpopmax(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmax(timeout, keys));
   }
 
   @Override
-  public Response<List<byte[]>> bzpopmin(double timeout, byte[]... keys) {
+  public Response<KeyValue<byte[], Tuple>> bzpopmin(double timeout, byte[]... keys) {
     return appendCommand(commandObjects.bzpopmin(timeout, keys));
   }
 
@@ -2984,37 +3044,43 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, byte[]... keys) {
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, byte[]... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, keys));
   }
 
   @Override
-  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, byte[]... keys) {
+  public Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
   @Override
-  public Response<Set<byte[]>> zdiff(byte[]... keys) {
+  public Response<List<byte[]>> zdiff(byte[]... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zdiffWithScores(byte[]... keys) {
+  public Response<List<Tuple>> zdiffWithScores(byte[]... keys) {
     return appendCommand(commandObjects.zdiffWithScores(keys));
   }
 
   @Override
+  @Deprecated
   public Response<Long> zdiffStore(byte[] dstkey, byte[]... keys) {
     return appendCommand(commandObjects.zdiffStore(dstkey, keys));
   }
 
   @Override
-  public Response<Set<byte[]>> zinter(ZParams params, byte[]... keys) {
+  public Response<Long> zdiffstore(byte[] dstkey, byte[]... keys) {
+    return appendCommand(commandObjects.zdiffstore(dstkey, keys));
+  }
+
+  @Override
+  public Response<List<byte[]>> zinter(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zinter(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
+  public Response<List<Tuple>> zinterWithScores(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zinterWithScores(params, keys));
   }
 
@@ -3039,12 +3105,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<Set<byte[]>> zunion(ZParams params, byte[]... keys) {
+  public Response<List<byte[]>> zunion(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zunion(params, keys));
   }
 
   @Override
-  public Response<Set<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
+  public Response<List<Tuple>> zunionWithScores(ZParams params, byte[]... keys) {
     return appendCommand(commandObjects.zunionWithScores(params, keys));
   }
 
@@ -3069,22 +3135,22 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end) {
+  public Response<List<Object>> xrange(byte[] key, byte[] start, byte[] end) {
     return appendCommand(commandObjects.xrange(key, start, end));
   }
 
   @Override
-  public Response<List<byte[]>> xrange(byte[] key, byte[] start, byte[] end, int count) {
+  public Response<List<Object>> xrange(byte[] key, byte[] start, byte[] end, int count) {
     return appendCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
-  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start) {
+  public Response<List<Object>> xrevrange(byte[] key, byte[] end, byte[] start) {
     return appendCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
-  public Response<List<byte[]>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+  public Response<List<Object>> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     return appendCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
@@ -3139,11 +3205,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<Object>> xpending(byte[] key, byte[] groupName, byte[] start, byte[] end, int count, byte[] consumerName) {
-    return appendCommand(commandObjects.xpending(key, groupName, start, end, count, consumerName));
-  }
-
-  @Override
   public Response<List<Object>> xpending(byte[] key, byte[] groupName, XPendingParams params) {
     return appendCommand(commandObjects.xpending(key, groupName, params));
   }
@@ -3184,12 +3245,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  @Deprecated
-  public Response<List<Object>> xinfoGroup(byte[] key) {
-    return appendCommand(commandObjects.xinfoGroup(key));
-  }
-
-  @Override
   public Response<List<Object>> xinfoGroups(byte[] key) {
     return appendCommand(commandObjects.xinfoGroups(key));
   }
@@ -3200,12 +3255,12 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<byte[]>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+  public Response<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     return appendCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
-  public Response<List<byte[]>> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+  public Response<List<Object>> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
@@ -3222,6 +3277,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<byte[]> get(byte[] key) {
     return appendCommand(commandObjects.get(key));
+  }
+
+  @Override
+  public Response<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
+    return appendCommand(commandObjects.setGet(key, value, params));
   }
 
   @Override
@@ -3369,15 +3429,15 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
     return appendCommand(commandObjects.bitop(op, destKey, srcKeys));
   }
 
-  @Override
-  public Response<LCSMatchResult> strAlgoLCSKeys(byte[] keyA, byte[] keyB, StrAlgoLCSParams params) {
-    return appendCommand(commandObjects.strAlgoLCSKeys(keyA, keyB, params));
-  }
-
   // RediSearch commands
   @Override
   public Response<String> ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
     return appendCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
+  }
+
+  @Override
+  public Response<String> ftCreate(String indexName, FTCreateParams createParams, Iterable<SchemaField> schemaFields) {
+    return appendCommand(commandObjects.ftCreate(indexName, createParams, schemaFields));
   }
 
   @Override
@@ -3386,11 +3446,52 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<String> ftAlter(String indexName, Iterable<SchemaField> schemaFields) {
+    return appendCommand(commandObjects.ftAlter(indexName, schemaFields));
+  }
+
+  @Override
+  public Response<String> ftAliasAdd(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
+    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
+  }
+
+  @Override
+  public Response<String> ftAliasDel(String aliasName) {
+    return appendCommand(commandObjects.ftAliasDel(aliasName));
+  }
+
+  @Override
+  public Response<String> ftDropIndex(String indexName) {
+    return appendCommand(commandObjects.ftDropIndex(indexName));
+  }
+
+  @Override
+  public Response<String> ftDropIndexDD(String indexName) {
+    return appendCommand(commandObjects.ftDropIndexDD(indexName));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, String query) {
+    return appendCommand(commandObjects.ftSearch(indexName, query));
+  }
+
+  @Override
+  public Response<SearchResult> ftSearch(String indexName, String query, FTSearchParams searchParams) {
+    return appendCommand(commandObjects.ftSearch(indexName, query, searchParams));
+  }
+
+  @Override
   public Response<SearchResult> ftSearch(String indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
 
   @Override
+  @Deprecated
   public Response<SearchResult> ftSearch(byte[] indexName, Query query) {
     return appendCommand(commandObjects.ftSearch(indexName, query));
   }
@@ -3411,26 +3512,6 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<AggregationResult> ftCursorRead(String indexName, long cursorId, int count) {
-    return appendCommand(commandObjects.ftCursorRead(indexName, cursorId, count));
-  }
-
-  @Override
-  public Response<String> ftCursorDel(String indexName, long cursorId) {
-    return appendCommand(commandObjects.ftCursorDel(indexName, cursorId));
-  }
-
-  @Override
-  public Response<String> ftDropIndex(String indexName) {
-    return appendCommand(commandObjects.ftDropIndex(indexName));
-  }
-
-  @Override
-  public Response<String> ftDropIndexDD(String indexName) {
-    return appendCommand(commandObjects.ftDropIndexDD(indexName));
-  }
-
-  @Override
   public Response<String> ftSynUpdate(String indexName, String synonymGroupId, String... terms) {
     return appendCommand(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms));
   }
@@ -3441,32 +3522,62 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
+  public Response<Long> ftDictAdd(String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictAdd(dictionary, terms));
+  }
+
+  @Override
+  public Response<Long> ftDictDel(String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictDel(dictionary, terms));
+  }
+
+  @Override
+  public Response<Set<String>> ftDictDump(String dictionary) {
+    return appendCommand(commandObjects.ftDictDump(dictionary));
+  }
+
+  @Override
+  public Response<Long> ftDictAddBySampleKey(String indexName, String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictAddBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public Response<Long> ftDictDelBySampleKey(String indexName, String dictionary, String... terms) {
+    return appendCommand(commandObjects.ftDictDelBySampleKey(indexName, dictionary, terms));
+  }
+
+  @Override
+  public Response<Set<String>> ftDictDumpBySampleKey(String indexName, String dictionary) {
+    return appendCommand(commandObjects.ftDictDumpBySampleKey(indexName, dictionary));
+  }
+
+  @Override
+  public Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query) {
+    return appendCommand(commandObjects.ftSpellCheck(index, query));
+  }
+
+  @Override
+  public Response<Map<String, Map<String, Double>>> ftSpellCheck(String index, String query, FTSpellCheckParams spellCheckParams) {
+    return appendCommand(commandObjects.ftSpellCheck(index, query, spellCheckParams));
+  }
+
+  @Override
   public Response<Map<String, Object>> ftInfo(String indexName) {
     return appendCommand(commandObjects.ftInfo(indexName));
   }
 
   @Override
-  public Response<String> ftAliasAdd(String aliasName, String indexName) {
-    return appendCommand(commandObjects.ftAliasAdd(aliasName, indexName));
+  public Response<Set<String>> ftTagVals(String indexName, String fieldName) {
+    return appendCommand(commandObjects.ftTagVals(indexName, fieldName));
   }
 
   @Override
-  public Response<String> ftAliasUpdate(String aliasName, String indexName) {
-    return appendCommand(commandObjects.ftAliasUpdate(aliasName, indexName));
-  }
-
-  @Override
-  public Response<String> ftAliasDel(String aliasName) {
-    return appendCommand(commandObjects.ftAliasDel(aliasName));
-  }
-
-  @Override
-  public Response<Map<String, String>> ftConfigGet(String option) {
+  public Response<Map<String, Object>> ftConfigGet(String option) {
     return appendCommand(commandObjects.ftConfigGet(option));
   }
 
   @Override
-  public Response<Map<String, String>> ftConfigGet(String indexName, String option) {
+  public Response<Map<String, Object>> ftConfigGet(String indexName, String option) {
     return appendCommand(commandObjects.ftConfigGet(indexName, option));
   }
 
@@ -3478,6 +3589,46 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<String> ftConfigSet(String indexName, String option, String value) {
     return appendCommand(commandObjects.ftConfigSet(indexName, option, value));
+  }
+
+  @Override
+  public Response<Long> ftSugAdd(String key, String string, double score) {
+    return appendCommand(commandObjects.ftSugAdd(key, string, score));
+  }
+
+  @Override
+  public Response<Long> ftSugAddIncr(String key, String string, double score) {
+    return appendCommand(commandObjects.ftSugAddIncr(key, string, score));
+  }
+
+  @Override
+  public Response<List<String>> ftSugGet(String key, String prefix) {
+    return appendCommand(commandObjects.ftSugGet(key, prefix));
+  }
+
+  @Override
+  public Response<List<String>> ftSugGet(String key, String prefix, boolean fuzzy, int max) {
+    return appendCommand(commandObjects.ftSugGet(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> ftSugGetWithScores(String key, String prefix) {
+    return appendCommand(commandObjects.ftSugGetWithScores(key, prefix));
+  }
+
+  @Override
+  public Response<List<Tuple>> ftSugGetWithScores(String key, String prefix, boolean fuzzy, int max) {
+    return appendCommand(commandObjects.ftSugGetWithScores(key, prefix, fuzzy, max));
+  }
+
+  @Override
+  public Response<Boolean> ftSugDel(String key, String string) {
+    return appendCommand(commandObjects.ftSugDel(key, string));
+  }
+
+  @Override
+  public Response<Long> ftSugLen(String key) {
+    return appendCommand(commandObjects.ftSugLen(key));
   }
   // RediSearch commands
 
@@ -3516,6 +3667,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<String> jsonSet(String key, Path path, Object object, JsonSetParams params) {
     return appendCommand(commandObjects.jsonSet(key, path, object, params));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path2 path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
+  }
+
+  @Override
+  public Response<String> jsonMerge(String key, Path path, Object object) {
+    return appendCommand(commandObjects.jsonMerge(key, path, object));
   }
 
   @Override
@@ -3636,6 +3797,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Long> jsonStrLen(String key, Path path) {
     return appendCommand(commandObjects.jsonStrLen(key, path));
+  }
+
+  @Override
+  public Response<Object> jsonNumIncrBy(String key, Path2 path, double value) {
+    return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
+  }
+
+  @Override
+  public Response<Double> jsonNumIncrBy(String key, Path path, double value) {
+    return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 
   @Override
@@ -3831,22 +4002,22 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<TSKeyedElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<TSKeyedElements>> tsMRange(TSMRangeParams multiRangeParams) {
+  public Response<Map<String, TSMRangeElements>> tsMRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRange(multiRangeParams));
   }
 
   @Override
-  public Response<List<TSKeyedElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
+  public Response<Map<String, TSMRangeElements>> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters));
   }
 
   @Override
-  public Response<List<TSKeyedElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
+  public Response<Map<String, TSMRangeElements>> tsMRevRange(TSMRangeParams multiRangeParams) {
     return appendCommand(commandObjects.tsMRevRange(multiRangeParams));
   }
 
@@ -3856,13 +4027,23 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<TSKeyValue<TSElement>>> tsMGet(TSMGetParams multiGetParams, String... filters) {
+  public Response<TSElement> tsGet(String key, TSGetParams getParams) {
+    return appendCommand(commandObjects.tsGet(key, getParams));
+  }
+
+  @Override
+  public Response<Map<String, TSMGetElement>> tsMGet(TSMGetParams multiGetParams, String... filters) {
     return appendCommand(commandObjects.tsMGet(multiGetParams, filters));
   }
 
   @Override
   public Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket) {
     return appendCommand(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket));
+  }
+
+  @Override
+  public Response<String> tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration, long alignTimestamp) {
+    return appendCommand(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration, alignTimestamp));
   }
 
   @Override
@@ -3915,6 +4096,21 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<List<Boolean>> bfMExists(String key, String... items) {
     return appendCommand(commandObjects.bfMExists(key, items));
+  }
+
+  @Override
+  public Response<Map.Entry<Long, byte[]>> bfScanDump(String key, long iterator) {
+    return appendCommand(commandObjects.bfScanDump(key, iterator));
+  }
+
+  @Override
+  public Response<String> bfLoadChunk(String key, long iterator, byte[] data) {
+    return appendCommand(commandObjects.bfLoadChunk(key, iterator, data));
+  }
+
+  @Override
+  public Response<Long> bfCard(String key) {
+    return appendCommand(commandObjects.bfCard(key));
   }
 
   @Override
@@ -3975,6 +4171,16 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   @Override
   public Response<Long> cfCount(String key, String item) {
     return appendCommand(commandObjects.cfCount(key, item));
+  }
+
+  @Override
+  public Response<Map.Entry<Long, byte[]>> cfScanDump(String key, long iterator) {
+    return appendCommand(commandObjects.cfScanDump(key, iterator));
+  }
+
+  @Override
+  public Response<String> cfLoadChunk(String key, long iterator, byte[] data) {
+    return appendCommand(commandObjects.cfLoadChunk(key, iterator, data));
   }
 
   @Override
@@ -4043,18 +4249,98 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   }
 
   @Override
-  public Response<List<Long>> topkCount(String key, String... items) {
-    return appendCommand(commandObjects.topkCount(key, items));
-  }
-
-  @Override
   public Response<List<String>> topkList(String key) {
     return appendCommand(commandObjects.topkList(key));
   }
 
   @Override
+  public Response<Map<String, Long>> topkListWithCount(String key) {
+    return appendCommand(commandObjects.topkListWithCount(key));
+  }
+
+  @Override
   public Response<Map<String, Object>> topkInfo(String key) {
     return appendCommand(commandObjects.topkInfo(key));
+  }
+
+  @Override
+  public Response<String> tdigestCreate(String key) {
+    return appendCommand(commandObjects.tdigestCreate(key));
+  }
+
+  @Override
+  public Response<String> tdigestCreate(String key, int compression) {
+    return appendCommand(commandObjects.tdigestCreate(key, compression));
+  }
+
+  @Override
+  public Response<String> tdigestReset(String key) {
+    return appendCommand(commandObjects.tdigestReset(key));
+  }
+
+  @Override
+  public Response<String> tdigestMerge(String destinationKey, String... sourceKeys) {
+    return appendCommand(commandObjects.tdigestMerge(destinationKey, sourceKeys));
+  }
+
+  @Override
+  public Response<String> tdigestMerge(TDigestMergeParams mergeParams, String destinationKey, String... sourceKeys) {
+    return appendCommand(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKeys));
+  }
+
+  @Override
+  public Response<Map<String, Object>> tdigestInfo(String key) {
+    return appendCommand(commandObjects.tdigestInfo(key));
+  }
+
+  @Override
+  public Response<String> tdigestAdd(String key, double... values) {
+    return appendCommand(commandObjects.tdigestAdd(key, values));
+  }
+
+  @Override
+  public Response<List<Double>> tdigestCDF(String key, double... values) {
+    return appendCommand(commandObjects.tdigestCDF(key, values));
+  }
+
+  @Override
+  public Response<List<Double>> tdigestQuantile(String key, double... quantiles) {
+    return appendCommand(commandObjects.tdigestQuantile(key, quantiles));
+  }
+
+  @Override
+  public Response<Double> tdigestMin(String key) {
+    return appendCommand(commandObjects.tdigestMin(key));
+  }
+
+  @Override
+  public Response<Double> tdigestMax(String key) {
+    return appendCommand(commandObjects.tdigestMax(key));
+  }
+
+  @Override
+  public Response<Double> tdigestTrimmedMean(String key, double lowCutQuantile, double highCutQuantile) {
+    return appendCommand(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile));
+  }
+
+  @Override
+  public Response<List<Long>> tdigestRank(String key, double... values) {
+    return appendCommand(commandObjects.tdigestRank(key, values));
+  }
+
+  @Override
+  public Response<List<Long>> tdigestRevRank(String key, double... values) {
+    return appendCommand(commandObjects.tdigestRevRank(key, values));
+  }
+
+  @Override
+  public Response<List<Double>> tdigestByRank(String key, long... ranks) {
+    return appendCommand(commandObjects.tdigestByRank(key, ranks));
+  }
+
+  @Override
+  public Response<List<Double>> tdigestByRevRank(String key, long... ranks) {
+    return appendCommand(commandObjects.tdigestByRevRank(key, ranks));
   }
   // RedisBloom commands
 
@@ -4103,6 +4389,11 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
   public Response<String> graphDelete(String name) {
     return appendCommand(graphCommandObjects.graphDelete(name));
   }
+
+  @Override
+  public Response<List<String>> graphProfile(String graphName, String query) {
+    return appendCommand(commandObjects.graphProfile(graphName, query));
+  }
   // RedisGraph commands
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
@@ -4123,5 +4414,9 @@ public abstract class TransactionBase extends Queable implements PipelineCommand
 
   public <T> Response<T> executeCommand(CommandObject<T> command) {
     return appendCommand(command);
+  }
+
+  public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+    this.commandObjects.setJsonObjectMapper(jsonObjectMapper);
   }
 }

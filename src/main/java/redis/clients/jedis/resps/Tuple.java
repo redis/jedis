@@ -75,6 +75,7 @@ public class Tuple implements Comparable<Tuple> {
   }
 
   @Override
+  // TODO: element=score
   public String toString() {
     return '[' + SafeEncoder.encode(element) + ',' + score + ']';
   }

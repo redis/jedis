@@ -97,8 +97,11 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.RANGE key fromTimestamp toTimestamp
-   * [FILTER_BY_TS TS1 TS2 ..] [FILTER_BY_VALUE min max]
-   * [COUNT count] [ALIGN value] [AGGREGATION aggregationType timeBucket]}
+   * [LATEST]
+   * [FILTER_BY_TS ts...]
+   * [FILTER_BY_VALUE min max]
+   * [COUNT count] 
+   * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]}
    *
    * @param key
    * @param rangeParams
@@ -118,8 +121,11 @@ public interface RedisTimeSeriesCommands {
 
   /**
    * {@code TS.REVRANGE key fromTimestamp toTimestamp
-   * [FILTER_BY_TS TS1 TS2 ..] [FILTER_BY_VALUE min max]
-   * [COUNT count] [ALIGN value] [AGGREGATION aggregationType timeBucket]}
+   * [LATEST]
+   * [FILTER_BY_TS TS...]
+   * [FILTER_BY_VALUE min max]
+   * [COUNT count]
+   * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]}
    *
    * @param key
    * @param rangeParams
@@ -128,70 +134,82 @@ public interface RedisTimeSeriesCommands {
   List<TSElement> tsRevRange(String key, TSRangeParams rangeParams);
 
   /**
-   * {@code TS.MRANGE fromTimestamp toTimestamp}
+   * {@code TS.MRANGE fromTimestamp toTimestamp FILTER filter...}
    *
    * @param fromTimestamp
    * @param toTimestamp
    * @param filters
    * @return multi range elements
    */
-  List<TSKeyedElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
+  Map<String, TSMRangeElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
 
   /**
    * {@code TS.MRANGE fromTimestamp toTimestamp
-   * [FILTER_BY_TS TS1 TS2 ..] [FILTER_BY_VALUE min max]
-   * [WITHLABELS | SELECTED_LABELS label1 ..]
-   * [COUNT count] [ALIGN value]
-   * [AGGREGATION aggregationType timeBucket]
-   * FILTER filter..
-   * [GROUPBY <label> REDUCE <reducer>]}
+   * [LATEST]
+   * [FILTER_BY_TS ts...]
+   * [FILTER_BY_VALUE min max]
+   * [WITHLABELS | SELECTED_LABELS label...]
+   * [COUNT count]
+   * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]
+   * FILTER filter...
+   * [GROUPBY label REDUCE reducer]}
    *
    * @param multiRangeParams
    * @return multi range elements
    */
-  List<TSKeyedElements> tsMRange(TSMRangeParams multiRangeParams);
+  Map<String, TSMRangeElements> tsMRange(TSMRangeParams multiRangeParams);
 
   /**
-   * {@code TS.MREVRANGE fromTimestamp toTimestamp}
+   * {@code TS.MREVRANGE fromTimestamp toTimestamp FILTER filter...}
    *
    * @param fromTimestamp
    * @param toTimestamp
    * @param filters
    * @return multi range elements
    */
-  List<TSKeyedElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
+  Map<String, TSMRangeElements> tsMRevRange(long fromTimestamp, long toTimestamp, String... filters);
 
   /**
    * {@code TS.MREVRANGE fromTimestamp toTimestamp
-   * [FILTER_BY_TS TS1 TS2 ..]
+   * [LATEST]
+   * [FILTER_BY_TS TS...]
    * [FILTER_BY_VALUE min max]
-   * [WITHLABELS | SELECTED_LABELS label1 ..]
-   * [COUNT count] [ALIGN value]
-   * [AGGREGATION aggregationType timeBucket]
-   * FILTER filter..
-   * [GROUPBY <label> REDUCE <reducer>]}
+   * [WITHLABELS | SELECTED_LABELS label...]
+   * [COUNT count]
+   * [[ALIGN value] AGGREGATION aggregator bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]
+   * FILTER filter...
+   * [GROUPBY label REDUCE reducer]}
    *
    * @param multiRangeParams
    * @return multi range elements
    */
-  List<TSKeyedElements> tsMRevRange(TSMRangeParams multiRangeParams);
+  Map<String, TSMRangeElements> tsMRevRange(TSMRangeParams multiRangeParams);
 
   /**
    * {@code TS.GET key}
    *
-   * @param key
+   * @param key the key
    * @return the element
    */
   TSElement tsGet(String key);
 
   /**
-   * {@code TS.MGET [WITHLABELS | SELECTED_LABELS label1 ..] FILTER filter...}
+   * {@code TS.GET key [LATEST]}
    *
-   * @param multiGetParams
-   * @param filters
+   * @param key the key
+   * @param getParams optional arguments
+   * @return the element
+   */
+  TSElement tsGet(String key, TSGetParams getParams);
+
+  /**
+   * {@code TS.MGET [LATEST] [ WITHLABELS | SELECTED_LABELS label...] FILTER filter...}
+   *
+   * @param multiGetParams optional arguments
+   * @param filters secondary indexes
    * @return multi get elements
    */
-  List<TSKeyValue<TSElement>> tsMGet(TSMGetParams multiGetParams, String... filters);
+  Map<String, TSMGetElement> tsMGet(TSMGetParams multiGetParams, String... filters);
 
   /**
    * {@code TS.CREATERULE sourceKey destKey AGGREGATION aggregationType timeBucket}
@@ -202,6 +220,17 @@ public interface RedisTimeSeriesCommands {
    * @param timeBucket
    */
   String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long timeBucket);
+
+  /**
+   * {@code TS.CREATERULE sourceKey destKey AGGREGATION aggregationType bucketDuration [alignTimestamp]}
+   *
+   * @param sourceKey
+   * @param destKey
+   * @param aggregationType
+   * @param bucketDuration
+   * @param alignTimestamp
+   */
+  String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration, long alignTimestamp);
 
   /**
    * {@code TS.DELETERULE sourceKey destKey}
@@ -218,4 +247,8 @@ public interface RedisTimeSeriesCommands {
    * @return list of timeseries keys
    */
   List<String> tsQueryIndex(String... filters);
+
+  TSInfo tsInfo(String key);
+
+  TSInfo tsInfoDebug(String key);
 }

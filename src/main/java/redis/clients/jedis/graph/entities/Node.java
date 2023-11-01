@@ -6,11 +6,30 @@ import java.util.Objects;
 
 /**
  * * A class represent an node (graph entity). In addition to the base class id and properties, a node has labels.
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 public class Node extends GraphEntity {
 
     //members
-    private final List<String> labels = new ArrayList<>();
+    private final List<String> labels;
+
+    public Node() {
+        super();
+        labels = new ArrayList<>();
+    }
+
+    /**
+     * Use this constructor to reduce memory allocations 
+     * when labels or properties are added to the node
+     * @param labelsCapacity preallocate the capacity for the node labels
+     * @param propertiesCapacity preallocate the capacity for the properties
+     */
+    public Node(int labelsCapacity, int propertiesCapacity) {
+        super(propertiesCapacity);
+        this.labels = new ArrayList<>(labelsCapacity);
+    }
+
 
     /**
      * @param label - a label to be add

@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>4.3.0-SNAPSHOT</version>
+	<version>5.1.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -19,7 +19,7 @@
 			<name>Jedis Mailing List</name>
 			<post>jedis_redis@googlegroups.com</post>
 			<archive>
-				http://groups.google.com/group/jedis_redis
+				https://groups.google.com/group/jedis_redis
 			</archive>
 		</mailingList>
 	</mailingLists>
@@ -27,14 +27,14 @@
 	<licenses>
 		<license>
 			<name>MIT</name>
-			<url>http://github.com/redis/jedis/raw/master/LICENSE.txt</url>
+			<url>https://github.com/redis/jedis/blob/master/LICENSE</url>
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
 
 	<issueManagement>
 		<system>github</system>
-		<url>http://github.com/redis/jedis/issues</url>
+		<url>https://github.com/redis/jedis/issues</url>
 	</issueManagement>
 
 	<scm>
@@ -46,8 +46,9 @@
 
 	<properties>
 		<github.global.server>github</github.global.server>
-		<slf4j.version>1.7.32</slf4j.version>
+		<slf4j.version>1.7.36</slf4j.version>
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
+		<resilience4j.version>1.7.1</resilience4j.version>
 	</properties>
 
 	<dependencies>
@@ -59,23 +60,44 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-pool2</artifactId>
-			<version>2.11.1</version>
+			<version>2.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20211205</version>
+			<version>20231013</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
-			<version>2.8.9</version>
+			<version>2.10.1</version>
 		</dependency>
 
+		<!-- UNIX socket connection support -->
+		<dependency>
+			<groupId>com.kohlschutter.junixsocket</groupId>
+			<artifactId>junixsocket-core</artifactId>
+			<version>2.8.1</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+		<!-- Well-known text representation of geometry in RediSearch support -->
+		<dependency>
+			<groupId>org.locationtech.jts</groupId>
+			<artifactId>jts-core</artifactId>
+			<version>1.19.0</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.13.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest</artifactId>
+			<version>2.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -85,17 +107,40 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.kohlschutter.junixsocket</groupId>
-			<artifactId>junixsocket-core</artifactId>
-			<version>2.4.0</version>
-			<type>pom</type>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-inline</artifactId>
+			<version>4.11.0</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-inline</artifactId>
-			<version>3.12.4</version>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.14.2</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+			<version>2.14.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-all</artifactId>
+			<version>${resilience4j.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-circuitbreaker</artifactId>
+			<version>${resilience4j.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>io.github.resilience4j</groupId>
+			<artifactId>resilience4j-retry</artifactId>
+			<version>${resilience4j.version}</version>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 
@@ -111,6 +156,12 @@
 	</distributionManagement>
 
 	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
 		<plugins>
 			<plugin>
 				<groupId>org.jacoco</groupId>
@@ -133,7 +184,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
+				<version>3.11.0</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -141,17 +192,20 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.2</version>
+				<version>3.1.2</version>
 				<configuration>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
 					</systemPropertyVariables>
+					<excludes>
+						<exclude>**/examples/*Example.java</exclude>
+					</excludes>
 					<!--<trimStackTrace>false</trimStackTrace>-->
 				</configuration>
 			</plugin>
 			<plugin>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.1</version>
+				<version>3.3.0</version>
 				<configuration>
 					<attach>true</attach>
 				</configuration>
@@ -166,10 +220,12 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.4</version>
+				<version>3.6.0</version>
 				<configuration>
-					<aggregate>true</aggregate>
-					<additionalparam>-Xdoclint:none</additionalparam>
+					<source>8</source><!-- Until JDK 11+ -->
+					<detectJavaApiLink>false</detectJavaApiLink><!-- Until JDK 11+ -->
+					<!--<doclint>none</doclint>-->
+					<!--<doclint>all,-missing</doclint>-->
 				</configuration>
 				<executions>
 					<execution>
@@ -182,12 +238,12 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-release-plugin</artifactId>
-				<version>2.5.3</version>
+				<version>3.0.1</version>
 			</plugin>
 			<plugin>
 				<groupId>org.sonatype.plugins</groupId>
 				<artifactId>nexus-staging-maven-plugin</artifactId>
-				<version>1.6.8</version>
+				<version>1.6.13</version>
 				<extensions>true</extensions>
 				<configuration>
 					<serverId>ossrh</serverId>
@@ -205,7 +261,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.2</version>
+				<version>3.3.0</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
@@ -218,7 +274,7 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>4.2.1</version>
+				<version>5.1.9</version>
 				<executions>
 					<execution>
 						<id>bundle-manifest</id>
@@ -239,7 +295,7 @@
 					<!--Sign the components - this is required by maven central for releases -->
 					<plugin>
 						<artifactId>maven-gpg-plugin</artifactId>
-						<version>3.0.1</version>
+						<version>3.1.0</version>
 						<configuration>
 							<gpgArguments>
 								<arg>--pinentry-mode</arg>
@@ -255,6 +311,20 @@
 								</goals>
 							</execution>
 						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>doctests</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<version>3.1.2</version>
+						<configuration>
+							<test>**/examples/*Example.java</test>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>

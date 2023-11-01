@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands;
 
+import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
@@ -45,7 +46,7 @@ public interface ClientCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format.
+   * in a mostly human-readable format.
    *
    * @return All clients info connected to redis-server
    */
@@ -53,7 +54,7 @@ public interface ClientCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format filter by client type.
+   * in a mostly human-readable format filter by client type.
    *
    * @return All clients info connected to redis-server
    */
@@ -61,7 +62,7 @@ public interface ClientCommands {
 
   /**
    * Returns information and statistics about the client connections server
-   * in a mostly human readable format filter by client ids.
+   * in a mostly human-readable format filter by client ids.
    *
    * @param clientIds Unique 64-bit client IDs
    * @return All clients info connected to redis-server
@@ -70,11 +71,20 @@ public interface ClientCommands {
 
   /**
    * Returns information and statistics about the current client connection
-   * in a mostly human readable format.
+   * in a mostly human-readable format.
    *
    * @return Information and statistics about the current client connection
    */
   String clientInfo();
+
+  /**
+   * client set info command
+   * Since redis 7.2
+   * @param attr the attr option
+   * @param value the value
+   * @return OK or error
+   */
+  String clientSetInfo(ClientAttributeOption attr, String value);
 
   /**
    * Assigns a name to the current connection.
@@ -130,6 +140,12 @@ public interface ClientCommands {
   String clientPause(long timeout, ClientPauseMode mode);
 
   /**
+   * CLIENT UNPAUSE is used to resume command processing for all clients that were paused by CLIENT PAUSE.
+   * @return OK
+   */
+  String clientUnpause();
+
+  /**
    * Turn on the client eviction mode for the current connection.
    *
    * @return OK
@@ -142,4 +158,16 @@ public interface ClientCommands {
    * @return OK
    */
   String clientNoEvictOff();
+
+  /**
+   * Turn on <a href="https://redis.io/commands/client-no-touch/">CLIENT NO-TOUCH</a>
+   * @return OK
+   */
+  String clientNoTouchOn();
+
+  /**
+   * Turn off <a href="https://redis.io/commands/client-no-touch/">CLIENT NO-TOUCH</a>
+   * @return OK
+   */
+  String clientNoTouchOff();
 }

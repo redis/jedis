@@ -3,17 +3,30 @@ package redis.clients.jedis.graph.entities;
 import java.util.Objects;
 
 /**
- * A class represent an edge (graph entity). In addition to the base class id and properties, an edge shows its source,
- * destination and relationship type
+ * A class represent an edge (graph entity). In addition to the base class id and properties, an
+ * edge shows its source, destination and relationship type.
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 public class Edge extends GraphEntity {
 
     //members
-    private  String relationshipType;
+    private String relationshipType;
     private long source;
     private long destination;
 
+    public Edge() {
+        super();
+    }
 
+    /**
+     * Use this constructor to reduce memory allocations
+     * when properties are added to the edge
+     * @param propertiesCapacity preallocate the capacity for the properties
+     */
+    public Edge(int propertiesCapacity) {
+        super(propertiesCapacity);
+    }
     //getters & setters
 
     /**

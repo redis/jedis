@@ -2,7 +2,7 @@ package redis.clients.jedis.resps;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -19,17 +19,11 @@ public class Slowlog {
 
   @SuppressWarnings("unchecked")
   private Slowlog(List<Object> properties) {
-    super();
     this.id = (Long) properties.get(0);
     this.timeStamp = (Long) properties.get(1);
     this.executionTime = (Long) properties.get(2);
 
-    List<byte[]> bargs = (List<byte[]>) properties.get(3);
-    this.args = new ArrayList<>(bargs.size());
-
-    for (byte[] barg : bargs) {
-      this.args.add(SafeEncoder.encode(barg));
-    }
+    this.args = BuilderFactory.STRING_LIST.build(properties.get(3));
     if (properties.size() == 4) return;
 
     this.clientIpPort = HostAndPort.from(SafeEncoder.encode((byte[]) properties.get(4)));
@@ -43,7 +37,6 @@ public class Slowlog {
       List<Object> properties = (List<Object>) obj;
       logs.add(new Slowlog(properties));
     }
-
     return logs;
   }
 

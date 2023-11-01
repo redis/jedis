@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.sentinel.listenner.SentinelActiveDetectListener;
-import redis.clients.jedis.sentinel.listenner.SentinelListener;
-import redis.clients.jedis.sentinel.listenner.SentinelSubscribeListener;
+import redis.clients.jedis.sentinel.listener.SentinelActiveDetectListener;
+import redis.clients.jedis.sentinel.listener.SentinelListener;
+import redis.clients.jedis.sentinel.listener.SentinelSubscribeListener;
 import redis.clients.jedis.util.Pool;
 
 public class JedisSentinelPool extends Pool<Jedis> {

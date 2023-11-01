@@ -1,4 +1,4 @@
-package redis.clients.jedis.sentinel.listenner;
+package redis.clients.jedis.sentinel.listener;
 
 import redis.clients.jedis.HostAndPort;
 

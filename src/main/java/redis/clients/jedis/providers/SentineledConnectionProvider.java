@@ -18,9 +18,9 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.SentinelPoolConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.sentinel.listenner.SentinelActiveDetectListener;
-import redis.clients.jedis.sentinel.listenner.SentinelListener;
-import redis.clients.jedis.sentinel.listenner.SentinelSubscribeListener;
+import redis.clients.jedis.sentinel.listener.SentinelActiveDetectListener;
+import redis.clients.jedis.sentinel.listener.SentinelListener;
+import redis.clients.jedis.sentinel.listener.SentinelSubscribeListener;
 
 public class SentineledConnectionProvider implements ConnectionProvider {
 

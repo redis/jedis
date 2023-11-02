@@ -9260,6 +9260,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public String reset() {
+    connection.sendCommand(Command.RESET);
+    return connection.getStatusCodeReply();
+  }
+
+  @Override
   public String latencyDoctor() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(LATENCY, DOCTOR);

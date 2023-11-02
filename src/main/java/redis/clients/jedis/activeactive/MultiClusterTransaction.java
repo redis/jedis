@@ -24,7 +24,7 @@ import redis.clients.jedis.util.KeyValue;
  */
 public class MultiClusterTransaction extends TransactionBase {
 
-  private static final Builder<?> CHEAPEST_BUILDER = BuilderFactory.RAW_OBJECT;
+  private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
 
   private final CircuitBreakerFailoverConnectionProvider provider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();
@@ -62,7 +62,7 @@ public class MultiClusterTransaction extends TransactionBase {
 
   @Override
   public final void multi() {
-    appendCommand(new CommandObject<>(new CommandArguments(MULTI), CHEAPEST_BUILDER));
+    appendCommand(new CommandObject<>(new CommandArguments(MULTI), NO_OP_BUILDER));
     extraCommandCount.incrementAndGet();
     inMulti = true;
   }
@@ -73,7 +73,7 @@ public class MultiClusterTransaction extends TransactionBase {
    */
   @Override
   public final String watch(String... keys) {
-    appendCommand(new CommandObject<>(new CommandArguments(WATCH).addObjects((Object[]) keys), CHEAPEST_BUILDER));
+    appendCommand(new CommandObject<>(new CommandArguments(WATCH).addObjects((Object[]) keys), NO_OP_BUILDER));
     extraCommandCount.incrementAndGet();
     inWatch = true;
     return null;
@@ -85,7 +85,7 @@ public class MultiClusterTransaction extends TransactionBase {
    */
   @Override
   public final String watch(byte[]... keys) {
-    appendCommand(new CommandObject<>(new CommandArguments(WATCH).addObjects((Object[]) keys), CHEAPEST_BUILDER));
+    appendCommand(new CommandObject<>(new CommandArguments(WATCH).addObjects((Object[]) keys), NO_OP_BUILDER));
     extraCommandCount.incrementAndGet();
     inWatch = true;
     return null;
@@ -96,7 +96,7 @@ public class MultiClusterTransaction extends TransactionBase {
    */
   @Override
   public final String unwatch() {
-    appendCommand(new CommandObject<>(new CommandArguments(UNWATCH), CHEAPEST_BUILDER));
+    appendCommand(new CommandObject<>(new CommandArguments(UNWATCH), NO_OP_BUILDER));
     extraCommandCount.incrementAndGet();
     inWatch = false;
     return null;
@@ -137,6 +137,11 @@ public class MultiClusterTransaction extends TransactionBase {
       // ignore QUEUED (or ERROR)
       connection.getMany(commands.size());
 
+      // remove extra response builders
+      for (int idx = 0; idx < extraCommandCount.get(); ++idx) {
+        commands.poll();
+      }
+
       connection.sendCommand(EXEC);
 
       List<Object> unformatted = connection.getObjectMultiBulkReply();
@@ -146,10 +151,10 @@ public class MultiClusterTransaction extends TransactionBase {
       }
 
       List<Object> formatted = new ArrayList<>(unformatted.size() - extraCommandCount.get());
-      for (int idx = extraCommandCount.get(); idx < unformatted.size(); ++idx) {
+      for (Object rawReply: unformatted) {
         try {
           Response<?> response = commands.poll().getValue();
-          response.set(unformatted.get(idx));
+          response.set(rawReply);
           formatted.add(response.get());
         } catch (JedisDataException e) {
           formatted.add(e);

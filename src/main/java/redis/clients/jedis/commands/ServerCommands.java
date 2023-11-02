@@ -229,6 +229,8 @@ public interface ServerCommands {
 
   String lolwut(LolwutParams lolwutParams);
 
+  String reset();
+
   /**
    * The LATENCY DOCTOR command reports about different latency-related issues and advises about
    * possible remedies.

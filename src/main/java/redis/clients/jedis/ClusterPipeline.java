@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.time.Duration;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
@@ -18,6 +19,12 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig));
+    this.closeable = this.provider;
+  }
+
+  public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod));
     this.closeable = this.provider;
   }
 

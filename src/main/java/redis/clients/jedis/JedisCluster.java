@@ -9,6 +9,8 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 
 public class JedisCluster extends UnifiedJedis {
 
+  public static final String INIT_NO_ERROR_PROPERTY = "jedis.cluster.initNoError";
+
   /**
    * Default timeout in milliseconds.
    */
@@ -190,6 +192,13 @@ public class JedisCluster extends UnifiedJedis {
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     super(clusterNodes, clientConfig, maxAttempts, maxTotalRetriesDuration);
+  }
+
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
+        maxAttempts, maxTotalRetriesDuration);
   }
 
   public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,

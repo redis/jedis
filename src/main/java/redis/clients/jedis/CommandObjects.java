@@ -2845,7 +2845,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT = new CommandObject<>(commandArguments(SLOWLOG).add(RESET), BuilderFactory.STRING);
+  private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT
+      = new CommandObject<>(commandArguments(SLOWLOG).add(Keyword.RESET), BuilderFactory.STRING);
 
   public final CommandObject<String> slowlogReset() {
     return SLOWLOG_RESET_COMMAND_OBJECT;

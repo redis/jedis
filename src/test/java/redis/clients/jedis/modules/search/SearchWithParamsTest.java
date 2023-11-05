@@ -1333,4 +1333,22 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertNotEquals("hello-world", client.hget("doc2", "txt"));
     assertEquals("hello-world", RediSearchUtil.unescape(client.hget("doc2", "txt")));
   }
+
+  @Test
+  public void hsetObject() {
+    float[] floats = new float[]{0.2f};
+    assertEquals(1L, client.hsetObject("obj", "floats", floats));
+    assertArrayEquals(RediSearchUtil.toByteArray(floats),
+        client.hget("obj".getBytes(), "floats".getBytes()));
+
+    GeoCoordinate geo = new GeoCoordinate(-0.441, 51.458);
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("title", "hello world");
+    fields.put("loc", geo);
+    assertEquals(2L, client.hsetObject("obj", fields));
+    Map<String, String> stringMap = client.hgetAll("obj");
+    assertEquals(3, stringMap.size());
+    assertEquals("hello world", stringMap.get("title"));
+    assertEquals(geo.getLongitude() + "," + geo.getLatitude(), stringMap.get("loc"));
+  }
 }

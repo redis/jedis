@@ -3619,6 +3619,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // Random node commands
 
   // RediSearch commands
+  public long hsetObject(String key, String field, Object value) {
+    return executeCommand(commandObjects.hsetObject(key, field, value));
+  }
+
+  public long hsetObject(String key, Map<String, Object> hash) {
+    return executeCommand(commandObjects.hsetObject(key, hash));
+  }
+
   @Override
   public String ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
     return checkAndBroadcastCommand(commandObjects.ftCreate(indexName, indexOptions, schema));

@@ -5,6 +5,7 @@ import java.util.Map;
 
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.args.ClusterFailoverOption;
+import redis.clients.jedis.resps.ClusterShardInfo;
 
 public interface ClusterCommands {
 
@@ -95,7 +96,7 @@ public interface ClusterCommands {
    * @return a list of shards, with each shard containing two objects, 'slots' and 'nodes'.
    * @see <a href="https://redis.io/commands/cluster-shards/">CLUSTER SHARDS</a>
    */
-  List<Object> clusterShards();
+  List<ClusterShardInfo> clusterShards();
 
   String clusterReset();
 

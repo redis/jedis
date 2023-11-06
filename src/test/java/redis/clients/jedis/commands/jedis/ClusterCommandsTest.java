@@ -15,11 +15,14 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.resps.ClusterShardInfo;
+import redis.clients.jedis.resps.ClusterShardNodeInfo;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
@@ -193,30 +196,22 @@ public class ClusterCommandsTest {
   public void clusterShards() {
     assertEquals("OK", node1.clusterAddSlots(3100, 3101, 3102));
 
-    List<Object> shards = node1.clusterShards();
+    List<ClusterShardInfo> shards = node1.clusterShards();
     assertNotNull(shards);
     assertTrue(shards.size() > 0);
 
-    for (Object shardInfoObj : shards) {
-      assertNotNull(shardInfoObj);
-      List<Object> shardInfo = (List<Object>) shardInfoObj;
-      assertTrue(shardInfo.size() >= 4);
+    for (ClusterShardInfo shardInfo : shards) {
+      assertNotNull(shardInfo);
 
-      assertTrue(shardInfo.get(0) instanceof byte[]);
-      assertEquals("slots", new String((byte[]) shardInfo.get(0)));
+      assertTrue(shardInfo.getSlots().size() > 1);
 
-      List<Object> slots = (List<Object>) shardInfo.get(1);
-      for (Object slotInfoObj : slots) {
-        assertTrue(slotInfoObj instanceof Long);
-      }
-
-      assertTrue(shardInfo.get(2) instanceof byte[]);
-      assertEquals("nodes", new String((byte[]) shardInfo.get(2)));
-
-      List<Object> nodes = (List<Object>) shardInfo.get(3);
-      for (Object nodeInfoObj : nodes) {
-        List<Object> nodeInfo = (List<Object>) nodeInfoObj;
-        assertTrue(nodeInfo.size() >= 14);
+      for (ClusterShardNodeInfo nodeInfo : shardInfo.getNodes()) {
+        assertNotNull(nodeInfo.getId());
+        assertNotNull(nodeInfo.getEndpoint());
+        assertNotNull(nodeInfo.getIp());
+        assertNotNull(nodeInfo.getPort());
+        assertNotNull(nodeInfo.getRole());
+        assertNotNull(nodeInfo.getHealth());
       }
     }
     node1.clusterDelSlots(3100, 3101, 3102);

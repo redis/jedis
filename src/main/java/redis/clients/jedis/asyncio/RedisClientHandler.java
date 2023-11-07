@@ -46,8 +46,6 @@ public class RedisClientHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        //System.err.print("exceptionCaught: ");
-        //cause.printStackTrace(System.err);
         logger.error("Exception caught", cause);
         ctx.close();
     }
@@ -58,7 +56,6 @@ public class RedisClientHandler extends ChannelDuplexHandler {
         } else if (msg instanceof ErrorRedisMessage) {
             logger.error(((ErrorRedisMessage) msg).content());
         } else if (msg instanceof IntegerRedisMessage) {
-            //System.out.println(((IntegerRedisMessage) msg).value());
             logger.error(((IntegerRedisMessage) msg).toString());
         } else if (msg instanceof FullBulkStringRedisMessage) {
             logger.error(getString((FullBulkStringRedisMessage) msg));

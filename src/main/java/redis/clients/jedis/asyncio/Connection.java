@@ -23,16 +23,10 @@ public class Connection implements Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
-//    private final String host;
-//    private final int port;
-
     private final EventLoopGroup group;
     private final Channel channel;
 
     public Connection(String host, int port) throws InterruptedException {
-//        this.host = host;
-//        this.port = port;
-
         this.group = new NioEventLoopGroup();
         Bootstrap bootstrap = new Bootstrap();
         initializeBootstrap(bootstrap);
@@ -70,8 +64,6 @@ public class Connection implements Closeable {
         ChannelFuture writeFuture = channel.writeAndFlush(line);
         writeFuture.addListener((ChannelFuture future) -> {
             if (!future.isSuccess()) {
-                //System.err.print("write failed: ");
-                //future.cause().printStackTrace(System.err);
                 logger.error("Write failed", future.cause());
             }
         });

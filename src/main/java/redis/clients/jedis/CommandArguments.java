@@ -3,10 +3,12 @@ package redis.clients.jedis;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.search.RediSearchUtil;
 
 public class CommandArguments implements Iterable<Rawable> {
 
@@ -34,10 +36,19 @@ public class CommandArguments implements Iterable<Rawable> {
       args.add((Rawable) arg);
     } else if (arg instanceof byte[]) {
       args.add(RawableFactory.from((byte[]) arg));
+    } else if (arg instanceof Integer) {
+      args.add(RawableFactory.from((Integer) arg));
+    } else if (arg instanceof Double) {
+      args.add(RawableFactory.from((Double) arg));
+    } else if (arg instanceof Boolean) {
+      args.add(RawableFactory.from((Boolean) arg ? 1 : 0));
+    } else if (arg instanceof float[]) {
+      args.add(RawableFactory.from(RediSearchUtil.toByteArray((float[]) arg)));
     } else if (arg instanceof String) {
       args.add(RawableFactory.from((String) arg));
-    } else if (arg instanceof Boolean) {
-      args.add(RawableFactory.from(Integer.toString((Boolean) arg ? 1 : 0)));
+    } else if (arg instanceof GeoCoordinate) {
+      GeoCoordinate geo = (GeoCoordinate) arg;
+      args.add(RawableFactory.from(geo.getLongitude() + "," + geo.getLatitude()));
     } else {
       args.add(RawableFactory.from(String.valueOf(arg)));
     }

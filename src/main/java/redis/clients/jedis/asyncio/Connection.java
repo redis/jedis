@@ -1,4 +1,4 @@
-package redis.clients.jedis.netty;
+package redis.clients.jedis.asyncio;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;

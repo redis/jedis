@@ -1,4 +1,4 @@
-package redis.clients.jedis.netty;
+package redis.clients.jedis.asyncio;
 
 import org.junit.Assert;
 import org.junit.Test;

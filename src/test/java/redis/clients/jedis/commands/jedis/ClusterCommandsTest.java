@@ -194,7 +194,7 @@ public class ClusterCommandsTest {
 
   @Test
   public void clusterShards() {
-    assertEquals("OK", node1.clusterAddSlots(3100, 3101, 3102));
+    assertEquals("OK", node1.clusterAddSlots(3100, 3101, 3102, 3105));
 
     List<ClusterShardInfo> shards = node1.clusterShards();
     assertNotNull(shards);
@@ -204,6 +204,9 @@ public class ClusterCommandsTest {
       assertNotNull(shardInfo);
 
       assertTrue(shardInfo.getSlots().size() > 1);
+      for (List<Long> slotRange : shardInfo.getSlots()) {
+        assertEquals(2, slotRange.size());
+      }
 
       for (ClusterShardNodeInfo nodeInfo : shardInfo.getNodes()) {
         assertNotNull(nodeInfo.getId());
@@ -214,7 +217,7 @@ public class ClusterCommandsTest {
         assertNotNull(nodeInfo.getHealth());
       }
     }
-    node1.clusterDelSlots(3100, 3101, 3102);
+    node1.clusterDelSlots(3100, 3101, 3102, 3105);
   }
 
   @Test

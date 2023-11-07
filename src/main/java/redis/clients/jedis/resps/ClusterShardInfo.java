@@ -13,7 +13,7 @@ public class ClusterShardInfo {
   public static final String SLOTS = "slots";
   public static final String NODES = "nodes";
 
-  private final List<Long> slots;
+  private final List<List<Long>> slots;
   private final List<ClusterShardNodeInfo> nodes;
 
   private final Map<String, Object> clusterShardInfo;
@@ -23,13 +23,13 @@ public class ClusterShardInfo {
    */
   @SuppressWarnings("unchecked")
   public ClusterShardInfo(Map<String, Object> map) {
-    slots = (List<Long>) map.get(SLOTS);
+    slots = (List<List<Long>>) map.get(SLOTS);
     nodes = (List<ClusterShardNodeInfo>) map.get(NODES);
 
     clusterShardInfo = map;
   }
 
-  public List<Long> getSlots() {
+  public List<List<Long>> getSlots() {
     return slots;
   }
 

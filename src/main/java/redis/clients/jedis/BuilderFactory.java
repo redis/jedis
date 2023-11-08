@@ -997,7 +997,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<List<Long>>> CLUSTER_SHARD_SLOTS_RANGES = new Builder<List<List<Long>>>() {
+  private static final Builder<List<List<Long>>> CLUSTER_SHARD_SLOTS_RANGES = new Builder<List<List<Long>>>() {
 
     @Override
     public List<List<Long>> build(Object data) {
@@ -1014,7 +1014,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<ClusterShardNodeInfo>> CLUSTER_SHARD_NODE_INFO_LIST
+  private static final Builder<List<ClusterShardNodeInfo>> CLUSTER_SHARD_NODE_INFO_LIST
       = new Builder<List<ClusterShardNodeInfo>>() {
 
     final Map<String, Builder> mappingFunctions = createDecoderMap();
@@ -1056,7 +1056,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "ClusterShardNodeInfoList";
+      return "List<ClusterShardNodeInfo>";
     }
   };
 
@@ -1095,7 +1095,7 @@ public final class BuilderFactory {
 
     @Override
     public String toString() {
-      return "ClusterShardInfo";
+      return "List<ClusterShardInfo>";
     }
   };
 

@@ -13,9 +13,9 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ClusterResetType;
@@ -51,8 +51,17 @@ public class ClusterCommandsTest {
     node2.disconnect();
   }
 
+  @BeforeClass
+  public static void resetRedisBefore() {
+    removeSlots();
+  }
+
   @AfterClass
-  public static void removeSlots() throws InterruptedException {
+  public static void resetRedisAfter() {
+    removeSlots();
+  }
+
+  public static void removeSlots() {
     try (Jedis node = new Jedis(nodeInfo1)) {
       node.auth("cluster");
       node.clusterReset(ClusterResetType.SOFT);

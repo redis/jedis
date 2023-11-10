@@ -88,4 +88,7 @@ public class ClusterShardNodeInfo {
     return clusterShardNodeInfo;
   }
 
+  public boolean isSsl() {
+    return tlsPort != null;
+  }
 }

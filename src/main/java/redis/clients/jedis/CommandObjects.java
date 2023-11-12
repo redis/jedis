@@ -2845,7 +2845,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT = new CommandObject<>(commandArguments(SLOWLOG).add(RESET), BuilderFactory.STRING);
+  private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT
+      = new CommandObject<>(commandArguments(SLOWLOG).add(Keyword.RESET), BuilderFactory.STRING);
 
   public final CommandObject<String> slowlogReset() {
     return SLOWLOG_RESET_COMMAND_OBJECT;
@@ -3109,6 +3110,14 @@ public class CommandObjects {
   // Miscellaneous commands
 
   // RediSearch commands
+  public final CommandObject<Long> hsetObject(String key, String field, Object value) {
+    return new CommandObject<>(commandArguments(HSET).key(key).add(field).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> hsetObject(String key, Map<String, Object> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
+  }
+
   private boolean isRoundRobinSearchCommand() {
     if (broadcastAndRoundRobinConfig == null) {
       return true;

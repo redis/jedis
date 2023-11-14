@@ -6386,7 +6386,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param count if positive, return an array of distinct elements.
    *        If negative the behavior changes and the command is allowed to
-   *        return the same element multiple times  
+   *        return the same element multiple times
    * @return A list of randomly selected elements
    */
   @Override
@@ -8758,7 +8758,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long clusterCountFailureReports(final String nodeId) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, "COUNT-FAILURE-REPORTS",  nodeId);
-    return connection.getIntegerReply();  
+    return connection.getIntegerReply();
   }
 
   @Override
@@ -8826,10 +8826,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  @Deprecated
   public List<Object> clusterSlots() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.SLOTS);
     return connection.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public List<ClusterShardInfo> clusterShards() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.SHARDS);
+    return BuilderFactory.CLUSTER_SHARD_INFO_LIST.build(connection.getObjectMultiBulkReply());
   }
 
   @Override

@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.jedis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -221,8 +222,11 @@ public class ClusterCommandsTest {
         assertNotNull(nodeInfo.getId());
         assertNotNull(nodeInfo.getEndpoint());
         assertNotNull(nodeInfo.getIp());
+        assertNull(nodeInfo.getHostname());
         assertNotNull(nodeInfo.getPort());
+        assertNull(nodeInfo.getTlsPort());
         assertNotNull(nodeInfo.getRole());
+        assertNotNull(nodeInfo.getReplicationOffset());
         assertNotNull(nodeInfo.getHealth());
       }
     }

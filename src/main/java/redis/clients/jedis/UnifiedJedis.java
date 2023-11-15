@@ -9,6 +9,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
+import redis.clients.jedis.activeactive.CircuitBreakerCommandExecutor;
+import redis.clients.jedis.activeactive.MultiClusterPipeline;
+import redis.clients.jedis.activeactive.MultiClusterTransaction;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -4827,18 +4830,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisGears commands
 
+  /**
+   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
+   */
   public PipelineBase pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
+      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider);
+    } else {
+      return new Pipeline(provider.getConnection(), true);
     }
-    return new Pipeline(provider.getConnection(), true);
   }
 
-  public Transaction multi() {
+  public AbstractTransaction multi() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
+      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider);
+    } else {
+      return new Transaction(provider.getConnection(), true, true);
     }
-    return new Transaction(provider.getConnection(), true, true);
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

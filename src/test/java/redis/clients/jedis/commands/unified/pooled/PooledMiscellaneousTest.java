@@ -15,14 +15,14 @@ import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.Transaction;
+import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
   protected Pipeline pipeline;
-  protected Transaction transaction;
+  protected AbstractTransaction transaction;
 
   @BeforeClass
   public static void prepare() throws InterruptedException {

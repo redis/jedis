@@ -72,7 +72,7 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
-  final RedisProtocol getRedisProtocol() {
+  public final RedisProtocol getRedisProtocol() {
     return protocol;
   }
 

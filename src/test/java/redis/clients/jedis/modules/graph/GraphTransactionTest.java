@@ -12,7 +12,7 @@ import java.util.List;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.Transaction;
+import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.graph.Header;
 import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
@@ -53,7 +53,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
   @Test
   public void testMultiExec() {
 //    Transaction transaction = new Transaction(c);
-    Transaction transaction = client.multi();
+    AbstractTransaction transaction = client.multi();
 
     transaction.set("x", "1");
     transaction.graphQuery("social", "CREATE (:Person {name:'a'})");
@@ -177,7 +177,7 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
   @Test
   public void testMultiExecWithReadOnlyQueries() {
 //    Transaction transaction = new Transaction(c);
-    Transaction transaction = client.multi();
+    AbstractTransaction transaction = client.multi();
 
     transaction.set("x", "1");
     transaction.graphQuery("social", "CREATE (:Person {name:'a'})");

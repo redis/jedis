@@ -78,10 +78,6 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
     return appendCommand(commandObjects.waitAOF(numLocal, numReplicas, timeout));
   }
 
-  public Response<List<String>> time() {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.TIME), BuilderFactory.STRING_LIST));
-  }
-
   // RedisGraph commands
   @Override
   public Response<ResultSet> graphQuery(String name, String query) {

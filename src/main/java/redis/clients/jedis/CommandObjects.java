@@ -45,7 +45,7 @@ public class CommandObjects {
   }
 
   // TODO: remove
-  RedisProtocol getProtocol() {
+  protected RedisProtocol getProtocol() {
     return protocol;
   }
 
@@ -58,7 +58,7 @@ public class CommandObjects {
     this.broadcastAndRoundRobinConfig = config;
   }
 
-  public CommandArguments commandArguments(ProtocolCommand command) {
+  protected CommandArguments commandArguments(ProtocolCommand command) {
     return new CommandArguments(command);
   }
 

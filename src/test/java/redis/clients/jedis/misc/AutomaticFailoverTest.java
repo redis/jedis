@@ -1,16 +1,14 @@
 package redis.clients.jedis.misc;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 
 import java.util.Arrays;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
 import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
-
-import redis.clients.jedis.ClientSetInfoConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
@@ -18,7 +16,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 
 public class AutomaticFailoverTest {
@@ -67,10 +64,8 @@ public class AutomaticFailoverTest {
       pipe.sync();
     }
 
-    try (Jedis j = new Jedis(hostAndPort2, clientConfig)) {
-      assertEquals("foobar", j.get("pstr"));
-      assertEquals("bar", j.hget("phash", "foo"));
-    }
+    assertEquals("foobar", jedis2.get("pstr"));
+    assertEquals("bar", jedis2.hget("phash", "foo"));
   }
 
   @Test
@@ -83,9 +78,7 @@ public class AutomaticFailoverTest {
       assertEquals(Arrays.asList("OK", Long.valueOf(1L)), tx.exec());
     }
 
-    try (Jedis j = new Jedis(hostAndPort2, clientConfig)) {
-      assertEquals("foobar", j.get("tstr"));
-      assertEquals("bar", j.hget("thash", "foo"));
-    }
+    assertEquals("foobar", jedis2.get("tstr"));
+    assertEquals("bar", jedis2.hget("thash", "foo"));
   }
 }

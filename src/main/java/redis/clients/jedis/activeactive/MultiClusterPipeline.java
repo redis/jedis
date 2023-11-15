@@ -6,15 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.CommandObjects;
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.PipelineBase;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.Response;
+import redis.clients.jedis.*;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.KeyValue;

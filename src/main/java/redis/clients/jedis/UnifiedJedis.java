@@ -9,9 +9,9 @@ import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
-import redis.clients.jedis.activeactive.CircuitBreakerCommandExecutor;
-import redis.clients.jedis.activeactive.MultiClusterPipeline;
-import redis.clients.jedis.activeactive.MultiClusterTransaction;
+import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
+import redis.clients.jedis.mcf.MultiClusterPipeline;
+import redis.clients.jedis.mcf.MultiClusterTransaction;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;

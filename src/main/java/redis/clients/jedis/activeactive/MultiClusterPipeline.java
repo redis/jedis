@@ -17,17 +17,17 @@ import redis.clients.jedis.util.KeyValue;
  */
 public class MultiClusterPipeline extends PipelineBase implements Closeable {
 
-  private final CircuitBreakerFailoverConnectionProvider provider;
+  private final CircuitBreakerFailoverConnectionProvider failoverProvider;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
-  public MultiClusterPipeline(MultiClusterPooledConnectionProvider provider) {
+  public MultiClusterPipeline(MultiClusterPooledConnectionProvider pooledProvider) {
     super(new CommandObjects());
-    try (Connection connection = provider.getConnection()) { // we don't need a healthy connection now
+    try (Connection connection = pooledProvider.getConnection()) { // we don't need a healthy connection now
       RedisProtocol proto = connection.getRedisProtocol();
       if (proto != null) this.commandObjects.setProtocol(proto);
     }
 
-    this.provider = new CircuitBreakerFailoverConnectionProvider(provider);
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
   }
 
   @Override
@@ -52,7 +52,7 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
   public void sync() {
     if (commands.isEmpty()) return;
 
-    try (Connection connection = provider.getConnection()) {
+    try (Connection connection = failoverProvider.getConnection()) {
 
       commands.forEach((command) -> connection.sendCommand(command.getKey()));
       // following connection.getMany(int) flushes anyway, so no flush here.

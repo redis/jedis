@@ -1,15 +1,14 @@
-package redis.clients.jedis.activeactive;
+package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
-import redis.clients.jedis.util.IOUtils;
-
 import java.util.Arrays;
 import java.util.List;
 
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
+import redis.clients.jedis.util.IOUtils;
 
 /**
  * @author Allen Terleto (aterleto)

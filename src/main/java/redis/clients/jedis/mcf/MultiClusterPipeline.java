@@ -1,4 +1,4 @@
-package redis.clients.jedis.activeactive;
+package redis.clients.jedis.mcf;
 
 import java.io.Closeable;
 import java.util.LinkedList;

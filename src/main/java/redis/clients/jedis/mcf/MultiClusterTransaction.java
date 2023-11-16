@@ -1,4 +1,4 @@
-package redis.clients.jedis.activeactive;
+package redis.clients.jedis.mcf;
 
 import static redis.clients.jedis.Protocol.Command.DISCARD;
 import static redis.clients.jedis.Protocol.Command.EXEC;

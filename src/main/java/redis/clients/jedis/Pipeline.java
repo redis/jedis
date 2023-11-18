@@ -119,7 +119,7 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
 
   @Override
   public Response<Long> dbSize() {
-    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.DBSIZE), BuilderFactory.LONG));
+    return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.DBSIZE), LongBuilders.LONG));
   }
 
   @Override
@@ -131,13 +131,13 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
   @Override
   public Response<Long> move(String key, int dbIndex) {
     return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MOVE)
-        .key(key).add(dbIndex), BuilderFactory.LONG));
+        .key(key).add(dbIndex), LongBuilders.LONG));
   }
 
   @Override
   public Response<Long> move(final byte[] key, final int dbIndex) {
     return appendCommand(new CommandObject<>(commandObjects.commandArguments(Protocol.Command.MOVE)
-        .key(key).add(dbIndex), BuilderFactory.LONG));
+        .key(key).add(dbIndex), LongBuilders.LONG));
   }
 
   @Override

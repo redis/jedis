@@ -25,13 +25,9 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisMonitor;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.params.CommandListFilterByParams;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.resps.CommandDocument;
@@ -190,7 +186,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
       }
     }).start();
 
-    jedis.monitor(new JedisMonitor() {
+    Connection connection = new Connection();
+    connection.monitor(new JedisMonitor() {
       private int count = 0;
 
       @Override

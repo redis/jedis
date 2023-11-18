@@ -2,6 +2,7 @@ package redis.clients.jedis.gears.resps;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.LongBuilders;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -75,11 +76,11 @@ public class FunctionStreamInfo {
           BuilderFactory.STRING.build(pairList.get(9)),       // name
           BuilderFactory.STRING.build(pairList.get(1)),       // id_to_read_from
           BuilderFactory.STRING.build(pairList.get(3)),       // last_error
-          BuilderFactory.LONG.build(pairList.get(7)),         // last_processed_time
-          BuilderFactory.LONG.build(pairList.get(5)),         // last_lag
-          BuilderFactory.LONG.build(pairList.get(13)),        // total_lag
-          BuilderFactory.LONG.build(pairList.get(15)),        // total_processed_time
-          BuilderFactory.LONG.build(pairList.get(17)),        // total_record_processed
+          LongBuilders.LONG.build(pairList.get(7)),         // last_processed_time
+          LongBuilders.LONG.build(pairList.get(5)),         // last_lag
+          LongBuilders.LONG.build(pairList.get(13)),        // total_lag
+          LongBuilders.LONG.build(pairList.get(15)),        // total_processed_time
+          LongBuilders.LONG.build(pairList.get(17)),        // total_record_processed
           BuilderFactory.STRING_LIST.build(pairList.get(11))  // pending_ids
         ))//
         .collect(Collectors.toList());

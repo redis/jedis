@@ -186,9 +186,7 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
       broken = true;
       throw jce;
     } finally {
-      inMulti = false;
-      inWatch = false;
-      pipelinedResponses.clear();
+      resetTransactionState();
     }
   }
 
@@ -205,10 +203,14 @@ public abstract class TransactionBase implements PipelineCommands, PipelineBinar
       broken = true;
       throw jce;
     } finally {
-      inMulti = false;
-      inWatch = false;
-      pipelinedResponses.clear();
+      resetTransactionState();
     }
+  }
+
+  private void resetTransactionState(){
+    inMulti = false;
+    inWatch = false;
+    pipelinedResponses.clear();
   }
 
   @Override

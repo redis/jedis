@@ -8,7 +8,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static redis.clients.jedis.BuilderFactory.LONG;
+//import static redis.clients.jedis.BuilderFactory.LONG;
+import static redis.clients.jedis.LongBuilders.LONG;
 import static redis.clients.jedis.BuilderFactory.STRING;
 
 public class TriggerInfo {

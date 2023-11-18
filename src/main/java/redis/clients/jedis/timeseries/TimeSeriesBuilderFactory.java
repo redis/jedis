@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.LongBuilders;
 import redis.clients.jedis.util.KeyValue;
 
 public final class TimeSeriesBuilderFactory {
@@ -17,7 +18,7 @@ public final class TimeSeriesBuilderFactory {
     public TSElement build(Object data) {
       List<Object> list = (List<Object>) data;
       if (list == null || list.isEmpty()) return null;
-      return new TSElement(BuilderFactory.LONG.build(list.get(0)), BuilderFactory.DOUBLE.build(list.get(1)));
+      return new TSElement(LongBuilders.LONG.build(list.get(0)), BuilderFactory.DOUBLE.build(list.get(1)));
     }
   };
 
@@ -25,7 +26,7 @@ public final class TimeSeriesBuilderFactory {
     @Override
     public List<TSElement> build(Object data) {
       return ((List<Object>) data).stream().map((pairObject) -> (List<Object>) pairObject)
-          .map((pairList) -> new TSElement(BuilderFactory.LONG.build(pairList.get(0)),
+          .map((pairList) -> new TSElement(LongBuilders.LONG.build(pairList.get(0)),
               BuilderFactory.DOUBLE.build(pairList.get(1))))
           .collect(Collectors.toList());
     }

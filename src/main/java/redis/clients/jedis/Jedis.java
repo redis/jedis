@@ -3473,12 +3473,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * command is used directly via telnet.
    * @param jedisMonitor
    */
-  public void monitor(final JedisMonitor jedisMonitor) {
-//    connection.monitor();
-    connection.sendCommand(Command.MONITOR);
-    connection.getStatusCodeReply();
-    jedisMonitor.proceed(connection);
-  }
+//  public void monitor(final JedisMonitor jedisMonitor) {
+////    connection.monitor();
+//    connection.sendCommand(Command.MONITOR);
+//    connection.getStatusCodeReply();
+//    jedisMonitor.proceed(connection);
+//  }
 
   /**
    * Change the replication settings.

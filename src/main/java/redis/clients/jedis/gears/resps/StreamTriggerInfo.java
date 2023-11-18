@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static redis.clients.jedis.BuilderFactory.*;
+import static redis.clients.jedis.LongBuilders.LONG;
 import static redis.clients.jedis.gears.resps.FunctionStreamInfo.STREAM_INFO_LIST;
 
 public class StreamTriggerInfo {

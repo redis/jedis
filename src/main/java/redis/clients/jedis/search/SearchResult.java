@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.LongBuilders;
 import redis.clients.jedis.util.KeyValue;
 
 /**
@@ -96,7 +97,8 @@ public class SearchResult {
         String key = BuilderFactory.STRING.build(kv.getKey());
         switch (key) {
           case TOTAL_RESULTS_STR:
-            totalResults = BuilderFactory.LONG.build(kv.getValue());
+//            totalResults = BuilderFactory.LONG.build(kv.getValue());
+            totalResults = LongBuilders.LONG.build(kv.getValue());
             break;
           case RESULTS_STR:
             results = ((List<Object>) kv.getValue()).stream()

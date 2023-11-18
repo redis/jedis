@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static redis.clients.jedis.BuilderFactory.*;
+import static redis.clients.jedis.LongBuilders.LONG;
 import static redis.clients.jedis.gears.resps.FunctionInfo.FUNCTION_INFO_LIST;
 import static redis.clients.jedis.gears.resps.StreamTriggerInfo.STREAM_TRIGGER_INFO_LIST;
 import static redis.clients.jedis.gears.resps.TriggerInfo.KEYSPACE_TRIGGER_INFO_LIST;

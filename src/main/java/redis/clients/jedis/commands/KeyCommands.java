@@ -14,7 +14,8 @@ public interface KeyCommands {
 
   /**
    * <b><a href="http://redis.io/commands/exists">Exists Command</a></b>
-   * Test if the specified key exist.
+   * Test
+   * if the specified key exist.
    * <p>
    * Time complexity: O(1)
    * @param key

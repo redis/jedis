@@ -13,6 +13,10 @@ import redis.clients.jedis.util.JedisByteHashMap;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
+import redis.clients.jedis.LongBuilders;
+
+import static redis.clients.jedis.LongBuilders.LONG;
+
 public final class BuilderFactory {
 
   public static final Builder<Object> RAW_OBJECT = new Builder<Object>() {
@@ -63,35 +67,32 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Long> LONG = new Builder<Long>() {
-    @Override
-    public Long build(Object data) {
-      return (Long) data;
-    }
+//  public static final Builder<Long> LONG = new Builder<Long>() {
+//    @Override
+//    public LongBuilders.LONG.build(Object data) {
+//      return (Long) data;
+//    }
+//    @Override
+//    public String toString() {
+//      return "Long";
+//    }
+//  };
 
-    @Override
-    public String toString() {
-      return "Long";
-    }
-
-  };
-
-  public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Long> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      return (List<Long>) data;
-    }
-
-    @Override
-    public String toString() {
-      return "List<Long>";
-    }
-
-  };
+//  public static final Builder<List<Long>> LONG_LIST = new Builder<List<Long>>() {
+//    @Override
+//    @SuppressWarnings("unchecked")
+//    public List<Long> build(Object data) {
+//      if (null == data) {
+//        return null;
+//      }
+//      return (List<Long>) data;
+//    }
+//
+//    @Override
+//    public String toString() {
+//      return "List<Long>";
+//    }
+//  };
 
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
@@ -378,27 +379,36 @@ public final class BuilderFactory {
     }
   };
 
+//  public static final Builder<Object> AGGRESSIVE_ENCODED_OBJECT = new Builder<Object>() {
+//    @Override
+//    public Object build(Object data) {
+//      if (data == null) return null;
+//
+//      if (data instanceof List) {
+//        final List list = (List) data;
+//        if (list.isEmpty()) return Collections.emptyMap();
+//
+//        if (list.get(0) instanceof KeyValue) {
+//          return ((List<KeyValue>) data).stream()
+//              .filter(kv -> kv != null && kv.getKey() != null && kv.getValue() != null)
+//              .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+//                  kv -> this.build(kv.getValue())));
+//        } else {
+//          return list.stream().map(this::build).collect(Collectors.toList());
+//        }
+//      } else if (data instanceof byte[]) {
+//        return STRING.build(data);
+//      }
+//      return data;
+//    }
+//  };
+
   public static final Builder<Object> AGGRESSIVE_ENCODED_OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {
       if (data == null) return null;
-
-      if (data instanceof List) {
-        final List list = (List) data;
-        if (list.isEmpty()) return Collections.emptyMap();
-
-        if (list.get(0) instanceof KeyValue) {
-          return ((List<KeyValue>) data).stream()
-              .filter(kv -> kv != null && kv.getKey() != null && kv.getValue() != null)
-              .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
-                  kv -> this.build(kv.getValue())));
-        } else {
-          return list.stream().map(this::build).collect(Collectors.toList());
-        }
-      } else if (data instanceof byte[]) {
-        return STRING.build(data);
-      }
-      return data;
+      DataBuilder builder = DataBuilderFactory.getBuilder(data);
+      return builder.build(data);
     }
   };
 
@@ -1259,6 +1269,8 @@ public final class BuilderFactory {
   public static final Builder<List<Map.Entry<String, List<StreamEntry>>>> STREAM_READ_RESPONSE
       = new Builder<List<Map.Entry<String, List<StreamEntry>>>>() {
     @Override
+
+
     public List<Map.Entry<String, List<StreamEntry>>> build(Object data) {
       if (data == null) return null;
       List list = (List) data;
@@ -1301,8 +1313,8 @@ public final class BuilderFactory {
         List<Object> stream = (List<Object>) streamObj;
         String id = SafeEncoder.encode((byte[]) stream.get(0));
         String consumerName = SafeEncoder.encode((byte[]) stream.get(1));
-        long idleTime = BuilderFactory.LONG.build(stream.get(2));
-        long deliveredTimes = BuilderFactory.LONG.build(stream.get(3));
+        long idleTime = LONG.build(stream.get(2));
+        long deliveredTimes = LONG.build(stream.get(3));
         result.add(new StreamPendingEntry(new StreamEntryID(id), consumerName, idleTime,
             deliveredTimes));
       }
@@ -1634,7 +1646,7 @@ public final class BuilderFactory {
       }
 
       List<Object> objectList = (List<Object>) data;
-      long total = BuilderFactory.LONG.build(objectList.get(0));
+      long total = LONG.build(objectList.get(0));
       String minId = SafeEncoder.encode((byte[]) objectList.get(1));
       String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
       List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);

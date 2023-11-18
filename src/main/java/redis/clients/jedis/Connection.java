@@ -56,6 +56,12 @@ public class Connection implements Closeable {
     initializeFromClientConfig(clientConfig);
   }
 
+  public void monitor(final JedisMonitor jedisMonitor) {
+    this.sendCommand(Command.MONITOR);
+    this.getStatusCodeReply();
+    jedisMonitor.proceed(this);
+  }
+
   public Connection(final JedisSocketFactory socketFactory) {
     this.socketFactory = socketFactory;
   }

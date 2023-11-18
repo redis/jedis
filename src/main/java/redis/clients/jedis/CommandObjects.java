@@ -89,7 +89,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> exists(String... keys) {
-    return new CommandObject<>(commandArguments(Command.EXISTS).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.EXISTS).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Boolean> exists(byte[] key) {
@@ -97,15 +97,15 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> exists(byte[]... keys) {
-    return new CommandObject<>(commandArguments(Command.EXISTS).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.EXISTS).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> persist(String key) {
-    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> persist(byte[] key) {
-    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.PERSIST).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<String> type(String key) {
@@ -145,121 +145,121 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> expire(String key, long seconds) {
-    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expire(byte[] key, long seconds) {
-    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expire(String key, long seconds, ExpiryOption expiryOption) {
     return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(expiryOption),
-        BuilderFactory.LONG);
+        LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expire(byte[] key, long seconds, ExpiryOption expiryOption) {
     return new CommandObject<>(commandArguments(EXPIRE).key(key).add(seconds).add(expiryOption),
-        BuilderFactory.LONG);
+        LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpire(String key, long milliseconds) {
-    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpire(byte[] key, long milliseconds) {
-    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpire(String key, long milliseconds, ExpiryOption expiryOption) {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(expiryOption),
-        BuilderFactory.LONG);
+        LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpire(byte[] key, long milliseconds, ExpiryOption expiryOption) {
     return new CommandObject<>(commandArguments(PEXPIRE).key(key).add(milliseconds).add(expiryOption),
-        BuilderFactory.LONG);
+        LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expireTime(String key) {
-    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expireTime(byte[] key) {
-    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(EXPIRETIME).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpireTime(String key) {
-    return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpireTime(byte[] key) {
-    return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PEXPIRETIME).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expireAt(String key, long unixTime) {
-    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expireAt(byte[] key, long unixTime) {
-    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expireAt(String key, long unixTime, ExpiryOption expiryOption) {
-    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
-    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(EXPIREAT).key(key).add(unixTime).add(expiryOption), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpireAt(String key, long millisecondsTimestamp) {
-    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpireAt(byte[] key, long millisecondsTimestamp) {
-    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpireAt(String key, long millisecondsTimestamp, ExpiryOption expiryOption) {
     return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp).add(expiryOption),
-        BuilderFactory.LONG);
+        LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
     return new CommandObject<>(commandArguments(PEXPIREAT).key(key).add(millisecondsTimestamp).add(expiryOption),
-        BuilderFactory.LONG);
+        LongBuilders.LONG);
   }
 
   public final CommandObject<Long> ttl(String key) {
-    return new CommandObject<>(commandArguments(TTL).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TTL).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> ttl(byte[] key) {
-    return new CommandObject<>(commandArguments(TTL).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TTL).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pttl(String key) {
-    return new CommandObject<>(commandArguments(PTTL).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PTTL).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pttl(byte[] key) {
-    return new CommandObject<>(commandArguments(PTTL).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PTTL).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> touch(String key) {
-    return new CommandObject<>(commandArguments(TOUCH).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TOUCH).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> touch(String... keys) {
-    return new CommandObject<>(commandArguments(TOUCH).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TOUCH).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> touch(byte[] key) {
-    return new CommandObject<>(commandArguments(TOUCH).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TOUCH).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> touch(byte[]... keys) {
-    return new CommandObject<>(commandArguments(TOUCH).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TOUCH).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> sort(String key) {
@@ -280,22 +280,22 @@ public class CommandObjects {
 
   public final CommandObject<Long> sort(String key, String dstkey) {
     return new CommandObject<>(commandArguments(SORT).key(key)
-        .add(STORE).key(dstkey), BuilderFactory.LONG);
+        .add(STORE).key(dstkey), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> sort(String key, SortingParams sortingParams, String dstkey) {
     return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams)
-        .add(STORE).key(dstkey), BuilderFactory.LONG);
+        .add(STORE).key(dstkey), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> sort(byte[] key, byte[] dstkey) {
     return new CommandObject<>(commandArguments(SORT).key(key)
-        .add(STORE).key(dstkey), BuilderFactory.LONG);
+        .add(STORE).key(dstkey), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> sort(byte[] key, SortingParams sortingParams, byte[] dstkey) {
     return new CommandObject<>(commandArguments(SORT).key(key).addParams(sortingParams)
-        .add(STORE).key(dstkey), BuilderFactory.LONG);
+        .add(STORE).key(dstkey), LongBuilders.LONG);
   }
 
   public final CommandObject<List<byte[]>> sortReadonly(byte[] key, SortingParams sortingParams) {
@@ -309,35 +309,35 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> del(String key) {
-    return new CommandObject<>(commandArguments(DEL).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DEL).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> del(String... keys) {
-    return new CommandObject<>(commandArguments(DEL).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DEL).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> del(byte[] key) {
-    return new CommandObject<>(commandArguments(DEL).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DEL).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> del(byte[]... keys) {
-    return new CommandObject<>(commandArguments(DEL).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DEL).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> unlink(String key) {
-    return new CommandObject<>(commandArguments(UNLINK).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(UNLINK).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> unlink(String... keys) {
-    return new CommandObject<>(commandArguments(UNLINK).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(UNLINK).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> unlink(byte[] key) {
-    return new CommandObject<>(commandArguments(UNLINK).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(UNLINK).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> unlink(byte[]... keys) {
-    return new CommandObject<>(commandArguments(UNLINK).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(UNLINK).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Boolean> copy(String srcKey, String dstKey, boolean replace) {
@@ -361,7 +361,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> renamenx(String oldkey, String newkey) {
-    return new CommandObject<>(commandArguments(RENAMENX).key(oldkey).key(newkey), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(RENAMENX).key(oldkey).key(newkey), LongBuilders.LONG);
   }
 
   public final CommandObject<String> rename(byte[] oldkey, byte[] newkey) {
@@ -369,11 +369,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> renamenx(byte[] oldkey, byte[] newkey) {
-    return new CommandObject<>(commandArguments(RENAMENX).key(oldkey).key(newkey), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(RENAMENX).key(oldkey).key(newkey), LongBuilders.LONG);
   }
 
   public CommandObject<Long> dbSize() {
-    return new CommandObject<>(commandArguments(DBSIZE), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DBSIZE), LongBuilders.LONG);
   }
 
   public CommandObject<Set<String>> keys(String pattern) {
@@ -487,7 +487,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> setnx(String key, String value) {
-    return new CommandObject<>(commandArguments(SETNX).key(key).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SETNX).key(key).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<String> setex(String key, long seconds, String value) {
@@ -499,7 +499,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> setnx(byte[] key, byte[] value) {
-    return new CommandObject<>(commandArguments(SETNX).key(key).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SETNX).key(key).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<String> setex(byte[] key, long seconds, byte[] value) {
@@ -527,11 +527,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> setrange(String key, long offset, String value) {
-    return new CommandObject<>(commandArguments(SETRANGE).key(key).add(offset).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SETRANGE).key(key).add(offset).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> setrange(byte[] key, long offset, byte[] value) {
-    return new CommandObject<>(commandArguments(SETRANGE).key(key).add(offset).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SETRANGE).key(key).add(offset).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<String> getrange(String key, long startOffset, long endOffset) {
@@ -555,7 +555,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> msetnx(String... keysvalues) {
-    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), LongBuilders.LONG);
   }
 
   public final CommandObject<String> mset(byte[]... keysvalues) {
@@ -563,15 +563,15 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> msetnx(byte[]... keysvalues) {
-    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> incr(String key) {
-    return new CommandObject<>(commandArguments(Command.INCR).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.INCR).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> incrBy(String key, long increment) {
-    return new CommandObject<>(commandArguments(INCRBY).key(key).add(increment), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(INCRBY).key(key).add(increment), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> incrByFloat(String key, double increment) {
@@ -579,11 +579,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> incr(byte[] key) {
-    return new CommandObject<>(commandArguments(Command.INCR).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(Command.INCR).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> incrBy(byte[] key, long increment) {
-    return new CommandObject<>(commandArguments(INCRBY).key(key).add(increment), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(INCRBY).key(key).add(increment), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> incrByFloat(byte[] key, double increment) {
@@ -591,27 +591,27 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> decr(String key) {
-    return new CommandObject<>(commandArguments(DECR).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DECR).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> decrBy(String key, long decrement) {
-    return new CommandObject<>(commandArguments(DECRBY).key(key).add(decrement), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DECRBY).key(key).add(decrement), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> decr(byte[] key) {
-    return new CommandObject<>(commandArguments(DECR).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DECR).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> decrBy(byte[] key, long decrement) {
-    return new CommandObject<>(commandArguments(DECRBY).key(key).add(decrement), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(DECRBY).key(key).add(decrement), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> append(String key, String value) {
-    return new CommandObject<>(commandArguments(APPEND).key(key).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(APPEND).key(key).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> append(byte[] key, byte[] value) {
-    return new CommandObject<>(commandArguments(APPEND).key(key).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(APPEND).key(key).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<String> substr(String key, int start, int end) {
@@ -623,75 +623,75 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> strlen(String key) {
-    return new CommandObject<>(commandArguments(STRLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(STRLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> strlen(byte[] key) {
-    return new CommandObject<>(commandArguments(STRLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(STRLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitcount(String key) {
-    return new CommandObject<>(commandArguments(BITCOUNT).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitcount(String key, long start, long end) {
-    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitcount(String key, long start, long end, BitCountOption option) {
-    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(option), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(option), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitcount(byte[] key) {
-    return new CommandObject<>(commandArguments(BITCOUNT).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitcount(byte[] key, long start, long end) {
-    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitcount(byte[] key, long start, long end, BitCountOption option) {
-    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(option), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITCOUNT).key(key).add(start).add(end).add(option), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitpos(String key, boolean value) {
-    return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitpos(String key, boolean value, BitPosParams params) {
-    return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0).addParams(params), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitpos(byte[] key, boolean value) {
-    return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitpos(byte[] key, boolean value, BitPosParams params) {
-    return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0).addParams(params), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> bitfield(String key, String... arguments) {
-    return new CommandObject<>(commandArguments(BITFIELD).key(key).addObjects((Object[]) arguments), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(BITFIELD).key(key).addObjects((Object[]) arguments), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> bitfieldReadonly(String key, String... arguments) {
-    return new CommandObject<>(commandArguments(BITFIELD_RO).key(key).addObjects((Object[]) arguments), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(BITFIELD_RO).key(key).addObjects((Object[]) arguments), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> bitfield(byte[] key, byte[]... arguments) {
-    return new CommandObject<>(commandArguments(BITFIELD).key(key).addObjects((Object[]) arguments), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(BITFIELD).key(key).addObjects((Object[]) arguments), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> bitfieldReadonly(byte[] key, byte[]... arguments) {
-    return new CommandObject<>(commandArguments(BITFIELD_RO).key(key).addObjects((Object[]) arguments), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(BITFIELD_RO).key(key).addObjects((Object[]) arguments), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<Long> bitop(BitOP op, String destKey, String... srcKeys) {
-    return new CommandObject<>(commandArguments(BITOP).add(op).key(destKey).keys((Object[]) srcKeys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITOP).add(op).key(destKey).keys((Object[]) srcKeys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> bitop(BitOP op, byte[] destKey, byte[]... srcKeys) {
-    return new CommandObject<>(commandArguments(BITOP).add(op).key(destKey).keys((Object[]) srcKeys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BITOP).add(op).key(destKey).keys((Object[]) srcKeys), LongBuilders.LONG);
   }
 
   public final CommandObject<LCSMatchResult> lcs(String keyA, String keyB, LCSParams params) {
@@ -707,27 +707,27 @@ public class CommandObjects {
 
   // List commands
   public final CommandObject<Long> rpush(String key, String... strings) {
-    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) strings), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> rpush(byte[] key, byte[]... strings) {
-    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(RPUSH).key(key).addObjects((Object[]) strings), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> lpush(String key, String... strings) {
-    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) strings), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> lpush(byte[] key, byte[]... strings) {
-    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LPUSH).key(key).addObjects((Object[]) strings), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> llen(String key) {
-    return new CommandObject<>(commandArguments(LLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> llen(byte[] key) {
-    return new CommandObject<>(commandArguments(LLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> lrange(String key, long start, long stop) {
@@ -763,11 +763,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> lrem(String key, long count, String value) {
-    return new CommandObject<>(commandArguments(LREM).key(key).add(count).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LREM).key(key).add(count).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> lrem(byte[] key, long count, byte[] value) {
-    return new CommandObject<>(commandArguments(LREM).key(key).add(count).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LREM).key(key).add(count).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<String> lpop(String key) {
@@ -803,55 +803,55 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> lpos(String key, String element) {
-    return new CommandObject<>(commandArguments(LPOS).key(key).add(element), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LPOS).key(key).add(element), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> lpos(String key, String element, LPosParams params) {
-    return new CommandObject<>(commandArguments(LPOS).key(key).add(element).addParams(params), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LPOS).key(key).add(element).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> lpos(String key, String element, LPosParams params, long count) {
     return new CommandObject<>(commandArguments(LPOS).key(key).add(element)
-        .addParams(params).add(COUNT).add(count), BuilderFactory.LONG_LIST);
+        .addParams(params).add(COUNT).add(count), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<Long> lpos(byte[] key, byte[] element) {
-    return new CommandObject<>(commandArguments(LPOS).key(key).add(element), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LPOS).key(key).add(element), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> lpos(byte[] key, byte[] element, LPosParams params) {
-    return new CommandObject<>(commandArguments(LPOS).key(key).add(element).addParams(params), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LPOS).key(key).add(element).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> lpos(byte[] key, byte[] element, LPosParams params, long count) {
     return new CommandObject<>(commandArguments(LPOS).key(key).add(element)
-        .addParams(params).add(COUNT).add(count), BuilderFactory.LONG_LIST);
+        .addParams(params).add(COUNT).add(count), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<Long> linsert(String key, ListPosition where, String pivot, String value) {
     return new CommandObject<>(commandArguments(LINSERT).key(key).add(where)
-        .add(pivot).add(value), BuilderFactory.LONG);
+        .add(pivot).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> linsert(byte[] key, ListPosition where, byte[] pivot, byte[] value) {
     return new CommandObject<>(commandArguments(LINSERT).key(key).add(where)
-        .add(pivot).add(value), BuilderFactory.LONG);
+        .add(pivot).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> lpushx(String key, String... strings) {
-    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) strings), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> rpushx(String key, String... strings) {
-    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) strings), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) strings), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> lpushx(byte[] key, byte[]... args) {
-    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(LPUSHX).key(key).addObjects((Object[]) args), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> rpushx(byte[] key, byte[]... args) {
-    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) args), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(RPUSHX).key(key).addObjects((Object[]) args), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> blpop(int timeout, String key) {
@@ -985,11 +985,11 @@ public class CommandObjects {
 
   // Hash commands
   public final CommandObject<Long> hset(String key, String field, String value) {
-    return new CommandObject<>(commandArguments(HSET).key(key).add(field).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HSET).key(key).add(field).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> hset(String key, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), LongBuilders.LONG);
   }
 
   public final CommandObject<String> hget(String key, String field) {
@@ -997,7 +997,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hsetnx(String key, String field, String value) {
-    return new CommandObject<>(commandArguments(HSETNX).key(key).add(field).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HSETNX).key(key).add(field).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<String> hmset(String key, Map<String, String> hash) {
@@ -1009,11 +1009,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hset(byte[] key, byte[] field, byte[] value) {
-    return new CommandObject<>(commandArguments(HSET).key(key).add(field).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HSET).key(key).add(field).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> hset(byte[] key, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), LongBuilders.LONG);
   }
 
   public final CommandObject<byte[]> hget(byte[] key, byte[] field) {
@@ -1021,7 +1021,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hsetnx(byte[] key, byte[] field, byte[] value) {
-    return new CommandObject<>(commandArguments(HSETNX).key(key).add(field).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HSETNX).key(key).add(field).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
@@ -1033,7 +1033,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hincrBy(String key, String field, long value) {
-    return new CommandObject<>(commandArguments(HINCRBY).key(key).add(field).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HINCRBY).key(key).add(field).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> hincrByFloat(String key, String field, double value) {
@@ -1045,15 +1045,15 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hdel(String key, String... field) {
-    return new CommandObject<>(commandArguments(HDEL).key(key).addObjects((Object[]) field), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HDEL).key(key).addObjects((Object[]) field), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> hlen(String key) {
-    return new CommandObject<>(commandArguments(HLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> hincrBy(byte[] key, byte[] field, long value) {
-    return new CommandObject<>(commandArguments(HINCRBY).key(key).add(field).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HINCRBY).key(key).add(field).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> hincrByFloat(byte[] key, byte[] field, double value) {
@@ -1065,11 +1065,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hdel(byte[] key, byte[]... field) {
-    return new CommandObject<>(commandArguments(HDEL).key(key).addObjects((Object[]) field), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HDEL).key(key).addObjects((Object[]) field), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> hlen(byte[] key) {
-    return new CommandObject<>(commandArguments(HLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Set<String>> hkeys(String key) {
@@ -1127,7 +1127,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hstrlen(String key, String field) {
-    return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), LongBuilders.LONG);
   }
 
   public final CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor, ScanParams params) {
@@ -1135,17 +1135,17 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hstrlen(byte[] key, byte[] field) {
-    return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), LongBuilders.LONG);
   }
   // Hash commands
 
   // Set commands
   public final CommandObject<Long> sadd(String key, String... members) {
-    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) members), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> sadd(byte[] key, byte[]... members) {
-    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SADD).key(key).addObjects((Object[]) members), LongBuilders.LONG);
   }
 
   public final CommandObject<Set<String>> smembers(String key) {
@@ -1157,11 +1157,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> srem(String key, String... members) {
-    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) members), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> srem(byte[] key, byte[]... members) {
-    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SREM).key(key).addObjects((Object[]) members), LongBuilders.LONG);
   }
 
   public final CommandObject<String> spop(String key) {
@@ -1181,11 +1181,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> scard(String key) {
-    return new CommandObject<>(commandArguments(SCARD).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SCARD).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> scard(byte[] key) {
-    return new CommandObject<>(commandArguments(SCARD).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SCARD).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Boolean> sismember(String key, String member) {
@@ -1233,7 +1233,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> sdiffstore(String dstkey, String... keys) {
-    return new CommandObject<>(commandArguments(SDIFFSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SDIFFSTORE).key(dstkey).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Set<byte[]>> sdiff(byte[]... keys) {
@@ -1241,7 +1241,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> sdiffstore(byte[] dstkey, byte[]... keys) {
-    return new CommandObject<>(commandArguments(SDIFFSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SDIFFSTORE).key(dstkey).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Set<String>> sinter(String... keys) {
@@ -1249,15 +1249,15 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> sinterstore(String dstkey, String... keys) {
-    return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> sintercard(String... keys) {
-    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> sintercard(int limit, String... keys) {
-    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),LongBuilders.LONG);
   }
 
   public final CommandObject<Set<byte[]>> sinter(byte[]... keys) {
@@ -1265,15 +1265,15 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> sinterstore(byte[] dstkey, byte[]... keys) {
-    return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SINTERSTORE).key(dstkey).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> sintercard(byte[]... keys) {
-    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> sintercard(int limit, byte[]... keys) {
-    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SINTERCARD).add(keys.length).keys((Object[]) keys).add(LIMIT).add(limit),LongBuilders.LONG);
   }
 
   public final CommandObject<Set<String>> sunion(String... keys) {
@@ -1281,7 +1281,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> sunionstore(String dstkey, String... keys) {
-    return new CommandObject<>(commandArguments(SUNIONSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SUNIONSTORE).key(dstkey).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Set<byte[]>> sunion(byte[]... keys) {
@@ -1289,34 +1289,34 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> sunionstore(byte[] dstkey, byte[]... keys) {
-    return new CommandObject<>(commandArguments(SUNIONSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SUNIONSTORE).key(dstkey).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> smove(String srckey, String dstkey, String member) {
-    return new CommandObject<>(commandArguments(SMOVE).key(srckey).key(dstkey).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SMOVE).key(srckey).key(dstkey).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> smove(byte[] srckey, byte[] dstkey, byte[] member) {
-    return new CommandObject<>(commandArguments(SMOVE).key(srckey).key(dstkey).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SMOVE).key(srckey).key(dstkey).add(member), LongBuilders.LONG);
   }
   // Set commands
 
   // Sorted Set commands
   public final CommandObject<Long> zadd(String key, double score, String member) {
-    return new CommandObject<>(commandArguments(ZADD).key(key).add(score).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZADD).key(key).add(score).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zadd(String key, double score, String member, ZAddParams params) {
     return new CommandObject<>(commandArguments(ZADD).key(key).addParams(params)
-        .add(score).add(member), BuilderFactory.LONG);
+        .add(score).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zadd(String key, Map<String, Double> scoreMembers) {
-    return new CommandObject<>(addSortedSetFlatMapArgs(commandArguments(ZADD).key(key), scoreMembers), BuilderFactory.LONG);
+    return new CommandObject<>(addSortedSetFlatMapArgs(commandArguments(ZADD).key(key), scoreMembers), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zadd(String key, Map<String, Double> scoreMembers, ZAddParams params) {
-    return new CommandObject<>(addSortedSetFlatMapArgs(commandArguments(ZADD).key(key).addParams(params), scoreMembers), BuilderFactory.LONG);
+    return new CommandObject<>(addSortedSetFlatMapArgs(commandArguments(ZADD).key(key).addParams(params), scoreMembers), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> zaddIncr(String key, double score, String member, ZAddParams params) {
@@ -1325,20 +1325,20 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zadd(byte[] key, double score, byte[] member) {
-    return new CommandObject<>(commandArguments(ZADD).key(key).add(score).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZADD).key(key).add(score).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zadd(byte[] key, double score, byte[] member, ZAddParams params) {
     return new CommandObject<>(commandArguments(ZADD).key(key).addParams(params)
-        .add(score).add(member), BuilderFactory.LONG);
+        .add(score).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers) {
-    return new CommandObject<>(addSortedSetFlatMapArgs(commandArguments(ZADD).key(key), scoreMembers), BuilderFactory.LONG);
+    return new CommandObject<>(addSortedSetFlatMapArgs(commandArguments(ZADD).key(key), scoreMembers), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zadd(byte[] key, Map<byte[], Double> scoreMembers, ZAddParams params) {
-    return new CommandObject<>(addSortedSetFlatMapArgs(commandArguments(ZADD).key(key).addParams(params), scoreMembers), BuilderFactory.LONG);
+    return new CommandObject<>(addSortedSetFlatMapArgs(commandArguments(ZADD).key(key).addParams(params), scoreMembers), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> zaddIncr(byte[] key, double score, byte[] member, ZAddParams params) {
@@ -1363,19 +1363,19 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zrem(String key, String... members) {
-    return new CommandObject<>(commandArguments(ZREM).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREM).key(key).addObjects((Object[]) members), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zrem(byte[] key, byte[]... members) {
-    return new CommandObject<>(commandArguments(ZREM).key(key).addObjects((Object[]) members), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREM).key(key).addObjects((Object[]) members), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zrank(String key, String member) {
-    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zrevrank(String key, String member) {
-    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<KeyValue<Long, Double>> zrankWithScore(String key, String member) {
@@ -1387,11 +1387,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zrank(byte[] key, byte[] member) {
-    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZRANK).key(key).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zrevrank(byte[] key, byte[] member) {
-    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREVRANK).key(key).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<KeyValue<Long, Double>> zrankWithScore(byte[] key, byte[] member) {
@@ -1427,7 +1427,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zcard(String key) {
-    return new CommandObject<>(commandArguments(ZCARD).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZCARD).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> zscore(String key, String member) {
@@ -1439,7 +1439,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zcard(byte[] key) {
-    return new CommandObject<>(commandArguments(ZCARD).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZCARD).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> zscore(byte[] key, byte[] member) {
@@ -1503,19 +1503,19 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zcount(String key, double min, double max) {
-    return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zcount(String key, String min, String max) {
-    return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zcount(byte[] key, double min, double max) {
-    return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zcount(byte[] key, byte[] min, byte[] max) {
-    return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZCOUNT).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> zrange(String key, long start, long stop) {
@@ -1545,7 +1545,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zrangestore(String dest, String src, ZRangeParams zRangeParams) {
-    return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> zrangeByScore(String key, double min, double max) {
@@ -1651,7 +1651,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zrangestore(byte[] dest, byte[] src, ZRangeParams zRangeParams) {
-    return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZRANGESTORE).key(dest).add(src).addParams(zRangeParams), LongBuilders.LONG);
   }
 
   public final CommandObject<List<byte[]>> zrangeByScore(byte[] key, double min, double max) {
@@ -1731,31 +1731,31 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zremrangeByRank(String key, long start, long stop) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYRANK).key(key).add(start).add(stop), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREMRANGEBYRANK).key(key).add(start).add(stop), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zremrangeByScore(String key, double min, double max) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zremrangeByScore(String key, String min, String max) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zremrangeByRank(byte[] key, long start, long stop) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYRANK).key(key).add(start).add(stop), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREMRANGEBYRANK).key(key).add(start).add(stop), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zremrangeByScore(byte[] key, double min, double max) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zremrangeByScore(byte[] key, byte[] min, byte[] max) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREMRANGEBYSCORE).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zlexcount(String key, String min, String max) {
-    return new CommandObject<>(commandArguments(ZLEXCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZLEXCOUNT).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> zrangeByLex(String key, String min, String max) {
@@ -1777,11 +1777,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zremrangeByLex(String key, String min, String max) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYLEX).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREMRANGEBYLEX).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zlexcount(byte[] key, byte[] min, byte[] max) {
-    return new CommandObject<>(commandArguments(ZLEXCOUNT).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZLEXCOUNT).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<List<byte[]>> zrangeByLex(byte[] key, byte[] min, byte[] max) {
@@ -1803,7 +1803,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> zremrangeByLex(byte[] key, byte[] min, byte[] max) {
-    return new CommandObject<>(commandArguments(ZREMRANGEBYLEX).key(key).add(min).add(max), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(ZREMRANGEBYLEX).key(key).add(min).add(max), LongBuilders.LONG);
   }
 
   public final CommandObject<ScanResult<Tuple>> zscan(String key, String cursor, ScanParams params) {
@@ -1834,7 +1834,7 @@ public class CommandObjects {
 
   public final CommandObject<Long> zdiffstore(String dstkey, String... keys) {
     return new CommandObject<>(commandArguments(ZDIFFSTORE).key(dstkey)
-        .add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+        .add(keys.length).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<List<byte[]>> zdiff(byte[]... keys) {
@@ -1856,7 +1856,7 @@ public class CommandObjects {
 
   public final CommandObject<Long> zdiffstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(ZDIFFSTORE).key(dstkey)
-        .add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+        .add(keys.length).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> zinter(ZParams params, String... keys) {
@@ -1871,42 +1871,42 @@ public class CommandObjects {
 
   public final CommandObject<Long> zinterstore(String dstkey, String... keys) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
-        .add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+        .add(keys.length).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zinterstore(String dstkey, ZParams params, String... keys) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
-        .add(keys.length).keys((Object[]) keys).addParams(params), BuilderFactory.LONG);
+        .add(keys.length).keys((Object[]) keys).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zintercard(String... keys) {
     return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
-        .keys((Object[]) keys), BuilderFactory.LONG);
+        .keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zintercard(long limit, String... keys) {
     return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
-        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
+        .keys((Object[]) keys).add(LIMIT).add(limit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zinterstore(byte[] dstkey, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
-        .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
+        .add(sets.length).keys((Object[]) sets), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zinterstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZINTERSTORE).key(dstkey)
-        .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
+        .add(sets.length).keys((Object[]) sets).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zintercard(byte[]... keys) {
     return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
-        .keys((Object[]) keys), BuilderFactory.LONG);
+        .keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zintercard(long limit, byte[]... keys) {
     return new CommandObject<>(commandArguments(ZINTERCARD).add(keys.length)
-        .keys((Object[]) keys).add(LIMIT).add(limit), BuilderFactory.LONG);
+        .keys((Object[]) keys).add(LIMIT).add(limit), LongBuilders.LONG);
   }
 
   public final CommandObject<List<byte[]>> zinter(ZParams params, byte[]... keys) {
@@ -1921,12 +1921,12 @@ public class CommandObjects {
 
   public final CommandObject<Long> zunionstore(String dstkey, String... sets) {
     return new CommandObject<>(commandArguments(ZUNIONSTORE).key(dstkey)
-        .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
+        .add(sets.length).keys((Object[]) sets), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zunionstore(String dstkey, ZParams params, String... sets) {
     return new CommandObject<>(commandArguments(ZUNIONSTORE).key(dstkey)
-        .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
+        .add(sets.length).keys((Object[]) sets).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> zunion(ZParams params, String... keys) {
@@ -1941,12 +1941,12 @@ public class CommandObjects {
 
   public final CommandObject<Long> zunionstore(byte[] dstkey, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZUNIONSTORE).key(dstkey)
-        .add(sets.length).keys((Object[]) sets), BuilderFactory.LONG);
+        .add(sets.length).keys((Object[]) sets), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> zunionstore(byte[] dstkey, ZParams params, byte[]... sets) {
     return new CommandObject<>(commandArguments(ZUNIONSTORE).key(dstkey)
-        .add(sets.length).keys((Object[]) sets).addParams(params), BuilderFactory.LONG);
+        .add(sets.length).keys((Object[]) sets).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<List<byte[]>> zunion(ZParams params, byte[]... keys) {
@@ -2010,15 +2010,15 @@ public class CommandObjects {
 
   // Geo commands
   public final CommandObject<Long> geoadd(String key, double longitude, double latitude, String member) {
-    return new CommandObject<>(commandArguments(GEOADD).key(key).add(longitude).add(latitude).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(GEOADD).key(key).add(longitude).add(latitude).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geoadd(String key, Map<String, GeoCoordinate> memberCoordinateMap) {
-    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).key(key), memberCoordinateMap), BuilderFactory.LONG);
+    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).key(key), memberCoordinateMap), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geoadd(String key, GeoAddParams params, Map<String, GeoCoordinate> memberCoordinateMap) {
-    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).key(key).addParams(params), memberCoordinateMap), BuilderFactory.LONG);
+    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).key(key).addParams(params), memberCoordinateMap), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> geodist(String key, String member1, String member2) {
@@ -2039,15 +2039,15 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> geoadd(byte[] key, double longitude, double latitude, byte[] member) {
-    return new CommandObject<>(commandArguments(GEOADD).key(key).add(longitude).add(latitude).add(member), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(GEOADD).key(key).add(longitude).add(latitude).add(member), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geoadd(byte[] key, Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).key(key), memberCoordinateMap), BuilderFactory.LONG);
+    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).key(key), memberCoordinateMap), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geoadd(byte[] key, GeoAddParams params, Map<byte[], GeoCoordinate> memberCoordinateMap) {
-    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).key(key).addParams(params), memberCoordinateMap), BuilderFactory.LONG);
+    return new CommandObject<>(addGeoCoordinateFlatMapArgs(commandArguments(GEOADD).key(key).addParams(params), memberCoordinateMap), LongBuilders.LONG);
   }
 
   public final CommandObject<Double> geodist(byte[] key, byte[] member1, byte[] member2) {
@@ -2092,7 +2092,7 @@ public class CommandObjects {
   public final CommandObject<Long> georadiusStore(String key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
+        .add(radius).add(unit).addParams(param).addParams(storeParam), LongBuilders.LONG);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(String key, String member, double radius, GeoUnit unit) {
@@ -2120,7 +2120,7 @@ public class CommandObjects {
   public final CommandObject<Long> georadiusByMemberStore(String key, String member,
       double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER).key(key).add(member)
-        .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
+        .add(radius).add(unit).addParams(param).addParams(storeParam), LongBuilders.LONG);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
@@ -2149,7 +2149,7 @@ public class CommandObjects {
   public final CommandObject<Long> georadiusStore(byte[] key, double longitude, double latitude,
       double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return new CommandObject<>(commandArguments(GEORADIUS).key(key).add(longitude).add(latitude)
-        .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
+        .add(radius).add(unit).addParams(param).addParams(storeParam), LongBuilders.LONG);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit) {
@@ -2175,7 +2175,7 @@ public class CommandObjects {
   public final CommandObject<Long> georadiusByMemberStore(byte[] key, byte[] member,
       double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return new CommandObject<>(commandArguments(GEORADIUSBYMEMBER).key(key).add(member)
-        .add(radius).add(unit).addParams(param).addParams(storeParam), BuilderFactory.LONG);
+        .add(radius).add(unit).addParams(param).addParams(storeParam), LongBuilders.LONG);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(String key, String member,
@@ -2212,34 +2212,34 @@ public class CommandObjects {
   public final CommandObject<Long> geosearchStore(String dest, String src, String member,
       double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMMEMBER).add(member)
-        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.LONG);
+        .add(BYRADIUS).add(radius).add(unit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStore(String dest, String src, GeoCoordinate coord,
       double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMLONLAT).add(coord.getLongitude())
-        .add(coord.getLatitude()).add(BYRADIUS).add(radius).add(unit), BuilderFactory.LONG);
+        .add(coord.getLatitude()).add(BYRADIUS).add(radius).add(unit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStore(String dest, String src, String member,
       double width, double height, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMMEMBER).add(member)
-        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.LONG);
+        .add(BYBOX).add(width).add(height).add(unit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStore(String dest, String src, GeoCoordinate coord,
       double width, double height, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src)
         .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
-        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.LONG);
+        .add(BYBOX).add(width).add(height).add(unit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStore(String dest, String src, GeoSearchParam params) {
-    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStoreStoreDist(String dest, String src, GeoSearchParam params) {
-    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params).add(STOREDIST), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params).add(STOREDIST), LongBuilders.LONG);
   }
 
   public final CommandObject<List<GeoRadiusResponse>> geosearch(byte[] key, byte[] member,
@@ -2276,41 +2276,41 @@ public class CommandObjects {
   public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, byte[] member,
       double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMMEMBER).add(member)
-        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.LONG);
+        .add(BYRADIUS).add(radius).add(unit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord,
       double radius, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src)
         .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
-        .add(BYRADIUS).add(radius).add(unit), BuilderFactory.LONG);
+        .add(BYRADIUS).add(radius).add(unit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, byte[] member,
       double width, double height, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).add(FROMMEMBER).add(member)
-        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.LONG);
+        .add(BYBOX).add(width).add(height).add(unit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, GeoCoordinate coord,
       double width, double height, GeoUnit unit) {
     return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src)
         .add(FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude())
-        .add(BYBOX).add(width).add(height).add(unit), BuilderFactory.LONG);
+        .add(BYBOX).add(width).add(height).add(unit), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStore(byte[] dest, byte[] src, GeoSearchParam params) {
-    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> geosearchStoreStoreDist(byte[] dest, byte[] src, GeoSearchParam params) {
-    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params).add(STOREDIST), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(GEOSEARCHSTORE).key(dest).add(src).addParams(params).add(STOREDIST), LongBuilders.LONG);
   }
   // Geo commands
 
   // Hyper Log Log commands
   public final CommandObject<Long> pfadd(String key, String... elements) {
-    return new CommandObject<>(commandArguments(PFADD).key(key).addObjects((Object[]) elements), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PFADD).key(key).addObjects((Object[]) elements), LongBuilders.LONG);
   }
 
   public final CommandObject<String> pfmerge(String destkey, String... sourcekeys) {
@@ -2318,7 +2318,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> pfadd(byte[] key, byte[]... elements) {
-    return new CommandObject<>(commandArguments(PFADD).key(key).addObjects((Object[]) elements), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PFADD).key(key).addObjects((Object[]) elements), LongBuilders.LONG);
   }
 
   public final CommandObject<String> pfmerge(byte[] destkey, byte[]... sourcekeys) {
@@ -2326,19 +2326,19 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> pfcount(String key) {
-    return new CommandObject<>(commandArguments(PFCOUNT).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PFCOUNT).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pfcount(String... keys) {
-    return new CommandObject<>(commandArguments(PFCOUNT).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PFCOUNT).keys((Object[]) keys), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pfcount(byte[] key) {
-    return new CommandObject<>(commandArguments(PFCOUNT).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PFCOUNT).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> pfcount(byte[]... keys) {
-    return new CommandObject<>(commandArguments(PFCOUNT).keys((Object[]) keys), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PFCOUNT).keys((Object[]) keys), LongBuilders.LONG);
   }
   // Hyper Log Log commands
 
@@ -2354,7 +2354,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> xlen(String key) {
-    return new CommandObject<>(commandArguments(XLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(XLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<byte[]> xadd(byte[] key, XAddParams params, Map<byte[], byte[]> hash) {
@@ -2363,7 +2363,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> xlen(byte[] key) {
-    return new CommandObject<>(commandArguments(XLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(XLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<List<StreamEntry>> xrange(String key, StreamEntryID start, StreamEntryID end) {
@@ -2423,11 +2423,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> xack(String key, String group, StreamEntryID... ids) {
-    return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> xack(byte[] key, byte[] group, byte[]... ids) {
-    return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(XACK).key(key).add(group).addObjects((Object[]) ids), LongBuilders.LONG);
   }
 
   public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
@@ -2444,7 +2444,7 @@ public class CommandObjects {
 
   public final CommandObject<Long> xgroupDestroy(String key, String groupName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DESTROY)
-        .key(key).add(groupName), BuilderFactory.LONG);
+        .key(key).add(groupName), LongBuilders.LONG);
   }
 
   public final CommandObject<Boolean> xgroupCreateConsumer(String key, String groupName, String consumerName) {
@@ -2454,7 +2454,7 @@ public class CommandObjects {
 
   public final CommandObject<Long> xgroupDelConsumer(String key, String groupName, String consumerName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
-        .key(key).add(groupName).add(consumerName), BuilderFactory.LONG);
+        .key(key).add(groupName).add(consumerName), LongBuilders.LONG);
   }
 
   public final CommandObject<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
@@ -2471,7 +2471,7 @@ public class CommandObjects {
 
   public final CommandObject<Long> xgroupDestroy(byte[] key, byte[] groupName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DESTROY)
-        .key(key).add(groupName), BuilderFactory.LONG);
+        .key(key).add(groupName), LongBuilders.LONG);
   }
 
   public final CommandObject<Boolean> xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
@@ -2481,36 +2481,36 @@ public class CommandObjects {
 
   public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
     return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
-        .key(key).add(groupName).add(consumerName), BuilderFactory.LONG);
+        .key(key).add(groupName).add(consumerName), LongBuilders.LONG);
   }
   public final CommandObject<Long> xdel(String key, StreamEntryID... ids) {
-    return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> xtrim(String key, long maxLen, boolean approximate) {
     CommandArguments args = commandArguments(XTRIM).key(key).add(MAXLEN);
     if (approximate) args.add(Protocol.BYTES_TILDE);
     args.add(maxLen);
-    return new CommandObject<>(args, BuilderFactory.LONG);
+    return new CommandObject<>(args, LongBuilders.LONG);
   }
 
   public final CommandObject<Long> xtrim(String key, XTrimParams params) {
-    return new CommandObject<>(commandArguments(XTRIM).key(key).addParams(params), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(XTRIM).key(key).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> xdel(byte[] key, byte[]... ids) {
-    return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(XDEL).key(key).addObjects((Object[]) ids), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> xtrim(byte[] key, long maxLen, boolean approximateLength) {
     CommandArguments args = commandArguments(XTRIM).key(key).add(MAXLEN);
     if (approximateLength) args.add(Protocol.BYTES_TILDE);
     args.add(maxLen);
-    return new CommandObject<>(args, BuilderFactory.LONG);
+    return new CommandObject<>(args, LongBuilders.LONG);
   }
 
   public final CommandObject<Long> xtrim(byte[] key, XTrimParams params) {
-    return new CommandObject<>(commandArguments(XTRIM).key(key).addParams(params), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(XTRIM).key(key).addParams(params), LongBuilders.LONG);
   }
 
   public final CommandObject<StreamPendingSummary> xpending(String key, String groupName) {
@@ -3020,23 +3020,23 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> memoryUsage(String key) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> memoryUsage(String key, int samples) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(SAMPLES).add(samples), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(SAMPLES).add(samples), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> memoryUsage(byte[] key) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> memoryUsage(byte[] key, int samples) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(SAMPLES).add(samples), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(SAMPLES).add(samples), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> objectRefcount(String key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<String> objectEncoding(String key) {
@@ -3044,15 +3044,15 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> objectIdletime(String key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(IDLETIME).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT).add(IDLETIME).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> objectFreq(String key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> objectRefcount(byte[] key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<byte[]> objectEncoding(byte[] key) {
@@ -3060,23 +3060,23 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> objectIdletime(byte[] key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(IDLETIME).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT).add(IDLETIME).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> objectFreq(byte[] key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), LongBuilders.LONG);
   }
 
   public CommandObject<Long> waitReplicas(int replicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> waitReplicas(String sampleKey, int replicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> waitReplicas(byte[] sampleKey, int replicas, long timeout) {
-    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(WAIT).add(replicas).add(timeout).processKey(sampleKey), LongBuilders.LONG);
   }
 
   public CommandObject<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
@@ -3092,19 +3092,19 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> publish(String channel, String message) {
-    return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> publish(byte[] channel, byte[] message) {
-    return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(PUBLISH).add(channel).add(message), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> spublish(String channel, String message) {
-    return new CommandObject<>(commandArguments(SPUBLISH).key(channel).add(message), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SPUBLISH).key(channel).add(message), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> spublish(byte[] channel, byte[] message) {
-    return new CommandObject<>(commandArguments(SPUBLISH).key(channel).add(message), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SPUBLISH).key(channel).add(message), LongBuilders.LONG);
   }
   // Miscellaneous commands
 
@@ -3293,12 +3293,12 @@ public class CommandObjects {
 
   public final CommandObject<Long> ftDictAdd(String dictionary, String... terms) {
     return new CommandObject<>(commandArguments(SearchCommand.DICTADD).add(dictionary).addObjects((Object[]) terms),
-        BuilderFactory.LONG);
+        LongBuilders.LONG);
   }
 
   public final CommandObject<Long> ftDictDel(String dictionary, String... terms) {
     return new CommandObject<>(commandArguments(SearchCommand.DICTDEL).add(dictionary).addObjects((Object[]) terms),
-        BuilderFactory.LONG);
+        LongBuilders.LONG);
   }
 
   public final CommandObject<Set<String>> ftDictDump(String dictionary) {
@@ -3356,11 +3356,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> ftSugAdd(String key, String string, double score) {
-    return new CommandObject<>(commandArguments(SearchCommand.SUGADD).key(key).add(string).add(score), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SearchCommand.SUGADD).key(key).add(string).add(score), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> ftSugAddIncr(String key, String string, double score) {
-    return new CommandObject<>(commandArguments(SearchCommand.SUGADD).key(key).add(string).add(score).add(SearchKeyword.INCR), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SearchCommand.SUGADD).key(key).add(string).add(score).add(SearchKeyword.INCR), LongBuilders.LONG);
   }
 
   public final CommandObject<List<String>> ftSugGet(String key, String prefix) {
@@ -3392,7 +3392,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> ftSugLen(String key) {
-    return new CommandObject<>(commandArguments(SearchCommand.SUGLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(SearchCommand.SUGLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Set<String>> ftList() {
@@ -3485,29 +3485,29 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> jsonDel(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> jsonDel(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key).add(path), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key).add(path), LongBuilders.LONG);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonDel(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key).add(path), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.DEL).key(key).add(path), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> jsonClear(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> jsonClear(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), LongBuilders.LONG);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonClear(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.CLEAR).key(key).add(path), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Boolean>> jsonToggle(String key, Path2 path) {
@@ -3537,32 +3537,32 @@ public class CommandObjects {
   @Deprecated
   public final CommandObject<Long> jsonStrAppend(String key, Object string) {
     return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(
-        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG);
+        getJsonObjectMapper().toJson(string)), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonStrAppend(String key, Path2 path, Object string) {
     return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(
-        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG_LIST);
+        getJsonObjectMapper().toJson(string)), LongBuilders.LONG_LIST);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonStrAppend(String key, Path path, Object string) {
     return new CommandObject<>(commandArguments(JsonCommand.STRAPPEND).key(key).add(path).add(
-        getJsonObjectMapper().toJson(string)), BuilderFactory.LONG);
+        getJsonObjectMapper().toJson(string)), LongBuilders.LONG);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonStrLen(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonStrLen(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), LongBuilders.LONG_LIST);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonStrLen(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), LongBuilders.LONG);
   }
 
   public final CommandObject<Object> jsonNumIncrBy(String key, Path2 path, double value) {
@@ -3580,12 +3580,12 @@ public class CommandObjects {
     for (Object object : objects) {
       args.add(object);
     }
-    return new CommandObject<>(args, BuilderFactory.LONG);
+    return new CommandObject<>(args, LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path).addObjects(objects);
-    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+    return new CommandObject<>(args, LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects) {
@@ -3593,7 +3593,7 @@ public class CommandObjects {
     for (Object object : objects) {
       args.add(getJsonObjectMapper().toJson(object));
     }
-    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+    return new CommandObject<>(args, LongBuilders.LONG_LIST);
   }
 
   @Deprecated
@@ -3602,27 +3602,27 @@ public class CommandObjects {
     for (Object pojo : pojos) {
       args.add(getJsonObjectMapper().toJson(pojo));
     }
-    return new CommandObject<>(args, BuilderFactory.LONG);
+    return new CommandObject<>(args, LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonArrIndex(String key, Path2 path, Object scalar) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(scalar), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(scalar), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> jsonArrIndexWithEscape(String key, Path2 path, Object scalar) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(
-        getJsonObjectMapper().toJson(scalar)), BuilderFactory.LONG_LIST);
+        getJsonObjectMapper().toJson(scalar)), LongBuilders.LONG_LIST);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonArrIndex(String key, Path path, Object scalar) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRINDEX).key(key).add(path).add(
-        getJsonObjectMapper().toJson(scalar)), BuilderFactory.LONG);
+        getJsonObjectMapper().toJson(scalar)), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonArrInsert(String key, Path2 path, int index, Object... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRINSERT).key(key).add(path).add(index).addObjects(objects);
-    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+    return new CommandObject<>(args, LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> jsonArrInsertWithEscape(String key, Path2 path, int index, Object... objects) {
@@ -3630,7 +3630,7 @@ public class CommandObjects {
     for (Object object : objects) {
       args.add(getJsonObjectMapper().toJson(object));
     }
-    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+    return new CommandObject<>(args, LongBuilders.LONG_LIST);
   }
 
   @Deprecated
@@ -3639,7 +3639,7 @@ public class CommandObjects {
     for (Object pojo : pojos) {
       args.add(getJsonObjectMapper().toJson(pojo));
     }
-    return new CommandObject<>(args, BuilderFactory.LONG);
+    return new CommandObject<>(args, LongBuilders.LONG);
   }
 
   @Deprecated
@@ -3682,39 +3682,39 @@ public class CommandObjects {
 
   @Deprecated
   public final CommandObject<Long> jsonArrLen(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonArrLen(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key).add(path), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key).add(path), LongBuilders.LONG_LIST);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonArrLen(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key).add(path), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key).add(path), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonArrTrim(String key, Path2 path, int start, int stop) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), LongBuilders.LONG_LIST);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonArrTrim(String key, Path path, int start, int stop) {
-    return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.ARRTRIM).key(key).add(path).add(start).add(stop), LongBuilders.LONG);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonObjLen(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key), LongBuilders.LONG);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonObjLen(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonObjLen(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.OBJLEN).key(key).add(path), LongBuilders.LONG_LIST);
   }
 
   @Deprecated
@@ -3733,16 +3733,16 @@ public class CommandObjects {
 
   @Deprecated
   public final CommandObject<Long> jsonDebugMemory(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key), LongBuilders.LONG);
   }
 
   @Deprecated
   public final CommandObject<Long> jsonDebugMemory(String key, Path path) {
-    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> jsonDebugMemory(String key, Path2 path) {
-    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(JsonCommand.DEBUG).add("MEMORY").key(key).add(path), LongBuilders.LONG_LIST);
   }
   // RedisJSON commands
 
@@ -3757,7 +3757,7 @@ public class CommandObjects {
 
   public final CommandObject<Long> tsDel(String key, long fromTimestamp, long toTimestamp) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.DEL).key(key)
-        .add(fromTimestamp).add(toTimestamp), BuilderFactory.LONG);
+        .add(fromTimestamp).add(toTimestamp), LongBuilders.LONG);
   }
 
   public final CommandObject<String> tsAlter(String key, TSAlterParams alterParams) {
@@ -3765,16 +3765,16 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> tsAdd(String key, double value) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(Protocol.BYTES_ASTERISK).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(Protocol.BYTES_ASTERISK).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> tsAdd(String key, long timestamp, double value) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(timestamp).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(timestamp).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
-        .add(timestamp).add(value).addParams(createParams), BuilderFactory.LONG);
+        .add(timestamp).add(value).addParams(createParams), LongBuilders.LONG);
   }
 
   public final CommandObject<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries) {
@@ -3782,25 +3782,25 @@ public class CommandObjects {
     for (Map.Entry<String, TSElement> entry : entries) {
       args.key(entry.getKey()).add(entry.getValue().getTimestamp()).add(entry.getValue().getValue());
     }
-    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+    return new CommandObject<>(args, LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<Long> tsIncrBy(String key, double value) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.INCRBY).key(key).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.INCRBY).key(key).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> tsIncrBy(String key, double value, long timestamp) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.INCRBY).key(key).add(value)
-        .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), BuilderFactory.LONG);
+        .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> tsDecrBy(String key, double value) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(value), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(value), LongBuilders.LONG);
   }
 
   public final CommandObject<Long> tsDecrBy(String key, double value, long timestamp) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(value)
-        .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), BuilderFactory.LONG);
+        .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), LongBuilders.LONG);
   }
 
   public final CommandObject<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
@@ -3948,7 +3948,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> bfCard(String key) {
-    return new CommandObject<>(commandArguments(BloomFilterCommand.CARD).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BloomFilterCommand.CARD).key(key), LongBuilders.LONG);
   }
 
   public final CommandObject<Map<String, Object>> bfInfo(String key) {
@@ -4005,7 +4005,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> cfCount(String key, String item) {
-    return new CommandObject<>(commandArguments(CuckooFilterCommand.COUNT).key(key).add(item), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(CuckooFilterCommand.COUNT).key(key).add(item), LongBuilders.LONG);
   }
 
   public final CommandObject<Map.Entry<Long, byte[]>> cfScanDump(String key, long iterator) {
@@ -4033,12 +4033,12 @@ public class CommandObjects {
   public final CommandObject<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
     CommandArguments args = commandArguments(CountMinSketchCommand.INCRBY).key(key);
     itemIncrements.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
-    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+    return new CommandObject<>(args, LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> cmsQuery(String key, String... items) {
     return new CommandObject<>(commandArguments(CountMinSketchCommand.QUERY).key(key)
-        .addObjects((Object[]) items), BuilderFactory.LONG_LIST);
+        .addObjects((Object[]) items), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<String> cmsMerge(String destKey, String... keys) {
@@ -4153,12 +4153,12 @@ public class CommandObjects {
 
   public final CommandObject<List<Long>> tdigestRank(String key, double... values) {
     return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.RANK).key(key),
-        values), BuilderFactory.LONG_LIST);
+        values), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> tdigestRevRank(String key, double... values) {
     return new CommandObject<>(addFlatArgs(commandArguments(TDigestCommand.REVRANK).key(key),
-        values), BuilderFactory.LONG_LIST);
+        values), LongBuilders.LONG_LIST);
   }
 
   public final CommandObject<List<Double>> tdigestByRank(String key, long... ranks) {
@@ -4334,7 +4334,7 @@ public class CommandObjects {
     @Override
     public Map.Entry<Long, byte[]> build(Object data) {
       List<Object> list = (List<Object>) data;
-      return new KeyValue<>(BuilderFactory.LONG.build(list.get(0)), BuilderFactory.BINARY.build(list.get(1)));
+      return new KeyValue<>(LongBuilders.LONG.build(list.get(0)), BuilderFactory.BINARY.build(list.get(1)));
     }
   };
 

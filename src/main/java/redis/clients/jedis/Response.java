@@ -7,9 +7,9 @@ public class Response<T> implements Supplier<T> {
   protected T response = null;
   protected JedisDataException exception = null;
 
-  private boolean building = false;
-  private boolean built = false;
-  private boolean set = false;
+  private boolean isResponseBuilding = false;
+  private boolean isResponseBuilt = false;
+  private boolean isDataSet = false;
 
   private Builder<T> builder;
   private Object data;
@@ -21,20 +21,21 @@ public class Response<T> implements Supplier<T> {
 
   public void set(Object data) {
     this.data = data;
-    set = true;
+    isDataSet = true;
   }
 
   @Override
   public T get() {
     // if response has dependency response and dependency is not built, build it first and no more!!
-    if (dependency != null && dependency.set && !dependency.built) {
+    boolean dependencyNeedsBuilding = dependency != null && dependency.isDataSet && !dependency.isResponseBuilt;
+    if (dependencyNeedsBuilding) {
       dependency.build();
     }
-    if (!set) {
+    if (!isDataSet) {
       throw new IllegalStateException(
           "Please close pipeline or multi block before calling this method.");
     }
-    if (!built) {
+    if (!isResponseBuilt) {
       build();
     }
     if (exception != null) {
@@ -49,11 +50,11 @@ public class Response<T> implements Supplier<T> {
 
   private void build() {
     // check build state to prevent recursion
-    if (building) {
+    if (isResponseBuilding) {
       return;
     }
 
-    building = true;
+    isResponseBuilding = true;
     try {
       if (data != null) {
         if (data instanceof JedisDataException) {
@@ -65,8 +66,8 @@ public class Response<T> implements Supplier<T> {
 
       data = null;
     } finally {
-      building = false;
-      built = true;
+      isResponseBuilding = false;
+      isResponseBuilt = true;
     }
   }
 

@@ -5,7 +5,8 @@ import redis.clients.jedis.Builder;
 import java.util.List;
 
 import static redis.clients.jedis.BuilderFactory.STRING_LIST;
-import static redis.clients.jedis.BuilderFactory.LONG;
+//import static redis.clients.jedis.BuilderFactory.LONG;
+import static redis.clients.jedis.LongBuilders.LONG;
 
 public class CommandInfo {
   private final long arity;

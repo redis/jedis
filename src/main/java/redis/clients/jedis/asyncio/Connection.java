@@ -23,6 +23,8 @@ public class Connection implements Closeable {
 
     private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
+    private final CommandArgumentsHandler commandArgumentsHandler = new CommandArgumentsHandler();
+
     private final EventLoopGroup group;
     private final Channel channel;
 
@@ -40,11 +42,12 @@ public class Connection implements Closeable {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline p = ch.pipeline();
-                        p.addLast(new RedisDecoder());
-                        p.addLast(new RedisBulkStringAggregator());
-                        p.addLast(new RedisArrayAggregator());
-                        p.addLast(new RedisEncoder());
-                        p.addLast(new RedisClientHandler());
+//                        p.addLast(new RedisDecoder());
+//                        p.addLast(new RedisBulkStringAggregator());
+//                        p.addLast(new RedisArrayAggregator());
+//                        p.addLast(new RedisEncoder());
+//                        p.addLast(new RedisClientHandler());
+                        p.addLast(commandArgumentsHandler);
                     }
                 });
     }

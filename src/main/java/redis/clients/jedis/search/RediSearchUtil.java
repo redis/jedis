@@ -63,10 +63,14 @@ public class RediSearchUtil {
    * @param input float array
    * @return byte array
    */
-  public static byte[] ToByteArray(float[] input) {
+  public static byte[] toByteArray(float[] input) {
     byte[] bytes = new byte[Float.BYTES * input.length];
     ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer().put(input);
     return bytes;
+  }
+
+  public static byte[] ToByteArray(float[] input) {
+    return toByteArray(input);
   }
 
   private static final Set<Character> ESCAPE_CHARS = new HashSet<>(Arrays.asList(//

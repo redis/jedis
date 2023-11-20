@@ -69,6 +69,10 @@ public class RediSearchUtil {
     return bytes;
   }
 
+  /**
+   * @deprecated Use {@link RediSearchUtil#toByteArray(float[])}.
+   */
+  @Deprecated
   public static byte[] ToByteArray(float[] input) {
     return toByteArray(input);
   }

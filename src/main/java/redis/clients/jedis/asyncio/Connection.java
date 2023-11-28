@@ -48,6 +48,7 @@ public class Connection implements Closeable {
 //                        p.addLast(new RedisEncoder());
 //                        p.addLast(new RedisClientHandler());
                         p.addLast(commandArgumentsHandler);
+                        p.addLast(new CommandResponseHandler());
                     }
                 });
     }

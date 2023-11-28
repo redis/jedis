@@ -14,6 +14,7 @@ public class ConnectionTest extends JedisCommandsTestBase {
             connection.executeCommand("AUTH foobared");
             connection.executeCommand("SET foo " + strVal);
             connection.executeCommand("GET foo");
+            connection.executeCommand("PING"); // just to get previous command
         }
 
         Assert.assertEquals(strVal, jedis.get("foo"));

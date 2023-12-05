@@ -4,6 +4,7 @@ package io.redis.examples;
 
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.UnifiedJedis;
+//HIDE_END
 
 //REMOVE_START
 import org.junit.Test;

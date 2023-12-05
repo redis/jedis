@@ -40,12 +40,13 @@ public class StreamExample {
     StreamEntryID res3 = jedis.xadd("race:france",new HashMap<String,String>(){{put("rider","Prickett");put("speed","29.7");put("position","2");put("location_id","1");}} , XAddParams.xAddParams());
 
     System.out.println(res3); // >>> 1701760582226-0
+    //STEP_END
 
     //REMOVE_START
     assertEquals(jedis.xlen("race:france"),3);
     //REMOVE_END
 
-    //STEP_STAR xrange
+    //STEP_START xrange
     List<StreamEntry> res4 = jedis.xrange("race:france","1701760582225-0","+",2);
 
     System.out.println(res4); // >>> [1701760841292-0 {rider=Castilla, speed=30.2, location_id=1, position=1}, 1701760841292-1 {rider=Norem, speed=28.8, location_id=1, position=3}]
@@ -86,14 +87,14 @@ public class StreamExample {
     }
     //STEP_END
 
-    //STEP_START xragne_all
+    //STEP_START xrange_all
     List<StreamEntry> res11 = jedis.xrange("race:france","-","+");
     System.out.println(
       res11
     ); // >>> [1701764734160-0 {rider=Castilla, speed=30.2, location_id=1, position=1}, 1701764734160-1 {rider=Norem, speed=28.8, location_id=1, position=3}, 1701764734161-0 {rider=Prickett, speed=29.7, location_id=1, position=2}, 1701764734162-0 {rider=Castilla, speed=29.9, location_id=1, position=2}]
     //STEP_END
 
-    //STEP_START xragne_time
+    //STEP_START xrange_time
     List<StreamEntry> res12 = jedis.xrange("race:france",String.valueOf(System.currentTimeMillis()-1000),String.valueOf(System.currentTimeMillis()+1000));
     System.out.println(
       res12
@@ -257,10 +258,6 @@ public class StreamExample {
     List<StreamEntry> res41 = jedis.xrange("race:italy","-","+");
     System.out.println(res41); // >>> [1701771517639-1 {rider=Henshaw}]
     //STEP_END
-
-    //STEP_START
-    //STEP_END
-
   }
 
 }

@@ -18,5 +18,7 @@ public interface TopKFilterPipelineCommands {
 
   Response<List<String>> topkList(String key);
 
+  Response<Map<String, Long>> topkListWithCount(String key);
+
   Response<Map<String, Object>> topkInfo(String key);
 }

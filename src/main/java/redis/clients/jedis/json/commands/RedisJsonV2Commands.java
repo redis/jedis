@@ -59,7 +59,7 @@ public interface RedisJsonV2Commands {
 
   List<Long> jsonStrLen(String key, Path2 path);
 
-  JSONArray jsonNumIncrBy(String key, Path2 path, double value);
+  Object jsonNumIncrBy(String key, Path2 path, double value);
 
   List<Long> jsonArrAppend(String key, Path2 path, Object... objects);
 
@@ -86,6 +86,4 @@ public interface RedisJsonV2Commands {
   List<List<String>> jsonObjKeys(String key, Path2 path);
 
   List<Long> jsonDebugMemory(String key, Path2 path);
-
-  List<List<Object>> jsonResp(String key, Path2 path);
 }

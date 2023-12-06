@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
+import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.exceptions.JedisException;
 
 public final class JsonBuilderFactory {
@@ -60,6 +61,21 @@ public final class JsonBuilderFactory {
     }
   };
 
+  public static final Builder<List<List<Class<?>>>> JSON_TYPE_RESPONSE_RESP3 = new Builder<List<List<Class<?>>>>() {
+    @Override
+    public List<List<Class<?>>> build(Object data) {
+      return ((List<Object>) data).stream().map(JSON_TYPE_LIST::build).collect(Collectors.toList());
+    }
+  };
+
+  public static final Builder<List<Class<?>>> JSON_TYPE_RESPONSE_RESP3_COMPATIBLE = new Builder<List<Class<?>>>() {
+    @Override
+    public List<Class<?>> build(Object data) {
+      List<List<Class<?>>> fullReply = JSON_TYPE_RESPONSE_RESP3.build(data);
+      return fullReply == null ? null : fullReply.get(0);
+    }
+  };
+
   public static final Builder<Object> JSON_OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {
@@ -70,7 +86,6 @@ public final class JsonBuilderFactory {
       if (!(data instanceof byte[])) {
         return data;
       }
-
       String str = STRING.build(data);
       if (str.charAt(0) == '{') {
         try {
@@ -100,6 +115,15 @@ public final class JsonBuilderFactory {
         // just to make it safe for com.vaadin.external.google:android-json library
         throw new JedisException(ex);
       }
+    }
+  };
+
+  public static final Builder<Object> JSON_ARRAY_OR_DOUBLE_LIST = new Builder<Object>() {
+    @Override
+    public Object build(Object data) {
+      if (data == null) return null;
+      if (data instanceof List) return BuilderFactory.DOUBLE_LIST.build(data);
+      return JSON_ARRAY.build(data);
     }
   };
 

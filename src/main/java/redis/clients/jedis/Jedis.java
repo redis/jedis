@@ -352,7 +352,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * Select the DB with having the specified zero-based numeric index. For default every new
-   * connection connection is automatically selected to DB 0.
+   * connection is automatically selected to DB 0.
    * @param index
    * @return OK
    */
@@ -569,7 +569,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * This command is very similar to DEL: it removes the specified keys. Just like DEL a key is
-   * ignored if it does not exist. However the command performs the actual memory reclaiming in a
+   * ignored if it does not exist. However, the command performs the actual memory reclaiming in a
    * different thread, so it is not blocking, while DEL is. This is where the command name comes
    * from: the command just unlinks the keys from the keyspace. The actual removal will happen later
    * asynchronously.
@@ -925,7 +925,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Set the the respective keys to the respective values. MSET will replace old values with new
+   * Set the respective keys to the respective values. MSET will replace old values with new
    * values, while {@link Jedis#msetnx(byte[][]) MSETNX} will not perform any operation at all even
    * if just a single key already exists.
    * <p>
@@ -973,10 +973,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * DECRBY work just like {@link Jedis#decr(byte[]) DECR} but instead to decrement by 1 the
    * decrement is integer.
    * <p>
-   * DECR commands are limited to 64 bit signed integers.
+   * DECR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -997,10 +997,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Decrement the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the decrement operation.
    * <p>
-   * DECR commands are limited to 64 bit signed integers.
+   * DECR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -1020,10 +1020,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * INCRBY work just like {@link Jedis#incr(byte[]) INCR} but instead to increment by 1 the
    * increment is integer.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -1069,10 +1069,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Increment the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the increment operation.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -1222,7 +1222,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * before applying the operation. Since the value argument is signed you can use this command to
    * perform both increments and decrements.
    * <p>
-   * The range of values supported by HINCRBY is limited to 64 bit signed integers.
+   * The range of values supported by HINCRBY is limited to 64-bit signed integers.
    * <p>
    * <b>Time complexity:</b> O(1)
    * @param key
@@ -2646,7 +2646,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * instructed to require a password before to allow clients to issue commands. This is done using
    * the requirepass directive in the Redis configuration file. If the password given by the connection
    * is correct the server replies with an OK status code reply and starts accepting commands from
-   * the connection. Otherwise an error is returned and the clients needs to try a new password. Note
+   * the connection. Otherwise, an error is returned and the clients needs to try a new password. Note
    * that for the high performance nature of Redis it is possible to try a lot of passwords in
    * parallel in very short time, so make sure to generate a strong and very long password so that
    * this attack is infeasible.
@@ -3617,9 +3617,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * </ul>
    * <p>
    * CONFIG REWRITE is also able to rewrite the configuration file from scratch if the original one
-   * no longer exists for some reason. However if the server was started without a configuration
+   * no longer exists for some reason. However, if the server was started without a configuration
    * file at all, the CONFIG REWRITE will just return an error.
-   * @return OK when the configuration was rewritten properly. Otherwise an error is returned.
+   * @return OK when the configuration was rewritten properly. Otherwise, an error is returned.
    */
   @Override
   public String configRewrite() {
@@ -4646,13 +4646,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
+  public List<Object> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
-  public List<byte[]> xreadGroup(byte[] groupName, byte[] consumer,
+  public List<Object> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
@@ -4671,25 +4671,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+  public List<Object> xrange(byte[] key, byte[] start, byte[] end) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrange(key, start, end));
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
+  public List<Object> xrange(byte[] key, byte[] start, byte[] end, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
-  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+  public List<Object> xrevrange(byte[] key, byte[] end, byte[] start) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
-  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+  public List<Object> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrevrange(key, end, start, count));
   }
@@ -5002,7 +5002,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   /**
    * This command is very similar to DEL: it removes the specified keys. Just like DEL a key is
-   * ignored if it does not exist. However the command performs the actual memory reclaiming in a
+   * ignored if it does not exist. However, the command performs the actual memory reclaiming in a
    * different thread, so it is not blocking, while DEL is. This is where the command name comes
    * from: the command just unlinks the keys from the keyspace. The actual removal will happen later
    * asynchronously.
@@ -5362,7 +5362,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Set the the respective keys to the respective values. MSET will replace old values with new
+   * Set the respective keys to the respective values. MSET will replace old values with new
    * values, while {@link Jedis#msetnx(String...) MSETNX} will not perform any operation at all even
    * if just a single key already exists.
    * <p>
@@ -5384,7 +5384,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   /**
-   * Set the the respective keys to the respective values. {@link Jedis#mset(String...) MSET} will
+   * Set the respective keys to the respective values. {@link Jedis#mset(String...) MSET} will
    * replace old values with new values, while MSETNX will not perform any operation at all even if
    * just a single key already exists.
    * <p>
@@ -5409,10 +5409,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * IDECRBY work just like {@link Jedis#decr(String) INCR} but instead to decrement by 1 the
    * decrement is integer.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -5433,10 +5433,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Decrement the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the decrement operation.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -5456,10 +5456,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * INCRBY work just like {@link Jedis#incr(String) INCR} but instead to increment by 1 the
    * increment is integer.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -5501,10 +5501,10 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * Increment the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the increment operation.
    * <p>
-   * INCR commands are limited to 64 bit signed integers.
+   * INCR commands are limited to 64-bit signed integers.
    * <p>
    * Note: this is actually a string operation, that is, in Redis there are not "integer" types.
-   * Simply the string stored at the key is parsed as a base 10 64 bit signed integer, incremented,
+   * Simply the string stored at the key is parsed as a base 10 64-bit signed integer, incremented,
    * and then converted back as a string.
    * <p>
    * Time complexity: O(1)
@@ -5654,7 +5654,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * before applying the operation. Since the value argument is signed you can use this command to
    * perform both increments and decrements.
    * <p>
-   * The range of values supported by HINCRBY is limited to 64 bit signed integers.
+   * The range of values supported by HINCRBY is limited to 64-bit signed integers.
    * <p>
    * <b>Time complexity:</b> O(1)
    * @param key
@@ -6386,7 +6386,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param count if positive, return an array of distinct elements.
    *        If negative the behavior changes and the command is allowed to
-   *        return the same element multiple times  
+   *        return the same element multiple times
    * @return A list of randomly selected elements
    */
   @Override
@@ -8758,7 +8758,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long clusterCountFailureReports(final String nodeId) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, "COUNT-FAILURE-REPORTS",  nodeId);
-    return connection.getIntegerReply();  
+    return connection.getIntegerReply();
   }
 
   @Override
@@ -8826,10 +8826,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  @Deprecated
   public List<Object> clusterSlots() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.SLOTS);
     return connection.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public List<ClusterShardInfo> clusterShards() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.SHARDS);
+    return BuilderFactory.CLUSTER_SHARD_INFO_LIST.build(connection.getObjectMultiBulkReply());
   }
 
   @Override
@@ -9257,6 +9265,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(new CommandArguments(LOLWUT).addParams(lolwutParams));
     return connection.getBulkReply();
+  }
+
+  @Override
+  public String reset() {
+    connection.sendCommand(Command.RESET);
+    return connection.getStatusCodeReply();
   }
 
   @Override

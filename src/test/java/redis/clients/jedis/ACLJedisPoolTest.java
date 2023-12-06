@@ -60,7 +60,7 @@ public class ACLJedisPoolTest {
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp.getHost(), hnp.getPort(),
         Protocol.DEFAULT_TIMEOUT, Protocol.DEFAULT_TIMEOUT, 0 /* infinite */, "acljedis",
-        "fizzbuzz", Protocol.DEFAULT_DATABASE, "closable-resuable-pool", false, null, null, null)) {
+        "fizzbuzz", Protocol.DEFAULT_DATABASE, "closable-reusable-pool", false, null, null, null)) {
 
       Jedis jedis = pool.getResource();
       jedis.set("hello", "jedis");
@@ -79,7 +79,7 @@ public class ACLJedisPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, hnp, DefaultJedisClientConfig.builder()
-        .user("acljedis").password("fizzbuzz").clientName("closable-resuable-pool")
+        .user("acljedis").password("fizzbuzz").clientName("closable-reusable-pool")
         .build())) {
 
       Jedis jedis = pool.getResource();
@@ -89,7 +89,7 @@ public class ACLJedisPoolTest {
       Jedis jedis2 = pool.getResource();
       assertEquals(jedis, jedis2);
       assertEquals("jedis", jedis2.get("hello"));
-      assertEquals("closable-resuable-pool", jedis2.clientGetname());
+      assertEquals("closable-reusable-pool", jedis2.clientGetname());
       jedis2.close();
     }
   }

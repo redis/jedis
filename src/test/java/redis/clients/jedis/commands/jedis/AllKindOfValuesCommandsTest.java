@@ -21,6 +21,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Transaction;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -1123,5 +1124,33 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     jedis.set(bfoo1, bbar1);
     assertTrue(jedis.copy(bfoo1, bfoo2, true));
     assertArrayEquals(bbar1, jedis.get(bfoo2));
+  }
+
+  @Test
+  public void reset() {
+    // response test
+    String status = jedis.reset();
+    assertEquals("RESET", status);
+
+    // auth reset
+    String counter = "counter";
+    Exception ex1 = assertThrows(JedisDataException.class, () -> {
+      jedis.set(counter, "1");
+    });
+    assertEquals("NOAUTH Authentication required.", ex1.getMessage());
+
+    // multi reset
+    jedis.auth("foobared");
+    jedis.set(counter, "1");
+
+    Transaction trans = jedis.multi();
+    trans.incr(counter);
+    jedis.reset();
+
+    Exception ex2 = assertThrows(JedisDataException.class, trans::exec);
+    assertEquals("EXECABORT Transaction discarded because of: NOAUTH Authentication required.", ex2.getMessage());
+
+    jedis.auth("foobared");
+    assertEquals("1", jedis.get(counter));
   }
 }

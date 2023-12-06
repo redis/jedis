@@ -47,7 +47,7 @@ public class LibraryInfo {
     return libraryCode;
   }
 
-  public static final Builder<LibraryInfo> LIBRARY_BUILDER = new Builder<LibraryInfo>() {
+  public static final Builder<LibraryInfo> LIBRARY_INFO = new Builder<LibraryInfo>() {
     @Override
     public LibraryInfo build(Object data) {
       if (data == null) return null;
@@ -85,6 +85,20 @@ public class LibraryInfo {
       }
       String code = STRING.build(list.get(7));
       return new LibraryInfo(libname, engine, functions, code);
+    }
+  };
+
+  /**
+   * @deprecated Use {@link LibraryInfo#LIBRARY_INFO}.
+   */
+  @Deprecated
+  public static final Builder<LibraryInfo> LIBRARY_BUILDER = LIBRARY_INFO;
+
+  public static final Builder<List<LibraryInfo>> LIBRARY_INFO_LIST = new Builder<List<LibraryInfo>>() {
+    @Override
+    public List<LibraryInfo> build(Object data) {
+      List<Object> list = (List<Object>) data;
+      return list.stream().map(o -> LibraryInfo.LIBRARY_INFO.build(o)).collect(Collectors.toList());
     }
   };
 

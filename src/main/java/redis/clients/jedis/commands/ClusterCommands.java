@@ -5,6 +5,7 @@ import java.util.Map;
 
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.args.ClusterFailoverOption;
+import redis.clients.jedis.resps.ClusterShardInfo;
 
 public interface ClusterCommands {
 
@@ -79,7 +80,23 @@ public interface ClusterCommands {
 
   String clusterFailover(ClusterFailoverOption failoverOption);
 
+  /**
+   * {@code CLUSTER SLOTS} command is deprecated since Redis 7.
+   *
+   * @deprecated Use {@link ClusterCommands#clusterShards()}.
+   */
+  @Deprecated
   List<Object> clusterSlots();
+
+  /**
+   * {@code CLUSTER SHARDS} returns details about the shards of the cluster.
+   * This command replaces the {@code CLUSTER SLOTS} command from Redis 7,
+   * by providing a more efficient and extensible representation of the cluster.
+   *
+   * @return a list of shards, with each shard containing two objects, 'slots' and 'nodes'.
+   * @see <a href="https://redis.io/commands/cluster-shards/">CLUSTER SHARDS</a>
+   */
+  List<ClusterShardInfo> clusterShards();
 
   String clusterReset();
 
@@ -108,7 +125,7 @@ public interface ClusterCommands {
    * Takes a list of slot ranges (specified by start and end slots) to assign to the node
    *
    * @param ranges slots range
-   * @return OK if the command was successful. Otherwise an error is returned.
+   * @return OK if the command was successful. Otherwise, an error is returned.
    */
   String clusterAddSlotsRange(int... ranges);
 
@@ -116,7 +133,7 @@ public interface ClusterCommands {
    * Takes a list of slot ranges (specified by start and end slots) to remove to the node.
    *
    * @param ranges slots range
-   * @return OK if the command was successful. Otherwise an error is returned.
+   * @return OK if the command was successful. Otherwise, an error is returned.
    */
   String clusterDelSlotsRange(int... ranges);
 }

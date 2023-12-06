@@ -17,6 +17,10 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.entities.*;
 import redis.clients.jedis.util.SafeEncoder;
 
+/**
+ * @deprecated Redis Graph support is deprecated.
+ */
+@Deprecated
 class ResultSetBuilder extends Builder<ResultSet> {
 
   private final GraphCache graphCache;
@@ -334,7 +338,7 @@ class ResultSetBuilder extends Builder<ResultSet> {
     UNKNOWN,
     NULL,
     STRING,
-    INTEGER, // 64 bit long.
+    INTEGER, // 64-bit long.
     BOOLEAN,
     DOUBLE,
     ARRAY,

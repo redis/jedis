@@ -14,6 +14,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import static redis.clients.jedis.Protocol.*;
 
+// Some parts were inspired or taken from RedisStateMachine in Lettuce library.
 public class CommandResponseHandler extends ChannelDuplexHandler {
 
     protected final ByteBuf buffer = ByteBufAllocator.DEFAULT.directBuffer(8192 * 8);

@@ -64,13 +64,17 @@ public class Connection implements Closeable {
         }
     }
 
-    public void executeCommand(String line) throws InterruptedException {
-        ChannelFuture writeFuture = channel.writeAndFlush(line);
-        writeFuture.addListener((ChannelFuture future) -> {
-            if (!future.isSuccess()) {
-                logger.error("Write failed", future.cause());
-            }
-        });
-        writeFuture.sync();
+    public <T> CommandObject<T> executeCommand(CommandObject<T> command) throws InterruptedException {
+        try {
+            ChannelFuture writeFuture = channel.writeAndFlush(command);
+            writeFuture.addListener((ChannelFuture future) -> {
+                if (!future.isSuccess()) {
+                    logger.error("Write failed", future.cause());
+                }
+            });
+            writeFuture.sync();
+        } finally {
+            return command;
+        }
     }
 }

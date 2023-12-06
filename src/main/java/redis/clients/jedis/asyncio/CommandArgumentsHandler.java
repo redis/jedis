@@ -16,7 +16,9 @@ public class CommandArgumentsHandler extends MessageToByteEncoder<Object> {
         try {
             buf.markWriterIndex();
 
-            if (msg instanceof List) {
+            if (msg instanceof CommandObject) {
+                write(buf, ((CommandObject<?>) msg).getArguments());
+            } else if (msg instanceof List) {
                 write(buf, (List<String>) msg);
             } else if (msg instanceof String) {
                 write(buf, Arrays.asList(((String) msg).split("\\s+")));
@@ -31,19 +33,38 @@ public class CommandArgumentsHandler extends MessageToByteEncoder<Object> {
         }
     }
 
-    private void write(ByteBuf buf, List<String> msg) throws Exception {
+    private void write(ByteBuf buf, List<String> args) throws Exception {
 
         buf.writeByte('*');
-        buf.writeBytes(Protocol.toByteArray(msg.size()));
+        buf.writeBytes(Protocol.toByteArray(args.size()));
         buf.writeByte('\r');
         buf.writeByte('\n');
 
-        msg.forEach(arg -> {
+        args.forEach(arg -> {
             buf.writeByte('$');
             buf.writeBytes(Protocol.toByteArray(arg.length()));
             buf.writeByte('\r');
             buf.writeByte('\n');
             buf.writeBytes(SafeEncoder.encode(arg));
+            buf.writeByte('\r');
+            buf.writeByte('\n');
+        });
+    }
+
+    private void write(ByteBuf buf, CommandArguments args) throws Exception {
+
+        buf.writeByte('*');
+        buf.writeBytes(Protocol.toByteArray(args.size()));
+        buf.writeByte('\r');
+        buf.writeByte('\n');
+
+        args.forEach(arg -> {
+            byte[] raw = arg.getRaw();
+            buf.writeByte('$');
+            buf.writeBytes(Protocol.toByteArray(raw.length));
+            buf.writeByte('\r');
+            buf.writeByte('\n');
+            buf.writeBytes(raw);
             buf.writeByte('\r');
             buf.writeByte('\n');
         });

@@ -18,11 +18,11 @@ import static redis.clients.jedis.Protocol.*;
 public class CommandResponseHandler extends ChannelDuplexHandler {
 
     protected final ByteBuf buffer = ByteBufAllocator.DEFAULT.directBuffer(8192 * 8);
-//    protected volatile Deque<ChannelPromise> promiseList = new ArrayDeque<>(512);
+    protected volatile Deque<CommandObject<?>> commands = new ArrayDeque<>(512);
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-//        promiseList.add(promise);
+        commands.add((CommandObject<?>) msg);
         ctx.write(msg, promise);
     }
 
@@ -45,24 +45,28 @@ public class CommandResponseHandler extends ChannelDuplexHandler {
         ByteBuffer bytes;
 
         byte type = buffer.readByte();
-        System.out.println((char) type);
+//        System.out.println((char) type);
+
+        CommandObject object = commands.peek();
 
         switch (type) {
             // TODO: skip push
             //
             case PLUS_BYTE:
                 bytes = readLine(buffer);
+                object.getReply().parse(bytes);
                 break;
             case DOLLAR_BYTE:
                 end = findLineEnd(buffer);
                 length = (int) readLong(buffer, buffer.readerIndex(), end);
                 bytes = readBytes(buffer, length);
+                object.getReply().parse(bytes);
                 break;
             default:
                 throw new JedisConnectionException("Unknown reply: " + (char) type);
         }
-//        promiseList.remove();
-        System.out.println(StandardCharsets.US_ASCII.decode(bytes).toString());
+        commands.remove();
+//        System.out.println(StandardCharsets.US_ASCII.decode(bytes).toString());
     }
 
     private int findLineEnd(ByteBuf buffer) {

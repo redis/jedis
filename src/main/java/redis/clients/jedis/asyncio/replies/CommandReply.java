@@ -2,6 +2,7 @@ package redis.clients.jedis.asyncio.replies;
 
 import java.nio.ByteBuffer;
 
+// TODO: implements Future<T> (extends CompletableFuture<T>)
 public class CommandReply<T> {
 
     private T reply = null;

@@ -9,10 +9,6 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.redis.RedisArrayAggregator;
-import io.netty.handler.codec.redis.RedisBulkStringAggregator;
-import io.netty.handler.codec.redis.RedisDecoder;
-import io.netty.handler.codec.redis.RedisEncoder;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -41,14 +37,9 @@ public class Connection implements Closeable {
                 .handler(new ChannelInitializer<SocketChannel>() {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
-                        ChannelPipeline p = ch.pipeline();
-//                        p.addLast(new RedisDecoder());
-//                        p.addLast(new RedisBulkStringAggregator());
-//                        p.addLast(new RedisArrayAggregator());
-//                        p.addLast(new RedisEncoder());
-//                        p.addLast(new RedisClientHandler());
-                        p.addLast(commandArgumentsHandler);
-                        p.addLast(new CommandResponseHandler());
+                        ChannelPipeline chPipe = ch.pipeline();
+                        chPipe.addLast(commandArgumentsHandler);
+                        chPipe.addLast(new CommandResponseHandler());
                     }
                 });
     }

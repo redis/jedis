@@ -39,7 +39,7 @@ public class CMSExample {
     System.out.println(res4); // >>>[100]
 
     Map<String,Object> res5 = jedis.cmsInfo("bikes:profit");
-    System.out.println(res5.get("width") + " " + res5.get("depth") + " " + res5.get("count"));
+    System.out.println(res5.get("width") + " " + res5.get("depth") + " " + res5.get("count")); // >>> 2000 9 450
     //STEP_END
   }
 

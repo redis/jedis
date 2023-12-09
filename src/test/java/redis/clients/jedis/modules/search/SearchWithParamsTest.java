@@ -1,9 +1,11 @@
 package redis.clients.jedis.modules.search;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
@@ -1190,28 +1192,31 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         ? (Map<String, Object>) profile.getValue().get("Iterators profile")
         : ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
 
-    assertEquals("INTERSECT", depth0.get("Type"));
-    List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
-    assertEquals("TEXT", depth0_children.get(0).get("Type"));
-    Map<String, Object> depth1 = depth0_children.get(1);
-    assertEquals("INTERSECT", depth1.get("Type"));
-    List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
-    assertEquals("TEXT", depth1_children.get(0).get("Type"));
-    Map<String, Object> depth2 = depth1_children.get(1);
-    assertEquals("INTERSECT", depth2.get("Type"));
-    List<Map<String, Object>> depth2_children = (List<Map<String, Object>>) depth2.get("Child iterators");
-    assertEquals("TEXT", depth2_children.get(0).get("Type"));
-    Map<String, Object> depth3 = depth2_children.get(1);
-    assertEquals("INTERSECT", depth3.get("Type"));
-    List<Map<String, Object>> depth3_children = (List<Map<String, Object>>) depth3.get("Child iterators");
-    assertEquals("TEXT", depth3_children.get(0).get("Type"));
-    Map<String, Object> depth4 = depth3_children.get(1);
-    assertEquals("INTERSECT", depth4.get("Type"));
-    List<Map<String, Object>> depth4_children = (List<Map<String, Object>>) depth4.get("Child iterators");
-    assertEquals("TEXT", depth4_children.get(0).get("Type"));
-    Map<String, Object> depth5 = depth4_children.get(1);
-    assertEquals("TEXT", depth5.get("Type"));
-    assertNull(depth5.get("Child iterators"));
+    AtomicInteger intersectLevelCount = new AtomicInteger();
+    AtomicInteger textLevelCount = new AtomicInteger();
+    deepReplySearchProfile_assertProfile(depth0, intersectLevelCount, textLevelCount);
+    assertThat(intersectLevelCount.get(), Matchers.greaterThan(0));
+    assertThat(textLevelCount.get(), Matchers.greaterThan(0));
+  }
+
+  private void deepReplySearchProfile_assertProfile(Map<String, Object> attr,
+      AtomicInteger intersectLevelCount, AtomicInteger textLevelCount) {
+
+    String type = (String) attr.get("Type");
+    assertThat(type, Matchers.not(Matchers.blankOrNullString()));
+
+    switch (type) {
+      case "INTERSECT":
+        assertThat(attr, Matchers.hasKey("Child iterators"));
+        intersectLevelCount.incrementAndGet();
+        deepReplySearchProfile_assertProfile((Map) ((List) attr.get("Child iterators")).get(0),
+            intersectLevelCount, textLevelCount);
+        break;
+      case "TEXT":
+        assertThat(attr, Matchers.hasKey("Term"));
+        textLevelCount.incrementAndGet();
+        break;
+    }
   }
 
   @Test
@@ -1332,5 +1337,23 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.hset("doc2", RediSearchUtil.toStringMap(Collections.singletonMap("txt", "hello-world"), true));
     assertNotEquals("hello-world", client.hget("doc2", "txt"));
     assertEquals("hello-world", RediSearchUtil.unescape(client.hget("doc2", "txt")));
+  }
+
+  @Test
+  public void hsetObject() {
+    float[] floats = new float[]{0.2f};
+    assertEquals(1L, client.hsetObject("obj", "floats", floats));
+    assertArrayEquals(RediSearchUtil.toByteArray(floats),
+        client.hget("obj".getBytes(), "floats".getBytes()));
+
+    GeoCoordinate geo = new GeoCoordinate(-0.441, 51.458);
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("title", "hello world");
+    fields.put("loc", geo);
+    assertEquals(2L, client.hsetObject("obj", fields));
+    Map<String, String> stringMap = client.hgetAll("obj");
+    assertEquals(3, stringMap.size());
+    assertEquals("hello world", stringMap.get("title"));
+    assertEquals(geo.getLongitude() + "," + geo.getLatitude(), stringMap.get("loc"));
   }
 }

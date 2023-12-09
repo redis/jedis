@@ -40,10 +40,12 @@ public class CommandObjects {
 
   private RedisProtocol protocol;
 
-  protected void setProtocol(RedisProtocol proto) {
+  // TODO: restrict?
+  public final void setProtocol(RedisProtocol proto) {
     this.protocol = proto;
   }
 
+  // TODO: remove?
   protected RedisProtocol getProtocol() {
     return protocol;
   }
@@ -3110,6 +3112,14 @@ public class CommandObjects {
   // Miscellaneous commands
 
   // RediSearch commands
+  public final CommandObject<Long> hsetObject(String key, String field, Object value) {
+    return new CommandObject<>(commandArguments(HSET).key(key).add(field).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> hsetObject(String key, Map<String, Object> hash) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
+  }
+
   private boolean isRoundRobinSearchCommand() {
     if (broadcastAndRoundRobinConfig == null) {
       return true;

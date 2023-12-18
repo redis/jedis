@@ -50,6 +50,7 @@
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.16.0</jackson.version>
+		<maven.surefire.version>3.2.3</maven.surefire.version>
 	</properties>
 
 	<dependencies>
@@ -196,7 +197,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.2.2</version>
+				<version>${maven.surefire.version}</version>
 				<configuration>
 					<systemPropertyVariables>
 						<redis-hosts>${redis-hosts}</redis-hosts>
@@ -325,7 +326,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-surefire-plugin</artifactId>
-						<version>3.2.2</version>
+						<version>${maven.surefire.version}</version>
 						<configuration>
 							<test>**/examples/*Example.java</test>
 						</configuration>

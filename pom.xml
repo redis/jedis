@@ -46,9 +46,10 @@
 
 	<properties>
 		<github.global.server>github</github.global.server>
-		<slf4j.version>1.7.36</slf4j.version>
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
+		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
+		<jackson.version>2.16.0</jackson.version>
 	</properties>
 
 	<dependencies>
@@ -88,6 +89,7 @@
 			<version>1.19.0</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- test -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -115,15 +117,17 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>2.14.2</version>
+			<version>${jackson.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.datatype</groupId>
 			<artifactId>jackson-datatype-jsr310</artifactId>
-			<version>2.14.2</version>
+			<version>${jackson.version}</version>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- circuit breaker / failover -->
 		<dependency>
 			<groupId>io.github.resilience4j</groupId>
 			<artifactId>resilience4j-all</artifactId>

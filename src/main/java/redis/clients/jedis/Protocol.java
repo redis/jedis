@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
@@ -56,6 +58,8 @@ public final class Protocol {
   private static final String NOSCRIPT_PREFIX = "NOSCRIPT ";
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
+
+  private static final byte[] INVALIDATE_BYTES = SafeEncoder.encode("invalidate");
 
   private Protocol() {
     throw new InstantiationError("Must not instantiate this class");
@@ -133,7 +137,7 @@ public final class Protocol {
 
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
-    //System.out.println((char) b);
+    //System.out.println("BYTE: " + (char) b);
     switch (b) {
       case PLUS_BYTE:
         return is.readLineBytes();
@@ -167,6 +171,15 @@ public final class Protocol {
     }
   }
 
+  private static void processPush(final RedisInputStream is, ClientSideCache cache) {
+    List<Object> list = processMultiBulkReply(is);
+    //System.out.println("PUSH: " + SafeEncoder.encodeObject(list));
+    if (list.size() == 2 && list.get(0) instanceof byte[]
+        && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
+      cache.invalidateKeys((List) list.get(1));
+    }
+  }
+
   private static byte[] processBulkReply(final RedisInputStream is) {
     final int len = is.readIntCrLf();
     if (len == -1) {
@@ -193,11 +206,13 @@ public final class Protocol {
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
   // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
     final int num = is.readIntCrLf();
+    //System.out.println("MULTI BULK: " + num);
     if (num == -1) return null;
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
         ret.add(process(is));
+        //System.out.println("MULTI >> " + (i+1) + ": " + SafeEncoder.encodeObject(ret.get(i)));
       } catch (JedisDataException e) {
         ret.add(e);
       }
@@ -219,6 +234,16 @@ public final class Protocol {
 
   public static Object read(final RedisInputStream is) {
     return process(is);
+  }
+
+  static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
+    if (cache != null) {
+      //System.out.println("PEEK: " + is.peekByte());
+      while (Objects.equals(GREATER_THAN_BYTE, is.peekByte())) {
+        is.readByte();
+        processPush(is, cache);
+      }
+    }
   }
 
   public static final byte[] toByteArray(final boolean value) {

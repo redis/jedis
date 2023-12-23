@@ -121,6 +121,7 @@ public class SetsExample {
         jedis.del("bikes:racing:france");
         jedis.del("bikes:racing:usa");
         // REMOVE_END
+        // STEP_END
 
         // STEP_START multisets
         jedis.sadd("bikes:racing:france", "bike:1", "bike:2", "bike:3");
@@ -152,6 +153,7 @@ public class SetsExample {
         jedis.del("bikes:racing:usa");
         jedis.del("bikes:racing:italy");
         // REMOVE_END
+        // STEP_END
 
         // STEP_START srem
         jedis.sadd("bikes:racing:france", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5");

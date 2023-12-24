@@ -32,7 +32,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
 
         supplier.withRetry(cluster.getRetry());
         supplier.withCircuitBreaker(cluster.getCircuitBreaker());
-        supplier.withFallback(defaultCircuitBreakerFallbackException,
+        supplier.withFallback(provider.getCircuitBreakerFallbackExceptionList(),
                               e -> this.handleClusterFailover(commandObject, cluster.getCircuitBreaker()));
 
         return supplier.decorate().get();

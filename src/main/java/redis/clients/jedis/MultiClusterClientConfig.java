@@ -1,13 +1,15 @@
 package redis.clients.jedis;
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisValidationException;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisValidationException;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -99,6 +101,7 @@ public final class MultiClusterClientConfig {
      * failure nor success, even if the exceptions is part of recordExceptions */
     private List<Class> circuitBreakerIgnoreExceptionList;
 
+    private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList;
 
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
         this.clusterConfigs = clusterConfigs;
@@ -160,6 +163,10 @@ public final class MultiClusterClientConfig {
         return circuitBreakerSlidingWindowType;
     }
 
+    public List<Class<? extends Throwable>> getCircuitBreakerFallbackExceptionList() {
+        return circuitBreakerFallbackExceptionList;
+    }
+
     public static class ClusterConfig {
 
         private int priority;
@@ -210,13 +217,17 @@ public final class MultiClusterClientConfig {
 
         public Builder(ClusterConfig[] clusterConfigs) {
 
-            if (clusterConfigs == null || clusterConfigs.length < 1)
+            if (clusterConfigs.length < 1)
                 throw new JedisValidationException("ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
 
             for (int i = 0; i < clusterConfigs.length; i++)
                 clusterConfigs[i].setPriority(i + 1);
 
             this.clusterConfigs = clusterConfigs;
+        }
+
+        public Builder(List<ClusterConfig> clusterConfigs) {
+            this(clusterConfigs.toArray(new ClusterConfig[0]));
         }
 
         public Builder retryMaxAttempts(int retryMaxAttempts) {
@@ -314,16 +325,20 @@ public final class MultiClusterClientConfig {
             config.circuitBreakerSlowCallDurationThreshold = Duration.ofMillis(this.circuitBreakerSlowCallDurationThreshold);
             config.circuitBreakerSlowCallRateThreshold = this.circuitBreakerSlowCallRateThreshold;
 
-            if (this.circuitBreakerIncludedExceptionList != null && !circuitBreakerIncludedExceptionList.isEmpty())
+            if (this.circuitBreakerIncludedExceptionList != null && !circuitBreakerIncludedExceptionList.isEmpty()) {
                 config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
-
-            else {
-                config.circuitBreakerIncludedExceptionList = new ArrayList<>();
-                config.circuitBreakerIncludedExceptionList.add(CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT);
+            } else {
+                config.circuitBreakerIncludedExceptionList = Arrays.asList(CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT);
             }
 
             if (this.circuitBreakerIgnoreExceptionList != null && !circuitBreakerIgnoreExceptionList.isEmpty())
                 config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
+
+            if (this.circuitBreakerFallbackExceptionList != null && !this.circuitBreakerFallbackExceptionList.isEmpty()) {
+                config.circuitBreakerFallbackExceptionList = this.circuitBreakerFallbackExceptionList;
+            } else {
+                config.circuitBreakerFallbackExceptionList = Arrays.asList(CallNotPermittedException.class, JedisConnectionException.class);
+            }
 
             return config;
         }

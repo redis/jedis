@@ -1,11 +1,6 @@
 package redis.clients.jedis.mcf;
 
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
-
-import java.util.Arrays;
-import java.util.List;
-
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -20,9 +15,6 @@ import redis.clients.jedis.util.IOUtils;
  * <p>
  */
 public class CircuitBreakerFailoverBase implements AutoCloseable {
-
-    protected final static List<Class<? extends Throwable>> defaultCircuitBreakerFallbackException =
-                                                          Arrays.asList(CallNotPermittedException.class);
 
     protected final MultiClusterPooledConnectionProvider provider;
 

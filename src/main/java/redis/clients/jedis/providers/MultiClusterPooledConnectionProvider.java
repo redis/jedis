@@ -62,6 +62,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      */
     private Consumer<String> clusterFailoverPostProcessor;
 
+    private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList;
 
     public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterClientConfig) {
 
@@ -127,6 +128,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
                                                                                      config.getJedisClientConfig()),
                                                                                      retry, circuitBreaker));
         }
+
+        /// --- ///
+
+        this.circuitBreakerFallbackExceptionList = multiClusterClientConfig.getCircuitBreakerFallbackExceptionList();
     }
 
     /**
@@ -287,6 +292,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public void setClusterFailoverPostProcessor(Consumer<String> clusterFailoverPostProcessor) {
         this.clusterFailoverPostProcessor = clusterFailoverPostProcessor;
+    }
+
+    public List<Class<? extends Throwable>> getCircuitBreakerFallbackExceptionList() {
+        return circuitBreakerFallbackExceptionList;
     }
 
     public static class Cluster {

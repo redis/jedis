@@ -2,11 +2,11 @@ package redis.clients.jedis.misc;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,23 +30,24 @@ public class AutomaticFailoverTest {
 
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
 
-  private final HostAndPort hostPort1 = new HostAndPort(HostAndPorts.getRedisServers().get(0).getHost(), 6378);
-  private final HostAndPort hostPort2 = HostAndPorts.getRedisServers().get(7);
+  private final HostAndPort hostPort_1 = new HostAndPort(HostAndPorts.getRedisServers().get(0).getHost(), 6378);
+  private final HostAndPort hostPort_1_2 = HostAndPorts.getRedisServers().get(0);
+  private final HostAndPort hostPort_2 = HostAndPorts.getRedisServers().get(7);
 
   private final JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
 
   private Jedis jedis2;
 
-  private List<MultiClusterClientConfig.ClusterConfig> clusterConfigs;
+  private List<MultiClusterClientConfig.ClusterConfig> getClusterConfigs(
+      JedisClientConfig clientConfig, HostAndPort... hostPorts) {
+    return Arrays.stream(hostPorts)
+        .map(hp -> new MultiClusterClientConfig.ClusterConfig(hp, clientConfig))
+        .collect(Collectors.toList());
+  }
 
   @Before
   public void setUp() {
-
-    clusterConfigs = new ArrayList<>();
-    clusterConfigs.add(new MultiClusterClientConfig.ClusterConfig(hostPort1, clientConfig));
-    clusterConfigs.add(new MultiClusterClientConfig.ClusterConfig(hostPort2, clientConfig));
-
-    jedis2 = new Jedis(hostPort2, clientConfig);
+    jedis2 = new Jedis(hostPort_2, clientConfig);
     jedis2.flushAll();
   }
 
@@ -58,7 +59,8 @@ public class AutomaticFailoverTest {
   @Test
   public void pipelineSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(clusterConfigs).build());
+        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPort_1, hostPort_2)).build());
+
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
@@ -73,7 +75,8 @@ public class AutomaticFailoverTest {
   @Test
   public void transactionSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(clusterConfigs).build());
+        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPort_1, hostPort_2)).build());
+
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
@@ -90,25 +93,48 @@ public class AutomaticFailoverTest {
     int slidingWindowMinCalls = 10;
     int slidingWindowSize = 10;
 
-    // MultiCluster
-    List<MultiClusterClientConfig.ClusterConfig> mcClientConfigs = new ArrayList<>();
-    mcClientConfigs.add(new MultiClusterClientConfig.ClusterConfig(hostPort1, clientConfig));
-    mcClientConfigs.add(new MultiClusterClientConfig.ClusterConfig(hostPort2, clientConfig));
-
-    // default config for circuit breaker (fail over)
-    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(mcClientConfigs)
+    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
+        getClusterConfigs(clientConfig, hostPort_1, hostPort_2))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
     RedisFailoverReporter rsasRedisFailoverReporter = new RedisFailoverReporter();
     MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
     cacheProvider.setClusterFailoverPostProcessor(rsasRedisFailoverReporter);
+
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
     log.info("Starting calls to Redis");
-
     String key = "hash-" + System.nanoTime();
     jedis.hset(key, "f1", "v1");
+
+    assertEquals(Collections.singletonMap("f1", "v1"), jedis.hgetAll(key));
+    jedis.flushAll();
+
+    jedis.close();
+  }
+
+  @Test
+  public void pipelineFailover() {
+    int slidingWindowMinCalls = 10;
+    int slidingWindowSize = 10;
+
+    MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
+        getClusterConfigs(clientConfig, hostPort_1, hostPort_2))
+        .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
+        .circuitBreakerSlidingWindowSize(slidingWindowSize);
+
+    RedisFailoverReporter rsasRedisFailoverReporter = new RedisFailoverReporter();
+    MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
+    cacheProvider.setClusterFailoverPostProcessor(rsasRedisFailoverReporter);
+
+    UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
+
+    log.info("Starting calls to Redis");
+    AbstractPipeline pipe = jedis.pipelined();
+    String key = "hash-" + System.nanoTime();
+    pipe.hset(key, "f1", "v1");
+    pipe.sync();
 
     assertEquals(Collections.singletonMap("f1", "v1"), jedis.hgetAll(key));
     jedis.flushAll();

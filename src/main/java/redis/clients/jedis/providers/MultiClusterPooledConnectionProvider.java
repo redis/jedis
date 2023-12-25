@@ -124,9 +124,9 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
             circuitBreakerEventPublisher.onStateTransition(event -> log.warn(String.valueOf(event)));
 
-            multiClusterMap.put(config.getPriority(), new Cluster(new ConnectionPool(config.getHostAndPort(),
-                                                                                     config.getJedisClientConfig()),
-                                                                                     retry, circuitBreaker));
+            multiClusterMap.put(config.getPriority(),
+                    new Cluster(new ConnectionPool(config.getHostAndPort(),
+                            config.getJedisClientConfig()), retry, circuitBreaker));
         }
 
         /// --- ///

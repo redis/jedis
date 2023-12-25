@@ -60,7 +60,7 @@ public class AutomaticFailoverTest {
   }
 
   @Test
-  public void pipelineSwitch() {
+  public void pipelineWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
         new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPort_1, hostPort_2)).build());
 
@@ -68,6 +68,7 @@ public class AutomaticFailoverTest {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
+      //provider.incrementActiveMultiClusterIndex();
       pipe.sync();
     }
 
@@ -76,7 +77,7 @@ public class AutomaticFailoverTest {
   }
 
   @Test
-  public void transactionSwitch() {
+  public void transactionWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
         new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPort_1, hostPort_2)).build());
 
@@ -84,6 +85,7 @@ public class AutomaticFailoverTest {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
+      //provider.incrementActiveMultiClusterIndex();
       assertEquals(Arrays.asList("OK", Long.valueOf(1L)), tx.exec());
     }
 
@@ -150,7 +152,7 @@ public class AutomaticFailoverTest {
   }
 
   @Test
-  public void failoverAuthError() {
+  public void failoverFromAuthError() {
     int slidingWindowMinCalls = 10;
     int slidingWindowSize = 10;
 

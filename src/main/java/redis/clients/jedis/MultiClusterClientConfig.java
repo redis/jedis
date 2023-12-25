@@ -217,7 +217,7 @@ public final class MultiClusterClientConfig {
 
         public Builder(ClusterConfig[] clusterConfigs) {
 
-            if (clusterConfigs.length < 1)
+            if (clusterConfigs == null || clusterConfigs.length < 1)
                 throw new JedisValidationException("ClusterClientConfigs are required for MultiClusterPooledConnectionProvider");
 
             for (int i = 0; i < clusterConfigs.length; i++)

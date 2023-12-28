@@ -34,6 +34,7 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
+  private ClientSideCache clientSideCache;
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
@@ -119,6 +120,10 @@ public class Connection implements Closeable {
       broken = true;
       throw new JedisConnectionException(ex);
     }
+  }
+
+  final void setClientSideCache(ClientSideCache clientSideCache) {
+    this.clientSideCache = clientSideCache;
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -347,9 +352,10 @@ public class Connection implements Closeable {
     }
 
     try {
+      Protocol.readPushes(inputStream, clientSideCache);
       return Protocol.read(inputStream);
 //      Object read = Protocol.read(inputStream);
-//      System.out.println(SafeEncoder.encodeObject(read));
+//      System.out.println("REPLY: " + SafeEncoder.encodeObject(read));
 //      return read;
     } catch (JedisConnectionException exc) {
       broken = true;
@@ -368,6 +374,19 @@ public class Connection implements Closeable {
       }
     }
     return responses;
+  }
+
+  protected void readPushesWithCheckingBroken() {
+    if (broken) {
+      throw new JedisConnectionException("Attempting to read pushes from a broken connection");
+    }
+
+    try {
+      Protocol.readPushes(inputStream, clientSideCache);
+    } catch (JedisConnectionException exc) {
+      broken = true;
+      throw exc;
+    }
   }
 
   /**

@@ -80,7 +80,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         retryConfigBuilder.retryExceptions(multiClusterClientConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
 
         List<Class> retryIgnoreExceptionList = multiClusterClientConfig.getRetryIgnoreExceptionList();
-        if (retryIgnoreExceptionList != null && !retryIgnoreExceptionList.isEmpty())
+        if (retryIgnoreExceptionList != null)
             retryConfigBuilder.ignoreExceptions(retryIgnoreExceptionList.stream().toArray(Class[]::new));
 
         RetryConfig retryConfig = retryConfigBuilder.build();
@@ -98,7 +98,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State transitions are forced. No half open states are used
 
         List<Class> circuitBreakerIgnoreExceptionList = multiClusterClientConfig.getCircuitBreakerIgnoreExceptionList();
-        if (circuitBreakerIgnoreExceptionList != null && !circuitBreakerIgnoreExceptionList.isEmpty())
+        if (circuitBreakerIgnoreExceptionList != null)
             circuitBreakerConfigBuilder.ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
 
         CircuitBreakerConfig circuitBreakerConfig = circuitBreakerConfigBuilder.build();

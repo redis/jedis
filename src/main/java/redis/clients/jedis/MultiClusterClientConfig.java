@@ -205,8 +205,8 @@ public final class MultiClusterClientConfig {
         private int retryMaxAttempts = RETRY_MAX_ATTEMPTS_DEFAULT;
         private int retryWaitDuration = RETRY_WAIT_DURATION_DEFAULT;
         private int retryWaitDurationExponentialBackoffMultiplier = RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT;
-        private List<Class> retryIncludedExceptionList;
-        private List<Class> retryIgnoreExceptionList;
+        private List<Class> retryIncludedExceptionList = RETRY_INCLUDED_EXCEPTIONS_DEFAULT;
+        private List<Class> retryIgnoreExceptionList = null;
 
         private float circuitBreakerFailureRateThreshold = CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT;
         private int circuitBreakerSlidingWindowMinCalls = CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT;
@@ -214,9 +214,9 @@ public final class MultiClusterClientConfig {
         private int circuitBreakerSlidingWindowSize = CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT;
         private int circuitBreakerSlowCallDurationThreshold = CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT;
         private float circuitBreakerSlowCallRateThreshold = CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT;
-        private List<Class> circuitBreakerIncludedExceptionList;
-        private List<Class> circuitBreakerIgnoreExceptionList;
-        private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList;
+        private List<Class> circuitBreakerIncludedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
+        private List<Class> circuitBreakerIgnoreExceptionList = null;
+        private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList = CIRCUIT_BREAKER_FALLBACK_EXCEPTIONS_DEFAULT;
 
         public Builder(ClusterConfig[] clusterConfigs) {
 

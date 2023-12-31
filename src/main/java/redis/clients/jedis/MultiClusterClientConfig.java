@@ -2,14 +2,13 @@ package redis.clients.jedis;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisValidationException;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisValidationException;
 
 /**
  * @author Allen Terleto (aterleto)
@@ -24,12 +23,13 @@ import redis.clients.jedis.exceptions.JedisValidationException;
  * not passed through to Jedis users.
  * <p>
  */
+// TODO: move
 public final class MultiClusterClientConfig {
 
     private static final int RETRY_MAX_ATTEMPTS_DEFAULT = 3;
     private static final int RETRY_WAIT_DURATION_DEFAULT = 500;  // measured in milliseconds
     private static final int RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT = 2;
-    private static final Class RETRY_INCLUDED_EXCEPTIONS_DEFAULT = JedisConnectionException.class;
+    private static final List<Class> RETRY_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
 
     private static final float CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT = 50.0f; // measured as percentage
     private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT = 100;
@@ -37,7 +37,10 @@ public final class MultiClusterClientConfig {
     private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT = 100;
     private static final int CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT = 60000; // measured in milliseconds
     private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f; // measured as percentage
-    private static final Class CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = JedisConnectionException.class;
+    private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
+
+    private static final List<Class<? extends Throwable>> CIRCUIT_BREAKER_FALLBACK_EXCEPTIONS_DEFAULT =
+        Arrays.asList(CallNotPermittedException.class, JedisConnectionException.class);
 
     private final ClusterConfig[] clusterConfigs;
 
@@ -307,16 +310,15 @@ public final class MultiClusterClientConfig {
             config.retryWaitDuration = Duration.ofMillis(this.retryWaitDuration);
             config.retryWaitDurationExponentialBackoffMultiplier = this.retryWaitDurationExponentialBackoffMultiplier;
 
-            if (this.retryIncludedExceptionList != null && !retryIncludedExceptionList.isEmpty())
+            if (this.retryIncludedExceptionList != null && !retryIncludedExceptionList.isEmpty()) {
                 config.retryIncludedExceptionList = this.retryIncludedExceptionList;
-
-            else {
-                config.retryIncludedExceptionList = new ArrayList<>();
-                config.retryIncludedExceptionList.add(RETRY_INCLUDED_EXCEPTIONS_DEFAULT);
+            } else {
+                config.retryIncludedExceptionList = RETRY_INCLUDED_EXCEPTIONS_DEFAULT;
             }
 
-            if (this.retryIgnoreExceptionList != null && !retryIgnoreExceptionList.isEmpty())
+            if (this.retryIgnoreExceptionList != null && !retryIgnoreExceptionList.isEmpty()) {
                 config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
+            }
 
             config.circuitBreakerFailureRateThreshold = this.circuitBreakerFailureRateThreshold;
             config.circuitBreakerSlidingWindowMinCalls = this.circuitBreakerSlidingWindowMinCalls;
@@ -328,16 +330,17 @@ public final class MultiClusterClientConfig {
             if (this.circuitBreakerIncludedExceptionList != null && !circuitBreakerIncludedExceptionList.isEmpty()) {
                 config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
             } else {
-                config.circuitBreakerIncludedExceptionList = Arrays.asList(CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT);
+                config.circuitBreakerIncludedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
             }
 
-            if (this.circuitBreakerIgnoreExceptionList != null && !circuitBreakerIgnoreExceptionList.isEmpty())
+            if (this.circuitBreakerIgnoreExceptionList != null && !circuitBreakerIgnoreExceptionList.isEmpty()) {
                 config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
+            }
 
             if (this.circuitBreakerFallbackExceptionList != null && !this.circuitBreakerFallbackExceptionList.isEmpty()) {
                 config.circuitBreakerFallbackExceptionList = this.circuitBreakerFallbackExceptionList;
             } else {
-                config.circuitBreakerFallbackExceptionList = Arrays.asList(CallNotPermittedException.class, JedisConnectionException.class);
+                config.circuitBreakerFallbackExceptionList = CIRCUIT_BREAKER_FALLBACK_EXCEPTIONS_DEFAULT;
             }
 
             return config;

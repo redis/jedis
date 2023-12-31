@@ -31,6 +31,7 @@ import java.util.function.Consumer;
  * Support for manual failback is provided by way of {@link #setActiveMultiClusterIndex(int)}
  * <p>
  */
+// TODO: move?
 public class MultiClusterPooledConnectionProvider implements ConnectionProvider {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

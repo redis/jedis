@@ -299,6 +299,14 @@ public final class MultiClusterClientConfig {
             return this;
         }
 
+        /**
+         * @deprecated Use {@link #fallbackExceptionList(java.util.List)}.
+         */
+        @Deprecated
+        public Builder circuitBreakerFallbackExceptionList(List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList) {
+            return fallbackExceptionList(circuitBreakerFallbackExceptionList);
+        }
+
         public Builder fallbackExceptionList(List<Class<? extends Throwable>> fallbackExceptionList) {
             this.fallbackExceptionList = fallbackExceptionList;
             return this;

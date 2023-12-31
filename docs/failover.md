@@ -99,8 +99,8 @@ Jedis uses the following retry settings:
 | Max retry attempts               | 3                          | Maximum number of retry attempts (including the initial call)                                                                                                                                                   |
 | Retry wait duration              | 500 ms                     | Number of milliseconds to wait between retry attempts                                                                                                                                                           |
 | Wait duration backoff multiplier | 2                          | Exponential backoff factor multiplied against wait duration between retries. For example, with a wait duration of 1 second and a multiplier of 2, the retries would occur after 1s, 2s, 4s, 8s, 16s, and so on. |
-| Retry included exception list    | `JedisConnectionException` | A list of `Throwable` classes that count as failures and should be retried.                                                                                                                                     |
-| Retry ignored exception list     | Empty list                 | A list of `Throwable` classes to explicitly ignore for the purposes of retry.                                                                                                                                   |
+| Retry included exception list    | [JedisConnectionException] | A list of Throwable classes that count as failures and should be retried.                                                                                                                                       |
+| Retry ignored exception list     | null                       | A list of Throwable classes to explicitly ignore for the purposes of retry.                                                                                                                                     |
 
 To disable retry, set `maxRetryAttempts` to 1.
 
@@ -116,8 +116,16 @@ Jedis uses the following circuit breaker settings:
 | Failure rate threshold                  | `50.0f`                    | Percentage of calls within the sliding window that must fail before the circuit breaker transitions to the `OPEN` state.                                                      |
 | Slow call duration threshold            | 60000 ms                   | Duration threshold above which calls are classified as slow and added to the sliding window.                                                                                  |
 | Slow call rate threshold                | `100.0f`                   | Percentage of calls within the sliding window that exceed the slow call duration threshold before circuit breaker transitions to the `OPEN` state.                            |
-| Circuit breaker included exception list | `JedisConnectionException` | A list of `Throwable` classes that count as failures and add to the failure rate.                                                                                             |
-| Circuit breaker ignored exception list  | Empty list                 | A list of `Throwable` classes to explicitly ignore for failure rate calculations.                                                                                             |                                                                                                               |
+| Circuit breaker included exception list | [JedisConnectionException] | A list of Throwable classes that count as failures and add to the failure rate.                                                                                               |
+| Circuit breaker ignored exception list  | null                       | A list of Throwable classes to explicitly ignore for failure rate calculations.                                                                                               |                                                                                                               |
+
+### Fallback configuration
+
+Jedis uses the following fallback settings:
+
+| Setting                 | Default value                                         | Description                                        |
+|-------------------------|-------------------------------------------------------|----------------------------------------------------|
+| Fallback exception list | [CallNotPermittedException, JedisConnectionException] | A list of Throwable classes that trigger fallback. |
 
 ### Failover callbacks
 

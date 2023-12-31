@@ -8,17 +8,20 @@ import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.Pool;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 
 /**
@@ -63,7 +66,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      */
     private Consumer<String> clusterFailoverPostProcessor;
 
-    private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList;
+    private List<Class<? extends Throwable>> fallbackExceptionList;
 
     public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterClientConfig) {
 
@@ -132,7 +135,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         /// --- ///
 
-        this.circuitBreakerFallbackExceptionList = multiClusterClientConfig.getCircuitBreakerFallbackExceptionList();
+        this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
     }
 
     /**
@@ -295,8 +298,8 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         this.clusterFailoverPostProcessor = clusterFailoverPostProcessor;
     }
 
-    public List<Class<? extends Throwable>> getCircuitBreakerFallbackExceptionList() {
-        return circuitBreakerFallbackExceptionList;
+    public List<Class<? extends Throwable>> getFallbackExceptionList() {
+        return fallbackExceptionList;
     }
 
     public static class Cluster {

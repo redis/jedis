@@ -2,12 +2,13 @@ package redis.clients.jedis;
 
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisValidationException;
 
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisValidationException;
 
 
 /**
@@ -39,7 +40,7 @@ public final class MultiClusterClientConfig {
     private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f; // measured as percentage
     private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
 
-    private static final List<Class<? extends Throwable>> CIRCUIT_BREAKER_FALLBACK_EXCEPTIONS_DEFAULT =
+    private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT =
         Arrays.asList(CallNotPermittedException.class, JedisConnectionException.class);
 
     private final ClusterConfig[] clusterConfigs;
@@ -104,7 +105,7 @@ public final class MultiClusterClientConfig {
      * failure nor success, even if the exceptions is part of recordExceptions */
     private List<Class> circuitBreakerIgnoreExceptionList;
 
-    private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList;
+    private List<Class<? extends Throwable>> fallbackExceptionList;
 
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
         this.clusterConfigs = clusterConfigs;
@@ -166,8 +167,8 @@ public final class MultiClusterClientConfig {
         return circuitBreakerSlidingWindowType;
     }
 
-    public List<Class<? extends Throwable>> getCircuitBreakerFallbackExceptionList() {
-        return circuitBreakerFallbackExceptionList;
+    public List<Class<? extends Throwable>> getFallbackExceptionList() {
+        return fallbackExceptionList;
     }
 
     public static class ClusterConfig {
@@ -216,7 +217,7 @@ public final class MultiClusterClientConfig {
         private float circuitBreakerSlowCallRateThreshold = CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT;
         private List<Class> circuitBreakerIncludedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
         private List<Class> circuitBreakerIgnoreExceptionList = null;
-        private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList = CIRCUIT_BREAKER_FALLBACK_EXCEPTIONS_DEFAULT;
+        private List<Class<? extends Throwable>> fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
 
         public Builder(ClusterConfig[] clusterConfigs) {
 
@@ -298,8 +299,8 @@ public final class MultiClusterClientConfig {
             return this;
         }
 
-        public Builder circuitBreakerFallbackExceptionList(List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList) {
-            this.circuitBreakerFallbackExceptionList = circuitBreakerFallbackExceptionList;
+        public Builder fallbackExceptionList(List<Class<? extends Throwable>> fallbackExceptionList) {
+            this.fallbackExceptionList = fallbackExceptionList;
             return this;
         }
 
@@ -337,10 +338,10 @@ public final class MultiClusterClientConfig {
                 config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
             }
 
-            if (this.circuitBreakerFallbackExceptionList != null && !this.circuitBreakerFallbackExceptionList.isEmpty()) {
-                config.circuitBreakerFallbackExceptionList = this.circuitBreakerFallbackExceptionList;
+            if (this.fallbackExceptionList != null && !this.fallbackExceptionList.isEmpty()) {
+                config.fallbackExceptionList = this.fallbackExceptionList;
             } else {
-                config.circuitBreakerFallbackExceptionList = CIRCUIT_BREAKER_FALLBACK_EXCEPTIONS_DEFAULT;
+                config.fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
             }
 
             return config;

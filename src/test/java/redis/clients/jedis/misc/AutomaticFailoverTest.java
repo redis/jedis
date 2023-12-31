@@ -160,7 +160,7 @@ public class AutomaticFailoverTest {
         getClusterConfigs(clientConfig, hostPort_1_2, hostPort_2))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize)
-        .circuitBreakerFallbackExceptionList(Arrays.asList(JedisAccessControlException.class));
+        .fallbackExceptionList(Arrays.asList(JedisAccessControlException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());

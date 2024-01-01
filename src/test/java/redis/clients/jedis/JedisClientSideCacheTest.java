@@ -19,7 +19,7 @@ public class JedisClientSideCacheTest {
 
   @Before
   public void setUp() throws Exception {
-    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
+    jedis = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
     jedis.flushAll();
   }
 
@@ -28,12 +28,11 @@ public class JedisClientSideCacheTest {
     jedis.close();
   }
 
-  private static final JedisClientConfig configForCache = DefaultJedisClientConfig.builder()
-      .resp3().password("foobared").build();
+  private static final JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().resp3().password("foobared").build();
 
   @Test
   public void simple() {
-    try (JedisClientSideCache jCache = new JedisClientSideCache(hnp, configForCache)) {
+    try (JedisClientSideCache jCache = new JedisClientSideCache(hnp, clientConfig)) {
       jedis.set("foo", "bar");
       assertEquals("bar", jCache.get("foo"));
       jedis.del("foo");
@@ -46,7 +45,7 @@ public class JedisClientSideCacheTest {
     ClientSideCache cache = Mockito.mock(ClientSideCache.class);
     Mockito.when(cache.getValue("foo")).thenReturn(null, "bar", null);
 
-    try (JedisClientSideCache jCache = new JedisClientSideCache(hnp, configForCache, cache)) {
+    try (JedisClientSideCache jCache = new JedisClientSideCache(hnp, clientConfig, cache)) {
       jedis.set("foo", "bar");
 
       assertEquals("bar", jCache.get("foo"));
@@ -72,7 +71,7 @@ public class JedisClientSideCacheTest {
 
   @Test
   public void flushAll() {
-    try (JedisClientSideCache jCache = new JedisClientSideCache(hnp, configForCache)) {
+    try (JedisClientSideCache jCache = new JedisClientSideCache(hnp, clientConfig)) {
       jedis.set("foo", "bar");
       assertEquals("bar", jCache.get("foo"));
       jedis.flushAll();
@@ -85,7 +84,7 @@ public class JedisClientSideCacheTest {
     ClientSideCache cache = Mockito.mock(ClientSideCache.class);
     Mockito.when(cache.getValue("foo")).thenReturn(null, "bar", null);
 
-    try (JedisClientSideCache jCache = new JedisClientSideCache(hnp, configForCache, cache)) {
+    try (JedisClientSideCache jCache = new JedisClientSideCache(hnp, clientConfig, cache)) {
       jedis.set("foo", "bar");
 
       assertEquals("bar", jCache.get("foo"));

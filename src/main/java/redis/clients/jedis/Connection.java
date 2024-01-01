@@ -376,19 +376,6 @@ public class Connection implements Closeable {
     return responses;
   }
 
-  protected void readPushesWithCheckingBroken() {
-    if (broken) {
-      throw new JedisConnectionException("Attempting to read pushes from a broken connection");
-    }
-
-    try {
-      Protocol.readPushes(inputStream, clientSideCache);
-    } catch (JedisConnectionException exc) {
-      broken = true;
-      throw exc;
-    }
-  }
-
   /**
    * Check if the client name libname, libver, characters are legal
    * @param info the name

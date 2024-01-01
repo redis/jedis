@@ -259,15 +259,24 @@ public class RedisInputStream extends FilterInputStream {
   }
 
   private void ensureFillSafe() {
-    if (count >= limit) {
-      try {
-        limit = in.read(buf);
-        count = 0;
-        if (limit == -1) {
-          throw new JedisConnectionException("Unexpected end of stream.");
-        }
-      } catch (IOException e) {
+//    if (count >= limit) {
+//      try {
+//        limit = in.read(buf);
+//        count = 0;
+//        if (limit == -1) {
+//          throw new JedisConnectionException("Unexpected end of stream.");
+//        }
+//      } catch (IOException e) {
+//        // do nothing
+//      }
+//    }
+    try {
+      ensureFill();
+    } catch (JedisConnectionException jce) {
+      if (jce.getCause() instanceof IOException) {
         // do nothing
+      } else {
+        throw jce;
       }
     }
   }

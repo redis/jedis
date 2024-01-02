@@ -1,8 +1,8 @@
 // EXAMPLE: hll_tutorial
 package io.redis.examples;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.locationtech.jts.util.Assert;
 import redis.clients.jedis.UnifiedJedis;
 public class HyperLogLogExample {
 
@@ -34,7 +34,7 @@ public class HyperLogLogExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.equals("OK", res4);
+        Assert.assertEquals("OK", res4);
         // REMOVE_END
     }
 }

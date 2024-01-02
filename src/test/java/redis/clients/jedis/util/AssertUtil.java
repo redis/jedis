@@ -9,7 +9,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
 import org.junit.ComparisonFailure;
+import redis.clients.jedis.RedisProtocol;
 
 public class AssertUtil {
 
@@ -17,7 +19,24 @@ public class AssertUtil {
     assertEquals("OK", str);
   }
 
-  public static boolean assertCollectionContains(Collection<byte[]> array, byte[] expected) {
+  public static void assertEqualsByProtocol(RedisProtocol protocol, Object expectedResp2, Object expectedResp3, Object actual) {
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals(expectedResp2, actual);
+    } else {
+      assertEquals(expectedResp3, actual);
+    }
+  }
+
+  public static <T> boolean assertCollectionContains(Collection<T> array, T expected) {
+    for (T element : array) {
+      if (Objects.equals(element, expected)) {
+        return true;
+      }
+    }
+    throw new ComparisonFailure("element is missing", Objects.toString(expected), array.toString());
+  }
+
+  public static boolean assertByteArrayCollectionContains(Collection<byte[]> array, byte[] expected) {
     for (byte[] bytes : array) {
       if (Arrays.equals(bytes, expected)) {
         return true;
@@ -29,7 +48,7 @@ public class AssertUtil {
   public static void assertByteArrayListEquals(List<byte[]> expected, List<byte[]> actual) {
     assertEquals(expected.size(), actual.size());
     for (int n = 0; n < expected.size(); n++) {
-      assertArrayEquals(expected.get(n), actual.get(n));
+      assertArrayEquals(n + "'th elements don't match", expected.get(n), actual.get(n));
     }
   }
 

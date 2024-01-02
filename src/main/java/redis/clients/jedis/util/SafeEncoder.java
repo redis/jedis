@@ -46,6 +46,11 @@ public final class SafeEncoder {
       return SafeEncoder.encode((byte[]) dataToEncode);
     }
 
+    if (dataToEncode instanceof KeyValue) {
+      KeyValue keyValue = (KeyValue) dataToEncode;
+      return new KeyValue<>(encodeObject(keyValue.getKey()), encodeObject(keyValue.getValue()));
+    }
+
     if (dataToEncode instanceof List) {
       List arrayToDecode = (List) dataToEncode;
       List returnValueArray = new ArrayList(arrayToDecode.size());

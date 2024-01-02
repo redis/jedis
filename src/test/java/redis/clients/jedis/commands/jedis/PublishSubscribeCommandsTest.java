@@ -1,14 +1,14 @@
 package redis.clients.jedis.commands.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +21,7 @@ import org.junit.Test;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
@@ -65,8 +65,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void pubSubChannels() {
-    final List<String> expectedActiveChannels = Arrays
-        .asList("testchan1", "testchan2", "testchan3");
     jedis.subscribe(new JedisPubSub() {
       private int count = 0;
 
@@ -78,9 +76,9 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
           Jedis otherJedis = createJedis();
           List<String> activeChannels = otherJedis.pubsubChannels();
           // Since we are utilizing sentinel for the tests, there is an additional
-          // '__sentinel__:hello' channel that has subscribers and will be returned from PUBSUB
-          // CHANNELS.
-          assertTrue(activeChannels.containsAll(expectedActiveChannels));
+          // '__sentinel__:hello' channel that has subscribers and will be returned
+          // from PUBSUB CHANNELS.
+          assertThat(activeChannels, hasItems("testchan1", "testchan2", "testchan3"));
           unsubscribe();
         }
       }
@@ -89,8 +87,6 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void pubSubChannelsWithPattern() {
-    final List<String> expectedActiveChannels = Arrays
-        .asList("testchan1", "testchan2", "testchan3");
     jedis.subscribe(new JedisPubSub() {
       private int count = 0;
 
@@ -101,7 +97,7 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
         if (count == 3) {
           Jedis otherJedis = createJedis();
           List<String> activeChannels = otherJedis.pubsubChannels("test*");
-          assertTrue(expectedActiveChannels.containsAll(activeChannels));
+          assertThat(activeChannels, hasItems("testchan1", "testchan2", "testchan3"));
           unsubscribe();
         }
       }
@@ -296,19 +292,19 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
   public void binarySubscribe() throws UnknownHostException, IOException, InterruptedException {
     jedis.subscribe(new BinaryJedisPubSub() {
       public void onMessage(byte[] channel, byte[] message) {
-        assertTrue(Arrays.equals(SafeEncoder.encode("foo"), channel));
-        assertTrue(Arrays.equals(SafeEncoder.encode("exit"), message));
+        assertArrayEquals(SafeEncoder.encode("foo"), channel);
+        assertArrayEquals(SafeEncoder.encode("exit"), message);
         unsubscribe();
       }
 
       public void onSubscribe(byte[] channel, int subscribedChannels) {
-        assertTrue(Arrays.equals(SafeEncoder.encode("foo"), channel));
+        assertArrayEquals(SafeEncoder.encode("foo"), channel);
         assertEquals(1, subscribedChannels);
         publishOne(SafeEncoder.encode(channel), "exit");
       }
 
       public void onUnsubscribe(byte[] channel, int subscribedChannels) {
-        assertTrue(Arrays.equals(SafeEncoder.encode("foo"), channel));
+        assertArrayEquals(SafeEncoder.encode("foo"), channel);
         assertEquals(0, subscribedChannels);
       }
     }, SafeEncoder.encode("foo"));
@@ -331,20 +327,20 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
   public void binaryPsubscribe() throws UnknownHostException, IOException, InterruptedException {
     jedis.psubscribe(new BinaryJedisPubSub() {
       public void onPSubscribe(byte[] pattern, int subscribedChannels) {
-        assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
+        assertArrayEquals(SafeEncoder.encode("foo.*"), pattern);
         assertEquals(1, subscribedChannels);
         publishOne(SafeEncoder.encode(pattern).replace("*", "bar"), "exit");
       }
 
       public void onPUnsubscribe(byte[] pattern, int subscribedChannels) {
-        assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
+        assertArrayEquals(SafeEncoder.encode("foo.*"), pattern);
         assertEquals(0, subscribedChannels);
       }
 
       public void onPMessage(byte[] pattern, byte[] channel, byte[] message) {
-        assertTrue(Arrays.equals(SafeEncoder.encode("foo.*"), pattern));
-        assertTrue(Arrays.equals(SafeEncoder.encode("foo.bar"), channel));
-        assertTrue(Arrays.equals(SafeEncoder.encode("exit"), message));
+        assertArrayEquals(SafeEncoder.encode("foo.*"), pattern);
+        assertArrayEquals(SafeEncoder.encode("foo.bar"), channel);
+        assertArrayEquals(SafeEncoder.encode("exit"), message);
         punsubscribe();
       }
     }, SafeEncoder.encode("foo.*"));
@@ -461,14 +457,14 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
     jedis.subscribe(pubsub, SafeEncoder.encode("foo"));
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test(expected = JedisException.class)
   public void unsubscribeWhenNotSusbscribed() throws InterruptedException {
     JedisPubSub pubsub = new JedisPubSub() {
     };
     pubsub.unsubscribe();
   }
 
-  @Test(expected = JedisConnectionException.class)
+  @Test(expected = JedisException.class)
   public void handleClientOutputBufferLimitForSubscribeTooSlow() throws InterruptedException {
     final Jedis j = createJedis();
     final AtomicBoolean exit = new AtomicBoolean(false);

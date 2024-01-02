@@ -7,7 +7,6 @@ import java.util.Set;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
-import redis.clients.jedis.resps.KeyedZSetElement;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.KeyValue;
@@ -33,6 +32,10 @@ public interface SortedSetPipelineCommands {
   Response<Long> zrank(String key, String member);
 
   Response<Long> zrevrank(String key, String member);
+
+  Response<KeyValue<Long, Double>> zrankWithScore(String key, String member);
+
+  Response<KeyValue<Long, Double>> zrevrankWithScore(String key, String member);
 
   Response<List<String>> zrange(String key, long start, long stop);
 
@@ -128,31 +131,37 @@ public interface SortedSetPipelineCommands {
 
   Response<ScanResult<Tuple>> zscan(String key, String cursor, ScanParams params);
 
-  Response<KeyedZSetElement> bzpopmax(double timeout, String... keys);
+  Response<KeyValue<String, Tuple>> bzpopmax(double timeout, String... keys);
 
-  Response<KeyedZSetElement> bzpopmin(double timeout, String... keys);
+  Response<KeyValue<String, Tuple>> bzpopmin(double timeout, String... keys);
 
-  Response<Set<String>> zdiff(String... keys);
+  Response<List<String>> zdiff(String... keys);
 
-  Response<Set<Tuple>> zdiffWithScores(String... keys);
+  Response<List<Tuple>> zdiffWithScores(String... keys);
 
+  /**
+   * @deprecated Use {@link #zdiffstore(java.lang.String, java.lang.String...)}.
+   */
+  @Deprecated
   Response<Long> zdiffStore(String dstKey, String... keys);
+
+  Response<Long> zdiffstore(String dstKey, String... keys);
 
   Response<Long> zinterstore(String dstKey, String... sets);
 
   Response<Long> zinterstore(String dstKey, ZParams params, String... sets);
 
-  Response<Set<String>> zinter(ZParams params, String... keys);
+  Response<List<String>> zinter(ZParams params, String... keys);
 
-  Response<Set<Tuple>> zinterWithScores(ZParams params, String... keys);
+  Response<List<Tuple>> zinterWithScores(ZParams params, String... keys);
 
   Response<Long> zintercard(String... keys);
 
   Response<Long> zintercard(long limit, String... keys);
 
-  Response<Set<String>> zunion(ZParams params, String... keys);
+  Response<List<String>> zunion(ZParams params, String... keys);
 
-  Response<Set<Tuple>> zunionWithScores(ZParams params, String... keys);
+  Response<List<Tuple>> zunionWithScores(ZParams params, String... keys);
 
   Response<Long> zunionstore(String dstKey, String... sets);
 
@@ -162,7 +171,7 @@ public interface SortedSetPipelineCommands {
 
   Response<KeyValue<String, List<Tuple>>> zmpop(SortedSetOption option, int count, String... keys);
 
-  Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, String... keys);
+  Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, String... keys);
 
-  Response<KeyValue<String, List<Tuple>>> bzmpop(long timeout, SortedSetOption option, int count, String... keys);
+  Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, String... keys);
 }

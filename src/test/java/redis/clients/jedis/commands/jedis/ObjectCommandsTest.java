@@ -1,13 +1,12 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
+import java.util.List;
+import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,8 +16,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.util.SafeEncoder;
-
-import java.util.List;
 
 public class ObjectCommandsTest extends JedisCommandsTestBase {
 
@@ -90,11 +87,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
   public void objectHelp() {
     // String
     List<String> helpTexts = jedis.objectHelp();
-    assertNotNull(helpTexts);
+    Assert.assertNotNull(helpTexts);
 
     // Binary
     List<byte[]> helpBinaryTexts = jedis.objectHelpBinary();
-    assertNotNull(helpBinaryTexts);
+    Assert.assertNotNull(helpBinaryTexts);
   }
 
   @Test
@@ -102,20 +99,13 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     lfuJedis.set(key, "test1");
     lfuJedis.get(key);
     // String
-    Long count = lfuJedis.objectFreq(key);
-    assertTrue(count > 0);
-
+    assertThat(lfuJedis.objectFreq(key), greaterThanOrEqualTo(1L));
     // Binary
-    count = lfuJedis.objectFreq(binaryKey);
-    assertTrue(count > 0);
+    assertThat(lfuJedis.objectFreq(binaryKey), greaterThanOrEqualTo(1L));
 
-    assertNull(lfuJedis.objectFreq("no_such_key"));
+    Assert.assertNull(lfuJedis.objectFreq("no_such_key"));
 
-    try {
-      jedis.set(key, "test2");
-      jedis.objectFreq(key);
-      fail("Freq is only allowed with LFU policy");
-    } catch (JedisDataException e) {
-    }
+    jedis.set(key, "test2");
+    Assert.assertThrows("Freq is only allowed with LFU policy", JedisDataException.class, () -> jedis.objectFreq(key));
   }
 }

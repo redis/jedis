@@ -18,7 +18,7 @@ public class PooledBenchmark {
     try (Jedis j = new Jedis(hnp.getHost(), hnp.getPort())) {
       j.auth("foobared");
       j.flushAll();
-      j.quit();
+      j.disconnect();
     }
     long t = System.currentTimeMillis();
     withPool();

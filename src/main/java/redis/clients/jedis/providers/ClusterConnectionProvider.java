@@ -1,5 +1,6 @@
 package redis.clients.jedis.providers;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +18,8 @@ import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 
+import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
+
 public class ClusterConnectionProvider implements ConnectionProvider {
 
   protected final JedisClusterInfoCache cache;
@@ -29,6 +32,12 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes);
+    initializeSlotsCache(clusterNodes, clientConfig);
+  }
+
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
+    this.cache = new JedisClusterInfoCache(clientConfig, poolConfig, clusterNodes, topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
@@ -53,6 +62,9 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       }
     }
 
+    if (System.getProperty(INIT_NO_ERROR_PROPERTY) != null) {
+      return;
+    }
     JedisClusterOperationException uninitializedException
         = new JedisClusterOperationException("Could not initialize cluster slots cache.");
     uninitializedException.addSuppressed(firstException);
@@ -61,7 +73,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
 
   @Override
   public void close() {
-    cache.reset();
+    cache.close();
   }
 
   public void renewSlotCache() {

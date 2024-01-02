@@ -1,8 +1,7 @@
 package redis.clients.jedis.search.aggr;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
 
 /**
  * Created by mnunberg on 2/22/18.
@@ -11,61 +10,56 @@ import java.util.List;
  */
 public abstract class Reducer {
 
-  private String alias;
+  private final String name;
   private final String field;
+  private String alias;
 
-  protected Reducer(String field) {
+  protected Reducer(String name) {
+    this.name = name;
+    this.field = null;
+  }
+
+  protected Reducer(String name, String field) {
+    this.name = name;
     this.field = field;
-    this.alias = null;
   }
 
-  protected Reducer() {
-    this(null);
+  public final Reducer as(String alias) {
+    this.alias = alias;
+    return this;
   }
 
-  protected List<String> getOwnArgs() {
-    if (field == null) {
-      return Collections.emptyList();
-    }
-    List<String> ret = new ArrayList<>();
-    ret.add(field);
-    return ret;
+  public final String getName() {
+    return name;
   }
 
-  /**
-   * @return The name of the reducer
-   */
-  public abstract String getName();
+  public final String getField() {
+    return field;
+  }
 
   public final String getAlias() {
     return alias;
   }
 
-  public final Reducer setAlias(String alias) {
-    this.alias = alias;
-    return this;
-  }
+  protected abstract List<Object> getOwnArgs();
 
-  public final Reducer as(String alias) {
-    return setAlias(alias);
-  }
+  public final void addArgs(List<Object> args) {
 
-  public final Reducer setAliasAsField() {
-    if (field == null || field.isEmpty()) {
-      throw new IllegalArgumentException("Cannot set to field name since no field exists");
+    args.add(SearchKeyword.REDUCE);
+    args.add(name);
+
+    List<Object> ownArgs = getOwnArgs();
+    if (field != null) {
+      args.add(1 + ownArgs.size());
+      args.add(field);
+    } else {
+      args.add(ownArgs.size());
     }
-    return setAlias(field);
-  }
-
-  public void addArgs(List<String> args) {
-    List<String> ownArgs = getOwnArgs();
-    args.add(Integer.toString(ownArgs.size()));
     args.addAll(ownArgs);
-  }
 
-  public final List<String> getArgs() {
-    List<String> args = new ArrayList<>();
-    addArgs(args);
-    return args;
+    if (alias != null) {
+      args.add(SearchKeyword.AS);
+      args.add(alias);
+    }
   }
 }

@@ -1,5 +1,6 @@
 package redis.clients.jedis.timeseries;
 
+import java.util.Locale;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -28,7 +29,7 @@ public enum AggregationType implements Rawable {
 
   public static AggregationType safeValueOf(String str) {
     try {
-      return AggregationType.valueOf(str.replace('.', '_'));
+      return AggregationType.valueOf(str.replace('.', '_').toUpperCase(Locale.ENGLISH));
     } catch (IllegalArgumentException iae) {
       return null;
     }

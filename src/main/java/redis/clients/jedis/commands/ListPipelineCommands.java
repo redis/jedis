@@ -6,7 +6,6 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
-import redis.clients.jedis.resps.KeyedListElement;
 import redis.clients.jedis.util.KeyValue;
 
 public interface ListPipelineCommands {
@@ -49,19 +48,19 @@ public interface ListPipelineCommands {
 
   Response<List<String>> blpop(int timeout, String key);
 
-  Response<KeyedListElement> blpop(double timeout, String key);
+  Response<KeyValue<String, String>> blpop(double timeout, String key);
 
   Response<List<String>> brpop(int timeout, String key);
 
-  Response<KeyedListElement> brpop(double timeout, String key);
+  Response<KeyValue<String, String>> brpop(double timeout, String key);
 
   Response<List<String>> blpop(int timeout, String... keys);
 
-  Response<KeyedListElement> blpop(double timeout, String... keys);
+  Response<KeyValue<String, String>> blpop(double timeout, String... keys);
 
   Response<List<String>> brpop(int timeout, String... keys);
 
-  Response<KeyedListElement> brpop(double timeout, String... keys);
+  Response<KeyValue<String, String>> brpop(double timeout, String... keys);
 
   Response<String> rpoplpush(String srckey, String dstkey);
 
@@ -75,7 +74,7 @@ public interface ListPipelineCommands {
 
   Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, int count, String... keys);
 
-  Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, String... keys);
+  Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, String... keys);
 
-  Response<KeyValue<String, List<String>>> blmpop(long timeout, ListDirection direction, int count, String... keys);
+  Response<KeyValue<String, List<String>>> blmpop(double timeout, ListDirection direction, int count, String... keys);
 }

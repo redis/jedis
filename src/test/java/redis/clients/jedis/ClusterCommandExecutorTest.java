@@ -2,11 +2,7 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -15,8 +11,12 @@ import static org.mockito.Mockito.when;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
+import org.hamcrest.MatcherAssert;
+import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.InOrder;
+import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -99,7 +99,7 @@ public class ClusterCommandExecutorTest {
     }
     InOrder inOrder = inOrder(connectionHandler, sleep);
     inOrder.verify(connectionHandler, times(2)).getConnection(STR_COM_OBJECT.getArguments());
-    inOrder.verify(sleep).accept(anyLong());
+    inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
     inOrder.verifyNoMoreInteractions();
@@ -134,7 +134,7 @@ public class ClusterCommandExecutorTest {
 
     InOrder inOrder = inOrder(connectionHandler);
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
-    inOrder.verify(connectionHandler).renewSlotCache(any());
+    inOrder.verify(connectionHandler).renewSlotCache(ArgumentMatchers.any());
     inOrder.verify(connectionHandler).getConnection(movedTarget);
     inOrder.verifyNoMoreInteractions();
   }
@@ -191,8 +191,8 @@ public class ClusterCommandExecutorTest {
     when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenReturn(redirecter);
 
     final Connection failer = mock(Connection.class);
-    when(connectionHandler.getConnection(any(HostAndPort.class))).thenReturn(failer);
-    doAnswer((Answer) (InvocationOnMock invocation) -> {
+    when(connectionHandler.getConnection(ArgumentMatchers.any(HostAndPort.class))).thenReturn(failer);
+    Mockito.doAnswer((Answer) (InvocationOnMock invocation) -> {
       when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenReturn(failer);
       return null;
     }).when(connectionHandler).renewSlotCache();
@@ -231,10 +231,10 @@ public class ClusterCommandExecutorTest {
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
     inOrder.verify(connectionHandler).renewSlotCache(redirecter);
     inOrder.verify(connectionHandler, times(2)).getConnection(movedTarget);
-    inOrder.verify(sleep).accept(anyLong());
+    inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verify(connectionHandler, times(2)).getConnection(STR_COM_OBJECT.getArguments());
-    inOrder.verify(sleep).accept(anyLong());
+    inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verifyNoMoreInteractions();
   }
@@ -260,13 +260,13 @@ public class ClusterCommandExecutorTest {
 
     when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenReturn(master);
 
-    doAnswer((Answer) (InvocationOnMock invocation) -> {
+    Mockito.doAnswer((Answer) (InvocationOnMock invocation) -> {
       when(connectionHandler.getConnection(STR_COM_OBJECT.getArguments())).thenReturn(replica);
       return null;
     }).when(connectionHandler).renewSlotCache();
 
     final AtomicLong totalSleepMs = new AtomicLong();
-    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND) {
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 5, ONE_SECOND) {
 
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
@@ -283,7 +283,7 @@ public class ClusterCommandExecutorTest {
 
       @Override
       protected void sleep(long sleepMillis) {
-        assert sleepMillis > 0;
+        // assert sleepMillis > 0;
         totalSleepMs.addAndGet(sleepMillis);
       }
     };
@@ -294,7 +294,7 @@ public class ClusterCommandExecutorTest {
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
     inOrder.verifyNoMoreInteractions();
-    assertTrue(totalSleepMs.get() > 0);
+    MatcherAssert.assertThat(totalSleepMs.get(), Matchers.greaterThan(0L));
   }
 
   @Test(expected = JedisClusterOperationException.class)
@@ -322,7 +322,8 @@ public class ClusterCommandExecutorTest {
   public void runStopsRetryingAfterTimeout() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
 
-    final LongConsumer sleep = mock(LongConsumer.class);
+    //final LongConsumer sleep = mock(LongConsumer.class);
+    final AtomicLong totalSleepMs = new AtomicLong();
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, Duration.ZERO) {
       @Override
       public <T> T execute(Connection connection, CommandObject<T> commandObject) {
@@ -337,7 +338,8 @@ public class ClusterCommandExecutorTest {
 
       @Override
       protected void sleep(long sleepMillis) {
-        sleep.accept(sleepMillis);
+        //sleep.accept(sleepMillis);
+        totalSleepMs.addAndGet(sleepMillis);
       }
     };
 
@@ -347,8 +349,10 @@ public class ClusterCommandExecutorTest {
     } catch (JedisClusterOperationException e) {
       // expected
     }
-    InOrder inOrder = inOrder(connectionHandler, sleep);
+    //InOrder inOrder = inOrder(connectionHandler, sleep);
+    InOrder inOrder = inOrder(connectionHandler);
     inOrder.verify(connectionHandler).getConnection(STR_COM_OBJECT.getArguments());
     inOrder.verifyNoMoreInteractions();
+    assertEquals(0L, totalSleepMs.get());
   }
 }

@@ -25,7 +25,7 @@ import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
 public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
-  private Connection c;
+//  private Connection c;
 
   @BeforeClass
   public static void prepare() {
@@ -42,20 +42,21 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 //    api.deleteGraph("social");
 //    api.close();
 //  }
-
-  @Before
-  public void createApi() {
-    c = createConnection();
-  }
-
-  @After
-  public void deleteGraph() {
-    c.close();
-  }
+//
+//  @Before
+//  public void createApi() {
+//    c = createConnection();
+//  }
+//
+//  @After
+//  public void deleteGraph() {
+//    c.close();
+//  }
 
   @Test
   public void testSync() {
-    Pipeline pipeline = new Pipeline(c);
+//    Pipeline pipeline = new Pipeline(c);
+    Pipeline pipeline = (Pipeline) client.pipelined();
 
     pipeline.set("x", "1");
     pipeline.graphQuery("social", "CREATE (:Person {name:'a'})");
@@ -140,7 +141,8 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testReadOnlyQueries() {
-    Pipeline pipeline = new Pipeline(c);
+//    Pipeline pipeline = new Pipeline(c);
+    Pipeline pipeline = (Pipeline) client.pipelined();
 
     pipeline.set("x", "1");
     pipeline.graphQuery("social", "CREATE (:Person {name:'a'})");
@@ -215,12 +217,26 @@ public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void testWaitReplicas() {
-    Pipeline pipeline = new Pipeline(c);
+//    Pipeline pipeline = new Pipeline(c);
+    Pipeline pipeline = (Pipeline) client.pipelined();
     pipeline.set("x", "1");
     pipeline.graphProfile("social", "CREATE (:Person {name:'a'})");
     pipeline.graphProfile("g", "CREATE (:Person {name:'a'})");
     pipeline.waitReplicas(0, 100L);
     List<Object> results = pipeline.syncAndReturnAll();
     assertEquals(Long.valueOf(0), results.get(3));
+  }
+
+  @Test
+  @org.junit.Ignore
+  public void testWaitAof() {
+//    Pipeline pipeline = new Pipeline(c);
+    Pipeline pipeline = (Pipeline) client.pipelined();
+    pipeline.set("x", "1");
+    pipeline.graphProfile("social", "CREATE (:Person {name:'a'})");
+    pipeline.graphProfile("g", "CREATE (:Person {name:'a'})");
+    pipeline.waitAOF(1L, 0L, 100L);
+    List<Object> results = pipeline.syncAndReturnAll();
+    assertEquals(0L, results.get(3));
   }
 }

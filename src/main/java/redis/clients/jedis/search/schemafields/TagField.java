@@ -106,6 +106,14 @@ public class TagField extends SchemaField {
       args.add(SEPARATOR).add(separator);
     }
 
+    if (caseSensitive) {
+      args.add(CASESENSITIVE);
+    }
+
+    if (withSuffixTrie) {
+      args.add(WITHSUFFIXTRIE);
+    }
+
     if (sortableUNF) {
       args.add(SORTABLE).add(UNF);
     } else if (sortable) {
@@ -114,14 +122,6 @@ public class TagField extends SchemaField {
 
     if (noIndex) {
       args.add(NOINDEX);
-    }
-
-    if (caseSensitive) {
-      args.add(CASESENSITIVE);
-    }
-
-    if (withSuffixTrie) {
-      args.add(WITHSUFFIXTRIE);
     }
   }
 }

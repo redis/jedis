@@ -5,7 +5,7 @@ package io.redis.examples;
 
 import redis.clients.jedis.UnifiedJedis;
 import org.junit.Test;
-import org.junit.Assert;
+import org.locationtech.jts.util.Assert;
 import java.util.List;
 
 public class BloomFilterExample {
@@ -33,7 +33,7 @@ public class BloomFilterExample {
                 "Rocky Mountain Racer",
                 "Cloudy City Cruiser",
                 "Windy City Wippet");
-        System.out.println(res4); // >>> True
+        System.out.println(res4); // >>> [True, True, True]
 
         List<Boolean> res5 = jedis.bfMExists("bikes:models",
                 "Rocky Mountain Racer",
@@ -43,7 +43,7 @@ public class BloomFilterExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.assertEquals("OK", res1);
+        Assert.equals("OK", res1);
         // REMOVE_END
     }
 }

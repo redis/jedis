@@ -22,4 +22,4 @@ jobs:
         stale-issue-label: "stale"
         stale-pr-label: "stale"
         operations-per-run: 10
-        remove-stale-when-updated: true
+        remove-stale-when-updated: false

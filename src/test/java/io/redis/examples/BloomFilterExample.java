@@ -39,7 +39,7 @@ public class BloomFilterExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.equals("OK",res1);
+        Assert.assertEquals("OK",res1);
         // REMOVE_END
     }
 }

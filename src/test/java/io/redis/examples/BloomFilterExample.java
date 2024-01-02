@@ -21,7 +21,7 @@ public class BloomFilterExample {
 
         // STEP_START bloom
         String res1 = jedis.bfReserve("bikes:models", 0.01, 1000);
-        System.out.println(res1); // >>> True
+        System.out.println(res1); // >>> OK
 
         boolean res2 = jedis.bfAdd("bikes:models", "Smoky Mountain Striker");
         System.out.println(res2); // >>> True

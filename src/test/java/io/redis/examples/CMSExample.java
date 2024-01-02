@@ -4,8 +4,8 @@ package io.redis.examples;
 //HIDE_END
 
 //REMOVE_START
-import org.junit.Test;
 import redis.clients.jedis.UnifiedJedis;
+import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,19 +26,24 @@ public class CMSExample {
     //REMOVE_END
 
     //STEP_START cms
-    String res1 = jedis.cmsInitByProb("bikes:profit",0.001d,0.002d);
+    String res1 = jedis.cmsInitByProb("bikes:profit", 0.001d, 0.002d);
     System.out.println(res1); // >>> OK
 
-    List<Long> res2= jedis.cmsIncrBy("bikes:profit",new HashMap<String,Long>(){{put("Smoky Mountain Striker",100L);}});
+    List<Long> res2 = jedis.cmsIncrBy("bikes:profit", new HashMap<String, Long>() {{
+      put("Smoky Mountain Striker", 100L);
+    }});
     System.out.println(res2); // >>> [100]
 
-    List<Long> res3= jedis.cmsIncrBy("bikes:profit",new HashMap<String,Long>(){{put("Rocky Mountain Racer",200L);put("Cloudy City Cruiser",150L);}});
+    List<Long> res3 = jedis.cmsIncrBy("bikes:profit", new HashMap<String, Long>() {{
+      put("Rocky Mountain Racer", 200L);
+      put("Cloudy City Cruiser", 150L);
+    }});
     System.out.println(res3); // >>> [200,150]
 
-    List<Long> res4 = jedis.cmsQuery("bikes:profit","Smoky Mountain Striker");
+    List<Long> res4 = jedis.cmsQuery("bikes:profit", "Smoky Mountain Striker");
     System.out.println(res4); // >>>[100]
 
-    Map<String,Object> res5 = jedis.cmsInfo("bikes:profit");
+    Map<String, Object> res5 = jedis.cmsInfo("bikes:profit");
     System.out.println(res5.get("width") + " " + res5.get("depth") + " " + res5.get("count")); // >>> 2000 9 450
     //STEP_END
   }

@@ -77,10 +77,10 @@ public abstract class JedisClusterTestBase {
     node2.flushDB();
     node3.flushDB();
     node4.flushDB();
-    node1.clusterReset(ClusterResetType.SOFT);
-    node2.clusterReset(ClusterResetType.SOFT);
-    node3.clusterReset(ClusterResetType.SOFT);
-    node4.clusterReset(ClusterResetType.SOFT);
+    node1.clusterReset(ClusterResetType.HARD);
+    node2.clusterReset(ClusterResetType.HARD);
+    node3.clusterReset(ClusterResetType.HARD);
+    node4.clusterReset(ClusterResetType.HARD);
   }
 
   @After

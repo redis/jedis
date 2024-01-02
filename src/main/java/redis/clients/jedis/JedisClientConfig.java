@@ -80,4 +80,11 @@ public interface JedisClientConfig {
     return null;
   }
 
+  /**
+   * Modify the behavior of internally executing CLIENT SETINFO command.
+   * @return CLIENT SETINFO config
+   */
+  default ClientSetInfoConfig getClientSetInfoConfig() {
+    return ClientSetInfoConfig.DEFAULT;
+  }
 }

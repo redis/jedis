@@ -6,13 +6,27 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.txt)
 [![Integration](https://github.com/redis/jedis/actions/workflows/integration.yml/badge.svg?branch=master)](https://github.com/redis/jedis/actions/workflows/integration.yml)
 [![codecov](https://codecov.io/gh/redis/jedis/branch/master/graph/badge.svg?token=pAstxAAjYo)](https://codecov.io/gh/redis/jedis)
-[![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/qRhBuY8Z)
+[![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/redis)
 
 ## What is Jedis?
 
 Jedis is a Java client for [Redis](https://github.com/redis/redis "Redis") designed for performance and ease of use.
 
 Are you looking for a high-level library to handle object mapping? See [redis-om-spring](https://github.com/redis/redis-om-spring)!
+
+## How do I Redis?
+
+[Learn for free at Redis University](https://university.redis.com/)
+
+[Build faster with the Redis Launchpad](https://launchpad.redis.com/)
+
+[Try the Redis Cloud](https://redis.com/try-free/)
+
+[Dive in developer tutorials](https://developer.redis.com/)
+
+[Join the Redis community](https://redis.com/community/)
+
+[Work at Redis](https://redis.com/company/careers/jobs/)
 
 ## Supported Redis versions
 

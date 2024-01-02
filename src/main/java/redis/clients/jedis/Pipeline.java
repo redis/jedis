@@ -7,16 +7,12 @@ import java.util.List;
 import java.util.Queue;
 
 import redis.clients.jedis.commands.DatabasePipelineCommands;
-import redis.clients.jedis.commands.PipelineBinaryCommands;
-import redis.clients.jedis.commands.PipelineCommands;
-import redis.clients.jedis.commands.RedisModulePipelineCommands;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.KeyValue;
 
-public class Pipeline extends PipelineBase implements PipelineCommands, PipelineBinaryCommands,
-    DatabasePipelineCommands, RedisModulePipelineCommands, Closeable {
+public class Pipeline extends PipelineBase implements DatabasePipelineCommands, Closeable {
 
   private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
   protected final Connection connection;
@@ -66,8 +62,8 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
   public void sync() {
     if (!hasPipelinedResponse()) return;
     List<Object> unformatted = connection.getMany(pipelinedResponses.size());
-    for (Object o : unformatted) {
-      pipelinedResponses.poll().set(o);
+    for (Object rawReply : unformatted) {
+      pipelinedResponses.poll().set(rawReply);
     }
   }
 
@@ -81,10 +77,10 @@ public class Pipeline extends PipelineBase implements PipelineCommands, Pipeline
     if (hasPipelinedResponse()) {
       List<Object> unformatted = connection.getMany(pipelinedResponses.size());
       List<Object> formatted = new ArrayList<>();
-      for (Object o : unformatted) {
+      for (Object rawReply : unformatted) {
         try {
           Response<?> response = pipelinedResponses.poll();
-          response.set(o);
+          response.set(rawReply);
           formatted.add(response.get());
         } catch (JedisDataException e) {
           formatted.add(e);

@@ -3,13 +3,13 @@
 // HIDE_START
 package io.redis.examples;
 
-import org.junit.Test;
-import org.locationtech.jts.util.Assert;
 import redis.clients.jedis.UnifiedJedis;
-
+import org.junit.Test;
+import org.junit.Assert;
 import java.util.List;
 
 public class BloomFilterExample {
+
     @Test
     public void run(){
         UnifiedJedis unifiedJedis = new UnifiedJedis("redis://localhost:6379");

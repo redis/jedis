@@ -19,7 +19,7 @@ jobs:
         stale-pr-message: 'This pull request is marked stale. It will be closed in 30 days if it is not updated.'
         days-before-stale: 365
         days-before-close: 30
-        stale-issue-label: "Stale"
-        stale-pr-label: "Stale"
+        stale-issue-label: "stale"
+        stale-pr-label: "stale"
         operations-per-run: 10
         remove-stale-when-updated: true

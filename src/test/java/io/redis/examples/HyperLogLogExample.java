@@ -34,7 +34,7 @@ public class HyperLogLogExample {
         // STEP_END
 
         // REMOVE_START
-         Assert.equals("OK", res4);
+        Assert.equals("OK", res4);
         // REMOVE_END
     }
 }

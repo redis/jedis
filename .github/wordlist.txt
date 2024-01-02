@@ -33,6 +33,8 @@ HostnameVerifier
 INCR
 IOError
 Instrumentations
+JDK
+JSONArray
 JSONCommands
 Jaeger
 Javadocs

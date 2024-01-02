@@ -36,10 +36,10 @@ public class CMSExample {
       put("Rocky Mountain Racer", 200L);
       put("Cloudy City Cruiser", 150L);
     }});
-    System.out.println(res3); // >>> [200,150]
+    System.out.println(res3); // >>> [200, 150]
 
     List<Long> res4 = jedis.cmsQuery("bikes:profit", "Smoky Mountain Striker");
-    System.out.println(res4); // >>>[100]
+    System.out.println(res4); // >>> [100]
 
     Map<String, Object> res5 = jedis.cmsInfo("bikes:profit");
     System.out.println(res5.get("width") + " " + res5.get("depth") + " " + res5.get("count")); // >>> 2000 9 450

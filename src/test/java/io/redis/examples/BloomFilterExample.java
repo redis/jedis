@@ -3,9 +3,9 @@
 // HIDE_START
 package io.redis.examples;
 
+import org.junit.Assert;
 import redis.clients.jedis.UnifiedJedis;
 import org.junit.Test;
-import org.locationtech.jts.util.Assert;
 import java.util.List;
 
 public class BloomFilterExample {
@@ -43,7 +43,7 @@ public class BloomFilterExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.equals("OK", res1);
+        Assert.assertEquals("OK", res1);
         // REMOVE_END
     }
 }

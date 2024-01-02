@@ -64,14 +64,14 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void clientSetInfoDefault() {
-    String libName = "jedis";
+  public void clientSetInfoCommand() {
+    String libName = "Jedis::A-Redis-Java-library";
     String libVersion = "999.999.999";
     assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_NAME, libName));
     assertEquals("OK", client.clientSetInfo(ClientAttributeOption.LIB_VER, libVersion));
     String info = client.clientInfo();
-    assertTrue(info.contains("lib-name=jedis"));
-    assertTrue(info.contains("lib-ver=999.999.999"));
+    assertTrue(info.contains("lib-name=" + libName));
+    assertTrue(info.contains("lib-ver=" + libVersion));
   }
 
   @Test

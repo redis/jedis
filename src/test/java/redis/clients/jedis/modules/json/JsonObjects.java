@@ -2,7 +2,6 @@ package redis.clients.jedis.modules.json;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class JsonObjects {
@@ -17,6 +16,16 @@ public class JsonObjects {
     public IRLObject() {
       this.str = "string";
       this.bool = true;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) return true;
+      if (obj == null) return false;
+      if (getClass() != obj.getClass()) return false;
+      final IRLObject other = (IRLObject) obj;
+      return Objects.equals(str, other.str)
+          && Objects.equals(bool, other.bool);
     }
   }
 

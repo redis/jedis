@@ -107,29 +107,30 @@ public class TextField extends SchemaField {
     args.addParams(fieldName);
     args.add(TEXT);
 
-    if (sortableUNF) {
-      args.add(SORTABLE).add(UNF);
-    } else if (sortable) {
-      args.add(SORTABLE);
+    if (weight != null) {
+      args.add(WEIGHT).add(weight);
     }
 
     if (noStem) {
       args.add(NOSTEM);
-    }
-    if (noIndex) {
-      args.add(NOINDEX);
     }
 
     if (phoneticMatcher != null) {
       args.add(PHONETIC).add(phoneticMatcher);
     }
 
-    if (weight != null) {
-      args.add(WEIGHT).add(weight);
-    }
-
     if (withSuffixTrie) {
       args.add(WITHSUFFIXTRIE);
+    }
+
+    if (sortableUNF) {
+      args.add(SORTABLE).add(UNF);
+    } else if (sortable) {
+      args.add(SORTABLE);
+    }
+
+    if (noIndex) {
+      args.add(NOINDEX);
     }
   }
 }

@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.providers.ConnectionProvider;
-import redis.clients.jedis.search.SearchBuilderFactory;
 import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.util.JedisCommandIterationBase;
 
@@ -20,7 +19,7 @@ public class FtAggregateIteration extends JedisCommandIterationBase<AggregationR
    * @param aggr cursor must be set
    */
   public FtAggregateIteration(ConnectionProvider connectionProvider, String indexName, AggregationBuilder aggr) {
-    super(connectionProvider, SearchBuilderFactory.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
+    super(connectionProvider, AggregationResult.SEARCH_AGGREGATION_RESULT_WITH_CURSOR);
     if (!aggr.isWithCursor()) throw new IllegalArgumentException("cursor must be set");
     this.indexName = indexName;
     this.args = new CommandArguments(SearchProtocol.SearchCommand.AGGREGATE).add(this.indexName).addParams(aggr);

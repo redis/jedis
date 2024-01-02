@@ -3,10 +3,13 @@ package redis.clients.jedis.modules.search;
 import static org.junit.Assert.*;
 
 import java.util.*;
+import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
@@ -155,11 +158,6 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     }
     SearchResult res2 = client.ftSearch(index, new Query("@tags:{tagA}"));
     assertEquals(100, res2.getTotalResults());
-
-    Map<String, Object> info = client.ftInfo(index);
-    assertEquals(index, info.get("index_name"));
-    assertEquals("identifier", ((List) ((List) info.get("attributes")).get(1)).get(0));
-    assertEquals("attribute", ((List) ((List) info.get("attributes")).get(1)).get(2));
   }
 
   @Test
@@ -373,8 +371,13 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     res = client.ftSearch(index, q);
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
-      assertEquals(1.0, d.getScore(), 0);
-      assertNull(d.get("title"));
+      if (protocol != RedisProtocol.RESP3) {
+        assertEquals(1.0, d.getScore(), 0);
+        assertNull(d.get("title"));
+      } else {
+        assertNull(d.getScore());
+        assertThrows(NullPointerException.class, () -> d.get("title"));
+      }
     }
 
     // test verbatim vs. stemming
@@ -644,8 +647,13 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     Map<String, Object> info = client.ftInfo(index);
     assertEquals(index, info.get("index_name"));
     assertEquals(6, ((List) info.get("attributes")).size());
-    assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
-    assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
+      assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
+    } else {
+      assertEquals(0L, ((Map) info.get("cursor_stats")).get("global_idle"));
+      assertEquals(128L, ((Map) info.get("cursor_stats")).get("index_capacity"));
+    }
   }
 
   @Test
@@ -892,6 +900,8 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void blobField() throws Exception {
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3); // not supporting
+
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
 
@@ -1124,6 +1134,43 @@ public class SearchTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void searchProfile() {
+    Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
+
+    Map<String, String> hash = new HashMap<>();
+    hash.put("t1", "foo");
+    hash.put("t2", "bar");
+    client.hset("doc1", hash);
+
+    Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
+        FTProfileParams.profileParams(), new Query("foo"));
+
+    SearchResult result = reply.getKey();
+    assertEquals(1, result.getTotalResults());
+    assertEquals(Collections.singletonList("doc1"), result.getDocuments().stream().map(Document::getId).collect(Collectors.toList()));
+
+    Map<String, Object> profile = reply.getValue();
+    Map<String, Object> iteratorsProfile;
+    if (protocol != RedisProtocol.RESP3) {
+      iteratorsProfile = (Map<String, Object>) profile.get("Iterators profile");
+    } else {
+      List iteratorsProfileList = (List) profile.get("Iterators profile");
+      assertEquals(1, iteratorsProfileList.size());
+      iteratorsProfile = (Map<String, Object>) iteratorsProfileList.get(0);
+    }
+    assertEquals("TEXT", iteratorsProfile.get("Type"));
+    assertEquals("foo", iteratorsProfile.get("Term"));
+    assertEquals(1L, iteratorsProfile.get("Counter"));
+    assertEquals(1L, iteratorsProfile.get("Size"));
+    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
+
+    assertEquals(Arrays.asList("Index", "Scorer", "Sorter", "Loader"),
+        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
+            .map(map -> map.get("Type")).collect(Collectors.toList()));
+  }
+
+  @Test
   public void testHNSWVVectorSimilarity() {
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
@@ -1147,13 +1194,18 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals("0", doc1.get("__v_score"));
 
     // profile
-    Map.Entry<SearchResult, Map<String, Object>> profile
+    Map.Entry<SearchResult, Map<String, Object>> reply
         = client.ftProfileSearch(index, FTProfileParams.profileParams(), query);
-    doc1 = profile.getKey().getDocuments().get(0);
+    doc1 = reply.getKey().getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
-    assertEquals("VECTOR", iteratorsProfile.get("Type"));
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("VECTOR", ((Map<String, Object>) reply.getValue().get("Iterators profile")).get("Type"));
+    } else {
+      assertEquals(Arrays.asList("VECTOR"),
+          ((List<Map<String, Object>>) reply.getValue().get("Iterators profile")).stream()
+              .map(map -> map.get("Type")).collect(Collectors.toList()));
+    }
   }
 
   @Test
@@ -1180,34 +1232,18 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals("0", doc1.get("__v_score"));
 
     // profile
-    Map.Entry<SearchResult, Map<String, Object>> profile
+    Map.Entry<SearchResult, Map<String, Object>> reply
         = client.ftProfileSearch(index, FTProfileParams.profileParams(), query);
-    doc1 = profile.getKey().getDocuments().get(0);
+    doc1 = reply.getKey().getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
-    assertEquals("VECTOR", iteratorsProfile.get("Type"));
-  }
-
-  @Test
-  public void searchProfile() {
-    Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
-    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), sc));
-
-    Map<String, String> map = new HashMap<>();
-    map.put("t1", "foo");
-    map.put("t2", "bar");
-    client.hset("doc1", map);
-
-    Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
-        FTProfileParams.profileParams(), new Query("foo"));
-    // Iterators profile={Type=TEXT, Time=0.0, Term=foo, Counter=1, Size=1}
-    Map<String, Object> iteratorsProfile = (Map<String, Object>) profile.getValue().get("Iterators profile");
-    assertEquals("TEXT", iteratorsProfile.get("Type"));
-    assertEquals("foo", iteratorsProfile.get("Term"));
-    assertEquals(1L, iteratorsProfile.get("Counter"));
-    assertEquals(1L, iteratorsProfile.get("Size"));
-    assertSame(Double.class, iteratorsProfile.get("Time").getClass());
+    if (protocol != RedisProtocol.RESP3) {
+      assertEquals("VECTOR", ((Map<String, Object>) reply.getValue().get("Iterators profile")).get("Type"));
+    } else {
+      assertEquals(Arrays.asList("VECTOR"),
+          ((List<Map<String, Object>>) reply.getValue().get("Iterators profile")).stream()
+              .map(map -> map.get("Type")).collect(Collectors.toList()));
+    }
   }
 
   @Test

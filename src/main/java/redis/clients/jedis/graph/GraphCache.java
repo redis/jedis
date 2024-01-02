@@ -3,7 +3,9 @@ package redis.clients.jedis.graph;
 /**
  * Store a local cache in the client, for a specific graph. Holds the labels, property names and
  * relationship types.
+ * @deprecated Redis Graph support is deprecated.
  */
+@Deprecated
 interface GraphCache {
 
   /**

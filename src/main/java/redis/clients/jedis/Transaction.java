@@ -1,18 +1,40 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Command.DISCARD;
+import static redis.clients.jedis.Protocol.Command.EXEC;
+import static redis.clients.jedis.Protocol.Command.MULTI;
+import static redis.clients.jedis.Protocol.Command.UNWATCH;
+import static redis.clients.jedis.Protocol.Command.WATCH;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.graph.GraphCommandObjects;
 
 /**
  * A pipeline based transaction.
  */
 public class Transaction extends TransactionBase {
 
-  private final Jedis jedis;
+  private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
+
+  private Jedis jedis = null;
+
+  protected final Connection connection;
+  private final boolean closeConnection;
+
+  private boolean broken = false;
+  private boolean inWatch = false;
+  private boolean inMulti = false;
 
   // Legacy - to support Jedis.multi()
   // TODO: Should be package private ??
   public Transaction(Jedis jedis) {
-    super(jedis.getConnection());
+    this(jedis.getConnection());
     this.jedis = jedis;
   }
 
@@ -24,8 +46,7 @@ public class Transaction extends TransactionBase {
    * @param connection connection
    */
   public Transaction(Connection connection) {
-    super(connection);
-    this.jedis = null;
+    this(connection, true);
   }
 
   /**
@@ -38,8 +59,7 @@ public class Transaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   public Transaction(Connection connection, boolean doMulti) {
-    super(connection, doMulti);
-    this.jedis = null;
+    this(connection, doMulti, false);
   }
 
   /**
@@ -53,49 +73,142 @@ public class Transaction extends TransactionBase {
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
    */
   public Transaction(Connection connection, boolean doMulti, boolean closeConnection) {
-    super(connection, doMulti, closeConnection);
-    this.jedis = null;
+    this.connection = connection;
+    this.closeConnection = closeConnection;
+    setGraphCommands(new GraphCommandObjects(this.connection));
+    if (doMulti) multi();
   }
 
   @Override
-  protected final void processMultiResponse() {
-    // do nothing
+  public final void multi() {
+    connection.sendCommand(MULTI);
+    // processMultiResponse(); // do nothing
+    inMulti = true;
   }
 
   @Override
-  protected final void processAppendStatus() {
-    // do nothing
+  public String watch(final String... keys) {
+    connection.sendCommand(WATCH, keys);
+    String status = connection.getStatusCodeReply();
+    inWatch = true;
+    return status;
   }
 
   @Override
-  protected final void processPipelinedResponses(int pipelineLength) {
-    // ignore QUEUED or ERROR
-    connection.getMany(1 + pipelineLength);
+  public String watch(final byte[]... keys) {
+    connection.sendCommand(WATCH, keys);
+    String status = connection.getStatusCodeReply();
+    inWatch = true;
+    return status;
   }
 
   @Override
-  public final List<Object> exec() {
-    List<Object> ret;
+  public String unwatch() {
+    connection.sendCommand(UNWATCH);
+    String status = connection.getStatusCodeReply();
+    inWatch = false;
+    return status;
+  }
+
+  @Override
+  protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
+    connection.sendCommand(commandObject.getArguments());
+    // processAppendStatus(); // do nothing
+    Response<T> response = new Response<>(commandObject.getBuilder());
+    pipelinedResponses.add(response);
+    return response;
+  }
+
+  @Override
+  public final void close() {
     try {
-      ret = super.exec();
+      clear();
     } finally {
+      if (closeConnection) {
+        connection.close();
+      }
+    }
+  }
+
+  @Deprecated // TODO: private
+  public final void clear() {
+    if (broken) {
+      return;
+    }
+    if (inMulti) {
+      discard();
+    } else if (inWatch) {
+      unwatch();
+    }
+  }
+
+  @Override
+  public List<Object> exec() {
+    if (!inMulti) {
+      throw new IllegalStateException("EXEC without MULTI");
+    }
+
+    try {
+      // ignore QUEUED (or ERROR)
+      // processPipelinedResponses(pipelinedResponses.size());
+      connection.getMany(1 + pipelinedResponses.size());
+
+      connection.sendCommand(EXEC);
+
+      List<Object> unformatted = connection.getObjectMultiBulkReply();
+      if (unformatted == null) {
+        pipelinedResponses.clear();
+        return null;
+      }
+
+      List<Object> formatted = new ArrayList<>(unformatted.size());
+      for (Object o : unformatted) {
+        try {
+          Response<?> response = pipelinedResponses.poll();
+          response.set(o);
+          formatted.add(response.get());
+        } catch (JedisDataException e) {
+          formatted.add(e);
+        }
+      }
+      return formatted;
+    } catch (JedisConnectionException jce) {
+      broken = true;
+      throw jce;
+    } finally {
+      inMulti = false;
+      inWatch = false;
+      pipelinedResponses.clear();
       if (jedis != null) {
         jedis.resetState();
       }
     }
-    return ret;
   }
 
   @Override
-  public final String discard() {
-    String ret;
+  public String discard() {
+    if (!inMulti) {
+      throw new IllegalStateException("DISCARD without MULTI");
+    }
+
     try {
-      ret = super.discard();
+      // ignore QUEUED (or ERROR)
+      // processPipelinedResponses(pipelinedResponses.size());
+      connection.getMany(1 + pipelinedResponses.size());
+
+      connection.sendCommand(DISCARD);
+
+      return connection.getStatusCodeReply();
+    } catch (JedisConnectionException jce) {
+      broken = true;
+      throw jce;
     } finally {
+      inMulti = false;
+      inWatch = false;
+      pipelinedResponses.clear();
       if (jedis != null) {
         jedis.resetState();
       }
     }
-    return ret;
   }
 }

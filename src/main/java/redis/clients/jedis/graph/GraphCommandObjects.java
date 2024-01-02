@@ -19,6 +19,10 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.graph.GraphProtocol.GraphCommand;
 import redis.clients.jedis.providers.ConnectionProvider;
 
+/**
+ * @deprecated Redis Graph support is deprecated.
+ */
+@Deprecated
 public class GraphCommandObjects {
 
   private final RedisGraphCommands graph;

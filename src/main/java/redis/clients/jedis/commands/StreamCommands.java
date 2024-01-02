@@ -124,16 +124,6 @@ public interface StreamCommands {
   long xgroupDelConsumer(String key, String groupName, String consumerName);
 
   /**
-   * XPENDING key group
-   */
-  StreamPendingSummary xpending(String key, String groupName);
-
-  /**
-   * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
-   */
-  List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params);
-
-  /**
    * XDEL key ID [ID ...]
    */
   long xdel(String key, StreamEntryID... ids);
@@ -147,6 +137,16 @@ public interface StreamCommands {
    * XTRIM key MAXLEN|MINID [=|~] threshold [LIMIT count]
    */
   long xtrim(String key, XTrimParams params);
+
+  /**
+   * XPENDING key group
+   */
+  StreamPendingSummary xpending(String key, String groupName);
+
+  /**
+   * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
+   */
+  List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params);
 
   /**
    * {@code XCLAIM key group consumer min-idle-time <ID-1> ... <ID-N>
@@ -226,7 +226,7 @@ public interface StreamCommands {
    * @param key Stream name
    * @param group Group name
    * @return List of {@link StreamConsumersInfo} containing information about consumers that belong
-   * to the the group
+   * to the group
    * @deprecated Use {@link #xinfoConsumers2(java.lang.String, java.lang.String)}.
    */
   @Deprecated // keep it till at least Jedis 6/7
@@ -237,7 +237,7 @@ public interface StreamCommands {
    * @param key Stream name
    * @param group Group name
    * @return List of {@link StreamConsumerInfo} containing information about consumers that belong
-   * to the the group
+   * to the group
    */
   List<StreamConsumerInfo> xinfoConsumers2(String key, String group);
 

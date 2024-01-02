@@ -15,7 +15,7 @@ import java.util.Map;
 public class CMSExample {
 
   @Test
-  public void run(){
+  public void run() {
 
     //HIDE_START
     UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
@@ -29,10 +29,8 @@ public class CMSExample {
     String res1 = jedis.cmsInitByProb("bikes:profit", 0.001d, 0.002d);
     System.out.println(res1); // >>> OK
 
-    List<Long> res2 = jedis.cmsIncrBy("bikes:profit", new HashMap<String, Long>() {{
-      put("Smoky Mountain Striker", 100L);
-    }});
-    System.out.println(res2); // >>> [100]
+    long res2 = jedis.cmsIncrBy("bikes:profit", "Smoky Mountain Striker", 100L);
+    System.out.println(res2); // >>> 100
 
     List<Long> res3 = jedis.cmsIncrBy("bikes:profit", new HashMap<String, Long>() {{
       put("Rocky Mountain Racer", 200L);

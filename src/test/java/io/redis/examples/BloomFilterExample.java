@@ -11,7 +11,7 @@ import java.util.List;
 public class BloomFilterExample {
 
     @Test
-    public void run(){
+    public void run() {
         UnifiedJedis unifiedJedis = new UnifiedJedis("redis://localhost:6379");
         // HIDE_END
 
@@ -39,7 +39,7 @@ public class BloomFilterExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.assertEquals("OK",res1);
+        Assert.assertEquals("OK", res1);
         // REMOVE_END
     }
 }

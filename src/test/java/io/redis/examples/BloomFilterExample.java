@@ -3,15 +3,15 @@
 // HIDE_START
 package io.redis.examples;
 
-import org.junit.Test;
-import org.locationtech.jts.util.Assert;
 import redis.clients.jedis.UnifiedJedis;
-
+import org.junit.Test;
+import org.junit.Assert;
 import java.util.List;
 
 public class BloomFilterExample {
+
     @Test
-    public void run(){
+    public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
         // HIDE_END
 
@@ -43,7 +43,7 @@ public class BloomFilterExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.equals("OK",res1);
+        Assert.assertEquals("OK", res1);
         // REMOVE_END
     }
 }

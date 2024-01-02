@@ -1,13 +1,22 @@
 package redis.clients.jedis.modules.search;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
 
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
@@ -331,6 +340,100 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         FTSearchParams.searchParams()
             .geoFilter(new FTSearchParams.GeoFilter("loc", -0.44, 51.45, 100, GeoUnit.KM)));
     assertEquals(2, res.getTotalResults());
+  }
+
+  @Test
+  public void geoShapeFilterSpherical() throws ParseException {
+    final WKTReader reader = new WKTReader();
+    final GeometryFactory factory = new GeometryFactory();
+
+    assertOK(client.ftCreate(index, GeoShapeField.of("geom", GeoShapeField.CoordinateSystem.SPHERICAL)));
+
+    // polygon type
+    final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
+        new Coordinate(34.9001, 29.7100), new Coordinate(34.9100, 29.7100),
+        new Coordinate(34.9100, 29.7001), new Coordinate(34.9001, 29.7001)});
+    client.hset("small", "geom", small.toString());
+
+    final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
+        new Coordinate(34.9001, 29.7200), new Coordinate(34.9200, 29.7200),
+        new Coordinate(34.9200, 29.7001), new Coordinate(34.9001, 29.7001)});
+    client.hset("large", "geom", large.toString());
+
+    // within condition
+    final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(34.9000, 29.7000),
+        new Coordinate(34.9000, 29.7150), new Coordinate(34.9150, 29.7150),
+        new Coordinate(34.9150, 29.7000), new Coordinate(34.9000, 29.7000)});
+
+    SearchResult res = client.ftSearch(index, "@geom:[within $poly]",
+        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+    assertEquals(1, res.getTotalResults());
+    assertEquals(1, res.getDocuments().size());
+    assertEquals(small, reader.read(res.getDocuments().get(0).getString("geom")));
+
+    // contains condition
+    final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(34.9002, 29.7002),
+        new Coordinate(34.9002, 29.7050), new Coordinate(34.9050, 29.7050),
+        new Coordinate(34.9050, 29.7002), new Coordinate(34.9002, 29.7002)});
+
+    res = client.ftSearch(index, "@geom:[contains $poly]",
+        FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
+    assertEquals(2, res.getTotalResults());
+    assertEquals(2, res.getDocuments().size());
+
+    // point type
+    final Point point = factory.createPoint(new Coordinate(34.9010, 29.7010));
+    client.hset("point", "geom", point.toString());
+
+    res = client.ftSearch(index, "@geom:[within $poly]",
+        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+    assertEquals(2, res.getTotalResults());
+    assertEquals(2, res.getDocuments().size());
+  }
+
+  @Test
+  public void geoShapeFilterFlat() throws ParseException {
+    final WKTReader reader = new WKTReader();
+    final GeometryFactory factory = new GeometryFactory();
+
+    assertOK(client.ftCreate(index, GeoShapeField.of("geom", GeoShapeField.CoordinateSystem.FLAT)));
+
+    // polygon type
+    final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
+        new Coordinate(1, 100), new Coordinate(100, 100), new Coordinate(100, 1), new Coordinate(1, 1)});
+    client.hset("small", "geom", small.toString());
+
+    final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
+        new Coordinate(1, 200), new Coordinate(200, 200), new Coordinate(200, 1), new Coordinate(1, 1)});
+    client.hset("large", "geom", large.toString());
+
+    // within condition
+    final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(0, 0),
+        new Coordinate(0, 150), new Coordinate(150, 150), new Coordinate(150, 0), new Coordinate(0, 0)});
+
+    SearchResult res = client.ftSearch(index, "@geom:[within $poly]",
+        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+    assertEquals(1, res.getTotalResults());
+    assertEquals(1, res.getDocuments().size());
+    assertEquals(small, reader.read(res.getDocuments().get(0).getString("geom")));
+
+    // contains condition
+    final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(2, 2),
+        new Coordinate(2, 50), new Coordinate(50, 50), new Coordinate(50, 2), new Coordinate(2, 2)});
+
+    res = client.ftSearch(index, "@geom:[contains $poly]",
+        FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
+    assertEquals(2, res.getTotalResults());
+    assertEquals(2, res.getDocuments().size());
+
+    // point type
+    final Point point = factory.createPoint(new Coordinate(10, 10));
+    client.hset("point", "geom", point.toString());
+
+    res = client.ftSearch(index, "@geom:[within $poly]",
+        FTSearchParams.searchParams().addParam("poly", within).dialect(3));
+    assertEquals(2, res.getTotalResults());
+    assertEquals(2, res.getDocuments().size());
   }
 
   @Test
@@ -1029,9 +1132,9 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       client.ftConfigSet(configParam, "2");
 
       assertOK(client.ftCreate(index, TextField.of("t")));
-      client.hset("1", Collections.singletonMap("t", "foo1"));
-      client.hset("2", Collections.singletonMap("t", "foo2"));
-      client.hset("3", Collections.singletonMap("t", "foo3"));
+      client.hset("1", "t", "foo1");
+      client.hset("2", "t", "foo2");
+      client.hset("3", "t", "foo3");
 
       Map.Entry<SearchResult, Map<String, Object>> reply = client.ftProfileSearch(index,
           FTProfileParams.profileParams(), "foo*", FTSearchParams.searchParams().limit(0, 0));
@@ -1051,8 +1154,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void noContentSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
-    client.hset("1", Collections.singletonMap("t", "foo"));
-    client.hset("2", Collections.singletonMap("t", "bar"));
+    client.hset("1", "t", "foo");
+    client.hset("2", "t", "bar");
 
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams(), "foo -@t:baz", FTSearchParams.searchParams().noContent());
@@ -1078,8 +1181,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   @Test
   public void deepReplySearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
-    client.hset("1", Collections.singletonMap("t", "hello"));
-    client.hset("2", Collections.singletonMap("t", "world"));
+    client.hset("1", "t", "hello");
+    client.hset("2", "t", "world");
 
     Map.Entry<SearchResult, Map<String, Object>> profile
         = client.ftProfileSearch(index, FTProfileParams.profileParams(),
@@ -1089,37 +1192,40 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         ? (Map<String, Object>) profile.getValue().get("Iterators profile")
         : ((List<Map<String, Object>>) profile.getValue().get("Iterators profile")).get(0);
 
-    assertEquals("INTERSECT", depth0.get("Type"));
-    List<Map<String, Object>> depth0_children = (List<Map<String, Object>>) depth0.get("Child iterators");
-    assertEquals("TEXT", depth0_children.get(0).get("Type"));
-    Map<String, Object> depth1 = depth0_children.get(1);
-    assertEquals("INTERSECT", depth1.get("Type"));
-    List<Map<String, Object>> depth1_children = (List<Map<String, Object>>) depth1.get("Child iterators");
-    assertEquals("TEXT", depth1_children.get(0).get("Type"));
-    Map<String, Object> depth2 = depth1_children.get(1);
-    assertEquals("INTERSECT", depth2.get("Type"));
-    List<Map<String, Object>> depth2_children = (List<Map<String, Object>>) depth2.get("Child iterators");
-    assertEquals("TEXT", depth2_children.get(0).get("Type"));
-    Map<String, Object> depth3 = depth2_children.get(1);
-    assertEquals("INTERSECT", depth3.get("Type"));
-    List<Map<String, Object>> depth3_children = (List<Map<String, Object>>) depth3.get("Child iterators");
-    assertEquals("TEXT", depth3_children.get(0).get("Type"));
-    Map<String, Object> depth4 = depth3_children.get(1);
-    assertEquals("INTERSECT", depth4.get("Type"));
-    List<Map<String, Object>> depth4_children = (List<Map<String, Object>>) depth4.get("Child iterators");
-    assertEquals("TEXT", depth4_children.get(0).get("Type"));
-    Map<String, Object> depth5 = depth4_children.get(1);
-    assertEquals("TEXT", depth5.get("Type"));
-    assertNull(depth5.get("Child iterators"));
+    AtomicInteger intersectLevelCount = new AtomicInteger();
+    AtomicInteger textLevelCount = new AtomicInteger();
+    deepReplySearchProfile_assertProfile(depth0, intersectLevelCount, textLevelCount);
+    assertThat(intersectLevelCount.get(), Matchers.greaterThan(0));
+    assertThat(textLevelCount.get(), Matchers.greaterThan(0));
+  }
+
+  private void deepReplySearchProfile_assertProfile(Map<String, Object> attr,
+      AtomicInteger intersectLevelCount, AtomicInteger textLevelCount) {
+
+    String type = (String) attr.get("Type");
+    assertThat(type, Matchers.not(Matchers.blankOrNullString()));
+
+    switch (type) {
+      case "INTERSECT":
+        assertThat(attr, Matchers.hasKey("Child iterators"));
+        intersectLevelCount.incrementAndGet();
+        deepReplySearchProfile_assertProfile((Map) ((List) attr.get("Child iterators")).get(0),
+            intersectLevelCount, textLevelCount);
+        break;
+      case "TEXT":
+        assertThat(attr, Matchers.hasKey("Term"));
+        textLevelCount.incrementAndGet();
+        break;
+    }
   }
 
   @Test
   public void limitedSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
-    client.hset("1", Collections.singletonMap("t", "hello"));
-    client.hset("2", Collections.singletonMap("t", "hell"));
-    client.hset("3", Collections.singletonMap("t", "help"));
-    client.hset("4", Collections.singletonMap("t", "helowa"));
+    client.hset("1", "t", "hello");
+    client.hset("2", "t", "hell");
+    client.hset("3", "t", "help");
+    client.hset("4", "t", "helowa");
 
     Map.Entry<SearchResult, Map<String, Object>> profile = client.ftProfileSearch(index,
         FTProfileParams.profileParams().limited(), "%hell% hel*", FTSearchParams.searchParams().noContent());
@@ -1231,5 +1337,23 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     client.hset("doc2", RediSearchUtil.toStringMap(Collections.singletonMap("txt", "hello-world"), true));
     assertNotEquals("hello-world", client.hget("doc2", "txt"));
     assertEquals("hello-world", RediSearchUtil.unescape(client.hget("doc2", "txt")));
+  }
+
+  @Test
+  public void hsetObject() {
+    float[] floats = new float[]{0.2f};
+    assertEquals(1L, client.hsetObject("obj", "floats", floats));
+    assertArrayEquals(RediSearchUtil.toByteArray(floats),
+        client.hget("obj".getBytes(), "floats".getBytes()));
+
+    GeoCoordinate geo = new GeoCoordinate(-0.441, 51.458);
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("title", "hello world");
+    fields.put("loc", geo);
+    assertEquals(2L, client.hsetObject("obj", fields));
+    Map<String, String> stringMap = client.hgetAll("obj");
+    assertEquals(3, stringMap.size());
+    assertEquals("hello world", stringMap.get("title"));
+    assertEquals(geo.getLongitude() + "," + geo.getLatitude(), stringMap.get("loc"));
   }
 }

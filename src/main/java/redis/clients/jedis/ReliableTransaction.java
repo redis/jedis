@@ -1,7 +1,20 @@
 package redis.clients.jedis;
 
+import static redis.clients.jedis.Protocol.Command.DISCARD;
+import static redis.clients.jedis.Protocol.Command.EXEC;
+import static redis.clients.jedis.Protocol.Command.MULTI;
+import static redis.clients.jedis.Protocol.Command.UNWATCH;
+import static redis.clients.jedis.Protocol.Command.WATCH;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.graph.GraphCommandObjects;
 
 /**
  * ReliableTransaction is a transaction where commands are immediately sent to Redis server and the
@@ -11,6 +24,14 @@ public class ReliableTransaction extends TransactionBase {
 
   private static final String QUEUED_STR = "QUEUED";
 
+  private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
+  protected final Connection connection;
+  private final boolean closeConnection;
+
+  private boolean broken = false;
+  private boolean inWatch = false;
+  private boolean inMulti = false;
+
   /**
    * Creates a new transaction.
    * 
@@ -18,7 +39,7 @@ public class ReliableTransaction extends TransactionBase {
    * @param connection connection
    */
   public ReliableTransaction(Connection connection) {
-    super(connection);
+    this(connection, true);
   }
 
   /**
@@ -31,7 +52,7 @@ public class ReliableTransaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   public ReliableTransaction(Connection connection, boolean doMulti) {
-    super(connection, doMulti);
+    this(connection, doMulti, false);
   }
 
   /**
@@ -45,41 +66,141 @@ public class ReliableTransaction extends TransactionBase {
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
    */
   public ReliableTransaction(Connection connection, boolean doMulti, boolean closeConnection) {
-    super(connection, doMulti, closeConnection);
+    this.connection = connection;
+    this.closeConnection = closeConnection;
+    setGraphCommands(new GraphCommandObjects(this.connection));
+    if (doMulti) multi();
   }
 
   @Override
-  protected final void processMultiResponse() {
+  public final void multi() {
+    connection.sendCommand(MULTI);
     String status = connection.getStatusCodeReply();
     if (!"OK".equals(status)) {
       throw new JedisException("MULTI command failed. Received response: " + status);
     }
+    inMulti = true;
   }
 
   @Override
-  protected final void processAppendStatus() {
+  public String watch(final String... keys) {
+    connection.sendCommand(WATCH, keys);
+    String status = connection.getStatusCodeReply();
+    inWatch = true;
+    return status;
+  }
+
+  @Override
+  public String watch(final byte[]... keys) {
+    connection.sendCommand(WATCH, keys);
+    String status = connection.getStatusCodeReply();
+    inWatch = true;
+    return status;
+  }
+
+  @Override
+  public String unwatch() {
+    connection.sendCommand(UNWATCH);
+    String status = connection.getStatusCodeReply();
+    inWatch = false;
+    return status;
+  }
+
+  @Override
+  protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
+    connection.sendCommand(commandObject.getArguments());
     String status = connection.getStatusCodeReply();
     if (!QUEUED_STR.equals(status)) {
       throw new JedisException(status);
     }
+    Response<T> response = new Response<>(commandObject.getBuilder());
+    pipelinedResponses.add(response);
+    return response;
   }
 
   @Override
-  protected final void processPipelinedResponses(int pipelineLength) {
-    // do nothing
-  }
-
-  @Override
-  public final List<Object> exec() {
-    return super.exec();
-  }
-
-  @Override
-  public final String discard() {
-    String status = super.discard();
-    if (!"OK".equals(status)) {
-      throw new JedisException("DISCARD command failed. Received response: " + status);
+  public final void close() {
+    try {
+      clear();
+    } finally {
+      if (closeConnection) {
+        connection.close();
+      }
     }
-    return status;
+  }
+
+  @Deprecated // TODO: private
+  public final void clear() {
+    if (broken) {
+      return;
+    }
+    if (inMulti) {
+      discard();
+    } else if (inWatch) {
+      unwatch();
+    }
+  }
+
+  @Override
+  public List<Object> exec() {
+    if (!inMulti) {
+      throw new IllegalStateException("EXEC without MULTI");
+    }
+
+    try {
+      // processPipelinedResponses(pipelinedResponses.size());
+      // do nothing
+      connection.sendCommand(EXEC);
+
+      List<Object> unformatted = connection.getObjectMultiBulkReply();
+      if (unformatted == null) {
+        pipelinedResponses.clear();
+        return null;
+      }
+
+      List<Object> formatted = new ArrayList<>(unformatted.size());
+      for (Object o : unformatted) {
+        try {
+          Response<?> response = pipelinedResponses.poll();
+          response.set(o);
+          formatted.add(response.get());
+        } catch (JedisDataException e) {
+          formatted.add(e);
+        }
+      }
+      return formatted;
+    } catch (JedisConnectionException jce) {
+      broken = true;
+      throw jce;
+    } finally {
+      inMulti = false;
+      inWatch = false;
+      pipelinedResponses.clear();
+    }
+  }
+
+  @Override
+  public String discard() {
+    if (!inMulti) {
+      throw new IllegalStateException("DISCARD without MULTI");
+    }
+
+    try {
+      // processPipelinedResponses(pipelinedResponses.size());
+      // do nothing
+      connection.sendCommand(DISCARD);
+      String status = connection.getStatusCodeReply();
+      if (!"OK".equals(status)) {
+        throw new JedisException("DISCARD command failed. Received response: " + status);
+      }
+      return status;
+    } catch (JedisConnectionException jce) {
+      broken = true;
+      throw jce;
+    } finally {
+      inMulti = false;
+      inWatch = false;
+      pipelinedResponses.clear();
+    }
   }
 }

@@ -23,7 +23,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.IOUtils;
-import redis.clients.jedis.util.JedisMetaInfo;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
@@ -73,7 +72,7 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
-  final RedisProtocol getRedisProtocol() {
+  public final RedisProtocol getRedisProtocol() {
     return protocol;
   }
 

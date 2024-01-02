@@ -4646,13 +4646,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
+  public List<Object> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
-  public List<byte[]> xreadGroup(byte[] groupName, byte[] consumer,
+  public List<Object> xreadGroup(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
@@ -4671,25 +4671,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+  public List<Object> xrange(byte[] key, byte[] start, byte[] end) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrange(key, start, end));
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
+  public List<Object> xrange(byte[] key, byte[] start, byte[] end, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
-  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+  public List<Object> xrevrange(byte[] key, byte[] end, byte[] start) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
-  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+  public List<Object> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xrevrange(key, end, start, count));
   }
@@ -6386,7 +6386,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param count if positive, return an array of distinct elements.
    *        If negative the behavior changes and the command is allowed to
-   *        return the same element multiple times  
+   *        return the same element multiple times
    * @return A list of randomly selected elements
    */
   @Override
@@ -8758,7 +8758,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long clusterCountFailureReports(final String nodeId) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, "COUNT-FAILURE-REPORTS",  nodeId);
-    return connection.getIntegerReply();  
+    return connection.getIntegerReply();
   }
 
   @Override
@@ -8826,10 +8826,18 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  @Deprecated
   public List<Object> clusterSlots() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(CLUSTER, ClusterKeyword.SLOTS);
     return connection.getObjectMultiBulkReply();
+  }
+
+  @Override
+  public List<ClusterShardInfo> clusterShards() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLUSTER, ClusterKeyword.SHARDS);
+    return BuilderFactory.CLUSTER_SHARD_INFO_LIST.build(connection.getObjectMultiBulkReply());
   }
 
   @Override
@@ -9257,6 +9265,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(new CommandArguments(LOLWUT).addParams(lolwutParams));
     return connection.getBulkReply();
+  }
+
+  @Override
+  public String reset() {
+    connection.sendCommand(Command.RESET);
+    return connection.getStatusCodeReply();
   }
 
   @Override

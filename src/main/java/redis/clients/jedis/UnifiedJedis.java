@@ -28,6 +28,9 @@ import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.json.JsonObjectMapper;
+import redis.clients.jedis.mcf.CircuitBreakerCommandExecutor;
+import redis.clients.jedis.mcf.MultiClusterPipeline;
+import redis.clients.jedis.mcf.MultiClusterTransaction;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.*;
 import redis.clients.jedis.resps.*;
@@ -3058,22 +3061,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end) {
+  public List<Object> xrange(byte[] key, byte[] start, byte[] end) {
     return executeCommand(commandObjects.xrange(key, start, end));
   }
 
   @Override
-  public List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count) {
+  public List<Object> xrange(byte[] key, byte[] start, byte[] end, int count) {
     return executeCommand(commandObjects.xrange(key, start, end, count));
   }
 
   @Override
-  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start) {
+  public List<Object> xrevrange(byte[] key, byte[] end, byte[] start) {
     return executeCommand(commandObjects.xrevrange(key, end, start));
   }
 
   @Override
-  public List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
+  public List<Object> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
     return executeCommand(commandObjects.xrevrange(key, end, start, count));
   }
 
@@ -3178,12 +3181,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
+  public List<Object> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xread(xReadParams, streams));
   }
 
   @Override
-  public List<byte[]> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
+  public List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
   // Stream commands
@@ -3619,6 +3622,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // Random node commands
 
   // RediSearch commands
+  public long hsetObject(String key, String field, Object value) {
+    return executeCommand(commandObjects.hsetObject(key, field, value));
+  }
+
+  public long hsetObject(String key, Map<String, Object> hash) {
+    return executeCommand(commandObjects.hsetObject(key, hash));
+  }
+
   @Override
   public String ftCreate(String indexName, IndexOptions indexOptions, Schema schema) {
     return checkAndBroadcastCommand(commandObjects.ftCreate(indexName, indexOptions, schema));
@@ -4819,18 +4830,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // RedisGears commands
 
+  /**
+   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
+   */
   public PipelineBase pipelined() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
+      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider);
+    } else {
+      return new Pipeline(provider.getConnection(), true);
     }
-    return new Pipeline(provider.getConnection(), true);
   }
 
-  public Transaction multi() {
+  public AbstractTransaction multi() {
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+    } else if (provider instanceof MultiClusterPooledConnectionProvider) {
+      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider);
+    } else {
+      return new Transaction(provider.getConnection(), true, true);
     }
-    return new Transaction(provider.getConnection(), true, true);
   }
 
   public Object sendCommand(ProtocolCommand cmd) {

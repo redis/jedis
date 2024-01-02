@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.jedis;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import redis.clients.jedis.HostAndPort;
@@ -20,6 +22,8 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.resps.ClusterShardInfo;
+import redis.clients.jedis.resps.ClusterShardNodeInfo;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
@@ -48,8 +52,17 @@ public class ClusterCommandsTest {
     node2.disconnect();
   }
 
+  @BeforeClass
+  public static void resetRedisBefore() {
+    removeSlots();
+  }
+
   @AfterClass
-  public static void removeSlots() throws InterruptedException {
+  public static void resetRedisAfter() {
+    removeSlots();
+  }
+
+  public static void removeSlots() {
     try (Jedis node = new Jedis(nodeInfo1)) {
       node.auth("cluster");
       node.clusterReset(ClusterResetType.SOFT);
@@ -187,6 +200,37 @@ public class ClusterCommandsTest {
       }
     }
     node1.clusterDelSlots(3000, 3001, 3002);
+  }
+
+  @Test
+  public void clusterShards() {
+    assertEquals("OK", node1.clusterAddSlots(3100, 3101, 3102, 3105));
+
+    List<ClusterShardInfo> shards = node1.clusterShards();
+    assertNotNull(shards);
+    assertTrue(shards.size() > 0);
+
+    for (ClusterShardInfo shardInfo : shards) {
+      assertNotNull(shardInfo);
+
+      assertTrue(shardInfo.getSlots().size() > 1);
+      for (List<Long> slotRange : shardInfo.getSlots()) {
+        assertEquals(2, slotRange.size());
+      }
+
+      for (ClusterShardNodeInfo nodeInfo : shardInfo.getNodes()) {
+        assertNotNull(nodeInfo.getId());
+        assertNotNull(nodeInfo.getEndpoint());
+        assertNotNull(nodeInfo.getIp());
+        assertNull(nodeInfo.getHostname());
+        assertNotNull(nodeInfo.getPort());
+        assertNull(nodeInfo.getTlsPort());
+        assertNotNull(nodeInfo.getRole());
+        assertNotNull(nodeInfo.getReplicationOffset());
+        assertNotNull(nodeInfo.getHealth());
+      }
+    }
+    node1.clusterDelSlots(3100, 3101, 3102, 3105);
   }
 
   @Test

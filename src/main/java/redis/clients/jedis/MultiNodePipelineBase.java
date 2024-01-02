@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import java.io.Closeable;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -14,16 +13,12 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.commands.PipelineBinaryCommands;
-import redis.clients.jedis.commands.PipelineCommands;
-import redis.clients.jedis.commands.RedisModulePipelineCommands;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
-public abstract class MultiNodePipelineBase extends PipelineBase
-    implements PipelineCommands, PipelineBinaryCommands, RedisModulePipelineCommands, Closeable {
+public abstract class MultiNodePipelineBase extends PipelineBase {
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 

@@ -27,7 +27,7 @@ public class HyperLogLogExample {
         System.out.println(res3); // >>> 1
 
         String res4 = jedis.pfmerge("all_bikes", "bikes", "commuter_bikes");
-        System.out.println(res4); // >>> True
+        System.out.println(res4); // >>> OK
 
         long res5 = jedis.pfcount("all_bikes");
         System.out.println(res5); // >>> 6

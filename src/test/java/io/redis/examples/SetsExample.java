@@ -1,13 +1,16 @@
 //EXAMPLE: sets_tutorial
 //HIDE_START
 package io.redis.examples;
-import org.junit.Test;
+
 import redis.clients.jedis.UnifiedJedis;
+import org.junit.Test;
 import java.util.List;
 import java.util.Set;
+
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+
 public class SetsExample {
 
     @Test

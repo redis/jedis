@@ -43,9 +43,9 @@ public class RedisInputStream extends FilterInputStream {
     this(in, INPUT_BUFFER_SIZE);
   }
 
-  public Byte peekByte() throws JedisConnectionException {
+  public boolean peek(byte b) throws JedisConnectionException {
     ensureFill(); // in current design we are expecting at least a reply. so not doing ensureFillSafe()
-    return buf[count];
+    return buf[count] == b;
   }
 
   public byte readByte() throws JedisConnectionException {

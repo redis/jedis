@@ -4,6 +4,7 @@ package io.redis.examples;
 import org.junit.Assert;
 import org.junit.Test;
 import redis.clients.jedis.UnifiedJedis;
+
 public class HyperLogLogExample {
 
     @Test
@@ -29,12 +30,12 @@ public class HyperLogLogExample {
         String res4 = jedis.pfmerge("all_bikes", "bikes", "commuter_bikes");
         System.out.println(res4); // >>> OK
 
-        long res5 = jedis.pfcount("all_bikes");
-        System.out.println(res5); // >>> 6
-        // STEP_END
-
         // REMOVE_START
         Assert.assertEquals("OK", res4);
         // REMOVE_END
+
+        long res5 = jedis.pfcount("all_bikes");
+        System.out.println(res5); // >>> 6
+        // STEP_END
     }
 }

@@ -33,7 +33,6 @@ public class JedisClientSideCache extends Jedis {
 
   @Override
   public String get(String key) {
-    //connection.readPushesWithCheckingBroken();
     String cachedValue = cache.getValue(key);
     if (cachedValue != null) return cachedValue;
 

@@ -352,12 +352,7 @@ public class Connection implements Closeable {
     }
 
     try {
-//      Protocol.readPushes(inputStream, clientSideCache);
-//      return Protocol.read(inputStream);
       return Protocol.read(inputStream, clientSideCache);
-//      Object read = Protocol.read(inputStream);
-//      System.out.println("REPLY: " + SafeEncoder.encodeObject(read));
-//      return read;
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;

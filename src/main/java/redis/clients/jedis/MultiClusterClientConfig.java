@@ -319,15 +319,9 @@ public final class MultiClusterClientConfig {
             config.retryWaitDuration = Duration.ofMillis(this.retryWaitDuration);
             config.retryWaitDurationExponentialBackoffMultiplier = this.retryWaitDurationExponentialBackoffMultiplier;
 
-            if (this.retryIncludedExceptionList != null && !retryIncludedExceptionList.isEmpty()) {
-                config.retryIncludedExceptionList = this.retryIncludedExceptionList;
-            } else {
-                config.retryIncludedExceptionList = RETRY_INCLUDED_EXCEPTIONS_DEFAULT;
-            }
+            config.retryIncludedExceptionList = this.retryIncludedExceptionList;
 
-            if (this.retryIgnoreExceptionList != null && !retryIgnoreExceptionList.isEmpty()) {
-                config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
-            }
+            config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
 
             config.circuitBreakerFailureRateThreshold = this.circuitBreakerFailureRateThreshold;
             config.circuitBreakerSlidingWindowMinCalls = this.circuitBreakerSlidingWindowMinCalls;
@@ -336,21 +330,11 @@ public final class MultiClusterClientConfig {
             config.circuitBreakerSlowCallDurationThreshold = Duration.ofMillis(this.circuitBreakerSlowCallDurationThreshold);
             config.circuitBreakerSlowCallRateThreshold = this.circuitBreakerSlowCallRateThreshold;
 
-            if (this.circuitBreakerIncludedExceptionList != null && !circuitBreakerIncludedExceptionList.isEmpty()) {
-                config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
-            } else {
-                config.circuitBreakerIncludedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
-            }
+            config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
 
-            if (this.circuitBreakerIgnoreExceptionList != null && !circuitBreakerIgnoreExceptionList.isEmpty()) {
-                config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
-            }
+            config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
 
-            if (this.fallbackExceptionList != null && !this.fallbackExceptionList.isEmpty()) {
-                config.fallbackExceptionList = this.fallbackExceptionList;
-            } else {
-                config.fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
-            }
+            config.fallbackExceptionList = this.fallbackExceptionList;
 
             return config;
         }

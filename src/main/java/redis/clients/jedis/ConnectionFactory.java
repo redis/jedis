@@ -26,12 +26,12 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this.clientConfig = DefaultJedisClientConfig.copyConfig(clientConfig);
+    this.clientConfig = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
   }
 
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    this.clientConfig = DefaultJedisClientConfig.copyConfig(clientConfig);
+    this.clientConfig = clientConfig;
     this.jedisSocketFactory = jedisSocketFactory;
   }
 

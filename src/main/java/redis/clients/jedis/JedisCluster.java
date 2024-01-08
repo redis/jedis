@@ -182,6 +182,8 @@ public class JedisCluster extends UnifiedJedis {
       int maxAttempts, Duration maxTotalRetriesDuration,
       GenericObjectPoolConfig<Connection> poolConfig) {
     super(clusterNodes, clientConfig, poolConfig, maxAttempts, maxTotalRetriesDuration);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) setProtocol(proto);
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig) {
@@ -190,11 +192,15 @@ public class JedisCluster extends UnifiedJedis {
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
     super(clusterNodes, clientConfig, maxAttempts);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) setProtocol(proto);
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     super(clusterNodes, clientConfig, maxAttempts, maxTotalRetriesDuration);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) setProtocol(proto);
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
@@ -202,6 +208,8 @@ public class JedisCluster extends UnifiedJedis {
       Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
         maxAttempts, maxTotalRetriesDuration);
+    RedisProtocol proto = clientConfig.getRedisProtocol();
+    if (proto != null) setProtocol(proto);
   }
 
   public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,

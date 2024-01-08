@@ -48,7 +48,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
 
-  protected RedisProtocol protocol = null;
+  @Deprecated protected RedisProtocol protocol = null;
+  private ClientSideCache clientSideCache = null;
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
@@ -92,7 +93,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 //    this(new Connection(hostAndPort, clientConfig));
     this(new PooledConnectionProvider(hostAndPort, clientConfig));
     RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    if (proto != null) setProtocol(proto);
+    ClientSideCache cache = clientConfig.getClientSideCache();
+    if (cache != null) setCache(cache);
   }
 
   public UnifiedJedis(ConnectionProvider provider) {
@@ -104,7 +107,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     try (Connection conn = this.provider.getConnection()) {
       if (conn != null) {
         RedisProtocol proto = conn.getRedisProtocol();
-        if (proto != null) commandObjects.setProtocol(proto);
+        if (proto != null) setProtocol(proto);
+        ClientSideCache cache = conn.getClientSideCache();
+        if (cache != null) setCache(cache);
       }
     //} catch (JedisAccessControlException ace) {
     } catch (JedisException je) { // TODO: use specific exception(s)
@@ -144,29 +149,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects = new CommandObjects();
     this.graphCommandObjects = new GraphCommandObjects(this);
     RedisProtocol proto = connection.getRedisProtocol();
-    if (proto == RedisProtocol.RESP3) this.commandObjects.setProtocol(proto);
+    if (proto != null) setProtocol(protocol);
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
         Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
     RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    if (proto != null) setProtocol(proto);
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration);
     RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    if (proto != null) setProtocol(proto);
   }
 
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
     RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    if (proto != null) setProtocol(proto);
   }
 
+  // NOTE/TODO: Doesn't manage RedisProtocol.
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this.provider = provider;
     this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
@@ -178,6 +184,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * @deprecated Sharding/Sharded feature will be removed in next major release.
    */
+  // NOTE/TODO: Doesn't manage RedisProtocol.
   @Deprecated
   public UnifiedJedis(ShardedConnectionProvider provider) {
     this.provider = provider;
@@ -190,6 +197,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * @deprecated Sharding/Sharded feature will be removed in next major release.
    */
+  // NOTE/TODO: Doesn't manage RedisProtocol.
   @Deprecated
   public UnifiedJedis(ShardedConnectionProvider provider, Pattern tagPattern) {
     this.provider = provider;
@@ -205,6 +213,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects = new CommandObjects();
     this.graphCommandObjects = new GraphCommandObjects(this);
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+    try (Connection conn = this.provider.getConnection()) {
+      if (conn != null) {
+        RedisProtocol proto = conn.getRedisProtocol();
+        if (proto != null) setProtocol(proto);
+      }
+    } catch (JedisException je) { }
   }
 
   /**
@@ -214,6 +228,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
    * <p>
    */
+  // NOTE/TODO: Doesn't manage RedisProtocol.
   public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
     this.provider = provider;
     this.executor = new CircuitBreakerCommandExecutor(provider);
@@ -228,6 +243,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
    */
+  // NOTE/TODO: Doesn't manage RedisProtocol.
   public UnifiedJedis(CommandExecutor executor) {
     this.provider = null;
     this.executor = executor;
@@ -244,6 +260,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected final void setProtocol(RedisProtocol protocol) {
     this.protocol = protocol;
     this.commandObjects.setProtocol(this.protocol);
+  }
+
+  protected final void setCache(ClientSideCache cache) {
+    this.clientSideCache = cache;
   }
 
   public final <T> T executeCommand(CommandObject<T> commandObject) {
@@ -725,6 +745,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String get(String key) {
+    if (clientSideCache != null) {
+      String cachedValue = clientSideCache.getValue(key);
+      if (cachedValue != null) return cachedValue;
+
+      String value = executeCommand(commandObjects.get(key));
+      if (value != null) clientSideCache.setKey(key, value);
+      return value;
+    }
     return executeCommand(commandObjects.get(key));
   }
 

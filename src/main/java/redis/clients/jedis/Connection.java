@@ -52,9 +52,7 @@ public class Connection implements Closeable {
   }
 
   public Connection(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig));
-    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
-    initializeFromClientConfig(clientConfig);
+    this(new DefaultJedisSocketFactory(hostAndPort, clientConfig), clientConfig);
   }
 
   public Connection(final JedisSocketFactory socketFactory) {
@@ -65,7 +63,8 @@ public class Connection implements Closeable {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
-    initializeFromClientConfig(clientConfig);
+    initializeConnection(clientConfig);
+    initializeClientSideCache(clientConfig);
   }
 
   @Override
@@ -75,6 +74,10 @@ public class Connection implements Closeable {
 
   public final RedisProtocol getRedisProtocol() {
     return protocol;
+  }
+
+  protected final ClientSideCache getClientSideCache() {
+    return clientSideCache;
   }
 
   public final void setHandlingPool(final ConnectionPool pool) {
@@ -120,10 +123,6 @@ public class Connection implements Closeable {
       broken = true;
       throw new JedisConnectionException(ex);
     }
-  }
-
-  final void setClientSideCache(ClientSideCache clientSideCache) {
-    this.clientSideCache = clientSideCache;
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -389,7 +388,7 @@ public class Connection implements Closeable {
     return true;
   }
 
-  private void initializeFromClientConfig(final JedisClientConfig config) {
+  private void initializeConnection(final JedisClientConfig config) {
     try {
       connect();
 
@@ -515,5 +514,20 @@ public class Connection implements Closeable {
       throw new JedisException(status);
     }
     return true;
+  }
+
+  private void initializeClientSideCache(JedisClientConfig clientConfig) {
+    this.clientSideCache = clientConfig.getClientSideCache();
+    if (clientSideCache != null) {
+      if (protocol != RedisProtocol.RESP3) {
+        throw new JedisException("Client side caching is only supported with RESP3.");
+      }
+
+      sendCommand(Protocol.Command.CLIENT, "TRACKING", "ON");
+      String reply = getStatusCodeReply();
+      if (!"OK".equals(reply)) {
+        throw new JedisException("Could not enable client tracking. Reply: " + reply);
+      }
+    }
   }
 }

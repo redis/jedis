@@ -24,7 +24,7 @@ public class JedisClientSideCache extends Jedis {
 
   private void clientTrackingOn() {
     String reply = connection.executeCommand(new CommandObject<>(
-        new CommandArguments(Protocol.Command.CLIENT).add("TRACKING").add("ON").add("BCAST"),
+        new CommandArguments(Protocol.Command.CLIENT).add("TRACKING").add("ON"),
         BuilderFactory.STRING));
     if (!"OK".equals(reply)) {
       throw new JedisException("Could not enable client tracking. Reply: " + reply);
@@ -33,7 +33,6 @@ public class JedisClientSideCache extends Jedis {
 
   @Override
   public String get(String key) {
-    connection.readPushesWithCheckingBroken();
     String cachedValue = cache.getValue(key);
     if (cachedValue != null) return cachedValue;
 

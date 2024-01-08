@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
@@ -171,15 +170,6 @@ public final class Protocol {
     }
   }
 
-  private static void processPush(final RedisInputStream is, ClientSideCache cache) {
-    List<Object> list = processMultiBulkReply(is);
-    //System.out.println("PUSH: " + SafeEncoder.encodeObject(list));
-    if (list.size() == 2 && list.get(0) instanceof byte[]
-        && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
-      cache.invalidateKeys((List) list.get(1));
-    }
-  }
-
   private static byte[] processBulkReply(final RedisInputStream is) {
     final int len = is.readIntCrLf();
     if (len == -1) {
@@ -232,17 +222,32 @@ public final class Protocol {
     return ret;
   }
 
+  @Deprecated
   public static Object read(final RedisInputStream is) {
     return process(is);
   }
 
-  static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
+  public static Object read(final RedisInputStream is, final ClientSideCache cache) {
+    readPushes(is, cache);
+    return process(is);
+  }
+
+  private static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
     if (cache != null) {
       //System.out.println("PEEK: " + is.peekByte());
-      while (Objects.equals(GREATER_THAN_BYTE, is.peekByte())) {
+      while (is.peek(GREATER_THAN_BYTE)) {
         is.readByte();
         processPush(is, cache);
       }
+    }
+  }
+
+  private static void processPush(final RedisInputStream is, ClientSideCache cache) {
+    List<Object> list = processMultiBulkReply(is);
+    //System.out.println("PUSH: " + SafeEncoder.encodeObject(list));
+    if (list.size() == 2 && list.get(0) instanceof byte[]
+        && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
+      cache.invalidateKeys((List) list.get(1));
     }
   }
 

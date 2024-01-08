@@ -352,11 +352,7 @@ public class Connection implements Closeable {
     }
 
     try {
-      Protocol.readPushes(inputStream, clientSideCache);
-      return Protocol.read(inputStream);
-//      Object read = Protocol.read(inputStream);
-//      System.out.println("REPLY: " + SafeEncoder.encodeObject(read));
-//      return read;
+      return Protocol.read(inputStream, clientSideCache);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -374,19 +370,6 @@ public class Connection implements Closeable {
       }
     }
     return responses;
-  }
-
-  protected void readPushesWithCheckingBroken() {
-    if (broken) {
-      throw new JedisConnectionException("Attempting to read pushes from a broken connection");
-    }
-
-    try {
-      Protocol.readPushes(inputStream, clientSideCache);
-    } catch (JedisConnectionException exc) {
-      broken = true;
-      throw exc;
-    }
   }
 
   /**

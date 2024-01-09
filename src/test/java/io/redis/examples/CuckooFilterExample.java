@@ -17,6 +17,7 @@ public class CuckooFilterExample {
         jedis.del("bikes:models");
         // REMOVE_END
 
+        // STEP_START cuckoo
         String res1 = jedis.cfReserve("bikes:models", 1000000);
         System.out.println(res1); // >>> OK
 

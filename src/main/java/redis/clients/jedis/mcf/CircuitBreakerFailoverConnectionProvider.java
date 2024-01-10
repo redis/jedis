@@ -26,8 +26,8 @@ public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFail
 
         supplier.withRetry(cluster.getRetry());
         supplier.withCircuitBreaker(cluster.getCircuitBreaker());
-        supplier.withFallback(defaultCircuitBreakerFallbackException,
-                              e -> this.handleClusterFailover(cluster.getCircuitBreaker()));
+        supplier.withFallback(provider.getFallbackExceptionList(),
+                e -> this.handleClusterFailover(cluster.getCircuitBreaker()));
 
         return supplier.decorate().get();
     }

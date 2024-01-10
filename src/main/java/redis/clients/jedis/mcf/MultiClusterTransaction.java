@@ -26,7 +26,7 @@ public class MultiClusterTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
 
-  private final CircuitBreakerFailoverConnectionProvider provider;
+  private final CircuitBreakerFailoverConnectionProvider failoverProvider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
@@ -50,12 +50,12 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti) {
-    try (Connection connection = provider.getConnection()) { // we don't need a healthy connection now
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
+
+    try (Connection connection = failoverProvider.getConnection()) {
       RedisProtocol proto = connection.getRedisProtocol();
       if (proto != null) this.commandObjects.setProtocol(proto);
     }
-
-    this.provider = new CircuitBreakerFailoverConnectionProvider(provider);
 
     if (doMulti) multi();
   }
@@ -129,7 +129,7 @@ public class MultiClusterTransaction extends TransactionBase {
       throw new IllegalStateException("EXEC without MULTI");
     }
 
-    try (Connection connection = provider.getConnection()) {
+    try (Connection connection = failoverProvider.getConnection()) {
 
       commands.forEach((command) -> connection.sendCommand(command.getKey()));
       // following connection.getMany(int) flushes anyway, so no flush here.
@@ -174,7 +174,7 @@ public class MultiClusterTransaction extends TransactionBase {
       throw new IllegalStateException("DISCARD without MULTI");
     }
 
-    try (Connection connection = provider.getConnection()) {
+    try (Connection connection = failoverProvider.getConnection()) {
 
       commands.forEach((command) -> connection.sendCommand(command.getKey()));
       // following connection.getMany(int) flushes anyway, so no flush here.

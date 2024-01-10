@@ -22,12 +22,13 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
 
   public MultiClusterPipeline(MultiClusterPooledConnectionProvider pooledProvider) {
     super(new CommandObjects());
-    try (Connection connection = pooledProvider.getConnection()) { // we don't need a healthy connection now
+
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
+
+    try (Connection connection = failoverProvider.getConnection()) {
       RedisProtocol proto = connection.getRedisProtocol();
       if (proto != null) this.commandObjects.setProtocol(proto);
     }
-
-    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
   }
 
   @Override

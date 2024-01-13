@@ -6,7 +6,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import redis.clients.jedis.UnifiedJedis;
 
-public class BitMapExample {
+public class BitMapsExample {
     @Test
     public void run(){
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");

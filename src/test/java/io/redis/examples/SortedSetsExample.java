@@ -1,4 +1,4 @@
-//ExAMPLE: ss_tutorial
+//EXAMPLE: ss_tutorial
 //HIDE_START
 package io.redis.examples;
 

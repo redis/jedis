@@ -23,7 +23,7 @@ public class ListExample {
         long res1 = jedis.lpush("bikes:repairs", "bike:1");
         System.out.println(res1);  // >>> 1
 
-         long res2 = jedis.lpush("bikes:repairs", "bike:2");
+        long res2 = jedis.lpush("bikes:repairs", "bike:2");
         System.out.println(res2);  // >>> 2
 
         String res3 = jedis.rpop("bikes:repairs");
@@ -34,10 +34,10 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(1,res1);
-        assertEquals(2,res2);
-        assertEquals("bike:1",res3);
-        assertEquals("bike:2",res4);
+        assertEquals(1, res1);
+        assertEquals(2, res2);
+        assertEquals("bike:1", res3);
+        assertEquals("bike:2", res4);
         // REMOVE_END
 
         // STEP_START stack
@@ -55,10 +55,10 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(1,res5);
-        assertEquals(2,res6);
-        assertEquals("bike:2",res7);
-        assertEquals("bike:1",res8);
+        assertEquals(1, res5);
+        assertEquals(2, res6);
+        assertEquals("bike:2", res7);
+        assertEquals("bike:1", res8);
         // REMOVE_END
 
         // STEP_START llen
@@ -67,7 +67,7 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(0,res9);
+        assertEquals(0, res9);
         // REMOVE_END
 
         // STEP_START lmove_lrange
@@ -88,11 +88,11 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(1,res10);
-        assertEquals(2,res11);
-        assertEquals("bike:2",res12);
-        assertEquals("[bike:1]",res13.toString());
-        assertEquals("[bike:2]",res14.toString());
+        assertEquals(1, res10);
+        assertEquals(2, res11);
+        assertEquals("bike:2", res12);
+        assertEquals("[bike:1]", res13.toString());
+        assertEquals("[bike:2]", res14.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
 
@@ -111,10 +111,10 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(1,res15);
-        assertEquals(2,res16);
-        assertEquals(3,res17);
-        assertEquals("[bike:important_bike, bike:1, bike:2]",res18.toString());
+        assertEquals(1, res15);
+        assertEquals(2, res16);
+        assertEquals(3, res17);
+        assertEquals("[bike:important_bike, bike:1, bike:2]", res18.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
 
@@ -122,20 +122,16 @@ public class ListExample {
         long res19 = jedis.rpush("bikes:repairs", "bike:1", "bike:2", "bike:3");
         System.out.println(res19);  // >>> 3
 
-        long res20 = jedis.lpush(
-                "bikes:repairs", "bike:important_bike", "bike:very_important_bike"
-        );
+        long res20 = jedis.lpush("bikes:repairs", "bike:important_bike", "bike:very_important_bike");
         System.out.println(res20);  // >>> 5
 
         List<String> res21 = jedis.lrange("bikes:repairs", 0, -1);
-        System.out.println(
-                res21
-        );  // >>> [bike:very_important_bike, bike:important_bike, bike:1, bike:2, bike:3]
+        System.out.println(res21);  // >>> [bike:very_important_bike, bike:important_bike, bike:1, bike:2, bike:3]
         // STEP_END
 
         // REMOVE_START
-        assertEquals(3,res19);
-        assertEquals(5,res20);
+        assertEquals(3, res19);
+        assertEquals(5, res20);
         assertEquals("[bike:very_important_bike, bike:important_bike, bike:1, bike:2, bike:3]",res21.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
@@ -158,17 +154,15 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(3,res22);
-        assertEquals("bike:3",res23);
-        assertEquals("bike:1",res24);
-        assertEquals("bike:2",res25);
+        assertEquals(3, res22);
+        assertEquals("bike:3", res23);
+        assertEquals("bike:1", res24);
+        assertEquals("bike:2", res25);
         assertNull(res26);
         // REMOVE_END
 
         // STEP_START ltrim
-        long res27 = jedis.lpush(
-                "bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5"
-        );
+        long res27 = jedis.lpush("bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5");
         System.out.println(res27);  // >>> 5
 
         String res28 = jedis.ltrim("bikes:repairs", 0, 2);
@@ -179,29 +173,27 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(5,res27);
-        assertEquals("OK",res28);
-        assertEquals("[bike:5, bike:4, bike:3]",res29.toString());
+        assertEquals(5, res27);
+        assertEquals("OK", res28);
+        assertEquals("[bike:5, bike:4, bike:3]", res29.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
 
         // STEP_START ltrim_end_of_list
-        res27 = jedis.rpush(
-                "bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5"
-        );
+        res27 = jedis.rpush("bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5");
         System.out.println(res27);  // >>> 5
 
         res28 = jedis.ltrim("bikes:repairs", -3, -1);
         System.out.println(res2);  // >>> OK
 
-       res29 = jedis.lrange("bikes:repairs", 0, -1);
+        res29 = jedis.lrange("bikes:repairs", 0, -1);
         System.out.println(res29);  // >>> [bike:3, bike:4, bike:5]
         // STEP_END
 
         // REMOVE_START
-        assertEquals(5,res27);
-        assertEquals("OK",res28);
-        assertEquals("[bike:3, bike:4, bike:5]",res29.toString());
+        assertEquals(5, res27);
+        assertEquals("OK", res28);
+        assertEquals("[bike:3, bike:4, bike:5]", res29.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
 
@@ -220,9 +212,9 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(2,res31);
-        assertEquals("[bikes:repairs, bike:2]",res32.toString());
-        assertEquals( "[bikes:repairs, bike:1]",res33.toString());
+        assertEquals(2, res31);
+        assertEquals("[bikes:repairs, bike:2]", res32.toString());
+        assertEquals( "[bikes:repairs, bike:1]", res33.toString());
         assertNull(res34);
         jedis.del("bikes:repairs");
         jedis.del("new_bikes");
@@ -237,8 +229,8 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(0,res35);
-        assertEquals(3,res36);
+        assertEquals(0, res35);
+        assertEquals(3, res36);
         jedis.del("new_bikes");
         // REMOVE_END
 
@@ -251,10 +243,10 @@ public class ListExample {
 
         try {
             long res39  = jedis.lpush("new_bikes", "bike:2", "bike:3");
+        } catch (Exception e) {
+            e.printStackTrace();
             // >>> redis.clients.jedis.exceptions.JedisDataException:
             // >>> WRONGTYPE Operation against a key holding the wrong kind of value
-        }catch (Exception e){
-            e.printStackTrace();
         }
         // STEP_END
 
@@ -286,9 +278,9 @@ public class ListExample {
 
         // REMOVE_START
         assertTrue(res40);
-        assertEquals(res41,"bike:3");
-        assertEquals(res42,"bike:2");
-        assertEquals(res43,"bike:1");
+        assertEquals(res41, "bike:3");
+        assertEquals(res42, "bike:2");
+        assertEquals(res43, "bike:1");
         assertFalse(res44);
         // REMOVE_END
 
@@ -304,15 +296,13 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(0,res45);
-        assertEquals(0,res46);
+        assertEquals(0, res45);
+        assertEquals(0, res46);
         assertNull(res47);
         // REMOVE_END
 
         // STEP_START ltrim.1
-        long res48 = jedis.lpush(
-                "bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5"
-        );
+        long res48 = jedis.lpush("bikes:repairs", "bike:1", "bike:2", "bike:3", "bike:4", "bike:5");
         System.out.println(res48);  // >>> 5
 
         String res49 = jedis.ltrim("bikes:repairs", 0, 2);
@@ -323,9 +313,9 @@ public class ListExample {
         // STEP_END
 
         // REMOVE_START
-        assertEquals(5,res48);
-        assertEquals("OK",res49);
-        assertEquals("[bike:5, bike:4, bike:3]",res50.toString());
+        assertEquals(5, res48);
+        assertEquals("OK", res49);
+        assertEquals("[bike:5, bike:4, bike:3]", res50.toString());
         jedis.del("bikes:repairs");
         // REMOVE_END
 

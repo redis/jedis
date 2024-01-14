@@ -30,13 +30,7 @@ public class BitMapsExample {
 
         // REMOVE_START
         Assert.assertFalse(res1);
-        // REMOVE_END
-
-        // REMOVE_START
         Assert.assertTrue(res2);
-        // REMOVE_END
-
-        //REMOVE_START
         Assert.assertFalse(res3);
         // REMOVE_END
 
@@ -46,7 +40,7 @@ public class BitMapsExample {
         // STEP_END
 
         // REMOVE_START
-        Assert.assertEquals(res4,1);
+        Assert.assertEquals(res4, 1);
         // REMOVE_END
     }
 }

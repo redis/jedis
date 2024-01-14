@@ -19,23 +19,28 @@ public class BitMapsExample {
 
         // STEP_START ping
         boolean res1 = jedis.setbit("pings:2024-01-01-00:00", 123, true);
-        System.out.println(res1); // >>> False
+        System.out.println(res1); // >>> false
 
         boolean res2 = jedis.getbit("pings:2024-01-01-00:00", 123);
-        System.out.println(res2); // >>> True
+        System.out.println(res2); // >>> true
 
         boolean res3 = jedis.getbit("pings:2024-01-01-00:00", 456);
-        System.out.println(res3); // >>> False
+        System.out.println(res3); // >>> false
         // STEP_END
 
         // REMOVE_START
         Assert.assertFalse(res1);
         // REMOVE_END
 
+        // REMOVE_START
+        Assert.assertTrue(res2);
+        // REMOVE_END
+
+        //REMOVE_START
+        Assert.assertFalse(res3);
+        // REMOVE_END
+
         // STEP_START bitcount
-        // HIDE_START
-        jedis.setbit("pings:2024-01-01-00:00",123,true);
-        // HIDE_END
         long res4 = jedis.bitcount("pings:2024-01-01-00:00");
         System.out.println(res4); // >>> 1
         // STEP_END

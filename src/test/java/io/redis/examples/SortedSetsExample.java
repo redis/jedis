@@ -28,13 +28,19 @@ public class SortedSetsExample {
     //REMOVE_END
 
     //STEP_START zadd
-    long res1 = jedis.zadd("racer_scores", new HashMap<String,Double>(){{put("Norem",10d);}});
+    long res1 = jedis.zadd("racer_scores",10d,"Norem");
     System.out.println(res1); // >>> 1
 
-    long res2 = jedis.zadd("racer_scores", new HashMap<String,Double>(){{put("Castilla",12d);}});
+    long res2 = jedis.zadd("racer_scores",12d,"Castilla");
     System.out.println(res2); // >>> 1
 
-    long res3 = jedis.zadd("racer_scores", new HashMap<String,Double>(){{put("Sam-Bodden",8d);put("Royce",10d);put("Ford",6d);put("Prickett",14d);put("Castilla",12d);}});
+    long res3 = jedis.zadd("racer_scores", new HashMap<String,Double>(){{
+      put("Sam-Bodden",8d);
+      put("Royce",10d);
+      put("Ford",6d);
+      put("Prickett",14d);
+      put("Castilla",12d);
+    }});
     System.out.println(res3); // >>> 4
     //STEP_END
 
@@ -80,7 +86,14 @@ public class SortedSetsExample {
     //STEP_END
 
     //STEP_START zadd_lex
-    long res13 = jedis.zadd("racer_scores",new HashMap<String,Double>(){{put("Norem",0d);put("Sam-Bodden",0d);put("Royce",0d);put("Ford",0d);put("Prickett",0d);put("Castilla",0d);}});
+    long res13 = jedis.zadd("racer_scores",new HashMap<String,Double>(){{
+      put("Norem",0d);
+      put("Sam-Bodden",0d);
+      put("Royce",0d);
+      put("Ford",0d);
+      put("Prickett",0d);
+      put("Castilla",0d);
+    }});
     System.out.println(res13); // >>> 3
 
     List<String> res14 = jedis.zrange("racer_scores",0,-1);
@@ -91,13 +104,13 @@ public class SortedSetsExample {
     //STEP_END
 
     //STEP_START leaderboard
-    long res16 = jedis.zadd("racer_scores",new HashMap<String,Double>(){{put("Wood",100d);}});
+    long res16 = jedis.zadd("racer_scores",100d,"Wood");
     System.out.println(res16); // >>> 1
 
-    long res17 = jedis.zadd("racer_scores",new HashMap<String,Double>(){{put("Henshaw",100d);}});
+    long res17 = jedis.zadd("racer_scores",100d,"Henshaw");
     System.out.println(res17); // >>> 1
 
-    long res18 = jedis.zadd("racer_scores",new HashMap<String,Double>(){{put("Henshaw",150d);}});
+    long res18 = jedis.zadd("racer_scores",100d,"Henshaw");
     System.out.println(res18); // >>> 0
 
     double res19 = jedis.zincrby("racer_scores",50d,"Wood");

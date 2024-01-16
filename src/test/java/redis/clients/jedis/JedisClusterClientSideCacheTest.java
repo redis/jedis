@@ -1,5 +1,9 @@
 package redis.clients.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,12 +12,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import static org.hamcrest.MatcherAssert.assertThat;
 import org.hamcrest.Matchers;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import org.junit.Test;
-
 
 public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 

@@ -7,8 +7,9 @@ import org.junit.Test;
 import redis.clients.jedis.UnifiedJedis;
 
 public class BitMapsExample {
+
     @Test
-    public void run(){
+    public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
         // HIDE_END
 

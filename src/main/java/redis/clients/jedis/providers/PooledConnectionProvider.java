@@ -5,6 +5,7 @@ import java.util.Map;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.ClientSideCache;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionFactory;
@@ -28,9 +29,20 @@ public class PooledConnectionProvider implements ConnectionProvider {
     this.connectionMapKey = hostAndPort;
   }
 
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache) {
+    this(new ConnectionPool(hostAndPort, clientConfig, csCache));
+    this.connectionMapKey = hostAndPort;
+  }
+
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
+    this(new ConnectionPool(hostAndPort, clientConfig, poolConfig));
+    this.connectionMapKey = hostAndPort;
+  }
+
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache,
+      GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ConnectionPool(hostAndPort, clientConfig, csCache, poolConfig));
     this.connectionMapKey = hostAndPort;
   }
 

@@ -17,8 +17,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private static final Logger logger = LoggerFactory.getLogger(ConnectionFactory.class);
 
   private final JedisSocketFactory jedisSocketFactory;
-
   private final JedisClientConfig clientConfig;
+  private ClientSideCache clientSideCache = null;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this.clientConfig = DefaultJedisClientConfig.builder().build();
@@ -28,6 +28,12 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     this.clientConfig = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
+  }
+
+  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache) {
+    this.clientConfig = clientConfig;
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
+    this.clientSideCache = csCache;
   }
 
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
@@ -54,9 +60,11 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   @Override
   public PooledObject<Connection> makeObject() throws Exception {
-    Connection jedis = null;
     try {
-      jedis = new Connection(jedisSocketFactory, clientConfig);
+      Connection jedis = clientSideCache == null
+          ? new Connection(jedisSocketFactory, clientConfig)
+          : new Connection(jedisSocketFactory, clientConfig, clientSideCache);
+
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
       logger.debug("Error while makeObject", je);

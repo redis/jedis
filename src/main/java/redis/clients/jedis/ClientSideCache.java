@@ -10,12 +10,21 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class ClientSideCache {
 
-  private final Map<ByteBuffer, Object> cache = new HashMap<>();
+  private final Map<ByteBuffer, Object> cache;
 
-  protected ClientSideCache() {
+  public ClientSideCache() {
+    this.cache = new HashMap<>();
   }
 
-  protected void invalidateKeys(List list) {
+  /**
+   * For testing purpose only.
+   * @param map 
+   */
+  ClientSideCache(Map<ByteBuffer, Object> map) {
+    this.cache = map;
+  }
+
+  public final void invalidateKeys(List list) {
     if (list == null) {
       cache.clear();
       return;

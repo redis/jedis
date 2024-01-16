@@ -26,13 +26,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final ClientSetInfoConfig clientSetInfoConfig;
 
-  private final ClientSideCache clientSideCache;
-
   private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
       String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper,
-      ClientSetInfoConfig clientSetInfoConfig, ClientSideCache clientSideCache) {
+      ClientSetInfoConfig clientSetInfoConfig) {
     this.redisProtocol = protocol;
     this.connectionTimeoutMillis = connectionTimeoutMillis;
     this.socketTimeoutMillis = soTimeoutMillis;
@@ -46,7 +44,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.hostnameVerifier = hostnameVerifier;
     this.hostAndPortMapper = hostAndPortMapper;
     this.clientSetInfoConfig = clientSetInfoConfig;
-    this.clientSideCache = clientSideCache;
   }
 
   @Override
@@ -125,11 +122,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return clientSetInfoConfig;
   }
 
-  @Override
-  public ClientSideCache getClientSideCache() {
-    return clientSideCache;
-  }
-
   public static Builder builder() {
     return new Builder();
   }
@@ -157,8 +149,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private ClientSetInfoConfig clientSetInfoConfig = ClientSetInfoConfig.DEFAULT;
 
-    private ClientSideCache clientSideCache = null;
-
     private Builder() {
     }
 
@@ -170,8 +160,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
       return new DefaultJedisClientConfig(redisProtocol, connectionTimeoutMillis, socketTimeoutMillis,
           blockingSocketTimeoutMillis, credentialsProvider, database, clientName, ssl,
-          sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, clientSetInfoConfig,
-          clientSideCache);
+          sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, clientSetInfoConfig);
     }
 
     /**
@@ -266,18 +255,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = setInfoConfig;
       return this;
     }
-
-    /**
-     * Will use default {@link ClientSideCache}.
-     */
-    public Builder clientSideCache() {
-      return clientSideCache(new ClientSideCache());
-    }
-
-    public Builder clientSideCache(ClientSideCache clientSideCache) {
-      this.clientSideCache = clientSideCache;
-      return this;
-    }
   }
 
   public static DefaultJedisClientConfig create(int connectionTimeoutMillis, int soTimeoutMillis,
@@ -287,7 +264,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return new DefaultJedisClientConfig(null,
         connectionTimeoutMillis, soTimeoutMillis, blockingSocketTimeoutMillis,
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(user, password)), database,
-        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, null, null);
+        clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, null);
   }
 
   public static DefaultJedisClientConfig copyConfig(JedisClientConfig copy) {
@@ -296,6 +273,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         copy.getBlockingSocketTimeoutMillis(), copy.getCredentialsProvider(),
         copy.getDatabase(), copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(),
         copy.getSslParameters(), copy.getHostnameVerifier(), copy.getHostAndPortMapper(),
-        copy.getClientSetInfoConfig(), null);
+        copy.getClientSetInfoConfig());
   }
 }

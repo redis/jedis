@@ -87,8 +87,4 @@ public interface JedisClientConfig {
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return ClientSetInfoConfig.DEFAULT;
   }
-
-  default ClientSideCache getClientSideCache() {
-    return null;
-  }
 }

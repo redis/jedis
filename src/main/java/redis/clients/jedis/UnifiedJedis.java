@@ -48,7 +48,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
 
-  protected RedisProtocol protocol = null;
+  @Deprecated protected RedisProtocol protocol = null;
+  private final ClientSideCache clientSideCache;
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
@@ -99,6 +100,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
   }
 
+  protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, ClientSideCache clientSideCache) {
+    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, clientSideCache);
+  }
+
   /**
    * The constructor to directly use a custom {@link JedisSocketFactory}.
    * <p>
@@ -132,6 +137,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     RedisProtocol proto = connection.getRedisProtocol();
     if (proto != null) this.commandObjects.setProtocol(proto);
     this.graphCommandObjects = new GraphCommandObjects(this);
+    this.clientSideCache = null; // TODO:
   }
 
   @Deprecated
@@ -163,6 +169,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       RedisProtocol protocol) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol);
+  }
+
+  protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
+      RedisProtocol protocol, ClientSideCache clientSideCache) {
+    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+        new ClusterCommandObjects(), protocol, clientSideCache);
   }
 
   /**
@@ -212,7 +224,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
-    this(executor, provider, commandObjects, null);
+    this(executor, provider, commandObjects, null, null);
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {
         if (conn != null) {
@@ -225,16 +237,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol) {
+    this(executor, provider, commandObjects, protocol, (ClientSideCache) null);
+  }
+
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
+      RedisProtocol protocol, ClientSideCache clientSideCache) {
+
+    if (clientSideCache != null && protocol != RedisProtocol.RESP3) {
+      throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
+    }
+
     this.provider = provider;
     this.executor = executor;
 
     this.commandObjects = commandObjects;
-    if (protocol != null) {
-      this.commandObjects.setProtocol(protocol);
-    }
+    if (protocol != null) this.commandObjects.setProtocol(protocol);
 
     this.graphCommandObjects = new GraphCommandObjects(this);
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+
+    this.clientSideCache = clientSideCache;
   }
 
   @Override
@@ -727,6 +749,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String get(String key) {
+    if (clientSideCache != null) {
+      String cachedValue = clientSideCache.getValue(key);
+      if (cachedValue != null) return cachedValue;
+
+      String value = executeCommand(commandObjects.get(key));
+      if (value != null) clientSideCache.setKey(key, value);
+      return value;
+    }
     return executeCommand(commandObjects.get(key));
   }
 

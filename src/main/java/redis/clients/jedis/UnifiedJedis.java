@@ -242,10 +242,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     IOUtils.closeQuietly(this.executor);
   }
 
-//  protected final void setProtocol(RedisProtocol protocol) {
-//    this.protocol = protocol;
-//    this.commandObjects.setProtocol(this.protocol);
-//  }
+  @Deprecated
+  protected final void setProtocol(RedisProtocol protocol) {
+    this.protocol = protocol;
+    this.commandObjects.setProtocol(this.protocol);
+  }
 
   public final <T> T executeCommand(CommandObject<T> commandObject) {
     return executor.executeCommand(commandObject);

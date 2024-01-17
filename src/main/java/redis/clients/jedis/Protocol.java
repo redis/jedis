@@ -54,6 +54,7 @@ public final class Protocol {
   private static final String CLUSTERDOWN_PREFIX = "CLUSTERDOWN ";
   private static final String BUSY_PREFIX = "BUSY ";
   private static final String NOSCRIPT_PREFIX = "NOSCRIPT ";
+  private static final String NOAUTH_PREFIX = "NOAUTH";
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
 
@@ -97,9 +98,9 @@ public final class Protocol {
       throw new JedisBusyException(message);
     } else if (message.startsWith(NOSCRIPT_PREFIX)) {
       throw new JedisNoScriptException(message);
-    } else if (message.startsWith(WRONGPASS_PREFIX)) {
-      throw new JedisAccessControlException(message);
-    } else if (message.startsWith(NOPERM_PREFIX)) {
+    } else if (message.startsWith(NOAUTH_PREFIX)
+        || message.startsWith(WRONGPASS_PREFIX)
+        || message.startsWith(NOPERM_PREFIX)) {
       throw new JedisAccessControlException(message);
     }
     throw new JedisDataException(message);

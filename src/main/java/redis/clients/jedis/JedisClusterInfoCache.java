@@ -226,6 +226,9 @@ public class JedisClusterInfoCache {
     try {
       Arrays.fill(slots, null);
       Arrays.fill(slotNodes, null);
+      if (clientSideCache != null) {
+        clientSideCache.clear();
+      }
       Set<String> hostAndPortKeys = new HashSet<>();
 
       for (Object slotInfoObj : slotsInfo) {

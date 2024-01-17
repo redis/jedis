@@ -24,9 +24,13 @@ public class ClientSideCache {
     this.cache = map;
   }
 
+  public final void clear() {
+    cache.clear();
+  }
+
   public final void invalidateKeys(List list) {
     if (list == null) {
-      cache.clear();
+      clear();
       return;
     }
 

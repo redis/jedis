@@ -178,7 +178,8 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
-    this(clusterNodes, clientConfig, maxAttempts, Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
+    this(clusterNodes, clientConfig, maxAttempts,
+        Duration.ofMillis((long) clientConfig.getSocketTimeoutMillis() * maxAttempts));
   }
 
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,

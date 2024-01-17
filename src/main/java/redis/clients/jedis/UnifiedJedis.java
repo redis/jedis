@@ -146,7 +146,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Deprecated
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
+  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
     this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration,
         clientConfig.getRedisProtocol());
   }
@@ -158,6 +159,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         maxTotalRetriesDuration, clientConfig.getRedisProtocol());
   }
 
+  // Uses a fetched connection to process protocol. Should be avoided if possible.
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects());
@@ -220,6 +222,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(executor, provider, new CommandObjects());
   }
 
+  // Uses a fetched connection to process protocol. Should be avoided if possible.
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null, null);
     if (this.provider != null) {

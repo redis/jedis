@@ -53,7 +53,7 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   public JedisPooled(final HostAndPort hostAndPort) {
-    this(new PooledConnectionProvider(hostAndPort));
+    super(hostAndPort);
   }
 
   public JedisPooled(final String host, final int port, final boolean ssl) {
@@ -388,7 +388,8 @@ public class JedisPooled extends UnifiedJedis {
 
   public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig,
       final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    this(new ConnectionFactory(jedisSocketFactory, clientConfig), poolConfig);
+    super(new PooledConnectionProvider(new ConnectionFactory(jedisSocketFactory, clientConfig), poolConfig),
+        clientConfig.getRedisProtocol());
   }
 
   public JedisPooled(GenericObjectPoolConfig<Connection> poolConfig, PooledObjectFactory<Connection> factory) {

@@ -750,11 +750,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public String get(String key) {
     if (clientSideCache != null) {
-      String cachedValue = clientSideCache.getValue(key);
+      String cachedValue = clientSideCache.get(key);
       if (cachedValue != null) return cachedValue;
 
       String value = executeCommand(commandObjects.get(key));
-      if (value != null) clientSideCache.setKey(key, value);
+      if (value != null) clientSideCache.set(key, value);
       return value;
     }
     return executeCommand(commandObjects.get(key));

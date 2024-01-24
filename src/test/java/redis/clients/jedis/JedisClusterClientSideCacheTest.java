@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import redis.clients.jedis.util.MapCSC;
 
 public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 
@@ -31,7 +32,7 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 
   @Test
   public void simple() {
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new ClientSideCache())) {
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC())) {
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       jedis.del("foo");
@@ -42,7 +43,7 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<ByteBuffer, Object> map = new HashMap<>();
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new ClientSideCache(map), singleConnectionPoolConfig.get())) {
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -60,7 +61,7 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 
   @Test
   public void flushAll() {
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new ClientSideCache())) {
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC())) {
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       jedis.flushAll();
@@ -71,7 +72,7 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<ByteBuffer, Object> map = new HashMap<>();
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new ClientSideCache(map), singleConnectionPoolConfig.get())) {
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));

@@ -1,63 +1,47 @@
 package redis.clients.jedis;
 
 import java.nio.ByteBuffer;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class ClientSideCache {
+public abstract class ClientSideCache {
 
-  private final Map<ByteBuffer, Object> cache;
+  protected ClientSideCache() { }
 
-  public ClientSideCache() {
-    this.cache = new HashMap<>();
-  }
+  public abstract void clear();
 
-  /**
-   * For testing purpose only.
-   * @param map 
-   */
-  ClientSideCache(Map<ByteBuffer, Object> map) {
-    this.cache = map;
-  }
+  protected abstract void remove(ByteBuffer key);
 
-  public final void clear() {
-    cache.clear();
-  }
+  protected abstract void put(ByteBuffer key, Object value);
 
-  public final void invalidateKeys(List list) {
+  protected abstract Object get(ByteBuffer key);
+
+  final void invalidateKeys(List list) {
     if (list == null) {
       clear();
-      return;
+    } else {
+      list.forEach(this::invalidateKey);
     }
-
-    list.forEach(this::invalidateKey);
   }
 
   private void invalidateKey(Object key) {
     if (key instanceof byte[]) {
-      cache.remove(convertKey((byte[]) key));
+      remove(convertKey((byte[]) key));
     } else {
       throw new JedisException("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
     }
   }
 
-  protected void setKey(Object key, Object value) {
-    cache.put(getMapKey(key), value);
+  final void set(Object key, Object value) {
+    put(makeKey(key), value);
   }
 
-  protected <T> T getValue(Object key) {
-    return (T) getMapValue(key);
+  final <T> T get(Object key) {
+    return (T) get(makeKey(key));
   }
 
-  private Object getMapValue(Object key) {
-    return cache.get(getMapKey(key));
-  }
-
-  private ByteBuffer getMapKey(Object key) {
+  private ByteBuffer makeKey(Object key) {
     if (key instanceof byte[]) {
       return convertKey((byte[]) key);
     } else {

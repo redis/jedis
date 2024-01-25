@@ -106,7 +106,7 @@
 			<scope>test</scope>
 		</dependency>
 
-                <!-- test -->
+		<!-- test -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

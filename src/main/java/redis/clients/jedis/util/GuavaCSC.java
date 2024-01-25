@@ -1,31 +1,31 @@
 package redis.clients.jedis.util;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.ClientSideCache;
 
-public class CaffeineCSC extends ClientSideCache {
+public class GuavaCSC extends ClientSideCache {
 
   private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
 
   private final Cache<ByteBuffer, Object> cache;
 
-  public CaffeineCSC() {
+  public GuavaCSC() {
     this(DEFAULT_MAXIMUM_SIZE);
   }
 
-  public CaffeineCSC(int maximumSize) {
-    this(Caffeine.newBuilder().maximumSize(maximumSize).build());
+  public GuavaCSC(int maximumSize) {
+    this(CacheBuilder.newBuilder().maximumSize(maximumSize).build());
   }
 
-  public CaffeineCSC(int maximumSize, int ttlSeconds) {
-    this(Caffeine.newBuilder().maximumSize(maximumSize)
+  public GuavaCSC(int maximumSize, int ttlSeconds) {
+    this(CacheBuilder.newBuilder().maximumSize(maximumSize)
         .expireAfterWrite(ttlSeconds, TimeUnit.SECONDS).build());
   }
 
-  public CaffeineCSC(Cache<ByteBuffer, Object> caffeineCache) {
+  public GuavaCSC(Cache<ByteBuffer, Object> caffeineCache) {
     this.cache = caffeineCache;
   }
 

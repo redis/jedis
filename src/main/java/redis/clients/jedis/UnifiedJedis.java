@@ -295,6 +295,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
   }
 
+  private <T> T executeClientSideCacheCommand(CommandObject<T> command) {
+    if (clientSideCache == null) {
+      return executeCommand(command);
+    }
+
+    return clientSideCache.getValue((cmd) -> executeCommand(cmd), command);
+  }
+
   public String ping() {
     return checkAndBroadcastCommand(commandObjects.ping());
   }
@@ -749,15 +757,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String get(String key) {
-    if (clientSideCache != null) {
-      String cachedValue = clientSideCache.get(key);
-      if (cachedValue != null) return cachedValue;
-
-      String value = executeCommand(commandObjects.get(key));
-      if (value != null) clientSideCache.set(key, value);
-      return value;
-    }
-    return executeCommand(commandObjects.get(key));
+    return executeClientSideCacheCommand(commandObjects.get(key));
   }
 
   @Override

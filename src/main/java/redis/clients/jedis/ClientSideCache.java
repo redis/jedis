@@ -1,55 +1,108 @@
 package redis.clients.jedis;
 
 import java.nio.ByteBuffer;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import redis.clients.jedis.exceptions.JedisException;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Function;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class ClientSideCache {
 
-  protected ClientSideCache() { }
+  private final Map<ByteBuffer, Set<Long>> keyHashes;
+  private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
+  private final Lock readLock = rwl.readLock();
+  private final Lock writeLock = rwl.writeLock();
 
-  public abstract void clear();
+  protected ClientSideCache() {
+    this.keyHashes = new ConcurrentHashMap<>();
+  }
 
-  protected abstract void remove(ByteBuffer key);
+  protected ClientSideCache(Map<ByteBuffer, Set<Long>> keyHashes) {
+    this.keyHashes = keyHashes;
+  }
 
-  protected abstract void put(ByteBuffer key, Object value);
+  public abstract void invalidateAll();
 
-  protected abstract Object get(ByteBuffer key);
+  protected abstract void invalidateAll(Iterable<Long> hashes);
+
+  protected abstract void put(long hash, Object value);
+
+  protected abstract Object get(long hash);
 
   final void invalidateKeys(List list) {
     if (list == null) {
-      clear();
-    } else {
-      list.forEach(this::invalidateKey);
+      invalidateAll();
+      return;
+    }
+
+    Set<Long> hashes = new HashSet<>();
+    list.forEach(key -> hashes.addAll(getHashes(key)));
+    invalidateAll(hashes);
+  }
+
+  private Set<Long> getHashes(Object key) {
+    if (!(key instanceof byte[])) {
+      throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
+    }
+
+    final ByteBuffer mapKey = makeKey((byte[]) key);
+    readLock.lock();
+    try {
+      Set<Long> hashes = keyHashes.get(mapKey);
+      return hashes != null ? hashes : Collections.emptySet();
+    } finally {
+      readLock.unlock();
     }
   }
 
-  private void invalidateKey(Object key) {
-    if (key instanceof byte[]) {
-      remove(convertKey((byte[]) key));
-    } else {
-      throw new JedisException("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
+  final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, String... keys) {
+
+    final long hash = getHash(command);
+
+    T value = (T) get(hash);
+    if (value != null) {
+      return value;
     }
-  }
 
-  final void set(Object key, Object value) {
-    put(makeKey(key), value);
-  }
-
-  final <T> T get(Object key) {
-    return (T) get(makeKey(key));
-  }
-
-  private ByteBuffer makeKey(Object key) {
-    if (key instanceof byte[]) {
-      return convertKey((byte[]) key);
-    } else {
-      return convertKey(SafeEncoder.encode(String.valueOf(key)));
+    value = loader.apply(command);
+    if (value != null) {
+      writeLock.lock();
+      try {
+        put(hash, value);
+        for (String key : keys) {
+          ByteBuffer mapKey = makeKey(key);
+          if (keyHashes.containsKey(mapKey)) {
+            keyHashes.get(mapKey).add(hash);
+          } else {
+            Set<Long> set = new HashSet<>();
+            set.add(hash);
+            keyHashes.put(mapKey, set);
+          }
+        }
+      } finally {
+        writeLock.unlock();
+      }
     }
+
+    return value;
   }
 
-  private static ByteBuffer convertKey(byte[] b) {
+  private long getHash(CommandObject command) {
+    // TODO:
+    return 0;
+  }
+
+  private ByteBuffer makeKey(String key) {
+    return makeKey(SafeEncoder.encode(key));
+  }
+
+  private static ByteBuffer makeKey(byte[] b) {
     return ByteBuffer.wrap(b);
   }
 }

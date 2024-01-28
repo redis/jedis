@@ -128,7 +128,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         pool = newPool;
         LOG.info("Created connection pool to master at {}.", master);
         if (clientSideCache != null) {
-          clientSideCache.clear();
+          clientSideCache.invalidateAll();
         }
 
         if (existingPool != null) {

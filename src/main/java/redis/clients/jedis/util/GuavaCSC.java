@@ -2,7 +2,6 @@ package redis.clients.jedis.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.ClientSideCache;
 
@@ -10,7 +9,7 @@ public class GuavaCSC extends ClientSideCache {
 
   private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
 
-  private final Cache<ByteBuffer, Object> cache;
+  private final Cache<Long, Object> cache;
 
   public GuavaCSC() {
     this(DEFAULT_MAXIMUM_SIZE);
@@ -25,27 +24,27 @@ public class GuavaCSC extends ClientSideCache {
         .expireAfterWrite(ttlSeconds, TimeUnit.SECONDS).build());
   }
 
-  public GuavaCSC(Cache<ByteBuffer, Object> caffeineCache) {
-    this.cache = caffeineCache;
+  public GuavaCSC(Cache<Long, Object> guavaCache) {
+    this.cache = guavaCache;
   }
 
   @Override
-  public final void clear() {
+  public final void invalidateAll() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void remove(ByteBuffer key) {
-    cache.invalidate(key);
+  protected void invalidateAll(Iterable<Long> hashes) {
+    cache.invalidateAll(hashes);
   }
 
   @Override
-  protected void put(ByteBuffer key, Object value) {
-    cache.put(key, value);
+  protected void put(long hash, Object value) {
+    cache.put(hash, value);
   }
 
   @Override
-  protected Object get(ByteBuffer key) {
-    return cache.getIfPresent(key);
+  protected Object get(long hash) {
+    return cache.getIfPresent(hash);
   }
 }

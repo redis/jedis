@@ -42,7 +42,7 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 
   @Test
   public void simpleWithSimpleMap() {
-    HashMap<ByteBuffer, Object> map = new HashMap<>();
+    HashMap<Long, Object> map = new HashMap<>();
     try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -71,7 +71,7 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 
   @Test
   public void flushAllWithSimpleMap() {
-    HashMap<ByteBuffer, Object> map = new HashMap<>();
+    HashMap<Long, Object> map = new HashMap<>();
     try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));

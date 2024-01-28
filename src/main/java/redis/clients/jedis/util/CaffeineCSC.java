@@ -2,7 +2,6 @@ package redis.clients.jedis.util;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.ClientSideCache;
 
@@ -10,7 +9,7 @@ public class CaffeineCSC extends ClientSideCache {
 
   private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
 
-  private final Cache<ByteBuffer, Object> cache;
+  private final Cache<Long, Object> cache;
 
   public CaffeineCSC() {
     this(DEFAULT_MAXIMUM_SIZE);
@@ -25,27 +24,27 @@ public class CaffeineCSC extends ClientSideCache {
         .expireAfterWrite(ttlSeconds, TimeUnit.SECONDS).build());
   }
 
-  public CaffeineCSC(Cache<ByteBuffer, Object> caffeineCache) {
+  public CaffeineCSC(Cache<Long, Object> caffeineCache) {
     this.cache = caffeineCache;
   }
 
   @Override
-  public final void clear() {
+  public final void invalidateAll() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void remove(ByteBuffer key) {
-    cache.invalidate(key);
+  protected void invalidateAll(Iterable<Long> hashes) {
+    cache.invalidateAll(hashes);
   }
 
   @Override
-  protected void put(ByteBuffer key, Object value) {
-    cache.put(key, value);
+  protected void put(long hash, Object value) {
+    cache.put(hash, value);
   }
 
   @Override
-  protected Object get(ByteBuffer key) {
-    return cache.getIfPresent(key);
+  protected Object get(long hash) {
+    return cache.getIfPresent(hash);
   }
 }

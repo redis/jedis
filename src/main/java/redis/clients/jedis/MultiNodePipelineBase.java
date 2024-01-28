@@ -86,6 +86,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     try {
       sync();
     } finally {
+      pipelinedResponses.clear();
       connections.values().forEach(IOUtils::closeQuietly);
     }
   }

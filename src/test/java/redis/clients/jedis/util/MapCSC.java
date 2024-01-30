@@ -1,8 +1,11 @@
 package redis.clients.jedis.util;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import redis.clients.jedis.ClientSideCache;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.args.Rawable;
 
 public class MapCSC extends ClientSideCache {
 
@@ -34,5 +37,14 @@ public class MapCSC extends ClientSideCache {
   @Override
   protected Object get(long hash) {
     return cache.get(hash);
+  }
+
+  @Override
+  protected final long getHash(CommandObject command) {
+    long result = 1;
+    for (Rawable raw : command.getArguments()) {
+      result = 31 * result + Arrays.hashCode(raw.getRaw());
+    }
+    return 31 * result + command.getBuilder().hashCode();
   }
 }

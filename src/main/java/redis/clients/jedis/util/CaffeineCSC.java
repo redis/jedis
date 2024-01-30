@@ -2,8 +2,11 @@ package redis.clients.jedis.util;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.ClientSideCache;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.args.Rawable;
 
 public class CaffeineCSC extends ClientSideCache {
 
@@ -46,5 +49,14 @@ public class CaffeineCSC extends ClientSideCache {
   @Override
   protected Object get(long hash) {
     return cache.getIfPresent(hash);
+  }
+
+  @Override // TODO:
+  protected final long getHash(CommandObject command) {
+    long result = 1;
+    for (Rawable raw : command.getArguments()) {
+      result = 31 * result + Arrays.hashCode(raw.getRaw());
+    }
+    return 31 * result + command.getBuilder().hashCode();
   }
 }

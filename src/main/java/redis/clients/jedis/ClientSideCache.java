@@ -23,17 +23,9 @@ public abstract class ClientSideCache {
     this.keyHashes = new ConcurrentHashMap<>();
   }
 
-  protected ClientSideCache(Map<ByteBuffer, Set<Long>> keyHashes) {
-    this.keyHashes = keyHashes;
-  }
-
   public abstract void invalidateAll();
 
   protected abstract void invalidateAll(Iterable<Long> hashes);
-
-  protected abstract void put(long hash, Object value);
-
-  protected abstract Object get(long hash);
 
   final void invalidate(List list) {
     if (list == null) {
@@ -61,6 +53,10 @@ public abstract class ClientSideCache {
       readLock.unlock();
     }
   }
+
+  protected abstract void put(long hash, Object value);
+
+  protected abstract Object get(long hash);
 
   final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, String... keys) {
 
@@ -94,10 +90,7 @@ public abstract class ClientSideCache {
     return value;
   }
 
-  private long getHash(CommandObject command) {
-    // TODO:
-    return 0;
-  }
+  protected abstract long getHash(CommandObject command);
 
   private ByteBuffer makeKey(String key) {
     return makeKey(SafeEncoder.encode(key));

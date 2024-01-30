@@ -14,7 +14,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class ClientSideCache {
 
-  private final Map<ByteBuffer, Set<Long>> keyHashes;
+  private final Map<ByteBuffer, Set<Long>> keyHashes; // TODO: clean-up
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock readLock = rwl.readLock();
   private final Lock writeLock = rwl.writeLock();
@@ -44,6 +44,7 @@ public abstract class ClientSideCache {
     Set<Long> hashes = new HashSet<>();
     list.forEach(key -> hashes.addAll(getHashes(key)));
     invalidateAll(hashes);
+    // TODO: clean-up keyHashes
   }
 
   private Set<Long> getHashes(Object key) {

@@ -35,7 +35,7 @@ public abstract class ClientSideCache {
 
   protected abstract Object get(long hash);
 
-  final void invalidateKeys(List list) {
+  final void invalidate(List list) {
     if (list == null) {
       invalidateAll();
       return;

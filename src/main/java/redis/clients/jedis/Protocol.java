@@ -248,7 +248,7 @@ public final class Protocol {
     //System.out.println("PUSH: " + SafeEncoder.encodeObject(list));
     if (list.size() == 2 && list.get(0) instanceof byte[]
         && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
-      cache.invalidateKeys((List) list.get(1));
+      cache.invalidate((List) list.get(1));
     }
   }
 

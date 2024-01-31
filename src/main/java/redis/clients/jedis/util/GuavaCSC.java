@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
-import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.ClientSideCache;
 import redis.clients.jedis.CommandObject;
@@ -12,8 +11,8 @@ import redis.clients.jedis.CommandObject;
 public class GuavaCSC extends ClientSideCache {
 
   private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
-  private static final int DEFAULT_EXPIRE_MINUTES = 5;
-  private static final HashFunction DEFAULT_FUNCTION = com.google.common.hash.Hashing.fingerprint2011();
+  private static final int DEFAULT_EXPIRE_SECONDS = 100;
+  private static final HashFunction DEFAULT_HASH_FUNCTION = com.google.common.hash.Hashing.fingerprint2011();
 
   private final Cache<Long, Object> cache;
   private final HashFunction function;
@@ -58,11 +57,10 @@ public class GuavaCSC extends ClientSideCache {
   public static class Builder {
 
     private long maximumSize = DEFAULT_MAXIMUM_SIZE;
-    private Duration expireDuration = null;
-    private long expireTime = DEFAULT_EXPIRE_MINUTES;
-    private TimeUnit expireTimeUnit = TimeUnit.MINUTES;
+    private long expireTime = DEFAULT_EXPIRE_SECONDS;
+    private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
-    private HashFunction hashFunction = DEFAULT_FUNCTION;
+    private HashFunction hashFunction = DEFAULT_HASH_FUNCTION;
 
     private Builder() { }
 
@@ -71,14 +69,8 @@ public class GuavaCSC extends ClientSideCache {
       return this;
     }
 
-    public Builder ttl(Duration duration) {
-      this.expireDuration = duration;
-      return this;
-    }
-
-    public Builder ttl(long time, TimeUnit unit) {
-      this.expireTime = time;
-      this.expireTimeUnit = unit;
+    public Builder ttl(int seconds) {
+      this.expireTime = seconds;
       return this;
     }
 
@@ -92,11 +84,7 @@ public class GuavaCSC extends ClientSideCache {
 
       cb.maximumSize(maximumSize);
 
-      if (expireDuration != null) {
-        cb.expireAfterWrite(expireDuration);
-      } else {
-        cb.expireAfterWrite(expireTime, expireTimeUnit);
-      }
+      cb.expireAfterWrite(expireTime, expireTimeUnit);
 
       return new GuavaCSC(cb.build(), hashFunction);
     }

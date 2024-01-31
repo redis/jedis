@@ -2,8 +2,8 @@ package redis.clients.jedis.util;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import net.openhft.hashing.LongHashFunction;
 import redis.clients.jedis.ClientSideCache;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.args.Rawable;
@@ -11,24 +11,15 @@ import redis.clients.jedis.args.Rawable;
 public class CaffeineCSC extends ClientSideCache {
 
   private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
+  private static final int DEFAULT_EXPIRE_SECONDS = 100;
+  private static final LongHashFunction DEFAULT_HASH_FUNCTION = LongHashFunction.xx3();
 
   private final Cache<Long, Object> cache;
+  private final LongHashFunction function;
 
-  public CaffeineCSC() {
-    this(DEFAULT_MAXIMUM_SIZE);
-  }
-
-  public CaffeineCSC(int maximumSize) {
-    this(Caffeine.newBuilder().maximumSize(maximumSize).build());
-  }
-
-  public CaffeineCSC(int maximumSize, int ttlSeconds) {
-    this(Caffeine.newBuilder().maximumSize(maximumSize)
-        .expireAfterWrite(ttlSeconds, TimeUnit.SECONDS).build());
-  }
-
-  public CaffeineCSC(Cache<Long, Object> caffeineCache) {
+  public CaffeineCSC(Cache<Long, Object> caffeineCache, LongHashFunction hashFunction) {
     this.cache = caffeineCache;
+    this.function = hashFunction;
   }
 
   @Override
@@ -51,12 +42,54 @@ public class CaffeineCSC extends ClientSideCache {
     return cache.getIfPresent(hash);
   }
 
-  @Override // TODO:
+  @Override
   protected final long getHash(CommandObject command) {
-    long result = 1;
+    long[] nums = new long[command.getArguments().size() + 1];
+    int idx = 0;
     for (Rawable raw : command.getArguments()) {
-      result = 31 * result + Arrays.hashCode(raw.getRaw());
+      nums[idx++] = function.hashBytes(raw.getRaw());
     }
-    return 31 * result + command.getBuilder().hashCode();
+    nums[idx] = function.hashInt(command.getBuilder().hashCode());
+    return function.hashLongs(nums);
+  }
+
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  public static class Builder {
+
+    private long maximumSize = DEFAULT_MAXIMUM_SIZE;
+    private long expireTime = DEFAULT_EXPIRE_SECONDS;
+    private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
+
+    private LongHashFunction hashFunction = DEFAULT_HASH_FUNCTION;
+
+    private Builder() { }
+
+    public Builder maximumSize(int size) {
+      this.maximumSize = size;
+      return this;
+    }
+
+    public Builder ttl(int seconds) {
+      this.expireTime = seconds;
+      return this;
+    }
+
+    public Builder hashFunction(LongHashFunction function) {
+      this.hashFunction = function;
+      return this;
+    }
+
+    public CaffeineCSC build() {
+      Caffeine cb = Caffeine.newBuilder();
+
+      cb.maximumSize(maximumSize);
+
+      cb.expireAfterWrite(expireTime, expireTimeUnit);
+
+      return new CaffeineCSC(cb.build(), hashFunction);
+    }
   }
 }

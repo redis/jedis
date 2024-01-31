@@ -89,6 +89,12 @@
 			<version>2.9.3</version>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>zero-allocation-hashing</artifactId>
+			<version>0.16</version>
+			<optional>true</optional>
+		</dependency>
 
 		<!-- UNIX socket connection support -->
 		<dependency>

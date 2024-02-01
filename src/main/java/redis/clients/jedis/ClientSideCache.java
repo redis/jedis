@@ -1,23 +1,19 @@
 package redis.clients.jedis;
 
 import java.nio.ByteBuffer;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class ClientSideCache {
 
-  private final Map<ByteBuffer, Set<Long>> keyHashes; // TODO: clean-up
-  private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
-  private final Lock readLock = rwl.readLock();
-  private final Lock writeLock = rwl.writeLock();
+  private final Map<ByteBuffer, Set<Long>> keyHashes;
+  private final ReentrantLock writeLock = new ReentrantLock();
 
   protected ClientSideCache() {
     this.keyHashes = new ConcurrentHashMap<>();
@@ -33,24 +29,25 @@ public abstract class ClientSideCache {
       return;
     }
 
-    Set<Long> hashes = new HashSet<>();
-    list.forEach(key -> hashes.addAll(getHashes(key)));
-    invalidateAll(hashes);
-    // TODO: clean-up keyHashes
+    list.forEach(this::invalidate0);
   }
 
-  private Set<Long> getHashes(Object key) {
+  private void invalidate0(Object key) {
     if (!(key instanceof byte[])) {
       throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
     }
 
     final ByteBuffer mapKey = makeKey((byte[]) key);
-    readLock.lock();
-    try {
-      Set<Long> hashes = keyHashes.get(mapKey);
-      return hashes != null ? hashes : Collections.emptySet();
-    } finally {
-      readLock.unlock();
+
+    Set<Long> hashes = keyHashes.get(mapKey);
+    if (hashes != null) {
+      writeLock.lock();
+      try {
+        invalidateAll(hashes);
+        keyHashes.remove(mapKey);
+      } finally {
+        writeLock.unlock();
+      }
     }
   }
 

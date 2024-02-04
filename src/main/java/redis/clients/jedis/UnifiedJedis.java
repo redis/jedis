@@ -72,7 +72,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
         .database(JedisURIHelper.getDBIndex(uri)).protocol(JedisURIHelper.getRedisProtocol(uri))
-        .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
+        .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build(), JedisURIHelper.getClientSideCache(uri));
   }
 
   public UnifiedJedis(final URI uri, JedisClientConfig config) {
@@ -85,11 +85,15 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         .protocol(JedisURIHelper.getRedisProtocol(uri))
         .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
         .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
-        .build());
+        .build(), JedisURIHelper.getClientSideCache(uri));
   }
 
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig), clientConfig.getRedisProtocol());
+  }
+
+  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
+    this(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache), clientConfig.getRedisProtocol(), clientSideCache);
   }
 
   public UnifiedJedis(ConnectionProvider provider) {

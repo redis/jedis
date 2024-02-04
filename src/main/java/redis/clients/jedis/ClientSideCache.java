@@ -37,7 +37,7 @@ public abstract class ClientSideCache {
       throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
     }
 
-    final ByteBuffer mapKey = makeKey((byte[]) key);
+    final ByteBuffer mapKey = makeKey0((byte[]) key);
 
     Set<Long> hashes = keyHashes.get(mapKey);
     if (hashes != null) {
@@ -55,7 +55,7 @@ public abstract class ClientSideCache {
 
   protected abstract Object get(long hash);
 
-  final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, String... keys) {
+  final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
 
     final long hash = getHash(command);
 
@@ -69,7 +69,7 @@ public abstract class ClientSideCache {
       writeLock.lock();
       try {
         put(hash, value);
-        for (String key : keys) {
+        for (Object key : keys) {
           ByteBuffer mapKey = makeKey(key);
           if (keyHashes.containsKey(mapKey)) {
             keyHashes.get(mapKey).add(hash);
@@ -89,11 +89,13 @@ public abstract class ClientSideCache {
 
   protected abstract long getHash(CommandObject command);
 
-  private ByteBuffer makeKey(String key) {
-    return makeKey(SafeEncoder.encode(key));
+  private ByteBuffer makeKey(Object key) {
+    if (key instanceof byte[]) return makeKey0((byte[]) key);
+    else if (key instanceof String) return makeKey0(SafeEncoder.encode((String) key));
+    else throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
   }
 
-  private static ByteBuffer makeKey(byte[] b) {
+  private static ByteBuffer makeKey0(byte[] b) {
     return ByteBuffer.wrap(b);
   }
 }

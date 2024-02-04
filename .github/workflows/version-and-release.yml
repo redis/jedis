@@ -32,14 +32,14 @@ jobs:
 
       - name: Install gpg key
         run: |
-          cat <(echo -e "${{ secrets.OSSRH_GPG_SECRET_KEY }}") | gpg --batch --import
+          cat <(echo -e "${{ secrets.OSSH_GPG_SECRET_KEY }}") | gpg --batch --import
           gpg --list-secret-keys --keyid-format LONG
 
       - name: Publish
         run: |
           mvn --no-transfer-progress \
             --batch-mode \
-            -Dgpg.passphrase='${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}' \
+            -Dgpg.passphrase='${{ secrets.OSSH_GPG_SECRET_KEY_PASSWORD }}' \
             -DskipTests deploy -P release
         env:
           MAVEN_USERNAME: ${{secrets.OSSH_USERNAME}}

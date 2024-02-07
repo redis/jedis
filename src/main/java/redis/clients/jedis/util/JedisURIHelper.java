@@ -58,6 +58,7 @@ public final class JedisURIHelper {
     String[] params = uri.getQuery().split("&");
     for (String param : params) {
       int idx = param.indexOf("=");
+      if (idx < 0) continue;
       if ("protocol".equals(param.substring(0, idx))) {
         String ver = param.substring(idx + 1);
         for (RedisProtocol proto : RedisProtocol.values()) {
@@ -84,6 +85,8 @@ public final class JedisURIHelper {
     String[] params = uri.getQuery().split("&");
     for (String param : params) {
       int idx = param.indexOf("=");
+      if (idx < 0) continue;
+
       String key = param.substring(0, idx);
       String val = param.substring(idx + 1);
 

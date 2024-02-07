@@ -128,11 +128,11 @@ public final class JedisURIHelper {
     if (ZERO_INTEGER.equals(maxSize)) {
       return null;
     }
+    if (!guava && !caffeine && (maxSize != null || ttl != null)) {
+      throw new IllegalArgumentException("The cache library (guava OR caffeine) must be selected.");
+    }
     if (ZERO_INTEGER.equals(ttl)) {
       ttl = null; // below, only null will be checked
-    }
-    if (!guava && !caffeine) {
-      throw new IllegalArgumentException("The cache library (guava OR caffeine) must be selected.");
     }
 
     if (guava) {

@@ -114,11 +114,11 @@ public final class JedisURIHelper {
           }
           break;
 
-        case "ttl":
+        case "cache_ttl":
           try {
             ttl = Integer.parseInt(val);
           } catch (NumberFormatException nfe) {
-            throw new JedisValidationException("Value of ttl must be an integer denoting seconds.", nfe);
+            throw new JedisValidationException("Value of cache_ttl must be an integer denoting seconds.", nfe);
           }
           break;
       }

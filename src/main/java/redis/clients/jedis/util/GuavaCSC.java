@@ -23,12 +23,12 @@ public class GuavaCSC extends ClientSideCache {
   }
 
   @Override
-  public final void invalidateAll() {
+  protected final void invalidateAllCommandHashes() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateAll(Iterable<Long> hashes) {
+  protected void invalidateCommandHashes(Iterable<Long> hashes) {
     cache.invalidateAll(hashes);
   }
 
@@ -43,7 +43,7 @@ public class GuavaCSC extends ClientSideCache {
   }
 
   @Override
-  protected final long getHash(CommandObject command) {
+  protected final long getCommandHash(CommandObject command) {
     Hasher hasher = function.newHasher();
     command.getArguments().forEach(raw -> hasher.putBytes(raw.getRaw()));
     hasher.putInt(command.getBuilder().hashCode());

@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -18,7 +17,6 @@ import redis.clients.jedis.util.SafeEncoder;
 public abstract class ClientSideCache {
 
   private final Map<ByteBuffer, Set<Long>> keyHashes;
-  private final ReentrantLock writeLock = new ReentrantLock();
 
   protected ClientSideCache() {
     this.keyHashes = new ConcurrentHashMap<>();
@@ -46,13 +44,8 @@ public abstract class ClientSideCache {
 
     Set<Long> hashes = keyHashes.get(mapKey);
     if (hashes != null) {
-      writeLock.lock();
-      try {
-        invalidateAll(hashes);
-        keyHashes.remove(mapKey);
-      } finally {
-        writeLock.unlock();
-      }
+      invalidateAll(hashes);
+      keyHashes.remove(mapKey);
     }
   }
 
@@ -71,21 +64,16 @@ public abstract class ClientSideCache {
 
     value = loader.apply(command);
     if (value != null) {
-      writeLock.lock();
-      try {
-        put(hash, value);
-        for (String key : keys) {
-          ByteBuffer mapKey = makeKey(key);
-          if (keyHashes.containsKey(mapKey)) {
-            keyHashes.get(mapKey).add(hash);
-          } else {
-            Set<Long> set = new HashSet<>();
-            set.add(hash);
-            keyHashes.put(mapKey, set);
-          }
+      put(hash, value);
+      for (String key : keys) {
+        ByteBuffer mapKey = makeKey(key);
+        if (keyHashes.containsKey(mapKey)) {
+          keyHashes.get(mapKey).add(hash);
+        } else {
+          Set<Long> set = new HashSet<>();
+          set.add(hash);
+          keyHashes.put(mapKey, set);
         }
-      } finally {
-        writeLock.unlock();
       }
     }
 

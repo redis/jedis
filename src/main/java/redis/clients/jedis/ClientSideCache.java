@@ -10,6 +10,11 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import redis.clients.jedis.util.SafeEncoder;
 
+/**
+ * The class to manage the client-side caching. User can provide any of implementation of this class to the client
+ * object; e.g. {@link redis.clients.jedis.util.CaffeineCSC CaffeineCSC} or
+ * {@link redis.clients.jedis.util.GuavaCSC GuavaCSC} or a custom implementation of their own.
+ */
 public abstract class ClientSideCache {
 
   private final Map<ByteBuffer, Set<Long>> keyHashes;

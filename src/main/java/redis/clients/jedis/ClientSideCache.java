@@ -16,10 +16,10 @@ import redis.clients.jedis.util.SafeEncoder;
  */
 public abstract class ClientSideCache {
 
-  private final Map<ByteBuffer, Set<Long>> keyHashes;
+  private final Map<ByteBuffer, Set<Long>> keyToCommandHashes;
 
   protected ClientSideCache() {
-    this.keyHashes = new ConcurrentHashMap<>();
+    this.keyToCommandHashes = new ConcurrentHashMap<>();
   }
 
   public abstract void invalidateAll();
@@ -40,12 +40,12 @@ public abstract class ClientSideCache {
       throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
     }
 
-    final ByteBuffer mapKey = makeKey((byte[]) key);
+    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
 
-    Set<Long> hashes = keyHashes.get(mapKey);
+    Set<Long> hashes = keyToCommandHashes.get(mapKey);
     if (hashes != null) {
       invalidateAll(hashes);
-      keyHashes.remove(mapKey);
+      keyToCommandHashes.remove(mapKey);
     }
   }
 
@@ -66,13 +66,13 @@ public abstract class ClientSideCache {
     if (value != null) {
       put(hash, value);
       for (String key : keys) {
-        ByteBuffer mapKey = makeKey(key);
-        if (keyHashes.containsKey(mapKey)) {
-          keyHashes.get(mapKey).add(hash);
+        ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
+        if (keyToCommandHashes.containsKey(mapKey)) {
+          keyToCommandHashes.get(mapKey).add(hash);
         } else {
           Set<Long> set = new HashSet<>();
           set.add(hash);
-          keyHashes.put(mapKey, set);
+          keyToCommandHashes.put(mapKey, set);
         }
       }
     }
@@ -82,11 +82,11 @@ public abstract class ClientSideCache {
 
   protected abstract long getHash(CommandObject command);
 
-  private ByteBuffer makeKey(String key) {
-    return makeKey(SafeEncoder.encode(key));
+  private ByteBuffer makeKeyForKeyToCommandHashes(String key) {
+    return makeKeyForKeyToCommandHashes(SafeEncoder.encode(key));
   }
 
-  private static ByteBuffer makeKey(byte[] b) {
+  private static ByteBuffer makeKeyForKeyToCommandHashes(byte[] b) {
     return ByteBuffer.wrap(b);
   }
 }

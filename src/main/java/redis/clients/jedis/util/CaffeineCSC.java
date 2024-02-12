@@ -10,8 +10,6 @@ import redis.clients.jedis.args.Rawable;
 
 public class CaffeineCSC extends ClientSideCache {
 
-  private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
-  private static final int DEFAULT_EXPIRE_SECONDS = 100;
   private static final LongHashFunction DEFAULT_HASH_FUNCTION = LongHashFunction.xx3();
 
   private final Cache<Long, Object> cache;

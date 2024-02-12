@@ -10,8 +10,6 @@ import redis.clients.jedis.CommandObject;
 
 public class GuavaCSC extends ClientSideCache {
 
-  private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
-  private static final int DEFAULT_EXPIRE_SECONDS = 100;
   private static final HashFunction DEFAULT_HASH_FUNCTION = com.google.common.hash.Hashing.fingerprint2011();
 
   private final Cache<Long, Object> cache;

@@ -16,6 +16,9 @@ import redis.clients.jedis.util.SafeEncoder;
  */
 public abstract class ClientSideCache {
 
+  protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
+  protected static final int DEFAULT_EXPIRE_SECONDS = 100;
+
   private final Map<ByteBuffer, Set<Long>> keyToCommandHashes;
 
   protected ClientSideCache() {

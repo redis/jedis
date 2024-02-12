@@ -34,10 +34,10 @@ public abstract class ClientSideCache {
       return;
     }
 
-    list.forEach(this::invalidate0);
+    list.forEach(this::invalidateKeyAndRespectiveCommandHashes);
   }
 
-  private void invalidate0(Object key) {
+  private void invalidateKeyAndRespectiveCommandHashes(Object key) {
     if (!(key instanceof byte[])) {
       throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
     }

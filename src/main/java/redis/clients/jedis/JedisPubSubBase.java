@@ -174,7 +174,5 @@ public abstract class JedisPubSubBase<T> {
       }
     } while (isSubscribed());
 
-//    /* Invalidate instance since this thread is no longer listening */
-//    this.client = null;
   }
 }

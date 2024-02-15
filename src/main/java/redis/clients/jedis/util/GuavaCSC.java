@@ -10,8 +10,6 @@ import redis.clients.jedis.CommandObject;
 
 public class GuavaCSC extends ClientSideCache {
 
-  private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
-  private static final int DEFAULT_EXPIRE_SECONDS = 100;
   private static final HashFunction DEFAULT_HASH_FUNCTION = com.google.common.hash.Hashing.fingerprint2011();
 
   private final Cache<Long, Object> cache;
@@ -23,12 +21,12 @@ public class GuavaCSC extends ClientSideCache {
   }
 
   @Override
-  public final void invalidateAll() {
+  protected final void invalidateAllCommandHashes() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateAll(Iterable<Long> hashes) {
+  protected void invalidateCommandHashes(Iterable<Long> hashes) {
     cache.invalidateAll(hashes);
   }
 
@@ -43,7 +41,7 @@ public class GuavaCSC extends ClientSideCache {
   }
 
   @Override
-  protected final long getHash(CommandObject command) {
+  protected final long getCommandHash(CommandObject command) {
     Hasher hasher = function.newHasher();
     command.getArguments().forEach(raw -> hasher.putBytes(raw.getRaw()));
     hasher.putInt(command.getBuilder().hashCode());

@@ -10,8 +10,6 @@ import redis.clients.jedis.args.Rawable;
 
 public class CaffeineCSC extends ClientSideCache {
 
-  private static final int DEFAULT_MAXIMUM_SIZE = 10_000;
-  private static final int DEFAULT_EXPIRE_SECONDS = 100;
   private static final LongHashFunction DEFAULT_HASH_FUNCTION = LongHashFunction.xx3();
 
   private final Cache<Long, Object> cache;
@@ -23,12 +21,12 @@ public class CaffeineCSC extends ClientSideCache {
   }
 
   @Override
-  public final void invalidateAll() {
+  protected final void invalidateAllCommandHashes() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateAll(Iterable<Long> hashes) {
+  protected void invalidateCommandHashes(Iterable<Long> hashes) {
     cache.invalidateAll(hashes);
   }
 
@@ -43,7 +41,7 @@ public class CaffeineCSC extends ClientSideCache {
   }
 
   @Override
-  protected final long getHash(CommandObject command) {
+  protected final long getCommandHash(CommandObject command) {
     long[] nums = new long[command.getArguments().size() + 1];
     int idx = 0;
     for (Rawable raw : command.getArguments()) {

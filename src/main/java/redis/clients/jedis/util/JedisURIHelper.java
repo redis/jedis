@@ -5,7 +5,6 @@ import redis.clients.jedis.ClientSideCache;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.exceptions.JedisValidationException;
 
 public final class JedisURIHelper {
 
@@ -110,7 +109,7 @@ public final class JedisURIHelper {
           try {
             maxSize = Integer.parseInt(val);
           } catch (NumberFormatException nfe) {
-            throw new JedisValidationException("Value of cache_max_size must be an integer.", nfe);
+            throw new IllegalArgumentException("Value of cache_max_size must be an integer.", nfe);
           }
           break;
 
@@ -118,7 +117,7 @@ public final class JedisURIHelper {
           try {
             ttl = Integer.parseInt(val);
           } catch (NumberFormatException nfe) {
-            throw new JedisValidationException("Value of cache_ttl must be an integer denoting seconds.", nfe);
+            throw new IllegalArgumentException("Value of cache_ttl must be an integer denoting seconds.", nfe);
           }
           break;
       }

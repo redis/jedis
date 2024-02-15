@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
 import java.util.function.Function;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -67,7 +68,7 @@ public abstract class ClientSideCache {
     }
   }
 
-  final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, String... keys) {
+  final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
 
     final long hash = getCommandHash(command);
 
@@ -79,7 +80,7 @@ public abstract class ClientSideCache {
     value = loader.apply(command);
     if (value != null) {
       put(hash, value);
-      for (String key : keys) {
+      for (Object key : keys) {
         ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
         if (keyToCommandHashes.containsKey(mapKey)) {
           keyToCommandHashes.get(mapKey).add(hash);
@@ -94,8 +95,10 @@ public abstract class ClientSideCache {
     return value;
   }
 
-  private ByteBuffer makeKeyForKeyToCommandHashes(String key) {
-    return makeKeyForKeyToCommandHashes(SafeEncoder.encode(key));
+  private ByteBuffer makeKeyForKeyToCommandHashes(Object key) {
+    if (key instanceof byte[]) return makeKeyForKeyToCommandHashes((byte[]) key);
+    else if (key instanceof String) return makeKeyForKeyToCommandHashes(SafeEncoder.encode((String) key));
+    else throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
   }
 
   private static ByteBuffer makeKeyForKeyToCommandHashes(byte[] b) {

@@ -75,6 +75,27 @@
 			<version>2.10.1</version>
 		</dependency>
 
+		<!-- Optional dependencies -->
+		<!-- Client-side caching -->
+                <dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>33.0.0-jre</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+			<version>2.9.3</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>net.openhft</groupId>
+			<artifactId>zero-allocation-hashing</artifactId>
+			<version>0.16</version>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- UNIX socket connection support -->
 		<dependency>
 			<groupId>com.kohlschutter.junixsocket</groupId>
@@ -90,6 +111,7 @@
 			<version>1.19.0</version>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- test -->
 		<dependency>
 			<groupId>junit</groupId>

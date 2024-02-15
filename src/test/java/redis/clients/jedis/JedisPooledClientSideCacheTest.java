@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.function.Supplier;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -12,6 +11,7 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.util.MapCSC;
 
 public class JedisPooledClientSideCacheTest {
 
@@ -42,7 +42,7 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void simple() {
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new ClientSideCache())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -52,8 +52,8 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void simpleWithSimpleMap() {
-    HashMap<ByteBuffer, Object> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new ClientSideCache(map), singleConnectionPoolConfig.get())) {
+    HashMap<Long, Object> map = new HashMap<>();
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -71,7 +71,7 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void flushAll() {
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new ClientSideCache())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
@@ -81,8 +81,8 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void flushAllWithSimpleMap() {
-    HashMap<ByteBuffer, Object> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new ClientSideCache(map), singleConnectionPoolConfig.get())) {
+    HashMap<Long, Object> map = new HashMap<>();
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));

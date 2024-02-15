@@ -26,7 +26,7 @@ public class JedisPooled extends UnifiedJedis {
    * @param url
    */
   public JedisPooled(final String url) {
-    this(URI.create(url));
+    super(url);
   }
 
   /**
@@ -76,7 +76,7 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache) {
-    super(new PooledConnectionProvider(hostAndPort, clientConfig, csCache), clientConfig.getRedisProtocol(), csCache);
+    super(hostAndPort, clientConfig, csCache);
   }
 
   public JedisPooled(PooledObjectFactory<Connection> factory) {

@@ -4,6 +4,8 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class XTrimParams implements IParams {
 
   private Long maxLen;
@@ -73,5 +75,18 @@ public class XTrimParams implements IParams {
     if (limit != null) {
       args.add(Keyword.LIMIT).add(limit);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XTrimParams that = (XTrimParams) o;
+    return approximateTrimming == that.approximateTrimming && exactTrimming == that.exactTrimming && Objects.equals(maxLen, that.maxLen) && Objects.equals(minId, that.minId) && Objects.equals(limit, that.limit);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(maxLen, approximateTrimming, exactTrimming, minId, limit);
   }
 }

@@ -3,6 +3,9 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 public class LolwutParams implements IParams {
 
   private Integer version;
@@ -32,5 +35,20 @@ public class LolwutParams implements IParams {
         args.addObjects((Object[]) opargs);
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    LolwutParams that = (LolwutParams) o;
+    return Objects.equals(version, that.version) && Arrays.equals(opargs, that.opargs);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = Objects.hash(version);
+    result = 31 * result + Arrays.hashCode(opargs);
+    return result;
   }
 }

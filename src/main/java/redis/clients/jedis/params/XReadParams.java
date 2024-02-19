@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class XReadParams implements IParams {
 
   private Integer count = null;
@@ -30,5 +32,18 @@ public class XReadParams implements IParams {
     if (block != null) {
       args.add(Keyword.BLOCK).add(block).blocking();
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XReadParams that = (XReadParams) o;
+    return Objects.equals(count, that.count) && Objects.equals(block, that.block);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(count, block);
   }
 }

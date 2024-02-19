@@ -172,7 +172,7 @@ public abstract class JedisPubSubBase<T> {
       } else {
         throw new JedisException("Unknown message type: " + reply);
       }
-    } while (isSubscribed());
+    } while (!Thread.currentThread().isInterrupted() && isSubscribed());
 
 //    /* Invalidate instance since this thread is no longer listening */
 //    this.client = null;

@@ -10,7 +10,8 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static redis.clients.jedis.Protocol.ResponseKeyword.*;
+import static redis.clients.jedis.Protocol.ResponseKeyword.MESSAGE;
+import static redis.clients.jedis.Protocol.ResponseKeyword.SUBSCRIBE;
 
 public class JedisPubSubBaseTest extends TestCase {
 

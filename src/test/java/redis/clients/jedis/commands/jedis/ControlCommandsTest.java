@@ -36,6 +36,8 @@ import redis.clients.jedis.params.CommandListFilterByParams;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.resps.CommandDocument;
 import redis.clients.jedis.resps.CommandInfo;
+import redis.clients.jedis.resps.LatencyHistoryInfo;
+import redis.clients.jedis.resps.LatencyLatestInfo;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
@@ -438,6 +440,23 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   public void latencyDoctor() {
     String report = jedis.latencyDoctor();
     assertNotNull(report);
+  }
+
+  @Test
+  public void latencyLatest() {
+    Map<String, LatencyLatestInfo> report = jedis.latencyLatest();
+    assertNotNull(report);
+  }
+
+  @Test
+  public void latencyHistoryFork() {
+    List<LatencyHistoryInfo> report = jedis.latencyHistory(Protocol.EventKeyword.FORK);
+    assertNotNull(report);
+  }
+
+  @Test
+  public void latencyReset() {
+    assertTrue(jedis.latencyReset() >= 0);
   }
 
   @Test

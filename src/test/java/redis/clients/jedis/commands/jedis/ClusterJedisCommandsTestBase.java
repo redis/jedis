@@ -14,6 +14,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.util.JedisClusterCRC16;
+import redis.clients.jedis.util.JedisClusterTestUtil;
 
 public abstract class ClusterJedisCommandsTestBase {
 
@@ -44,8 +45,8 @@ public abstract class ClusterJedisCommandsTestBase {
     // ---- configure cluster
 
     // add nodes to cluster
-    node1.clusterMeet("127.0.0.1", nodeInfo2.getPort());
-    node1.clusterMeet("127.0.0.1", nodeInfo3.getPort());
+    node1.clusterMeet(JedisClusterTestUtil.getClusterIp(2), 6379);
+    node1.clusterMeet(JedisClusterTestUtil.getClusterIp(3), 6379);
 
     // split available slots across the three nodes
 //    int slotsPerNode = JedisCluster.HASHSLOTS / 3;

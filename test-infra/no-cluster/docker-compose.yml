@@ -1,0 +1,296 @@
+---
+
+version: "3.8"
+
+services:
+
+  redis-1:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass foobared --user acljedis on allcommands allkeys >fizzbuzz --enable-module-command yes --client-output-buffer-limit pubsub 256k 128k 5 --save ''"
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./testmodule.so:/tmp/testmodule.so:ro
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.10
+
+  redis-2:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass foobared --save ''"
+    ports:
+      - "6380:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.11
+
+  redis-3:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass foobared --masterauth foobared --save ''"
+    ports:
+      - "6381:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.12
+
+  redis-4:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass foobared --masterauth foobared --slaveof redis-3 6379 --save ''"
+    ports:
+      - "6382:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.13
+
+  redis-5:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass foobared --masterauth foobared --slaveof redis-1 6379 --save ''"
+    ports:
+      - "6383:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.14
+
+  redis-6:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass foobared --masterauth foobared --save ''"
+    ports:
+      - "6384:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.15
+
+  redis-7:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass foobared --masterauth foobared --slaveof redis-6 6379 --save ''"
+    ports:
+      - "6385:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.16
+
+  redis-8:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--maxmemory-policy allkeys-lfu --save ''"
+    ports:
+      - "6386:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.17
+
+  redis-9:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--user default off --user acljedis on allcommands allkeys >fizzbuzz --client-output-buffer-limit pubsub 256k 128k 5 --save ''"
+    ports:
+      - "6387:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.18
+
+  redis-10:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--save ''"
+    ports:
+      - "6388:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.19
+
+  redis-11:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--replicaof redis-10 6379 --save ''"
+    ports:
+      - "6389:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.20
+
+  redis-uds:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--port 0 --unixsocket /var/run/redis_uds.sock --unixsocketperm 777 --save ''"
+    volumes:
+      - /var/run/:/var/run/:rw
+    healthcheck:
+      test: redis-cli -s /var/run/redis_uds.sock ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.21
+
+  redis-unavailable:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--port 6400"
+    ports:
+      - "6400:6400"
+    healthcheck:
+      test: redis-cli -p 6400 ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.22
+
+  redis-sentinel-1:
+    build:
+      context: sentinel
+      args:
+        MASTER_HOST: redis-1
+    depends_on:
+      - redis-1
+    ports:
+      - "26379:26379"
+    healthcheck:
+      test: redis-cli -p 26379 ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.31
+
+  redis-sentinel-2:
+    build:
+      context: sentinel
+      args:
+        MASTER_HOST: redis-3
+    depends_on:
+      - redis-3
+    ports:
+      - "26380:26379"
+    healthcheck:
+      test: redis-cli -p 26379 ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.32
+
+  redis-sentinel-3:
+    build:
+      context: sentinel
+      args:
+        MASTER_NAME: mymasterfailover
+        MASTER_HOST: redis-6
+    depends_on:
+      - redis-6
+    ports:
+      - "26381:26379"
+    healthcheck:
+      test: redis-cli -p 26379 ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.33
+
+  redis-sentinel-4:
+    build:
+      context: sentinel
+      args:
+        MASTER_HOST: redis-3
+    depends_on:
+      - redis-3
+    ports:
+      - "26382:26379"
+    healthcheck:
+      test: redis-cli -p 26379 ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.34
+
+  redis-sentinel-5:
+    build:
+      context: sentinel
+      args:
+        CONFIG_FILE: sentinel-acl.conf
+        MASTER_NAME: aclmaster
+        MASTER_HOST: redis-9
+        MASTER_AUTH_USER: acljedis
+        MASTER_AUTH_PASS: fizzbuzz
+    depends_on:
+      - redis-9
+    ports:
+      - "26383:26379"
+    healthcheck:
+      test: redis-cli -p 26379 ping
+      interval: 5s
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.35
+
+  stunnel:
+    image: redisfab/stunnel
+    ports:
+      - "6390:6390"
+      - "16381:16381"
+      - "16382:16382"
+      - "16387:16387"
+      - "36383:36383"
+    volumes:
+      - "./stunnel/stunnel.conf:/etc/stunnel/conf.d/sentinel.conf:ro"
+      - "./stunnel/pki:/etc/stunnel/keys:ro"
+    depends_on:
+      redis-1:
+        condition: service_healthy
+      redis-3:
+        condition: service_healthy
+      redis-4:
+        condition: service_healthy
+      redis-9:
+        condition: service_healthy
+      redis-sentinel-5:
+        condition: service_healthy
+    networks:
+      no-cluster:
+        ipv4_address: 172.21.0.40
+
+networks:
+  no-cluster:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.21.0.0/16
+          ip_range: 172.21.0.0/24
+          gateway: 172.21.0.254

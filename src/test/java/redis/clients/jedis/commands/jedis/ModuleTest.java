@@ -1,15 +1,15 @@
 package redis.clients.jedis.commands.jedis;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import java.util.Collections;
-import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.Module;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
+
+import static org.junit.Assert.*;
 
 public class ModuleTest extends JedisCommandsTestBase {
 
@@ -35,8 +35,9 @@ public class ModuleTest extends JedisCommandsTestBase {
       assertEquals("OK", jedis.moduleLoad("/tmp/testmodule.so"));
 
       List<Module> modules = jedis.moduleList();
+      Set<String> moduleNames = modules.stream().map(Module::getName).collect(Collectors.toSet());
 
-      assertEquals("testmodule", modules.get(0).getName());
+      assertTrue(moduleNames.contains("testmodule"));
 
       Object output = jedis.sendCommand(ModuleCommand.SIMPLE);
       assertTrue((Long) output > 0);
@@ -44,7 +45,11 @@ public class ModuleTest extends JedisCommandsTestBase {
     } finally {
 
       assertEquals("OK", jedis.moduleUnload("testmodule"));
-      assertEquals(Collections.emptyList(), jedis.moduleList());
+
+      List<Module> modules = jedis.moduleList();
+      Set<String> moduleNames = modules.stream().map(Module::getName).collect(Collectors.toSet());
+
+      assertFalse(moduleNames.contains("testmodule"));
     }
   }
 }

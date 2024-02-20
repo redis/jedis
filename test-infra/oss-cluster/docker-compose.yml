@@ -1,0 +1,118 @@
+---
+
+version: '3.8'
+
+services:
+  redis-oss-cluster-node-1:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass cluster --cluster-enabled yes --cluster-node-timeout 15000"
+    ports:
+      - "7379:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      cluster:
+        ipv4_address: 172.20.0.31
+
+  redis-oss-cluster-node-2:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass cluster --cluster-enabled yes --cluster-node-timeout 15000"
+    ports:
+      - "7380:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      cluster:
+        ipv4_address: 172.20.0.32
+
+  redis-oss-cluster-node-3:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass cluster --cluster-enabled yes --cluster-node-timeout 15000"
+    ports:
+      - "7381:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      cluster:
+        ipv4_address: 172.20.0.33
+
+  redis-oss-cluster-node-4:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass cluster --cluster-enabled yes --cluster-node-timeout 15000"
+    ports:
+      - "7382:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      cluster:
+        ipv4_address: 172.20.0.34
+
+  redis-oss-cluster-node-5:
+    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+    environment:
+      - "REDIS_ARGS=--requirepass cluster --cluster-enabled yes --cluster-node-timeout 15000"
+    ports:
+      - "7383:6379"
+    healthcheck:
+      test: redis-cli ping
+      interval: 5s
+    networks:
+      cluster:
+        ipv4_address: 172.20.0.35
+
+#  redis-oss-cluster-starter:
+#    image: redis/redis-stack-server:${REDIS_VERSION:-edge}
+#    depends_on:
+#      redis-oss-cluster-node-1:
+#        condition: service_healthy
+#      redis-oss-cluster-node-2:
+#        condition: service_healthy
+#      redis-oss-cluster-node-3:
+#        condition: service_healthy
+#      redis-oss-cluster-node-4:
+#        condition: service_healthy
+#      redis-oss-cluster-node-5:
+#        condition: service_healthy
+#    command: redis-cli -a cluster --cluster create 172.20.0.31:6379 172.20.0.32:6379 172.20.0.33:6379 172.20.0.34:6379 172.20.0.35:6379 --cluster-yes
+#    networks:
+#      cluster:
+#        ipv4_address: 172.20.0.30
+
+  stunnel:
+    image: redisfab/stunnel
+    ports:
+      - "8379-8383:8379-8383"
+    volumes:
+      - "./stunnel/stunnel.conf:/etc/stunnel/conf.d/oss-cluster.conf:ro"
+      - "./stunnel/pki:/etc/stunnel/keys:ro"
+    depends_on:
+      redis-oss-cluster-node-1:
+        condition: service_healthy
+      redis-oss-cluster-node-2:
+        condition: service_healthy
+      redis-oss-cluster-node-3:
+        condition: service_healthy
+      redis-oss-cluster-node-4:
+        condition: service_healthy
+      redis-oss-cluster-node-5:
+        condition: service_healthy
+    networks:
+      cluster:
+        ipv4_address: 172.20.0.29
+
+networks:
+  cluster:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          ip_range: 172.20.0.0/24
+          gateway: 172.20.0.254

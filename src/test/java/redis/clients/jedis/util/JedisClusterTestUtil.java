@@ -7,7 +7,8 @@ import redis.clients.jedis.exceptions.JedisException;
 public class JedisClusterTestUtil {
   public static void waitForClusterReady(Jedis... nodes) throws InterruptedException {
     boolean clusterOk = false;
-    while (!clusterOk) {
+    int retries = 0;
+    while (!clusterOk && retries < 1000) {
       boolean isOk = true;
       for (Jedis node : nodes) {
         if (!node.clusterInfo().split("\n")[0].contains("ok")) {
@@ -20,8 +21,18 @@ public class JedisClusterTestUtil {
         clusterOk = true;
       }
 
+      retries += 1;
       Thread.sleep(50);
     }
+  }
+
+  public static String getClusterIp(int index) {
+    // 172.20.0.31 is the first IP in the cluster, with index 1
+    return String.format("172.20.0.%d", 30 + index);
+  }
+
+  public static String getClusterIpWithPort(int index) {
+    return String.format("%s:6379", getClusterIp(index));
   }
 
   public static String getNodeId(String infoOutput) {

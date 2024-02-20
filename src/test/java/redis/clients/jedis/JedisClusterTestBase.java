@@ -47,8 +47,8 @@ public abstract class JedisClusterTestBase {
     // ---- configure cluster
 
     // add nodes to cluster
-    node1.clusterMeet(LOCAL_IP, nodeInfo2.getPort());
-    node1.clusterMeet(LOCAL_IP, nodeInfo3.getPort());
+    node1.clusterMeet(JedisClusterTestUtil.getClusterIp(2), 6379);
+    node1.clusterMeet(JedisClusterTestUtil.getClusterIp(3), 6379);
 
     // split available slots across the three nodes
     int slotsPerNode = CLUSTER_HASHSLOTS / 3;

@@ -22,20 +22,21 @@ on:
 jobs:
 
   build:
-    name: Build and Test
+    name: Build and Test - Redis Stack ${{matrix.redis-stack-version}}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        redis-stack-version: ['6.2.6-v12', '7.2.0-v8', 'edge']
+    env:
+      REDIS_STACK_VERSION: ${{matrix.redis-stack-version}}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Set up publishing to maven central
         uses: actions/setup-java@v2
         with:
           java-version: '8'
           distribution: 'temurin'
-      - name: System setup
-        run: |
-          sudo apt update
-          sudo apt install -y stunnel make
-          make system-setup
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -51,28 +52,10 @@ jobs:
           mvn javadoc:jar
       - name: Run tests
         run: |
-          TEST="" make test
+          make test
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
-      - name: sleep 10s
-        run: sleep 10s
-      - name: Make - start
-        run: |
-          make start
-          sleep 2s
-      - name: Docker - mod or stack
-        run: docker run -p 52567:6379 -d redis/redis-stack-server:edge
-      - name: Test commands - default protocol
-        run: mvn -Dtest="redis.clients.jedis.commands.**" test
-      - name: Test commands - RESP3 protocol
-        run: mvn -DjedisProtocol=3 -Dtest="redis.clients.jedis.commands.**" test
-      - name: Test module commands - default protocol
-        run: mvn -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
-      - name: Test module commands - RESP3 protocol
-        run: mvn -DjedisProtocol=3 -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
-      - name: Make - stop
-        run: make stop
       - name: Codecov
         run: |
           bash <(curl -s https://codecov.io/bash)

@@ -18,7 +18,7 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class SlowlogCommandsTest extends JedisCommandsTestBase {
 
-  private static final List<String> LOCAL_IPS = Arrays.asList("127.0.0.1", "[::1]");
+  private static final List<String> DOCKER_GATEWAY_IPS = Arrays.asList("172.20.0.254", "172.21.0.254");
 
   private static final String SLOWLOG_TIME_PARAM = "slowlog-log-slower-than";
   private static final String ZERO_STRING = "0";
@@ -90,7 +90,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     assertEquals(SafeEncoder.encode(Protocol.Keyword.SET.getRaw()), log.getArgs().get(1));
     assertEquals(SLOWLOG_TIME_PARAM, log.getArgs().get(2));
     assertEquals(ZERO_STRING, log.getArgs().get(3));
-    assertThat(log.getClientIpPort().getHost(), Matchers.in(LOCAL_IPS));
+    assertThat(log.getClientIpPort().getHost(), Matchers.in(DOCKER_GATEWAY_IPS));
     assertThat(log.getClientIpPort().getPort(), Matchers.greaterThan(0));
     assertEquals(clientName, log.getClientName());
   }

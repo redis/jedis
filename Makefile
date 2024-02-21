@@ -1,4 +1,4 @@
-pavuformat:
+format:
 	mvn java-formatter:format
 
 start: compile-module

@@ -1,7 +1,7 @@
 package redis.clients.jedis.commands;
 
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.LatencyEvent;
 import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.LolwutParams;
@@ -255,7 +255,7 @@ public interface ServerCommands {
 
   Map<String, LatencyLatestInfo> latencyLatest();
 
-  List<LatencyHistoryInfo> latencyHistory(Protocol.EventKeyword events);
+  List<LatencyHistoryInfo> latencyHistory(LatencyEvent events);
 
-  long latencyReset(Protocol.EventKeyword... events);
+  long latencyReset(LatencyEvent... events);
 }

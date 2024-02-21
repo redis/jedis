@@ -30,6 +30,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisMonitor;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.ClientPauseMode;
+import redis.clients.jedis.args.LatencyEvent;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.params.CommandListFilterByParams;
@@ -450,7 +451,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void latencyHistoryFork() {
-    List<LatencyHistoryInfo> report = jedis.latencyHistory(Protocol.EventKeyword.FORK);
+    List<LatencyHistoryInfo> report = jedis.latencyHistory(LatencyEvent.FORK);
     assertNotNull(report);
   }
 

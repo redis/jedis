@@ -9287,13 +9287,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return BuilderFactory.LATENCY_LATEST_RESPONSE.build(connection.getOne());
   }
 
-  public List<LatencyHistoryInfo> latencyHistory(EventKeyword event) {
+  public List<LatencyHistoryInfo> latencyHistory(LatencyEvent event) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(new CommandArguments(LATENCY).add(HISTORY).add(event));
     return BuilderFactory.LATENCY_HISTORY_RESPONSE.build(connection.getOne());
   }
 
-  public long latencyReset(EventKeyword... events) {
+  public long latencyReset(LatencyEvent... events) {
     checkIsInMultiOrPipeline();
     CommandArguments arguments = new CommandArguments(LATENCY).add(Keyword.RESET);
     Arrays.stream(events).forEach(arguments::add);

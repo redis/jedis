@@ -997,6 +997,53 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, LatencyLatestInfo>> LATENCY_LATEST_RESPONSE = new Builder<Map<String, LatencyLatestInfo>>() {
+    @Override
+    public Map<String, LatencyLatestInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      Map<String, LatencyLatestInfo> map = new HashMap<>(rawList.size());
+
+      for (Object rawLatencyLatestInfo : rawList) {
+        if (rawLatencyLatestInfo == null) {
+          continue;
+        }
+
+        LatencyLatestInfo latestInfo = LatencyLatestInfo.LATENCY_LATEST_BUILDER.build(rawLatencyLatestInfo);
+        String name = latestInfo.getCommand();
+        map.put(name, latestInfo);
+      }
+
+      return map;
+    }
+  };
+
+  public static final Builder<List<LatencyHistoryInfo>> LATENCY_HISTORY_RESPONSE = new Builder<List<LatencyHistoryInfo>>() {
+    @Override
+    public List<LatencyHistoryInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      List<LatencyHistoryInfo> response = new ArrayList<>(rawList.size());
+
+      for (Object rawLatencyHistoryInfo : rawList) {
+        if (rawLatencyHistoryInfo == null) {
+          continue;
+        }
+
+        LatencyHistoryInfo historyInfo = LatencyHistoryInfo.LATENCY_HISTORY_BUILDER.build(rawLatencyHistoryInfo);
+        response.add(historyInfo);
+      }
+
+      return response;
+    }
+  };
+
   private static final Builder<List<List<Long>>> CLUSTER_SHARD_SLOTS_RANGES = new Builder<List<List<Long>>>() {
 
     @Override

@@ -12,13 +12,20 @@ public class SSLJedisSentinelPoolTest {
 
   private static Set<HostAndPort> sentinels = new HashSet<>();
 
+  // don't map IP addresses so that we try to connect with host 127.0.0.1
+  private final HostAndPortMapper SSL_PORT_MAPPER = (HostAndPort hostAndPort) -> {
+    if (hostAndPort.getHost().startsWith("172")) {
+      return mapClusterAddress(hostAndPort.getHost(), hostAndPort.getPort());
+    }
+    return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() + 10000);
+  };
   private static final GenericObjectPoolConfig<Jedis> POOL_CONFIG = new GenericObjectPoolConfig<>();
 
   private static HostAndPort mapClusterAddress(String host, int port) {
     String[] segments = host.split("\\.");
     if (segments.length == 4) {
       int lastSegment = Integer.parseInt(segments[3]);
-      host = "localhost";
+      host = "127.0.0.1";
       if (lastSegment < 30) {
         int delta = lastSegment - 10; // 172.21.0.10 is the first IP for non-sentinels
         port = 6379 + delta + 10000; // stunnel serves non-sentinels on 16379...
@@ -29,14 +36,6 @@ public class SSLJedisSentinelPoolTest {
     }
     return new HostAndPort(host, port);
   }
-
-  // don't map IP addresses so that we try to connect with host 127.0.0.1
-  public final HostAndPortMapper SSL_PORT_MAPPER = (HostAndPort hostAndPort) -> {
-    if (hostAndPort.getHost().startsWith("172")) {
-      return mapClusterAddress(hostAndPort.getHost(), hostAndPort.getPort());
-    }
-    return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() + 10000);
-  };
 
 
   @BeforeClass

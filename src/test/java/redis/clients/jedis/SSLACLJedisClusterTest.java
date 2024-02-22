@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static redis.clients.jedis.SSLJedisClusterTest.hostAndPortMap;
+import static redis.clients.jedis.SSLJedisClusterTest.portMap;
 
 import java.util.Collections;
 import java.util.Map;
@@ -23,41 +25,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
 
   private static final int DEFAULT_REDIRECTIONS = 5;
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
-
-  public static final HostAndPortMapper hostAndPortMap = (HostAndPort hostAndPort) -> {
-    String host = hostAndPort.getHost();
-    int port = hostAndPort.getPort();
-    if (host.startsWith("172")) {
-      return mapClusterAddress(host, port);
-    }
-    if (host.equals("127.0.0.1")) {
-      host = "localhost";
-      port = port + 1000;
-    }
-    return new HostAndPort(host, port);
-  };
-
-  private static HostAndPort mapClusterAddress(String host, int port) {
-    String[] segments = host.split("\\.");
-    if (segments.length == 4) {
-      int lastSegment = Integer.parseInt(segments[3]);
-      int delta = lastSegment - 31; // 172.20.0.31 is the first IP in the cluster
-      host = "localhost";
-      port = 6379 + delta + 2000; // stunnel serves OSS cluster nodes on 8379...
-    }
-    return new HostAndPort(host, port);
-  }
-
-  // don't map IP addresses so that we try to connect with host 127.0.0.1
-  public static final HostAndPortMapper portMap = (HostAndPort hostAndPort) -> {
-    if (hostAndPort.getHost().startsWith("172")) {
-      return mapClusterAddress(hostAndPort.getHost(), hostAndPort.getPort());
-    }
-    if ("localhost".equals(hostAndPort.getHost())) {
-      return hostAndPort;
-    }
-    return new HostAndPort(hostAndPort.getHost(), hostAndPort.getPort() + 1000);
-  };
 
   @BeforeClass
   public static void prepare() {
@@ -169,7 +136,7 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
   @Test
   public void connectWithCustomHostNameVerifier() {
     HostnameVerifier hostnameVerifier = new BasicHostnameVerifier();
-    HostnameVerifier localhostVerifier = new LocalhostVerifier();
+    HostnameVerifier localhostVerifier = new SSLJedisClusterTest.LocalhostVerifier();
 
     try (JedisCluster jc = new JedisCluster(new HostAndPort("localhost", 8379),
         DefaultJedisClientConfig.builder().user("default").password("cluster").ssl(true)
@@ -246,16 +213,6 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
       assertTrue(clusterNodes.containsKey(JedisClusterTestUtil.getClusterIpWithPort(1)));
       assertTrue(clusterNodes.containsKey(JedisClusterTestUtil.getClusterIpWithPort(2)));
       assertTrue(clusterNodes.containsKey(JedisClusterTestUtil.getClusterIpWithPort(3)));
-    }
-  }
-
-  public static class LocalhostVerifier extends BasicHostnameVerifier {
-    @Override
-    public boolean verify(String hostname, SSLSession session) {
-      if (hostname.equals("127.0.0.1") || hostname.startsWith("172.")) {
-        hostname = "localhost";
-      }
-      return super.verify(hostname, session);
     }
   }
 }

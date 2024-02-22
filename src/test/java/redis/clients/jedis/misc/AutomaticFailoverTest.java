@@ -109,8 +109,8 @@ public class AutomaticFailoverTest {
 
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
-    assertFalse(failoverReporter.failedOver);
     log.info("Starting calls to Redis");
+    assertFalse(failoverReporter.failedOver);
     String key = "hash-" + System.nanoTime();
     jedis.hset(key, "f1", "v1");
     assertTrue(failoverReporter.failedOver);
@@ -137,11 +137,13 @@ public class AutomaticFailoverTest {
 
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
-    assertFalse(failoverReporter.failedOver);
     log.info("Starting calls to Redis");
+    assertFalse(failoverReporter.failedOver);
     AbstractPipeline pipe = jedis.pipelined();
+    assertFalse(failoverReporter.failedOver);
     String key = "hash-" + System.nanoTime();
     pipe.hset(key, "f1", "v1");
+    assertFalse(failoverReporter.failedOver);
     pipe.sync();
     assertTrue(failoverReporter.failedOver);
 
@@ -168,8 +170,8 @@ public class AutomaticFailoverTest {
 
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
-    assertFalse(failoverReporter.failedOver);
     log.info("Starting calls to Redis");
+    assertFalse(failoverReporter.failedOver);
     String key = "hash-" + System.nanoTime();
     jedis.hset(key, "f1", "v1");
     assertTrue(failoverReporter.failedOver);

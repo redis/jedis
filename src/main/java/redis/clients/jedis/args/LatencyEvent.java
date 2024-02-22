@@ -13,7 +13,7 @@ public enum LatencyEvent implements Rawable {
 
     private final byte[] raw;
 
-    LatencyEvent(String s) {
+    private LatencyEvent(String s) {
         raw = SafeEncoder.encode(s);
     }
 

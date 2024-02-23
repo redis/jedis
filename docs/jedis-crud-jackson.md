@@ -20,7 +20,7 @@
 </dependency>
 ```
 
-### .env
+### Environment variables
 To establish a connection to a Redis server, various connection methods provided by Jedis can be utilized. One effective way is to initialize a URI for connection. This allows for a concise and flexible approach in specifying connection details.
 
 ```java
@@ -28,7 +28,7 @@ To establish a connection to a Redis server, various connection methods provided
 davis.redis.uri=<url_connection>
 ```
 
-### Redis Config
+### Redis Configuration
 
 Project configuration connecting to the initially initialized URI.
 

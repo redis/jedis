@@ -1,4 +1,4 @@
-# Guide using methods CRUD cache Jackson data in Maven SpringBoot projects
+# Guide using methods CRUD cache Jackson data in Maven Spring projects
 
 ### Necessary libraries
 
@@ -20,7 +20,7 @@
 </dependency>
 ```
 
-### ENV
+### .env
 To establish a connection to a Redis server, various connection methods provided by Jedis can be utilized. One effective way is to initialize a URI for connection. This allows for a concise and flexible approach in specifying connection details.
 
 ```java
@@ -28,7 +28,7 @@ To establish a connection to a Redis server, various connection methods provided
 davis.redis.uri=<url_connection>
 ```
 
-### RedisConfig.java
+### Redis Config
 
 Project configuration connecting to the initially initialized URI.
 

@@ -6,15 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.function.Function;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * The class to manage the client-side caching. User can provide any of implementation of this class to the client
- * object; e.g. {@link redis.clients.jedis.util.CaffeineCSC CaffeineCSC} or
- * {@link redis.clients.jedis.util.GuavaCSC GuavaCSC} or a custom implementation of their own.
+ * object; e.g. {@link redis.clients.jedis.csc.util.CaffeineCSC CaffeineCSC} or
+ * {@link redis.clients.jedis.csc.util.GuavaCSC GuavaCSC} or a custom implementation of their own.
  */
 public abstract class ClientSideCache {
 

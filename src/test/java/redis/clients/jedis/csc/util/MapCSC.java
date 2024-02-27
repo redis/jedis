@@ -1,4 +1,4 @@
-package redis.clients.jedis.util;
+package redis.clients.jedis.csc.util;
 
 import java.util.Arrays;
 import java.util.Map;

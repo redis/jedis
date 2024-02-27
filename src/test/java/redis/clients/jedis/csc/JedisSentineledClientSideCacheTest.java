@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.csc;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -11,8 +11,13 @@ import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
-import redis.clients.jedis.csc.DefaultClientSideCacheConfig;
-import redis.clients.jedis.util.MapCSC;
+
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisSentineled;
+import redis.clients.jedis.csc.util.MapCSC;
 
 public class JedisSentineledClientSideCacheTest {
 

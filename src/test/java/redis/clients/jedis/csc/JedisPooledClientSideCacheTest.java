@@ -1,27 +1,46 @@
-package redis.clients.jedis;
+package redis.clients.jedis.csc;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
-import redis.clients.jedis.csc.DefaultClientSideCacheConfig;
-import redis.clients.jedis.util.MapCSC;
 
-public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPoolConfig;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.csc.util.MapCSC;
 
-  private static final Set<HostAndPort> hnp = Arrays.asList(nodeInfo1, nodeInfo2, nodeInfo3).stream().collect(Collectors.toSet());
+public class JedisPooledClientSideCacheTest {
+
+  protected static final HostAndPort hnp = HostAndPorts.getRedisServers().get(1);
+
+  protected Jedis control;
+
+  @Before
+  public void setUp() throws Exception {
+    control = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
+    control.flushAll();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    control.close();
+  }
 
   private static final Supplier<JedisClientConfig> clientConfig
-      = () -> DefaultJedisClientConfig.builder().resp3().password("cluster").build();
+      = () -> DefaultJedisClientConfig.builder().resp3().password("foobared").build();
 
   private static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig
       = () -> {
@@ -32,10 +51,10 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 
   @Test
   public void simple() {
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC()))) {
-      jedis.set("foo", "bar");
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC()))) {
+      control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
-      jedis.del("foo");
+      control.del("foo");
       assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
     }
   }
@@ -43,13 +62,12 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC(map)),
-        singleConnectionPoolConfig.get())) {
-      jedis.set("foo", "bar");
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC(map)), singleConnectionPoolConfig.get())) {
+      control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(1));
-      jedis.del("foo");
+      control.del("foo");
       assertThat(map, Matchers.aMapWithSize(1));
       assertEquals("bar", jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(1));
@@ -62,10 +80,10 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 
   @Test
   public void flushAll() {
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC()))) {
-      jedis.set("foo", "bar");
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC()))) {
+      control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
-      jedis.flushAll();
+      control.flushAll();
       assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
     }
   }
@@ -73,13 +91,12 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC(map)),
-        singleConnectionPoolConfig.get())) {
-      jedis.set("foo", "bar");
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC(map)), singleConnectionPoolConfig.get())) {
+      control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(1));
-      jedis.flushAll();
+      control.flushAll();
       assertThat(map, Matchers.aMapWithSize(1));
       assertEquals("bar", jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(1));

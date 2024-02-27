@@ -4414,15 +4414,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
-    return hscan(key, cursor, new ScanParams());
-  }
-
-  @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public ScanResult<byte[]> hscanNoValues(final byte[] key, final byte[] cursor, final ScanParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override
@@ -8615,6 +8616,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final ScanParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public ScanResult<String> hscanNoValues(final String key, final String cursor, final ScanParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override

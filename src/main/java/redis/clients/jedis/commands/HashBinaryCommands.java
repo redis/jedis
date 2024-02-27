@@ -47,7 +47,13 @@ public interface HashBinaryCommands {
     return hscan(key, cursor, new ScanParams());
   }
 
+  default ScanResult<byte[]> hscanNoValues(byte[] key, byte[] cursor) {
+    return hscanNoValues(key, cursor, new ScanParams());
+  }
+
   ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params);
+
+  ScanResult<byte[]> hscanNoValues(byte[] key, byte[] cursor, ScanParams params);
 
   long hstrlen(byte[] key, byte[] field);
 

@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 
 public class JedisSentineled extends UnifiedJedis {

@@ -5,7 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import java.util.concurrent.TimeUnit;
-import redis.clients.jedis.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.CommandObject;
 
 public class GuavaCSC extends ClientSideCache {

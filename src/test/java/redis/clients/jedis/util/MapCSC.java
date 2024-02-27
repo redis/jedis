@@ -3,9 +3,9 @@ package redis.clients.jedis.util;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import redis.clients.jedis.ClientSideCache;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.csc.ClientSideCache;
 
 public class MapCSC extends ClientSideCache {
 

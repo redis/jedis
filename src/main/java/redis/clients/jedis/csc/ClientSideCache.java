@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.csc;
 
 import java.nio.ByteBuffer;
 import java.util.HashSet;
@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.function.Function;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -40,7 +41,7 @@ public abstract class ClientSideCache {
     invalidateAllKeysAndCommandHashes();
   }
 
-  final void invalidate(List list) {
+  public final void invalidate(List list) {
     if (list == null) {
       invalidateAllKeysAndCommandHashes();
       return;
@@ -68,7 +69,7 @@ public abstract class ClientSideCache {
     }
   }
 
-  final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
+  public final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
 
     final long hash = getCommandHash(command);
 

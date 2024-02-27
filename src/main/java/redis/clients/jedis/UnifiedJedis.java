@@ -17,6 +17,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.gears.TFunctionListParams;

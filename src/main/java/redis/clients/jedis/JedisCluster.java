@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 

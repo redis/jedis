@@ -7,6 +7,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;

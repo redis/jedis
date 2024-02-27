@@ -4,7 +4,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 import net.openhft.hashing.LongHashFunction;
-import redis.clients.jedis.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.args.Rawable;
 

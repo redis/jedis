@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import java.util.function.Function;
+import redis.clients.jedis.csc.hash.CommandLongHashing;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -20,9 +21,11 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
+  private final CommandLongHashing function;
   private final Map<ByteBuffer, Set<Long>> keyToCommandHashes;
 
-  protected ClientSideCache() {
+  protected ClientSideCache(CommandLongHashing function) {
+    this.function = function;
     this.keyToCommandHashes = new ConcurrentHashMap<>();
   }
 
@@ -33,8 +36,6 @@ public abstract class ClientSideCache {
   protected abstract void put(long hash, Object value);
 
   protected abstract Object get(long hash);
-
-  protected abstract long getCommandHash(CommandObject command);
 
   public final void clear() {
     invalidateAllKeysAndCommandHashes();
@@ -70,7 +71,7 @@ public abstract class ClientSideCache {
 
   final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
 
-    final long hash = getCommandHash(command);
+    final long hash = function.hash(command);
 
     T value = (T) get(hash);
     if (value != null) {

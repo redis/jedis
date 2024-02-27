@@ -3,21 +3,21 @@ package redis.clients.jedis.util;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
-import net.openhft.hashing.LongHashFunction;
 import redis.clients.jedis.ClientSideCache;
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.csc.hash.CommandLongHashing;
+import redis.clients.jedis.csc.hash.OpenHftHashing;
 
 public class CaffeineCSC extends ClientSideCache {
 
-  private static final LongHashFunction DEFAULT_HASH_FUNCTION = LongHashFunction.xx3();
-
   private final Cache<Long, Object> cache;
-  private final LongHashFunction function;
 
-  public CaffeineCSC(Cache<Long, Object> caffeineCache, LongHashFunction hashFunction) {
+  public CaffeineCSC(Cache<Long, Object> caffeineCache) {
+    this(caffeineCache, new OpenHftHashing(OpenHftHashing.DEFAULT_HASH_FUNCTION));
+  }
+
+  public CaffeineCSC(Cache<Long, Object> caffeineCache, CommandLongHashing hashing) {
+    super(hashing);
     this.cache = caffeineCache;
-    this.function = hashFunction;
   }
 
   @Override
@@ -40,17 +40,6 @@ public class CaffeineCSC extends ClientSideCache {
     return cache.getIfPresent(hash);
   }
 
-  @Override
-  protected final long getCommandHash(CommandObject command) {
-    long[] nums = new long[command.getArguments().size() + 1];
-    int idx = 0;
-    for (Rawable raw : command.getArguments()) {
-      nums[idx++] = function.hashBytes(raw.getRaw());
-    }
-    nums[idx] = function.hashInt(command.getBuilder().hashCode());
-    return function.hashLongs(nums);
-  }
-
   public static Builder builder() {
     return new Builder();
   }
@@ -61,7 +50,7 @@ public class CaffeineCSC extends ClientSideCache {
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
-    private LongHashFunction hashFunction = DEFAULT_HASH_FUNCTION;
+    private CommandLongHashing longHashing = null;
 
     private Builder() { }
 
@@ -75,8 +64,8 @@ public class CaffeineCSC extends ClientSideCache {
       return this;
     }
 
-    public Builder hashFunction(LongHashFunction function) {
-      this.hashFunction = function;
+    public Builder hashing(CommandLongHashing hashing) {
+      this.longHashing = hashing;
       return this;
     }
 
@@ -87,7 +76,7 @@ public class CaffeineCSC extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return new CaffeineCSC(cb.build(), hashFunction);
+      return longHashing != null ? new CaffeineCSC(cb.build(), longHashing) : new CaffeineCSC(cb.build());
     }
   }
 }

@@ -3,21 +3,26 @@ package redis.clients.jedis.util;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hasher;
 import java.util.concurrent.TimeUnit;
 import redis.clients.jedis.ClientSideCache;
-import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.csc.hash.CommandLongHashing;
+import redis.clients.jedis.csc.hash.GuavaHashing;
 
 public class GuavaCSC extends ClientSideCache {
 
-  private static final HashFunction DEFAULT_HASH_FUNCTION = com.google.common.hash.Hashing.fingerprint2011();
-
   private final Cache<Long, Object> cache;
-  private final HashFunction function;
+
+  public GuavaCSC(Cache<Long, Object> guavaCache) {
+    this(guavaCache, GuavaHashing.DEFAULT_HASH_FUNCTION);
+  }
 
   public GuavaCSC(Cache<Long, Object> guavaCache, HashFunction hashFunction) {
+    this(guavaCache, new GuavaHashing(hashFunction));
+  }
+
+  public GuavaCSC(Cache<Long, Object> guavaCache, CommandLongHashing hashing) {
+    super(hashing);
     this.cache = guavaCache;
-    this.function = hashFunction;
   }
 
   @Override
@@ -40,14 +45,6 @@ public class GuavaCSC extends ClientSideCache {
     return cache.getIfPresent(hash);
   }
 
-  @Override
-  protected final long getCommandHash(CommandObject command) {
-    Hasher hasher = function.newHasher();
-    command.getArguments().forEach(raw -> hasher.putBytes(raw.getRaw()));
-    hasher.putInt(command.getBuilder().hashCode());
-    return hasher.hash().asLong();
-  }
-
   public static Builder builder() {
     return new Builder();
   }
@@ -58,7 +55,8 @@ public class GuavaCSC extends ClientSideCache {
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
-    private HashFunction hashFunction = DEFAULT_HASH_FUNCTION;
+    private HashFunction hashFunction = null;
+    private CommandLongHashing longHashing = null;
 
     private Builder() { }
 
@@ -74,6 +72,13 @@ public class GuavaCSC extends ClientSideCache {
 
     public Builder hashFunction(HashFunction function) {
       this.hashFunction = function;
+      this.longHashing = null;
+      return this;
+    }
+
+    public Builder hashing(CommandLongHashing hashing) {
+      this.longHashing = hashing;
+      this.hashFunction = null;
       return this;
     }
 
@@ -84,7 +89,9 @@ public class GuavaCSC extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return new GuavaCSC(cb.build(), hashFunction);
+      return longHashing != null ? new GuavaCSC(cb.build(), longHashing)
+          : hashFunction != null ? new GuavaCSC(cb.build(), hashFunction)
+              : new GuavaCSC(cb.build());
     }
   }
 }

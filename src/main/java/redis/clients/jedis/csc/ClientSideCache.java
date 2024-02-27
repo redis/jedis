@@ -26,15 +26,15 @@ public abstract class ClientSideCache {
     this.keyToCommandHashes = new ConcurrentHashMap<>();
   }
 
-  protected abstract void invalidateAllCommandHashes();
+  protected abstract void invalidateAllHashes();
 
-  protected abstract void invalidateCommandHashes(Iterable<Long> hashes);
+  protected abstract void invalidateHashes(Iterable<Long> hashes);
 
-  protected abstract void put(long hash, Object value);
+  protected abstract void putValue(long hash, Object value);
 
-  protected abstract Object get(long hash);
+  protected abstract Object getValue(long hash);
 
-  protected abstract long getCommandHash(CommandObject command);
+  protected abstract long getHash(CommandObject command);
 
   public final void clear() {
     invalidateAllKeysAndCommandHashes();
@@ -50,7 +50,7 @@ public abstract class ClientSideCache {
   }
 
   private void invalidateAllKeysAndCommandHashes() {
-    invalidateAllCommandHashes();
+    invalidateAllHashes();
     keyToCommandHashes.clear();
   }
 
@@ -63,23 +63,23 @@ public abstract class ClientSideCache {
 
     Set<Long> hashes = keyToCommandHashes.get(mapKey);
     if (hashes != null) {
-      invalidateCommandHashes(hashes);
+      invalidateHashes(hashes);
       keyToCommandHashes.remove(mapKey);
     }
   }
 
-  public final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
+  public final <T> T get(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
 
-    final long hash = getCommandHash(command);
+    final long hash = getHash(command);
 
-    T value = (T) get(hash);
+    T value = (T) getValue(hash);
     if (value != null) {
       return value;
     }
 
     value = loader.apply(command);
     if (value != null) {
-      put(hash, value);
+      putValue(hash, value);
       for (Object key : keys) {
         ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
         if (keyToCommandHashes.containsKey(mapKey)) {

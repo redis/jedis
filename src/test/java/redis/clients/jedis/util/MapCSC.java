@@ -20,27 +20,27 @@ public class MapCSC extends ClientSideCache {
   }
 
   @Override
-  protected final void invalidateAllCommandHashes() {
+  protected final void invalidateAllHashes() {
     cache.clear();
   }
 
   @Override
-  protected void invalidateCommandHashes(Iterable<Long> hashes) {
+  protected void invalidateHashes(Iterable<Long> hashes) {
     hashes.forEach(hash -> cache.remove(hash));
   }
 
   @Override
-  protected void put(long hash, Object value) {
+  protected void putValue(long hash, Object value) {
     cache.put(hash, value);
   }
 
   @Override
-  protected Object get(long hash) {
+  protected Object getValue(long hash) {
     return cache.get(hash);
   }
 
   @Override
-  protected final long getCommandHash(CommandObject command) {
+  protected final long getHash(CommandObject command) {
     long result = 1;
     for (Rawable raw : command.getArguments()) {
       result = 31 * result + Arrays.hashCode(raw.getRaw());

@@ -11,6 +11,7 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.csc.DefaultClientSideCacheConfig;
 import redis.clients.jedis.util.MapCSC;
 
 public class JedisPooledClientSideCacheTest {
@@ -42,7 +43,7 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void simple() {
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC()))) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -53,7 +54,7 @@ public class JedisPooledClientSideCacheTest {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC(map)), singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -71,7 +72,7 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void flushAll() {
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC()))) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
@@ -82,7 +83,7 @@ public class JedisPooledClientSideCacheTest {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(new MapCSC(map)), singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));

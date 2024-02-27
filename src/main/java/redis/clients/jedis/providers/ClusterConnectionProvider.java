@@ -15,7 +15,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisClusterInfoCache;
-import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 
@@ -30,7 +30,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
-  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCache csCache) {
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig csCache) {
     this.cache = new JedisClusterInfoCache(clientConfig, csCache, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
@@ -41,7 +41,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
-  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCache csCache,
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig csCache,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this.cache = new JedisClusterInfoCache(clientConfig, csCache, poolConfig, clusterNodes);
     initializeSlotsCache(clusterNodes, clientConfig);
@@ -53,7 +53,7 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 
-  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCache csCache,
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig csCache,
       GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
     this.cache = new JedisClusterInfoCache(clientConfig, csCache, poolConfig, clusterNodes, topologyRefreshPeriod);
     initializeSlotsCache(clusterNodes, clientConfig);

@@ -1,10 +1,12 @@
 package redis.clients.jedis.util;
 
 import java.net.URI;
-import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
+
+import redis.clients.jedis.csc.ClientSideCacheConfig;
+import redis.clients.jedis.csc.DefaultClientSideCacheConfig;
 import redis.clients.jedis.csc.util.GuavaCSC;
 import redis.clients.jedis.csc.util.CaffeineCSC;
 
@@ -76,7 +78,7 @@ public final class JedisURIHelper {
 
   private static final Integer ZERO_INTEGER = 0;
 
-  public static ClientSideCache getClientSideCache(URI uri) {
+  public static ClientSideCacheConfig getClientSideCache(URI uri) {
     if (uri.getQuery() == null) return null;
 
     boolean guava = false, caffeine = false; // cache_lib
@@ -140,12 +142,12 @@ public final class JedisURIHelper {
       GuavaCSC.Builder guavaBuilder = GuavaCSC.builder();
       if (maxSize != null) guavaBuilder.maximumSize(maxSize);
       if (ttl != null) guavaBuilder.ttl(ttl);
-      return guavaBuilder.build();
+      return new DefaultClientSideCacheConfig(guavaBuilder.build());
     } else if (caffeine) {
       CaffeineCSC.Builder caffeineBuilder = CaffeineCSC.builder();
       if (maxSize != null) caffeineBuilder.maximumSize(maxSize);
       if (ttl != null) caffeineBuilder.ttl(ttl);
-      return caffeineBuilder.build();
+      return new DefaultClientSideCacheConfig(caffeineBuilder.build());
     }
 
     return null; // null (default) when not defined

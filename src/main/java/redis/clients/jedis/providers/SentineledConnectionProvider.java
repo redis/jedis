@@ -17,7 +17,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPubSub;
-import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
@@ -36,7 +36,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private final JedisClientConfig masterClientConfig;
 
-  private final ClientSideCache clientSideCache;
+  private final ClientSideCacheConfig clientSideCache;
 
   private final GenericObjectPoolConfig<Connection> masterPoolConfig;
 
@@ -54,7 +54,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-      ClientSideCache clientSideCache, Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
+      ClientSideCacheConfig clientSideCache, Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, clientSideCache, null, sentinels, sentinelClientConfig);
   }
 
@@ -66,7 +66,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-      ClientSideCache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
+      ClientSideCacheConfig clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, clientSideCache, poolConfig, sentinels, sentinelClientConfig,
         DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
@@ -80,7 +80,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
-      ClientSideCache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
+      ClientSideCacheConfig clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
       final long subscribeRetryWaitTimeMillis) {
 
@@ -128,7 +128,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         pool = newPool;
         LOG.info("Created connection pool to master at {}.", master);
         if (clientSideCache != null) {
-          clientSideCache.clear();
+          clientSideCache.getClientSideCache().clear();
         }
 
         if (existingPool != null) {

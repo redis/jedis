@@ -5,8 +5,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import java.util.concurrent.TimeUnit;
-import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.csc.ClientSideCache;
 
 public class GuavaCSC extends ClientSideCache {
 
@@ -21,27 +21,27 @@ public class GuavaCSC extends ClientSideCache {
   }
 
   @Override
-  protected final void invalidateAllCommandHashes() {
+  protected final void invalidateAllHashes() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateCommandHashes(Iterable<Long> hashes) {
+  protected void invalidateHashes(Iterable<Long> hashes) {
     cache.invalidateAll(hashes);
   }
 
   @Override
-  protected void put(long hash, Object value) {
+  protected void putValue(long hash, Object value) {
     cache.put(hash, value);
   }
 
   @Override
-  protected Object get(long hash) {
+  protected Object getValue(long hash) {
     return cache.getIfPresent(hash);
   }
 
   @Override
-  protected final long getCommandHash(CommandObject command) {
+  protected final long getHash(CommandObject command) {
     Hasher hasher = function.newHasher();
     command.getArguments().forEach(raw -> hasher.putBytes(raw.getRaw()));
     hasher.putInt(command.getBuilder().hashCode());

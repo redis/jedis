@@ -17,7 +17,7 @@ import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
-import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -35,7 +35,7 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private ClientSideCache clientSideCache;
+  private ClientSideCacheConfig clientSideCache;
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
@@ -67,7 +67,7 @@ public class Connection implements Closeable {
     initializeConnection(clientConfig);
   }
 
-  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, ClientSideCache csCache) {
+  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, ClientSideCacheConfig csCache) {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
@@ -520,7 +520,7 @@ public class Connection implements Closeable {
     return true;
   }
 
-  private void initializeClientSideCache(ClientSideCache csCache) {
+  private void initializeClientSideCache(ClientSideCacheConfig csCache) {
     this.clientSideCache = csCache;
     if (clientSideCache != null) {
       if (protocol != RedisProtocol.RESP3) {

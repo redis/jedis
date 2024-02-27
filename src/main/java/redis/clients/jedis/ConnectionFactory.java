@@ -6,7 +6,7 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.exceptions.JedisException;
 
 /**
@@ -18,7 +18,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   private final JedisSocketFactory jedisSocketFactory;
   private final JedisClientConfig clientConfig;
-  private ClientSideCache clientSideCache = null;
+  private ClientSideCacheConfig clientSideCache = null;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this.clientConfig = DefaultJedisClientConfig.builder().build();
@@ -30,7 +30,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
   }
 
-  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache) {
+  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCacheConfig csCache) {
     this.clientConfig = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
     this.clientSideCache = csCache;

@@ -30,17 +30,13 @@ public class StringWhiteListBlackListClientSideCacheConfig implements ClientSide
 
   @Override
   public boolean isCacheable(ProtocolCommand command, Object... keys) {
-    if (!(keys instanceof String[])) {
-      throw new IllegalArgumentException(this.getClass() + " can only process String keys.");
-    }
+    if (whiteCommands != null && !whiteCommands.contains(command)) return false;
+    if (blackCommands != null && blackCommands.contains(command)) return false;
 
-    if (!whiteCommands.contains(command)) return false;
-    if (blackCommands.contains(command)) return false;
-
-    String[] strs = (String[]) keys;
-    for (String str : strs) {
-      if (!whiteKeys.contains(str)) return false;
-      if (blackKeys.contains(str)) return false;
+    for (Object key : keys) {
+      if (!(key instanceof String)) throw new IllegalArgumentException(this.getClass() + " can only process String keys.");
+      if (whiteKeys != null && !whiteKeys.contains((String) key)) return false;
+      if (blackKeys != null && blackKeys.contains((String) key)) return false;
     }
 
     return true;

@@ -302,7 +302,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   private <T> T checkAndClientSideCacheCommand(CommandObject<T> command, Object... keys) {
     if (clientSideCache != null) {
-      if (clientSideCache.isCacheable(command.getArguments().getCommand(), keys)) {
+      if (clientSideCache.isCacheable(command.getArguments().getCommand(), (Object[]) keys)) {
         return clientSideCache.getClientSideCache().get((cmd) -> executeCommand(cmd), command, keys);
       }
     }

@@ -9,5 +9,7 @@ public interface ClientSideCacheConfig {
    */
   ClientSideCache getClientSideCache();
 
-  boolean isCacheable(ProtocolCommand command, Object... keys);
+  default boolean isCacheable(ProtocolCommand command, Object... keys) {
+    return true;
+  }
 }

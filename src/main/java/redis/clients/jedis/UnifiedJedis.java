@@ -1550,6 +1550,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public ScanResult<String> hscanNoValues(String key, String cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public long hstrlen(String key, String field) {
     return executeCommand(commandObjects.hstrlen(key, field));
   }
@@ -1572,6 +1577,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params) {
     return executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public ScanResult<byte[]> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override

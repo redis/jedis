@@ -47,11 +47,11 @@ public interface HashCommands {
     return hscan(key, cursor, new ScanParams());
   }
 
+  ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params);
+
   default ScanResult<String> hscanNoValues(String key, String cursor) {
     return hscanNoValues(key, cursor, new ScanParams());
   }
-
-  ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params);
 
   ScanResult<String> hscanNoValues(String key, String cursor, ScanParams params);
 

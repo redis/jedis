@@ -7,8 +7,8 @@ import redis.clients.jedis.RedisProtocol;
 
 import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.csc.DefaultClientSideCacheConfig;
-import redis.clients.jedis.csc.util.GuavaCSC;
-import redis.clients.jedis.csc.util.CaffeineCSC;
+import redis.clients.jedis.csc.GuavaCSC;
+import redis.clients.jedis.csc.CaffeineCSC;
 
 public final class JedisURIHelper {
 

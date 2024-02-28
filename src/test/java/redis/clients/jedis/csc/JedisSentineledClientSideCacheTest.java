@@ -17,7 +17,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSentineled;
-import redis.clients.jedis.csc.util.MapCSC;
 
 public class JedisSentineledClientSideCacheTest {
 

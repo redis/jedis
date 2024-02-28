@@ -21,7 +21,6 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.csc.util.MapCSC;
 
 public class WhiteListBlackListClientSideCacheTest {
 

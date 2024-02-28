@@ -20,7 +20,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.JedisClusterTestBase;
-import redis.clients.jedis.csc.util.MapCSC;
 
 public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 

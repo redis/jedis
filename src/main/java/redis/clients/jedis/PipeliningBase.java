@@ -707,6 +707,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<ScanResult<String>> hscanNoValues(String key, String cursor, ScanParams params) {
+    return appendCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public Response<Long> hstrlen(String key, String field) {
     return appendCommand(commandObjects.hstrlen(key, field));
   }
@@ -1970,6 +1975,11 @@ public abstract class PipeliningBase
   @Override
   public Response<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor, ScanParams params) {
     return appendCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return appendCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override

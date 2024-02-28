@@ -16,6 +16,10 @@ public class GuavaCSC extends ClientSideCache {
     this(guavaCache, GuavaHashing.DEFAULT_HASH_FUNCTION);
   }
 
+  public GuavaCSC(Cache<Long, Object> guavaCache) {
+    this(guavaCache, DEFAULT_HASH_FUNCTION);
+  }
+
   public GuavaCSC(Cache<Long, Object> guavaCache, HashFunction hashFunction) {
     this(guavaCache, new GuavaHashing(hashFunction));
   }

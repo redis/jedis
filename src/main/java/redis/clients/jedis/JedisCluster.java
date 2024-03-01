@@ -262,7 +262,7 @@ public class JedisCluster extends UnifiedJedis {
    * @throws UnsupportedOperationException
    */
   @Override
-  public Transaction multi() {
+  public Transaction transaction(boolean multi) {
     throw new UnsupportedOperationException();
   }
 }

@@ -18,7 +18,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   private final JedisSocketFactory jedisSocketFactory;
   private final JedisClientConfig clientConfig;
-  private ClientSideCacheConfig clientSideCache = null;
+  private ClientSideCacheConfig clientSideCacheConfig = null;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this.clientConfig = DefaultJedisClientConfig.builder().build();
@@ -30,10 +30,11 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
   }
 
-  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCacheConfig csCache) {
+  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
+      ClientSideCacheConfig csCacheConfig) {
     this.clientConfig = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
-    this.clientSideCache = csCache;
+    this.clientSideCacheConfig = csCacheConfig;
   }
 
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
@@ -61,9 +62,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   @Override
   public PooledObject<Connection> makeObject() throws Exception {
     try {
-      Connection jedis = clientSideCache == null
+      Connection jedis = clientSideCacheConfig == null
           ? new Connection(jedisSocketFactory, clientConfig)
-          : new Connection(jedisSocketFactory, clientConfig, clientSideCache);
+          : new Connection(jedisSocketFactory, clientConfig, clientSideCacheConfig);
 
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {

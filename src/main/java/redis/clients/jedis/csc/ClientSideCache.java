@@ -26,15 +26,15 @@ public abstract class ClientSideCache {
     this.keyToCommandHashes = new ConcurrentHashMap<>();
   }
 
-  protected abstract void invalidateAllHashes();
+  protected abstract void invalidateAllCommandHashes();
 
-  protected abstract void invalidateHashes(Iterable<Long> hashes);
+  protected abstract void invalidateCommandHashes(Iterable<Long> hashes);
 
   protected abstract void putValue(long hash, Object value);
 
   protected abstract Object getValue(long hash);
 
-  protected abstract long getHash(CommandObject command);
+  protected abstract long getCommandHash(CommandObject command);
 
   public final void clear() {
     invalidateAllKeysAndCommandHashes();
@@ -50,7 +50,7 @@ public abstract class ClientSideCache {
   }
 
   private void invalidateAllKeysAndCommandHashes() {
-    invalidateAllHashes();
+    invalidateAllCommandHashes();
     keyToCommandHashes.clear();
   }
 
@@ -63,14 +63,14 @@ public abstract class ClientSideCache {
 
     Set<Long> hashes = keyToCommandHashes.get(mapKey);
     if (hashes != null) {
-      invalidateHashes(hashes);
+      invalidateCommandHashes(hashes);
       keyToCommandHashes.remove(mapKey);
     }
   }
 
   public final <T> T get(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
 
-    final long hash = getHash(command);
+    final long hash = getCommandHash(command);
 
     T value = (T) getValue(hash);
     if (value != null) {

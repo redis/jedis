@@ -35,7 +35,7 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private ClientSideCacheConfig clientSideCache;
+  private ClientSideCacheConfig clientSideCacheConfig;
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
@@ -67,12 +67,13 @@ public class Connection implements Closeable {
     initializeConnection(clientConfig);
   }
 
-  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, ClientSideCacheConfig csCache) {
+  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig,
+      ClientSideCacheConfig csCacheConfig) {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     initializeConnection(clientConfig);
-    initializeClientSideCache(csCache);
+    initializeClientSideCache(csCacheConfig);
   }
 
   @Override
@@ -355,7 +356,7 @@ public class Connection implements Closeable {
     }
 
     try {
-      return Protocol.read(inputStream, clientSideCache);
+      return Protocol.read(inputStream, clientSideCacheConfig);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -520,9 +521,9 @@ public class Connection implements Closeable {
     return true;
   }
 
-  private void initializeClientSideCache(ClientSideCacheConfig csCache) {
-    this.clientSideCache = csCache;
-    if (clientSideCache != null) {
+  private void initializeClientSideCache(ClientSideCacheConfig csCacheConfig) {
+    this.clientSideCacheConfig = csCacheConfig;
+    if (clientSideCacheConfig != null) {
       if (protocol != RedisProtocol.RESP3) {
         throw new JedisException("Client side caching is only supported with RESP3.");
       }

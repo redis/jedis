@@ -78,7 +78,7 @@ public final class JedisURIHelper {
 
   private static final Integer ZERO_INTEGER = 0;
 
-  public static ClientSideCacheConfig getClientSideCache(URI uri) {
+  public static ClientSideCacheConfig getClientSideCacheConfig(URI uri) {
     if (uri.getQuery() == null) return null;
 
     boolean guava = false, caffeine = false; // cache_lib

@@ -43,7 +43,7 @@ public class JedisClusterInfoCache {
 
   private final GenericObjectPoolConfig<Connection> poolConfig;
   private final JedisClientConfig clientConfig;
-  private final ClientSideCacheConfig clientSideCache;
+  private final ClientSideCacheConfig csCacheConfig;
   private final Set<HostAndPort> startNodes;
 
   private static final int MASTER_NODE_INDEX = 2;
@@ -86,12 +86,12 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, poolConfig, startNodes, topologyRefreshPeriod);
   }
 
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCacheConfig csCache,
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCacheConfig csCacheConfig,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
-    this.clientSideCache = csCache;
+    this.csCacheConfig = csCacheConfig;
     this.startNodes = startNodes;
     if (topologyRefreshPeriod != null) {
       logger.info("Cluster topology refresh start, period: {}, startNodes: {}", topologyRefreshPeriod, startNodes);
@@ -227,8 +227,8 @@ public class JedisClusterInfoCache {
     try {
       Arrays.fill(slots, null);
       Arrays.fill(slotNodes, null);
-      if (clientSideCache != null) {
-        clientSideCache.getClientSideCache().clear();
+      if (csCacheConfig != null) {
+        csCacheConfig.getClientSideCache().clear();
       }
       Set<String> hostAndPortKeys = new HashSet<>();
 
@@ -301,16 +301,16 @@ public class JedisClusterInfoCache {
 
   private ConnectionPool createNodePool(HostAndPort node) {
     if (poolConfig == null) {
-      if (clientSideCache == null) {
+      if (csCacheConfig == null) {
         return new ConnectionPool(node, clientConfig);
       } else {
-        return new ConnectionPool(node, clientConfig, clientSideCache);
+        return new ConnectionPool(node, clientConfig, csCacheConfig);
       }
     } else {
-      if (clientSideCache == null) {
+      if (csCacheConfig == null) {
         return new ConnectionPool(node, clientConfig, poolConfig);
       } else {
-        return new ConnectionPool(node, clientConfig, clientSideCache, poolConfig);
+        return new ConnectionPool(node, clientConfig, csCacheConfig, poolConfig);
       }
     }
   }

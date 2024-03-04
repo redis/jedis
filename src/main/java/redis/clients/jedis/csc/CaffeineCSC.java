@@ -20,12 +20,12 @@ public class CaffeineCSC extends ClientSideCache {
   }
 
   @Override
-  protected final void invalidateAllHashes() {
+  protected final void invalidateAllCommandHashes() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateHashes(Iterable<Long> hashes) {
+  protected void invalidateCommandHashes(Iterable<Long> hashes) {
     cache.invalidateAll(hashes);
   }
 
@@ -40,7 +40,7 @@ public class CaffeineCSC extends ClientSideCache {
   }
 
   @Override
-  protected final long getHash(CommandObject command) {
+  protected final long getCommandHash(CommandObject command) {
     long[] nums = new long[command.getArguments().size() + 1];
     int idx = 0;
     for (Rawable raw : command.getArguments()) {

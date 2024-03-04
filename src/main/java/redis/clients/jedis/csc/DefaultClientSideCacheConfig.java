@@ -4,15 +4,15 @@ import redis.clients.jedis.commands.ProtocolCommand;
 
 public class DefaultClientSideCacheConfig implements ClientSideCacheConfig {
 
-  private final ClientSideCache csCache;
+  private final ClientSideCache clientSideCache;
 
   public DefaultClientSideCacheConfig(ClientSideCache clientSideCache) {
-    this.csCache = clientSideCache;
+    this.clientSideCache = clientSideCache;
   }
 
   @Override
   public ClientSideCache getClientSideCache() {
-    return this.csCache;
+    return this.clientSideCache;
   }
 
   @Override

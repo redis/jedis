@@ -216,40 +216,40 @@ public class JedisCluster extends UnifiedJedis {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig clientSideCache) {
-    this(clusterNodes, clientConfig, clientSideCache, DEFAULT_MAX_ATTEMPTS,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig csCacheConfig) {
+    this(clusterNodes, clientConfig, csCacheConfig, DEFAULT_MAX_ATTEMPTS,
         Duration.ofMillis(DEFAULT_MAX_ATTEMPTS * clientConfig.getSocketTimeoutMillis()));
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig clientSideCache,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig csCacheConfig,
       int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache), maxAttempts, maxTotalRetriesDuration,
-        clientConfig.getRedisProtocol(), clientSideCache);
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, csCacheConfig), maxAttempts, maxTotalRetriesDuration,
+        clientConfig.getRedisProtocol(), csCacheConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig clientSideCache,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig csCacheConfig,
       int maxAttempts, Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig),
-        maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol(), clientSideCache);
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, csCacheConfig, poolConfig),
+        maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol(), csCacheConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig clientSideCache,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig csCacheConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig),
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, csCacheConfig, poolConfig),
         DEFAULT_MAX_ATTEMPTS, Duration.ofMillis(DEFAULT_MAX_ATTEMPTS * clientConfig.getSocketTimeoutMillis()),
-        clientConfig.getRedisProtocol(), clientSideCache);
+        clientConfig.getRedisProtocol(), csCacheConfig);
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig clientSideCache,
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCacheConfig csCacheConfig,
       GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod, int maxAttempts,
       Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig, topologyRefreshPeriod),
-        maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol(), clientSideCache);
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, csCacheConfig, poolConfig, topologyRefreshPeriod),
+        maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol(), csCacheConfig);
   }
 
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol, ClientSideCacheConfig clientSideCache) {
-    super(provider, maxAttempts, maxTotalRetriesDuration, protocol, clientSideCache);
+      RedisProtocol protocol, ClientSideCacheConfig csCacheConfig) {
+    super(provider, maxAttempts, maxTotalRetriesDuration, protocol, csCacheConfig);
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.

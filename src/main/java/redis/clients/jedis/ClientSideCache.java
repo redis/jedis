@@ -21,11 +21,11 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
-  private final CommandLongHashing function;
+  private final CommandLongHashing commandHashing;
   private final Map<ByteBuffer, Set<Long>> keyToCommandHashes;
 
-  protected ClientSideCache(CommandLongHashing function) {
-    this.function = function;
+  protected ClientSideCache(CommandLongHashing commandHashing) {
+    this.commandHashing = commandHashing;
     this.keyToCommandHashes = new ConcurrentHashMap<>();
   }
 
@@ -71,7 +71,7 @@ public abstract class ClientSideCache {
 
   final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
 
-    final long hash = function.hash(command);
+    final long hash = commandHashing.hash(command);
 
     T value = (T) get(hash);
     if (value != null) {

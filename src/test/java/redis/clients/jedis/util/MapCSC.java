@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import redis.clients.jedis.ClientSideCache;
-import redis.clients.jedis.csc.hash.ByteArrayHashing;
+import redis.clients.jedis.csc.hash.PrimitiveArrayHashing;
 
 public class MapCSC extends ClientSideCache {
 
-  private static final ByteArrayHashing HASHING = new ByteArrayHashing() {
+  private static final PrimitiveArrayHashing HASHING = new PrimitiveArrayHashing() {
 
     @Override
     protected long hashLongs(long[] longs) {

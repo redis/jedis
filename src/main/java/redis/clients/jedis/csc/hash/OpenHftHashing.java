@@ -2,7 +2,7 @@ package redis.clients.jedis.csc.hash;
 
 import net.openhft.hashing.LongHashFunction;
 
-public class OpenHftHashing extends ByteArrayHashing implements CommandLongHashing {
+public class OpenHftHashing extends PrimitiveArrayHashing implements CommandLongHashing {
 
   public static final LongHashFunction DEFAULT_HASH_FUNCTION = LongHashFunction.xx3();
 

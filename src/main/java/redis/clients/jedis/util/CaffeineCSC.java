@@ -50,6 +50,7 @@ public class CaffeineCSC extends ClientSideCache {
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
+    // not using a default value to avoid an object creation like 'new OpenHftHashing(hashFunction)'
     private CommandLongHashing longHashing = null;
 
     private Builder() { }

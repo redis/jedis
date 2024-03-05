@@ -1,8 +1,8 @@
 package redis.clients.jedis.csc;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.args.Rawable;
 
@@ -11,11 +11,16 @@ public class MapCSC extends ClientSideCache {
   private final Map<Long, Object> cache;
 
   public MapCSC() {
-    this(new ConcurrentHashMap<>());
+    this(new HashMap<>());
   }
 
   public MapCSC(Map<Long, Object> map) {
     this.cache = map;
+  }
+
+  public MapCSC(Map<Long, Object> cache, ClientSideCacheable cacheable) {
+    super(cacheable);
+    this.cache = cache;
   }
 
   @Override

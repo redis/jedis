@@ -19,8 +19,19 @@ public class GuavaCSC extends ClientSideCache {
   }
 
   public GuavaCSC(Cache<Long, Object> guavaCache, HashFunction hashFunction) {
+    super();
     this.cache = guavaCache;
     this.function = hashFunction;
+  }
+
+  public GuavaCSC(Cache<Long, Object> guavaCache, ClientSideCacheable cacheable) {
+    this(guavaCache, DEFAULT_HASH_FUNCTION, cacheable);
+  }
+
+  public GuavaCSC(Cache<Long, Object> cache, HashFunction function, ClientSideCacheable cacheable) {
+    super(cacheable);
+    this.cache = cache;
+    this.function = function;
   }
 
   @Override
@@ -63,6 +74,8 @@ public class GuavaCSC extends ClientSideCache {
 
     private HashFunction hashFunction = DEFAULT_HASH_FUNCTION;
 
+    private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
+
     private Builder() { }
 
     public Builder maximumSize(int size) {
@@ -80,6 +93,11 @@ public class GuavaCSC extends ClientSideCache {
       return this;
     }
 
+    public Builder cacheable(ClientSideCacheable cacheable) {
+      this.cacheable = cacheable;
+      return this;
+    }
+
     public GuavaCSC build() {
       CacheBuilder cb = CacheBuilder.newBuilder();
 
@@ -87,7 +105,7 @@ public class GuavaCSC extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return new GuavaCSC(cb.build(), hashFunction);
+      return new GuavaCSC(cb.build(), hashFunction, cacheable);
     }
   }
 }

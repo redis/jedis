@@ -20,10 +20,15 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
-  private final Map<ByteBuffer, Set<Long>> keyToCommandHashes;
+  private final Map<ByteBuffer, Set<Long>> keyToCommandHashes = new ConcurrentHashMap<>();
+  private final ClientSideCacheable cacheable;
 
   protected ClientSideCache() {
-    this.keyToCommandHashes = new ConcurrentHashMap<>();
+    this.cacheable = DefaultClientSideCacheable.INSTANCE;
+  }
+
+  protected ClientSideCache(ClientSideCacheable cacheable) {
+    this.cacheable = cacheable;
   }
 
   protected abstract void invalidateAllHashes();
@@ -69,6 +74,10 @@ public abstract class ClientSideCache {
   }
 
   public final <T> T get(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
+
+    if (!cacheable.isCacheable(command.getArguments().getCommand(), keys)) {
+      return loader.apply(command);
+    }
 
     final long hash = getHash(command);
 

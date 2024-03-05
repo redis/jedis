@@ -2,8 +2,8 @@ package redis.clients.jedis;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.util.Pool;
+import redis.clients.jedis.csc.ClientSideCache;
 
 public class ConnectionPool extends Pool<Connection> {
 
@@ -11,7 +11,7 @@ public class ConnectionPool extends Pool<Connection> {
     this(new ConnectionFactory(hostAndPort, clientConfig));
   }
 
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCacheConfig csCache) {
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache) {
     this(new ConnectionFactory(hostAndPort, clientConfig, csCache));
   }
 
@@ -24,7 +24,7 @@ public class ConnectionPool extends Pool<Connection> {
     this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
   }
 
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCacheConfig csCache,
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig, csCache), poolConfig);
   }

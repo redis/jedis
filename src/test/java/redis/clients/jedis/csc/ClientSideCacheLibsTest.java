@@ -56,7 +56,7 @@ public class ClientSideCacheLibsTest {
   public void guavaSimple() {
     GuavaCSC guava = GuavaCSC.builder().maximumSize(10).ttl(10)
         .hashFunction(com.google.common.hash.Hashing.farmHashFingerprint64()).build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(guava))) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -69,8 +69,8 @@ public class ClientSideCacheLibsTest {
 
     com.google.common.cache.Cache guava = CacheBuilder.newBuilder().recordStats().build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new DefaultClientSideCacheConfig(new GuavaCSC(guava)), singleConnectionPoolConfig.get())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaCSC(guava),
+        singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, guava.size());
       assertEquals("bar", jedis.get("foo"));
@@ -93,7 +93,7 @@ public class ClientSideCacheLibsTest {
   @Test
   public void caffeineSimple() {
     CaffeineCSC caffeine = CaffeineCSC.builder().maximumSize(10).ttl(10).hashFunction(LongHashFunction.xx()).build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCacheConfig(caffeine))) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -107,8 +107,7 @@ public class ClientSideCacheLibsTest {
     com.github.benmanes.caffeine.cache.Cache caffeine = Caffeine.newBuilder().recordStats().build();
 
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new DefaultClientSideCacheConfig(new CaffeineCSC(caffeine, LongHashFunction.city_1_1())),
-        singleConnectionPoolConfig.get())) {
+        new CaffeineCSC(caffeine, LongHashFunction.city_1_1()), singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, caffeine.estimatedSize());
       assertEquals("bar", jedis.get("foo"));

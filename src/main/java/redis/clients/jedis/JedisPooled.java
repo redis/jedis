@@ -7,10 +7,10 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
+import redis.clients.jedis.csc.ClientSideCache;
 
 public class JedisPooled extends UnifiedJedis {
 
@@ -76,7 +76,7 @@ public class JedisPooled extends UnifiedJedis {
     super(hostAndPort, clientConfig);
   }
 
-  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCacheConfig csCache) {
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache) {
     super(hostAndPort, clientConfig, csCache);
   }
 
@@ -380,7 +380,7 @@ public class JedisPooled extends UnifiedJedis {
     super(new PooledConnectionProvider(hostAndPort, clientConfig, poolConfig), clientConfig.getRedisProtocol());
   }
 
-  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCacheConfig csCache,
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache,
       final GenericObjectPoolConfig<Connection> poolConfig) {
     super(new PooledConnectionProvider(hostAndPort, clientConfig, csCache, poolConfig),
         clientConfig.getRedisProtocol(), csCache);

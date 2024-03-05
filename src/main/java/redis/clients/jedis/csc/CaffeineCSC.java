@@ -15,8 +15,15 @@ public class CaffeineCSC extends ClientSideCache {
   private final LongHashFunction function;
 
   public CaffeineCSC(Cache<Long, Object> caffeineCache, LongHashFunction hashFunction) {
+    super();
     this.cache = caffeineCache;
     this.function = hashFunction;
+  }
+
+  public CaffeineCSC(Cache<Long, Object> caffeineCache, LongHashFunction function, ClientSideCacheable cacheable) {
+    super(cacheable);
+    this.cache = caffeineCache;
+    this.function = function;
   }
 
   @Override
@@ -62,6 +69,8 @@ public class CaffeineCSC extends ClientSideCache {
 
     private LongHashFunction hashFunction = DEFAULT_HASH_FUNCTION;
 
+    private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
+
     private Builder() { }
 
     public Builder maximumSize(int size) {
@@ -79,6 +88,11 @@ public class CaffeineCSC extends ClientSideCache {
       return this;
     }
 
+    public Builder cacheable(ClientSideCacheable cacheable) {
+      this.cacheable = cacheable;
+      return this;
+    }
+
     public CaffeineCSC build() {
       Caffeine cb = Caffeine.newBuilder();
 
@@ -86,7 +100,7 @@ public class CaffeineCSC extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return new CaffeineCSC(cb.build(), hashFunction);
+      return new CaffeineCSC(cb.build(), hashFunction, cacheable);
     }
   }
 }

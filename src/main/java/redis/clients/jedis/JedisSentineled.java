@@ -2,8 +2,8 @@ package redis.clients.jedis;
 
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import redis.clients.jedis.csc.ClientSideCache;
 
 public class JedisSentineled extends UnifiedJedis {
 
@@ -13,7 +13,7 @@ public class JedisSentineled extends UnifiedJedis {
         masterClientConfig.getRedisProtocol());
   }
 
-  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, ClientSideCacheConfig clientSideCache,
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, ClientSideCache clientSideCache,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, clientSideCache,
         sentinels, sentinelClientConfig), masterClientConfig.getRedisProtocol(), clientSideCache);
@@ -26,7 +26,7 @@ public class JedisSentineled extends UnifiedJedis {
         masterClientConfig.getRedisProtocol());
   }
 
-  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, ClientSideCacheConfig clientSideCache,
+  public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig, ClientSideCache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     super(new SentineledConnectionProvider(masterName, masterClientConfig, clientSideCache, poolConfig,

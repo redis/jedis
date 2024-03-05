@@ -12,11 +12,11 @@ import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.csc.ClientSideCache;
 
 public final class Protocol {
 
@@ -230,17 +230,17 @@ public final class Protocol {
     return process(is);
   }
 
-  public static Object read(final RedisInputStream is, final ClientSideCacheConfig cache) {
+  public static Object read(final RedisInputStream is, final ClientSideCache cache) {
     readPushes(is, cache);
     return process(is);
   }
 
-  private static void readPushes(final RedisInputStream is, final ClientSideCacheConfig cache) {
+  private static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
     if (cache != null) {
       //System.out.println("PEEK: " + is.peekByte());
       while (is.peek(GREATER_THAN_BYTE)) {
         is.readByte();
-        processPush(is, cache.getClientSideCache());
+        processPush(is, cache);
       }
     }
   }

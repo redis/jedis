@@ -11,8 +11,8 @@ import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.util.Pool;
+import redis.clients.jedis.csc.ClientSideCache;
 
 public class PooledConnectionProvider implements ConnectionProvider {
 
@@ -29,7 +29,7 @@ public class PooledConnectionProvider implements ConnectionProvider {
     this.connectionMapKey = hostAndPort;
   }
 
-  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCacheConfig csCache) {
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache) {
     this(new ConnectionPool(hostAndPort, clientConfig, csCache));
     this.connectionMapKey = hostAndPort;
   }
@@ -40,7 +40,7 @@ public class PooledConnectionProvider implements ConnectionProvider {
     this.connectionMapKey = hostAndPort;
   }
 
-  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCacheConfig csCache,
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig, csCache, poolConfig));
     this.connectionMapKey = hostAndPort;

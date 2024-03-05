@@ -21,12 +21,12 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.csc.ClientSideCacheConfig;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
+import redis.clients.jedis.csc.ClientSideCache;
 
 public class JedisClusterInfoCache {
 
@@ -43,7 +43,7 @@ public class JedisClusterInfoCache {
 
   private final GenericObjectPoolConfig<Connection> poolConfig;
   private final JedisClientConfig clientConfig;
-  private final ClientSideCacheConfig clientSideCache;
+  private final ClientSideCache clientSideCache;
   private final Set<HostAndPort> startNodes;
 
   private static final int MASTER_NODE_INDEX = 2;
@@ -66,7 +66,7 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, null, startNodes);
   }
 
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCacheConfig csCache, final Set<HostAndPort> startNodes) {
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache csCache, final Set<HostAndPort> startNodes) {
     this(clientConfig, csCache, null, startNodes);
   }
 
@@ -75,7 +75,7 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, poolConfig, startNodes);
   }
 
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCacheConfig csCache,
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache csCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
     this(clientConfig, csCache, poolConfig, startNodes, null);
   }
@@ -86,7 +86,7 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, poolConfig, startNodes, topologyRefreshPeriod);
   }
 
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCacheConfig csCache,
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache csCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {
     this.poolConfig = poolConfig;
@@ -228,7 +228,7 @@ public class JedisClusterInfoCache {
       Arrays.fill(slots, null);
       Arrays.fill(slotNodes, null);
       if (clientSideCache != null) {
-        clientSideCache.getClientSideCache().clear();
+        clientSideCache.clear();
       }
       Set<String> hostAndPortKeys = new HashSet<>();
 

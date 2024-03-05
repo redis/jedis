@@ -2,8 +2,8 @@ package redis.clients.jedis;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.util.Pool;
 
 public class ConnectionPool extends Pool<Connection> {
 

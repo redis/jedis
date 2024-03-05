@@ -21,12 +21,12 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
 import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
-import redis.clients.jedis.csc.ClientSideCache;
 
 public class JedisClusterInfoCache {
 

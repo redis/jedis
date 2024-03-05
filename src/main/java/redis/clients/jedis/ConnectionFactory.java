@@ -6,8 +6,8 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.exceptions.JedisException;
 
 /**
  * PoolableObjectFactory custom impl.

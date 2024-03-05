@@ -15,11 +15,11 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisClusterInfoCache;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 
 import static redis.clients.jedis.JedisCluster.INIT_NO_ERROR_PROPERTY;
-import redis.clients.jedis.csc.ClientSideCache;
 
 public class ClusterConnectionProvider implements ConnectionProvider {
 

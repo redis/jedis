@@ -16,7 +16,6 @@ import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
-import redis.clients.jedis.csc.ClientSideCache;
 
 public final class Protocol {
 

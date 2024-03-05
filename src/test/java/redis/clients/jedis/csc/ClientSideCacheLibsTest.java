@@ -6,11 +6,10 @@ import static org.junit.Assert.assertNull;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.cache.CacheBuilder;
-
 import java.util.function.Supplier;
 import net.openhft.hashing.LongHashFunction;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;

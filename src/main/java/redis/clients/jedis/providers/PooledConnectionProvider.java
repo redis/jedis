@@ -11,8 +11,8 @@ import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.util.Pool;
 
 public class PooledConnectionProvider implements ConnectionProvider {
 

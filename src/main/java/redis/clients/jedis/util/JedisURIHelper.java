@@ -1,6 +1,7 @@
 package redis.clients.jedis.util;
 
 import java.net.URI;
+
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;

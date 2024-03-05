@@ -234,6 +234,26 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void killMaxAge() throws InterruptedException {
+    long maxAge = 2;
+
+    // sleep twice the maxAge, to be sure
+    Thread.sleep(maxAge * 2 * 1000);
+
+    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    client2.auth("foobared");
+
+    long killedClients = jedis.clientKill(new ClientKillParams().maxAge(maxAge));
+
+    // The reality is that some tests leak clients, so we can't assert
+    // on the exact number of killed clients.
+    assertTrue(killedClients > 0);
+
+    assertDisconnected(client);
+    assertConnected(client2);
+  }
+
+  @Test
   public void clientInfo() {
     String info = client.clientInfo();
     assertNotNull(info);
@@ -265,6 +285,10 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     } catch (JedisConnectionException jce) {
       // should be here
     }
+  }
+
+  private void assertConnected(Jedis j) {
+    assertEquals("PONG", j.ping());
   }
 
   private String findInClientList() {

@@ -1,10 +1,13 @@
-package redis.clients.jedis.util;
+package redis.clients.jedis.csc.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
 import java.util.concurrent.TimeUnit;
-import redis.clients.jedis.ClientSideCache;
+
+import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheable;
+import redis.clients.jedis.csc.DefaultClientSideCacheable;
 import redis.clients.jedis.csc.hash.CommandLongHashing;
 import redis.clients.jedis.csc.hash.GuavaHashing;
 
@@ -25,23 +28,32 @@ public class GuavaCSC extends ClientSideCache {
     this.cache = guavaCache;
   }
 
+  public GuavaCSC(Cache<Long, Object> guavaCache, ClientSideCacheable cacheable) {
+    this(guavaCache, new GuavaHashing(GuavaHashing.DEFAULT_HASH_FUNCTION), cacheable);
+  }
+
+  public GuavaCSC(Cache<Long, Object> cache, CommandLongHashing hashing, ClientSideCacheable cacheable) {
+    super(hashing, cacheable);
+    this.cache = cache;
+  }
+
   @Override
-  protected final void invalidateAllCommandHashes() {
+  protected final void invalidateAllHashes() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateCommandHashes(Iterable<Long> hashes) {
+  protected void invalidateHashes(Iterable<Long> hashes) {
     cache.invalidateAll(hashes);
   }
 
   @Override
-  protected void put(long hash, Object value) {
+  protected void putValue(long hash, Object value) {
     cache.put(hash, value);
   }
 
   @Override
-  protected Object get(long hash) {
+  protected Object getValue(long hash) {
     return cache.getIfPresent(hash);
   }
 
@@ -58,6 +70,8 @@ public class GuavaCSC extends ClientSideCache {
     // not using a default value to avoid an object creation like 'new GuavaHashing(hashFunction)'
     private HashFunction hashFunction = null;
     private CommandLongHashing longHashing = null;
+
+    private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
 
     private Builder() { }
 
@@ -80,6 +94,11 @@ public class GuavaCSC extends ClientSideCache {
     public Builder hashing(CommandLongHashing hashing) {
       this.longHashing = hashing;
       this.hashFunction = null;
+      return this;
+    }
+
+    public Builder cacheable(ClientSideCacheable cacheable) {
+      this.cacheable = cacheable;
       return this;
     }
 

@@ -1,9 +1,11 @@
-package redis.clients.jedis.util;
+package redis.clients.jedis.csc;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import redis.clients.jedis.ClientSideCache;
+
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.csc.hash.PrimitiveArrayHashing;
 
 public class MapCSC extends ClientSideCache {
@@ -24,7 +26,7 @@ public class MapCSC extends ClientSideCache {
   private final Map<Long, Object> cache;
 
   public MapCSC() {
-    this(new ConcurrentHashMap<>());
+    this(new HashMap<>());
   }
 
   public MapCSC(Map<Long, Object> map) {
@@ -32,23 +34,28 @@ public class MapCSC extends ClientSideCache {
     this.cache = map;
   }
 
+  public MapCSC(Map<Long, Object> cache, ClientSideCacheable cacheable) {
+    super(HASHING, cacheable);
+    this.cache = cache;
+  }
+
   @Override
-  protected final void invalidateAllCommandHashes() {
+  protected final void invalidateAllHashes() {
     cache.clear();
   }
 
   @Override
-  protected void invalidateCommandHashes(Iterable<Long> hashes) {
+  protected void invalidateHashes(Iterable<Long> hashes) {
     hashes.forEach(hash -> cache.remove(hash));
   }
 
   @Override
-  protected void put(long hash, Object value) {
+  protected void putValue(long hash, Object value) {
     cache.put(hash, value);
   }
 
   @Override
-  protected Object get(long hash) {
+  protected Object getValue(long hash) {
     return cache.get(hash);
   }
 }

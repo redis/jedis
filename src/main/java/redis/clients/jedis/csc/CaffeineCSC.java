@@ -1,12 +1,9 @@
-package redis.clients.jedis.csc.util;
+package redis.clients.jedis.csc;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 
-import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.ClientSideCacheable;
-import redis.clients.jedis.csc.DefaultClientSideCacheable;
 import redis.clients.jedis.csc.hash.CommandLongHashing;
 import redis.clients.jedis.csc.hash.OpenHftHashing;
 

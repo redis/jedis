@@ -1,13 +1,10 @@
-package redis.clients.jedis.csc.util;
+package redis.clients.jedis.csc;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
 import java.util.concurrent.TimeUnit;
 
-import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.ClientSideCacheable;
-import redis.clients.jedis.csc.DefaultClientSideCacheable;
 import redis.clients.jedis.csc.hash.CommandLongHashing;
 import redis.clients.jedis.csc.hash.GuavaHashing;
 
@@ -109,9 +106,9 @@ public class GuavaCSC extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return longHashing != null ? new GuavaCSC(cb.build(), longHashing)
-          : hashFunction != null ? new GuavaCSC(cb.build(), hashFunction)
-              : new GuavaCSC(cb.build());
+      return longHashing != null ? new GuavaCSC(cb.build(), longHashing, cacheable)
+          : hashFunction != null ? new GuavaCSC(cb.build(), new GuavaHashing(hashFunction), cacheable)
+              : new GuavaCSC(cb.build(), cacheable);
     }
   }
 }

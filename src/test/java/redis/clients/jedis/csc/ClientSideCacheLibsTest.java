@@ -54,7 +54,7 @@ public class ClientSideCacheLibsTest {
 
   @Test
   public void guavaSimple() {
-    GuavaCSC guava = GuavaCSC.builder().maximumSize(10).ttl(10)
+    GuavaClientSideCache guava = GuavaClientSideCache.builder().maximumSize(10).ttl(10)
         .hashFunction(com.google.common.hash.Hashing.farmHashFingerprint64()).build();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
       control.set("foo", "bar");
@@ -69,7 +69,7 @@ public class ClientSideCacheLibsTest {
 
     com.google.common.cache.Cache guava = CacheBuilder.newBuilder().recordStats().build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaCSC(guava),
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaClientSideCache(guava),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, guava.size());
@@ -92,7 +92,7 @@ public class ClientSideCacheLibsTest {
 
   @Test
   public void caffeineSimple() {
-    CaffeineCSC caffeine = CaffeineCSC.builder().maximumSize(10).ttl(10)
+    CaffeineClientSideCache caffeine = CaffeineClientSideCache.builder().maximumSize(10).ttl(10)
         .hash(new OpenHftCommandHash(LongHashFunction.xx())).build();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
       control.set("foo", "bar");
@@ -107,7 +107,7 @@ public class ClientSideCacheLibsTest {
 
     com.github.benmanes.caffeine.cache.Cache caffeine = Caffeine.newBuilder().recordStats().build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineCSC(caffeine),
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineClientSideCache(caffeine),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, caffeine.estimatedSize());

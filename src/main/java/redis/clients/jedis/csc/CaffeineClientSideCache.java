@@ -1,37 +1,27 @@
 package redis.clients.jedis.csc;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.hash.HashFunction;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 
-import redis.clients.jedis.csc.hash.GuavaCommandHash;
+import redis.clients.jedis.csc.hash.OpenHftCommandHash;
 import redis.clients.jedis.csc.hash.CommandLongHash;
 
-public class GuavaCSC extends ClientSideCache {
+public class CaffeineClientSideCache extends ClientSideCache {
 
   private final Cache<Long, Object> cache;
 
-  public GuavaCSC(Cache<Long, Object> guavaCache) {
-    this(guavaCache, GuavaCommandHash.DEFAULT_HASH_FUNCTION);
+  public CaffeineClientSideCache(Cache<Long, Object> caffeineCache) {
+    this(caffeineCache, new OpenHftCommandHash(OpenHftCommandHash.DEFAULT_HASH_FUNCTION), DefaultClientSideCacheable.INSTANCE);
   }
 
-  public GuavaCSC(Cache<Long, Object> guavaCache, HashFunction hashFunction) {
-    this(guavaCache, new GuavaCommandHash(hashFunction));
+  public CaffeineClientSideCache(Cache<Long, Object> caffeineCache, ClientSideCacheable cacheable) {
+    this(caffeineCache, new OpenHftCommandHash(OpenHftCommandHash.DEFAULT_HASH_FUNCTION), cacheable);
   }
 
-  public GuavaCSC(Cache<Long, Object> guavaCache, CommandLongHash hashing) {
-    super(hashing);
-    this.cache = guavaCache;
-  }
-
-  public GuavaCSC(Cache<Long, Object> guavaCache, ClientSideCacheable cacheable) {
-    this(guavaCache, new GuavaCommandHash(GuavaCommandHash.DEFAULT_HASH_FUNCTION), cacheable);
-  }
-
-  public GuavaCSC(Cache<Long, Object> cache, CommandLongHash hashing, ClientSideCacheable cacheable) {
+  public CaffeineClientSideCache(Cache<Long, Object> caffeineCache, CommandLongHash hashing, ClientSideCacheable cacheable) {
     super(hashing, cacheable);
-    this.cache = cache;
+    this.cache = caffeineCache;
   }
 
   @Override
@@ -64,8 +54,7 @@ public class GuavaCSC extends ClientSideCache {
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
-    // not using a default value to avoid an object creation like 'new GuavaHashing(hashFunction)'
-    private HashFunction hashFunction = null;
+    // not using a default value to avoid an object creation like 'new OpenHftHashing(hashFunction)'
     private CommandLongHash longHashing = null;
 
     private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
@@ -82,15 +71,8 @@ public class GuavaCSC extends ClientSideCache {
       return this;
     }
 
-    public Builder hashFunction(HashFunction function) {
-      this.hashFunction = function;
-      this.longHashing = null;
-      return this;
-    }
-
     public Builder hash(CommandLongHash hashing) {
       this.longHashing = hashing;
-      this.hashFunction = null;
       return this;
     }
 
@@ -99,16 +81,16 @@ public class GuavaCSC extends ClientSideCache {
       return this;
     }
 
-    public GuavaCSC build() {
-      CacheBuilder cb = CacheBuilder.newBuilder();
+    public CaffeineClientSideCache build() {
+      Caffeine cb = Caffeine.newBuilder();
 
       cb.maximumSize(maximumSize);
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return longHashing != null ? new GuavaCSC(cb.build(), longHashing, cacheable)
-          : hashFunction != null ? new GuavaCSC(cb.build(), new GuavaCommandHash(hashFunction), cacheable)
-              : new GuavaCSC(cb.build(), cacheable);
+      return longHashing != null
+          ? new CaffeineClientSideCache(cb.build(), longHashing, cacheable)
+          : new CaffeineClientSideCache(cb.build(), cacheable);
     }
   }
 }

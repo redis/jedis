@@ -32,7 +32,7 @@ public class JedisSentineledClientSideCacheTest {
 
   @Test
   public void simple() {
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(),
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(),
         sentinels, sentinelClientConfig)) {
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -44,7 +44,7 @@ public class JedisSentineledClientSideCacheTest {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(map),
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(map),
         sentinels, sentinelClientConfig)) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -63,7 +63,7 @@ public class JedisSentineledClientSideCacheTest {
 
   @Test
   public void flushAll() {
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(),
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(),
         sentinels, sentinelClientConfig)) {
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -75,7 +75,7 @@ public class JedisSentineledClientSideCacheTest {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(map),
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(map),
         sentinels, sentinelClientConfig)) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));

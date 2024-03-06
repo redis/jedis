@@ -50,7 +50,7 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void simple() {
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -61,7 +61,7 @@ public class JedisPooledClientSideCacheTest {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC(map),
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache(map),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -80,7 +80,7 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void flushAll() {
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
@@ -91,7 +91,7 @@ public class JedisPooledClientSideCacheTest {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapCSC(map),
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache(map),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));

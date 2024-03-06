@@ -54,7 +54,7 @@ public class AllowAndDenyListClientSideCacheTest {
   public void none() {
     HashMap<Long, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new MapCSC(map, new AllowAndDenyListWithStringKeys(null, null, null, null)),
+        new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, null, null)),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -67,7 +67,7 @@ public class AllowAndDenyListClientSideCacheTest {
   public void whiteListCommand() {
     HashMap<Long, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new MapCSC(map, new AllowAndDenyListWithStringKeys(singleton(Protocol.Command.GET), null, null, null)),
+        new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(singleton(Protocol.Command.GET), null, null, null)),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -80,7 +80,7 @@ public class AllowAndDenyListClientSideCacheTest {
   public void blackListCommand() {
     HashMap<Long, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new MapCSC(map, new AllowAndDenyListWithStringKeys(null, singleton(Protocol.Command.GET), null, null)),
+        new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, singleton(Protocol.Command.GET), null, null)),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -93,7 +93,7 @@ public class AllowAndDenyListClientSideCacheTest {
   public void whiteListKey() {
     HashMap<Long, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new MapCSC(map, new AllowAndDenyListWithStringKeys(null, null, singleton("foo"), null)),
+        new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, singleton("foo"), null)),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -106,7 +106,7 @@ public class AllowAndDenyListClientSideCacheTest {
   public void blackListKey() {
     HashMap<Long, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new MapCSC(map, new AllowAndDenyListWithStringKeys(null, null, null, singleton("foo"))),
+        new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, null, singleton("foo"))),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));

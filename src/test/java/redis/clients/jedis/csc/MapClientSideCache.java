@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import redis.clients.jedis.csc.hash.PrimitiveArrayHash;
 
-public class MapCSC extends ClientSideCache {
+public class MapClientSideCache extends ClientSideCache {
 
   private static final PrimitiveArrayHash HASHING = new PrimitiveArrayHash() {
 
@@ -22,16 +22,16 @@ public class MapCSC extends ClientSideCache {
 
   private final Map<Long, Object> cache;
 
-  public MapCSC() {
+  public MapClientSideCache() {
     this(new HashMap<>());
   }
 
-  public MapCSC(Map<Long, Object> map) {
+  public MapClientSideCache(Map<Long, Object> map) {
     super(HASHING);
     this.cache = map;
   }
 
-  public MapCSC(Map<Long, Object> cache, ClientSideCacheable cacheable) {
+  public MapClientSideCache(Map<Long, Object> cache, ClientSideCacheable cacheable) {
     super(HASHING, cacheable);
     this.cache = cache;
   }

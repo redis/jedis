@@ -1,10 +1,14 @@
 package redis.clients.jedis.util;
 
 import java.net.URI;
-import redis.clients.jedis.ClientSideCache;
+
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
+
+import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.util.GuavaCSC;
+import redis.clients.jedis.csc.util.CaffeineCSC;
 
 public final class JedisURIHelper {
 

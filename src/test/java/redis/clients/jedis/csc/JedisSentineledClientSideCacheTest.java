@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.csc;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -8,10 +8,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.stream.Collectors;
-
 import org.hamcrest.Matchers;
 import org.junit.Test;
-import redis.clients.jedis.util.MapCSC;
+
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisSentineled;
 
 public class JedisSentineledClientSideCacheTest {
 
@@ -28,7 +32,8 @@ public class JedisSentineledClientSideCacheTest {
 
   @Test
   public void simple() {
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(), sentinels, sentinelClientConfig)) {
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(),
+        sentinels, sentinelClientConfig)) {
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       jedis.del("foo");
@@ -39,7 +44,8 @@ public class JedisSentineledClientSideCacheTest {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(map), sentinels, sentinelClientConfig)) {
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(map),
+        sentinels, sentinelClientConfig)) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -57,7 +63,8 @@ public class JedisSentineledClientSideCacheTest {
 
   @Test
   public void flushAll() {
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(), sentinels, sentinelClientConfig)) {
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(),
+        sentinels, sentinelClientConfig)) {
       jedis.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       jedis.flushAll();
@@ -68,7 +75,8 @@ public class JedisSentineledClientSideCacheTest {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(map), sentinels, sentinelClientConfig)) {
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapCSC(map),
+        sentinels, sentinelClientConfig)) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));

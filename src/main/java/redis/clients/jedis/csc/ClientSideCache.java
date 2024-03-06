@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.csc;
 
 import java.nio.ByteBuffer;
 import java.util.HashSet;
@@ -6,41 +6,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
 import java.util.function.Function;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * The class to manage the client-side caching. User can provide any of implementation of this class to the client
- * object; e.g. {@link redis.clients.jedis.util.CaffeineCSC CaffeineCSC} or
- * {@link redis.clients.jedis.util.GuavaCSC GuavaCSC} or a custom implementation of their own.
+ * object; e.g. {@link redis.clients.jedis.csc.util.CaffeineCSC CaffeineCSC} or
+ * {@link redis.clients.jedis.csc.util.GuavaCSC GuavaCSC} or a custom implementation of their own.
  */
 public abstract class ClientSideCache {
 
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
-  private final Map<ByteBuffer, Set<Long>> keyToCommandHashes;
+  private final Map<ByteBuffer, Set<Long>> keyToCommandHashes = new ConcurrentHashMap<>();
+  private final ClientSideCacheable cacheable;
 
   protected ClientSideCache() {
-    this.keyToCommandHashes = new ConcurrentHashMap<>();
+    this.cacheable = DefaultClientSideCacheable.INSTANCE;
   }
 
-  protected abstract void invalidateAllCommandHashes();
+  protected ClientSideCache(ClientSideCacheable cacheable) {
+    this.cacheable = cacheable;
+  }
 
-  protected abstract void invalidateCommandHashes(Iterable<Long> hashes);
+  protected abstract void invalidateAllHashes();
 
-  protected abstract void put(long hash, Object value);
+  protected abstract void invalidateHashes(Iterable<Long> hashes);
 
-  protected abstract Object get(long hash);
+  protected abstract void putValue(long hash, Object value);
 
-  protected abstract long getCommandHash(CommandObject command);
+  protected abstract Object getValue(long hash);
+
+  protected abstract long getHash(CommandObject command);
 
   public final void clear() {
     invalidateAllKeysAndCommandHashes();
   }
 
-  final void invalidate(List list) {
+  public final void invalidate(List list) {
     if (list == null) {
       invalidateAllKeysAndCommandHashes();
       return;
@@ -50,7 +55,7 @@ public abstract class ClientSideCache {
   }
 
   private void invalidateAllKeysAndCommandHashes() {
-    invalidateAllCommandHashes();
+    invalidateAllHashes();
     keyToCommandHashes.clear();
   }
 
@@ -63,23 +68,27 @@ public abstract class ClientSideCache {
 
     Set<Long> hashes = keyToCommandHashes.get(mapKey);
     if (hashes != null) {
-      invalidateCommandHashes(hashes);
+      invalidateHashes(hashes);
       keyToCommandHashes.remove(mapKey);
     }
   }
 
-  final <T> T getValue(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
+  public final <T> T get(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
 
-    final long hash = getCommandHash(command);
+    if (!cacheable.isCacheable(command.getArguments().getCommand(), keys)) {
+      return loader.apply(command);
+    }
 
-    T value = (T) get(hash);
+    final long hash = getHash(command);
+
+    T value = (T) getValue(hash);
     if (value != null) {
       return value;
     }
 
     value = loader.apply(command);
     if (value != null) {
-      put(hash, value);
+      putValue(hash, value);
       for (Object key : keys) {
         ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
         if (keyToCommandHashes.containsKey(mapKey)) {

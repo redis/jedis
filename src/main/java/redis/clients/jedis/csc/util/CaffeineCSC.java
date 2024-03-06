@@ -1,54 +1,64 @@
-package redis.clients.jedis.util;
+package redis.clients.jedis.csc.util;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 import net.openhft.hashing.LongHashFunction;
-import redis.clients.jedis.ClientSideCache;
+
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheable;
+import redis.clients.jedis.csc.DefaultClientSideCacheable;
 
 public class CaffeineCSC extends ClientSideCache {
 
   private static final LongHashFunction DEFAULT_HASH_FUNCTION = LongHashFunction.xx3();
 
   private final Cache<Long, Object> cache;
-  private final LongHashFunction function;
+  private final LongHashFunction hashFunction;
 
   public CaffeineCSC(Cache<Long, Object> caffeineCache, LongHashFunction hashFunction) {
+    super();
     this.cache = caffeineCache;
-    this.function = hashFunction;
+    this.hashFunction = hashFunction;
+  }
+
+  public CaffeineCSC(Cache<Long, Object> caffeineCache, LongHashFunction function, ClientSideCacheable cacheable) {
+    super(cacheable);
+    this.cache = caffeineCache;
+    this.hashFunction = function;
   }
 
   @Override
-  protected final void invalidateAllCommandHashes() {
+  protected final void invalidateAllHashes() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateCommandHashes(Iterable<Long> hashes) {
+  protected void invalidateHashes(Iterable<Long> hashes) {
     cache.invalidateAll(hashes);
   }
 
   @Override
-  protected void put(long hash, Object value) {
+  protected void putValue(long hash, Object value) {
     cache.put(hash, value);
   }
 
   @Override
-  protected Object get(long hash) {
+  protected Object getValue(long hash) {
     return cache.getIfPresent(hash);
   }
 
   @Override
-  protected final long getCommandHash(CommandObject command) {
+  protected final long getHash(CommandObject command) {
     long[] nums = new long[command.getArguments().size() + 1];
     int idx = 0;
     for (Rawable raw : command.getArguments()) {
-      nums[idx++] = function.hashBytes(raw.getRaw());
+      nums[idx++] = hashFunction.hashBytes(raw.getRaw());
     }
-    nums[idx] = function.hashInt(command.getBuilder().hashCode());
-    return function.hashLongs(nums);
+    nums[idx] = hashFunction.hashInt(command.getBuilder().hashCode());
+    return hashFunction.hashLongs(nums);
   }
 
   public static Builder builder() {
@@ -62,6 +72,8 @@ public class CaffeineCSC extends ClientSideCache {
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
     private LongHashFunction hashFunction = DEFAULT_HASH_FUNCTION;
+
+    private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
 
     private Builder() { }
 
@@ -80,6 +92,11 @@ public class CaffeineCSC extends ClientSideCache {
       return this;
     }
 
+    public Builder cacheable(ClientSideCacheable cacheable) {
+      this.cacheable = cacheable;
+      return this;
+    }
+
     public CaffeineCSC build() {
       Caffeine cb = Caffeine.newBuilder();
 
@@ -87,7 +104,7 @@ public class CaffeineCSC extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return new CaffeineCSC(cb.build(), hashFunction);
+      return new CaffeineCSC(cb.build(), hashFunction, cacheable);
     }
   }
 }

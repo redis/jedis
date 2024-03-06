@@ -17,6 +17,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.gears.TFunctionListParams;
@@ -300,11 +301,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   private <T> T checkAndClientSideCacheCommand(CommandObject<T> command, Object... keys) {
-    if (clientSideCache == null) {
-      return executeCommand(command);
+    if (clientSideCache != null) {
+      return clientSideCache.get((cmd) -> executeCommand(cmd), command, keys);
     }
 
-    return clientSideCache.getValue((cmd) -> executeCommand(cmd), command, keys);
+    return executeCommand(command);
   }
 
   public String ping() {

@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.csc;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -6,18 +6,25 @@ import static org.junit.Assert.assertNull;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.cache.CacheBuilder;
-
 import java.util.function.Supplier;
 import net.openhft.hashing.LongHashFunction;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import redis.clients.jedis.util.CaffeineCSC;
-import redis.clients.jedis.util.GuavaCSC;
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPoolConfig;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.csc.util.CaffeineCSC;
+import redis.clients.jedis.csc.util.GuavaCSC;
 
 public class ClientSideCacheLibsTest {
 
@@ -48,7 +55,8 @@ public class ClientSideCacheLibsTest {
 
   @Test
   public void guavaSimple() {
-    GuavaCSC guava = GuavaCSC.builder().maximumSize(10).ttl(10).hashFunction(com.google.common.hash.Hashing.farmHashFingerprint64()).build();
+    GuavaCSC guava = GuavaCSC.builder().maximumSize(10).ttl(10)
+        .hashFunction(com.google.common.hash.Hashing.farmHashFingerprint64()).build();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -62,7 +70,8 @@ public class ClientSideCacheLibsTest {
 
     com.google.common.cache.Cache guava = CacheBuilder.newBuilder().recordStats().build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaCSC(guava), singleConnectionPoolConfig.get())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaCSC(guava),
+        singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, guava.size());
       assertEquals("bar", jedis.get("foo"));
@@ -98,8 +107,8 @@ public class ClientSideCacheLibsTest {
 
     com.github.benmanes.caffeine.cache.Cache caffeine = Caffeine.newBuilder().recordStats().build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineCSC(caffeine, LongHashFunction.city_1_1()),
-        singleConnectionPoolConfig.get())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
+        new CaffeineCSC(caffeine, LongHashFunction.city_1_1()), singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, caffeine.estimatedSize());
       assertEquals("bar", jedis.get("foo"));

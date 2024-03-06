@@ -1,4 +1,4 @@
-package redis.clients.jedis;
+package redis.clients.jedis.csc;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +13,14 @@ import java.util.stream.Collectors;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
 import org.junit.Test;
-import redis.clients.jedis.util.MapCSC;
+
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPoolConfig;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisClusterTestBase;
 
 public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
 
@@ -42,7 +49,8 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC(map),
+        singleConnectionPoolConfig.get())) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
@@ -71,7 +79,8 @@ public class JedisClusterClientSideCacheTest extends JedisClusterTestBase {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<Long, Object> map = new HashMap<>();
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC(map), singleConnectionPoolConfig.get())) {
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapCSC(map),
+        singleConnectionPoolConfig.get())) {
       jedis.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));

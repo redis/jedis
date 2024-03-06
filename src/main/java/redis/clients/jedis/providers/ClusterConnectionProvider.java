@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import redis.clients.jedis.ClientSideCache;
 import redis.clients.jedis.ClusterCommandArguments;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.HostAndPort;
@@ -16,6 +15,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisClusterInfoCache;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 

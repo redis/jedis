@@ -26,6 +26,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiClusterClientConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
@@ -68,7 +69,7 @@ public class AutomaticFailoverTest {
       AbstractPipeline pipe = client.pipelined();
       pipe.set("pstr", "foobar");
       pipe.hset("phash", "foo", "bar");
-      //provider.incrementActiveMultiClusterIndex();
+      provider.incrementActiveMultiClusterIndex();
       pipe.sync();
     }
 
@@ -85,7 +86,7 @@ public class AutomaticFailoverTest {
       AbstractTransaction tx = client.multi();
       tx.set("tstr", "foobar");
       tx.hset("thash", "foo", "bar");
-      //provider.incrementActiveMultiClusterIndex();
+      provider.incrementActiveMultiClusterIndex();
       assertEquals(Arrays.asList("OK", Long.valueOf(1L)), tx.exec());
     }
 
@@ -109,9 +110,19 @@ public class AutomaticFailoverTest {
 
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
-    assertFalse(failoverReporter.failedOver);
-    log.info("Starting calls to Redis");
     String key = "hash-" + System.nanoTime();
+    log.info("Starting calls to Redis");
+    assertFalse(failoverReporter.failedOver);
+    for (int attempt = 0; attempt < 10; attempt++) {
+      try {
+        jedis.hset(key, "f1", "v1");
+      } catch (JedisConnectionException jce) {
+        //
+      }
+      assertFalse(failoverReporter.failedOver);
+    }
+
+    // should failover now
     jedis.hset(key, "f1", "v1");
     assertTrue(failoverReporter.failedOver);
 
@@ -129,7 +140,8 @@ public class AutomaticFailoverTest {
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
         getClusterConfigs(clientConfig, hostPort_1, hostPort_2))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
-        .circuitBreakerSlidingWindowSize(slidingWindowSize);
+        .circuitBreakerSlidingWindowSize(slidingWindowSize)
+        .fallbackExceptionList(Arrays.asList(JedisConnectionException.class));
 
     RedisFailoverReporter failoverReporter = new RedisFailoverReporter();
     MultiClusterPooledConnectionProvider cacheProvider = new MultiClusterPooledConnectionProvider(builder.build());
@@ -137,11 +149,13 @@ public class AutomaticFailoverTest {
 
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
-    assertFalse(failoverReporter.failedOver);
-    log.info("Starting calls to Redis");
-    AbstractPipeline pipe = jedis.pipelined();
     String key = "hash-" + System.nanoTime();
+    log.info("Starting calls to Redis");
+    assertFalse(failoverReporter.failedOver);
+    AbstractPipeline pipe = jedis.pipelined();
+    assertFalse(failoverReporter.failedOver);
     pipe.hset(key, "f1", "v1");
+    assertFalse(failoverReporter.failedOver);
     pipe.sync();
     assertTrue(failoverReporter.failedOver);
 
@@ -168,9 +182,9 @@ public class AutomaticFailoverTest {
 
     UnifiedJedis jedis = new UnifiedJedis(cacheProvider);
 
-    assertFalse(failoverReporter.failedOver);
-    log.info("Starting calls to Redis");
     String key = "hash-" + System.nanoTime();
+    log.info("Starting calls to Redis");
+    assertFalse(failoverReporter.failedOver);
     jedis.hset(key, "f1", "v1");
     assertTrue(failoverReporter.failedOver);
 

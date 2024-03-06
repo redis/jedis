@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.Arrays;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -4413,15 +4414,16 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor) {
-    return hscan(key, cursor, new ScanParams());
-  }
-
-  @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public ScanResult<byte[]> hscanNoValues(final byte[] key, final byte[] cursor, final ScanParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override
@@ -8617,6 +8619,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public ScanResult<String> hscanNoValues(final String key, final String cursor, final ScanParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public ScanResult<String> sscan(final String key, final String cursor, final ScanParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sscan(key, cursor, params));
@@ -9278,6 +9286,26 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     connection.sendCommand(LATENCY, DOCTOR);
     return connection.getBulkReply();
+  }
+
+  public Map<String, LatencyLatestInfo> latencyLatest() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(LATENCY, LATEST);
+    return BuilderFactory.LATENCY_LATEST_RESPONSE.build(connection.getOne());
+  }
+
+  public List<LatencyHistoryInfo> latencyHistory(LatencyEvent event) {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(new CommandArguments(LATENCY).add(HISTORY).add(event));
+    return BuilderFactory.LATENCY_HISTORY_RESPONSE.build(connection.getOne());
+  }
+
+  public long latencyReset(LatencyEvent... events) {
+    checkIsInMultiOrPipeline();
+    CommandArguments arguments = new CommandArguments(LATENCY).add(Keyword.RESET);
+    Arrays.stream(events).forEach(arguments::add);
+    connection.sendCommand(arguments);
+    return connection.getIntegerReply();
   }
 
   @Override

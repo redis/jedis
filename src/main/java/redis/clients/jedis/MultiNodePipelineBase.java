@@ -63,9 +63,6 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
       queue = pipelinedResponses.get(nodeKey);
       connection = connections.get(nodeKey);
     } else {
-      pipelinedResponses.putIfAbsent(nodeKey, new LinkedList<>());
-      queue = pipelinedResponses.get(nodeKey);
-
       Connection newOne = getConnection(nodeKey);
       connections.putIfAbsent(nodeKey, newOne);
       connection = connections.get(nodeKey);
@@ -73,6 +70,9 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
         log.debug("Duplicate connection to {}, closing it.", nodeKey);
         IOUtils.closeQuietly(newOne);
       }
+
+      pipelinedResponses.putIfAbsent(nodeKey, new LinkedList<>());
+      queue = pipelinedResponses.get(nodeKey);
     }
 
     connection.sendCommand(commandObject.getArguments());

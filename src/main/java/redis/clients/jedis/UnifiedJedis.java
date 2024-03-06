@@ -1585,6 +1585,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public ScanResult<String> hscanNoValues(String key, String cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public long hstrlen(String key, String field) {
     return checkAndClientSideCacheCommand(commandObjects.hstrlen(key, field), key);
   }
@@ -1607,6 +1612,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params) {
     return executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public ScanResult<byte[]> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override
@@ -4874,7 +4884,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider);
+      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
     } else {
       return new Pipeline(provider.getConnection(), true);
     }
@@ -4884,7 +4894,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider);
+      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, true, commandObjects);
     } else {
       return new Transaction(provider.getConnection(), true, true);
     }

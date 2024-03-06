@@ -1128,12 +1128,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params), BuilderFactory.HSCAN_RESPONSE);
   }
 
+  public final CommandObject<ScanResult<String>> hscanNoValues(String key, String cursor, ScanParams params) {
+    return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params).add(NOVALUES), BuilderFactory.SCAN_RESPONSE);
+  }
+
   public final CommandObject<Long> hstrlen(String key, String field) {
     return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), BuilderFactory.LONG);
   }
 
   public final CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor, ScanParams params) {
     return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params), BuilderFactory.HSCAN_BINARY_RESPONSE);
+  }
+
+  public final CommandObject<ScanResult<byte[]>> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params).add(NOVALUES), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   public final CommandObject<Long> hstrlen(byte[] key, byte[] field) {

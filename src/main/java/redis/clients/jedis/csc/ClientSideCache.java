@@ -14,8 +14,8 @@ import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * The class to manage the client-side caching. User can provide any of implementation of this class to the client
- * object; e.g. {@link redis.clients.jedis.csc.CaffeineCSC CaffeineCSC} or
- * {@link redis.clients.jedis.csc.GuavaCSC GuavaCSC} or a custom implementation of their own.
+ * object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache CaffeineClientSideCache} or
+ * {@link redis.clients.jedis.csc.GuavaClientSideCache GuavaClientSideCache} or a custom implementation of their own.
  */
 public abstract class ClientSideCache {
 

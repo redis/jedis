@@ -3,7 +3,7 @@ package redis.clients.jedis.csc.hash;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.args.Rawable;
 
-public abstract class PrimitiveArrayHashing extends AbstractCommandHashing {
+public abstract class PrimitiveArrayHash extends AbstractCommandHash {
 
   @Override
   protected final long hashRawable(Rawable raw) {

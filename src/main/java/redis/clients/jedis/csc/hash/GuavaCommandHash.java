@@ -4,13 +4,13 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import redis.clients.jedis.CommandObject;
 
-public class GuavaHashing implements CommandLongHashing {
+public class GuavaCommandHash implements CommandLongHash {
 
   public static final HashFunction DEFAULT_HASH_FUNCTION = com.google.common.hash.Hashing.fingerprint2011();
 
   private final HashFunction function;
 
-  public GuavaHashing(HashFunction function) {
+  public GuavaCommandHash(HashFunction function) {
     this.function = function;
   }
 

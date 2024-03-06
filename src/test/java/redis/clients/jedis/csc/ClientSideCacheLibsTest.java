@@ -23,7 +23,7 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.csc.hash.OpenHftHashing;
+import redis.clients.jedis.csc.hash.OpenHftCommandHash;
 
 public class ClientSideCacheLibsTest {
 
@@ -93,7 +93,7 @@ public class ClientSideCacheLibsTest {
   @Test
   public void caffeineSimple() {
     CaffeineCSC caffeine = CaffeineCSC.builder().maximumSize(10).ttl(10)
-        .hashing(new OpenHftHashing(LongHashFunction.xx())).build();
+        .hash(new OpenHftCommandHash(LongHashFunction.xx())).build();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));

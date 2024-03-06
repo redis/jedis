@@ -4,7 +4,7 @@ import redis.clients.jedis.Builder;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.args.Rawable;
 
-public abstract class AbstractCommandHashing implements CommandLongHashing {
+public abstract class AbstractCommandHash implements CommandLongHash {
   
   @Override
   public final long hash(CommandObject command) {

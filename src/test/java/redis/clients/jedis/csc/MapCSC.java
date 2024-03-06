@@ -3,14 +3,11 @@ package redis.clients.jedis.csc;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.args.Rawable;
-import redis.clients.jedis.csc.hash.PrimitiveArrayHashing;
+import redis.clients.jedis.csc.hash.PrimitiveArrayHash;
 
 public class MapCSC extends ClientSideCache {
 
-  private static final PrimitiveArrayHashing HASHING = new PrimitiveArrayHashing() {
+  private static final PrimitiveArrayHash HASHING = new PrimitiveArrayHash() {
 
     @Override
     protected long hashLongs(long[] longs) {

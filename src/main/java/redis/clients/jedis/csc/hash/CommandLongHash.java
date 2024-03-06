@@ -5,7 +5,7 @@ import redis.clients.jedis.CommandObject;
 /**
  * The interface for hashing a command object for client-side caching.
  */
-public interface CommandLongHashing {
+public interface CommandLongHash {
 
   /**
    * Produce a 64-bit signed hash from a command object.

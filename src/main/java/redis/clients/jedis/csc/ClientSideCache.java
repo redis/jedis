@@ -8,8 +8,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.csc.hash.CommandLongHashing;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.csc.hash.CommandLongHash;
 
 /**
  * The class to manage the client-side caching. User can provide any of implementation of this class to the client
@@ -22,14 +22,14 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
   private final Map<ByteBuffer, Set<Long>> keyToCommandHashes = new ConcurrentHashMap<>();
-  private final CommandLongHashing commandHashing;
+  private final CommandLongHash commandHashing;
   private final ClientSideCacheable cacheable;
 
-  protected ClientSideCache(CommandLongHashing commandHashing) {
+  protected ClientSideCache(CommandLongHash commandHashing) {
     this(commandHashing, DefaultClientSideCacheable.INSTANCE);
   }
 
-  protected ClientSideCache(CommandLongHashing commandHashing, ClientSideCacheable cacheable) {
+  protected ClientSideCache(CommandLongHash commandHashing, ClientSideCacheable cacheable) {
     this.commandHashing = commandHashing;
     this.cacheable = cacheable;
   }

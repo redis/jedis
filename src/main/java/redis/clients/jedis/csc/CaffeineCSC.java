@@ -4,22 +4,22 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 
-import redis.clients.jedis.csc.hash.CommandLongHashing;
-import redis.clients.jedis.csc.hash.OpenHftHashing;
+import redis.clients.jedis.csc.hash.OpenHftCommandHash;
+import redis.clients.jedis.csc.hash.CommandLongHash;
 
 public class CaffeineCSC extends ClientSideCache {
 
   private final Cache<Long, Object> cache;
 
   public CaffeineCSC(Cache<Long, Object> caffeineCache) {
-    this(caffeineCache, new OpenHftHashing(OpenHftHashing.DEFAULT_HASH_FUNCTION), DefaultClientSideCacheable.INSTANCE);
+    this(caffeineCache, new OpenHftCommandHash(OpenHftCommandHash.DEFAULT_HASH_FUNCTION), DefaultClientSideCacheable.INSTANCE);
   }
 
   public CaffeineCSC(Cache<Long, Object> caffeineCache, ClientSideCacheable cacheable) {
-    this(caffeineCache, new OpenHftHashing(OpenHftHashing.DEFAULT_HASH_FUNCTION), cacheable);
+    this(caffeineCache, new OpenHftCommandHash(OpenHftCommandHash.DEFAULT_HASH_FUNCTION), cacheable);
   }
 
-  public CaffeineCSC(Cache<Long, Object> caffeineCache, CommandLongHashing hashing, ClientSideCacheable cacheable) {
+  public CaffeineCSC(Cache<Long, Object> caffeineCache, CommandLongHash hashing, ClientSideCacheable cacheable) {
     super(hashing, cacheable);
     this.cache = caffeineCache;
   }
@@ -55,7 +55,7 @@ public class CaffeineCSC extends ClientSideCache {
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
     // not using a default value to avoid an object creation like 'new OpenHftHashing(hashFunction)'
-    private CommandLongHashing longHashing = null;
+    private CommandLongHash longHashing = null;
 
     private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
 
@@ -71,7 +71,7 @@ public class CaffeineCSC extends ClientSideCache {
       return this;
     }
 
-    public Builder hashing(CommandLongHashing hashing) {
+    public Builder hash(CommandLongHash hashing) {
       this.longHashing = hashing;
       return this;
     }

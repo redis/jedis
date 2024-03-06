@@ -1,18 +1,22 @@
-package redis.clients.jedis.csc;
+package redis.clients.jedis.csc.util;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import java.util.concurrent.TimeUnit;
+
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheable;
+import redis.clients.jedis.csc.DefaultClientSideCacheable;
 
 public class GuavaCSC extends ClientSideCache {
 
   private static final HashFunction DEFAULT_HASH_FUNCTION = com.google.common.hash.Hashing.fingerprint2011();
 
   private final Cache<Long, Object> cache;
-  private final HashFunction function;
+  private final HashFunction hashFunction;
 
   public GuavaCSC(Cache<Long, Object> guavaCache) {
     this(guavaCache, DEFAULT_HASH_FUNCTION);
@@ -21,7 +25,7 @@ public class GuavaCSC extends ClientSideCache {
   public GuavaCSC(Cache<Long, Object> guavaCache, HashFunction hashFunction) {
     super();
     this.cache = guavaCache;
-    this.function = hashFunction;
+    this.hashFunction = hashFunction;
   }
 
   public GuavaCSC(Cache<Long, Object> guavaCache, ClientSideCacheable cacheable) {
@@ -31,7 +35,7 @@ public class GuavaCSC extends ClientSideCache {
   public GuavaCSC(Cache<Long, Object> cache, HashFunction function, ClientSideCacheable cacheable) {
     super(cacheable);
     this.cache = cache;
-    this.function = function;
+    this.hashFunction = function;
   }
 
   @Override
@@ -56,7 +60,7 @@ public class GuavaCSC extends ClientSideCache {
 
   @Override
   protected final long getHash(CommandObject command) {
-    Hasher hasher = function.newHasher();
+    Hasher hasher = hashFunction.newHasher();
     command.getArguments().forEach(raw -> hasher.putBytes(raw.getRaw()));
     hasher.putInt(command.getBuilder().hashCode());
     return hasher.hash().asLong();

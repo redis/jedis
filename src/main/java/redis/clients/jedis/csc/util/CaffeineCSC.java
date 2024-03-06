@@ -1,29 +1,33 @@
-package redis.clients.jedis.csc;
+package redis.clients.jedis.csc.util;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 import net.openhft.hashing.LongHashFunction;
+
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheable;
+import redis.clients.jedis.csc.DefaultClientSideCacheable;
 
 public class CaffeineCSC extends ClientSideCache {
 
   private static final LongHashFunction DEFAULT_HASH_FUNCTION = LongHashFunction.xx3();
 
   private final Cache<Long, Object> cache;
-  private final LongHashFunction function;
+  private final LongHashFunction hashFunction;
 
   public CaffeineCSC(Cache<Long, Object> caffeineCache, LongHashFunction hashFunction) {
     super();
     this.cache = caffeineCache;
-    this.function = hashFunction;
+    this.hashFunction = hashFunction;
   }
 
   public CaffeineCSC(Cache<Long, Object> caffeineCache, LongHashFunction function, ClientSideCacheable cacheable) {
     super(cacheable);
     this.cache = caffeineCache;
-    this.function = function;
+    this.hashFunction = function;
   }
 
   @Override
@@ -51,10 +55,10 @@ public class CaffeineCSC extends ClientSideCache {
     long[] nums = new long[command.getArguments().size() + 1];
     int idx = 0;
     for (Rawable raw : command.getArguments()) {
-      nums[idx++] = function.hashBytes(raw.getRaw());
+      nums[idx++] = hashFunction.hashBytes(raw.getRaw());
     }
-    nums[idx] = function.hashInt(command.getBuilder().hashCode());
-    return function.hashLongs(nums);
+    nums[idx] = hashFunction.hashInt(command.getBuilder().hashCode());
+    return hashFunction.hashLongs(nums);
   }
 
   public static Builder builder() {

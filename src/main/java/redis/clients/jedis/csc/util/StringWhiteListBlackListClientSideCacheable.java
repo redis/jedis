@@ -1,7 +1,8 @@
-package redis.clients.jedis.csc;
+package redis.clients.jedis.csc.util;
 
 import java.util.Set;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.csc.ClientSideCacheable;
 
 public class StringWhiteListBlackListClientSideCacheable implements ClientSideCacheable {
 

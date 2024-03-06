@@ -7,9 +7,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+
 import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.csc.hash.CommandLongHash;
+import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * The class to manage the client-side caching. User can provide any of implementation of this class to the client

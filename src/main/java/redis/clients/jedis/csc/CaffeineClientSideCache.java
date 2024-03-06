@@ -4,8 +4,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 
-import redis.clients.jedis.csc.hash.OpenHftCommandHash;
 import redis.clients.jedis.csc.hash.CommandLongHash;
+import redis.clients.jedis.csc.hash.OpenHftCommandHash;
 
 public class CaffeineClientSideCache extends ClientSideCache {
 

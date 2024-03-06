@@ -6,8 +6,22 @@ import java.util.Map;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.csc.hash.PrimitiveArrayHashing;
 
 public class MapCSC extends ClientSideCache {
+
+  private static final PrimitiveArrayHashing HASHING = new PrimitiveArrayHashing() {
+
+    @Override
+    protected long hashLongs(long[] longs) {
+      return Arrays.hashCode(longs);
+    }
+
+    @Override
+    protected long hashBytes(byte[] bytes) {
+      return Arrays.hashCode(bytes);
+    }
+  };
 
   private final Map<Long, Object> cache;
 
@@ -16,11 +30,12 @@ public class MapCSC extends ClientSideCache {
   }
 
   public MapCSC(Map<Long, Object> map) {
+    super(HASHING);
     this.cache = map;
   }
 
   public MapCSC(Map<Long, Object> cache, ClientSideCacheable cacheable) {
-    super(cacheable);
+    super(HASHING, cacheable);
     this.cache = cache;
   }
 
@@ -42,14 +57,5 @@ public class MapCSC extends ClientSideCache {
   @Override
   protected Object getValue(long hash) {
     return cache.get(hash);
-  }
-
-  @Override
-  protected final long getHash(CommandObject command) {
-    long result = 1;
-    for (Rawable raw : command.getArguments()) {
-      result = 31 * result + Arrays.hashCode(raw.getRaw());
-    }
-    return 31 * result + command.getBuilder().hashCode();
   }
 }

@@ -8,12 +8,13 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.csc.hash.CommandLongHashing;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * The class to manage the client-side caching. User can provide any of implementation of this class to the client
- * object; e.g. {@link redis.clients.jedis.csc.util.CaffeineCSC CaffeineCSC} or
- * {@link redis.clients.jedis.csc.util.GuavaCSC GuavaCSC} or a custom implementation of their own.
+ * object; e.g. {@link redis.clients.jedis.csc.CaffeineCSC CaffeineCSC} or
+ * {@link redis.clients.jedis.csc.GuavaCSC GuavaCSC} or a custom implementation of their own.
  */
 public abstract class ClientSideCache {
 
@@ -21,13 +22,15 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
   private final Map<ByteBuffer, Set<Long>> keyToCommandHashes = new ConcurrentHashMap<>();
+  private final CommandLongHashing commandHashing;
   private final ClientSideCacheable cacheable;
 
-  protected ClientSideCache() {
-    this.cacheable = DefaultClientSideCacheable.INSTANCE;
+  protected ClientSideCache(CommandLongHashing commandHashing) {
+    this(commandHashing, DefaultClientSideCacheable.INSTANCE);
   }
 
-  protected ClientSideCache(ClientSideCacheable cacheable) {
+  protected ClientSideCache(CommandLongHashing commandHashing, ClientSideCacheable cacheable) {
+    this.commandHashing = commandHashing;
     this.cacheable = cacheable;
   }
 
@@ -38,8 +41,6 @@ public abstract class ClientSideCache {
   protected abstract void putValue(long hash, Object value);
 
   protected abstract Object getValue(long hash);
-
-  protected abstract long getHash(CommandObject command);
 
   public final void clear() {
     invalidateAllKeysAndCommandHashes();
@@ -79,7 +80,7 @@ public abstract class ClientSideCache {
       return loader.apply(command);
     }
 
-    final long hash = getHash(command);
+    final long hash = commandHashing.hash(command);
 
     T value = (T) getValue(hash);
     if (value != null) {

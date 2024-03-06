@@ -23,8 +23,7 @@ import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.csc.util.CaffeineCSC;
-import redis.clients.jedis.csc.util.GuavaCSC;
+import redis.clients.jedis.csc.hash.OpenHftHashing;
 
 public class ClientSideCacheLibsTest {
 
@@ -93,7 +92,8 @@ public class ClientSideCacheLibsTest {
 
   @Test
   public void caffeineSimple() {
-    CaffeineCSC caffeine = CaffeineCSC.builder().maximumSize(10).ttl(10).hashFunction(LongHashFunction.xx()).build();
+    CaffeineCSC caffeine = CaffeineCSC.builder().maximumSize(10).ttl(10)
+        .hashing(new OpenHftHashing(LongHashFunction.xx())).build();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -107,8 +107,8 @@ public class ClientSideCacheLibsTest {
 
     com.github.benmanes.caffeine.cache.Cache caffeine = Caffeine.newBuilder().recordStats().build();
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new CaffeineCSC(caffeine, LongHashFunction.city_1_1()), singleConnectionPoolConfig.get())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineCSC(caffeine),
+        singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, caffeine.estimatedSize());
       assertEquals("bar", jedis.get("foo"));

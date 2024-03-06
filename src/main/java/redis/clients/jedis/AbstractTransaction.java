@@ -9,6 +9,10 @@ public abstract class AbstractTransaction extends PipeliningBase implements Clos
     super(new CommandObjects());
   }
 
+  protected AbstractTransaction(CommandObjects commandObjects) {
+    super(commandObjects);
+  }
+
   public abstract void multi();
 
   /**

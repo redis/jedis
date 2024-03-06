@@ -20,6 +20,7 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
   private final CircuitBreakerFailoverConnectionProvider failoverProvider;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
+  @Deprecated
   public MultiClusterPipeline(MultiClusterPooledConnectionProvider pooledProvider) {
     super(new CommandObjects());
 
@@ -29,6 +30,11 @@ public class MultiClusterPipeline extends PipelineBase implements Closeable {
       RedisProtocol proto = connection.getRedisProtocol();
       if (proto != null) this.commandObjects.setProtocol(proto);
     }
+  }
+
+  public MultiClusterPipeline(MultiClusterPooledConnectionProvider pooledProvider, CommandObjects commandObjects) {
+    super(commandObjects);
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(pooledProvider);
   }
 
   @Override

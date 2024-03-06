@@ -40,8 +40,7 @@ public final class MultiClusterClientConfig {
     private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f; // measured as percentage
     private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
 
-    private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT =
-        Arrays.asList(CallNotPermittedException.class, JedisConnectionException.class);
+    private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays.asList(CallNotPermittedException.class);
 
     private final ClusterConfig[] clusterConfigs;
 

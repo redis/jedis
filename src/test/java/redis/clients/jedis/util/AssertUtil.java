@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -105,4 +106,47 @@ public class AssertUtil {
     }
   }
 
+  public static void assertPipelineSyncAll(List<Object> expected, List<Object> actual) {
+    assertEquals(expected.size(), actual.size());
+    for (int n = 0; n < expected.size(); n++) {
+      Object expObj = expected.get(n);
+      Object actObj = actual.get(n);
+      if (expObj instanceof List) {
+        if (!(actObj instanceof List)) {
+          throw new ComparisonFailure(n + "'th element is not a list",
+              expObj.getClass().toString(), actObj.getClass().toString());
+        }
+        assertPipelineSyncAll((List) expObj, (List) actObj);
+      } else if (expObj instanceof List) {
+        if (!(actObj instanceof List)) {
+          throw new ComparisonFailure(n + "'th element is not a list",
+              expObj.getClass().toString(), actObj.getClass().toString());
+        }
+        assertPipelineSyncAll((List) expObj, (List) actObj);
+      } else if (expObj instanceof Set) {
+        if (!(actObj instanceof Set)) {
+          throw new ComparisonFailure(n + "'th element is not a set",
+              expObj.getClass().toString(), actObj.getClass().toString());
+        }
+        assertPipelineSyncAllSet((Set) expObj, (Set) actObj);
+      } else if (expObj instanceof byte[]) {
+        if (!(actObj instanceof byte[])) {
+          throw new ComparisonFailure(n + "'th element is not byte array",
+              expObj.getClass().toString(), actObj.getClass().toString());
+        }
+        assertArrayEquals((byte[]) expObj, (byte[]) actObj);
+      } else {
+        assertEquals(n + "'th element mismatched", expObj, actObj);
+      }
+    }
+  }
+
+  private static void assertPipelineSyncAllSet(Set<?> expected, Set<?> actual) {
+    assertEquals(expected.size(), actual.size());
+    if (expected.iterator().next() instanceof byte[]) {
+      assertByteArraySetEquals((Set<byte[]>) expected, (Set<byte[]>) actual);
+    } else {
+      assertEquals(expected, actual);
+    }
+  }
 }

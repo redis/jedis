@@ -18,7 +18,7 @@ import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.MigrateParams;
 
-public class PipeliningMigrateTest extends JedisCommandsTestBase {
+public class MigratePipeliningTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03 };
   private static final byte[] bbar = { 0x04, 0x05, 0x06 };

@@ -222,14 +222,15 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void killUser() {
-    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    client.aclSetUser("test_kill", "on", "+acl", ">password1");
-    try {
-      client2.auth("test_kill", "password1");
-      assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
-      assertDisconnected(client2);
-    } finally {
-      jedis.aclDelUser("test_kill");
+    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+      client.aclSetUser("test_kill", "on", "+acl", ">password1");
+      try {
+        client2.auth("test_kill", "password1");
+        assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
+        assertDisconnected(client2);
+      } finally {
+        jedis.aclDelUser("test_kill");
+      }
     }
   }
 
@@ -240,17 +241,18 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     // sleep twice the maxAge, to be sure
     Thread.sleep(maxAge * 2 * 1000);
 
-    Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    client2.auth("foobared");
+    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+      client2.auth("foobared");
 
-    long killedClients = jedis.clientKill(new ClientKillParams().maxAge(maxAge));
+      long killedClients = jedis.clientKill(new ClientKillParams().maxAge(maxAge));
 
-    // The reality is that some tests leak clients, so we can't assert
-    // on the exact number of killed clients.
-    assertTrue(killedClients > 0);
+      // The reality is that some tests leak clients, so we can't assert
+      // on the exact number of killed clients.
+      assertTrue(killedClients > 0);
 
-    assertDisconnected(client);
-    assertConnected(client2);
+      assertDisconnected(client);
+      assertConnected(client2);
+    }
   }
 
   @Test

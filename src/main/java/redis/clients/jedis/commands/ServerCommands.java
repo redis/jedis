@@ -1,11 +1,17 @@
 package redis.clients.jedis.commands;
 
 import redis.clients.jedis.args.FlushMode;
+import redis.clients.jedis.args.LatencyEvent;
 import redis.clients.jedis.args.SaveMode;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.params.ShutdownParams;
+import redis.clients.jedis.resps.LatencyHistoryInfo;
+import redis.clients.jedis.resps.LatencyLatestInfo;
 import redis.clients.jedis.util.KeyValue;
+
+import java.util.List;
+import java.util.Map;
 
 public interface ServerCommands {
 
@@ -229,6 +235,8 @@ public interface ServerCommands {
 
   String lolwut(LolwutParams lolwutParams);
 
+  String reset();
+
   /**
    * The LATENCY DOCTOR command reports about different latency-related issues and advises about
    * possible remedies.
@@ -244,4 +252,10 @@ public interface ServerCommands {
    * @return the report
    */
   String latencyDoctor();
+
+  Map<String, LatencyLatestInfo> latencyLatest();
+
+  List<LatencyHistoryInfo> latencyHistory(LatencyEvent events);
+
+  long latencyReset(LatencyEvent... events);
 }

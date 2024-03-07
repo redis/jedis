@@ -30,10 +30,10 @@ public interface ClientCommands {
   String clientKill(String ip, int port);
 
   /**
-   * Close a given client connection.
+   * Close client connections based on certain selection parameters.
    *
-   * @param params Connection info will be closed
-   * @return Close success return OK
+   * @param params Parameters defining what client connections to close.
+   * @return The number of client connections that were closed.
    */
   long clientKill(ClientKillParams params);
 

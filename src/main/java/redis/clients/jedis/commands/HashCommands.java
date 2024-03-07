@@ -49,5 +49,11 @@ public interface HashCommands {
 
   ScanResult<Map.Entry<String, String>> hscan(String key, String cursor, ScanParams params);
 
+  default ScanResult<String> hscanNoValues(String key, String cursor) {
+    return hscanNoValues(key, cursor, new ScanParams());
+  }
+
+  ScanResult<String> hscanNoValues(String key, String cursor, ScanParams params);
+
   long hstrlen(String key, String field);
 }

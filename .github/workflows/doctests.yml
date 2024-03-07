@@ -2,6 +2,10 @@ name: Documentation Tests
 
 on:
   push:
+    tags-ignore:
+      - '*'
+    branches:
+      - 'emb-examples'
   pull_request:
   workflow_dispatch:
 

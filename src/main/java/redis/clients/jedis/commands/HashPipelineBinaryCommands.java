@@ -50,6 +50,12 @@ public interface HashPipelineBinaryCommands {
 
   Response<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor, ScanParams params);
 
+  default Response<ScanResult<byte[]>> hscanNoValues(byte[] key, byte[] cursor) {
+    return hscanNoValues(key, cursor, new ScanParams());
+  }
+
+  Response<ScanResult<byte[]>> hscanNoValues(byte[] key, byte[] cursor, ScanParams params);
+
   Response<Long> hstrlen(byte[] key, byte[] field);
 
 }

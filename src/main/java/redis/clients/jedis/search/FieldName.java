@@ -30,6 +30,14 @@ public class FieldName implements IParams {
     return this;
   }
 
+  public final String getName() {
+    return name;
+  }
+
+  public final String getAttribute() {
+    return attribute;
+  }
+
   public int addCommandArguments(List<Object> args) {
     args.add(name);
     if (attribute == null) {

@@ -15,13 +15,13 @@ public interface StreamBinaryCommands {
 
   long xlen(byte[] key);
 
-  List<byte[]> xrange(byte[] key, byte[] start, byte[] end);
+  List<Object> xrange(byte[] key, byte[] start, byte[] end);
 
-  List<byte[]> xrange(byte[] key, byte[] start, byte[] end, int count);
+  List<Object> xrange(byte[] key, byte[] start, byte[] end, int count);
 
-  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start);
+  List<Object> xrevrange(byte[] key, byte[] end, byte[] start);
 
-  List<byte[]> xrevrange(byte[] key, byte[] end, byte[] start, int count);
+  List<Object> xrevrange(byte[] key, byte[] end, byte[] start, int count);
 
   long xack(byte[] key, byte[] group, byte[]... ids);
 
@@ -74,9 +74,9 @@ public interface StreamBinaryCommands {
 
   List<Object> xinfoConsumers(byte[] key, byte[] group);
 
-  List<byte[]> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
+  List<Object> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams);
 
-  List<byte[]> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
+  List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
       Map.Entry<byte[], byte[]>... streams);
 
 }

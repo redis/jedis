@@ -222,15 +222,14 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void killUser() {
+    client.aclSetUser("test_kill", "on", "+acl", ">password1");
     try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
-      client.aclSetUser("test_kill", "on", "+acl", ">password1");
-      try {
-        client2.auth("test_kill", "password1");
-        assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
-        assertDisconnected(client2);
-      } finally {
-        jedis.aclDelUser("test_kill");
-      }
+      client2.auth("test_kill", "password1");
+
+      assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
+      assertDisconnected(client2);
+    } finally {
+      jedis.aclDelUser("test_kill");
     }
   }
 

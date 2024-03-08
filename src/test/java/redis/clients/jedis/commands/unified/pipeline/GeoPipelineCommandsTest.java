@@ -16,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.GeoUnit;
-import redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GeoAddParams;
 import redis.clients.jedis.params.GeoRadiusParam;
@@ -31,6 +31,7 @@ import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
   protected final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -41,14 +42,8 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
   private static final double EPSILON = 1e-5;
 
-  @BeforeClass
-  public static void prepare() throws InterruptedException {
-    jedis = PooledCommandsTestHelper.getPooled();
-  }
-
-  @AfterClass
-  public static void cleanUp() {
-    jedis.close();
+  public GeoPipelineCommandsTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Test

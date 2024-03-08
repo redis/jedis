@@ -26,6 +26,10 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class JedisTest extends JedisCommandsTestBase {
 
+  public JedisTest() {
+    super(null);
+  }
+
   @Test
   public void useWithoutConnecting() {
     try (Jedis j = new Jedis()) {

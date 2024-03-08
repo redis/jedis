@@ -11,8 +11,11 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.AbstractTransaction;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.graph.Header;
 import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
@@ -20,6 +23,7 @@ import redis.clients.jedis.graph.entities.Node;
 import redis.clients.jedis.graph.entities.Property;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class GraphTransactionTest extends RedisModuleCommandsTestBase {
 
 //  private Connection c;
@@ -28,6 +32,11 @@ public class GraphTransactionTest extends RedisModuleCommandsTestBase {
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
   }
+
+  public GraphTransactionTest(RedisProtocol protocol) {
+    super(protocol);
+  }
+
 //
 //  @Before
 //  public void createApi() {

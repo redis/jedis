@@ -14,10 +14,14 @@ import static org.junit.Assert.assertNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.MigrateParams;
 
+@RunWith(Parameterized.class)
 public class MigratePipeliningTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03 };
@@ -38,6 +42,10 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
 
   private Jedis dest;
   private Jedis destAuth;
+
+  public MigratePipeliningTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   @Override

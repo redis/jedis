@@ -13,19 +13,27 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.commands.unified.ListCommandsTestBase;
 import redis.clients.jedis.util.KeyValue;
 
+@RunWith(Parameterized.class)
 public class ClusterListCommandsTest extends ListCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
+  public ClusterListCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Before
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster();
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @After

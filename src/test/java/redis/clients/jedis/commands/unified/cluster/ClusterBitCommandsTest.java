@@ -6,15 +6,23 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.commands.unified.BitCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+@RunWith(Parameterized.class)
 public class ClusterBitCommandsTest extends BitCommandsTestBase {
+
+  public ClusterBitCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster();
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @After

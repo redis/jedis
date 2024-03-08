@@ -38,6 +38,10 @@ public class PipeliningTest extends JedisCommandsTestBase {
   private static final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   private static final byte[] bbaz = { 0x09, 0x0A, 0x0B, 0x0C };
 
+  public PipeliningTest() {
+    super(null);
+  }
+
   @Test
   public void pipeline() {
     Pipeline p = jedis.pipelined();

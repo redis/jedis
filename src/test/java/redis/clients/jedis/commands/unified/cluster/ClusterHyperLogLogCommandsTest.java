@@ -6,13 +6,21 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.HyperLogLogCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class ClusterHyperLogLogCommandsTest extends HyperLogLogCommandsTestBase {
+
+  public ClusterHyperLogLogCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster();
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @After

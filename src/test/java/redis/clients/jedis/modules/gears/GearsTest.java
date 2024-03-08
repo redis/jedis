@@ -5,6 +5,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -29,6 +31,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+@RunWith(Parameterized.class)
 public class GearsTest extends RedisModuleCommandsTestBase {
 
   private static final String BAD_FUNCTION = "All Your Base Are Belong to Us";
@@ -39,6 +42,10 @@ public class GearsTest extends RedisModuleCommandsTestBase {
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
+  }
+
+  public GearsTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @After

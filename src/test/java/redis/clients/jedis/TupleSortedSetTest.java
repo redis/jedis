@@ -18,6 +18,10 @@ public class TupleSortedSetTest extends JedisCommandsTestBase {
   final byte[] be = { 0x0E };
   final byte[] bf = { 0x0F };
 
+  public TupleSortedSetTest() {
+    super(null);
+  }
+
   @Test
   public void testBinary() {
     List<Tuple> array = new ArrayList<Tuple>();

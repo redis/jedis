@@ -9,10 +9,14 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.resps.Tuple;
 
+@RunWith(Parameterized.class)
 public class SuggestionTest extends RedisModuleCommandsTestBase {
 
   private static final String key = "suggest";
@@ -26,6 +30,10 @@ public class SuggestionTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public SuggestionTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void addSuggestionAndGetSuggestion() {

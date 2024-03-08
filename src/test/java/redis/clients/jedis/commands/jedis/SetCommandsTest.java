@@ -20,10 +20,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
+@RunWith(Parameterized.class)
 public class SetCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
@@ -38,6 +42,10 @@ public class SetCommandsTest extends JedisCommandsTestBase {
   final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
+
+  public SetCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void sadd() {

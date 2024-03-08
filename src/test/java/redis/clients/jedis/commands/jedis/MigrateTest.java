@@ -9,12 +9,16 @@ import static org.junit.Assert.fail;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.MigrateParams;
 
+@RunWith(Parameterized.class)
 public class MigrateTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03 };
@@ -34,6 +38,10 @@ public class MigrateTest extends JedisCommandsTestBase {
   private static final int db = 2;
   private static final int dbAuth = 3;
   private static final int timeout = Protocol.DEFAULT_TIMEOUT;
+
+  public MigrateTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   @Override

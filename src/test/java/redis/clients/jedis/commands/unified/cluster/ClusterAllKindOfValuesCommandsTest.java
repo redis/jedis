@@ -13,15 +13,23 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.AllKindOfValuesCommandsTestBase;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
+@RunWith(Parameterized.class)
 public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsTestBase {
+
+  public ClusterAllKindOfValuesCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster();
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @After

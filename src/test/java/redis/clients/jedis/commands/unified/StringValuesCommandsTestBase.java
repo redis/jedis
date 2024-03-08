@@ -8,12 +8,18 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 
 public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
+
+  public StringValuesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Test
   public void setAndGet() {
     String status = jedis.set("foo", "bar");

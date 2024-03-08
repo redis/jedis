@@ -13,12 +13,16 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.search.FTSpellCheckParams;
 import redis.clients.jedis.search.schemafields.TextField;
 
+@RunWith(Parameterized.class)
 public class SpellCheckTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "spellcheck";
@@ -32,6 +36,10 @@ public class SpellCheckTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public SpellCheckTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   private static Map<String, String> toMap(String... values) {
     Map<String, String> map = new HashMap<>();

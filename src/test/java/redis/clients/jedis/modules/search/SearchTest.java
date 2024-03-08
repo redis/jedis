@@ -8,6 +8,8 @@ import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -17,6 +19,7 @@ import redis.clients.jedis.search.Schema.*;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class SearchTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "testindex";
@@ -30,6 +33,10 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public SearchTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   private void addDocument(String key, Map<String, Object> map) {
     client.hset(key, RediSearchUtil.toStringMap(map));

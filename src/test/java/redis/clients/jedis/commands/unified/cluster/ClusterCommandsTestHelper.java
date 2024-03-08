@@ -6,15 +6,15 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
-import redis.clients.jedis.util.RedisProtocolUtil;
+import redis.clients.jedis.RedisProtocol;
 
 public class ClusterCommandsTestHelper {
 
-  static JedisCluster getCleanCluster() {
+  static JedisCluster getCleanCluster(RedisProtocol protocol) {
     clearClusterData();
     return new JedisCluster(
         Collections.singleton(HostAndPorts.getStableClusterServers().get(0)),
-        DefaultJedisClientConfig.builder().password("cluster").protocol(RedisProtocolUtil.getRedisProtocol()).build());
+        DefaultJedisClientConfig.builder().password("cluster").protocol(protocol).build());
   }
 
   static void clearClusterData() {

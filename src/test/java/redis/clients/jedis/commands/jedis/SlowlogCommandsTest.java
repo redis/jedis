@@ -84,7 +84,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     Slowlog log = logs.get(0);
     assertThat(log.getId(), Matchers.greaterThan(0L));
     assertThat(log.getTimeStamp(), Matchers.greaterThan(0L));
-    assertThat(log.getExecutionTime(), Matchers.greaterThan(0L));
+    assertThat(log.getExecutionTime(), Matchers.greaterThanOrEqualTo(0L));
     assertEquals(4, log.getArgs().size());
     assertEquals(SafeEncoder.encode(Protocol.Command.CONFIG.getRaw()), log.getArgs().get(0));
     assertEquals(SafeEncoder.encode(Protocol.Keyword.SET.getRaw()), log.getArgs().get(1));

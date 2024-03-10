@@ -4,11 +4,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import redis.clients.jedis.csc.hash.PrimitiveArrayHash;
+import redis.clients.jedis.csc.hash.PrimitiveArrayCommandHasher;
 
 public class MapClientSideCache extends ClientSideCache {
 
-  private static final PrimitiveArrayHash HASHING = new PrimitiveArrayHash() {
+  private static final PrimitiveArrayCommandHasher HASHING = new PrimitiveArrayCommandHasher() {
 
     @Override
     protected long hashLongs(long[] longs) {

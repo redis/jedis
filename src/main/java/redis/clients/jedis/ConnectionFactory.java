@@ -61,10 +61,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   @Override
   public PooledObject<Connection> makeObject() throws Exception {
     try {
-      Connection jedis = clientSideCache == null
-          ? new Connection(jedisSocketFactory, clientConfig)
-          : new Connection(jedisSocketFactory, clientConfig, clientSideCache);
-
+      Connection jedis = new Connection(jedisSocketFactory, clientConfig, clientSideCache);
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
       logger.debug("Error while makeObject", je);

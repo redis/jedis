@@ -29,8 +29,8 @@ public class PooledConnectionProvider implements ConnectionProvider {
     this.connectionMapKey = hostAndPort;
   }
 
-  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache) {
-    this(new ConnectionPool(hostAndPort, clientConfig, csCache));
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
+    this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache));
     this.connectionMapKey = hostAndPort;
   }
 
@@ -40,9 +40,9 @@ public class PooledConnectionProvider implements ConnectionProvider {
     this.connectionMapKey = hostAndPort;
   }
 
-  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache,
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache clientSideCache,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionPool(hostAndPort, clientConfig, csCache, poolConfig));
+    this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache, poolConfig));
     this.connectionMapKey = hostAndPort;
   }
 

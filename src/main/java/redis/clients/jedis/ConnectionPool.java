@@ -11,8 +11,8 @@ public class ConnectionPool extends Pool<Connection> {
     this(new ConnectionFactory(hostAndPort, clientConfig));
   }
 
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, csCache));
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
@@ -24,9 +24,9 @@ public class ConnectionPool extends Pool<Connection> {
     this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
   }
 
-  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache csCache,
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache clientSideCache,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, csCache), poolConfig);
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,

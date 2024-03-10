@@ -106,8 +106,8 @@ public class GuavaClientSideCache extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return commandHasher != null ? new GuavaClientSideCache(cb.build(), commandHasher, cacheable)
-          : hashFunction != null ? new GuavaClientSideCache(cb.build(), new GuavaCommandHasher(hashFunction), cacheable)
+      return hashFunction != null ? new GuavaClientSideCache(cb.build(), new GuavaCommandHasher(hashFunction), cacheable)
+          : commandHasher != null ? new GuavaClientSideCache(cb.build(), commandHasher, cacheable)
               : new GuavaClientSideCache(cb.build(), cacheable);
     }
   }

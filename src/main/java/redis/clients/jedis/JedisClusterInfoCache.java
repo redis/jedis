@@ -66,8 +66,9 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, null, startNodes);
   }
 
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache csCache, final Set<HostAndPort> startNodes) {
-    this(clientConfig, csCache, null, startNodes);
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+      final Set<HostAndPort> startNodes) {
+    this(clientConfig, clientSideCache, null, startNodes);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
@@ -75,9 +76,9 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, poolConfig, startNodes);
   }
 
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache csCache,
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
-    this(clientConfig, csCache, poolConfig, startNodes, null);
+    this(clientConfig, clientSideCache, poolConfig, startNodes, null);
   }
 
   public JedisClusterInfoCache(final JedisClientConfig clientConfig,
@@ -86,12 +87,12 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, poolConfig, startNodes, topologyRefreshPeriod);
   }
 
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache csCache,
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
-    this.clientSideCache = csCache;
+    this.clientSideCache = clientSideCache;
     this.startNodes = startNodes;
     if (topologyRefreshPeriod != null) {
       logger.info("Cluster topology refresh start, period: {}, startNodes: {}", topologyRefreshPeriod, startNodes);

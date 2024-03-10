@@ -88,13 +88,9 @@ public final class Protocol {
     // Maybe Read only first 5 bytes instead?
     if (message.startsWith(MOVED_PREFIX)) {
       String[] movedInfo = parseTargetHostAndSlot(message);
-//      throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1],
-//          Integer.parseInt(movedInfo[2])), Integer.parseInt(movedInfo[0]));
       throw new JedisMovedDataException(message, HostAndPort.from(movedInfo[1]), Integer.parseInt(movedInfo[0]));
     } else if (message.startsWith(ASK_PREFIX)) {
       String[] askInfo = parseTargetHostAndSlot(message);
-//      throw new JedisAskDataException(message, new HostAndPort(askInfo[1],
-//          Integer.parseInt(askInfo[2])), Integer.parseInt(askInfo[0]));
       throw new JedisAskDataException(message, HostAndPort.from(askInfo[1]), Integer.parseInt(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_PREFIX)) {
       throw new JedisClusterException(message);
@@ -119,15 +115,6 @@ public final class Protocol {
     return is.readLine();
   }
 
-//  private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
-//    String[] response = new String[3];
-//    String[] messageInfo = clusterRedirectResponse.split(" ");
-//    String[] targetHostAndPort = HostAndPort.extractParts(messageInfo[2]);
-//    response[0] = messageInfo[1];
-//    response[1] = targetHostAndPort[0];
-//    response[2] = targetHostAndPort[1];
-//    return response;
-//  }
   private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
     String[] response = new String[2];
     String[] messageInfo = clusterRedirectResponse.split(" ");
@@ -196,15 +183,12 @@ public final class Protocol {
   }
 
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-  // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
     final int num = is.readIntCrLf();
-    //System.out.println("MULTI BULK: " + num);
     if (num == -1) return null;
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
         ret.add(process(is));
-        //System.out.println("MULTI >> " + (i+1) + ": " + SafeEncoder.encodeObject(ret.get(i)));
       } catch (JedisDataException e) {
         ret.add(e);
       }
@@ -212,8 +196,6 @@ public final class Protocol {
     return ret;
   }
 
-  // private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-  // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
   private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
     if (num == -1) return null;
@@ -236,7 +218,6 @@ public final class Protocol {
 
   private static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
     if (cache != null) {
-      //System.out.println("PEEK: " + is.peekByte());
       while (is.peek(GREATER_THAN_BYTE)) {
         is.readByte();
         processPush(is, cache);
@@ -246,7 +227,6 @@ public final class Protocol {
 
   private static void processPush(final RedisInputStream is, ClientSideCache cache) {
     List<Object> list = processMultiBulkReply(is);
-    //System.out.println("PUSH: " + SafeEncoder.encodeObject(list));
     if (list.size() == 2 && list.get(0) instanceof byte[]
         && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
       cache.invalidate((List) list.get(1));

@@ -76,8 +76,8 @@ public class JedisPooled extends UnifiedJedis {
     super(hostAndPort, clientConfig);
   }
 
-  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache) {
-    super(hostAndPort, clientConfig, csCache);
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
+    super(hostAndPort, clientConfig, clientSideCache);
   }
 
   public JedisPooled(PooledObjectFactory<Connection> factory) {
@@ -380,10 +380,10 @@ public class JedisPooled extends UnifiedJedis {
     super(new PooledConnectionProvider(hostAndPort, clientConfig, poolConfig), clientConfig.getRedisProtocol());
   }
 
-  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache,
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig) {
-    super(new PooledConnectionProvider(hostAndPort, clientConfig, csCache, poolConfig),
-        clientConfig.getRedisProtocol(), csCache);
+    super(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache, poolConfig),
+        clientConfig.getRedisProtocol(), clientSideCache);
   }
 
   public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig,

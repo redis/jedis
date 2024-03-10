@@ -64,15 +64,16 @@ public class Connection implements Closeable {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
-    initializeConnection(clientConfig);
+    initializeFromClientConfig(clientConfig);
   }
 
-  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, ClientSideCache csCache) {
+  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig,
+      ClientSideCache clientSideCache) {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
-    initializeConnection(clientConfig);
-    initializeClientSideCache(csCache);
+    initializeFromClientConfig(clientConfig);
+    initializeClientSideCache(clientSideCache);
   }
 
   @Override
@@ -392,7 +393,7 @@ public class Connection implements Closeable {
     return true;
   }
 
-  private void initializeConnection(final JedisClientConfig config) {
+  private void initializeFromClientConfig(final JedisClientConfig config) {
     try {
       connect();
 

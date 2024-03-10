@@ -4,9 +4,9 @@ import java.net.URI;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.csc.CaffeineCSC;
+import redis.clients.jedis.csc.CaffeineClientSideCache;
 import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.GuavaCSC;
+import redis.clients.jedis.csc.GuavaClientSideCache;
 
 public final class JedisURIHelper {
 
@@ -137,12 +137,12 @@ public final class JedisURIHelper {
     }
 
     if (guava) {
-      GuavaCSC.Builder guavaBuilder = GuavaCSC.builder();
+      GuavaClientSideCache.Builder guavaBuilder = GuavaClientSideCache.builder();
       if (maxSize != null) guavaBuilder.maximumSize(maxSize);
       if (ttl != null) guavaBuilder.ttl(ttl);
       return guavaBuilder.build();
     } else if (caffeine) {
-      CaffeineCSC.Builder caffeineBuilder = CaffeineCSC.builder();
+      CaffeineClientSideCache.Builder caffeineBuilder = CaffeineClientSideCache.builder();
       if (maxSize != null) caffeineBuilder.maximumSize(maxSize);
       if (ttl != null) caffeineBuilder.ttl(ttl);
       return caffeineBuilder.build();

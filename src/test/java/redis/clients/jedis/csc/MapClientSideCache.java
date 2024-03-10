@@ -4,13 +4,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.args.Rawable;
-import redis.clients.jedis.csc.hash.PrimitiveArrayHashing;
+import redis.clients.jedis.csc.hash.PrimitiveArrayCommandHasher;
 
-public class MapCSC extends ClientSideCache {
+public class MapClientSideCache extends ClientSideCache {
 
-  private static final PrimitiveArrayHashing HASHING = new PrimitiveArrayHashing() {
+  private static final PrimitiveArrayCommandHasher HASHING = new PrimitiveArrayCommandHasher() {
 
     @Override
     protected long hashLongs(long[] longs) {
@@ -25,16 +23,16 @@ public class MapCSC extends ClientSideCache {
 
   private final Map<Long, Object> cache;
 
-  public MapCSC() {
+  public MapClientSideCache() {
     this(new HashMap<>());
   }
 
-  public MapCSC(Map<Long, Object> map) {
+  public MapClientSideCache(Map<Long, Object> map) {
     super(HASHING);
     this.cache = map;
   }
 
-  public MapCSC(Map<Long, Object> cache, ClientSideCacheable cacheable) {
+  public MapClientSideCache(Map<Long, Object> cache, ClientSideCacheable cacheable) {
     super(HASHING, cacheable);
     this.cache = cache;
   }

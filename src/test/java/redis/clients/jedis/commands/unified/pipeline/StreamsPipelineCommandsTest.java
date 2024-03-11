@@ -32,7 +32,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.BuilderFactory;
-import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
@@ -470,18 +469,16 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     Thread t = new Thread(new Runnable() {
       @Override
       public void run() {
-        try (JedisPooled blockJedis = createJedis()) {
-          long startTime = System.currentTimeMillis();
-          Pipeline blockPipe = blockJedis.pipelined();
-          Map<String, StreamEntryID> streamQuery = singletonMap("block0-stream", new StreamEntryID());
-          Response<List<Entry<String, List<StreamEntry>>>> read =
-              blockPipe.xread(XReadParams.xReadParams().block(0), streamQuery);
-          blockPipe.sync();
-          long endTime = System.currentTimeMillis();
-          assertTrue(endTime - startTime > 500);
-          assertNotNull(read);
-          readRef.set(read.get());
-        }
+        long startTime = System.currentTimeMillis();
+        Pipeline blockPipe = jedis.pipelined();
+        Map<String, StreamEntryID> streamQuery = singletonMap("block0-stream", new StreamEntryID());
+        Response<List<Entry<String, List<StreamEntry>>>> read =
+            blockPipe.xread(XReadParams.xReadParams().block(0), streamQuery);
+        blockPipe.sync();
+        long endTime = System.currentTimeMillis();
+        assertTrue(endTime - startTime > 500);
+        assertNotNull(read);
+        readRef.set(read.get());
       }
     }, "xread-block-0-thread");
     t.start();
@@ -1313,13 +1310,5 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals(1, consumer.getPending().size());
     List<Object> consumerPendingEntry = consumer.getPending().get(0);
     assertEquals(id1, consumerPendingEntry.get(0));
-  }
-
-  private JedisPooled createJedis() {
-    try {
-      return PooledCommandsTestHelper.getPooled();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
-    }
   }
 }

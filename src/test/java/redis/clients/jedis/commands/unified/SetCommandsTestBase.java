@@ -5,7 +5,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayCollectionContainsAll;
@@ -20,12 +19,12 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
-
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
 public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bfoo_same_hashslot = { 0x01, 0x02, 0x03, 0x04, 0x03, 0x00, 0x03, 0x1b };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
   final byte[] ba = { 0x0A };
@@ -357,29 +356,29 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   @Test
   public void sintercard() {
-    jedis.sadd("foo", "a");
-    jedis.sadd("foo", "b");
+    jedis.sadd("foo{.}", "a");
+    jedis.sadd("foo{.}", "b");
 
-    jedis.sadd("bar", "a");
-    jedis.sadd("bar", "b");
-    jedis.sadd("bar", "c");
+    jedis.sadd("bar{.}", "a");
+    jedis.sadd("bar{.}", "b");
+    jedis.sadd("bar{.}", "c");
 
-    long card = jedis.sintercard("foo", "bar");
+    long card = jedis.sintercard("foo{.}", "bar{.}");
     assertEquals(2, card);
-    long limitedCard = jedis.sintercard(1, "foo", "bar");
+    long limitedCard = jedis.sintercard(1, "foo{.}", "bar{.}");
     assertEquals(1, limitedCard);
 
     // Binary
     jedis.sadd(bfoo, ba);
     jedis.sadd(bfoo, bb);
 
-    jedis.sadd(bbar, ba);
-    jedis.sadd(bbar, bb);
-    jedis.sadd(bbar, bc);
+    jedis.sadd(bfoo_same_hashslot, ba);
+    jedis.sadd(bfoo_same_hashslot, bb);
+    jedis.sadd(bfoo_same_hashslot, bc);
 
-    long bcard = jedis.sintercard(bfoo, bbar);
+    long bcard = jedis.sintercard(bfoo, bfoo_same_hashslot);
     assertEquals(2, bcard);
-    long blimitedCard = jedis.sintercard(1, bfoo, bbar);
+    long blimitedCard = jedis.sintercard(1, bfoo, bfoo_same_hashslot);
     assertEquals(1, blimitedCard);
   }
 
@@ -545,11 +544,11 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     List<String> members = jedis.srandmember("foo", 2);
     members.sort(Comparator.naturalOrder());
-    assertEquals( Arrays.asList("a", "b"), members);
+    assertEquals(Arrays.asList("a", "b"), members);
 
     member = jedis.srandmember("bar");
     assertNull(member);
-    
+
     members = jedis.srandmember("bar", 2);
     assertEquals(0, members.size());
 
@@ -561,13 +560,13 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     assertTrue(Arrays.equals(ba, bmember) || Arrays.equals(bb, bmember));
     assertEquals(2, jedis.smembers(bfoo).size());
-    
+
     List<byte[]> bmembers = jedis.srandmember(bfoo, 2);
     assertEquals(2, bmembers.size());
 
     bmember = jedis.srandmember(bbar);
     assertNull(bmember);
-    
+
     members = jedis.srandmember("bbar", 2);
     assertEquals(0, members.size());
   }

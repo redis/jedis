@@ -16,9 +16,8 @@ import java.util.List;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
@@ -123,7 +122,7 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertEquals(expected, range);
 
     range = jedis.lrange("foo", 2, 1);
-    assertEquals(Collections.<String> emptyList(), range);
+    assertEquals(Collections.<String>emptyList(), range);
 
     // Binary
     jedis.rpush(bfoo, bA);
@@ -149,7 +148,7 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertByteArrayListEquals(bexpected, brange);
 
     brange = jedis.lrange(bfoo, 2, 1);
-    assertByteArrayListEquals(Collections.<byte[]> emptyList(), brange);
+    assertByteArrayListEquals(Collections.<byte[]>emptyList(), brange);
   }
 
   @Test
@@ -500,7 +499,7 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     new Thread(() -> {
       try {
         Thread.sleep(30);
-      } catch(InterruptedException e) {
+      } catch (InterruptedException e) {
         logger.error("", e);
       }
       jedis.lpush("foo", "bar");
@@ -620,7 +619,7 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     new Thread(() -> {
       try {
         Thread.sleep(30);
-      } catch(InterruptedException e) {
+      } catch (InterruptedException e) {
         logger.error("", e);
       }
       jedis.lpush("foo", "bar");
@@ -861,8 +860,8 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
 
   @Test
   public void lmpop() {
-    String mylist1 = "mylist1";
-    String mylist2 = "mylist2";
+    String mylist1 = "mylist1{.}";
+    String mylist2 = "mylist2{.}";
 
     // add elements to list
     jedis.lpush(mylist1, "one", "two", "three", "four", "five");
@@ -886,8 +885,8 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
 
   @Test
   public void blmpopSimple() {
-    String mylist1 = "mylist1";
-    String mylist2 = "mylist2";
+    String mylist1 = "mylist1{.}";
+    String mylist2 = "mylist2{.}";
 
     // add elements to list
     jedis.lpush(mylist1, "one", "two", "three", "four", "five");

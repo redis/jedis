@@ -4325,6 +4325,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
+  @Override
+  public TrackingInfo clientTrackingInfo() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "TRACKINGINFO");
+    return TrackingInfo.TRACKING_INFO_BUILDER.build(connection.getOne());
+  }
+
   public List<String> time() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.TIME);

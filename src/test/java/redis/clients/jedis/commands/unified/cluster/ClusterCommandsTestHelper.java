@@ -4,12 +4,14 @@ import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.Collections;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
 import redis.clients.jedis.args.ClusterResetType;
 import redis.clients.jedis.util.JedisClusterTestUtil;
+import redis.clients.jedis.util.RedisProtocolUtil;
 
 public class ClusterCommandsTestHelper {
 
@@ -62,7 +64,8 @@ public class ClusterCommandsTestHelper {
     JedisClusterTestUtil.waitForClusterReady(node1, node2, node2);
 
     return new JedisCluster(Collections.singleton(
-        new HostAndPort("127.0.0.1", nodeInfo1.getPort())), null, "cluster");
+        new HostAndPort("127.0.0.1", nodeInfo1.getPort())),
+        DefaultJedisClientConfig.builder().password("cluster").protocol(RedisProtocolUtil.getRedisProtocol()).build());
   }
 
   static void tearClusterDown() {

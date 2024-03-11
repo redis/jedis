@@ -5,6 +5,7 @@ import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.resps.TrackingInfo;
 
 /**
  * The interface contain all the commands about client.
@@ -170,4 +171,6 @@ public interface ClientCommands {
    * @return OK
    */
   String clientNoTouchOff();
+
+  TrackingInfo clientTrackingInfo();
 }

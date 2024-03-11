@@ -19,12 +19,15 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.args.UnblockType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.resps.TrackingInfo;
 
 public class ClientCommandsTest extends JedisCommandsTestBase {
 
@@ -277,6 +280,26 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, client.clientList(ClientType.SLAVE).split("\\n").length);
     assertEquals(1, client.clientList(ClientType.REPLICA).split("\\n").length);
     assertEquals(1, client.clientList(ClientType.PUBSUB).split("\\n").length);
+  }
+
+  @Test
+  public void trackingInfo() {
+    TrackingInfo trackingInfo = client.clientTrackingInfo();
+
+    assertEquals(1, trackingInfo.getFlags().size());
+    assertEquals(-1, trackingInfo.getRedirect());
+    assertEquals(0, trackingInfo.getPrefixes().size());
+  }
+
+  @Test
+  public void trackingInfoResp3() {
+    Jedis clientResp3 = new Jedis(hnp, DefaultJedisClientConfig.builder()
+            .protocol(RedisProtocol.RESP3).password("foobared").build());
+    TrackingInfo trackingInfo = clientResp3.clientTrackingInfo();
+
+    assertEquals(1, trackingInfo.getFlags().size());
+    assertEquals(-1, trackingInfo.getRedirect());
+    assertEquals(0, trackingInfo.getPrefixes().size());
   }
 
   private void assertDisconnected(Jedis j) {

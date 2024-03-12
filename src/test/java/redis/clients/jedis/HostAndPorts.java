@@ -36,9 +36,9 @@ public final class HostAndPorts {
     clusterHostAndPortList.add(new HostAndPort("localhost", 7383));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7384));
 
-    stableClusterHostAndPortList.add(new HostAndPort("localhost", 10379));
-    stableClusterHostAndPortList.add(new HostAndPort("localhost", 10380));
-    stableClusterHostAndPortList.add(new HostAndPort("localhost", 10381));
+    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7479));
+    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7480));
+    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7481));
   }
 
   public static List<HostAndPort> parseHosts(String envHosts,

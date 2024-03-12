@@ -280,7 +280,7 @@ define REDIS_STABLE_CLUSTER_NODE1_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
-port 10379
+port 7479
 cluster-node-timeout 15000
 pidfile /tmp/redis_stable_cluster_node1.pid
 logfile /tmp/redis_stable_cluster_node1.log
@@ -294,7 +294,7 @@ define REDIS_STABLE_CLUSTER_NODE2_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
-port 10380
+port 7480
 cluster-node-timeout 15000
 pidfile /tmp/redis_stable_cluster_node2.pid
 logfile /tmp/redis_stable_cluster_node2.log
@@ -308,7 +308,7 @@ define REDIS_STABLE_CLUSTER_NODE3_CONF
 daemonize yes
 protected-mode no
 requirepass cluster
-port 10381
+port 7481
 cluster-node-timeout 15000
 pidfile /tmp/redis_stable_cluster_node3.pid
 logfile /tmp/redis_stable_cluster_node3.log
@@ -445,7 +445,7 @@ start: stunnel cleanup
 	echo "$$REDIS_STABLE_CLUSTER_NODE3_CONF" | redis-server -
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
-	redis-cli -a cluster --cluster create 127.0.0.1:10379 127.0.0.1:10380 127.0.0.1:10381 --cluster-yes
+	redis-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null

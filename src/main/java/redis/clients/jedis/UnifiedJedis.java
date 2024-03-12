@@ -825,6 +825,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   @Override
   public String getSet(String key, String value) {
     return executeCommand(commandObjects.getSet(key, value));
@@ -845,6 +849,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.psetex(key, milliseconds, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   @Override
   public byte[] getSet(byte[] key, byte[] value) {
     return executeCommand(commandObjects.getSet(key, value));

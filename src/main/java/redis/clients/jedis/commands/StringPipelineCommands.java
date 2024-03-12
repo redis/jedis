@@ -16,6 +16,8 @@ public interface StringPipelineCommands extends BitPipelineCommands {
 
   Response<String> get(String key);
 
+  Response<String> setGet(String key, String value);
+
   Response<String> setGet(String key, String value, SetParams params);
 
   Response<String> getDel(String key);
@@ -26,6 +28,10 @@ public interface StringPipelineCommands extends BitPipelineCommands {
 
   Response<String> getrange(String key, long startOffset, long endOffset);
 
+  /**
+   * @deprecated Use {@link StringPipelineCommands#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   Response<String> getSet(String key, String value);
 
   Response<Long> setnx(String key, String value);

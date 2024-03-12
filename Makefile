@@ -373,15 +373,6 @@ connect = 127.0.0.1:7382
 [redis_cluster_5]
 accept = 127.0.0.1:8383
 connect = 127.0.0.1:7383
-[redis_stable_cluster_1]
-accept = 127.0.0.1:11379
-connect = 127.0.0.1:10379
-[redis_stable_cluster_2]
-accept = 127.0.0.1:11380
-connect = 127.0.001:10380
-[redis_stable_cluster_3]
-accept = 127.0.0.1:11381
-connect = 127.0.001:10381
 [redis_sentinel_5]
 accept = 127.0.0.1:36383
 connect = 127.0.0.1:26383

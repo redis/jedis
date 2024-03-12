@@ -10,9 +10,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,23 +23,14 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
 
   private final Logger logger = LoggerFactory.getLogger(getClass());
 
-  @BeforeClass
-  public static void prepare() throws InterruptedException {
-    jedis = ClusterCommandsTestHelper.initAndGetCluster();
-  }
-
-  @AfterClass
-  public static void closeCluster() {
-    jedis.close();
-  }
-
-  @AfterClass
-  public static void resetCluster() {
-    ClusterCommandsTestHelper.tearClusterDown();
-  }
-
   @Before
   public void setUp() {
+    jedis = ClusterCommandsTestHelper.getCleanCluster();
+  }
+
+  @After
+  public void tearDown() {
+    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 

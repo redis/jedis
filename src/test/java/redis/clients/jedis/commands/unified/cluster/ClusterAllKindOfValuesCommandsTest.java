@@ -10,9 +10,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import redis.clients.jedis.commands.unified.AllKindOfValuesCommandsTestBase;
 import redis.clients.jedis.params.ScanParams;
@@ -20,23 +19,14 @@ import redis.clients.jedis.resps.ScanResult;
 
 public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsTestBase {
 
-  @BeforeClass
-  public static void prepare() throws InterruptedException {
-    jedis = ClusterCommandsTestHelper.initAndGetCluster();
-  }
-
-  @AfterClass
-  public static void closeCluster() {
-    jedis.close();
-  }
-
-  @AfterClass
-  public static void resetCluster() {
-    ClusterCommandsTestHelper.tearClusterDown();
-  }
-
   @Before
   public void setUp() {
+    jedis = ClusterCommandsTestHelper.getCleanCluster();
+  }
+
+  @After
+  public void tearDown() {
+    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 

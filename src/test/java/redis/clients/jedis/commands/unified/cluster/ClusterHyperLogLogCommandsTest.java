@@ -2,32 +2,22 @@ package redis.clients.jedis.commands.unified.cluster;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.commands.unified.HyperLogLogCommandsTestBase;
 
 public class ClusterHyperLogLogCommandsTest extends HyperLogLogCommandsTestBase {
 
-  @BeforeClass
-  public static void prepare() throws InterruptedException {
-    jedis = ClusterCommandsTestHelper.initAndGetCluster();
-  }
-
-  @AfterClass
-  public static void closeCluster() {
-    jedis.close();
-  }
-
-  @AfterClass
-  public static void resetCluster() {
-    ClusterCommandsTestHelper.tearClusterDown();
-  }
-
   @Before
   public void setUp() {
+    jedis = ClusterCommandsTestHelper.getCleanCluster();
+  }
+
+  @After
+  public void tearDown() {
+    jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
 

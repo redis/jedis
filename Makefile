@@ -274,6 +274,50 @@ cluster-enabled yes
 cluster-config-file /tmp/redis_cluster_node5.conf
 endef
 
+# STABLE CLUSTER REDIS NODES
+# The structure of this cluster is not changed by the tests!
+define REDIS_STABLE_CLUSTER_NODE1_CONF
+daemonize yes
+protected-mode no
+requirepass cluster
+port 7479
+cluster-node-timeout 15000
+pidfile /tmp/redis_stable_cluster_node1.pid
+logfile /tmp/redis_stable_cluster_node1.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_stable_cluster_node1.conf
+endef
+
+define REDIS_STABLE_CLUSTER_NODE2_CONF
+daemonize yes
+protected-mode no
+requirepass cluster
+port 7480
+cluster-node-timeout 15000
+pidfile /tmp/redis_stable_cluster_node2.pid
+logfile /tmp/redis_stable_cluster_node2.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_stable_cluster_node2.conf
+endef
+
+define REDIS_STABLE_CLUSTER_NODE3_CONF
+daemonize yes
+protected-mode no
+requirepass cluster
+port 7481
+cluster-node-timeout 15000
+pidfile /tmp/redis_stable_cluster_node3.pid
+logfile /tmp/redis_stable_cluster_node3.log
+save ""
+appendonly no
+cluster-enabled yes
+cluster-config-file /tmp/redis_stable_cluster_node3.conf
+endef
+
 # UDS REDIS NODES
 define REDIS_UDS
 daemonize yes
@@ -355,6 +399,9 @@ export REDIS_CLUSTER_NODE2_CONF
 export REDIS_CLUSTER_NODE3_CONF
 export REDIS_CLUSTER_NODE4_CONF
 export REDIS_CLUSTER_NODE5_CONF
+export REDIS_STABLE_CLUSTER_NODE1_CONF
+export REDIS_STABLE_CLUSTER_NODE2_CONF
+export REDIS_STABLE_CLUSTER_NODE3_CONF
 export REDIS_UDS
 export REDIS_UNAVAILABLE_CONF
 export STUNNEL_CONF
@@ -393,8 +440,12 @@ start: stunnel cleanup
 	echo "$$REDIS_CLUSTER_NODE3_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE4_CONF" | redis-server -
 	echo "$$REDIS_CLUSTER_NODE5_CONF" | redis-server -
+	echo "$$REDIS_STABLE_CLUSTER_NODE1_CONF" | redis-server -
+	echo "$$REDIS_STABLE_CLUSTER_NODE2_CONF" | redis-server -
+	echo "$$REDIS_STABLE_CLUSTER_NODE3_CONF" | redis-server -
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
+	redis-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -426,6 +477,9 @@ stop:
 	kill `cat /tmp/redis_cluster_node3.pid` || true
 	kill `cat /tmp/redis_cluster_node4.pid` || true
 	kill `cat /tmp/redis_cluster_node5.pid` || true
+	kill `cat /tmp/redis_stable_cluster_node1.pid`
+	kill `cat /tmp/redis_stable_cluster_node2.pid`
+	kill `cat /tmp/redis_stable_cluster_node3.pid`
 	kill `cat /tmp/redis_uds.pid` || true
 	kill `cat /tmp/stunnel.pid` || true
 	[ -f /tmp/redis_unavailable.pid ] && kill `cat /tmp/redis_unavailable.pid` || true
@@ -439,6 +493,9 @@ stop:
 	rm -f /tmp/redis_cluster_node3.conf
 	rm -f /tmp/redis_cluster_node4.conf
 	rm -f /tmp/redis_cluster_node5.conf
+	rm -f /tmp/redis_stable_cluster_node1.conf
+	rm -f /tmp/redis_stable_cluster_node2.conf
+	rm -f /tmp/redis_stable_cluster_node3.conf
 
 test: compile-module start
 	sleep 2

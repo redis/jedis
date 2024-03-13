@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.unified.cluster;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,10 +15,17 @@ import org.junit.Test;
 import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZParams;
+import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.KeyValue;
 
 public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
+
+  final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bfoo_same_hashslot = { 0x01, 0x02, 0x03, 0x04, 0x03, 0x00, 0x03, 0x1b };
+  final byte[] ba = { 0x0A };
+  final byte[] bb = { 0x0B };
+  final byte[] bc = { 0x0C };
 
   @Before
   public void setUp() {
@@ -179,6 +187,57 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     assertEquals(0, jedis.zdiffstore("{bar}3", "{bar}1", "{bar}2"));
     assertEquals(1, jedis.zdiffstore("bar{:}3", "foo{:}", "bar{:}"));
     assertEquals(Collections.singletonList("b"), jedis.zrange("bar{:}3", 0, -1));
+  }
+
+  @Test
+  public void zrangestore() {
+    jedis.zadd("foo{.}", 1, "aa");
+    jedis.zadd("foo{.}", 2, "c");
+    jedis.zadd("foo{.}", 3, "bb");
+
+    long stored = jedis.zrangestore("bar{.}", "foo{.}", ZRangeParams.zrangeByScoreParams(1, 2));
+    assertEquals(2, stored);
+
+    List<String> range = jedis.zrange("bar{.}", 0, -1);
+    List<String> expected = new ArrayList<>();
+    expected.add("aa");
+    expected.add("c");
+    assertEquals(expected, range);
+
+    // Binary
+    jedis.zadd(bfoo, 1d, ba);
+    jedis.zadd(bfoo, 10d, bb);
+    jedis.zadd(bfoo, 0.1d, bc);
+    jedis.zadd(bfoo, 2d, ba);
+
+    long bstored = jedis.zrangestore(bfoo_same_hashslot, bfoo, ZRangeParams.zrangeParams(0, 1).rev());
+    assertEquals(2, bstored);
+
+    List<byte[]> brange = jedis.zrevrange(bfoo_same_hashslot, 0, 1);
+    List<byte[]> bexpected = new ArrayList<>();
+    bexpected.add(bb);
+    bexpected.add(ba);
+    assertByteArrayListEquals(bexpected, brange);
+  }
+
+  @Test
+  public void zintercard() {
+    jedis.zadd("foo{.}", 1, "a");
+    jedis.zadd("foo{.}", 2, "b");
+    jedis.zadd("bar{.}", 2, "a");
+    jedis.zadd("bar{.}", 1, "b");
+
+    assertEquals(2, jedis.zintercard("foo{.}", "bar{.}"));
+    assertEquals(1, jedis.zintercard(1, "foo{.}", "bar{.}"));
+
+    // Binary
+    jedis.zadd(bfoo, 1, ba);
+    jedis.zadd(bfoo, 2, bb);
+    jedis.zadd(bfoo_same_hashslot, 2, ba);
+    jedis.zadd(bfoo_same_hashslot, 2, bb);
+
+    assertEquals(2, jedis.zintercard(bfoo, bfoo_same_hashslot));
+    assertEquals(1, jedis.zintercard(1, bfoo, bfoo_same_hashslot));
   }
 
 }

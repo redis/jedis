@@ -1,17 +1,17 @@
 package redis.clients.jedis.commands.unified;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.junit.Test;
-import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.params.GetExParams;
+
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.GetExParams;
 
 public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
   @Test
@@ -239,19 +239,19 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   public void lcs() {
-    jedis.mset("key1{.}", "ohmytext", "key2{.}", "mynewtext");
+    jedis.mset("key1", "ohmytext", "key2", "mynewtext");
 
-    LCSMatchResult stringMatchResult = jedis.lcs("key1{.}", "key2{.}",
-        LCSParams.LCSParams());
+    LCSMatchResult stringMatchResult = jedis.lcs("key1", "key2",
+            LCSParams.LCSParams());
     assertEquals("mytext", stringMatchResult.getMatchString());
 
-    stringMatchResult = jedis.lcs("key1{.}", "key2{.}",
-        LCSParams.LCSParams().idx().withMatchLen());
+    stringMatchResult = jedis.lcs( "key1", "key2",
+            LCSParams.LCSParams().idx().withMatchLen());
     assertEquals(stringMatchResult.getLen(), 6);
     assertEquals(2, stringMatchResult.getMatches().size());
 
-    stringMatchResult = jedis.lcs("key1{.}", "key2{.}",
-        LCSParams.LCSParams().idx().minMatchLen(10));
+    stringMatchResult = jedis.lcs( "key1", "key2",
+            LCSParams.LCSParams().idx().minMatchLen(10));
     assertEquals(0, stringMatchResult.getMatches().size());
   }
 

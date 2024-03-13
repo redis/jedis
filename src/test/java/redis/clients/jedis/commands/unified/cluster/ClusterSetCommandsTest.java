@@ -12,6 +12,12 @@ import redis.clients.jedis.commands.unified.SetCommandsTestBase;
 
 public class ClusterSetCommandsTest extends SetCommandsTestBase {
 
+  final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  final byte[] bfoo_same_hashslot = { 0x01, 0x02, 0x03, 0x04, 0x03, 0x00, 0x03, 0x1b };
+  final byte[] ba = { 0x0A };
+  final byte[] bb = { 0x0B };
+  final byte[] bc = { 0x0C };
+
   @Before
   public void setUp() {
     jedis = ClusterCommandsTestHelper.getCleanCluster();
@@ -161,6 +167,34 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
     long status = jedis.sdiffstore("tar{.}", "foo{.}", "bar{.}", "car{.}");
     assertEquals(2, status);
     assertEquals(expected, jedis.smembers("tar{.}"));
+  }
+
+  @Test
+  public void sintercard() {
+    jedis.sadd("foo{.}", "a");
+    jedis.sadd("foo{.}", "b");
+
+    jedis.sadd("bar{.}", "a");
+    jedis.sadd("bar{.}", "b");
+    jedis.sadd("bar{.}", "c");
+
+    long card = jedis.sintercard("foo{.}", "bar{.}");
+    assertEquals(2, card);
+    long limitedCard = jedis.sintercard(1, "foo{.}", "bar{.}");
+    assertEquals(1, limitedCard);
+
+    // Binary
+    jedis.sadd(bfoo, ba);
+    jedis.sadd(bfoo, bb);
+
+    jedis.sadd(bfoo_same_hashslot, ba);
+    jedis.sadd(bfoo_same_hashslot, bb);
+    jedis.sadd(bfoo_same_hashslot, bc);
+
+    long bcard = jedis.sintercard(bfoo, bfoo_same_hashslot);
+    assertEquals(2, bcard);
+    long blimitedCard = jedis.sintercard(1, bfoo, bfoo_same_hashslot);
+    assertEquals(1, blimitedCard);
   }
 
 }

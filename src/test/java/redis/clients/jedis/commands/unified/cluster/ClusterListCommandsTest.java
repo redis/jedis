@@ -249,4 +249,54 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
     assertEquals(Collections.singletonList("bar3"), jedis.lrange("{|}bar", 0, -1));
     assertEquals(Arrays.asList("bar1", "bar2"), jedis.lrange("{|}foo", 0, -1));
   }
+
+  @Test
+  public void lmpop() {
+    String mylist1 = "mylist1{.}";
+    String mylist2 = "mylist2{.}";
+
+    // add elements to list
+    jedis.lpush(mylist1, "one", "two", "three", "four", "five");
+    jedis.lpush(mylist2, "one", "two", "three", "four", "five");
+
+    KeyValue<String, List<String>> elements = jedis.lmpop(ListDirection.LEFT, mylist1, mylist2);
+    assertEquals(mylist1, elements.getKey());
+    assertEquals(1, elements.getValue().size());
+
+    elements = jedis.lmpop(ListDirection.LEFT, 5, mylist1, mylist2);
+    assertEquals(mylist1, elements.getKey());
+    assertEquals(4, elements.getValue().size());
+
+    elements = jedis.lmpop(ListDirection.RIGHT, 100, mylist1, mylist2);
+    assertEquals(mylist2, elements.getKey());
+    assertEquals(5, elements.getValue().size());
+
+    elements = jedis.lmpop(ListDirection.RIGHT, mylist1, mylist2);
+    assertNull(elements);
+  }
+
+  @Test
+  public void blmpopSimple() {
+    String mylist1 = "mylist1{.}";
+    String mylist2 = "mylist2{.}";
+
+    // add elements to list
+    jedis.lpush(mylist1, "one", "two", "three", "four", "five");
+    jedis.lpush(mylist2, "one", "two", "three", "four", "five");
+
+    KeyValue<String, List<String>> elements = jedis.blmpop(1L, ListDirection.LEFT, mylist1, mylist2);
+    assertEquals(mylist1, elements.getKey());
+    assertEquals(1, elements.getValue().size());
+
+    elements = jedis.blmpop(1L, ListDirection.LEFT, 5, mylist1, mylist2);
+    assertEquals(mylist1, elements.getKey());
+    assertEquals(4, elements.getValue().size());
+
+    elements = jedis.blmpop(1L, ListDirection.RIGHT, 100, mylist1, mylist2);
+    assertEquals(mylist2, elements.getKey());
+    assertEquals(5, elements.getValue().size());
+
+    elements = jedis.blmpop(1L, ListDirection.RIGHT, mylist1, mylist2);
+    assertNull(elements);
+  }
 }

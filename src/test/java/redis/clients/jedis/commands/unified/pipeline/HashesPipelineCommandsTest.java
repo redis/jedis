@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper;
 
-public class PipelineHashesCommandsTest extends PipelineCommandsTestBase {
+public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
 
   @BeforeClass
   public static void prepare() throws InterruptedException {

@@ -31,7 +31,7 @@ import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class PipelineGeoCommandsTest extends PipelineCommandsTestBase {
+public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
 
   protected final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   protected final byte[] bA = { 0x0A };

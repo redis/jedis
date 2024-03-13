@@ -55,7 +55,7 @@ import redis.clients.jedis.resps.StreamInfo;
 import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.util.SafeEncoder;
 
-public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
+public class PipelineStreamsCommandsTest extends PipelineCommandsTestBase {
 
   @BeforeClass
   public static void prepare() throws InterruptedException {

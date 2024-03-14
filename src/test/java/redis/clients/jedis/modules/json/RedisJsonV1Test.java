@@ -37,6 +37,9 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     RedisModuleCommandsTestBase.prepare();
   }
 
+  /**
+   * V1 of the JSON module only works with RESP2, hence this test is not parameterized.
+   */
   public RedisJsonV1Test() {
     super(RedisProtocol.RESP2);
   }

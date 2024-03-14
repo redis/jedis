@@ -28,12 +28,21 @@ public abstract class RedisModuleCommandsTestBase {
     return CommandsTestsParameters.respVersions();
   }
 
-  private static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 52567);
+  private static final String address = System.getProperty("modulesDocker", Protocol.DEFAULT_HOST + ':' + 6479);
   protected static final HostAndPort hnp = HostAndPort.from(address);
   protected final RedisProtocol protocol;
 
   protected UnifiedJedis client;
 
+  /**
+   * The RESP protocol is to be injected by the subclasses, usually via JUnit
+   * parameterized tests, because most of the subclassed tests are meant to be
+   * executed against multiple RESP versions. For the special cases where a single
+   * RESP version is relevant, we still force the subclass to be explicit and
+   * call this constructor.
+   *
+   * @param protocol The RESP protocol to use during the tests.
+   */
   public RedisModuleCommandsTestBase(RedisProtocol protocol) {
     this.protocol = protocol;
   }

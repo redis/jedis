@@ -786,7 +786,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> sdiffStore(String dstKey, String... keys) {
+  public Response<Long> sdiffstore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 

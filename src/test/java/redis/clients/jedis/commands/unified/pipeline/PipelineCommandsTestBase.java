@@ -15,7 +15,9 @@ public abstract class PipelineCommandsTestBase {
 
   /**
    * Input data for parameterized tests. In principle all subclasses of this
-   * class should be parameterized tests, to run with several version of RESP.
+   * class should be parameterized tests, to run with several versions of RESP.
+   *
+   * @see CommandsTestsParameters#respVersions()
    */
   @Parameterized.Parameters
   public static Collection<Object[]> data() {

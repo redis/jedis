@@ -12,12 +12,6 @@ public class PooledCommandsTestHelper {
   private static final HostAndPort nodeInfo = HostAndPorts.getRedisServers().get(0);
 
   public static JedisPooled getPooled(RedisProtocol redisProtocol) {
-    try (Jedis node = new Jedis(nodeInfo)) {
-      node.auth("foobared");
-      //node.flushAll();
-    }
-
-    //return new JedisPooled(nodeInfo.getHost(), nodeInfo.getPort(), null, "foobared");
     return new JedisPooled(nodeInfo, DefaultJedisClientConfig.builder()
         .protocol(redisProtocol).password("foobared").build());
   }

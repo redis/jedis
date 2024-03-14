@@ -63,22 +63,16 @@ public class CommandObjects {
     return new CommandArguments(command);
   }
 
-  private final CommandObject<String> PING_COMMAND_OBJECT = new CommandObject<>(commandArguments(PING), BuilderFactory.STRING);
-
   public final CommandObject<String> ping() {
-    return PING_COMMAND_OBJECT;
+    return new CommandObject<>(commandArguments(PING), BuilderFactory.STRING);
   }
-
-  private final CommandObject<String> FLUSHALL_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHALL), BuilderFactory.STRING);
 
   public final CommandObject<String> flushAll() {
-    return FLUSHALL_COMMAND_OBJECT;
+    return new CommandObject<>(commandArguments(FLUSHALL), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> FLUSHDB_COMMAND_OBJECT = new CommandObject<>(commandArguments(FLUSHDB), BuilderFactory.STRING);
-
   public final CommandObject<String> flushDB() {
-    return FLUSHDB_COMMAND_OBJECT;
+    return new CommandObject<>(commandArguments(FLUSHDB), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> configSet(String parameter, String value) {
@@ -2818,10 +2812,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).processKey(sampleKey), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> SCRIPT_FLUSH_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(FLUSH), BuilderFactory.STRING);
-
   public final CommandObject<String> scriptFlush() {
-    return SCRIPT_FLUSH_COMMAND_OBJECT;
+    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptFlush(String sampleKey) {
@@ -2832,10 +2824,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).processKey(sampleKey), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> SCRIPT_KILL_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
-
   public final CommandObject<String> scriptKill() {
-    return SCRIPT_KILL_COMMAND_OBJECT;
+    return new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptKill(String sampleKey) {
@@ -2863,11 +2853,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SCRIPT).add(KILL).processKey(sampleKey), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT
-      = new CommandObject<>(commandArguments(SLOWLOG).add(Keyword.RESET), BuilderFactory.STRING);
-
   public final CommandObject<String> slowlogReset() {
-    return SLOWLOG_RESET_COMMAND_OBJECT;
+    return new CommandObject<>(commandArguments(SLOWLOG).add(Keyword.RESET), BuilderFactory.STRING);
   }
 
   public final CommandObject<Object> fcall(String name, List<String> keys, List<String> args) {

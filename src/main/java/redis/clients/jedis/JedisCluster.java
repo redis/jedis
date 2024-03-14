@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
@@ -220,6 +221,10 @@ public class JedisCluster extends UnifiedJedis {
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol);
+  }
+
+  public JedisCluster(ClusterCommandExecutor executor, ClusterConnectionProvider provider, ClusterCommandObjects commandObjects, RedisProtocol protocol) {
+    super(executor, provider, commandObjects, protocol);
   }
 
   public Map<String, ConnectionPool> getClusterNodes() {

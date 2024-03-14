@@ -28,7 +28,11 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
   }
 
   public Pipeline(Connection connection, boolean closeConnection) {
-    super(new CommandObjects());
+    this(connection, new CommandObjects(), closeConnection);
+  }
+
+  public Pipeline(Connection connection, CommandObjects commandObjects, boolean closeConnection) {
+    super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
     RedisProtocol proto = this.connection.getRedisProtocol();

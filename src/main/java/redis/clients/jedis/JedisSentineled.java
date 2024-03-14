@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 
 public class JedisSentineled extends UnifiedJedis {
@@ -21,6 +22,10 @@ public class JedisSentineled extends UnifiedJedis {
 
   public JedisSentineled(SentineledConnectionProvider sentineledConnectionProvider) {
     super(sentineledConnectionProvider);
+  }
+
+  public JedisSentineled(CommandExecutor executor, SentineledConnectionProvider sentineledConnectionProvider, CommandObjects commandObjects, RedisProtocol redisProtocol) {
+    super(executor, sentineledConnectionProvider, commandObjects, redisProtocol);
   }
 
   public HostAndPort getCurrentMaster() {

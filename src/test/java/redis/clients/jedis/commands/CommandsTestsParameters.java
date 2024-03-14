@@ -9,7 +9,7 @@ public class CommandsTestsParameters {
 
   /**
    * RESP protocol versions we want our commands related tests to run against.
-   * {@code null} means to use the default protocol chosen by the Redis server.
+   * {@code null} means to use the default protocol which is assumed to be RESP2.
    */
   public static Collection<Object[]> respVersions() {
     return Arrays.asList(

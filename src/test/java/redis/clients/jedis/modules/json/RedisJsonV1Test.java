@@ -26,6 +26,9 @@ import redis.clients.jedis.json.commands.RedisJsonV1Commands;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.JsonObjectMapperTestUtil;
 
+/**
+ * V1 of the RedisJSON is only supported with RESP2, hence this test is not parameterized.
+ */
 public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   private final Gson gson = new Gson();
@@ -37,9 +40,6 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
     RedisModuleCommandsTestBase.prepare();
   }
 
-  /**
-   * V1 of the JSON module only works with RESP2, hence this test is not parameterized.
-   */
   public RedisJsonV1Test() {
     super(RedisProtocol.RESP2);
   }

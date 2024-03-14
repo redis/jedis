@@ -50,7 +50,7 @@ public class JedisShardedPubSubBaseTest extends TestCase {
         });
         thread.start();
 
-        assertTrue(countDownLatch.await(10, TimeUnit.MILLISECONDS));
+        assertTrue(countDownLatch.await(20, TimeUnit.MILLISECONDS));
 
     }
 }

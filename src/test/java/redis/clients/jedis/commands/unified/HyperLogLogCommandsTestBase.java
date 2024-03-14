@@ -4,9 +4,14 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class HyperLogLogCommandsTestBase extends UnifiedJedisCommandsTestBase {
+
+  public HyperLogLogCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void pfadd() {

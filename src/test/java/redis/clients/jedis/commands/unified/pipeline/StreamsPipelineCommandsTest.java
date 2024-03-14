@@ -28,14 +28,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import org.hamcrest.Matchers;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
-import redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
@@ -55,16 +55,11 @@ import redis.clients.jedis.resps.StreamInfo;
 import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
-  @BeforeClass
-  public static void prepare() throws InterruptedException {
-    jedis = PooledCommandsTestHelper.getPooled();
-  }
-
-  @AfterClass
-  public static void cleanUp() {
-    jedis.close();
+  public StreamsPipelineCommandsTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Test

@@ -9,6 +9,7 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 import java.util.*;
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.ScanResult;
@@ -33,6 +34,10 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
+
+  public SortedSetCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void zadd() {

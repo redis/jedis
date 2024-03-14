@@ -11,17 +11,25 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.commands.unified.GeoCommandsTestBase;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 
+@RunWith(Parameterized.class)
 public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
+
+  public ClusterGeoCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster();
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @After

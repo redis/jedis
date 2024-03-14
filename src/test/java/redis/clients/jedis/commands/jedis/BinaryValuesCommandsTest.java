@@ -18,12 +18,16 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
@@ -34,6 +38,10 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   int expireSeconds = 2;
   long expireMillis = expireSeconds * 1000;
   byte[] binaryValue;
+
+  public BinaryValuesCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   public void startUp() {

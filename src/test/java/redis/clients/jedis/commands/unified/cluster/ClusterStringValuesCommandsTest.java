@@ -8,15 +8,23 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.StringValuesCommandsTestBase;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
+@RunWith(Parameterized.class)
 public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBase {
+
+  public ClusterStringValuesCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster();
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @After

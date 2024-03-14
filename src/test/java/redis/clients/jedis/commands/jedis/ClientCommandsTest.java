@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
@@ -29,12 +31,17 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 import redis.clients.jedis.resps.TrackingInfo;
 
+@RunWith(Parameterized.class)
 public class ClientCommandsTest extends JedisCommandsTestBase {
 
   private final String clientName = "fancy_jedis_name";
   private final Pattern pattern = Pattern.compile("\\bname=" + clientName + "\\b");
 
   private Jedis client;
+
+  public ClientCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   @Override

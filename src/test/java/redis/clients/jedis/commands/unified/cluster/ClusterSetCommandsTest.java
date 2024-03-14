@@ -8,8 +8,12 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.SetCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class ClusterSetCommandsTest extends SetCommandsTestBase {
 
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
@@ -18,9 +22,13 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
   final byte[] bb = { 0x0B };
   final byte[] bc = { 0x0C };
 
+  public ClusterSetCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Before
   public void setUp() {
-    jedis = ClusterCommandsTestHelper.getCleanCluster();
+    jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
   }
 
   @After

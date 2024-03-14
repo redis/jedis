@@ -8,8 +8,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
@@ -18,6 +21,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class GeoCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bA = { 0x0A };
@@ -27,6 +31,10 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
   final byte[] bNotexist = { 0x0F };
 
   private static final double EPSILON = 1e-5;
+
+  public GeoCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void geoadd() {

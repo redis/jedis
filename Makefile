@@ -413,7 +413,7 @@ ifndef STUNNEL_BIN
 endif
 export SKIP_SSL
 
-start: stunnel cleanup
+start: stunnel cleanup compile-module
 	echo "$$REDIS1_CONF" | redis-server -
 	echo "$$REDIS2_CONF" | redis-server -
 	echo "$$REDIS3_CONF" | redis-server -
@@ -446,6 +446,7 @@ start: stunnel cleanup
 	echo "$$REDIS_UDS" | redis-server -
 	echo "$$REDIS_UNAVAILABLE_CONF" | redis-server -
 	redis-cli -a cluster --cluster create 127.0.0.1:7479 127.0.0.1:7480 127.0.0.1:7481 --cluster-yes
+	docker run -p 6479:6379 --name jedis-stack -d redis/redis-stack-server:edge
 
 cleanup:
 	- rm -vf /tmp/redis_cluster_node*.conf 2>/dev/null
@@ -455,6 +456,7 @@ stunnel:
 	@if [ -e "$$STUNNEL_BIN" ]; then\
 	    echo "$$STUNNEL_CONF" | stunnel -fd 0;\
 	fi
+
 stop:
 	kill `cat /tmp/redis1.pid`
 	kill `cat /tmp/redis2.pid`
@@ -496,29 +498,32 @@ stop:
 	rm -f /tmp/redis_stable_cluster_node1.conf
 	rm -f /tmp/redis_stable_cluster_node2.conf
 	rm -f /tmp/redis_stable_cluster_node3.conf
+	docker rm -f jedis-stack
 
-test: compile-module start
-	sleep 2
+test: | start mvn-test stop
+
+mvn-test:
 	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
-	make stop
 
-package: start
+package: | start mvn-package stop
+
+mvn-package:
 	mvn clean package
-	make stop
 
-deploy: start
+deploy: | start mvn-deploy stop
+
+mvn-deploy:
 	mvn clean deploy
-	make stop
 
 format:
 	mvn java-formatter:format
 
-release:
-	make start
+release: | start mvn-release stop
+
+mvn-release:
 	mvn release:clean
 	mvn release:prepare
 	mvn release:perform -DskipTests
-	make stop
 
 system-setup:
 	sudo apt install -y gcc g++

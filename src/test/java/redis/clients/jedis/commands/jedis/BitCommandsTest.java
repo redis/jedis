@@ -8,15 +8,23 @@ import static org.junit.Assert.fail;
 
 import java.util.List;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class BitCommandsTest extends JedisCommandsTestBase {
+
+  public BitCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void setAndgetbit() {

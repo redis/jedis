@@ -10,19 +10,27 @@ import org.junit.Assert;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private final String key = "mylist";
   private final byte[] binaryKey = SafeEncoder.encode(key);
   private final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
   private Jedis lfuJedis;
+
+  public ObjectCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   @Override

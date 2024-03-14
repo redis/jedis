@@ -24,6 +24,9 @@ import java.util.UUID;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -31,12 +34,17 @@ import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class PipeliningTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   private static final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x11, 0x12, 0x13, 0x14 };
   private static final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   private static final byte[] bbaz = { 0x09, 0x0A, 0x0B, 0x0C };
+
+  public PipeliningTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void pipeline() {

@@ -9,6 +9,8 @@ import static org.junit.Assert.fail;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -35,6 +37,7 @@ import redis.clients.jedis.search.aggr.FtAggregateIteration;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TextField;
 
+@RunWith(Parameterized.class)
 public class AggregationTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "aggbindex";
@@ -48,6 +51,10 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public AggregationTest(RedisProtocol redisProtocol) {
+    super(redisProtocol);
+  }
 
   private void addDocument(Document doc) {
     String key = doc.getId();

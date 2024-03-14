@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,8 +25,10 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.commands.RedisJsonV1Commands;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.util.JsonObjectMapperTestUtil;
-import redis.clients.jedis.util.RedisProtocolUtil;
 
+/**
+ * V1 of the RedisJSON is only supported with RESP2, hence this test is not parameterized.
+ */
 public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   private final Gson gson = new Gson();
@@ -36,8 +37,11 @@ public class RedisJsonV1Test extends RedisModuleCommandsTestBase {
 
   @BeforeClass
   public static void prepare() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
     RedisModuleCommandsTestBase.prepare();
+  }
+
+  public RedisJsonV1Test() {
+    super(RedisProtocol.RESP2);
   }
 
   @Before

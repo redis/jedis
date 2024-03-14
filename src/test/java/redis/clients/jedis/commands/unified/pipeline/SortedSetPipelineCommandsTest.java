@@ -20,12 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
-import redis.clients.jedis.commands.unified.pooled.PooledCommandsTestHelper;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
@@ -37,7 +37,9 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
+
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
   final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
@@ -54,14 +56,8 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
 
-  @BeforeClass
-  public static void prepare() throws InterruptedException {
-    jedis = PooledCommandsTestHelper.getPooled();
-  }
-
-  @AfterClass
-  public static void cleanUp() {
-    jedis.close();
+  public SortedSetPipelineCommandsTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Test

@@ -37,7 +37,14 @@ public interface SetPipelineCommands {
 
   Response<Set<String>> sdiff(String... keys);
 
-  Response<Long> sdiffStore(String dstKey, String... keys);
+  Response<Long> sdiffstore(String dstKey, String... keys);
+
+  /**
+   * @deprecated Use {@code redis.clients.jedis.commands.SetPipelineCommands#sdiffstore(java.lang.String, java.lang.String...)}
+   */
+  default Response<Long> sdiffStore(String dstKey, String... keys) {
+    return sdiffstore(dstKey, keys);
+  }
 
   Response<Set<String>> sinter(String... keys);
 

@@ -223,8 +223,20 @@ public class JedisCluster extends UnifiedJedis {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol);
   }
 
-  public JedisCluster(ClusterCommandExecutor executor, ClusterConnectionProvider provider, ClusterCommandObjects commandObjects, RedisProtocol protocol) {
-    super(executor, provider, commandObjects, protocol);
+  /**
+   * Constructor that allows CommandObjects to be customized. The RedisProtocol specified will be written into the given
+   * CommandObjects.
+   *
+   * @param provider The ClusterConnectionProvider.
+   * @param maxAttempts Max number of attempts execute a command.
+   * @param maxTotalRetriesDuration Max amount of time to execute a command.
+   * @param commandObjects The CommandObjects.
+   * @param protocol The RedisProtocol that will be written into the given CommandObjects.
+   */
+  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
+                      ClusterCommandObjects commandObjects, RedisProtocol protocol) {
+    super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider, commandObjects,
+            protocol);
   }
 
   public Map<String, ConnectionPool> getClusterNodes() {

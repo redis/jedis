@@ -4869,7 +4869,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
       return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, true, commandObjects);
     } else {
-      return new Transaction(provider.getConnection(), true, true);
+      return new Transaction(provider.getConnection(), commandObjects, true, true);
     }
   }
 

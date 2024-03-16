@@ -9,6 +9,7 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.executors.CommandExecutor;
+import redis.clients.jedis.executors.DefaultCommandExecutor;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
@@ -395,9 +396,17 @@ public class JedisPooled extends UnifiedJedis {
     super(provider);
   }
 
-  public JedisPooled(CommandExecutor executor, PooledConnectionProvider provider, CommandObjects commandObjects,
+  /**
+   * Constructor that allows CommandObjects to be customized. The RedisProtocol specified will be written into the given
+   * CommandObjects.
+   *
+   * @param provider The PooledConnectionProvider.
+   * @param commandObjects The CommandObjects.
+   * @param redisProtocol The RedisProtocol that will be written into the given CommandObjects.
+   */
+  public JedisPooled(PooledConnectionProvider provider, CommandObjects commandObjects,
                      RedisProtocol redisProtocol) {
-    super(executor, provider, commandObjects, redisProtocol);
+    super(new DefaultCommandExecutor(provider), provider, commandObjects, redisProtocol);
   }
 
   public final Pool<Connection> getPool() {

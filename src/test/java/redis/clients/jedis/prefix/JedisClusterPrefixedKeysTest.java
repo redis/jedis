@@ -1,8 +1,16 @@
-package redis.clients.jedis;
+package redis.clients.jedis.prefix;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
+import redis.clients.jedis.HostAndPorts;
+import redis.clients.jedis.util.prefix.ClusterCommandObjectsWithPrefixedKeys;
+import redis.clients.jedis.ConnectionPoolConfig;
+import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.Protocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.ClusterResetType;
-import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.JedisClusterTestUtil;
 
@@ -14,10 +22,10 @@ public class JedisClusterPrefixedKeysTest extends PrefixedKeysTest {
     private static final int DEFAULT_TIMEOUT = 2000;
     private static final int DEFAULT_REDIRECTIONS = 5;
     private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
-    private static final HostAndPort HOST_AND_PORT = new HostAndPort("127.0.0.1", 7379);
+    private static final HostAndPort HOST_AND_PORT = HostAndPorts.getClusterServers().get(0);
 
-    @Before
-    public void setUp() throws InterruptedException {
+    @BeforeClass
+    public static void setUpClass() {
         Jedis jedis = new Jedis(HOST_AND_PORT);
         jedis.auth("cluster");
         jedis.clusterReset(ClusterResetType.HARD);
@@ -30,23 +38,26 @@ public class JedisClusterPrefixedKeysTest extends PrefixedKeysTest {
         }
 
         jedis.clusterAddSlots(slots);
-        JedisClusterTestUtil.waitForClusterReady(jedis);
+
+        try {
+            JedisClusterTestUtil.waitForClusterReady(jedis);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    @Before
-    public void tearDown() throws InterruptedException {
-        Jedis jedis = new Jedis(HOST_AND_PORT);
-        jedis.auth("cluster");
-        jedis.clusterReset(ClusterResetType.HARD);
-        jedis.flushAll();
+    @Override
+    public void prefixesKeysInTransaction() {
+        // Transactions are not supported by JedisCluster, so override this test to no-op
     }
 
     @Override
     public UnifiedJedis prefixingJedis() {
         ClusterConnectionProvider connectionProvider = new ClusterConnectionProvider(Collections.singleton(HOST_AND_PORT), DEFAULT_CLIENT_CONFIG);
-        ClusterCommandExecutor executor = new ClusterCommandExecutor(connectionProvider, 5, Duration.ofSeconds(5 * DEFAULT_TIMEOUT));
+        int maxAttempts = 5;
+        Duration maxTotalRetriesDuration = Duration.ofSeconds(5 * DEFAULT_TIMEOUT);
         ClusterCommandObjectsWithPrefixedKeys commandObjects = new ClusterCommandObjectsWithPrefixedKeys("test-prefix:");
-        return new JedisCluster(executor, connectionProvider, commandObjects, DEFAULT_CLIENT_CONFIG.getRedisProtocol());
+        return new JedisCluster(connectionProvider, maxAttempts, maxTotalRetriesDuration, commandObjects, DEFAULT_CLIENT_CONFIG.getRedisProtocol());
     }
 
     @Override

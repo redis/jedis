@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.executors.CommandExecutor;
+import redis.clients.jedis.executors.DefaultCommandExecutor;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
 
 public class JedisSentineled extends UnifiedJedis {
@@ -24,8 +25,16 @@ public class JedisSentineled extends UnifiedJedis {
     super(sentineledConnectionProvider);
   }
 
-  public JedisSentineled(CommandExecutor executor, SentineledConnectionProvider sentineledConnectionProvider, CommandObjects commandObjects, RedisProtocol redisProtocol) {
-    super(executor, sentineledConnectionProvider, commandObjects, redisProtocol);
+  /**
+   * Constructor that allows CommandObjects to be customized. The RedisProtocol specified will be written into the given
+   * CommandObjects.
+   *
+   * @param provider The SentineledConnectionProvider.
+   * @param commandObjects The CommandObjects.
+   * @param redisProtocol The RedisProtocol that will be written into the given CommandObjects.
+   */
+  public JedisSentineled(SentineledConnectionProvider provider, CommandObjects commandObjects, RedisProtocol redisProtocol) {
+    super(new DefaultCommandExecutor(provider), provider, commandObjects, redisProtocol);
   }
 
   public HostAndPort getCurrentMaster() {

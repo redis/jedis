@@ -59,7 +59,7 @@ public class Transaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   public Transaction(Connection connection, boolean doMulti) {
-    this(connection, doMulti, false);
+    this(connection, new CommandObjects(), doMulti, false);
   }
 
   /**
@@ -72,10 +72,13 @@ public class Transaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
    */
-  public Transaction(Connection connection, boolean doMulti, boolean closeConnection) {
+  public Transaction(Connection connection, CommandObjects commandObjects, boolean doMulti, boolean closeConnection) {
+    super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
-    setGraphCommands(new GraphCommandObjects(this.connection));
+    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this.connection);
+    graphCommandObjects.setBaseCommandArgumentsCreator(protocolCommand -> commandObjects.commandArguments(protocolCommand));
+    setGraphCommands(graphCommandObjects);
     if (doMulti) multi();
   }
 
@@ -88,7 +91,7 @@ public class Transaction extends TransactionBase {
 
   @Override
   public String watch(final String... keys) {
-    connection.sendCommand(WATCH, keys);
+    connection.sendCommand(commandObjects.watch(keys).getArguments());
     String status = connection.getStatusCodeReply();
     inWatch = true;
     return status;
@@ -96,7 +99,7 @@ public class Transaction extends TransactionBase {
 
   @Override
   public String watch(final byte[]... keys) {
-    connection.sendCommand(WATCH, keys);
+    connection.sendCommand(commandObjects.watch(keys).getArguments());
     String status = connection.getStatusCodeReply();
     inWatch = true;
     return status;

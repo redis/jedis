@@ -4259,12 +4259,12 @@ public class CommandObjects {
   // RedisGears commands
 
   // Transaction commands
-  public final CommandObject<Object> watch(String... keys) {
-    return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.RAW_OBJECT);
+  public final CommandObject<String> watch(String... keys) {
+    return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.STRING);
   }
 
-  public final CommandObject<Object> watch(byte[]... keys) {
-    return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.RAW_OBJECT);
+  public final CommandObject<String> watch(byte[]... keys) {
+    return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.STRING);
   }
   // Transaction commands
 

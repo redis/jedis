@@ -2069,7 +2069,7 @@ public abstract class PipeliningBase
 
   @Override
   public Response<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
-    return appendCommand(commandObjects.expireAt(key, unixTime));
+    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
   }
 
   @Override

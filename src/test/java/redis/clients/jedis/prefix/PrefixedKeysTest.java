@@ -18,7 +18,7 @@ public abstract class PrefixedKeysTest {
 
     abstract UnifiedJedis nonPrefixingJedis();
 
-    private void flush() {
+    protected void flush() {
         try (UnifiedJedis jedis = prefixingJedis()) {
             jedis.flushAll();
         }

@@ -40,8 +40,9 @@ public interface SetPipelineCommands {
   Response<Long> sdiffstore(String dstKey, String... keys);
 
   /**
-   * @deprecated Use {@code redis.clients.jedis.commands.SetPipelineCommands#sdiffstore(java.lang.String, java.lang.String...)}
+   * @deprecated Use {@link SetPipelineCommands#sdiffstore(java.lang.String, java.lang.String...)}.
    */
+  @Deprecated
   default Response<Long> sdiffStore(String dstKey, String... keys) {
     return sdiffstore(dstKey, keys);
   }

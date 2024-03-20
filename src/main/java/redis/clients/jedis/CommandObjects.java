@@ -50,17 +50,23 @@ public class CommandObjects {
     return protocol;
   }
 
+  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
+  protected volatile CommandKeyArgumentPreProcessor keyPreProcessor = null;
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(0);
-
-  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
 
   void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
     this.broadcastAndRoundRobinConfig = config;
   }
 
+  void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
+    this.keyPreProcessor = keyPreProcessor;
+  }
+
   protected CommandArguments commandArguments(ProtocolCommand command) {
-    return new CommandArguments(command);
+    CommandArguments comArgs = new CommandArguments(command);
+    if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);
+    return comArgs;
   }
 
   private final CommandObject<String> PING_COMMAND_OBJECT = new CommandObject<>(commandArguments(PING), BuilderFactory.STRING);

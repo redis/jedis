@@ -206,12 +206,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(executor, (ConnectionProvider) null);
   }
 
-  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
     this(executor, provider, new CommandObjects());
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
-  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null);
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {
@@ -223,7 +223,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
-  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol) {
     this.provider = provider;
     this.executor = executor;
@@ -4859,7 +4859,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
       return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
     } else {
-      return new Pipeline(provider.getConnection(), commandObjects, true);
+      return new Pipeline(provider.getConnection(), true, commandObjects);
     }
   }
 
@@ -4869,7 +4869,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
       return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, true, commandObjects);
     } else {
-      return new Transaction(provider.getConnection(), commandObjects, true, true);
+      return new Transaction(provider.getConnection(), true, true, commandObjects);
     }
   }
 
@@ -4911,6 +4911,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public Object executeCommand(CommandArguments args) {
     return executeCommand(new CommandObject<>(args, BuilderFactory.RAW_OBJECT));
+  }
+
+  public void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
+    this.commandObjects.setKeyArgumentPreProcessor(keyPreProcessor);
   }
 
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {

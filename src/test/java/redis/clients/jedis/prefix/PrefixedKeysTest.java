@@ -1,44 +1,39 @@
 package redis.clients.jedis.prefix;
 
+import static org.junit.Assert.assertEquals;
+
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
+
 import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.resps.Tuple;
+import redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor;
+import redis.clients.jedis.util.SafeEncoder;
 
-import java.nio.charset.StandardCharsets;
+public abstract class PrefixedKeysTest<T extends UnifiedJedis> {
 
-import static junit.framework.TestCase.assertEquals;
+    abstract T nonPrefixingJedis();
 
-public abstract class PrefixedKeysTest {
-
-    abstract UnifiedJedis prefixingJedis();
-
-    abstract UnifiedJedis nonPrefixingJedis();
-
-    protected void flush() {
-        try (UnifiedJedis jedis = prefixingJedis()) {
-            jedis.flushAll();
-        }
-    }
-
-    @Before
-    public void setUp() {
-        flush();
+    T prefixingJedis() {
+        T jedis = nonPrefixingJedis();
+        jedis.setKeyArgumentPreProcessor(new PrefixedKeyArgumentPreProcessor("test-prefix:"));
+        return jedis;
     }
 
     @After
-    public void tearDown() {
-        flush();
+    public void cleanUp() {
+        try (UnifiedJedis jedis = prefixingJedis()) {
+            jedis.flushAll();
+        }
     }
 
     @Test
     public void prefixesKeys() {
         try (UnifiedJedis jedis = prefixingJedis()) {
             jedis.set("foo1", "bar1");
-            jedis.set("foo2".getBytes(StandardCharsets.UTF_8), "bar2".getBytes(StandardCharsets.UTF_8));
+            jedis.set(SafeEncoder.encode("foo2"), SafeEncoder.encode("bar2"));
             AbstractPipeline pipeline = jedis.pipelined();
             pipeline.incr("foo3");
             pipeline.zadd("foo4", 1234, "bar4");

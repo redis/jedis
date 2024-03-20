@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
@@ -221,22 +220,6 @@ public class JedisCluster extends UnifiedJedis {
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol);
-  }
-
-  /**
-   * Constructor that allows CommandObjects to be customized. The RedisProtocol specified will be written into the given
-   * CommandObjects.
-   *
-   * @param provider The ClusterConnectionProvider.
-   * @param maxAttempts Max number of attempts execute a command.
-   * @param maxTotalRetriesDuration Max amount of time to execute a command.
-   * @param commandObjects The CommandObjects.
-   * @param protocol The RedisProtocol that will be written into the given CommandObjects.
-   */
-  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-                      ClusterCommandObjects commandObjects, RedisProtocol protocol) {
-    super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider, commandObjects,
-            protocol);
   }
 
   public Map<String, ConnectionPool> getClusterNodes() {

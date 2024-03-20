@@ -66,6 +66,29 @@ public class ReliableTransaction extends TransactionBase {
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
    */
   public ReliableTransaction(Connection connection, boolean doMulti, boolean closeConnection) {
+    this(connection, doMulti, closeConnection, createCommandObjects(connection));
+  }
+
+  private static CommandObjects createCommandObjects(Connection connection) {
+    CommandObjects commandObjects = new CommandObjects();
+    RedisProtocol proto = connection.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
+    return commandObjects;
+  }
+
+  /**
+   * Creates a new transaction.
+   *
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param commandObjects command objects
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param closeConnection should the 'connection' be closed when 'close()' is called?
+   */
+  ReliableTransaction(Connection connection, boolean doMulti, boolean closeConnection, CommandObjects commandObjects) {
+    super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
     setGraphCommands(new GraphCommandObjects(this.connection));

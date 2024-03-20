@@ -59,9 +59,8 @@ public class Transaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   public Transaction(Connection connection, boolean doMulti) {
-    this(connection, new CommandObjects(), doMulti, false);
+    this(connection, doMulti, false, createCommandObjects(connection));
   }
-
 
   /**
    * Creates a new transaction.
@@ -74,7 +73,14 @@ public class Transaction extends TransactionBase {
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
    */
   public Transaction(Connection connection, boolean doMulti, boolean closeConnection) {
-    this(connection, new CommandObjects(), doMulti, closeConnection);
+    this(connection, doMulti, closeConnection, createCommandObjects(connection));
+  }
+
+  private static CommandObjects createCommandObjects(Connection connection) {
+    CommandObjects commandObjects = new CommandObjects();
+    RedisProtocol proto = connection.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
+    return commandObjects;
   }
 
   /**
@@ -84,11 +90,11 @@ public class Transaction extends TransactionBase {
    * be {@code doMulti=false}.
    *
    * @param connection connection
-   * @param commandObjects commandObjects
+   * @param commandObjects command objects
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
    */
-  public Transaction(Connection connection, CommandObjects commandObjects, boolean doMulti, boolean closeConnection) {
+  Transaction(Connection connection, boolean doMulti, boolean closeConnection, CommandObjects commandObjects) {
     super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;

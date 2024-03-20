@@ -28,17 +28,17 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
   }
 
   public Pipeline(Connection connection, boolean closeConnection) {
-    this(connection, commandObjects(connection), closeConnection);
+    this(connection, closeConnection, createCommandObjects(connection));
   }
 
-  private static CommandObjects commandObjects(Connection connection) {
-    RedisProtocol proto = connection.getRedisProtocol();
+  private static CommandObjects createCommandObjects(Connection connection) {
     CommandObjects commandObjects = new CommandObjects();
+    RedisProtocol proto = connection.getRedisProtocol();
     if (proto != null) commandObjects.setProtocol(proto);
     return commandObjects;
   }
 
-  public Pipeline(Connection connection, CommandObjects commandObjects, boolean closeConnection) {
+  Pipeline(Connection connection, boolean closeConnection, CommandObjects commandObjects) {
     super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;

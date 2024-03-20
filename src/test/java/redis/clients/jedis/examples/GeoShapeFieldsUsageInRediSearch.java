@@ -1,6 +1,5 @@
 package redis.clients.jedis.examples;
 
-import java.util.Collections;
 import org.junit.Assert;
 
 import org.locationtech.jts.geom.Coordinate;
@@ -14,7 +13,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.search.FTSearchParams;
-import redis.clients.jedis.search.RediSearchUtil;
 import redis.clients.jedis.search.SearchResult;
 import redis.clients.jedis.search.schemafields.GeoShapeField;
 

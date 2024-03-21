@@ -4,7 +4,6 @@ import static redis.clients.jedis.Protocol.Command.DISCARD;
 import static redis.clients.jedis.Protocol.Command.EXEC;
 import static redis.clients.jedis.Protocol.Command.MULTI;
 import static redis.clients.jedis.Protocol.Command.UNWATCH;
-import static redis.clients.jedis.Protocol.Command.WATCH;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -91,7 +90,9 @@ public class ReliableTransaction extends TransactionBase {
     super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
-    setGraphCommands(new GraphCommandObjects(this.connection));
+    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this.connection);
+    graphCommandObjects.setBaseCommandArgumentsCreator(protocolCommand -> commandObjects.commandArguments(protocolCommand));
+    setGraphCommands(graphCommandObjects);
     if (doMulti) multi();
   }
 
@@ -107,16 +108,14 @@ public class ReliableTransaction extends TransactionBase {
 
   @Override
   public String watch(final String... keys) {
-    connection.sendCommand(WATCH, keys);
-    String status = connection.getStatusCodeReply();
+    String status = connection.executeCommand(commandObjects.watch(keys));
     inWatch = true;
     return status;
   }
 
   @Override
   public String watch(final byte[]... keys) {
-    connection.sendCommand(WATCH, keys);
-    String status = connection.getStatusCodeReply();
+    String status = connection.executeCommand(commandObjects.watch(keys));
     inWatch = true;
     return status;
   }

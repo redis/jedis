@@ -16,8 +16,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 
 /**
- * ReliableTransaction is a transaction where commands are immediately sent to Redis server and the
- * 'QUEUED' reply checked.
+ * A transaction where commands are immediately sent to Redis server and the {@code QUEUED} reply checked.
  */
 public class ReliableTransaction extends TransactionBase {
 

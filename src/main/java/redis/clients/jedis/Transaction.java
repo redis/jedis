@@ -15,7 +15,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 
 /**
- * A pipeline based transaction.
+ * A transaction based on <a href="https://redis.io/docs/manual/pipelining/">pipelining</a>.
  */
 public class Transaction extends TransactionBase {
 

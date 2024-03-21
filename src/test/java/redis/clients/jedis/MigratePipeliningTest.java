@@ -2,9 +2,9 @@ package redis.clients.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasToString;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertArrayEquals;
@@ -14,10 +14,14 @@ import static org.junit.Assert.assertNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.MigrateParams;
 
+@RunWith(Parameterized.class)
 public class MigratePipeliningTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03 };
@@ -38,6 +42,10 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
 
   private Jedis dest;
   private Jedis destAuth;
+
+  public MigratePipeliningTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   @Override
@@ -72,7 +80,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.migrate(host, port, db, timeout, new MigrateParams(), bfoo1, bfoo2, bfoo3);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("NOKEY", "NOKEY", "NOKEY", "NOKEY"));
+        contains("NOKEY", "NOKEY", "NOKEY", "NOKEY"));
   }
 
   @Test
@@ -86,7 +94,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertEquals("bar", dest.get("foo"));
   }
@@ -102,7 +110,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertArrayEquals(bbar, dest.get(bfoo));
   }
@@ -118,7 +126,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertEquals("bar", dest.get("foo"));
   }
@@ -134,7 +142,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertArrayEquals(bbar, dest.get(bfoo));
   }
@@ -150,7 +158,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", "bar"));
+        contains("OK", "OK", "bar"));
 
     assertEquals("bar", dest.get("foo"));
   }
@@ -166,7 +174,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", bbar));
+        contains("OK", "OK", bbar));
 
     assertArrayEquals(bbar, dest.get(bfoo));
   }
@@ -184,7 +192,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertEquals("bar1", dest.get("foo"));
   }
@@ -202,7 +210,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertArrayEquals(bbar1, dest.get(bfoo));
   }
@@ -220,7 +228,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", "bar1"));
+        contains("OK", "OK", "bar1"));
 
     assertEquals("bar1", dest.get("foo"));
   }
@@ -238,7 +246,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", bbar1));
+        contains("OK", "OK", bbar1));
 
     assertArrayEquals(bbar1, dest.get(bfoo));
   }
@@ -254,7 +262,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertEquals("bar", destAuth.get("foo"));
   }
@@ -270,7 +278,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertArrayEquals(bbar, destAuth.get(bfoo));
   }
@@ -287,7 +295,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertEquals("bar", jedis.get("foo"));
   }
@@ -304,7 +312,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK", null));
+        contains("OK", "OK", null));
 
     assertArrayEquals(bbar, jedis.get(bfoo));
   }
@@ -321,7 +329,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.migrate(host, port, db, timeout, new MigrateParams(), "foo1", "foo2", "foo3");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK"));
+        contains("OK", "OK"));
 
     assertEquals("bar1", dest.get("foo1"));
     assertEquals("bar2", dest.get("foo2"));
@@ -340,7 +348,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.migrate(host, port, db, timeout, new MigrateParams(), bfoo1, bfoo2, bfoo3);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems("OK", "OK"));
+        contains("OK", "OK"));
 
     assertArrayEquals(bbar1, dest.get(bfoo1));
     assertArrayEquals(bbar2, dest.get(bfoo2));
@@ -361,7 +369,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.migrate(host, port, db, timeout, new MigrateParams(), "foo1", "foo2", "foo3");
 
     assertThat(p.syncAndReturnAll(),
-        hasItems(
+        contains(
             equalTo("OK"),
             both(instanceOf(JedisDataException.class)).and(hasToString(containsString("BUSYKEY")))
         ));
@@ -385,7 +393,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     p.migrate(host, port, db, timeout, new MigrateParams(), bfoo1, bfoo2, bfoo3);
 
     assertThat(p.syncAndReturnAll(),
-        hasItems(
+        contains(
             equalTo("OK"),
             both(instanceOf(JedisDataException.class)).and(hasToString(containsString("BUSYKEY")))
         ));

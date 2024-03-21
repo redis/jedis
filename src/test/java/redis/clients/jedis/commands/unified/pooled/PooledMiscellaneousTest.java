@@ -7,38 +7,40 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+@RunWith(Parameterized.class)
 public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
   protected Pipeline pipeline;
   protected AbstractTransaction transaction;
 
-  @BeforeClass
-  public static void prepare() throws InterruptedException {
-    jedis = PooledCommandsTestHelper.getPooled();
-  }
-
-  @AfterClass
-  public static void cleanUp() {
-    jedis.close();
+  public PooledMiscellaneousTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Before
   public void setUp() {
+    jedis = PooledCommandsTestHelper.getPooled(protocol);
     PooledCommandsTestHelper.clearData();
     pipeline = ((JedisPooled) jedis).pipelined();
     transaction = jedis.multi();
+  }
+
+  @After
+  public void cleanUp() {
+    jedis.close();
   }
 
   @After

@@ -11,13 +11,16 @@ import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 import java.util.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import redis.clients.jedis.RedisProtocol;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.KeyValue;
 
+@RunWith(Parameterized.class)
 public class TimeSeriesTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
@@ -29,6 +32,10 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public TimeSeriesTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void testCreate() {

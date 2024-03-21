@@ -527,7 +527,8 @@ public class ClusterPipeliningTest {
     Response<Long> r1 = p.sadd("my{set}", "hello", "hello", "world", "foo", "bar");
     p.sadd("mynew{set}", "hello", "hello", "world");
     Response<Set<String>> r2 = p.sdiff("my{set}", "mynew{set}");
-    Response<Long> r3 = p.sdiffStore("diffset{set}", "my{set}", "mynew{set}");
+    Response<Long> r3deprecated = p.sdiffStore("diffset{set}deprecated", "my{set}", "mynew{set}");
+    Response<Long> r3 = p.sdiffstore("diffset{set}", "my{set}", "mynew{set}");
     Response<Set<String>> r4 = p.smembers("diffset{set}");
     Response<Set<String>> r5 = p.sinter("my{set}", "mynew{set}");
     Response<Long> r6 = p.sinterstore("interset{set}", "my{set}", "mynew{set}");
@@ -547,6 +548,7 @@ public class ClusterPipeliningTest {
     p.sync();
     assertEquals(Long.valueOf(4), r1.get());
     assertEquals(diff, r2.get());
+    assertEquals(Long.valueOf(diff.size()), r3deprecated.get());
     assertEquals(Long.valueOf(diff.size()), r3.get());
     assertEquals(diff, r4.get());
     assertEquals(inter, r5.get());

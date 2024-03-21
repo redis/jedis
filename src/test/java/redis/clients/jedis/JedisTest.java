@@ -17,6 +17,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.exceptions.InvalidURIException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -24,7 +26,12 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class JedisTest extends JedisCommandsTestBase {
+
+  public JedisTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void useWithoutConnecting() {

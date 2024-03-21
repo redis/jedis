@@ -281,6 +281,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<String> setGet(String key, String value) {
+    return appendCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public Response<String> setGet(String key, String value, SetParams params) {
     return appendCommand(commandObjects.setGet(key, value, params));
   }
@@ -315,6 +320,10 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   @Override
   public Response<String> getSet(String key, String value) {
     return appendCommand(commandObjects.getSet(key, value));
@@ -777,7 +786,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> sdiffStore(String dstKey, String... keys) {
+  public Response<Long> sdiffstore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 
@@ -2079,7 +2088,7 @@ public abstract class PipeliningBase
 
   @Override
   public Response<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
-    return appendCommand(commandObjects.expireAt(key, unixTime));
+    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
   }
 
   @Override
@@ -3115,6 +3124,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<byte[]> setGet(byte[] key, byte[] value) {
+    return appendCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public Response<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
     return appendCommand(commandObjects.setGet(key, value, params));
   }
@@ -3149,6 +3163,10 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> getSet(byte[] key, byte[] value) {
     return appendCommand(commandObjects.getSet(key, value));

@@ -13,7 +13,10 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.graph.Header;
 import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
@@ -22,11 +25,16 @@ import redis.clients.jedis.graph.entities.*;
 
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class GraphAPITest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
+  }
+
+  public GraphAPITest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @After

@@ -6,11 +6,15 @@ import static org.junit.Assert.assertTrue;
 import java.util.Collections;
 import java.util.List;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.Module;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class ModuleTest extends JedisCommandsTestBase {
 
   static enum ModuleCommand implements ProtocolCommand {
@@ -27,6 +31,10 @@ public class ModuleTest extends JedisCommandsTestBase {
     public byte[] getRaw() {
       return raw;
     }
+  }
+
+  public ModuleTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Test

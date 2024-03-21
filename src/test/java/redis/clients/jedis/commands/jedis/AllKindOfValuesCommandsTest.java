@@ -18,6 +18,8 @@ import java.util.*;
 import org.hamcrest.Matchers;
 import org.junit.Assume;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
@@ -35,8 +37,8 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.RedisProtocolUtil;
 
+@RunWith(Parameterized.class)
 public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   final byte[] bfoo1 = { 0x01, 0x02, 0x03, 0x04, 0x0A };
@@ -56,6 +58,10 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final int expireSeconds = 2;
 
   private static final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
+
+  public AllKindOfValuesCommandsTest(RedisProtocol redisProtocol) {
+    super(redisProtocol);
+  }
 
   @Test
   public void ping() {
@@ -984,7 +990,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseHgetall() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -1002,7 +1008,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseHgetallResp3() {
-    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -1019,7 +1025,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseXinfoStream() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
@@ -1046,7 +1052,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {
-    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");

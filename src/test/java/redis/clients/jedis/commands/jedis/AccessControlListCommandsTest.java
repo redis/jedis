@@ -18,10 +18,13 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -33,6 +36,7 @@ import redis.clients.jedis.util.SafeEncoder;
 /**
  * TODO: properly define and test exceptions
  */
+@RunWith(Parameterized.class)
 public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   public static final String USER_NAME = "newuser";
@@ -43,6 +47,10 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
         RedisVersionUtil.checkRedisMajorVersionNumber(6));
+  }
+
+  public AccessControlListCommandsTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @After

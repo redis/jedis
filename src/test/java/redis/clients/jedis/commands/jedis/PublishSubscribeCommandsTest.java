@@ -17,14 +17,23 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
+
+  public PublishSubscribeCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   private void publishOne(final String channel, final String message) {
     Thread t = new Thread(new Runnable() {
       public void run() {

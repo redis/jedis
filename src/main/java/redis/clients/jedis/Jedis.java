@@ -871,7 +871,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @return Bulk reply
+   * @deprecated Use {@link Jedis#setGet(byte[], byte[])}.
    */
+  @Deprecated
   @Override
   public byte[] getSet(final byte[] key, final byte[] value) {
     checkIsInMultiOrPipeline();
@@ -4325,6 +4327,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.getStatusCodeReply();
   }
 
+  @Override
+  public TrackingInfo clientTrackingInfo() {
+    checkIsInMultiOrPipeline();
+    connection.sendCommand(CLIENT, "TRACKINGINFO");
+    return TrackingInfo.TRACKING_INFO_BUILDER.build(connection.getOne());
+  }
+
   public List<String> time() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.TIME);
@@ -5309,7 +5318,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * @param key
    * @param value
    * @return Bulk reply
+   * @deprecated Use {@link Jedis#setGet(java.lang.String, java.lang.String)}.
    */
+  @Deprecated
   @Override
   public String getSet(final String key, final String value) {
     checkIsInMultiOrPipeline();

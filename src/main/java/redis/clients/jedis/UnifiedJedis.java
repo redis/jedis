@@ -457,7 +457,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
-    return executeCommand(commandObjects.expireAt(key, millisecondsTimestamp, expiryOption));
+    return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override

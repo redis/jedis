@@ -15,6 +15,8 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -22,8 +24,8 @@ import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.json.commands.RedisJsonV2Commands;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
-import redis.clients.jedis.util.RedisProtocolUtil;
 
+@RunWith(Parameterized.class)
 public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   private static final Gson gson = new Gson();
@@ -35,6 +37,10 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     RedisModuleCommandsTestBase.prepare();
   }
 
+  public RedisJsonV2Test(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Before
   @Override
   public void setUp() {
@@ -44,7 +50,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void basicSetGetShouldSucceed() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
 
     // naive set with a path
     jsonV2.jsonSetWithEscape("null", ROOT_PATH, (Object) null);
@@ -68,7 +74,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void basicSetGetShouldSucceedResp3() {
-    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
 
     // naive set with a path
     jsonV2.jsonSetWithEscape("null", ROOT_PATH, (Object) null);
@@ -467,7 +473,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void numIncrBy() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
     jsonV2.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertJsonArrayEquals(jsonArray((Object) null), jsonV2.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
     assertJsonArrayEquals(jsonArray(null, 4, 7, null), jsonV2.jsonNumIncrBy("doc", Path2.of("..a"), 2d));
@@ -477,7 +483,7 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void numIncrByResp3() {
-    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
     jsonV2.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5}, {\"a\":\"c\"}]}");
     assertEquals(singletonList((Object) null), jsonV2.jsonNumIncrBy("doc", Path2.of(".a"), 1d));
     assertEquals(Arrays.asList(null, 4d, 7d, null), jsonV2.jsonNumIncrBy("doc", Path2.of("..a"), 2d));

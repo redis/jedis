@@ -4,15 +4,24 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class GraphValuesTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
+  }
+
+  public GraphValuesTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Test

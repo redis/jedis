@@ -17,6 +17,8 @@ import org.json.JSONObject;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.RedisProtocol;
@@ -26,8 +28,8 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
-import redis.clients.jedis.util.RedisProtocolUtil;
 
+@RunWith(Parameterized.class)
 public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   private static final Gson gson = new Gson();
@@ -35,6 +37,10 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
+  }
+
+  public RedisModulesPipelineTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Test
@@ -91,7 +97,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void jsonV1() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
 
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");

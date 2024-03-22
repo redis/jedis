@@ -60,8 +60,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public UnifiedJedis(HostAndPort hostAndPort) {
-//    this(new Connection(hostAndPort));
-    this(new PooledConnectionProvider(hostAndPort));
+    this(new PooledConnectionProvider(hostAndPort), (RedisProtocol) null);
   }
 
   public UnifiedJedis(final String url) {
@@ -89,27 +88,15 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-//    this(new Connection(hostAndPort, clientConfig));
-    this(new PooledConnectionProvider(hostAndPort, clientConfig));
-    RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    this(new PooledConnectionProvider(hostAndPort, clientConfig), clientConfig.getRedisProtocol());
   }
 
   public UnifiedJedis(ConnectionProvider provider) {
-    this.provider = provider;
-    this.executor = new DefaultCommandExecutor(provider);
-    this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
-    try (Connection conn = this.provider.getConnection()) {
-      if (conn != null) {
-        RedisProtocol proto = conn.getRedisProtocol();
-        if (proto != null) commandObjects.setProtocol(proto);
-      }
-    //} catch (JedisAccessControlException ace) {
-    } catch (JedisException je) { // TODO: use specific exception(s)
-      // use default protocol
-    }
+    this(new DefaultCommandExecutor(provider), provider);
+  }
+
+  protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol) {
+    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
   }
 
   /**
@@ -142,37 +129,40 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
     this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(this);
     RedisProtocol proto = connection.getRedisProtocol();
-    if (proto == RedisProtocol.RESP3) this.commandObjects.setProtocol(proto);
+    if (proto != null) this.commandObjects.setProtocol(proto);
+    this.graphCommandObjects = new GraphCommandObjects(this);
   }
 
+  @Deprecated
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts,
-        Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
-    RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    this(jedisClusterNodes, clientConfig, maxAttempts, Duration.ofMillis(maxAttempts * clientConfig.getSocketTimeoutMillis()));
   }
 
-  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration);
-    RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+  @Deprecated
+  public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
+    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig), maxAttempts, maxTotalRetriesDuration,
+        clientConfig.getRedisProtocol());
   }
 
+  @Deprecated
   public UnifiedJedis(Set<HostAndPort> jedisClusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration);
-    RedisProtocol proto = clientConfig.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
+    this(new ClusterConnectionProvider(jedisClusterNodes, clientConfig, poolConfig), maxAttempts,
+        maxTotalRetriesDuration, clientConfig.getRedisProtocol());
   }
 
+  // Uses a fetched connection to process protocol. Should be avoided if possible.
   public UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this.provider = provider;
-    this.executor = new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
-    this.commandObjects = new ClusterCommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+        new ClusterCommandObjects());
+  }
+
+  protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
+      RedisProtocol protocol) {
+    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+        new ClusterCommandObjects(), protocol);
   }
 
   /**
@@ -180,11 +170,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    */
   @Deprecated
   public UnifiedJedis(ShardedConnectionProvider provider) {
-    this.provider = provider;
-    this.executor = new DefaultCommandExecutor(provider);
-    this.commandObjects = new ShardedCommandObjects(provider.getHashingAlgo());
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+    this(new DefaultCommandExecutor(provider), provider, new ShardedCommandObjects(provider.getHashingAlgo()));
   }
 
   /**
@@ -192,19 +178,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    */
   @Deprecated
   public UnifiedJedis(ShardedConnectionProvider provider, Pattern tagPattern) {
-    this.provider = provider;
-    this.executor = new DefaultCommandExecutor(provider);
-    this.commandObjects = new ShardedCommandObjects(provider.getHashingAlgo(), tagPattern);
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+    this(new DefaultCommandExecutor(provider), provider, new ShardedCommandObjects(provider.getHashingAlgo(), tagPattern));
   }
 
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this.provider = provider;
-    this.executor = new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration);
-    this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+    this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
   }
 
   /**
@@ -215,11 +193,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * <p>
    */
   public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
-    this.provider = provider;
-    this.executor = new CircuitBreakerCommandExecutor(provider);
-    this.commandObjects = new CommandObjects();
-    this.graphCommandObjects = new GraphCommandObjects(this);
-    this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+    this(new CircuitBreakerCommandExecutor(provider), provider);
   }
 
   /**
@@ -229,9 +203,36 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * {@link UnifiedJedis#provider} is accessed.
    */
   public UnifiedJedis(CommandExecutor executor) {
-    this.provider = null;
+    this(executor, (ConnectionProvider) null);
+  }
+
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
+    this(executor, provider, new CommandObjects());
+  }
+
+  // Uses a fetched connection to process protocol. Should be avoided if possible.
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
+    this(executor, provider, commandObjects, null);
+    if (this.provider != null) {
+      try (Connection conn = this.provider.getConnection()) {
+        if (conn != null) {
+          RedisProtocol proto = conn.getRedisProtocol();
+          if (proto != null) this.commandObjects.setProtocol(proto);
+        }
+      } catch (JedisException je) { }
+    }
+  }
+
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
+      RedisProtocol protocol) {
+    this.provider = provider;
     this.executor = executor;
-    this.commandObjects = new CommandObjects();
+
+    this.commandObjects = commandObjects;
+    if (protocol != null) {
+      this.commandObjects.setProtocol(protocol);
+    }
+
     this.graphCommandObjects = new GraphCommandObjects(this);
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
   }
@@ -241,6 +242,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     IOUtils.closeQuietly(this.executor);
   }
 
+  @Deprecated
   protected final void setProtocol(RedisProtocol protocol) {
     this.protocol = protocol;
     this.commandObjects.setProtocol(this.protocol);
@@ -823,6 +825,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   @Override
   public String getSet(String key, String value) {
     return executeCommand(commandObjects.getSet(key, value));
@@ -843,6 +849,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.psetex(key, milliseconds, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   @Override
   public byte[] getSet(byte[] key, byte[] value) {
     return executeCommand(commandObjects.getSet(key, value));
@@ -1548,6 +1558,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public ScanResult<String> hscanNoValues(String key, String cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public long hstrlen(String key, String field) {
     return executeCommand(commandObjects.hstrlen(key, field));
   }
@@ -1570,6 +1585,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(byte[] key, byte[] cursor, ScanParams params) {
     return executeCommand(commandObjects.hscan(key, cursor, params));
+  }
+
+  @Override
+  public ScanResult<byte[]> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscanNoValues(key, cursor, params));
   }
 
   @Override
@@ -4837,7 +4857,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider);
+      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
     } else {
       return new Pipeline(provider.getConnection(), true);
     }
@@ -4847,7 +4867,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider);
+      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, true, commandObjects);
     } else {
       return new Transaction(provider.getConnection(), true, true);
     }

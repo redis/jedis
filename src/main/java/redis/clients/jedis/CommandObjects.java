@@ -447,8 +447,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> setGet(String key, String value, SetParams params) {
-    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params)
-        .add(Keyword.GET), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params).add(Keyword.GET),
+        BuilderFactory.STRING);
   }
 
   public final CommandObject<String> getDel(String key) {
@@ -468,8 +468,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
-    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params)
-        .add(Keyword.GET), BuilderFactory.BINARY);
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params).add(Keyword.GET),
+        BuilderFactory.BINARY);
   }
 
   public final CommandObject<byte[]> getDel(byte[] key) {
@@ -480,10 +480,18 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.GETEX).key(key).addParams(params), BuilderFactory.BINARY);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   public final CommandObject<String> getSet(String key, String value) {
     return new CommandObject<>(commandArguments(Command.GETSET).key(key).add(value), BuilderFactory.STRING);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   public final CommandObject<byte[]> getSet(byte[] key, byte[] value) {
     return new CommandObject<>(commandArguments(Command.GETSET).key(key).add(value), BuilderFactory.BINARY);
   }
@@ -1128,12 +1136,20 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params), BuilderFactory.HSCAN_RESPONSE);
   }
 
+  public final CommandObject<ScanResult<String>> hscanNoValues(String key, String cursor, ScanParams params) {
+    return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params).add(NOVALUES), BuilderFactory.SCAN_RESPONSE);
+  }
+
   public final CommandObject<Long> hstrlen(String key, String field) {
     return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), BuilderFactory.LONG);
   }
 
   public final CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor, ScanParams params) {
     return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params), BuilderFactory.HSCAN_BINARY_RESPONSE);
+  }
+
+  public final CommandObject<ScanResult<byte[]>> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params).add(NOVALUES), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   public final CommandObject<Long> hstrlen(byte[] key, byte[] field) {

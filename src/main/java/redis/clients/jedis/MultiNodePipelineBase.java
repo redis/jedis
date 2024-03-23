@@ -1083,7 +1083,6 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.zcount(key, min, max));
   }
 
-    
   @Override
   public Response<List<String>> zrangeByScore(String key, double min, double max) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max));

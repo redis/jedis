@@ -1083,6 +1083,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
     return appendCommand(commandObjects.zcount(key, min, max));
   }
 
+    
   @Override
   public Response<List<String>> zrangeByScore(String key, double min, double max) {
     return appendCommand(commandObjects.zrangeByScore(key, min, max));
@@ -2863,7 +2864,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
@@ -2873,7 +2874,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min));
   }
 
   @Override
@@ -2883,7 +2884,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
@@ -2903,7 +2904,7 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<List<byte[]>> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByScore(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
   }
 
   @Override
@@ -2963,12 +2964,12 @@ public abstract class MultiNodePipelineBase implements PipelineCommands, Pipelin
 
   @Override
   public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-    return appendCommand(commandObjects.zrevrangeByLex(key, min, max));
+    return appendCommand(commandObjects.zrevrangeByLex(key, max, min));
   }
 
   @Override
   public Response<List<byte[]>> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return appendCommand(commandObjects.zrevrangeByLex(key, min, max, offset, count));
+    return appendCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
   }
 
   @Override

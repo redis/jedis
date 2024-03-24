@@ -1277,4 +1277,63 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     }
     assertEquals(7, total);
   }
+
+  @Test
+  public void testCreateIndexWithTextFieldWithSuffixTrie() {
+    Schema schema1 = new Schema()
+        .addField(new TextField("withSuffixTrie", 1.0, false, false, false, null, true));
+    Schema schema2 = new Schema()
+        .addField(new TextField("withSuffixTrie", 1.0, false, true, false, null, true));
+    Schema schema3 = new Schema()
+        .addField(new TextField("withSuffixTrie", 1.0, false, false, false, "dm:en", true));
+    Schema schema4 = new Schema()
+        .addField(new TextField("withSuffixTrie", 1.0, false, true, false, "dm:en", true));
+    Schema schema5 = new Schema()
+        .addField(new TextField("withSuffixTrie", 1.0, true, true, true, "dm:en", true));
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema1));
+    client.ftDropIndex(index);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema2));
+    client.ftDropIndex(index);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema3));
+    client.ftDropIndex(index);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema4));
+    client.ftDropIndex(index);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema5));
+    client.ftDropIndex(index);
+  }
+
+  @Test
+  public void testCreateIndexWithTagFieldWithSuffixTrie() {
+    Schema schema1 = new Schema()
+        .addField(new TagField("withSuffixTrie", null, false, false, true));
+    Schema schema2 = new Schema()
+        .addField(new TagField("withSuffixTrie", "|", false, false, true));
+    Schema schema3 = new Schema()
+        .addField(new TagField("withSuffixTrie", "|", true, false, true));
+    Schema schema4 = new Schema()
+        .addField(new TagField("withSuffixTrie", "|", false, true, true));
+    Schema schema5 = new Schema()
+        .addField(new TagField("withSuffixTrie", "|", true, true, true));
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema1));
+    client.ftDropIndex(index);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema2));
+    client.ftDropIndex(index);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema3));
+    client.ftDropIndex(index);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema4));
+    client.ftDropIndex(index);
+
+    assertEquals("OK", client.ftCreate(index, IndexOptions.defaultOptions(), schema5));
+    client.ftDropIndex(index);
+  }
+
 }

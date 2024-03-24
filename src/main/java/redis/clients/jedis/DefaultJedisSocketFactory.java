@@ -70,7 +70,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         socket.setTcpNoDelay(true); // Socket buffer Whetherclosed, to ensure timely delivery of data
         socket.setSoLinger(true, 0); // Control calls close () method, the underlying socket is closed immediately
 
-        socket.connect(new InetSocketAddress(host.getHostAddress(), hostAndPort.getPort()), connectionTimeout);
+        // Passing 'host' directly will avoid another call to InetAddress.getByName() inside the InetSocketAddress constructor.
+        // For machines with ipv4 and ipv6, but the startNode uses ipv4 to connect, the ipv6 connection may fail.
+        socket.connect(new InetSocketAddress(host, hostAndPort.getPort()), connectionTimeout);
         return socket;
       } catch (Exception e) {
         jce.addSuppressed(e);

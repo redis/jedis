@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class GeoAddParams implements IParams {
 
   private boolean nx = false;
@@ -57,4 +59,16 @@ public class GeoAddParams implements IParams {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    GeoAddParams that = (GeoAddParams) o;
+    return nx == that.nx && xx == that.xx && ch == that.ch;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(nx, xx, ch);
+  }
 }

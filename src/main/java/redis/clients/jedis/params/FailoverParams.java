@@ -4,6 +4,8 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class FailoverParams implements IParams {
 
   private HostAndPort to;
@@ -58,5 +60,18 @@ public class FailoverParams implements IParams {
       args.add(Keyword.TIMEOUT).add(timeout);
     }
 
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    FailoverParams that = (FailoverParams) o;
+    return force == that.force && Objects.equals(to, that.to) && Objects.equals(timeout, that.timeout);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(to, force, timeout);
   }
 }

@@ -7,6 +7,8 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
 
+import java.util.Objects;
+
 public class XAddParams implements IParams {
 
   private Rawable id;
@@ -113,5 +115,18 @@ public class XAddParams implements IParams {
     }
 
     args.add(id != null ? id : StreamEntryID.NEW_ENTRY);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XAddParams that = (XAddParams) o;
+    return approximateTrimming == that.approximateTrimming && exactTrimming == that.exactTrimming && nomkstream == that.nomkstream && Objects.equals(id, that.id) && Objects.equals(maxLen, that.maxLen) && Objects.equals(minId, that.minId) && Objects.equals(limit, that.limit);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, maxLen, approximateTrimming, exactTrimming, nomkstream, minId, limit);
   }
 }

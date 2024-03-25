@@ -1,6 +1,7 @@
 package redis.clients.jedis.params;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
@@ -80,5 +81,18 @@ public class ClientKillParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     params.forEach(kv -> args.add(kv.getKey()).add(kv.getValue()));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ClientKillParams that = (ClientKillParams) o;
+    return Objects.equals(params, that.params);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(params);
   }
 }

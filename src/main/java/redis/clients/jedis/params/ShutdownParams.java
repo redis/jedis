@@ -4,6 +4,8 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.SaveMode;
 
+import java.util.Objects;
+
 public class ShutdownParams implements IParams {
 
   private SaveMode saveMode;
@@ -48,5 +50,18 @@ public class ShutdownParams implements IParams {
     if (this.force) {
       args.add(Keyword.FORCE);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ShutdownParams that = (ShutdownParams) o;
+    return now == that.now && force == that.force && saveMode == that.saveMode;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(saveMode, now, force);
   }
 }

@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class XClaimParams implements IParams {
 
   private Long idleTime;
@@ -71,5 +73,18 @@ public class XClaimParams implements IParams {
     if (force) {
       args.add(Keyword.FORCE);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XClaimParams that = (XClaimParams) o;
+    return force == that.force && Objects.equals(idleTime, that.idleTime) && Objects.equals(idleUnixTime, that.idleUnixTime) && Objects.equals(retryCount, that.retryCount);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(idleTime, idleUnixTime, retryCount, force);
   }
 }

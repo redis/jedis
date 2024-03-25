@@ -1632,11 +1632,6 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<String> scriptKill() {
-    return appendCommand(commandObjects.scriptKill());
-  }
-
-  @Override
   public Response<String> scriptKill(String sampleKey) {
     return appendCommand(commandObjects.scriptKill(sampleKey));
   }

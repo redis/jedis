@@ -1607,18 +1607,8 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<String> scriptLoad(String script) {
-    return appendCommand(commandObjects.scriptLoad(script));
-  }
-
-  @Override
   public Response<String> scriptLoad(String script, String sampleKey) {
     return appendCommand(commandObjects.scriptLoad(script, sampleKey));
-  }
-
-  @Override
-  public Response<String> scriptFlush() {
-    return appendCommand(commandObjects.scriptFlush());
   }
 
   @Override
@@ -1629,11 +1619,6 @@ public abstract class PipeliningBase
   @Override
   public Response<String> scriptFlush(String sampleKey, FlushMode flushMode) {
     return appendCommand(commandObjects.scriptFlush(sampleKey, flushMode));
-  }
-
-  @Override
-  public Response<String> scriptKill() {
-    return appendCommand(commandObjects.scriptKill());
   }
 
   @Override

@@ -4,6 +4,8 @@ import static redis.clients.jedis.Protocol.Command.KEYS;
 import static redis.clients.jedis.Protocol.Command.SCAN;
 import static redis.clients.jedis.Protocol.Keyword.TYPE;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -11,6 +13,7 @@ import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.JedisClusterHashTag;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class ClusterCommandObjects extends CommandObjects {
 
@@ -102,6 +105,13 @@ public class ClusterCommandObjects extends CommandObjects {
   @Override
   public CommandObject<KeyValue<Long, Long>> waitAOF(long numLocal, long numReplicas, long timeout) {
     throw new UnsupportedOperationException(CLUSTER_UNSUPPORTED_MESSAGE);
+  }
+
+  public CommandObject<List<Map<String, Object>>> clusterLinks() {
+    return new CommandObject<>(
+        new ClusterCommandArguments(Protocol.Command.CLUSTER).add(
+            SafeEncoder.encode(Protocol.ClusterKeyword.LINKS.getRaw())),
+        BuilderFactory.ENCODED_MAP_LIST);
   }
 
 }

@@ -446,6 +446,23 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<List<Map<String, Object>>> ENCODED_MAP_LIST = new Builder<List<Map<String, Object>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Map<String, Object>> build(Object data) {
+      if (data == null) return null;
+      return ((List<List<Object>>) data).stream().map(one -> {
+        {
+          Map<String, Object> map = new HashMap<>();
+          for (int i = 0; i < one.size(); i += 2) {
+            map.put(STRING.build(one.get(i)), ENCODED_OBJECT.build(one.get(i + 1)));
+          }
+          return map;
+        }
+      }).collect(Collectors.toList());
+    }
+  };
+
   public static final Builder<Map<String, Long>> STRING_LONG_MAP = new Builder<Map<String, Long>>() {
     @Override
     @SuppressWarnings("unchecked")

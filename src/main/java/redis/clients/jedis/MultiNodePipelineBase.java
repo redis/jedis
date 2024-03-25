@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -57,6 +58,18 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
   protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     HostAndPort nodeKey = getNodeKey(commandObject.getArguments());
 
+    return appendCommandByNodeKey(commandObject, nodeKey);
+  }
+
+  protected final <T> Map<HostAndPort, Response<T>> iterateAllNodeAppendCommand(CommandObject<T> commandObject) {
+    Map<HostAndPort, Response<T>> nodeResponses = new HashMap<>();
+    for (Map.Entry<HostAndPort, Connection> entry : connections.entrySet()) {
+      nodeResponses.put(entry.getKey(), appendCommandByNodeKey(commandObject, entry.getKey()));
+    }
+    return nodeResponses;
+  }
+
+  private <T> Response<T> appendCommandByNodeKey(CommandObject<T> commandObject, HostAndPort nodeKey) {
     Queue<Response<?>> queue;
     Connection connection;
     if (pipelinedResponses.containsKey(nodeKey)) {
@@ -139,5 +152,10 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
   @Deprecated
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
+  }
+
+  public Map<HostAndPort, Response<List<Map<String, Object>>>> clusterLinks() {
+    CommandObject<List<Map<String, Object>>> listCommandObject = ((ClusterCommandObjects) commandObjects).clusterLinks();
+    return iterateAllNodeAppendCommand(listCommandObject);
   }
 }

@@ -800,6 +800,59 @@ public class JedisClusterTest extends JedisClusterTestBase {
     }
   }
 
+  @Test
+  public void testClusterLinks() {
+    // 创建一个JedisCluster对象
+    Set<HostAndPort> jedisClusterNode = new HashSet<>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+      Set<String> mapKeys = new HashSet<>(
+          Arrays.asList("direction", "node", "create-time", "events", "send-buffer-allocated",
+              "send-buffer-used"));
+
+      Map<HostAndPort, List<Map<String, Object>>> links = jc.clusterLinks();
+      assertNotNull(links);
+      assertTrue(links.size() >= 3);
+      for (Map.Entry<HostAndPort, List<Map<String, Object>>> linkEntry : links.entrySet()) {
+        List<Map<String, Object>> link = linkEntry.getValue();
+        assertTrue(link.size() >= 3);
+        assertEquals(6, link.get(0).size());
+        assertEquals(mapKeys, link.get(0).keySet());
+      }
+    }
+  }
+
+  @Test
+  public void testClusterLinksInPipeline() {
+    // 创建一个JedisCluster对象
+    Set<HostAndPort> jedisClusterNode = new HashSet<>();
+    jedisClusterNode.add(new HostAndPort("127.0.0.1", 7379));
+
+    try (JedisCluster jc = new JedisCluster(jedisClusterNode, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT,
+        DEFAULT_REDIRECTIONS, "cluster", DEFAULT_POOL_CONFIG)) {
+      Set<String> mapKeys = new HashSet<>(
+          Arrays.asList("direction", "node", "create-time", "events", "send-buffer-allocated",
+              "send-buffer-used"));
+
+      ClusterPipeline pipelined = jc.pipelined();
+      Map<HostAndPort, Response<List<Map<String, Object>>>> nodeClusterLinksMap = pipelined.clusterLinks();
+      pipelined.sync();
+      for (Map.Entry<HostAndPort, Response<List<Map<String, Object>>>> entry : nodeClusterLinksMap.entrySet()) {
+        HostAndPort hostAndPort = entry.getKey();
+        Response<List<Map<String, Object>>> response = entry.getValue();
+        List<Map<String, Object>> links = response.get();
+        assertNotNull(links);
+        assertTrue(links.size() >= 3);
+        for (Map<String, Object> link : links) {
+          assertEquals(6, link.size());
+          assertEquals(mapKeys, link.keySet());
+        }
+      }
+    }
+  }
+
   private static String getNodeServingSlotRange(String infoOutput) {
     // f4f3dc4befda352a4e0beccf29f5e8828438705d 127.0.0.1:7380 master - 0
     // 1394372400827 0 connected 5461-10922

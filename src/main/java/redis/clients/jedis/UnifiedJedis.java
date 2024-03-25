@@ -237,6 +237,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
   }
 
+  /**
+   * Needed for unit tests.
+   */
+  public UnifiedJedis(CommandObjects commandObjects, GraphCommandObjects graphCommandObjects,
+                      CommandExecutor executor, ConnectionProvider provider) {
+    this.provider = provider;
+    this.executor = executor;
+    this.commandObjects = commandObjects;
+    this.graphCommandObjects = graphCommandObjects;
+  }
+
   @Override
   public void close() {
     IOUtils.closeQuietly(this.executor);

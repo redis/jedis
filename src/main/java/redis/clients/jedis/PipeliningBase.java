@@ -3907,6 +3907,16 @@ public abstract class PipeliningBase
   public Response<List<String>> tsQueryIndex(String... filters) {
     return appendCommand(commandObjects.tsQueryIndex(filters));
   }
+
+  @Override
+  public Response<TSInfo> tsInfo(String key) {
+    return appendCommand(commandObjects.tsInfo(key));
+  }
+
+  @Override
+  public Response<TSInfo> tsInfoDebug(String key) {
+    return appendCommand(commandObjects.tsInfoDebug(key));
+  }
   // RedisTimeSeries commands
 
   // RedisBloom commands
@@ -4013,6 +4023,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Boolean> cfExists(String key, String item) {
     return appendCommand(commandObjects.cfExists(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfMExists(String key, String... items) {
+    return appendCommand(commandObjects.cfMExists(key, items));
   }
 
   @Override

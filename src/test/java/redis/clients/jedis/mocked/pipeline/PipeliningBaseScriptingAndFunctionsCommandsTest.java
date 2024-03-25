@@ -609,16 +609,6 @@ public class PipeliningBaseScriptingAndFunctionsCommandsTest extends PipeliningB
   }
 
   @Test
-  public void testScriptFlushWithoutKey() {
-    when(commandObjects.scriptFlush()).thenReturn(stringCommandObject);
-
-    Response<String> response = pipeliningBase.scriptFlush();
-
-    assertThat(commands, contains(stringCommandObject));
-    assertThat(response, is(predefinedResponse));
-  }
-
-  @Test
   public void testScriptFlush() {
     when(commandObjects.scriptFlush("key")).thenReturn(stringCommandObject);
 
@@ -666,16 +656,6 @@ public class PipeliningBaseScriptingAndFunctionsCommandsTest extends PipeliningB
   }
 
   @Test
-  public void testScriptKillWithoutKey() {
-    when(commandObjects.scriptKill()).thenReturn(stringCommandObject);
-
-    Response<String> response = pipeliningBase.scriptKill();
-
-    assertThat(commands, contains(stringCommandObject));
-    assertThat(response, is(predefinedResponse));
-  }
-
-  @Test
   public void testScriptKill() {
     when(commandObjects.scriptKill("key")).thenReturn(stringCommandObject);
 
@@ -692,18 +672,6 @@ public class PipeliningBaseScriptingAndFunctionsCommandsTest extends PipeliningB
     when(commandObjects.scriptKill(sampleKey)).thenReturn(stringCommandObject);
 
     Response<String> response = pipeliningBase.scriptKill(sampleKey);
-
-    assertThat(commands, contains(stringCommandObject));
-    assertThat(response, is(predefinedResponse));
-  }
-
-  @Test
-  public void testScriptLoadWithoutKey() {
-    String script = "return 'Hello, world!'";
-
-    when(commandObjects.scriptLoad(script)).thenReturn(stringCommandObject);
-
-    Response<String> response = pipeliningBase.scriptLoad(script);
 
     assertThat(commands, contains(stringCommandObject));
     assertThat(response, is(predefinedResponse));

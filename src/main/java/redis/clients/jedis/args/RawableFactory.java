@@ -66,8 +66,7 @@ public final class RawableFactory {
     public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
-      Raw raw1 = (Raw) o;
-      return Arrays.equals(raw, raw1.raw);
+      return Arrays.equals(raw, ((Raw) o).raw);
     }
 
     @Override

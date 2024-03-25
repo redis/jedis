@@ -26,7 +26,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphQuery(name, query)).thenReturn(resultSetCommandObject);
     when(commandExecutor.executeCommand(resultSetCommandObject)).thenReturn(expectedResponse);
 
-    ResultSet result = unifiedJedis.graphQuery(name, query);
+    ResultSet result = jedis.graphQuery(name, query);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -43,7 +43,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphReadonlyQuery(name, query)).thenReturn(resultSetCommandObject);
     when(commandExecutor.executeCommand(resultSetCommandObject)).thenReturn(expectedResponse);
 
-    ResultSet result = unifiedJedis.graphReadonlyQuery(name, query);
+    ResultSet result = jedis.graphReadonlyQuery(name, query);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -61,7 +61,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphQuery(name, query, timeout)).thenReturn(resultSetCommandObject);
     when(commandExecutor.executeCommand(resultSetCommandObject)).thenReturn(expectedResponse);
 
-    ResultSet result = unifiedJedis.graphQuery(name, query, timeout);
+    ResultSet result = jedis.graphQuery(name, query, timeout);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -79,7 +79,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphReadonlyQuery(name, query, timeout)).thenReturn(resultSetCommandObject);
     when(commandExecutor.executeCommand(resultSetCommandObject)).thenReturn(expectedResponse);
 
-    ResultSet result = unifiedJedis.graphReadonlyQuery(name, query, timeout);
+    ResultSet result = jedis.graphReadonlyQuery(name, query, timeout);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -98,7 +98,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphQuery(name, query, params)).thenReturn(resultSetCommandObject);
     when(commandExecutor.executeCommand(resultSetCommandObject)).thenReturn(expectedResponse);
 
-    ResultSet result = unifiedJedis.graphQuery(name, query, params);
+    ResultSet result = jedis.graphQuery(name, query, params);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -117,7 +117,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphReadonlyQuery(name, query, params)).thenReturn(resultSetCommandObject);
     when(commandExecutor.executeCommand(resultSetCommandObject)).thenReturn(expectedResponse);
 
-    ResultSet result = unifiedJedis.graphReadonlyQuery(name, query, params);
+    ResultSet result = jedis.graphReadonlyQuery(name, query, params);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -137,7 +137,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphQuery(name, query, params, timeout)).thenReturn(resultSetCommandObject);
     when(commandExecutor.executeCommand(resultSetCommandObject)).thenReturn(expectedResponse);
 
-    ResultSet result = unifiedJedis.graphQuery(name, query, params, timeout);
+    ResultSet result = jedis.graphQuery(name, query, params, timeout);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -157,7 +157,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphReadonlyQuery(name, query, params, timeout)).thenReturn(resultSetCommandObject);
     when(commandExecutor.executeCommand(resultSetCommandObject)).thenReturn(expectedResponse);
 
-    ResultSet result = unifiedJedis.graphReadonlyQuery(name, query, params, timeout);
+    ResultSet result = jedis.graphReadonlyQuery(name, query, params, timeout);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -173,7 +173,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(graphCommandObjects.graphDelete(name)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.graphDelete(name);
+    String result = jedis.graphDelete(name);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -190,7 +190,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.graphProfile(graphName, query)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.graphProfile(graphName, query);
+    List<String> result = jedis.graphProfile(graphName, query);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(listStringCommandObject);
@@ -204,7 +204,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.graphList()).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.graphList();
+    List<String> result = jedis.graphList();
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -221,7 +221,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.graphExplain(graphName, query)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.graphExplain(graphName, query);
+    List<String> result = jedis.graphExplain(graphName, query);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(listStringCommandObject);
@@ -239,7 +239,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.graphSlowlog(graphName)).thenReturn(listListObjectCommandObject);
     when(commandExecutor.executeCommand(listListObjectCommandObject)).thenReturn(expectedResponse);
 
-    List<List<Object>> result = unifiedJedis.graphSlowlog(graphName);
+    List<List<Object>> result = jedis.graphSlowlog(graphName);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -256,7 +256,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.graphConfigSet(configName, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.graphConfigSet(configName, value);
+    String result = jedis.graphConfigSet(configName, value);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -272,7 +272,7 @@ public class UnifiedJedisGraphCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.graphConfigGet(configName)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.graphConfigGet(configName);
+    Map<String, Object> result = jedis.graphConfigGet(configName);
 
     assertThat(result, sameInstance(expectedResponse));
 

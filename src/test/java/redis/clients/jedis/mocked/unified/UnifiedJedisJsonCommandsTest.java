@@ -29,7 +29,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrAppend(key, path, pojos)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    Long result = unifiedJedis.jsonArrAppend(key, path, pojos);
+    Long result = jedis.jsonArrAppend(key, path, pojos);
 
     assertEquals(expectedResponse, result);
 
@@ -47,7 +47,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrAppend(key, path, objects)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonArrAppend(key, path, objects);
+    List<Long> result = jedis.jsonArrAppend(key, path, objects);
 
     assertEquals(expectedResponse, result);
 
@@ -65,7 +65,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrAppendWithEscape(key, path, objects)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonArrAppendWithEscape(key, path, objects);
+    List<Long> result = jedis.jsonArrAppendWithEscape(key, path, objects);
 
     assertEquals(expectedResponse, result);
 
@@ -83,7 +83,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrIndex(key, path, scalar)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonArrIndex(key, path, scalar);
+    long result = jedis.jsonArrIndex(key, path, scalar);
 
     assertEquals(expectedResponse, result);
 
@@ -101,7 +101,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrIndex(key, path, scalar)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonArrIndex(key, path, scalar);
+    List<Long> result = jedis.jsonArrIndex(key, path, scalar);
 
     assertEquals(expectedResponse, result);
 
@@ -119,7 +119,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrIndexWithEscape(key, path, scalar)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonArrIndexWithEscape(key, path, scalar);
+    List<Long> result = jedis.jsonArrIndexWithEscape(key, path, scalar);
 
     assertEquals(expectedResponse, result);
 
@@ -138,7 +138,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrInsert(key, path, index, pojos)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonArrInsert(key, path, index, pojos);
+    long result = jedis.jsonArrInsert(key, path, index, pojos);
 
     assertEquals(expectedResponse, result);
 
@@ -157,7 +157,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrInsert(key, path, index, objects)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonArrInsert(key, path, index, objects);
+    List<Long> result = jedis.jsonArrInsert(key, path, index, objects);
 
     assertEquals(expectedResponse, result);
 
@@ -176,7 +176,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrInsertWithEscape(key, path, index, objects)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonArrInsertWithEscape(key, path, index, objects);
+    List<Long> result = jedis.jsonArrInsertWithEscape(key, path, index, objects);
 
     assertEquals(expectedResponse, result);
 
@@ -192,7 +192,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrLen(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    Long result = unifiedJedis.jsonArrLen(key);
+    Long result = jedis.jsonArrLen(key);
 
     assertEquals(expectedResponse, result);
 
@@ -209,7 +209,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrLen(key, path)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    Long result = unifiedJedis.jsonArrLen(key, path);
+    Long result = jedis.jsonArrLen(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -226,7 +226,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrLen(key, path)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonArrLen(key, path);
+    List<Long> result = jedis.jsonArrLen(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -242,7 +242,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrPop(key)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.jsonArrPop(key);
+    Object result = jedis.jsonArrPop(key);
 
     assertEquals(expectedResponse, result);
 
@@ -259,7 +259,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrPop(key, path)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.jsonArrPop(key, path);
+    Object result = jedis.jsonArrPop(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -277,7 +277,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrPop(key, path, index)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.jsonArrPop(key, path, index);
+    Object result = jedis.jsonArrPop(key, path, index);
 
     assertEquals(expectedResponse, result);
 
@@ -295,7 +295,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrPop(key, clazz, path)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonArrPop(key, clazz, path);
+    String result = jedis.jsonArrPop(key, clazz, path);
 
     assertEquals(expectedResponse, result);
 
@@ -314,7 +314,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrPop(key, clazz, path, index)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonArrPop(key, clazz, path, index);
+    String result = jedis.jsonArrPop(key, clazz, path, index);
 
     assertEquals(expectedResponse, result);
 
@@ -331,7 +331,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrPop(key, path)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedResponse);
 
-    List<Object> result = unifiedJedis.jsonArrPop(key, path);
+    List<Object> result = jedis.jsonArrPop(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -349,7 +349,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrPop(key, path, index)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedResponse);
 
-    List<Object> result = unifiedJedis.jsonArrPop(key, path, index);
+    List<Object> result = jedis.jsonArrPop(key, path, index);
 
     assertEquals(expectedResponse, result);
 
@@ -366,7 +366,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrPop(key, clazz)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonArrPop(key, clazz);
+    String result = jedis.jsonArrPop(key, clazz);
 
     assertEquals(expectedResponse, result);
 
@@ -385,7 +385,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrTrim(key, path, start, stop)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    Long result = unifiedJedis.jsonArrTrim(key, path, start, stop);
+    Long result = jedis.jsonArrTrim(key, path, start, stop);
 
     assertEquals(expectedResponse, result);
 
@@ -404,7 +404,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonArrTrim(key, path, start, stop)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonArrTrim(key, path, start, stop);
+    List<Long> result = jedis.jsonArrTrim(key, path, start, stop);
 
     assertEquals(expectedResponse, result);
 
@@ -420,7 +420,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonClear(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonClear(key);
+    long result = jedis.jsonClear(key);
 
     assertEquals(expectedResponse, result);
 
@@ -437,7 +437,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonClear(key, path)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonClear(key, path);
+    long result = jedis.jsonClear(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -454,7 +454,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonClear(key, path)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonClear(key, path);
+    long result = jedis.jsonClear(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -470,7 +470,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonDebugMemory(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonDebugMemory(key);
+    long result = jedis.jsonDebugMemory(key);
 
     assertEquals(expectedResponse, result);
 
@@ -487,7 +487,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonDebugMemory(key, path)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonDebugMemory(key, path);
+    long result = jedis.jsonDebugMemory(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -504,7 +504,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonDebugMemory(key, path)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonDebugMemory(key, path);
+    List<Long> result = jedis.jsonDebugMemory(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -520,7 +520,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonDel(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonDel(key);
+    long result = jedis.jsonDel(key);
 
     assertEquals(expectedResponse, result);
 
@@ -537,7 +537,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonDel(key, path)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonDel(key, path);
+    long result = jedis.jsonDel(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -554,7 +554,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonDel(key, path)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonDel(key, path);
+    long result = jedis.jsonDel(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -570,7 +570,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonGet(key)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.jsonGet(key);
+    Object result = jedis.jsonGet(key);
 
     assertEquals(expectedResponse, result);
 
@@ -587,7 +587,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonGet(key, clazz)).thenReturn(myBeanCommandObject);
     when(commandExecutor.executeCommand(myBeanCommandObject)).thenReturn(expectedResponse);
 
-    MyBean result = unifiedJedis.jsonGet(key, clazz);
+    MyBean result = jedis.jsonGet(key, clazz);
 
     assertEquals(expectedResponse, result);
 
@@ -604,7 +604,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonGet(key, paths)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.jsonGet(key, paths);
+    Object result = jedis.jsonGet(key, paths);
 
     assertEquals(expectedResponse, result);
 
@@ -621,7 +621,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonGet(key, paths)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.jsonGet(key, paths);
+    Object result = jedis.jsonGet(key, paths);
 
     assertEquals(expectedResponse, result);
 
@@ -638,7 +638,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonGetAsPlainString(key, path)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonGetAsPlainString(key, path);
+    String result = jedis.jsonGetAsPlainString(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -656,7 +656,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonGet(key, clazz, paths)).thenReturn(myBeanCommandObject);
     when(commandExecutor.executeCommand(myBeanCommandObject)).thenReturn(expectedResponse);
 
-    MyBean result = unifiedJedis.jsonGet(key, clazz, paths);
+    MyBean result = jedis.jsonGet(key, clazz, paths);
 
     assertEquals(expectedResponse, result);
 
@@ -674,7 +674,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonMerge(key, path, pojo)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonMerge(key, path, pojo);
+    String result = jedis.jsonMerge(key, path, pojo);
 
     assertEquals(expectedResponse, result);
 
@@ -692,7 +692,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonMerge(key, path, object)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonMerge(key, path, object);
+    String result = jedis.jsonMerge(key, path, object);
 
     assertEquals(expectedResponse, result);
 
@@ -710,7 +710,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonMGet(path, clazz, keys)).thenReturn(listMyBeanCommandObject);
     when(commandExecutor.executeCommand(listMyBeanCommandObject)).thenReturn(expectedResponse);
 
-    List<MyBean> result = unifiedJedis.jsonMGet(path, clazz, keys);
+    List<MyBean> result = jedis.jsonMGet(path, clazz, keys);
 
     assertEquals(expectedResponse, result);
 
@@ -727,7 +727,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonMGet(path, keys)).thenReturn(listJsonArrayCommandObject);
     when(commandExecutor.executeCommand(listJsonArrayCommandObject)).thenReturn(expectedResponse);
 
-    List<JSONArray> result = unifiedJedis.jsonMGet(path, keys);
+    List<JSONArray> result = jedis.jsonMGet(path, keys);
 
     assertEquals(expectedResponse, result);
 
@@ -745,7 +745,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonNumIncrBy(key, path, value)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedResponse);
 
-    double result = unifiedJedis.jsonNumIncrBy(key, path, value);
+    double result = jedis.jsonNumIncrBy(key, path, value);
 
     assertEquals(expectedResponse, result, 0.0);
 
@@ -763,7 +763,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonNumIncrBy(key, path, value)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.jsonNumIncrBy(key, path, value);
+    Object result = jedis.jsonNumIncrBy(key, path, value);
 
     assertEquals(expectedResponse, result);
 
@@ -781,7 +781,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonSet(key, path, pojo)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonSet(key, path, pojo);
+    String result = jedis.jsonSet(key, path, pojo);
 
     assertEquals(expectedResponse, result);
 
@@ -800,7 +800,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonSet(key, path, pojo, params)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonSet(key, path, pojo, params);
+    String result = jedis.jsonSet(key, path, pojo, params);
 
     assertEquals(expectedResponse, result);
 
@@ -818,7 +818,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonSet(key, path, object)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonSet(key, path, object);
+    String result = jedis.jsonSet(key, path, object);
 
     assertEquals(expectedResponse, result);
 
@@ -836,7 +836,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonSetWithEscape(key, path, object)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonSetWithEscape(key, path, object);
+    String result = jedis.jsonSetWithEscape(key, path, object);
 
     assertEquals(expectedResponse, result);
 
@@ -855,7 +855,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonSet(key, path, object, params)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonSet(key, path, object, params);
+    String result = jedis.jsonSet(key, path, object, params);
 
     assertEquals(expectedResponse, result);
 
@@ -874,7 +874,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonSetWithEscape(key, path, object, params)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonSetWithEscape(key, path, object, params);
+    String result = jedis.jsonSetWithEscape(key, path, object, params);
 
     assertEquals(expectedResponse, result);
 
@@ -892,7 +892,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonSetWithPlainString(key, path, jsonString)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonSetWithPlainString(key, path, jsonString);
+    String result = jedis.jsonSetWithPlainString(key, path, jsonString);
 
     assertEquals(expectedResponse, result);
 
@@ -909,7 +909,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonStrAppend(key, string)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonStrAppend(key, string);
+    long result = jedis.jsonStrAppend(key, string);
 
     assertEquals(expectedResponse, result);
 
@@ -927,7 +927,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonStrAppend(key, path, string)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.jsonStrAppend(key, path, string);
+    long result = jedis.jsonStrAppend(key, path, string);
 
     assertEquals(expectedResponse, result);
 
@@ -945,7 +945,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonStrAppend(key, path, string)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonStrAppend(key, path, string);
+    List<Long> result = jedis.jsonStrAppend(key, path, string);
 
     assertEquals(expectedResponse, result);
 
@@ -961,7 +961,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonStrLen(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    Long result = unifiedJedis.jsonStrLen(key);
+    Long result = jedis.jsonStrLen(key);
 
     assertEquals(expectedResponse, result);
 
@@ -978,7 +978,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonStrLen(key, path)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    Long result = unifiedJedis.jsonStrLen(key, path);
+    Long result = jedis.jsonStrLen(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -995,7 +995,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonStrLen(key, path)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonStrLen(key, path);
+    List<Long> result = jedis.jsonStrLen(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -1012,7 +1012,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonToggle(key, path)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.jsonToggle(key, path);
+    String result = jedis.jsonToggle(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -1029,7 +1029,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonToggle(key, path)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.jsonToggle(key, path);
+    List<Boolean> result = jedis.jsonToggle(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -1050,7 +1050,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
       }
     });
 
-    Class<?> result = unifiedJedis.jsonType(key);
+    Class<?> result = jedis.jsonType(key);
 
     assertEquals(expectedResponse, result);
 
@@ -1072,7 +1072,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
       }
     });
 
-    Class<?> result = unifiedJedis.jsonType(key, path);
+    Class<?> result = jedis.jsonType(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -1089,7 +1089,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonType(key, path)).thenReturn(listClassCommandObject);
     when(commandExecutor.executeCommand(listClassCommandObject)).thenReturn(expectedResponse);
 
-    List<Class<?>> result = unifiedJedis.jsonType(key, path);
+    List<Class<?>> result = jedis.jsonType(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -1105,7 +1105,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonObjKeys(key)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.jsonObjKeys(key);
+    List<String> result = jedis.jsonObjKeys(key);
 
     assertEquals(expectedResponse, result);
 
@@ -1122,7 +1122,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonObjKeys(key, path)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.jsonObjKeys(key, path);
+    List<String> result = jedis.jsonObjKeys(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -1139,7 +1139,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonObjKeys(key, path)).thenReturn(listListStringCommandObject);
     when(commandExecutor.executeCommand(listListStringCommandObject)).thenReturn(expectedResponse);
 
-    List<List<String>> result = unifiedJedis.jsonObjKeys(key, path);
+    List<List<String>> result = jedis.jsonObjKeys(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -1155,7 +1155,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonObjLen(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    Long result = unifiedJedis.jsonObjLen(key);
+    Long result = jedis.jsonObjLen(key);
 
     assertEquals(expectedResponse, result);
 
@@ -1172,7 +1172,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonObjLen(key, path)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    Long result = unifiedJedis.jsonObjLen(key, path);
+    Long result = jedis.jsonObjLen(key, path);
 
     assertEquals(expectedResponse, result);
 
@@ -1189,7 +1189,7 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.jsonObjLen(key, path)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.jsonObjLen(key, path);
+    List<Long> result = jedis.jsonObjLen(key, path);
 
     assertEquals(expectedResponse, result);
 

@@ -26,7 +26,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfAdd(key, item)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.bfAdd(key, item);
+    boolean result = jedis.bfAdd(key, item);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -42,7 +42,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfCard(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.bfCard(key);
+    long result = jedis.bfCard(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -59,7 +59,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfExists(key, item)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.bfExists(key, item);
+    boolean result = jedis.bfExists(key, item);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -78,7 +78,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfInfo(key)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.bfInfo(key);
+    Map<String, Object> result = jedis.bfInfo(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -95,7 +95,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfInsert(key, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.bfInsert(key, items);
+    List<Boolean> result = jedis.bfInsert(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -113,7 +113,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfInsert(key, insertParams, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.bfInsert(key, insertParams, items);
+    List<Boolean> result = jedis.bfInsert(key, insertParams, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -131,7 +131,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfLoadChunk(key, iterator, data)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.bfLoadChunk(key, iterator, data);
+    String result = jedis.bfLoadChunk(key, iterator, data);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -148,7 +148,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfMAdd(key, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.bfMAdd(key, items);
+    List<Boolean> result = jedis.bfMAdd(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -165,7 +165,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfMExists(key, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.bfMExists(key, items);
+    List<Boolean> result = jedis.bfMExists(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -183,7 +183,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfReserve(key, errorRate, capacity)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.bfReserve(key, errorRate, capacity);
+    String result = jedis.bfReserve(key, errorRate, capacity);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -202,7 +202,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfReserve(key, errorRate, capacity, reserveParams)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.bfReserve(key, errorRate, capacity, reserveParams);
+    String result = jedis.bfReserve(key, errorRate, capacity, reserveParams);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -219,7 +219,7 @@ public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bfScanDump(key, iterator)).thenReturn(entryLongBytesCommandObject);
     when(commandExecutor.executeCommand(entryLongBytesCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<Long, byte[]> result = unifiedJedis.bfScanDump(key, iterator);
+    Map.Entry<Long, byte[]> result = jedis.bfScanDump(key, iterator);
 
     assertThat(result, sameInstance(expectedResponse));
 

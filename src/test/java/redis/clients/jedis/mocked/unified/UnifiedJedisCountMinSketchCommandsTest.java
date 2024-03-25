@@ -25,7 +25,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.cmsIncrBy(key, itemIncrements)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.cmsIncrBy(key, itemIncrements);
+    List<Long> result = jedis.cmsIncrBy(key, itemIncrements);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -44,7 +44,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.cmsInfo(key)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.cmsInfo(key);
+    Map<String, Object> result = jedis.cmsInfo(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -62,7 +62,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.cmsInitByDim(key, width, depth)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.cmsInitByDim(key, width, depth);
+    String result = jedis.cmsInitByDim(key, width, depth);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -80,7 +80,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.cmsInitByProb(key, error, probability)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.cmsInitByProb(key, error, probability);
+    String result = jedis.cmsInitByProb(key, error, probability);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -97,7 +97,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.cmsMerge(destKey, keys)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.cmsMerge(destKey, keys);
+    String result = jedis.cmsMerge(destKey, keys);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -116,7 +116,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.cmsMerge(destKey, keysAndWeights)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.cmsMerge(destKey, keysAndWeights);
+    String result = jedis.cmsMerge(destKey, keysAndWeights);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -133,7 +133,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.cmsQuery(key, items)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.cmsQuery(key, items);
+    List<Long> result = jedis.cmsQuery(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 

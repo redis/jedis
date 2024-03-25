@@ -18,7 +18,7 @@ public class UnifiedJedisHyperloglogCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.pfadd(key, elements)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.pfadd(key, elements);
+    long result = jedis.pfadd(key, elements);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -35,7 +35,7 @@ public class UnifiedJedisHyperloglogCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.pfadd(key, elements)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.pfadd(key, elements);
+    long result = jedis.pfadd(key, elements);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -51,7 +51,7 @@ public class UnifiedJedisHyperloglogCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.pfcount(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.pfcount(key);
+    long result = jedis.pfcount(key);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -67,7 +67,7 @@ public class UnifiedJedisHyperloglogCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.pfcount(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.pfcount(key);
+    long result = jedis.pfcount(key);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -83,7 +83,7 @@ public class UnifiedJedisHyperloglogCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.pfcount(keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.pfcount(keys);
+    long result = jedis.pfcount(keys);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -99,7 +99,7 @@ public class UnifiedJedisHyperloglogCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.pfcount(keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.pfcount(keys);
+    long result = jedis.pfcount(keys);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -115,7 +115,7 @@ public class UnifiedJedisHyperloglogCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.pfmerge(destkey, sourcekeys)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedStatus);
 
-    String result = unifiedJedis.pfmerge(destkey, sourcekeys);
+    String result = jedis.pfmerge(destkey, sourcekeys);
 
     assertThat(result, equalTo(expectedStatus));
 
@@ -132,7 +132,7 @@ public class UnifiedJedisHyperloglogCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.pfmerge(destkey, sourcekeys)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedStatus);
 
-    String result = unifiedJedis.pfmerge(destkey, sourcekeys);
+    String result = jedis.pfmerge(destkey, sourcekeys);
 
     assertThat(result, equalTo(expectedStatus));
 

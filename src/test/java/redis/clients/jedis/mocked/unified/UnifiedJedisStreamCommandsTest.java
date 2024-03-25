@@ -45,7 +45,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xack(key, group, ids)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAcked);
 
-    long result = unifiedJedis.xack(key, group, ids);
+    long result = jedis.xack(key, group, ids);
 
     assertThat(result, equalTo(expectedAcked));
 
@@ -63,7 +63,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xack(key, group, ids)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAcked);
 
-    long result = unifiedJedis.xack(key, group, ids);
+    long result = jedis.xack(key, group, ids);
 
     assertThat(result, equalTo(expectedAcked));
 
@@ -83,7 +83,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xadd(key, id, hash)).thenReturn(streamEntryIdCommandObject);
     when(commandExecutor.executeCommand(streamEntryIdCommandObject)).thenReturn(expectedEntryID);
 
-    StreamEntryID result = unifiedJedis.xadd(key, id, hash);
+    StreamEntryID result = jedis.xadd(key, id, hash);
 
     assertThat(result, equalTo(expectedEntryID));
 
@@ -102,7 +102,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xadd(key, params, hash)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedEntryId);
 
-    byte[] result = unifiedJedis.xadd(key, params, hash);
+    byte[] result = jedis.xadd(key, params, hash);
 
     assertThat(result, equalTo(expectedEntryId));
 
@@ -122,7 +122,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xadd(key, params, hash)).thenReturn(streamEntryIdCommandObject);
     when(commandExecutor.executeCommand(streamEntryIdCommandObject)).thenReturn(expectedEntryID);
 
-    StreamEntryID result = unifiedJedis.xadd(key, params, hash);
+    StreamEntryID result = jedis.xadd(key, params, hash);
 
     assertThat(result, equalTo(expectedEntryID));
 
@@ -145,7 +145,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xautoclaim(key, group, consumerName, minIdleTime, start, params)).thenReturn(entryStreamEntryIdListStreamEntryCommandObject);
     when(commandExecutor.executeCommand(entryStreamEntryIdListStreamEntryCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<StreamEntryID, List<StreamEntry>> result = unifiedJedis.xautoclaim(key, group, consumerName, minIdleTime, start, params);
+    Map.Entry<StreamEntryID, List<StreamEntry>> result = jedis.xautoclaim(key, group, consumerName, minIdleTime, start, params);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -166,7 +166,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedAutoClaimResult);
 
-    List<Object> result = unifiedJedis.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
+    List<Object> result = jedis.xautoclaim(key, groupName, consumerName, minIdleTime, start, params);
 
     assertThat(result, equalTo(expectedAutoClaimResult));
 
@@ -189,7 +189,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params)).thenReturn(entryStreamEntryIdListStreamEntryIdCommandObject);
     when(commandExecutor.executeCommand(entryStreamEntryIdListStreamEntryIdCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<StreamEntryID, List<StreamEntryID>> result = unifiedJedis.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
+    Map.Entry<StreamEntryID, List<StreamEntryID>> result = jedis.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -210,7 +210,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedAutoClaimResult);
 
-    List<Object> result = unifiedJedis.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
+    List<Object> result = jedis.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params);
 
     assertThat(result, equalTo(expectedAutoClaimResult));
 
@@ -231,7 +231,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xclaim(key, group, consumerName, minIdleTime, params, ids);
+    List<StreamEntry> result = jedis.xclaim(key, group, consumerName, minIdleTime, params, ids);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -252,7 +252,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedClaimedIds);
 
-    List<byte[]> result = unifiedJedis.xclaim(key, group, consumerName, minIdleTime, params, ids);
+    List<byte[]> result = jedis.xclaim(key, group, consumerName, minIdleTime, params, ids);
 
     assertThat(result, equalTo(expectedClaimedIds));
 
@@ -273,7 +273,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids)).thenReturn(listStreamEntryIdCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryIdCommandObject)).thenReturn(expectedEntryIds);
 
-    List<StreamEntryID> result = unifiedJedis.xclaimJustId(key, group, consumerName, minIdleTime, params, ids);
+    List<StreamEntryID> result = jedis.xclaimJustId(key, group, consumerName, minIdleTime, params, ids);
 
     assertThat(result, equalTo(expectedEntryIds));
 
@@ -294,7 +294,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedClaimedIds);
 
-    List<byte[]> result = unifiedJedis.xclaimJustId(key, group, consumerName, minIdleTime, params, ids);
+    List<byte[]> result = jedis.xclaimJustId(key, group, consumerName, minIdleTime, params, ids);
 
     assertThat(result, equalTo(expectedClaimedIds));
 
@@ -311,7 +311,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xdel(key, ids)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedDeletedCount);
 
-    long result = unifiedJedis.xdel(key, ids);
+    long result = jedis.xdel(key, ids);
 
     assertThat(result, equalTo(expectedDeletedCount));
 
@@ -328,7 +328,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xdel(key, ids)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedDeleted);
 
-    long result = unifiedJedis.xdel(key, ids);
+    long result = jedis.xdel(key, ids);
 
     assertThat(result, equalTo(expectedDeleted));
 
@@ -347,7 +347,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupCreate(key, groupName, id, makeStream)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.xgroupCreate(key, groupName, id, makeStream);
+    String result = jedis.xgroupCreate(key, groupName, id, makeStream);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -366,7 +366,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupCreate(key, groupName, id, makeStream)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.xgroupCreate(key, groupName, id, makeStream);
+    String result = jedis.xgroupCreate(key, groupName, id, makeStream);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -384,7 +384,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupCreateConsumer(key, groupName, consumerName)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.xgroupCreateConsumer(key, groupName, consumerName);
+    boolean result = jedis.xgroupCreateConsumer(key, groupName, consumerName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -402,7 +402,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupCreateConsumer(key, groupName, consumerName)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.xgroupCreateConsumer(key, groupName, consumerName);
+    boolean result = jedis.xgroupCreateConsumer(key, groupName, consumerName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -420,7 +420,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupDelConsumer(key, groupName, consumerName)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedDeletedCount);
 
-    long result = unifiedJedis.xgroupDelConsumer(key, groupName, consumerName);
+    long result = jedis.xgroupDelConsumer(key, groupName, consumerName);
 
     assertThat(result, equalTo(expectedDeletedCount));
 
@@ -438,7 +438,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupDelConsumer(key, groupName, consumerName)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedDeleted);
 
-    long result = unifiedJedis.xgroupDelConsumer(key, groupName, consumerName);
+    long result = jedis.xgroupDelConsumer(key, groupName, consumerName);
 
     assertThat(result, equalTo(expectedDeleted));
 
@@ -455,7 +455,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupDestroy(key, groupName)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.xgroupDestroy(key, groupName);
+    long result = jedis.xgroupDestroy(key, groupName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -472,7 +472,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupDestroy(key, groupName)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedDestroyed);
 
-    long result = unifiedJedis.xgroupDestroy(key, groupName);
+    long result = jedis.xgroupDestroy(key, groupName);
 
     assertThat(result, equalTo(expectedDestroyed));
 
@@ -490,7 +490,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupSetID(key, groupName, id)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.xgroupSetID(key, groupName, id);
+    String result = jedis.xgroupSetID(key, groupName, id);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -508,7 +508,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xgroupSetID(key, groupName, id)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.xgroupSetID(key, groupName, id);
+    String result = jedis.xgroupSetID(key, groupName, id);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -525,7 +525,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoConsumers(key, group)).thenReturn(listStreamConsumersInfoCommandObject);
     when(commandExecutor.executeCommand(listStreamConsumersInfoCommandObject)).thenReturn(expectedConsumers);
 
-    List<StreamConsumersInfo> result = unifiedJedis.xinfoConsumers(key, group);
+    List<StreamConsumersInfo> result = jedis.xinfoConsumers(key, group);
 
     assertThat(result, equalTo(expectedConsumers));
 
@@ -542,7 +542,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoConsumers(key, group)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedConsumersInfo);
 
-    List<Object> result = unifiedJedis.xinfoConsumers(key, group);
+    List<Object> result = jedis.xinfoConsumers(key, group);
 
     assertThat(result, equalTo(expectedConsumersInfo));
 
@@ -559,7 +559,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoConsumers2(key, group)).thenReturn(listStreamConsumerInfoCommandObject);
     when(commandExecutor.executeCommand(listStreamConsumerInfoCommandObject)).thenReturn(expectedConsumerInfos);
 
-    List<StreamConsumerInfo> result = unifiedJedis.xinfoConsumers2(key, group);
+    List<StreamConsumerInfo> result = jedis.xinfoConsumers2(key, group);
 
     assertThat(result, equalTo(expectedConsumerInfos));
 
@@ -575,7 +575,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoGroups(key)).thenReturn(listStreamGroupInfoCommandObject);
     when(commandExecutor.executeCommand(listStreamGroupInfoCommandObject)).thenReturn(expectedGroups);
 
-    List<StreamGroupInfo> result = unifiedJedis.xinfoGroups(key);
+    List<StreamGroupInfo> result = jedis.xinfoGroups(key);
 
     assertThat(result, equalTo(expectedGroups));
 
@@ -591,7 +591,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoGroups(key)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedGroupsInfo);
 
-    List<Object> result = unifiedJedis.xinfoGroups(key);
+    List<Object> result = jedis.xinfoGroups(key);
 
     assertThat(result, equalTo(expectedGroupsInfo));
 
@@ -607,7 +607,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoStream(key)).thenReturn(streamInfoCommandObject);
     when(commandExecutor.executeCommand(streamInfoCommandObject)).thenReturn(expectedStreamInfo);
 
-    StreamInfo result = unifiedJedis.xinfoStream(key);
+    StreamInfo result = jedis.xinfoStream(key);
 
     assertThat(result, sameInstance(expectedStreamInfo));
 
@@ -623,7 +623,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoStream(key)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedStreamInfo);
 
-    Object result = unifiedJedis.xinfoStream(key);
+    Object result = jedis.xinfoStream(key);
 
     assertThat(result, sameInstance(expectedStreamInfo));
 
@@ -639,7 +639,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoStreamFull(key)).thenReturn(streamFullInfoCommandObject);
     when(commandExecutor.executeCommand(streamFullInfoCommandObject)).thenReturn(expectedStreamFullInfo);
 
-    StreamFullInfo result = unifiedJedis.xinfoStreamFull(key);
+    StreamFullInfo result = jedis.xinfoStreamFull(key);
 
     assertThat(result, sameInstance(expectedStreamFullInfo));
 
@@ -655,7 +655,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoStreamFull(key)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedStreamInfoFull);
 
-    Object result = unifiedJedis.xinfoStreamFull(key);
+    Object result = jedis.xinfoStreamFull(key);
 
     assertThat(result, sameInstance(expectedStreamInfoFull));
 
@@ -672,7 +672,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoStreamFull(key, count)).thenReturn(streamFullInfoCommandObject);
     when(commandExecutor.executeCommand(streamFullInfoCommandObject)).thenReturn(expectedStreamFullInfo);
 
-    StreamFullInfo result = unifiedJedis.xinfoStreamFull(key, count);
+    StreamFullInfo result = jedis.xinfoStreamFull(key, count);
 
     assertThat(result, sameInstance(expectedStreamFullInfo));
 
@@ -689,7 +689,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xinfoStreamFull(key, count)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedStreamInfoFull);
 
-    Object result = unifiedJedis.xinfoStreamFull(key, count);
+    Object result = jedis.xinfoStreamFull(key, count);
 
     assertThat(result, sameInstance(expectedStreamInfoFull));
 
@@ -705,7 +705,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xlen(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedLength);
 
-    long result = unifiedJedis.xlen(key);
+    long result = jedis.xlen(key);
 
     assertThat(result, equalTo(expectedLength));
 
@@ -721,7 +721,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xlen(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedLength);
 
-    long result = unifiedJedis.xlen(key);
+    long result = jedis.xlen(key);
 
     assertThat(result, equalTo(expectedLength));
 
@@ -739,7 +739,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xpending(key, groupName)).thenReturn(streamPendingSummaryCommandObject);
     when(commandExecutor.executeCommand(streamPendingSummaryCommandObject)).thenReturn(expectedSummary);
 
-    StreamPendingSummary result = unifiedJedis.xpending(key, groupName);
+    StreamPendingSummary result = jedis.xpending(key, groupName);
 
     assertThat(result, equalTo(expectedSummary));
 
@@ -756,7 +756,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xpending(key, groupName)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedPendingInfo);
 
-    Object result = unifiedJedis.xpending(key, groupName);
+    Object result = jedis.xpending(key, groupName);
 
     assertThat(result, sameInstance(expectedPendingInfo));
 
@@ -774,7 +774,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xpending(key, groupName, params)).thenReturn(listStreamPendingEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamPendingEntryCommandObject)).thenReturn(expectedPendingEntries);
 
-    List<StreamPendingEntry> result = unifiedJedis.xpending(key, groupName, params);
+    List<StreamPendingEntry> result = jedis.xpending(key, groupName, params);
 
     assertThat(result, equalTo(expectedPendingEntries));
 
@@ -792,7 +792,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xpending(key, groupName, params)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedPendingList);
 
-    List<Object> result = unifiedJedis.xpending(key, groupName, params);
+    List<Object> result = jedis.xpending(key, groupName, params);
 
     assertThat(result, equalTo(expectedPendingList));
 
@@ -813,7 +813,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrange(key, start, end)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xrange(key, start, end);
+    List<StreamEntry> result = jedis.xrange(key, start, end);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -833,7 +833,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrange(key, start, end)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedRange);
 
-    List<Object> result = unifiedJedis.xrange(key, start, end);
+    List<Object> result = jedis.xrange(key, start, end);
 
     assertThat(result, equalTo(expectedRange));
 
@@ -855,7 +855,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrange(key, start, end, count)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xrange(key, start, end, count);
+    List<StreamEntry> result = jedis.xrange(key, start, end, count);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -876,7 +876,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrange(key, start, end, count)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedRange);
 
-    List<Object> result = unifiedJedis.xrange(key, start, end, count);
+    List<Object> result = jedis.xrange(key, start, end, count);
 
     assertThat(result, equalTo(expectedRange));
 
@@ -898,7 +898,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrange(key, start, end)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xrange(key, start, end);
+    List<StreamEntry> result = jedis.xrange(key, start, end);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -920,7 +920,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrange(key, start, end, count)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xrange(key, start, end, count);
+    List<StreamEntry> result = jedis.xrange(key, start, end, count);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -937,7 +937,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xread(xReadParams, streams)).thenReturn(listEntryStringListStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listEntryStringListStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<Map.Entry<String, List<StreamEntry>>> result = unifiedJedis.xread(xReadParams, streams);
+    List<Map.Entry<String, List<StreamEntry>>> result = jedis.xread(xReadParams, streams);
 
     assertThat(result, equalTo(expectedEntries));
     verify(commandExecutor).executeCommand(listEntryStringListStreamEntryCommandObject);
@@ -953,7 +953,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xread(xReadParams, stream1)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReadResult);
 
-    List<Object> result = unifiedJedis.xread(xReadParams, stream1);
+    List<Object> result = jedis.xread(xReadParams, stream1);
 
     assertThat(result, equalTo(expectedReadResult));
 
@@ -972,7 +972,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams)).thenReturn(listEntryStringListStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listEntryStringListStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<Map.Entry<String, List<StreamEntry>>> result = unifiedJedis.xreadGroup(groupName, consumer, xReadGroupParams, streams);
+    List<Map.Entry<String, List<StreamEntry>>> result = jedis.xreadGroup(groupName, consumer, xReadGroupParams, streams);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -991,7 +991,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, stream1)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReadGroupResult);
 
-    List<Object> result = unifiedJedis.xreadGroup(groupName, consumer, xReadGroupParams, stream1);
+    List<Object> result = jedis.xreadGroup(groupName, consumer, xReadGroupParams, stream1);
 
     assertThat(result, equalTo(expectedReadGroupResult));
 
@@ -1012,7 +1012,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrevrange(key, end, start)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xrevrange(key, end, start);
+    List<StreamEntry> result = jedis.xrevrange(key, end, start);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -1032,7 +1032,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrevrange(key, end, start)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReverseRange);
 
-    List<Object> result = unifiedJedis.xrevrange(key, end, start);
+    List<Object> result = jedis.xrevrange(key, end, start);
 
     assertThat(result, equalTo(expectedReverseRange));
 
@@ -1054,7 +1054,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrevrange(key, end, start, count)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xrevrange(key, end, start, count);
+    List<StreamEntry> result = jedis.xrevrange(key, end, start, count);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -1074,7 +1074,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrevrange(key, end, start, count)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReverseRange);
 
-    List<Object> result = unifiedJedis.xrevrange(key, end, start, count);
+    List<Object> result = jedis.xrevrange(key, end, start, count);
 
     assertThat(result, equalTo(expectedReverseRange));
 
@@ -1095,7 +1095,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrevrange(key, end, start)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xrevrange(key, end, start);
+    List<StreamEntry> result = jedis.xrevrange(key, end, start);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -1117,7 +1117,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xrevrange(key, end, start, count)).thenReturn(listStreamEntryCommandObject);
     when(commandExecutor.executeCommand(listStreamEntryCommandObject)).thenReturn(expectedEntries);
 
-    List<StreamEntry> result = unifiedJedis.xrevrange(key, end, start, count);
+    List<StreamEntry> result = jedis.xrevrange(key, end, start, count);
 
     assertThat(result, equalTo(expectedEntries));
 
@@ -1135,7 +1135,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xtrim(key, maxLen, approximate)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedTrimmedCount);
 
-    long result = unifiedJedis.xtrim(key, maxLen, approximate);
+    long result = jedis.xtrim(key, maxLen, approximate);
 
     assertThat(result, equalTo(expectedTrimmedCount));
 
@@ -1153,7 +1153,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xtrim(key, maxLen, approximateLength)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedTrimmed);
 
-    long result = unifiedJedis.xtrim(key, maxLen, approximateLength);
+    long result = jedis.xtrim(key, maxLen, approximateLength);
 
     assertThat(result, equalTo(expectedTrimmed));
 
@@ -1170,7 +1170,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xtrim(key, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedTrimmedCount);
 
-    long result = unifiedJedis.xtrim(key, params);
+    long result = jedis.xtrim(key, params);
 
     assertThat(result, equalTo(expectedTrimmedCount));
 
@@ -1187,7 +1187,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.xtrim(key, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedTrimmed);
 
-    long result = unifiedJedis.xtrim(key, params);
+    long result = jedis.xtrim(key, params);
 
     assertThat(result, equalTo(expectedTrimmed));
 

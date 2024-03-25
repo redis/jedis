@@ -27,7 +27,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendCommand(cmd);
+    Object result = jedis.sendCommand(cmd);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());
@@ -51,7 +51,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendCommand(cmd, args);
+    Object result = jedis.sendCommand(cmd, args);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());
@@ -79,7 +79,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendBlockingCommand(cmd, args);
+    Object result = jedis.sendBlockingCommand(cmd, args);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());
@@ -103,7 +103,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendCommand(cmd, args);
+    Object result = jedis.sendCommand(cmd, args);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());
@@ -131,7 +131,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendBlockingCommand(cmd, args);
+    Object result = jedis.sendBlockingCommand(cmd, args);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());
@@ -159,7 +159,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendCommand(sampleKey, cmd, args);
+    Object result = jedis.sendCommand(sampleKey, cmd, args);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());
@@ -189,7 +189,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendBlockingCommand(sampleKey, cmd, args);
+    Object result = jedis.sendBlockingCommand(sampleKey, cmd, args);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());
@@ -217,7 +217,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendCommand(sampleKey, cmd, args);
+    Object result = jedis.sendCommand(sampleKey, cmd, args);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());
@@ -247,7 +247,7 @@ public class UnifiedJedisTest extends UnifiedJedisTestBase {
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
 
-    Object result = unifiedJedis.sendBlockingCommand(sampleKey, cmd, args);
+    Object result = jedis.sendBlockingCommand(sampleKey, cmd, args);
 
     ArgumentCaptor<CommandObject<Object>> argumentCaptor = ArgumentCaptor.forClass(CommandObject.class);
     verify(commandExecutor).executeCommand(argumentCaptor.capture());

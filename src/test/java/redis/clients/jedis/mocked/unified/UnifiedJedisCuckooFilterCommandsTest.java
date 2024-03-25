@@ -26,7 +26,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfAdd(key, item)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.cfAdd(key, item);
+    boolean result = jedis.cfAdd(key, item);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -43,7 +43,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfAddNx(key, item)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.cfAddNx(key, item);
+    boolean result = jedis.cfAddNx(key, item);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -60,7 +60,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfCount(key, item)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.cfCount(key, item);
+    long result = jedis.cfCount(key, item);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -77,7 +77,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfDel(key, item)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.cfDel(key, item);
+    boolean result = jedis.cfDel(key, item);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -94,7 +94,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfExists(key, item)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.cfExists(key, item);
+    boolean result = jedis.cfExists(key, item);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -113,7 +113,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfInfo(key)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.cfInfo(key);
+    Map<String, Object> result = jedis.cfInfo(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -130,7 +130,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfInsert(key, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.cfInsert(key, items);
+    List<Boolean> result = jedis.cfInsert(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -148,7 +148,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfInsert(key, insertParams, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.cfInsert(key, insertParams, items);
+    List<Boolean> result = jedis.cfInsert(key, insertParams, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -165,7 +165,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfInsertNx(key, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.cfInsertNx(key, items);
+    List<Boolean> result = jedis.cfInsertNx(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -183,7 +183,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfInsertNx(key, insertParams, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.cfInsertNx(key, insertParams, items);
+    List<Boolean> result = jedis.cfInsertNx(key, insertParams, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -201,7 +201,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfLoadChunk(key, iterator, data)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.cfLoadChunk(key, iterator, data);
+    String result = jedis.cfLoadChunk(key, iterator, data);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -218,7 +218,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfMExists(key, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.cfMExists(key, items);
+    List<Boolean> result = jedis.cfMExists(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -235,7 +235,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfReserve(key, capacity)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.cfReserve(key, capacity);
+    String result = jedis.cfReserve(key, capacity);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -253,7 +253,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfReserve(key, capacity, reserveParams)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.cfReserve(key, capacity, reserveParams);
+    String result = jedis.cfReserve(key, capacity, reserveParams);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -270,7 +270,7 @@ public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.cfScanDump(key, iterator)).thenReturn(entryLongBytesCommandObject);
     when(commandExecutor.executeCommand(entryLongBytesCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<Long, byte[]> result = unifiedJedis.cfScanDump(key, iterator);
+    Map.Entry<Long, byte[]> result = jedis.cfScanDump(key, iterator);
 
     assertThat(result, sameInstance(expectedResponse));
 

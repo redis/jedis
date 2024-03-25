@@ -28,7 +28,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.eval(script)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalResult);
 
-    Object result = unifiedJedis.eval(script);
+    Object result = jedis.eval(script);
 
     assertThat(result, equalTo(expectedEvalResult));
 
@@ -44,7 +44,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.eval(script)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalResult);
 
-    Object result = unifiedJedis.eval(script);
+    Object result = jedis.eval(script);
 
     assertThat(result, equalTo(expectedEvalResult));
 
@@ -62,7 +62,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.eval(script, keyCount, params)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalResult);
 
-    Object result = unifiedJedis.eval(script, keyCount, params);
+    Object result = jedis.eval(script, keyCount, params);
 
     assertThat(result, equalTo(expectedEvalResult));
 
@@ -80,7 +80,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.eval(script, keyCount, params)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalResult);
 
-    Object result = unifiedJedis.eval(script, keyCount, params);
+    Object result = jedis.eval(script, keyCount, params);
 
     assertThat(result, equalTo(expectedEvalResult));
 
@@ -98,7 +98,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.eval(script, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalResult);
 
-    Object result = unifiedJedis.eval(script, keys, args);
+    Object result = jedis.eval(script, keys, args);
 
     assertThat(result, equalTo(expectedEvalResult));
 
@@ -116,7 +116,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.eval(script, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalResult);
 
-    Object result = unifiedJedis.eval(script, keys, args);
+    Object result = jedis.eval(script, keys, args);
 
     assertThat(result, equalTo(expectedEvalResult));
 
@@ -133,7 +133,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.eval(script, sampleKey)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.eval(script, sampleKey);
+    Object result = jedis.eval(script, sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -150,7 +150,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.eval(script, sampleKey)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.eval(script, sampleKey);
+    Object result = jedis.eval(script, sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -168,7 +168,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalReadonly(script, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalResult);
 
-    Object result = unifiedJedis.evalReadonly(script, keys, args);
+    Object result = jedis.evalReadonly(script, keys, args);
 
     assertThat(result, equalTo(expectedEvalResult));
 
@@ -186,7 +186,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalReadonly(script, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalResult);
 
-    Object result = unifiedJedis.evalReadonly(script, keys, args);
+    Object result = jedis.evalReadonly(script, keys, args);
 
     assertThat(result, equalTo(expectedEvalResult));
 
@@ -202,7 +202,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalsha(sha1)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalshaResult);
 
-    Object result = unifiedJedis.evalsha(sha1);
+    Object result = jedis.evalsha(sha1);
 
     assertThat(result, equalTo(expectedEvalshaResult));
 
@@ -218,7 +218,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalsha(sha1)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalshaResult);
 
-    Object result = unifiedJedis.evalsha(sha1);
+    Object result = jedis.evalsha(sha1);
 
     assertThat(result, equalTo(expectedEvalshaResult));
 
@@ -236,7 +236,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalsha(sha1, keyCount, params)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalshaResult);
 
-    Object result = unifiedJedis.evalsha(sha1, keyCount, params);
+    Object result = jedis.evalsha(sha1, keyCount, params);
 
     assertThat(result, equalTo(expectedEvalshaResult));
 
@@ -254,7 +254,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalsha(sha1, keyCount, params)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalshaResult);
 
-    Object result = unifiedJedis.evalsha(sha1, keyCount, params);
+    Object result = jedis.evalsha(sha1, keyCount, params);
 
     assertThat(result, equalTo(expectedEvalshaResult));
 
@@ -272,7 +272,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalsha(sha1, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalshaResult);
 
-    Object result = unifiedJedis.evalsha(sha1, keys, args);
+    Object result = jedis.evalsha(sha1, keys, args);
 
     assertThat(result, equalTo(expectedEvalshaResult));
 
@@ -290,7 +290,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalsha(sha1, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalshaResult);
 
-    Object result = unifiedJedis.evalsha(sha1, keys, args);
+    Object result = jedis.evalsha(sha1, keys, args);
 
     assertThat(result, equalTo(expectedEvalshaResult));
 
@@ -307,7 +307,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalsha(sha1, sampleKey)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.evalsha(sha1, sampleKey);
+    Object result = jedis.evalsha(sha1, sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -324,7 +324,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalsha(sha1, sampleKey)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.evalsha(sha1, sampleKey);
+    Object result = jedis.evalsha(sha1, sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -342,7 +342,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalshaReadonly(sha1, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalshaResult);
 
-    Object result = unifiedJedis.evalshaReadonly(sha1, keys, args);
+    Object result = jedis.evalshaReadonly(sha1, keys, args);
 
     assertThat(result, equalTo(expectedEvalshaResult));
 
@@ -360,7 +360,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.evalshaReadonly(sha1, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedEvalshaResult);
 
-    Object result = unifiedJedis.evalshaReadonly(sha1, keys, args);
+    Object result = jedis.evalshaReadonly(sha1, keys, args);
 
     assertThat(result, equalTo(expectedEvalshaResult));
 
@@ -378,7 +378,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.fcall(name, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedFcallResult);
 
-    Object result = unifiedJedis.fcall(name, keys, args);
+    Object result = jedis.fcall(name, keys, args);
 
     assertThat(result, equalTo(expectedFcallResult));
 
@@ -396,7 +396,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.fcall(name, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedFcallResult);
 
-    Object result = unifiedJedis.fcall(name, keys, args);
+    Object result = jedis.fcall(name, keys, args);
 
     assertThat(result, equalTo(expectedFcallResult));
 
@@ -414,7 +414,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.fcallReadonly(name, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedFcallResult);
 
-    Object result = unifiedJedis.fcallReadonly(name, keys, args);
+    Object result = jedis.fcallReadonly(name, keys, args);
 
     assertThat(result, equalTo(expectedFcallResult));
 
@@ -432,7 +432,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.fcallReadonly(name, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedFcallResult);
 
-    Object result = unifiedJedis.fcallReadonly(name, keys, args);
+    Object result = jedis.fcallReadonly(name, keys, args);
 
     assertThat(result, equalTo(expectedFcallResult));
 
@@ -448,7 +448,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionDelete(libraryName)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionDelete(libraryName);
+    String result = jedis.functionDelete(libraryName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -464,7 +464,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionDelete(libraryName)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionDelete(libraryName);
+    String result = jedis.functionDelete(libraryName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -479,7 +479,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionDump()).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedDump);
 
-    byte[] result = unifiedJedis.functionDump();
+    byte[] result = jedis.functionDump();
 
     assertThat(result, equalTo(expectedDump));
 
@@ -494,7 +494,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionFlush()).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionFlush();
+    String result = jedis.functionFlush();
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -510,7 +510,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionFlush(mode)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionFlush(mode);
+    String result = jedis.functionFlush(mode);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -525,7 +525,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionKill()).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionKill();
+    String result = jedis.functionKill();
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -540,7 +540,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionList()).thenReturn(listLibraryInfoCommandObject);
     when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(expectedLibraryInfoList);
 
-    List<LibraryInfo> result = unifiedJedis.functionList();
+    List<LibraryInfo> result = jedis.functionList();
 
     assertThat(result, equalTo(expectedLibraryInfoList));
 
@@ -555,7 +555,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionListBinary()).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedFunctionListBinary);
 
-    List<Object> result = unifiedJedis.functionListBinary();
+    List<Object> result = jedis.functionListBinary();
 
     assertThat(result, equalTo(expectedFunctionListBinary));
 
@@ -571,7 +571,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionList(libraryNamePattern)).thenReturn(listLibraryInfoCommandObject);
     when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(expectedLibraryInfoList);
 
-    List<LibraryInfo> result = unifiedJedis.functionList(libraryNamePattern);
+    List<LibraryInfo> result = jedis.functionList(libraryNamePattern);
 
     assertThat(result, equalTo(expectedLibraryInfoList));
 
@@ -587,7 +587,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionList(libraryNamePattern)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedFunctionList);
 
-    List<Object> result = unifiedJedis.functionList(libraryNamePattern);
+    List<Object> result = jedis.functionList(libraryNamePattern);
 
     assertThat(result, equalTo(expectedFunctionList));
 
@@ -602,7 +602,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionListWithCode()).thenReturn(listLibraryInfoCommandObject);
     when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(expectedLibraryInfoList);
 
-    List<LibraryInfo> result = unifiedJedis.functionListWithCode();
+    List<LibraryInfo> result = jedis.functionListWithCode();
 
     assertThat(result, equalTo(expectedLibraryInfoList));
 
@@ -617,7 +617,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionListWithCodeBinary()).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedFunctionListWithCodeBinary);
 
-    List<Object> result = unifiedJedis.functionListWithCodeBinary();
+    List<Object> result = jedis.functionListWithCodeBinary();
 
     assertThat(result, equalTo(expectedFunctionListWithCodeBinary));
 
@@ -633,7 +633,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionListWithCode(libraryNamePattern)).thenReturn(listLibraryInfoCommandObject);
     when(commandExecutor.executeCommand(listLibraryInfoCommandObject)).thenReturn(expectedLibraryInfoList);
 
-    List<LibraryInfo> result = unifiedJedis.functionListWithCode(libraryNamePattern);
+    List<LibraryInfo> result = jedis.functionListWithCode(libraryNamePattern);
 
     assertThat(result, equalTo(expectedLibraryInfoList));
 
@@ -649,7 +649,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionListWithCode(libraryNamePattern)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedFunctionListWithCode);
 
-    List<Object> result = unifiedJedis.functionListWithCode(libraryNamePattern);
+    List<Object> result = jedis.functionListWithCode(libraryNamePattern);
 
     assertThat(result, equalTo(expectedFunctionListWithCode));
 
@@ -665,7 +665,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionLoad(functionCode)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionLoad(functionCode);
+    String result = jedis.functionLoad(functionCode);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -681,7 +681,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionLoad(functionCode)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionLoad(functionCode);
+    String result = jedis.functionLoad(functionCode);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -697,7 +697,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionLoadReplace(functionCode)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionLoadReplace(functionCode);
+    String result = jedis.functionLoadReplace(functionCode);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -713,7 +713,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionLoadReplace(functionCode)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionLoadReplace(functionCode);
+    String result = jedis.functionLoadReplace(functionCode);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -729,7 +729,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionRestore(serializedValue)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionRestore(serializedValue);
+    String result = jedis.functionRestore(serializedValue);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -746,7 +746,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionRestore(serializedValue, policy)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.functionRestore(serializedValue, policy);
+    String result = jedis.functionRestore(serializedValue, policy);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -761,7 +761,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionStats()).thenReturn(functionStatsCommandObject);
     when(commandExecutor.executeCommand(functionStatsCommandObject)).thenReturn(expectedFunctionStats);
 
-    FunctionStats result = unifiedJedis.functionStats();
+    FunctionStats result = jedis.functionStats();
 
     assertThat(result, sameInstance(expectedFunctionStats));
 
@@ -776,7 +776,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.functionStatsBinary()).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedFunctionStatsBinary);
 
-    Object result = unifiedJedis.functionStatsBinary();
+    Object result = jedis.functionStatsBinary();
 
     assertThat(result, equalTo(expectedFunctionStatsBinary));
 
@@ -792,7 +792,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptExists(sha1s)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.broadcastCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.scriptExists(sha1s);
+    List<Boolean> result = jedis.scriptExists(sha1s);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -809,7 +809,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptExists(sampleKey, sha1)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(Collections.singletonList(expectedResponse));
 
-    Boolean result = unifiedJedis.scriptExists(sha1, sampleKey);
+    Boolean result = jedis.scriptExists(sha1, sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -826,7 +826,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptExists(sampleKey, new byte[][]{ sha1 })).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(Collections.singletonList(expectedResponse));
 
-    Boolean result = unifiedJedis.scriptExists(sha1, sampleKey);
+    Boolean result = jedis.scriptExists(sha1, sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -843,7 +843,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptExists(sampleKey, sha1s)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.scriptExists(sampleKey, sha1s);
+    List<Boolean> result = jedis.scriptExists(sampleKey, sha1s);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -860,7 +860,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptExists(sampleKey, sha1s)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.scriptExists(sampleKey, sha1s);
+    List<Boolean> result = jedis.scriptExists(sampleKey, sha1s);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -875,7 +875,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptFlush()).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.scriptFlush();
+    String result = jedis.scriptFlush();
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -891,7 +891,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptFlush(sampleKey)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.scriptFlush(sampleKey);
+    String result = jedis.scriptFlush(sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -907,7 +907,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptFlush(sampleKey)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.scriptFlush(sampleKey);
+    String result = jedis.scriptFlush(sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -924,7 +924,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptFlush(sampleKey, flushMode)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.scriptFlush(sampleKey, flushMode);
+    String result = jedis.scriptFlush(sampleKey, flushMode);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -941,7 +941,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptFlush(sampleKey, flushMode)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.scriptFlush(sampleKey, flushMode);
+    String result = jedis.scriptFlush(sampleKey, flushMode);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -956,7 +956,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptKill()).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.scriptKill();
+    String result = jedis.scriptKill();
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -972,7 +972,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptKill(sampleKey)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.scriptKill(sampleKey);
+    String result = jedis.scriptKill(sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -988,7 +988,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptKill(sampleKey)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.scriptKill(sampleKey);
+    String result = jedis.scriptKill(sampleKey);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -1004,7 +1004,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptLoad(script)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedSha1);
 
-    String result = unifiedJedis.scriptLoad(script);
+    String result = jedis.scriptLoad(script);
 
     assertThat(result, equalTo(expectedSha1));
 
@@ -1021,7 +1021,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptLoad(script, sampleKey)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedSha1);
 
-    String result = unifiedJedis.scriptLoad(script, sampleKey);
+    String result = jedis.scriptLoad(script, sampleKey);
 
     assertThat(result, equalTo(expectedSha1));
 
@@ -1038,7 +1038,7 @@ public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisT
     when(commandObjects.scriptLoad(script, sampleKey)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedSha1);
 
-    byte[] result = unifiedJedis.scriptLoad(script, sampleKey);
+    byte[] result = jedis.scriptLoad(script, sampleKey);
 
     assertThat(result, equalTo(expectedSha1));
 

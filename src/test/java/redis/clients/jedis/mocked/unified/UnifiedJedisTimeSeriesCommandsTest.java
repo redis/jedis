@@ -38,7 +38,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsAdd(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.tsAdd(key, value);
+    long result = jedis.tsAdd(key, value);
 
     assertEquals(expectedResponse, result);
 
@@ -56,7 +56,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsAdd(key, timestamp, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.tsAdd(key, timestamp, value);
+    long result = jedis.tsAdd(key, timestamp, value);
 
     assertEquals(expectedResponse, result);
 
@@ -75,7 +75,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsAdd(key, timestamp, value, createParams)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.tsAdd(key, timestamp, value, createParams);
+    long result = jedis.tsAdd(key, timestamp, value, createParams);
 
     assertEquals(expectedResponse, result);
 
@@ -92,7 +92,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsAlter(key, alterParams)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tsAlter(key, alterParams);
+    String result = jedis.tsAlter(key, alterParams);
 
     assertEquals(expectedResponse, result);
 
@@ -108,7 +108,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsCreate(key)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tsCreate(key);
+    String result = jedis.tsCreate(key);
 
     assertEquals(expectedResponse, result);
 
@@ -125,7 +125,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsCreate(key, createParams)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tsCreate(key, createParams);
+    String result = jedis.tsCreate(key, createParams);
 
     assertEquals(expectedResponse, result);
 
@@ -144,7 +144,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket);
+    String result = jedis.tsCreateRule(sourceKey, destKey, aggregationType, timeBucket);
 
     assertEquals(expectedResponse, result);
 
@@ -164,7 +164,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration, alignTimestamp)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration, alignTimestamp);
+    String result = jedis.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration, alignTimestamp);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -181,7 +181,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsDecrBy(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.tsDecrBy(key, value);
+    long result = jedis.tsDecrBy(key, value);
 
     assertEquals(expectedResponse, result);
 
@@ -199,7 +199,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsDecrBy(key, value, timestamp)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.tsDecrBy(key, value, timestamp);
+    long result = jedis.tsDecrBy(key, value, timestamp);
 
     assertEquals(expectedResponse, result);
 
@@ -217,7 +217,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsDel(key, fromTimestamp, toTimestamp)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.tsDel(key, fromTimestamp, toTimestamp);
+    long result = jedis.tsDel(key, fromTimestamp, toTimestamp);
 
     assertEquals(expectedResponse, result);
 
@@ -234,7 +234,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsDeleteRule(sourceKey, destKey)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tsDeleteRule(sourceKey, destKey);
+    String result = jedis.tsDeleteRule(sourceKey, destKey);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -250,7 +250,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsGet(key)).thenReturn(tsElementCommandObject);
     when(commandExecutor.executeCommand(tsElementCommandObject)).thenReturn(expectedResponse);
 
-    TSElement result = unifiedJedis.tsGet(key);
+    TSElement result = jedis.tsGet(key);
 
     assertEquals(expectedResponse, result);
 
@@ -267,7 +267,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsGet(key, getParams)).thenReturn(tsElementCommandObject);
     when(commandExecutor.executeCommand(tsElementCommandObject)).thenReturn(expectedResponse);
 
-    TSElement result = unifiedJedis.tsGet(key, getParams);
+    TSElement result = jedis.tsGet(key, getParams);
 
     assertEquals(expectedResponse, result);
 
@@ -284,7 +284,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsIncrBy(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.tsIncrBy(key, value);
+    long result = jedis.tsIncrBy(key, value);
 
     assertEquals(expectedResponse, result);
 
@@ -302,7 +302,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsIncrBy(key, value, timestamp)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.tsIncrBy(key, value, timestamp);
+    long result = jedis.tsIncrBy(key, value, timestamp);
 
     assertEquals(expectedResponse, result);
 
@@ -318,7 +318,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsInfo(key)).thenReturn(tsInfoCommandObject);
     when(commandExecutor.executeCommand(tsInfoCommandObject)).thenReturn(expectedResponse);
 
-    TSInfo result = unifiedJedis.tsInfo(key);
+    TSInfo result = jedis.tsInfo(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -334,7 +334,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsInfoDebug(key)).thenReturn(tsInfoCommandObject);
     when(commandExecutor.executeCommand(tsInfoCommandObject)).thenReturn(expectedResponse);
 
-    TSInfo result = unifiedJedis.tsInfoDebug(key);
+    TSInfo result = jedis.tsInfoDebug(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -351,7 +351,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsMAdd(entry1, entry2)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.tsMAdd(entry1, entry2);
+    List<Long> result = jedis.tsMAdd(entry1, entry2);
 
     assertEquals(expectedResponse, result);
 
@@ -368,7 +368,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsMGet(multiGetParams, filters)).thenReturn(mapStringTsmGetElementCommandObject);
     when(commandExecutor.executeCommand(mapStringTsmGetElementCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, TSMGetElement> result = unifiedJedis.tsMGet(multiGetParams, filters);
+    Map<String, TSMGetElement> result = jedis.tsMGet(multiGetParams, filters);
 
     assertEquals(expectedResponse, result);
 
@@ -386,7 +386,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters)).thenReturn(mapStringTsmRangeElementsCommandObject);
     when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, TSMRangeElements> result = unifiedJedis.tsMRange(fromTimestamp, toTimestamp, filters);
+    Map<String, TSMRangeElements> result = jedis.tsMRange(fromTimestamp, toTimestamp, filters);
 
     assertEquals(expectedResponse, result);
 
@@ -402,7 +402,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsMRange(multiRangeParams)).thenReturn(mapStringTsmRangeElementsCommandObject);
     when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, TSMRangeElements> result = unifiedJedis.tsMRange(multiRangeParams);
+    Map<String, TSMRangeElements> result = jedis.tsMRange(multiRangeParams);
 
     assertEquals(expectedResponse, result);
 
@@ -420,7 +420,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsMRevRange(fromTimestamp, toTimestamp, filters)).thenReturn(mapStringTsmRangeElementsCommandObject);
     when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, TSMRangeElements> result = unifiedJedis.tsMRevRange(fromTimestamp, toTimestamp, filters);
+    Map<String, TSMRangeElements> result = jedis.tsMRevRange(fromTimestamp, toTimestamp, filters);
 
     assertEquals(expectedResponse, result);
 
@@ -437,7 +437,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsMRevRange(multiRangeParams)).thenReturn(mapStringTsmRangeElementsCommandObject);
     when(commandExecutor.executeCommand(mapStringTsmRangeElementsCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, TSMRangeElements> result = unifiedJedis.tsMRevRange(multiRangeParams);
+    Map<String, TSMRangeElements> result = jedis.tsMRevRange(multiRangeParams);
 
     assertEquals(expectedResponse, result);
 
@@ -453,7 +453,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsQueryIndex(filters)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.tsQueryIndex(filters);
+    List<String> result = jedis.tsQueryIndex(filters);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -471,7 +471,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsRange(key, fromTimestamp, toTimestamp)).thenReturn(listTsElementCommandObject);
     when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
 
-    List<TSElement> result = unifiedJedis.tsRange(key, fromTimestamp, toTimestamp);
+    List<TSElement> result = jedis.tsRange(key, fromTimestamp, toTimestamp);
 
     assertEquals(expectedResponse, result);
 
@@ -490,7 +490,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsRange(key, rangeParams)).thenReturn(listTsElementCommandObject);
     when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
 
-    List<TSElement> result = unifiedJedis.tsRange(key, rangeParams);
+    List<TSElement> result = jedis.tsRange(key, rangeParams);
 
     assertEquals(expectedResponse, result);
 
@@ -508,7 +508,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp)).thenReturn(listTsElementCommandObject);
     when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
 
-    List<TSElement> result = unifiedJedis.tsRevRange(key, fromTimestamp, toTimestamp);
+    List<TSElement> result = jedis.tsRevRange(key, fromTimestamp, toTimestamp);
 
     assertEquals(expectedResponse, result);
 
@@ -527,7 +527,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tsRevRange(key, rangeParams)).thenReturn(listTsElementCommandObject);
     when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
 
-    List<TSElement> result = unifiedJedis.tsRevRange(key, rangeParams);
+    List<TSElement> result = jedis.tsRevRange(key, rangeParams);
 
     assertEquals(expectedResponse, result);
 

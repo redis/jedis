@@ -25,7 +25,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestAdd(key, values)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tdigestAdd(key, values);
+    String result = jedis.tdigestAdd(key, values);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(stringCommandObject);
@@ -41,7 +41,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestByRank(key, ranks)).thenReturn(listDoubleCommandObject);
     when(commandExecutor.executeCommand(listDoubleCommandObject)).thenReturn(expectedResponse);
 
-    List<Double> result = unifiedJedis.tdigestByRank(key, ranks);
+    List<Double> result = jedis.tdigestByRank(key, ranks);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(listDoubleCommandObject);
@@ -57,7 +57,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestByRevRank(key, ranks)).thenReturn(listDoubleCommandObject);
     when(commandExecutor.executeCommand(listDoubleCommandObject)).thenReturn(expectedResponse);
 
-    List<Double> result = unifiedJedis.tdigestByRevRank(key, ranks);
+    List<Double> result = jedis.tdigestByRevRank(key, ranks);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(listDoubleCommandObject);
@@ -73,7 +73,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestCDF(key, values)).thenReturn(listDoubleCommandObject);
     when(commandExecutor.executeCommand(listDoubleCommandObject)).thenReturn(expectedResponse);
 
-    List<Double> result = unifiedJedis.tdigestCDF(key, values);
+    List<Double> result = jedis.tdigestCDF(key, values);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(listDoubleCommandObject);
@@ -88,7 +88,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestCreate(key)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tdigestCreate(key);
+    String result = jedis.tdigestCreate(key);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(stringCommandObject);
@@ -104,7 +104,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestCreate(key, compression)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tdigestCreate(key, compression);
+    String result = jedis.tdigestCreate(key, compression);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(stringCommandObject);
@@ -124,7 +124,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestInfo(key)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.tdigestInfo(key);
+    Map<String, Object> result = jedis.tdigestInfo(key);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
@@ -139,7 +139,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestMax(key)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedResponse);
 
-    double result = unifiedJedis.tdigestMax(key);
+    double result = jedis.tdigestMax(key);
 
     assertThat(result, equalTo(expectedResponse));
     verify(commandExecutor).executeCommand(doubleCommandObject);
@@ -155,7 +155,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestMerge(destinationKey, sourceKeys)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tdigestMerge(destinationKey, sourceKeys);
+    String result = jedis.tdigestMerge(destinationKey, sourceKeys);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(stringCommandObject);
@@ -172,7 +172,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestMerge(mergeParams, destinationKey, sourceKeys)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tdigestMerge(mergeParams, destinationKey, sourceKeys);
+    String result = jedis.tdigestMerge(mergeParams, destinationKey, sourceKeys);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(stringCommandObject);
@@ -187,7 +187,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestMin(key)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedResponse);
 
-    double result = unifiedJedis.tdigestMin(key);
+    double result = jedis.tdigestMin(key);
 
     assertThat(result, equalTo(expectedResponse));
     verify(commandExecutor).executeCommand(doubleCommandObject);
@@ -203,7 +203,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestQuantile(key, quantiles)).thenReturn(listDoubleCommandObject);
     when(commandExecutor.executeCommand(listDoubleCommandObject)).thenReturn(expectedResponse);
 
-    List<Double> result = unifiedJedis.tdigestQuantile(key, quantiles);
+    List<Double> result = jedis.tdigestQuantile(key, quantiles);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(listDoubleCommandObject);
@@ -219,7 +219,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestRank(key, values)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.tdigestRank(key, values);
+    List<Long> result = jedis.tdigestRank(key, values);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(listLongCommandObject);
@@ -234,7 +234,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestReset(key)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tdigestReset(key);
+    String result = jedis.tdigestReset(key);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(stringCommandObject);
@@ -250,7 +250,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestRevRank(key, values)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResponse);
 
-    List<Long> result = unifiedJedis.tdigestRevRank(key, values);
+    List<Long> result = jedis.tdigestRevRank(key, values);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(listLongCommandObject);
@@ -267,7 +267,7 @@ public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedResponse);
 
-    double result = unifiedJedis.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile);
+    double result = jedis.tdigestTrimmedMean(key, lowCutQuantile, highCutQuantile);
 
     assertThat(result, equalTo(expectedResponse));
     verify(commandExecutor).executeCommand(doubleCommandObject);

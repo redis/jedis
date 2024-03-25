@@ -15,7 +15,7 @@ public class UnifiedJedisAdditionalTest extends UnifiedJedisTestBase {
   public void testSetJsonObjectMapper() {
     JsonObjectMapper jsonObjectMapper = mock(JsonObjectMapper.class);
 
-    unifiedJedis.setJsonObjectMapper(jsonObjectMapper);
+    jedis.setJsonObjectMapper(jsonObjectMapper);
 
     verify(commandObjects).setJsonObjectMapper(jsonObjectMapper);
   }
@@ -24,7 +24,7 @@ public class UnifiedJedisAdditionalTest extends UnifiedJedisTestBase {
   public void testSetDefaultSearchDialect() {
     int dialect = 1;
 
-    unifiedJedis.setDefaultSearchDialect(dialect);
+    jedis.setDefaultSearchDialect(dialect);
 
     verify(commandObjects).setDefaultSearchDialect(dialect);
   }

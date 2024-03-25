@@ -25,7 +25,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.append(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedLength);
 
-    long result = unifiedJedis.append(key, value);
+    long result = jedis.append(key, value);
 
     assertThat(result, equalTo(expectedLength));
 
@@ -42,7 +42,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.append(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedLength);
 
-    long result = unifiedJedis.append(key, value);
+    long result = jedis.append(key, value);
 
     assertThat(result, equalTo(expectedLength));
 
@@ -58,7 +58,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.decr(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedValue);
 
-    long result = unifiedJedis.decr(key);
+    long result = jedis.decr(key);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -74,7 +74,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.decr(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedValue);
 
-    long result = unifiedJedis.decr(key);
+    long result = jedis.decr(key);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -91,7 +91,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.decrBy(key, decrement)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedValue);
 
-    long result = unifiedJedis.decrBy(key, decrement);
+    long result = jedis.decrBy(key, decrement);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -108,7 +108,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.decrBy(key, decrement)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedValue);
 
-    long result = unifiedJedis.decrBy(key, decrement);
+    long result = jedis.decrBy(key, decrement);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -124,7 +124,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.get(key)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedValue);
 
-    String result = unifiedJedis.get(key);
+    String result = jedis.get(key);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -140,7 +140,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.get(key)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedValue);
 
-    byte[] result = unifiedJedis.get(key);
+    byte[] result = jedis.get(key);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -156,7 +156,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getDel(key)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedValue);
 
-    String result = unifiedJedis.getDel(key);
+    String result = jedis.getDel(key);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -172,7 +172,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getDel(key)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedValue);
 
-    byte[] result = unifiedJedis.getDel(key);
+    byte[] result = jedis.getDel(key);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -189,7 +189,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getEx(key, params)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedValue);
 
-    String result = unifiedJedis.getEx(key, params);
+    String result = jedis.getEx(key, params);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -206,7 +206,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getEx(key, params)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedValue);
 
-    byte[] result = unifiedJedis.getEx(key, params);
+    byte[] result = jedis.getEx(key, params);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -224,7 +224,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getrange(key, startOffset, endOffset)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.getrange(key, startOffset, endOffset);
+    String result = jedis.getrange(key, startOffset, endOffset);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -242,7 +242,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getrange(key, startOffset, endOffset)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedResponse);
 
-    byte[] result = unifiedJedis.getrange(key, startOffset, endOffset);
+    byte[] result = jedis.getrange(key, startOffset, endOffset);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -259,7 +259,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getSet(key, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedPreviousValue);
 
-    String result = unifiedJedis.getSet(key, value);
+    String result = jedis.getSet(key, value);
 
     assertThat(result, equalTo(expectedPreviousValue));
 
@@ -276,7 +276,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getSet(key, value)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedPreviousValue);
 
-    byte[] result = unifiedJedis.getSet(key, value);
+    byte[] result = jedis.getSet(key, value);
 
     assertThat(result, equalTo(expectedPreviousValue));
 
@@ -292,7 +292,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.incr(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedValue);
 
-    long result = unifiedJedis.incr(key);
+    long result = jedis.incr(key);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -308,7 +308,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.incr(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedValue);
 
-    long result = unifiedJedis.incr(key);
+    long result = jedis.incr(key);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -325,7 +325,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.incrBy(key, increment)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedValue);
 
-    long result = unifiedJedis.incrBy(key, increment);
+    long result = jedis.incrBy(key, increment);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -342,7 +342,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.incrBy(key, increment)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedValue);
 
-    long result = unifiedJedis.incrBy(key, increment);
+    long result = jedis.incrBy(key, increment);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -359,7 +359,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.incrByFloat(key, increment)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedValue);
 
-    double result = unifiedJedis.incrByFloat(key, increment);
+    double result = jedis.incrByFloat(key, increment);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -376,7 +376,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.incrByFloat(key, increment)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedValue);
 
-    double result = unifiedJedis.incrByFloat(key, increment);
+    double result = jedis.incrByFloat(key, increment);
 
     assertThat(result, equalTo(expectedValue));
 
@@ -394,7 +394,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.lcs(keyA, keyB, params)).thenReturn(lcsMatchResultCommandObject);
     when(commandExecutor.executeCommand(lcsMatchResultCommandObject)).thenReturn(expectedResult);
 
-    LCSMatchResult result = unifiedJedis.lcs(keyA, keyB, params);
+    LCSMatchResult result = jedis.lcs(keyA, keyB, params);
 
     assertThat(result, equalTo(expectedResult));
 
@@ -412,7 +412,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.lcs(keyA, keyB, params)).thenReturn(lcsMatchResultCommandObject);
     when(commandExecutor.executeCommand(lcsMatchResultCommandObject)).thenReturn(expectedResult);
 
-    LCSMatchResult result = unifiedJedis.lcs(keyA, keyB, params);
+    LCSMatchResult result = jedis.lcs(keyA, keyB, params);
 
     assertThat(result, equalTo(expectedResult));
 
@@ -428,7 +428,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.mget(keys)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedValues);
 
-    List<String> result = unifiedJedis.mget(keys);
+    List<String> result = jedis.mget(keys);
 
     assertThat(result, equalTo(expectedValues));
 
@@ -444,7 +444,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.mget(keys)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedValues);
 
-    List<byte[]> result = unifiedJedis.mget(keys);
+    List<byte[]> result = jedis.mget(keys);
 
     assertThat(result, equalTo(expectedValues));
 
@@ -460,7 +460,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.mset(keysvalues)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.mset(keysvalues);
+    String result = jedis.mset(keysvalues);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -476,7 +476,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.mset(keysvalues)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.mset(keysvalues);
+    String result = jedis.mset(keysvalues);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -492,7 +492,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.msetnx(keysvalues)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.msetnx(keysvalues);
+    long result = jedis.msetnx(keysvalues);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -508,7 +508,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.msetnx(keysvalues)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.msetnx(keysvalues);
+    long result = jedis.msetnx(keysvalues);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -526,7 +526,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.psetex(key, milliseconds, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.psetex(key, milliseconds, value);
+    String result = jedis.psetex(key, milliseconds, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -544,7 +544,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.psetex(key, milliseconds, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.psetex(key, milliseconds, value);
+    String result = jedis.psetex(key, milliseconds, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -561,7 +561,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.set(key, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.set(key, value);
+    String result = jedis.set(key, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -578,7 +578,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.set(key, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.set(key, value);
+    String result = jedis.set(key, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -596,7 +596,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.set(key, value, params)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.set(key, value, params);
+    String result = jedis.set(key, value, params);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -614,7 +614,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.set(key, value, params)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.set(key, value, params);
+    String result = jedis.set(key, value, params);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -631,7 +631,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setGet(key, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedPreviousValue);
 
-    String result = unifiedJedis.setGet(key, value);
+    String result = jedis.setGet(key, value);
 
     assertThat(result, equalTo(expectedPreviousValue));
 
@@ -648,7 +648,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setGet(key, value)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedPreviousValue);
 
-    byte[] result = unifiedJedis.setGet(key, value);
+    byte[] result = jedis.setGet(key, value);
 
     assertThat(result, equalTo(expectedPreviousValue));
 
@@ -666,7 +666,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setGet(key, value, params)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedPreviousValue);
 
-    String result = unifiedJedis.setGet(key, value, params);
+    String result = jedis.setGet(key, value, params);
 
     assertThat(result, equalTo(expectedPreviousValue));
 
@@ -684,7 +684,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setGet(key, value, params)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedPreviousValue);
 
-    byte[] result = unifiedJedis.setGet(key, value, params);
+    byte[] result = jedis.setGet(key, value, params);
 
     assertThat(result, equalTo(expectedPreviousValue));
 
@@ -702,7 +702,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setex(key, seconds, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.setex(key, seconds, value);
+    String result = jedis.setex(key, seconds, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -720,7 +720,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setex(key, seconds, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.setex(key, seconds, value);
+    String result = jedis.setex(key, seconds, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -737,7 +737,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setnx(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.setnx(key, value);
+    long result = jedis.setnx(key, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -754,7 +754,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setnx(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.setnx(key, value);
+    long result = jedis.setnx(key, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -772,7 +772,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setrange(key, offset, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.setrange(key, offset, value);
+    long result = jedis.setrange(key, offset, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -790,7 +790,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setrange(key, offset, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.setrange(key, offset, value);
+    long result = jedis.setrange(key, offset, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -806,7 +806,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.strlen(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedLength);
 
-    long result = unifiedJedis.strlen(key);
+    long result = jedis.strlen(key);
 
     assertThat(result, equalTo(expectedLength));
 
@@ -822,7 +822,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.strlen(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedLength);
 
-    long result = unifiedJedis.strlen(key);
+    long result = jedis.strlen(key);
 
     assertThat(result, equalTo(expectedLength));
 
@@ -840,7 +840,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.substr(key, start, end)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedSubstring);
 
-    String result = unifiedJedis.substr(key, start, end);
+    String result = jedis.substr(key, start, end);
 
     assertThat(result, equalTo(expectedSubstring));
 
@@ -858,7 +858,7 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.substr(key, start, end)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedSubstring);
 
-    byte[] result = unifiedJedis.substr(key, start, end);
+    byte[] result = jedis.substr(key, start, end);
 
     assertThat(result, equalTo(expectedSubstring));
 

@@ -33,7 +33,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geoadd(key, longitude, latitude, member)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.geoadd(key, longitude, latitude, member);
+    long result = jedis.geoadd(key, longitude, latitude, member);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -52,7 +52,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geoadd(key, longitude, latitude, member)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.geoadd(key, longitude, latitude, member);
+    long result = jedis.geoadd(key, longitude, latitude, member);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -71,7 +71,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geoadd(key, memberCoordinateMap)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.geoadd(key, memberCoordinateMap);
+    long result = jedis.geoadd(key, memberCoordinateMap);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -90,7 +90,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geoadd(key, memberCoordinateMap)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.geoadd(key, memberCoordinateMap);
+    long result = jedis.geoadd(key, memberCoordinateMap);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -109,7 +109,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geoadd(key, params, memberCoordinateMap)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.geoadd(key, params, memberCoordinateMap);
+    long result = jedis.geoadd(key, params, memberCoordinateMap);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -128,7 +128,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geoadd(key, params, memberCoordinateMap)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.geoadd(key, params, memberCoordinateMap);
+    long result = jedis.geoadd(key, params, memberCoordinateMap);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -146,7 +146,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geodist(key, member1, member2)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedDistance);
 
-    Double result = unifiedJedis.geodist(key, member1, member2);
+    Double result = jedis.geodist(key, member1, member2);
 
     assertThat(result, equalTo(expectedDistance));
 
@@ -164,7 +164,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geodist(key, member1, member2)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedDistance);
 
-    Double result = unifiedJedis.geodist(key, member1, member2);
+    Double result = jedis.geodist(key, member1, member2);
 
     assertThat(result, equalTo(expectedDistance));
 
@@ -183,7 +183,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geodist(key, member1, member2, unit)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedDistance);
 
-    Double result = unifiedJedis.geodist(key, member1, member2, unit);
+    Double result = jedis.geodist(key, member1, member2, unit);
 
     assertThat(result, equalTo(expectedDistance));
 
@@ -202,7 +202,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geodist(key, member1, member2, unit)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedDistance);
 
-    Double result = unifiedJedis.geodist(key, member1, member2, unit);
+    Double result = jedis.geodist(key, member1, member2, unit);
 
     assertThat(result, equalTo(expectedDistance));
 
@@ -219,7 +219,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geohash(key, members)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedHashes);
 
-    List<String> result = unifiedJedis.geohash(key, members);
+    List<String> result = jedis.geohash(key, members);
 
     assertThat(result, equalTo(expectedHashes));
 
@@ -236,7 +236,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geohash(key, members)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedHashes);
 
-    List<byte[]> result = unifiedJedis.geohash(key, members);
+    List<byte[]> result = jedis.geohash(key, members);
 
     assertThat(result, equalTo(expectedHashes));
 
@@ -256,7 +256,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geopos(key, members)).thenReturn(listGeoCoordinateCommandObject);
     when(commandExecutor.executeCommand(listGeoCoordinateCommandObject)).thenReturn(expectedPositions);
 
-    List<GeoCoordinate> result = unifiedJedis.geopos(key, members);
+    List<GeoCoordinate> result = jedis.geopos(key, members);
 
     assertThat(result, equalTo(expectedPositions));
 
@@ -276,7 +276,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geopos(key, members)).thenReturn(listGeoCoordinateCommandObject);
     when(commandExecutor.executeCommand(listGeoCoordinateCommandObject)).thenReturn(expectedPositions);
 
-    List<GeoCoordinate> result = unifiedJedis.geopos(key, members);
+    List<GeoCoordinate> result = jedis.geopos(key, members);
 
     assertThat(result, equalTo(expectedPositions));
 
@@ -297,7 +297,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadius(key, longitude, latitude, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadius(key, longitude, latitude, radius, unit);
+    List<GeoRadiusResponse> result = jedis.georadius(key, longitude, latitude, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -318,7 +318,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadius(key, longitude, latitude, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadius(key, longitude, latitude, radius, unit);
+    List<GeoRadiusResponse> result = jedis.georadius(key, longitude, latitude, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -339,7 +339,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusReadonly(key, longitude, latitude, radius, unit);
+    List<GeoRadiusResponse> result = jedis.georadiusReadonly(key, longitude, latitude, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -360,7 +360,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusReadonly(key, longitude, latitude, radius, unit);
+    List<GeoRadiusResponse> result = jedis.georadiusReadonly(key, longitude, latitude, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -382,7 +382,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadius(key, longitude, latitude, radius, unit, param)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadius(key, longitude, latitude, radius, unit, param);
+    List<GeoRadiusResponse> result = jedis.georadius(key, longitude, latitude, radius, unit, param);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -404,7 +404,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadius(key, longitude, latitude, radius, unit, param)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadius(key, longitude, latitude, radius, unit, param);
+    List<GeoRadiusResponse> result = jedis.georadius(key, longitude, latitude, radius, unit, param);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -426,7 +426,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusReadonly(key, longitude, latitude, radius, unit, param);
+    List<GeoRadiusResponse> result = jedis.georadiusReadonly(key, longitude, latitude, radius, unit, param);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -448,7 +448,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusReadonly(key, longitude, latitude, radius, unit, param);
+    List<GeoRadiusResponse> result = jedis.georadiusReadonly(key, longitude, latitude, radius, unit, param);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -468,7 +468,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMember(key, member, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusByMember(key, member, radius, unit);
+    List<GeoRadiusResponse> result = jedis.georadiusByMember(key, member, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -488,7 +488,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMember(key, member, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusByMember(key, member, radius, unit);
+    List<GeoRadiusResponse> result = jedis.georadiusByMember(key, member, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -508,7 +508,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMemberReadonly(key, member, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusByMemberReadonly(key, member, radius, unit);
+    List<GeoRadiusResponse> result = jedis.georadiusByMemberReadonly(key, member, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -528,7 +528,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMemberReadonly(key, member, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusByMemberReadonly(key, member, radius, unit);
+    List<GeoRadiusResponse> result = jedis.georadiusByMemberReadonly(key, member, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -549,7 +549,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMember(key, member, radius, unit, param)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusByMember(key, member, radius, unit, param);
+    List<GeoRadiusResponse> result = jedis.georadiusByMember(key, member, radius, unit, param);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -570,7 +570,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMember(key, member, radius, unit, param)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusByMember(key, member, radius, unit, param);
+    List<GeoRadiusResponse> result = jedis.georadiusByMember(key, member, radius, unit, param);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -591,7 +591,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusByMemberReadonly(key, member, radius, unit, param);
+    List<GeoRadiusResponse> result = jedis.georadiusByMemberReadonly(key, member, radius, unit, param);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -612,7 +612,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.georadiusByMemberReadonly(key, member, radius, unit, param);
+    List<GeoRadiusResponse> result = jedis.georadiusByMemberReadonly(key, member, radius, unit, param);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -634,7 +634,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    long result = jedis.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -656,7 +656,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
+    long result = jedis.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -677,7 +677,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    long result = jedis.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -698,7 +698,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
+    long result = jedis.georadiusByMemberStore(key, member, radius, unit, param, storeParam);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -718,7 +718,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, member, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, member, radius, unit);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, member, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -738,7 +738,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, member, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, member, radius, unit);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, member, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -758,7 +758,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, coord, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, coord, radius, unit);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, coord, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -778,7 +778,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, coord, radius, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, coord, radius, unit);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, coord, radius, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -799,7 +799,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, member, width, height, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, member, width, height, unit);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, member, width, height, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -820,7 +820,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, member, width, height, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, member, width, height, unit);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, member, width, height, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -841,7 +841,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, coord, width, height, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, coord, width, height, unit);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, coord, width, height, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -862,7 +862,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, coord, width, height, unit)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, coord, width, height, unit);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, coord, width, height, unit);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -880,7 +880,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, params)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, params);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, params);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -898,7 +898,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearch(key, params)).thenReturn(listGeoRadiusResponseCommandObject);
     when(commandExecutor.executeCommand(listGeoRadiusResponseCommandObject)).thenReturn(expectedResponses);
 
-    List<GeoRadiusResponse> result = unifiedJedis.geosearch(key, params);
+    List<GeoRadiusResponse> result = jedis.geosearch(key, params);
 
     assertThat(result, equalTo(expectedResponses));
 
@@ -918,7 +918,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, member, radius, unit)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, member, radius, unit);
+    long result = jedis.geosearchStore(dest, src, member, radius, unit);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -938,7 +938,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, member, radius, unit)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, member, radius, unit);
+    long result = jedis.geosearchStore(dest, src, member, radius, unit);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -958,7 +958,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, coord, radius, unit)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, coord, radius, unit);
+    long result = jedis.geosearchStore(dest, src, coord, radius, unit);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -978,7 +978,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, coord, radius, unit)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, coord, radius, unit);
+    long result = jedis.geosearchStore(dest, src, coord, radius, unit);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -999,7 +999,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, member, width, height, unit)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, member, width, height, unit);
+    long result = jedis.geosearchStore(dest, src, member, width, height, unit);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -1020,7 +1020,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, member, width, height, unit)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, member, width, height, unit);
+    long result = jedis.geosearchStore(dest, src, member, width, height, unit);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -1041,7 +1041,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, coord, width, height, unit)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, coord, width, height, unit);
+    long result = jedis.geosearchStore(dest, src, coord, width, height, unit);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -1062,7 +1062,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, coord, width, height, unit)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, coord, width, height, unit);
+    long result = jedis.geosearchStore(dest, src, coord, width, height, unit);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -1080,7 +1080,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, params);
+    long result = jedis.geosearchStore(dest, src, params);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -1098,7 +1098,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStore(dest, src, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStored);
 
-    long result = unifiedJedis.geosearchStore(dest, src, params);
+    long result = jedis.geosearchStore(dest, src, params);
 
     assertThat(result, equalTo(expectedStored));
 
@@ -1116,7 +1116,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStoreStoreDist(dest, src, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredDist);
 
-    long result = unifiedJedis.geosearchStoreStoreDist(dest, src, params);
+    long result = jedis.geosearchStoreStoreDist(dest, src, params);
 
     assertThat(result, equalTo(expectedStoredDist));
 
@@ -1134,7 +1134,7 @@ public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.geosearchStoreStoreDist(dest, src, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredDist);
 
-    long result = unifiedJedis.geosearchStoreStoreDist(dest, src, params);
+    long result = jedis.geosearchStoreStoreDist(dest, src, params);
 
     assertThat(result, equalTo(expectedStoredDist));
 

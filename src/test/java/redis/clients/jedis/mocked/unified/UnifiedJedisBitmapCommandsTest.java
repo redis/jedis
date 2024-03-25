@@ -24,7 +24,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitcount(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.bitcount(key);
+    long result = jedis.bitcount(key);
 
     assertThat(result, sameInstance(expectedCount));
 
@@ -40,7 +40,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitcount(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.bitcount(key);
+    long result = jedis.bitcount(key);
 
     assertThat(result, sameInstance(expectedCount));
 
@@ -58,7 +58,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitcount(key, start, end)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.bitcount(key, start, end);
+    long result = jedis.bitcount(key, start, end);
 
     assertThat(result, sameInstance(expectedCount));
 
@@ -76,7 +76,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitcount(key, start, end)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.bitcount(key, start, end);
+    long result = jedis.bitcount(key, start, end);
 
     assertThat(result, sameInstance(expectedCount));
 
@@ -95,7 +95,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitcount(key, start, end, option)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.bitcount(key, start, end, option);
+    long result = jedis.bitcount(key, start, end, option);
 
     assertThat(result, sameInstance(expectedCount));
 
@@ -114,7 +114,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitcount(key, start, end, option)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.bitcount(key, start, end, option);
+    long result = jedis.bitcount(key, start, end, option);
 
     assertThat(result, sameInstance(expectedCount));
 
@@ -131,7 +131,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitfield(key, arguments)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResults);
 
-    List<Long> results = unifiedJedis.bitfield(key, arguments);
+    List<Long> results = jedis.bitfield(key, arguments);
 
     assertThat(results, sameInstance(expectedResults));
 
@@ -148,7 +148,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitfield(key, arguments)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResults);
 
-    List<Long> results = unifiedJedis.bitfield(key, arguments);
+    List<Long> results = jedis.bitfield(key, arguments);
 
     assertThat(results, sameInstance(expectedResults));
 
@@ -165,7 +165,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitfieldReadonly(key, arguments)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResults);
 
-    List<Long> results = unifiedJedis.bitfieldReadonly(key, arguments);
+    List<Long> results = jedis.bitfieldReadonly(key, arguments);
 
     assertThat(results, sameInstance(expectedResults));
 
@@ -182,7 +182,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitfieldReadonly(key, arguments)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expectedResults);
 
-    List<Long> results = unifiedJedis.bitfieldReadonly(key, arguments);
+    List<Long> results = jedis.bitfieldReadonly(key, arguments);
 
     assertThat(results, sameInstance(expectedResults));
 
@@ -200,7 +200,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitop(op, destKey, srcKeys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.bitop(op, destKey, srcKeys);
+    long result = jedis.bitop(op, destKey, srcKeys);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -218,7 +218,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitop(op, destKey, srcKeys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.bitop(op, destKey, srcKeys);
+    long result = jedis.bitop(op, destKey, srcKeys);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -235,7 +235,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitpos(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedPosition);
 
-    long result = unifiedJedis.bitpos(key, value);
+    long result = jedis.bitpos(key, value);
 
     assertThat(result, sameInstance(expectedPosition));
 
@@ -252,7 +252,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitpos(key, value)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedPosition);
 
-    long result = unifiedJedis.bitpos(key, value);
+    long result = jedis.bitpos(key, value);
 
     assertThat(result, sameInstance(expectedPosition));
 
@@ -270,7 +270,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitpos(key, value, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedPosition);
 
-    long result = unifiedJedis.bitpos(key, value, params);
+    long result = jedis.bitpos(key, value, params);
 
     assertThat(result, sameInstance(expectedPosition));
 
@@ -288,7 +288,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bitpos(key, value, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedPosition);
 
-    long result = unifiedJedis.bitpos(key, value, params);
+    long result = jedis.bitpos(key, value, params);
 
     assertThat(result, sameInstance(expectedPosition));
 
@@ -305,7 +305,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getbit(key, offset)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.getbit(key, offset);
+    boolean result = jedis.getbit(key, offset);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -322,7 +322,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.getbit(key, offset)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.getbit(key, offset);
+    boolean result = jedis.getbit(key, offset);
 
     assertThat(result, sameInstance(expectedResponse));
     verify(commandExecutor).executeCommand(booleanCommandObject);
@@ -339,7 +339,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setbit(key, offset, value)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.setbit(key, offset, value);
+    boolean result = jedis.setbit(key, offset, value);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -357,7 +357,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.setbit(key, offset, value)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.setbit(key, offset, value);
+    boolean result = jedis.setbit(key, offset, value);
 
     assertThat(result, sameInstance(expectedResponse));
 

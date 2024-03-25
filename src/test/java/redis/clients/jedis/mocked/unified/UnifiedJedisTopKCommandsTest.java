@@ -23,7 +23,7 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.topkAdd(key, items)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.topkAdd(key, items);
+    List<String> result = jedis.topkAdd(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -42,7 +42,7 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.topkIncrBy(key, itemIncrements)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.topkIncrBy(key, itemIncrements);
+    List<String> result = jedis.topkIncrBy(key, itemIncrements);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -62,7 +62,7 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.topkInfo(key)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.topkInfo(key);
+    Map<String, Object> result = jedis.topkInfo(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -78,7 +78,7 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.topkList(key)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.topkList(key);
+    List<String> result = jedis.topkList(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -96,7 +96,7 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.topkListWithCount(key)).thenReturn(mapStringLongCommandObject);
     when(commandExecutor.executeCommand(mapStringLongCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Long> result = unifiedJedis.topkListWithCount(key);
+    Map<String, Long> result = jedis.topkListWithCount(key);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -113,7 +113,7 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.topkQuery(key, items)).thenReturn(listBooleanCommandObject);
     when(commandExecutor.executeCommand(listBooleanCommandObject)).thenReturn(expectedResponse);
 
-    List<Boolean> result = unifiedJedis.topkQuery(key, items);
+    List<Boolean> result = jedis.topkQuery(key, items);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -130,7 +130,7 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.topkReserve(key, topk)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.topkReserve(key, topk);
+    String result = jedis.topkReserve(key, topk);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -150,7 +150,7 @@ public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.topkReserve(key, topk, width, depth, decay)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.topkReserve(key, topk, width, depth, decay);
+    String result = jedis.topkReserve(key, topk, width, depth, decay);
 
     assertThat(result, sameInstance(expectedResponse));
 

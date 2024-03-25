@@ -23,7 +23,7 @@ public abstract class UnifiedJedisTestBase extends MockCommandObjectsTest {
   /**
    * The {@link UnifiedJedis} instance under-test.
    */
-  protected UnifiedJedis unifiedJedis;
+  protected UnifiedJedis jedis;
 
   /**
    * Mocked {@link CommandExecutor} instance. Instead of going to the wire and exchanging data
@@ -57,7 +57,7 @@ public abstract class UnifiedJedisTestBase extends MockCommandObjectsTest {
 
   @Before
   public void setUp() {
-    unifiedJedis = new UnifiedJedis(commandObjects, graphCommandObjects, commandExecutor, connectionProvider);
+    jedis = new UnifiedJedis(commandObjects, graphCommandObjects, commandExecutor, connectionProvider);
   }
 
   @After

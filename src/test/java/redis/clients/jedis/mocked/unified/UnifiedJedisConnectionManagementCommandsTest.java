@@ -14,7 +14,7 @@ public class UnifiedJedisConnectionManagementCommandsTest extends UnifiedJedisTe
     when(commandObjects.ping()).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("foo");
 
-    String result = unifiedJedis.ping();
+    String result = jedis.ping();
 
     assertThat(result, equalTo("foo"));
 

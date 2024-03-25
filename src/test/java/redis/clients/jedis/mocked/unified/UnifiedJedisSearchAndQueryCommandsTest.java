@@ -41,7 +41,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftAggregate(indexName, aggr)).thenReturn(aggregationResultCommandObject);
     when(commandExecutor.executeCommand(aggregationResultCommandObject)).thenReturn(expectedResponse);
 
-    AggregationResult result = unifiedJedis.ftAggregate(indexName, aggr);
+    AggregationResult result = jedis.ftAggregate(indexName, aggr);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -58,7 +58,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftAliasAdd(aliasName, indexName)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftAliasAdd(aliasName, indexName);
+    String result = jedis.ftAliasAdd(aliasName, indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -74,7 +74,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftAliasDel(aliasName)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftAliasDel(aliasName);
+    String result = jedis.ftAliasDel(aliasName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -91,7 +91,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftAliasUpdate(aliasName, indexName)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftAliasUpdate(aliasName, indexName);
+    String result = jedis.ftAliasUpdate(aliasName, indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -108,7 +108,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftAlter(indexName, schema)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftAlter(indexName, schema);
+    String result = jedis.ftAlter(indexName, schema);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -125,7 +125,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftAlter(indexName, schemaFields)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftAlter(indexName, schemaFields);
+    String result = jedis.ftAlter(indexName, schemaFields);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -141,7 +141,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftConfigGet(option)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.ftConfigGet(option);
+    Map<String, Object> result = jedis.ftConfigGet(option);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -158,7 +158,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftConfigGet(indexName, option)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.ftConfigGet(indexName, option);
+    Map<String, Object> result = jedis.ftConfigGet(indexName, option);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -175,7 +175,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftConfigSet(option, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftConfigSet(option, value);
+    String result = jedis.ftConfigSet(option, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -193,7 +193,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftConfigSet(indexName, option, value)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftConfigSet(indexName, option, value);
+    String result = jedis.ftConfigSet(indexName, option, value);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -211,7 +211,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftCreate(indexName, indexOptions, schema)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftCreate(indexName, indexOptions, schema);
+    String result = jedis.ftCreate(indexName, indexOptions, schema);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -229,7 +229,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftCreate(indexName, createParams, schemaFields)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftCreate(indexName, createParams, schemaFields);
+    String result = jedis.ftCreate(indexName, createParams, schemaFields);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -246,7 +246,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftCursorDel(indexName, cursorId)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftCursorDel(indexName, cursorId);
+    String result = jedis.ftCursorDel(indexName, cursorId);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -264,7 +264,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftCursorRead(indexName, cursorId, count)).thenReturn(aggregationResultCommandObject);
     when(commandExecutor.executeCommand(aggregationResultCommandObject)).thenReturn(expectedResponse);
 
-    AggregationResult result = unifiedJedis.ftCursorRead(indexName, cursorId, count);
+    AggregationResult result = jedis.ftCursorRead(indexName, cursorId, count);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -281,7 +281,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftDictAdd(dictionary, terms)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.ftDictAdd(dictionary, terms);
+    long result = jedis.ftDictAdd(dictionary, terms);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -299,7 +299,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftDictAddBySampleKey(indexName, dictionary, terms)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.ftDictAddBySampleKey(indexName, dictionary, terms);
+    long result = jedis.ftDictAddBySampleKey(indexName, dictionary, terms);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -316,7 +316,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftDictDel(dictionary, terms)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.ftDictDel(dictionary, terms);
+    long result = jedis.ftDictDel(dictionary, terms);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -334,7 +334,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftDictDelBySampleKey(indexName, dictionary, terms)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.ftDictDelBySampleKey(indexName, dictionary, terms);
+    long result = jedis.ftDictDelBySampleKey(indexName, dictionary, terms);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -350,7 +350,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftDictDump(dictionary)).thenReturn(setStringCommandObject);
     when(commandExecutor.executeCommand(setStringCommandObject)).thenReturn(expectedResponse);
 
-    Set<String> result = unifiedJedis.ftDictDump(dictionary);
+    Set<String> result = jedis.ftDictDump(dictionary);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -367,7 +367,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftDictDumpBySampleKey(indexName, dictionary)).thenReturn(setStringCommandObject);
     when(commandExecutor.executeCommand(setStringCommandObject)).thenReturn(expectedResponse);
 
-    Set<String> result = unifiedJedis.ftDictDumpBySampleKey(indexName, dictionary);
+    Set<String> result = jedis.ftDictDumpBySampleKey(indexName, dictionary);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -383,7 +383,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftDropIndex(indexName)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftDropIndex(indexName);
+    String result = jedis.ftDropIndex(indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -399,7 +399,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftDropIndexDD(indexName)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftDropIndexDD(indexName);
+    String result = jedis.ftDropIndexDD(indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -416,7 +416,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftExplain(indexName, query)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftExplain(indexName, query);
+    String result = jedis.ftExplain(indexName, query);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -433,7 +433,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftExplainCLI(indexName, query)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.ftExplainCLI(indexName, query);
+    List<String> result = jedis.ftExplainCLI(indexName, query);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -449,7 +449,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftInfo(indexName)).thenReturn(mapStringObjectCommandObject);
     when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Object> result = unifiedJedis.ftInfo(indexName);
+    Map<String, Object> result = jedis.ftInfo(indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -464,7 +464,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftList()).thenReturn(setStringCommandObject);
     when(commandExecutor.executeCommand(setStringCommandObject)).thenReturn(expectedResponse);
 
-    Set<String> result = unifiedJedis.ftList();
+    Set<String> result = jedis.ftList();
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -481,7 +481,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSearch(indexName, query)).thenReturn(searchResultCommandObject);
     when(commandExecutor.executeCommand(searchResultCommandObject)).thenReturn(expectedResponse);
 
-    SearchResult result = unifiedJedis.ftSearch(indexName, query);
+    SearchResult result = jedis.ftSearch(indexName, query);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -499,7 +499,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSearch(indexName, query, params)).thenReturn(searchResultCommandObject);
     when(commandExecutor.executeCommand(searchResultCommandObject)).thenReturn(expectedResponse);
 
-    SearchResult result = unifiedJedis.ftSearch(indexName, query, params);
+    SearchResult result = jedis.ftSearch(indexName, query, params);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -516,7 +516,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSearch(indexName, query)).thenReturn(searchResultCommandObject);
     when(commandExecutor.executeCommand(searchResultCommandObject)).thenReturn(expectedResponse);
 
-    SearchResult result = unifiedJedis.ftSearch(indexName, query);
+    SearchResult result = jedis.ftSearch(indexName, query);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -533,7 +533,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSearch(indexName, query)).thenReturn(searchResultCommandObject);
     when(commandExecutor.executeCommand(searchResultCommandObject)).thenReturn(expectedResponse);
 
-    SearchResult result = unifiedJedis.ftSearch(indexName, query);
+    SearchResult result = jedis.ftSearch(indexName, query);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -550,7 +550,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSpellCheck(index, query)).thenReturn(mapStringMapStringDoubleCommandObject);
     when(commandExecutor.executeCommand(mapStringMapStringDoubleCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Map<String, Double>> result = unifiedJedis.ftSpellCheck(index, query);
+    Map<String, Map<String, Double>> result = jedis.ftSpellCheck(index, query);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -568,7 +568,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSpellCheck(index, query, spellCheckParams)).thenReturn(mapStringMapStringDoubleCommandObject);
     when(commandExecutor.executeCommand(mapStringMapStringDoubleCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, Map<String, Double>> result = unifiedJedis.ftSpellCheck(index, query, spellCheckParams);
+    Map<String, Map<String, Double>> result = jedis.ftSpellCheck(index, query, spellCheckParams);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -584,7 +584,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSynDump(indexName)).thenReturn(mapStringListStringCommandObject);
     when(commandExecutor.executeCommand(mapStringListStringCommandObject)).thenReturn(expectedResponse);
 
-    Map<String, List<String>> result = unifiedJedis.ftSynDump(indexName);
+    Map<String, List<String>> result = jedis.ftSynDump(indexName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -602,7 +602,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSynUpdate(indexName, synonymGroupId, terms)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.ftSynUpdate(indexName, synonymGroupId, terms);
+    String result = jedis.ftSynUpdate(indexName, synonymGroupId, terms);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -619,7 +619,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftTagVals(indexName, fieldName)).thenReturn(setStringCommandObject);
     when(commandExecutor.executeCommand(setStringCommandObject)).thenReturn(expectedResponse);
 
-    Set<String> result = unifiedJedis.ftTagVals(indexName, fieldName);
+    Set<String> result = jedis.ftTagVals(indexName, fieldName);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -637,7 +637,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSugAdd(key, string, score)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.ftSugAdd(key, string, score);
+    long result = jedis.ftSugAdd(key, string, score);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -655,7 +655,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSugAddIncr(key, string, score)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.ftSugAddIncr(key, string, score);
+    long result = jedis.ftSugAddIncr(key, string, score);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -672,7 +672,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSugDel(key, string)).thenReturn(booleanCommandObject);
     when(commandExecutor.executeCommand(booleanCommandObject)).thenReturn(expectedResponse);
 
-    boolean result = unifiedJedis.ftSugDel(key, string);
+    boolean result = jedis.ftSugDel(key, string);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -689,7 +689,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSugGet(key, prefix)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.ftSugGet(key, prefix);
+    List<String> result = jedis.ftSugGet(key, prefix);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -708,7 +708,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSugGet(key, prefix, fuzzy, max)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
 
-    List<String> result = unifiedJedis.ftSugGet(key, prefix, fuzzy, max);
+    List<String> result = jedis.ftSugGet(key, prefix, fuzzy, max);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -725,7 +725,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSugGetWithScores(key, prefix)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedResponse);
 
-    List<Tuple> result = unifiedJedis.ftSugGetWithScores(key, prefix);
+    List<Tuple> result = jedis.ftSugGetWithScores(key, prefix);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -744,7 +744,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSugGetWithScores(key, prefix, fuzzy, max)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedResponse);
 
-    List<Tuple> result = unifiedJedis.ftSugGetWithScores(key, prefix, fuzzy, max);
+    List<Tuple> result = jedis.ftSugGetWithScores(key, prefix, fuzzy, max);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -760,7 +760,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftSugLen(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
 
-    long result = unifiedJedis.ftSugLen(key);
+    long result = jedis.ftSugLen(key);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -779,7 +779,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftProfileAggregate(indexName, profileParams, aggr)).thenReturn(entryAggregationResultMapStringObjectCommandObject);
     when(commandExecutor.executeCommand(entryAggregationResultMapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<AggregationResult, Map<String, Object>> result = unifiedJedis.ftProfileAggregate(indexName, profileParams, aggr);
+    Map.Entry<AggregationResult, Map<String, Object>> result = jedis.ftProfileAggregate(indexName, profileParams, aggr);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -798,7 +798,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftProfileSearch(indexName, profileParams, query)).thenReturn(entrySearchResultMapStringObjectCommandObject);
     when(commandExecutor.executeCommand(entrySearchResultMapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<SearchResult, Map<String, Object>> result = unifiedJedis.ftProfileSearch(indexName, profileParams, query);
+    Map.Entry<SearchResult, Map<String, Object>> result = jedis.ftProfileSearch(indexName, profileParams, query);
 
     assertThat(result, equalTo(expectedResponse));
 
@@ -818,7 +818,7 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
     when(commandObjects.ftProfileSearch(indexName, profileParams, query, searchParams)).thenReturn(entrySearchResultMapStringObjectCommandObject);
     when(commandExecutor.executeCommand(entrySearchResultMapStringObjectCommandObject)).thenReturn(expectedResponse);
 
-    Map.Entry<SearchResult, Map<String, Object>> result = unifiedJedis.ftProfileSearch(indexName, profileParams, query, searchParams);
+    Map.Entry<SearchResult, Map<String, Object>> result = jedis.ftProfileSearch(indexName, profileParams, query, searchParams);
 
     assertThat(result, equalTo(expectedResponse));
 

@@ -35,7 +35,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bzmpop(timeout, option, keys)).thenReturn(keyValueStringListTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueStringListTupleCommandObject)).thenReturn(expectedPopResult);
 
-    KeyValue<String, List<Tuple>> result = unifiedJedis.bzmpop(timeout, option, keys);
+    KeyValue<String, List<Tuple>> result = jedis.bzmpop(timeout, option, keys);
 
     assertThat(result, equalTo(expectedPopResult));
 
@@ -53,7 +53,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bzmpop(timeout, option, keys)).thenReturn(keyValueBytesListTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueBytesListTupleCommandObject)).thenReturn(expectedPopResult);
 
-    KeyValue<byte[], List<Tuple>> result = unifiedJedis.bzmpop(timeout, option, keys);
+    KeyValue<byte[], List<Tuple>> result = jedis.bzmpop(timeout, option, keys);
 
     assertThat(result, equalTo(expectedPopResult));
 
@@ -72,7 +72,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bzmpop(timeout, option, count, keys)).thenReturn(keyValueStringListTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueStringListTupleCommandObject)).thenReturn(expectedPopResult);
 
-    KeyValue<String, List<Tuple>> result = unifiedJedis.bzmpop(timeout, option, count, keys);
+    KeyValue<String, List<Tuple>> result = jedis.bzmpop(timeout, option, count, keys);
 
     assertThat(result, equalTo(expectedPopResult));
 
@@ -91,7 +91,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bzmpop(timeout, option, count, keys)).thenReturn(keyValueBytesListTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueBytesListTupleCommandObject)).thenReturn(expectedPopResult);
 
-    KeyValue<byte[], List<Tuple>> result = unifiedJedis.bzmpop(timeout, option, count, keys);
+    KeyValue<byte[], List<Tuple>> result = jedis.bzmpop(timeout, option, count, keys);
 
     assertThat(result, equalTo(expectedPopResult));
 
@@ -109,7 +109,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bzpopmax(timeout, keys)).thenReturn(keyValueStringTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueStringTupleCommandObject)).thenReturn(expectedKeyValue);
 
-    KeyValue<String, Tuple> result = unifiedJedis.bzpopmax(timeout, keys);
+    KeyValue<String, Tuple> result = jedis.bzpopmax(timeout, keys);
 
     assertThat(result, equalTo(expectedKeyValue));
 
@@ -127,7 +127,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bzpopmax(timeout, keys)).thenReturn(keyValueBytesTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueBytesTupleCommandObject)).thenReturn(expectedKeyValue);
 
-    KeyValue<byte[], Tuple> result = unifiedJedis.bzpopmax(timeout, keys);
+    KeyValue<byte[], Tuple> result = jedis.bzpopmax(timeout, keys);
 
     assertThat(result, equalTo(expectedKeyValue));
 
@@ -145,7 +145,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bzpopmin(timeout, keys)).thenReturn(keyValueStringTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueStringTupleCommandObject)).thenReturn(expectedKeyValue);
 
-    KeyValue<String, Tuple> result = unifiedJedis.bzpopmin(timeout, keys);
+    KeyValue<String, Tuple> result = jedis.bzpopmin(timeout, keys);
 
     assertThat(result, equalTo(expectedKeyValue));
 
@@ -163,7 +163,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.bzpopmin(timeout, keys)).thenReturn(keyValueBytesTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueBytesTupleCommandObject)).thenReturn(expectedKeyValue);
 
-    KeyValue<byte[], Tuple> result = unifiedJedis.bzpopmin(timeout, keys);
+    KeyValue<byte[], Tuple> result = jedis.bzpopmin(timeout, keys);
 
     assertThat(result, equalTo(expectedKeyValue));
 
@@ -181,7 +181,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zadd(key, score, member)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.zadd(key, score, member);
+    long result = jedis.zadd(key, score, member);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -199,7 +199,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zadd(key, score, member)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.zadd(key, score, member);
+    long result = jedis.zadd(key, score, member);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -218,7 +218,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zadd(key, score, member, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.zadd(key, score, member, params);
+    long result = jedis.zadd(key, score, member, params);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -237,7 +237,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zadd(key, score, member, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.zadd(key, score, member, params);
+    long result = jedis.zadd(key, score, member, params);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -256,7 +256,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zadd(key, scoreMembers)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.zadd(key, scoreMembers);
+    long result = jedis.zadd(key, scoreMembers);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -275,7 +275,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zadd(key, scoreMembers)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.zadd(key, scoreMembers);
+    long result = jedis.zadd(key, scoreMembers);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -295,7 +295,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zadd(key, scoreMembers, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.zadd(key, scoreMembers, params);
+    long result = jedis.zadd(key, scoreMembers, params);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -315,7 +315,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zadd(key, scoreMembers, params)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedAdded);
 
-    long result = unifiedJedis.zadd(key, scoreMembers, params);
+    long result = jedis.zadd(key, scoreMembers, params);
 
     assertThat(result, equalTo(expectedAdded));
 
@@ -334,7 +334,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zaddIncr(key, score, member, params)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedNewScore);
 
-    Double result = unifiedJedis.zaddIncr(key, score, member, params);
+    Double result = jedis.zaddIncr(key, score, member, params);
 
     assertThat(result, equalTo(expectedNewScore));
 
@@ -353,7 +353,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zaddIncr(key, score, member, params)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedNewScore);
 
-    Double result = unifiedJedis.zaddIncr(key, score, member, params);
+    Double result = jedis.zaddIncr(key, score, member, params);
 
     assertThat(result, equalTo(expectedNewScore));
 
@@ -369,7 +369,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zcard(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
 
-    long result = unifiedJedis.zcard(key);
+    long result = jedis.zcard(key);
 
     assertThat(result, equalTo(expectedCardinality));
 
@@ -385,7 +385,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zcard(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
 
-    long result = unifiedJedis.zcard(key);
+    long result = jedis.zcard(key);
 
     assertThat(result, equalTo(expectedCardinality));
 
@@ -403,7 +403,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zcount(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.zcount(key, min, max);
+    long result = jedis.zcount(key, min, max);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -421,7 +421,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zcount(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.zcount(key, min, max);
+    long result = jedis.zcount(key, min, max);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -439,7 +439,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zcount(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.zcount(key, min, max);
+    long result = jedis.zcount(key, min, max);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -457,7 +457,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zcount(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.zcount(key, min, max);
+    long result = jedis.zcount(key, min, max);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -473,7 +473,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zdiff(keys)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedDifference);
 
-    List<String> result = unifiedJedis.zdiff(keys);
+    List<String> result = jedis.zdiff(keys);
 
     assertThat(result, equalTo(expectedDifference));
 
@@ -489,7 +489,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zdiff(keys)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedDifference);
 
-    List<byte[]> result = unifiedJedis.zdiff(keys);
+    List<byte[]> result = jedis.zdiff(keys);
 
     assertThat(result, equalTo(expectedDifference));
 
@@ -508,7 +508,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zdiffWithScores(keys)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedDifferenceWithScores);
 
-    List<Tuple> result = unifiedJedis.zdiffWithScores(keys);
+    List<Tuple> result = jedis.zdiffWithScores(keys);
 
     assertThat(result, equalTo(expectedDifferenceWithScores));
 
@@ -527,7 +527,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zdiffWithScores(keys)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedDifferenceWithScores);
 
-    List<Tuple> result = unifiedJedis.zdiffWithScores(keys);
+    List<Tuple> result = jedis.zdiffWithScores(keys);
 
     assertThat(result, equalTo(expectedDifferenceWithScores));
 
@@ -544,7 +544,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zdiffStore(dstkey, keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zdiffStore(dstkey, keys);
+    long result = jedis.zdiffStore(dstkey, keys);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -561,7 +561,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zdiffStore(dstkey, keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zdiffStore(dstkey, keys);
+    long result = jedis.zdiffStore(dstkey, keys);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -578,7 +578,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zdiffstore(dstkey, keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zdiffstore(dstkey, keys);
+    long result = jedis.zdiffstore(dstkey, keys);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -595,7 +595,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zdiffstore(dstkey, keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zdiffstore(dstkey, keys);
+    long result = jedis.zdiffstore(dstkey, keys);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -613,7 +613,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zincrby(key, increment, member)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedScore);
 
-    double result = unifiedJedis.zincrby(key, increment, member);
+    double result = jedis.zincrby(key, increment, member);
 
     assertThat(result, equalTo(expectedScore));
 
@@ -631,7 +631,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zincrby(key, increment, member)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedScore);
 
-    double result = unifiedJedis.zincrby(key, increment, member);
+    double result = jedis.zincrby(key, increment, member);
 
     assertThat(result, equalTo(expectedScore));
 
@@ -650,7 +650,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zincrby(key, increment, member, params)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedNewScore);
 
-    Double result = unifiedJedis.zincrby(key, increment, member, params);
+    Double result = jedis.zincrby(key, increment, member, params);
 
     assertThat(result, equalTo(expectedNewScore));
 
@@ -669,7 +669,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zincrby(key, increment, member, params)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedNewScore);
 
-    Double result = unifiedJedis.zincrby(key, increment, member, params);
+    Double result = jedis.zincrby(key, increment, member, params);
 
     assertThat(result, equalTo(expectedNewScore));
 
@@ -686,7 +686,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zinter(params, keys)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedIntersection);
 
-    List<String> result = unifiedJedis.zinter(params, keys);
+    List<String> result = jedis.zinter(params, keys);
 
     assertThat(result, equalTo(expectedIntersection));
 
@@ -703,7 +703,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zinter(params, keys)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedIntersection);
 
-    List<byte[]> result = unifiedJedis.zinter(params, keys);
+    List<byte[]> result = jedis.zinter(params, keys);
 
     assertThat(result, equalTo(expectedIntersection));
 
@@ -723,7 +723,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zinterWithScores(params, keys)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedIntersectionWithScores);
 
-    List<Tuple> result = unifiedJedis.zinterWithScores(params, keys);
+    List<Tuple> result = jedis.zinterWithScores(params, keys);
 
     assertThat(result, equalTo(expectedIntersectionWithScores));
 
@@ -740,7 +740,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zinterWithScores(params, keys)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedIntersectionWithScores);
 
-    List<Tuple> result = unifiedJedis.zinterWithScores(params, keys);
+    List<Tuple> result = jedis.zinterWithScores(params, keys);
 
     assertThat(result, equalTo(expectedIntersectionWithScores));
 
@@ -756,7 +756,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zintercard(keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
 
-    long result = unifiedJedis.zintercard(keys);
+    long result = jedis.zintercard(keys);
 
     assertThat(result, equalTo(expectedCardinality));
 
@@ -772,7 +772,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zintercard(keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
 
-    long result = unifiedJedis.zintercard(keys);
+    long result = jedis.zintercard(keys);
 
     assertThat(result, equalTo(expectedCardinality));
 
@@ -789,7 +789,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zintercard(limit, keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
 
-    long result = unifiedJedis.zintercard(limit, keys);
+    long result = jedis.zintercard(limit, keys);
 
     assertThat(result, equalTo(expectedCardinality));
 
@@ -806,7 +806,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zintercard(limit, keys)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedIntersectionCardinality);
 
-    long result = unifiedJedis.zintercard(limit, keys);
+    long result = jedis.zintercard(limit, keys);
 
     assertThat(result, equalTo(expectedIntersectionCardinality));
 
@@ -823,7 +823,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zinterstore(dstkey, sets)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zinterstore(dstkey, sets);
+    long result = jedis.zinterstore(dstkey, sets);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -840,7 +840,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zinterstore(dstkey, sets)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zinterstore(dstkey, sets);
+    long result = jedis.zinterstore(dstkey, sets);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -858,7 +858,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zinterstore(dstkey, params, sets)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zinterstore(dstkey, params, sets);
+    long result = jedis.zinterstore(dstkey, params, sets);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -876,7 +876,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zinterstore(dstkey, params, sets)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zinterstore(dstkey, params, sets);
+    long result = jedis.zinterstore(dstkey, params, sets);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -894,7 +894,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zlexcount(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.zlexcount(key, min, max);
+    long result = jedis.zlexcount(key, min, max);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -912,7 +912,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zlexcount(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCount);
 
-    long result = unifiedJedis.zlexcount(key, min, max);
+    long result = jedis.zlexcount(key, min, max);
 
     assertThat(result, equalTo(expectedCount));
 
@@ -929,7 +929,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zmpop(option, keys)).thenReturn(keyValueStringListTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueStringListTupleCommandObject)).thenReturn(expectedPopResult);
 
-    KeyValue<String, List<Tuple>> result = unifiedJedis.zmpop(option, keys);
+    KeyValue<String, List<Tuple>> result = jedis.zmpop(option, keys);
 
     assertThat(result, equalTo(expectedPopResult));
 
@@ -946,7 +946,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zmpop(option, keys)).thenReturn(keyValueBytesListTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueBytesListTupleCommandObject)).thenReturn(expectedPopResult);
 
-    KeyValue<byte[], List<Tuple>> result = unifiedJedis.zmpop(option, keys);
+    KeyValue<byte[], List<Tuple>> result = jedis.zmpop(option, keys);
 
     assertThat(result, equalTo(expectedPopResult));
 
@@ -964,7 +964,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zmpop(option, count, keys)).thenReturn(keyValueStringListTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueStringListTupleCommandObject)).thenReturn(expectedPopResult);
 
-    KeyValue<String, List<Tuple>> result = unifiedJedis.zmpop(option, count, keys);
+    KeyValue<String, List<Tuple>> result = jedis.zmpop(option, count, keys);
 
     assertThat(result, equalTo(expectedPopResult));
 
@@ -982,7 +982,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zmpop(option, count, keys)).thenReturn(keyValueBytesListTupleCommandObject);
     when(commandExecutor.executeCommand(keyValueBytesListTupleCommandObject)).thenReturn(expectedPopResult);
 
-    KeyValue<byte[], List<Tuple>> result = unifiedJedis.zmpop(option, count, keys);
+    KeyValue<byte[], List<Tuple>> result = jedis.zmpop(option, count, keys);
 
     assertThat(result, equalTo(expectedPopResult));
 
@@ -999,7 +999,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zmscore(key, members)).thenReturn(listDoubleCommandObject);
     when(commandExecutor.executeCommand(listDoubleCommandObject)).thenReturn(expectedScores);
 
-    List<Double> result = unifiedJedis.zmscore(key, members);
+    List<Double> result = jedis.zmscore(key, members);
 
     assertThat(result, equalTo(expectedScores));
 
@@ -1016,7 +1016,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zmscore(key, members)).thenReturn(listDoubleCommandObject);
     when(commandExecutor.executeCommand(listDoubleCommandObject)).thenReturn(expectedScores);
 
-    List<Double> result = unifiedJedis.zmscore(key, members);
+    List<Double> result = jedis.zmscore(key, members);
 
     assertThat(result, equalTo(expectedScores));
 
@@ -1032,7 +1032,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zpopmax(key)).thenReturn(tupleCommandObject);
     when(commandExecutor.executeCommand(tupleCommandObject)).thenReturn(expectedTuple);
 
-    Tuple result = unifiedJedis.zpopmax(key);
+    Tuple result = jedis.zpopmax(key);
 
     assertThat(result, equalTo(expectedTuple));
 
@@ -1048,7 +1048,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zpopmax(key)).thenReturn(tupleCommandObject);
     when(commandExecutor.executeCommand(tupleCommandObject)).thenReturn(expectedTuple);
 
-    Tuple result = unifiedJedis.zpopmax(key);
+    Tuple result = jedis.zpopmax(key);
 
     assertThat(result, equalTo(expectedTuple));
 
@@ -1068,7 +1068,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zpopmax(key, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedTuples);
 
-    List<Tuple> result = unifiedJedis.zpopmax(key, count);
+    List<Tuple> result = jedis.zpopmax(key, count);
 
     assertThat(result, equalTo(expectedTuples));
 
@@ -1088,7 +1088,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zpopmax(key, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedTuples);
 
-    List<Tuple> result = unifiedJedis.zpopmax(key, count);
+    List<Tuple> result = jedis.zpopmax(key, count);
 
     assertThat(result, equalTo(expectedTuples));
 
@@ -1104,7 +1104,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zpopmin(key)).thenReturn(tupleCommandObject);
     when(commandExecutor.executeCommand(tupleCommandObject)).thenReturn(expectedTuple);
 
-    Tuple result = unifiedJedis.zpopmin(key);
+    Tuple result = jedis.zpopmin(key);
 
     assertThat(result, equalTo(expectedTuple));
 
@@ -1120,7 +1120,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zpopmin(key)).thenReturn(tupleCommandObject);
     when(commandExecutor.executeCommand(tupleCommandObject)).thenReturn(expectedTuple);
 
-    Tuple result = unifiedJedis.zpopmin(key);
+    Tuple result = jedis.zpopmin(key);
 
     assertThat(result, equalTo(expectedTuple));
 
@@ -1140,7 +1140,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zpopmin(key, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedTuples);
 
-    List<Tuple> result = unifiedJedis.zpopmin(key, count);
+    List<Tuple> result = jedis.zpopmin(key, count);
 
     assertThat(result, equalTo(expectedTuples));
 
@@ -1160,7 +1160,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zpopmin(key, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedTuples);
 
-    List<Tuple> result = unifiedJedis.zpopmin(key, count);
+    List<Tuple> result = jedis.zpopmin(key, count);
 
     assertThat(result, equalTo(expectedTuples));
 
@@ -1176,7 +1176,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrandmember(key)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedMember);
 
-    String result = unifiedJedis.zrandmember(key);
+    String result = jedis.zrandmember(key);
 
     assertThat(result, equalTo(expectedMember));
 
@@ -1192,7 +1192,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrandmember(key)).thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(expectedMember);
 
-    byte[] result = unifiedJedis.zrandmember(key);
+    byte[] result = jedis.zrandmember(key);
 
     assertArrayEquals(expectedMember, result);
 
@@ -1209,7 +1209,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrandmember(key, count)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrandmember(key, count);
+    List<String> result = jedis.zrandmember(key, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1226,7 +1226,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrandmember(key, count)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrandmember(key, count);
+    List<byte[]> result = jedis.zrandmember(key, count);
 
     for (int i = 0; i < expectedMembers.size(); i++) {
       assertArrayEquals(expectedMembers.get(i), result.get(i));
@@ -1248,7 +1248,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrandmemberWithScores(key, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrandmemberWithScores(key, count);
+    List<Tuple> result = jedis.zrandmemberWithScores(key, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1268,7 +1268,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrandmemberWithScores(key, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrandmemberWithScores(key, count);
+    List<Tuple> result = jedis.zrandmemberWithScores(key, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1286,7 +1286,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrange(key, start, stop)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrange(key, start, stop);
+    List<String> result = jedis.zrange(key, start, stop);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1304,7 +1304,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrange(key, start, stop)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrange(key, start, stop);
+    List<byte[]> result = jedis.zrange(key, start, stop);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1326,7 +1326,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeWithScores(key, start, stop)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeWithScores(key, start, stop);
+    List<Tuple> result = jedis.zrangeWithScores(key, start, stop);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1348,7 +1348,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeWithScores(key, start, stop)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeWithScores(key, start, stop);
+    List<Tuple> result = jedis.zrangeWithScores(key, start, stop);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1365,7 +1365,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrange(key, zRangeParams)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrange(key, zRangeParams);
+    List<String> result = jedis.zrange(key, zRangeParams);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1382,7 +1382,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrange(key, zRangeParams)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrange(key, zRangeParams);
+    List<byte[]> result = jedis.zrange(key, zRangeParams);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1402,7 +1402,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeWithScores(key, zRangeParams)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeWithScores(key, zRangeParams);
+    List<Tuple> result = jedis.zrangeWithScores(key, zRangeParams);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1422,7 +1422,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeWithScores(key, zRangeParams)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeWithScores(key, zRangeParams);
+    List<Tuple> result = jedis.zrangeWithScores(key, zRangeParams);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1440,7 +1440,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByLex(key, min, max)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrangeByLex(key, min, max);
+    List<String> result = jedis.zrangeByLex(key, min, max);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1458,7 +1458,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByLex(key, min, max)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrangeByLex(key, min, max);
+    List<byte[]> result = jedis.zrangeByLex(key, min, max);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1478,7 +1478,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByLex(key, min, max, offset, count)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrangeByLex(key, min, max, offset, count);
+    List<String> result = jedis.zrangeByLex(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1498,7 +1498,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByLex(key, min, max, offset, count)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrangeByLex(key, min, max, offset, count);
+    List<byte[]> result = jedis.zrangeByLex(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1516,7 +1516,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScore(key, min, max)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrangeByScore(key, min, max);
+    List<String> result = jedis.zrangeByScore(key, min, max);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1534,7 +1534,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScore(key, min, max)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrangeByScore(key, min, max);
+    List<byte[]> result = jedis.zrangeByScore(key, min, max);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1552,7 +1552,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScore(key, min, max)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrangeByScore(key, min, max);
+    List<String> result = jedis.zrangeByScore(key, min, max);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1570,7 +1570,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScore(key, min, max)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrangeByScore(key, min, max);
+    List<byte[]> result = jedis.zrangeByScore(key, min, max);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1590,7 +1590,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScore(key, min, max, offset, count)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrangeByScore(key, min, max, offset, count);
+    List<String> result = jedis.zrangeByScore(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1610,7 +1610,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScore(key, min, max, offset, count)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrangeByScore(key, min, max, offset, count);
+    List<byte[]> result = jedis.zrangeByScore(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1630,7 +1630,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScore(key, min, max, offset, count)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrangeByScore(key, min, max, offset, count);
+    List<String> result = jedis.zrangeByScore(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1650,7 +1650,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScore(key, min, max, offset, count)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrangeByScore(key, min, max, offset, count);
+    List<byte[]> result = jedis.zrangeByScore(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -1671,7 +1671,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScoreWithScores(key, min, max)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeByScoreWithScores(key, min, max);
+    List<Tuple> result = jedis.zrangeByScoreWithScores(key, min, max);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1692,7 +1692,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScoreWithScores(key, min, max)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeByScoreWithScores(key, min, max);
+    List<Tuple> result = jedis.zrangeByScoreWithScores(key, min, max);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1713,7 +1713,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScoreWithScores(key, min, max)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeByScoreWithScores(key, min, max);
+    List<Tuple> result = jedis.zrangeByScoreWithScores(key, min, max);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1734,7 +1734,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScoreWithScores(key, min, max)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeByScoreWithScores(key, min, max);
+    List<Tuple> result = jedis.zrangeByScoreWithScores(key, min, max);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1757,7 +1757,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeByScoreWithScores(key, min, max, offset, count);
+    List<Tuple> result = jedis.zrangeByScoreWithScores(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1780,7 +1780,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeByScoreWithScores(key, min, max, offset, count);
+    List<Tuple> result = jedis.zrangeByScoreWithScores(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1803,7 +1803,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeByScoreWithScores(key, min, max, offset, count);
+    List<Tuple> result = jedis.zrangeByScoreWithScores(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1826,7 +1826,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrangeByScoreWithScores(key, min, max, offset, count);
+    List<Tuple> result = jedis.zrangeByScoreWithScores(key, min, max, offset, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -1844,7 +1844,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangestore(dest, src, zRangeParams)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zrangestore(dest, src, zRangeParams);
+    long result = jedis.zrangestore(dest, src, zRangeParams);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -1862,7 +1862,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrangestore(dest, src, zRangeParams)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zrangestore(dest, src, zRangeParams);
+    long result = jedis.zrangestore(dest, src, zRangeParams);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -1879,7 +1879,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrank(key, member)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRank);
 
-    Long result = unifiedJedis.zrank(key, member);
+    Long result = jedis.zrank(key, member);
 
     assertThat(result, equalTo(expectedRank));
 
@@ -1896,7 +1896,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrank(key, member)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRank);
 
-    Long result = unifiedJedis.zrank(key, member);
+    Long result = jedis.zrank(key, member);
 
     assertThat(result, equalTo(expectedRank));
 
@@ -1913,7 +1913,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrankWithScore(key, member)).thenReturn(keyValueLongDoubleCommandObject);
     when(commandExecutor.executeCommand(keyValueLongDoubleCommandObject)).thenReturn(expectedRankWithScore);
 
-    KeyValue<Long, Double> result = unifiedJedis.zrankWithScore(key, member);
+    KeyValue<Long, Double> result = jedis.zrankWithScore(key, member);
 
     assertThat(result, equalTo(expectedRankWithScore));
 
@@ -1930,7 +1930,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrankWithScore(key, member)).thenReturn(keyValueLongDoubleCommandObject);
     when(commandExecutor.executeCommand(keyValueLongDoubleCommandObject)).thenReturn(expectedRankWithScore);
 
-    KeyValue<Long, Double> result = unifiedJedis.zrankWithScore(key, member);
+    KeyValue<Long, Double> result = jedis.zrankWithScore(key, member);
 
     assertThat(result, equalTo(expectedRankWithScore));
 
@@ -1947,7 +1947,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrem(key, members)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemoved);
 
-    long result = unifiedJedis.zrem(key, members);
+    long result = jedis.zrem(key, members);
 
     assertThat(result, equalTo(expectedRemoved));
 
@@ -1964,7 +1964,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrem(key, members)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemoved);
 
-    long result = unifiedJedis.zrem(key, members);
+    long result = jedis.zrem(key, members);
 
     assertThat(result, equalTo(expectedRemoved));
 
@@ -1982,7 +1982,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zremrangeByLex(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemovals);
 
-    long result = unifiedJedis.zremrangeByLex(key, min, max);
+    long result = jedis.zremrangeByLex(key, min, max);
 
     assertThat(result, equalTo(expectedRemovals));
 
@@ -2000,7 +2000,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zremrangeByLex(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemovals);
 
-    long result = unifiedJedis.zremrangeByLex(key, min, max);
+    long result = jedis.zremrangeByLex(key, min, max);
 
     assertThat(result, equalTo(expectedRemovals));
 
@@ -2018,7 +2018,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zremrangeByRank(key, start, stop)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemovals);
 
-    long result = unifiedJedis.zremrangeByRank(key, start, stop);
+    long result = jedis.zremrangeByRank(key, start, stop);
 
     assertThat(result, equalTo(expectedRemovals));
 
@@ -2036,7 +2036,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zremrangeByRank(key, start, stop)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemovals);
 
-    long result = unifiedJedis.zremrangeByRank(key, start, stop);
+    long result = jedis.zremrangeByRank(key, start, stop);
 
     assertThat(result, equalTo(expectedRemovals));
 
@@ -2054,7 +2054,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zremrangeByScore(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemovals);
 
-    long result = unifiedJedis.zremrangeByScore(key, min, max);
+    long result = jedis.zremrangeByScore(key, min, max);
 
     assertThat(result, equalTo(expectedRemovals));
 
@@ -2072,7 +2072,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zremrangeByScore(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemovals);
 
-    long result = unifiedJedis.zremrangeByScore(key, min, max);
+    long result = jedis.zremrangeByScore(key, min, max);
 
     assertThat(result, equalTo(expectedRemovals));
 
@@ -2090,7 +2090,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zremrangeByScore(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemovals);
 
-    long result = unifiedJedis.zremrangeByScore(key, min, max);
+    long result = jedis.zremrangeByScore(key, min, max);
 
     assertThat(result, equalTo(expectedRemovals));
 
@@ -2108,7 +2108,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zremrangeByScore(key, min, max)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRemovals);
 
-    long result = unifiedJedis.zremrangeByScore(key, min, max);
+    long result = jedis.zremrangeByScore(key, min, max);
 
     assertThat(result, equalTo(expectedRemovals));
 
@@ -2126,7 +2126,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrange(key, start, stop)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrevrange(key, start, stop);
+    List<String> result = jedis.zrevrange(key, start, stop);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2144,7 +2144,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrange(key, start, stop)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrevrange(key, start, stop);
+    List<byte[]> result = jedis.zrevrange(key, start, stop);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2166,7 +2166,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeWithScores(key, start, stop)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeWithScores(key, start, stop);
+    List<Tuple> result = jedis.zrevrangeWithScores(key, start, stop);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2187,7 +2187,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeWithScores(key, start, stop)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeWithScores(key, start, stop);
+    List<Tuple> result = jedis.zrevrangeWithScores(key, start, stop);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2205,7 +2205,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByLex(key, max, min)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrevrangeByLex(key, max, min);
+    List<String> result = jedis.zrevrangeByLex(key, max, min);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2223,7 +2223,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByLex(key, max, min)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrevrangeByLex(key, max, min);
+    List<byte[]> result = jedis.zrevrangeByLex(key, max, min);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2243,7 +2243,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByLex(key, max, min, offset, count)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrevrangeByLex(key, max, min, offset, count);
+    List<String> result = jedis.zrevrangeByLex(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2263,7 +2263,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByLex(key, max, min, offset, count)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrevrangeByLex(key, max, min, offset, count);
+    List<byte[]> result = jedis.zrevrangeByLex(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2281,7 +2281,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScore(key, max, min)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrevrangeByScore(key, max, min);
+    List<String> result = jedis.zrevrangeByScore(key, max, min);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2299,7 +2299,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScore(key, max, min)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrevrangeByScore(key, max, min);
+    List<byte[]> result = jedis.zrevrangeByScore(key, max, min);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2317,7 +2317,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScore(key, max, min)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrevrangeByScore(key, max, min);
+    List<String> result = jedis.zrevrangeByScore(key, max, min);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2335,7 +2335,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScore(key, max, min)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrevrangeByScore(key, max, min);
+    List<byte[]> result = jedis.zrevrangeByScore(key, max, min);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2355,7 +2355,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScore(key, max, min, offset, count)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrevrangeByScore(key, max, min, offset, count);
+    List<String> result = jedis.zrevrangeByScore(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2375,7 +2375,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScore(key, max, min, offset, count)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrevrangeByScore(key, max, min, offset, count);
+    List<byte[]> result = jedis.zrevrangeByScore(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2396,7 +2396,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScoreWithScores(key, max, min)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeByScoreWithScores(key, max, min);
+    List<Tuple> result = jedis.zrevrangeByScoreWithScores(key, max, min);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2417,7 +2417,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScoreWithScores(key, max, min)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeByScoreWithScores(key, max, min);
+    List<Tuple> result = jedis.zrevrangeByScoreWithScores(key, max, min);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2437,7 +2437,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScore(key, max, min, offset, count)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedMembers);
 
-    List<String> result = unifiedJedis.zrevrangeByScore(key, max, min, offset, count);
+    List<String> result = jedis.zrevrangeByScore(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2457,7 +2457,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScore(key, max, min, offset, count)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedMembers);
 
-    List<byte[]> result = unifiedJedis.zrevrangeByScore(key, max, min, offset, count);
+    List<byte[]> result = jedis.zrevrangeByScore(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembers));
 
@@ -2478,7 +2478,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScoreWithScores(key, max, min)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeByScoreWithScores(key, max, min);
+    List<Tuple> result = jedis.zrevrangeByScoreWithScores(key, max, min);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2499,7 +2499,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScoreWithScores(key, max, min)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeByScoreWithScores(key, max, min);
+    List<Tuple> result = jedis.zrevrangeByScoreWithScores(key, max, min);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2522,7 +2522,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
+    List<Tuple> result = jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2545,7 +2545,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
+    List<Tuple> result = jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2568,7 +2568,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
+    List<Tuple> result = jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2591,7 +2591,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedMembersWithScores);
 
-    List<Tuple> result = unifiedJedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
+    List<Tuple> result = jedis.zrevrangeByScoreWithScores(key, max, min, offset, count);
 
     assertThat(result, equalTo(expectedMembersWithScores));
 
@@ -2608,7 +2608,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrank(key, member)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRevRank);
 
-    Long result = unifiedJedis.zrevrank(key, member);
+    Long result = jedis.zrevrank(key, member);
 
     assertThat(result, equalTo(expectedRevRank));
 
@@ -2625,7 +2625,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrank(key, member)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedRevRank);
 
-    Long result = unifiedJedis.zrevrank(key, member);
+    Long result = jedis.zrevrank(key, member);
 
     assertThat(result, equalTo(expectedRevRank));
 
@@ -2642,7 +2642,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrankWithScore(key, member)).thenReturn(keyValueLongDoubleCommandObject);
     when(commandExecutor.executeCommand(keyValueLongDoubleCommandObject)).thenReturn(expectedRevRankWithScore);
 
-    KeyValue<Long, Double> result = unifiedJedis.zrevrankWithScore(key, member);
+    KeyValue<Long, Double> result = jedis.zrevrankWithScore(key, member);
 
     assertThat(result, equalTo(expectedRevRankWithScore));
 
@@ -2659,7 +2659,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zrevrankWithScore(key, member)).thenReturn(keyValueLongDoubleCommandObject);
     when(commandExecutor.executeCommand(keyValueLongDoubleCommandObject)).thenReturn(expectedRevRankWithScore);
 
-    KeyValue<Long, Double> result = unifiedJedis.zrevrankWithScore(key, member);
+    KeyValue<Long, Double> result = jedis.zrevrankWithScore(key, member);
 
     assertThat(result, equalTo(expectedRevRankWithScore));
 
@@ -2681,7 +2681,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zscan(key, cursor, params)).thenReturn(scanResultTupleCommandObject);
     when(commandExecutor.executeCommand(scanResultTupleCommandObject)).thenReturn(expectedScanResult);
 
-    ScanResult<Tuple> result = unifiedJedis.zscan(key, cursor, params);
+    ScanResult<Tuple> result = jedis.zscan(key, cursor, params);
 
     assertThat(result, equalTo(expectedScanResult));
 
@@ -2703,7 +2703,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zscan(key, cursor, params)).thenReturn(scanResultTupleCommandObject);
     when(commandExecutor.executeCommand(scanResultTupleCommandObject)).thenReturn(expectedScanResult);
 
-    ScanResult<Tuple> result = unifiedJedis.zscan(key, cursor, params);
+    ScanResult<Tuple> result = jedis.zscan(key, cursor, params);
 
     assertThat(result, equalTo(expectedScanResult));
 
@@ -2720,7 +2720,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zscore(key, member)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedScore);
 
-    Double result = unifiedJedis.zscore(key, member);
+    Double result = jedis.zscore(key, member);
 
     assertThat(result, equalTo(expectedScore));
 
@@ -2737,7 +2737,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zscore(key, member)).thenReturn(doubleCommandObject);
     when(commandExecutor.executeCommand(doubleCommandObject)).thenReturn(expectedScore);
 
-    Double result = unifiedJedis.zscore(key, member);
+    Double result = jedis.zscore(key, member);
 
     assertThat(result, equalTo(expectedScore));
 
@@ -2754,7 +2754,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zunion(params, keys)).thenReturn(listStringCommandObject);
     when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedUnion);
 
-    List<String> result = unifiedJedis.zunion(params, keys);
+    List<String> result = jedis.zunion(params, keys);
 
     assertThat(result, equalTo(expectedUnion));
 
@@ -2771,7 +2771,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zunion(params, keys)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expectedUnion);
 
-    List<byte[]> result = unifiedJedis.zunion(params, keys);
+    List<byte[]> result = jedis.zunion(params, keys);
 
     assertThat(result, equalTo(expectedUnion));
 
@@ -2788,7 +2788,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zunionWithScores(params, keys)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedUnionWithScores);
 
-    List<Tuple> result = unifiedJedis.zunionWithScores(params, keys);
+    List<Tuple> result = jedis.zunionWithScores(params, keys);
 
     assertThat(result, equalTo(expectedUnionWithScores));
 
@@ -2805,7 +2805,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zunionWithScores(params, keys)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expectedUnionWithScores);
 
-    List<Tuple> result = unifiedJedis.zunionWithScores(params, keys);
+    List<Tuple> result = jedis.zunionWithScores(params, keys);
 
     assertThat(result, equalTo(expectedUnionWithScores));
 
@@ -2822,7 +2822,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zunionstore(dstkey, sets)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zunionstore(dstkey, sets);
+    long result = jedis.zunionstore(dstkey, sets);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -2839,7 +2839,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zunionstore(dstkey, sets)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zunionstore(dstkey, sets);
+    long result = jedis.zunionstore(dstkey, sets);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -2857,7 +2857,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zunionstore(dstkey, params, sets)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zunionstore(dstkey, params, sets);
+    long result = jedis.zunionstore(dstkey, params, sets);
 
     assertThat(result, equalTo(expectedStoredCount));
 
@@ -2875,7 +2875,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.zunionstore(dstkey, params, sets)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedStoredCount);
 
-    long result = unifiedJedis.zunionstore(dstkey, params, sets);
+    long result = jedis.zunionstore(dstkey, params, sets);
 
     assertThat(result, equalTo(expectedStoredCount));
 

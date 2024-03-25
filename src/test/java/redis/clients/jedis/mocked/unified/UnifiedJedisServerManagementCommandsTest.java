@@ -17,7 +17,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.configSet(parameter, value)).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
 
-    String result = unifiedJedis.configSet(parameter, value);
+    String result = jedis.configSet(parameter, value);
 
     assertThat(result, equalTo("OK"));
 
@@ -32,7 +32,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.dbSize()).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedSize);
 
-    long result = unifiedJedis.dbSize();
+    long result = jedis.dbSize();
 
     assertThat(result, equalTo(expectedSize));
 
@@ -45,7 +45,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.flushAll()).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
 
-    String result = unifiedJedis.flushAll();
+    String result = jedis.flushAll();
 
     assertThat(result, equalTo("OK"));
 
@@ -58,7 +58,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.flushDB()).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
 
-    String result = unifiedJedis.flushDB();
+    String result = jedis.flushDB();
 
     assertThat(result, equalTo("OK"));
 
@@ -74,7 +74,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.memoryUsage(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedMemoryUsage);
 
-    Long result = unifiedJedis.memoryUsage(key);
+    Long result = jedis.memoryUsage(key);
 
     assertThat(result, equalTo(expectedMemoryUsage));
 
@@ -91,7 +91,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.memoryUsage(key, samples)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedMemoryUsage);
 
-    Long result = unifiedJedis.memoryUsage(key, samples);
+    Long result = jedis.memoryUsage(key, samples);
 
     assertThat(result, equalTo(expectedMemoryUsage));
 
@@ -107,7 +107,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.memoryUsage(key)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedMemoryUsage);
 
-    Long result = unifiedJedis.memoryUsage(key);
+    Long result = jedis.memoryUsage(key);
 
     assertThat(result, equalTo(expectedMemoryUsage));
 
@@ -124,7 +124,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.memoryUsage(key, samples)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedMemoryUsage);
 
-    Long result = unifiedJedis.memoryUsage(key, samples);
+    Long result = jedis.memoryUsage(key, samples);
 
     assertThat(result, equalTo(expectedMemoryUsage));
 
@@ -139,7 +139,7 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBa
     when(commandObjects.slowlogReset()).thenReturn(stringCommandObject);
     when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.slowlogReset();
+    String result = jedis.slowlogReset();
 
     assertThat(result, equalTo(expectedResponse));
     verify(commandExecutor).broadcastCommand(stringCommandObject);

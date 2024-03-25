@@ -28,7 +28,7 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisTe
     when(commandObjects.tFunctionCall(library, function, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.tFunctionCall(library, function, keys, args);
+    Object result = jedis.tFunctionCall(library, function, keys, args);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -47,7 +47,7 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisTe
     when(commandObjects.tFunctionCallAsync(library, function, keys, args)).thenReturn(objectCommandObject);
     when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(expectedResponse);
 
-    Object result = unifiedJedis.tFunctionCallAsync(library, function, keys, args);
+    Object result = jedis.tFunctionCallAsync(library, function, keys, args);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -63,7 +63,7 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisTe
     when(commandObjects.tFunctionDelete(libraryName)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tFunctionDelete(libraryName);
+    String result = jedis.tFunctionDelete(libraryName);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -80,7 +80,7 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisTe
     when(commandObjects.tFunctionList(params)).thenReturn(listGearsLibraryInfoCommandObject);
     when(commandExecutor.executeCommand(listGearsLibraryInfoCommandObject)).thenReturn(expectedResponse);
 
-    List<GearsLibraryInfo> result = unifiedJedis.tFunctionList(params);
+    List<GearsLibraryInfo> result = jedis.tFunctionList(params);
 
     assertThat(result, sameInstance(expectedResponse));
 
@@ -97,7 +97,7 @@ public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisTe
     when(commandObjects.tFunctionLoad(libraryCode, params)).thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
-    String result = unifiedJedis.tFunctionLoad(libraryCode, params);
+    String result = jedis.tFunctionLoad(libraryCode, params);
 
     assertThat(result, sameInstance(expectedResponse));
     

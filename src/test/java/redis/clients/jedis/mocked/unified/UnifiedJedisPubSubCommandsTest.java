@@ -18,7 +18,7 @@ public class UnifiedJedisPubSubCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.publish(channel, message)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedPublishCount);
 
-    long result = unifiedJedis.publish(channel, message);
+    long result = jedis.publish(channel, message);
 
     assertThat(result, equalTo(expectedPublishCount));
 
@@ -35,7 +35,7 @@ public class UnifiedJedisPubSubCommandsTest extends UnifiedJedisTestBase {
     when(commandObjects.publish(channel, message)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedPublishCount);
 
-    long result = unifiedJedis.publish(channel, message);
+    long result = jedis.publish(channel, message);
 
     assertThat(result, equalTo(expectedPublishCount));
 

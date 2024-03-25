@@ -19,11 +19,17 @@ public interface SampleKeyedPipelineCommands {
 
   Response<List<Boolean>> scriptExists(String sampleKey, String... sha1);
 
+  Response<String> scriptLoad(String script);
+
   Response<String> scriptLoad(String script, String sampleKey);
+
+  Response<String> scriptFlush();
 
   Response<String> scriptFlush(String sampleKey);
 
   Response<String> scriptFlush(String sampleKey, FlushMode flushMode);
+
+  Response<String> scriptKill();
 
   Response<String> scriptKill(String sampleKey);
 }

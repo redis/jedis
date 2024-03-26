@@ -108,7 +108,8 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   };
 
   /**
-   * @deprecated Use {@link StreamEntryID#XGROUP_LAST_ID} or {@link StreamEntryID#XREAD_NEW_ENTRY}.
+   * @deprecated Use {@link StreamEntryID#XGROUP_LAST_ENTRY} for XREADGROUP command or
+   * {@link StreamEntryID#XREAD_NEW_ENTRY} for XREAD command.
    */
   @Deprecated
   public static final StreamEntryID LAST_ENTRY = XGROUP_LAST_ENTRY;

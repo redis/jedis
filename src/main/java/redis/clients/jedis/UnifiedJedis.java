@@ -10,6 +10,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -239,9 +240,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
   }
 
-  /**
-   * Needed for unit tests.
-   */
+  @VisibleForTesting
   public UnifiedJedis(CommandObjects commandObjects, GraphCommandObjects graphCommandObjects,
                       CommandExecutor executor, ConnectionProvider provider) {
     this.provider = provider;

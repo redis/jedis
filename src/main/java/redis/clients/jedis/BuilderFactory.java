@@ -1436,7 +1436,7 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<Map<String, List<StreamEntry>>> STREAM_READ_RESPONSE_MAP
+  public static final Builder<Map<String, List<StreamEntry>>> STREAM_READ_MAP_RESPONSE
       = new Builder<Map<String, List<StreamEntry>>>() {
     @Override
     public Map<String, List<StreamEntry>> build(Object data) {

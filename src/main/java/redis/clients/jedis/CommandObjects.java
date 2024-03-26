@@ -2672,7 +2672,7 @@ public class CommandObjects {
     Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
     entrySet.forEach(entry -> args.key(entry.getKey()));
     entrySet.forEach(entry -> args.add(entry.getValue()));
-    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE_MAP);
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_MAP_RESPONSE);
   }
 
   public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(
@@ -2696,7 +2696,7 @@ public class CommandObjects {
     Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
     entrySet.forEach(entry -> args.key(entry.getKey()));
     entrySet.forEach(entry -> args.add(entry.getValue()));
-    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE_MAP);
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_MAP_RESPONSE);
   }
 
   public final CommandObject<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {

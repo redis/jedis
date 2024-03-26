@@ -396,7 +396,11 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
   @Test
   public void xreadWithParams() {
-    Map<String, StreamEntryID> streamQuery1 = singletonMap("xread-stream1", new StreamEntryID());
+
+    final String key1 = "xread-stream1";
+    final String key2 = "xread-stream2";
+
+    Map<String, StreamEntryID> streamQuery1 = singletonMap(key1, new StreamEntryID());
 
     // Before creating Stream
     pipe.xread(XReadParams.xReadParams().block(1), streamQuery1);
@@ -408,25 +412,25 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     ));
 
     Map<String, String> map1 = singletonMap("f1", "v1");
-    StreamEntryID id1 = jedis.xadd("xread-stream1", (StreamEntryID) null, map1);
+    StreamEntryID id1 = jedis.xadd(key1, (StreamEntryID) null, map1);
 
     Map<String, String> map2 = singletonMap("f2", "v2");
-    StreamEntryID id2 = jedis.xadd("xread-stream2", (StreamEntryID) null, map2);
+    StreamEntryID id2 = jedis.xadd(key2, (StreamEntryID) null, map2);
 
     // Read only a single Stream
     Response<List<Entry<String, List<StreamEntry>>>> streams1 =
         pipe.xread(XReadParams.xReadParams().count(1).block(1), streamQuery1);
 
     Response<List<Entry<String, List<StreamEntry>>>> streams2 =
-        pipe.xread(XReadParams.xReadParams().block(1), singletonMap("xread-stream1", id1));
+        pipe.xread(XReadParams.xReadParams().block(1), singletonMap(key1, id1));
 
     Response<List<Entry<String, List<StreamEntry>>>> streams3 =
-        pipe.xread(XReadParams.xReadParams(), singletonMap("xread-stream1", id1));
+        pipe.xread(XReadParams.xReadParams(), singletonMap(key1, id1));
 
     pipe.sync();
 
     assertThat(streams1.get().stream().map(Entry::getKey).collect(Collectors.toList()),
-        contains("xread-stream1"));
+        contains(key1));
 
     assertThat(streams1.get().stream().map(Entry::getValue).flatMap(List::stream)
         .map(StreamEntry::getID).collect(Collectors.toList()), contains(id1));
@@ -440,8 +444,8 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     // Read from two Streams
     Map<String, StreamEntryID> streamQuery2 = new LinkedHashMap<>();
-    streamQuery2.put("xread-stream1", new StreamEntryID());
-    streamQuery2.put("xread-stream2", new StreamEntryID());
+    streamQuery2.put(key1, new StreamEntryID());
+    streamQuery2.put(key2, new StreamEntryID());
 
     Response<List<Entry<String, List<StreamEntry>>>> streams4 =
         pipe.xread(XReadParams.xReadParams().count(2).block(1), streamQuery2);
@@ -449,7 +453,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.sync();
 
     assertThat(streams4.get().stream().map(Entry::getKey).collect(Collectors.toList()),
-        contains("xread-stream1", "xread-stream2"));
+        contains(key1, key2));
 
     assertThat(streams4.get().stream().map(Entry::getValue).flatMap(List::stream)
         .map(StreamEntry::getID).collect(Collectors.toList()), contains(id1, id2));
@@ -618,7 +622,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.xgroupCreate("xgroup-stream", "consumer-group-name", null, false);
     pipe.xgroupSetID("xgroup-stream", "consumer-group-name", id1);
-    pipe.xgroupCreate("xgroup-stream", "consumer-group-name1", StreamEntryID.LAST_ENTRY, false);
+    pipe.xgroupCreate("xgroup-stream", "consumer-group-name1", StreamEntryID.XGROUP_LAST_ENTRY, false);
 
     pipe.xgroupDestroy("xgroup-stream", "consumer-group-name");
     pipe.xgroupDelConsumer("xgroup-stream", "consumer-group-name1", "myconsumer1");
@@ -1140,7 +1144,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     Response<StreamInfo> streamInfoResponse = pipe.xinfoStream(STREAM_NAME);
 
-    pipe.xgroupCreate(STREAM_NAME, G1, StreamEntryID.LAST_ENTRY, false);
+    pipe.xgroupCreate(STREAM_NAME, G1, StreamEntryID.XGROUP_LAST_ENTRY, false);
 
     Map<String, StreamEntryID> streamQuery1 = singletonMap(STREAM_NAME, new StreamEntryID("0-0"));
 
@@ -1221,7 +1225,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertThat(consumerInfo.get(0).getInactive(), Matchers.any(Long.class));
 
     // test with more groups and consumers
-    pipe.xgroupCreate(STREAM_NAME, G2, StreamEntryID.LAST_ENTRY, false);
+    pipe.xgroupCreate(STREAM_NAME, G2, StreamEntryID.XGROUP_LAST_ENTRY, false);
     pipe.xreadGroup(G1, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQuery1);
     pipe.xreadGroup(G2, MY_CONSUMER, XReadGroupParams.xReadGroupParams().count(1), streamQuery1);
     pipe.xreadGroup(G2, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQuery1);

@@ -80,9 +80,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Should be used only with XADD
    *
-   * <code>
-   * XADD mystream * field1 value1
-   * </code>
+   * {@code XADD mystream * field1 value1}
    */
   public static final StreamEntryID NEW_ENTRY = new StreamEntryID() {
 
@@ -97,11 +95,30 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Should be used only with XGROUP CREATE
    *
-   * <code>
-   * XGROUP CREATE mystream consumer-group-name $
-   * </code>
+   * {@code XGROUP CREATE mystream consumer-group-name $}
    */
-  public static final StreamEntryID LAST_ENTRY = new StreamEntryID() {
+  public static final StreamEntryID XGROUP_LAST_ENTRY = new StreamEntryID() {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toString() {
+      return "$";
+    }
+  };
+
+  /**
+   * @deprecated Use {@link StreamEntryID#XGROUP_LAST_ID} or {@link StreamEntryID#XREAD_NEW_ENTRY}.
+   */
+  @Deprecated
+  public static final StreamEntryID LAST_ENTRY = XGROUP_LAST_ENTRY;
+
+  /**
+   * Should be used only with XREAD
+   *
+   * {@code XREAD BLOCK 5000 COUNT 100 STREAMS mystream $}
+   */
+  public static final StreamEntryID XREAD_NEW_ENTRY = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
 
@@ -129,6 +146,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Can be used in XRANGE, XREVRANGE and XPENDING commands.
    */
+  // TODO: FIRST_ID ?
   public static final StreamEntryID MINIMUM_ID = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
@@ -142,7 +160,25 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Can be used in XRANGE, XREVRANGE and XPENDING commands.
    */
+  // TODO: LAST_ID ?
+  // TODO: unify with XREAD_LAST_ENTRY ??
   public static final StreamEntryID MAXIMUM_ID = new StreamEntryID() {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public String toString() {
+      return "+";
+    }
+  };
+
+  /**
+   * Should be used only with XREAD
+   *
+   * {@code XREAD STREAMS mystream +}
+   */
+  // TODO: unify with MAXIMUM_ID ??
+  public static final StreamEntryID XREAD_LAST_ENTRY = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
 

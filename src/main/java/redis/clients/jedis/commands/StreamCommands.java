@@ -250,7 +250,19 @@ public interface StreamCommands {
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    */
+  Map<String, List<StreamEntry>> xreadAsMap(XReadParams xReadParams,
+      Map<String, StreamEntryID> streams);
+
+  /**
+   * XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
+   */
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
+      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
+
+  /**
+   * XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
+   */
+  Map<String, List<StreamEntry>> xreadGroupAsMap(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
 }

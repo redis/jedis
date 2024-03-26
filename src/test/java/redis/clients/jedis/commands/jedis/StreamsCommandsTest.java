@@ -1,6 +1,8 @@
 package redis.clients.jedis.commands.jedis;
 
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -15,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
-import org.hamcrest.MatcherAssert;
+
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -273,7 +275,10 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   @Test
   public void xreadWithParams() {
 
-    Map<String, StreamEntryID> streamQeury1 = singletonMap("xread-stream1", new StreamEntryID());
+    final String key1 = "xread-stream1";
+    final String key2 = "xread-stream2";
+
+    Map<String, StreamEntryID> streamQeury1 = singletonMap(key1, new StreamEntryID());
 
     // Before creating Stream
     assertNull(jedis.xread(XReadParams.xReadParams().block(1), streamQeury1));
@@ -281,26 +286,76 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     Map<String, String> map = new HashMap<>();
     map.put("f1", "v1");
-    StreamEntryID id1 = jedis.xadd("xread-stream1", (StreamEntryID) null, map);
-    StreamEntryID id2 = jedis.xadd("xread-stream2", (StreamEntryID) null, map);
+    StreamEntryID id1 = jedis.xadd(key1, (StreamEntryID) null, map);
+    StreamEntryID id2 = jedis.xadd(key2, (StreamEntryID) null, map);
 
     // Read only a single Stream
     List<Entry<String, List<StreamEntry>>> streams1 = jedis.xread(XReadParams.xReadParams().count(1).block(1), streamQeury1);
     assertEquals(1, streams1.size());
-    assertEquals("xread-stream1", streams1.get(0).getKey());
+    assertEquals(key1, streams1.get(0).getKey());
     assertEquals(1, streams1.get(0).getValue().size());
     assertEquals(id1, streams1.get(0).getValue().get(0).getID());
     assertEquals(map, streams1.get(0).getValue().get(0).getFields());
 
-    assertNull(jedis.xread(XReadParams.xReadParams().block(1), singletonMap("xread-stream1", id1)));
-    assertNull(jedis.xread(XReadParams.xReadParams(), singletonMap("xread-stream1", id1)));
+    assertNull(jedis.xread(XReadParams.xReadParams().block(1), singletonMap(key1, id1)));
+    assertNull(jedis.xread(XReadParams.xReadParams(), singletonMap(key1, id1)));
 
     // Read from two Streams
-    Map<String, StreamEntryID> streamQuery23 = new LinkedHashMap<>();
-    streamQuery23.put("xread-stream1", new StreamEntryID());
-    streamQuery23.put("xread-stream2", new StreamEntryID());
-    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xread(XReadParams.xReadParams().count(2).block(1), streamQuery23);
+    Map<String, StreamEntryID> streamQuery2 = new LinkedHashMap<>();
+    streamQuery2.put(key1, new StreamEntryID());
+    streamQuery2.put(key2, new StreamEntryID());
+    List<Entry<String, List<StreamEntry>>> streams2 = jedis.xread(XReadParams.xReadParams().count(2).block(1), streamQuery2);
     assertEquals(2, streams2.size());
+  }
+
+  @Test
+  public void xreadAsMap() {
+
+    final String key1 = "xread-stream1";
+    final String key2 = "xread-stream2";
+
+    Map<String, StreamEntryID> streamQeury1 = singletonMap(key1, new StreamEntryID());
+
+    // Before creating Stream
+    assertNull(jedis.xreadAsMap(XReadParams.xReadParams().block(1), streamQeury1));
+    assertNull(jedis.xreadAsMap(XReadParams.xReadParams(), streamQeury1));
+
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    StreamEntryID id1 = new StreamEntryID(1);
+    StreamEntryID id2 = new StreamEntryID(2);
+    StreamEntryID id3 = new StreamEntryID(3);
+
+    assertEquals(id1, jedis.xadd(key1, id1, map));
+    assertEquals(id2, jedis.xadd(key2, id2, map));
+    assertEquals(id3, jedis.xadd(key1, id3, map));
+
+    // Read only a single Stream
+    Map<String, List<StreamEntry>> streams1 = jedis.xreadAsMap(XReadParams.xReadParams().count(2), streamQeury1);
+    assertEquals(singleton(key1), streams1.keySet());
+    List<StreamEntry> list1 = streams1.get(key1);
+    assertEquals(2, list1.size());
+    assertEquals(id1, list1.get(0).getID());
+    assertEquals(map, list1.get(0).getFields());
+    assertEquals(id3, list1.get(1).getID());
+    assertEquals(map, list1.get(1).getFields());
+
+    // Read from two Streams
+    Map<String, StreamEntryID> streamQuery2 = new LinkedHashMap<>();
+    streamQuery2.put(key1, new StreamEntryID());
+    streamQuery2.put(key2, new StreamEntryID());
+    Map<String, List<StreamEntry>> streams2 = jedis.xreadAsMap(XReadParams.xReadParams().count(1), streamQuery2);
+    assertEquals(2, streams2.size());
+    assertEquals(id1, streams2.get(key1).get(0).getID());
+    assertEquals(id2, streams2.get(key2).get(0).getID());
+
+    // Read from last entry
+    Map<String, StreamEntryID> streamQueryLE = singletonMap(key1, StreamEntryID.XREAD_LAST_ENTRY);
+    Map<String, List<StreamEntry>> streamsLE = jedis.xreadAsMap(XReadParams.xReadParams().count(1), streamQueryLE);
+    assertEquals(singleton(key1), streamsLE.keySet());
+    assertEquals(1, streamsLE.get(key1).size());
+    assertEquals(id3, streamsLE.get(key1).get(0).getID());
+    assertEquals(map, streamsLE.get(key1).get(0).getFields());
   }
 
   @Test
@@ -411,13 +466,13 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   @Test
   public void xgroup() {
 
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map = new HashMap<>();
     map.put("f1", "v1");
     StreamEntryID id1 = jedis.xadd("xgroup-stream", (StreamEntryID) null, map);
 
     assertEquals("OK", jedis.xgroupCreate("xgroup-stream", "consumer-group-name", null, false));
     assertEquals("OK", jedis.xgroupSetID("xgroup-stream", "consumer-group-name", id1));
-    assertEquals("OK", jedis.xgroupCreate("xgroup-stream", "consumer-group-name1", StreamEntryID.LAST_ENTRY, false));
+    assertEquals("OK", jedis.xgroupCreate("xgroup-stream", "consumer-group-name1", StreamEntryID.XGROUP_LAST_ENTRY, false));
 
     jedis.xgroupDestroy("xgroup-stream", "consumer-group-name");
     assertEquals(0L, jedis.xgroupDelConsumer("xgroup-stream", "consumer-group-name1","myconsumer1"));
@@ -451,11 +506,11 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, streams1.get(0).getValue().size());
 
     // Read from two Streams
-    Map<String, StreamEntryID> streamQuery23 = new LinkedHashMap<>();
-    streamQuery23.put("xreadGroup-stream1", new StreamEntryID());
-    streamQuery23.put("xreadGroup-stream2", new StreamEntryID());
+    Map<String, StreamEntryID> streamQuery2 = new LinkedHashMap<>();
+    streamQuery2.put("xreadGroup-stream1", new StreamEntryID());
+    streamQuery2.put("xreadGroup-stream2", new StreamEntryID());
     List<Entry<String, List<StreamEntry>>> streams2 = jedis.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
-        XReadGroupParams.xReadGroupParams().count(1).block(1).noAck(), streamQuery23);
+        XReadGroupParams.xReadGroupParams().count(1).block(1).noAck(), streamQuery2);
     assertEquals(2, streams2.size());
 
     // Read only fresh messages
@@ -802,7 +857,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     StreamInfo streamInfo = jedis.xinfoStream(STREAM_NAME);
     assertNotNull(id2);
 
-    jedis.xgroupCreate(STREAM_NAME, G1, StreamEntryID.LAST_ENTRY, false);
+    jedis.xgroupCreate(STREAM_NAME, G1, StreamEntryID.XGROUP_LAST_ENTRY, false);
     Map<String, StreamEntryID> streamQeury11 = singletonMap(
         STREAM_NAME, new StreamEntryID("0-0"));
     jedis.xreadGroup(G1, MY_CONSUMER, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
@@ -854,8 +909,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     // Using getters
     assertEquals(MY_CONSUMER, consumersInfo.get(0).getName());
     assertEquals(0L, consumersInfo.get(0).getPending());
-    MatcherAssert.assertThat(consumersInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
-    MatcherAssert.assertThat(consumersInfo.get(0).getInactive(), Matchers.any(Long.class));
+    assertThat(consumersInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
+    assertThat(consumersInfo.get(0).getInactive(), Matchers.any(Long.class));
 
     // Consumer info test
     assertEquals(MY_CONSUMER,
@@ -866,11 +921,11 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     // Using getters
     assertEquals(MY_CONSUMER, consumerInfo.get(0).getName());
     assertEquals(0L, consumerInfo.get(0).getPending());
-    MatcherAssert.assertThat(consumerInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
-    MatcherAssert.assertThat(consumerInfo.get(0).getInactive(), Matchers.any(Long.class));
+    assertThat(consumerInfo.get(0).getIdle(), Matchers.greaterThanOrEqualTo(0L));
+    assertThat(consumerInfo.get(0).getInactive(), Matchers.any(Long.class));
 
     // test with more groups and consumers
-    jedis.xgroupCreate(STREAM_NAME, G2, StreamEntryID.LAST_ENTRY, false);
+    jedis.xgroupCreate(STREAM_NAME, G2, StreamEntryID.XGROUP_LAST_ENTRY, false);
     jedis.xreadGroup(G1, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
     jedis.xreadGroup(G2, MY_CONSUMER, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
     jedis.xreadGroup(G2, MY_CONSUMER2, XReadGroupParams.xReadGroupParams().count(1), streamQeury11);
@@ -940,8 +995,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, group.getConsumers().size());
     StreamConsumerFullInfo consumer = group.getConsumers().get(0);
     assertEquals("xreadGroup-consumer", consumer.getName());
-    MatcherAssert.assertThat(consumer.getSeenTime(), Matchers.greaterThanOrEqualTo(0L));
-    MatcherAssert.assertThat(consumer.getActiveTime(), Matchers.greaterThanOrEqualTo(0L));
+    assertThat(consumer.getSeenTime(), Matchers.greaterThanOrEqualTo(0L));
+    assertThat(consumer.getActiveTime(), Matchers.greaterThanOrEqualTo(0L));
     assertEquals(1, consumer.getPending().size());
     List<Object> consumerPendingEntry = consumer.getPending().get(0);
     assertEquals(id1, consumerPendingEntry.get(0));

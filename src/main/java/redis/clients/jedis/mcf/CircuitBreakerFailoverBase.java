@@ -1,6 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -14,6 +15,7 @@ import redis.clients.jedis.util.IOUtils;
  * Resilience4j - https://resilience4j.readme.io/docs
  * <p>
  */
+@Experimental
 public class CircuitBreakerFailoverBase implements AutoCloseable {
 
     protected final MultiClusterPooledConnectionProvider provider;

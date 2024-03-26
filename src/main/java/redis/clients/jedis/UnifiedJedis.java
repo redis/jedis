@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -192,6 +193,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
    * <p>
    */
+  @Experimental
   public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
     this(new CircuitBreakerCommandExecutor(provider), provider);
   }

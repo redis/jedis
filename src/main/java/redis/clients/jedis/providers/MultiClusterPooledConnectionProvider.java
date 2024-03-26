@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.Pool;
@@ -35,6 +36,7 @@ import redis.clients.jedis.util.Pool;
  * <p>
  */
 // TODO: move?
+@Experimental
 public class MultiClusterPooledConnectionProvider implements ConnectionProvider {
 
     private final Logger log = LoggerFactory.getLogger(getClass());

@@ -5,6 +5,7 @@ import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
 
@@ -13,6 +14,7 @@ import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluste
  * With this executor users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
  * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
  */
+@Experimental
 public class CircuitBreakerFailoverConnectionProvider extends CircuitBreakerFailoverBase {
 
     public CircuitBreakerFailoverConnectionProvider(MultiClusterPooledConnectionProvider provider) {

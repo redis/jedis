@@ -2,8 +2,6 @@ package redis.clients.jedis;
 
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -268,17 +266,4 @@ public class JedisCluster extends UnifiedJedis {
     throw new UnsupportedOperationException();
   }
 
-  public Map<HostAndPort, List<Map<String, Object>>> clusterLinks() {
-    Map<HostAndPort, List<Map<String, Object>>> nodeClusterLinksMap = new HashMap<>();
-    Map<String, ConnectionPool> clusterNodes = this.getClusterNodes();
-
-    for (Map.Entry<String, ConnectionPool> entry : clusterNodes.entrySet()) {
-      try (Connection connection = entry.getValue().getResource()) {
-        List<Map<String, Object>> clusterNodeLinks =
-            connection.executeCommand(((ClusterCommandObjects) commandObjects).clusterLinks());
-        nodeClusterLinksMap.put(HostAndPort.from(entry.getKey()), clusterNodeLinks);
-      }
-    }
-    return nodeClusterLinksMap;
-  }
 }

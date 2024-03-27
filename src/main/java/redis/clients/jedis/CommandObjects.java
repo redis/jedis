@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
@@ -50,17 +51,24 @@ public class CommandObjects {
     return protocol;
   }
 
+  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
+  protected volatile CommandKeyArgumentPreProcessor keyPreProcessor = null;
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(0);
-
-  private JedisBroadcastAndRoundRobinConfig broadcastAndRoundRobinConfig = null;
 
   void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
     this.broadcastAndRoundRobinConfig = config;
   }
 
+  @Experimental
+  void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
+    this.keyPreProcessor = keyPreProcessor;
+  }
+
   protected CommandArguments commandArguments(ProtocolCommand command) {
-    return new CommandArguments(command);
+    CommandArguments comArgs = new CommandArguments(command);
+    if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);
+    return comArgs;
   }
 
   private final CommandObject<String> PING_COMMAND_OBJECT = new CommandObject<>(commandArguments(PING), BuilderFactory.STRING);
@@ -4278,6 +4286,16 @@ public class CommandObjects {
         .add(keys.size()).keys(keys).addObjects(args), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT);
   }
   // RedisGears commands
+
+  // Transaction commands
+  public final CommandObject<String> watch(String... keys) {
+    return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> watch(byte[]... keys) {
+    return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.STRING);
+  }
+  // Transaction commands
 
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with

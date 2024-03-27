@@ -24,7 +24,7 @@ public class XPendingParamsTest {
     @Test
     public void checkEqualsVariousParams() {
         XPendingParams firstParam = getDefaultValue();
-        firstParam.start(StreamEntryID.LAST_ENTRY);
+        firstParam.start(StreamEntryID.XGROUP_LAST_ENTRY);
         XPendingParams secondParam = getDefaultValue();
         secondParam.start(StreamEntryID.NEW_ENTRY);
         assertFalse(firstParam.equals(secondParam));
@@ -33,7 +33,7 @@ public class XPendingParamsTest {
     @Test
     public void checkHashCodeVariousParams() {
         XPendingParams firstParam = getDefaultValue();
-        firstParam.start(StreamEntryID.LAST_ENTRY);
+        firstParam.start(StreamEntryID.XGROUP_LAST_ENTRY);
         XPendingParams secondParam = getDefaultValue();
         secondParam.start(StreamEntryID.NEW_ENTRY);
         assertNotEquals(firstParam.hashCode(), secondParam.hashCode());

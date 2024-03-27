@@ -108,7 +108,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   };
 
   /**
-   * @deprecated Use {@link StreamEntryID#XGROUP_LAST_ENTRY} for XREADGROUP command or
+   * @deprecated Use {@link StreamEntryID#XGROUP_LAST_ENTRY} for XGROUP CREATE command or
    * {@link StreamEntryID#XREAD_NEW_ENTRY} for XREAD command.
    */
   @Deprecated
@@ -132,9 +132,9 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Should be used only with XREADGROUP
    * <p>
-   * {@code XREADGROUP $GroupName $ConsumerName BLOCK 2000 COUNT 10 STREAMS mystream >}
+   * {@code XREADGROUP GROUP mygroup myconsumer STREAMS mystream >}
    */
-  public static final StreamEntryID UNRECEIVED_ENTRY = new StreamEntryID() {
+  public static final StreamEntryID XREADGROUP_UNDELIVERED_ENTRY = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
 
@@ -145,9 +145,14 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   };
 
   /**
+   * @deprecated Use {@link StreamEntryID#XREADGROUP_UNDELIVERED_ENTRY}.
+   */
+  @Deprecated
+  public static final StreamEntryID UNRECEIVED_ENTRY = XREADGROUP_UNDELIVERED_ENTRY;
+
+  /**
    * Can be used in XRANGE, XREVRANGE and XPENDING commands.
    */
-  // TODO: FIRST_ID ?
   public static final StreamEntryID MINIMUM_ID = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
@@ -161,8 +166,6 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
   /**
    * Can be used in XRANGE, XREVRANGE and XPENDING commands.
    */
-  // TODO: LAST_ID ?
-  // TODO: unify with XREAD_LAST_ENTRY ??
   public static final StreamEntryID MAXIMUM_ID = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;
@@ -178,7 +181,6 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
    *
    * {@code XREAD STREAMS mystream +}
    */
-  // TODO: unify with MAXIMUM_ID ??
   public static final StreamEntryID XREAD_LAST_ENTRY = new StreamEntryID() {
 
     private static final long serialVersionUID = 1L;

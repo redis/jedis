@@ -648,7 +648,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     jedis.xgroupCreate("xreadGroup-stream1", "xreadGroup-group", null, false);
 
-    Map<String, StreamEntryID> streamQuery1 = singletonMap("xreadGroup-stream1", StreamEntryID.UNRECEIVED_ENTRY);
+    Map<String, StreamEntryID> streamQuery1 = singletonMap("xreadGroup-stream1", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
 
     Response<List<Entry<String, List<StreamEntry>>>> streams1 =
         pipe.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
@@ -679,8 +679,8 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     // Read from two Streams
     Map<String, StreamEntryID> streamQuery2 = new LinkedHashMap<>();
-    streamQuery2.put("xreadGroup-stream1", StreamEntryID.UNRECEIVED_ENTRY);
-    streamQuery2.put("xreadGroup-stream2", StreamEntryID.UNRECEIVED_ENTRY);
+    streamQuery2.put("xreadGroup-stream1", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    streamQuery2.put("xreadGroup-stream2", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
 
     Response<List<Entry<String, List<StreamEntry>>>> streams3 = pipe.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
         XReadGroupParams.xReadGroupParams().count(1).noAck(), streamQuery2);
@@ -709,7 +709,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     Map<String, String> map4 = singletonMap("f4", "v4");
     StreamEntryID id4 = jedis.xadd("xreadGroup-stream1", (StreamEntryID) null, map4);
 
-    Map<String, StreamEntryID> streamQueryFresh = singletonMap("xreadGroup-stream1", StreamEntryID.UNRECEIVED_ENTRY);
+    Map<String, StreamEntryID> streamQueryFresh = singletonMap("xreadGroup-stream1", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     Response<List<Entry<String, List<StreamEntry>>>> streams4 = pipe.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
         XReadGroupParams.xReadGroupParams().count(4).block(100).noAck(), streamQueryFresh);
 
@@ -737,7 +737,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.xgroupCreate("xreadGroup-discard-stream1", "xreadGroup-group", null, false);
 
-    Map<String, StreamEntryID> streamQuery1 = singletonMap("xreadGroup-discard-stream1", StreamEntryID.UNRECEIVED_ENTRY);
+    Map<String, StreamEntryID> streamQuery1 = singletonMap("xreadGroup-discard-stream1", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
 
     Response<List<Entry<String, List<StreamEntry>>>> streams1 =
         pipe.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
@@ -781,7 +781,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.xgroupCreate("xack-stream", "xack-group", null, false);
 
-    Map<String, StreamEntryID> streamQuery1 = singletonMap("xack-stream", StreamEntryID.UNRECEIVED_ENTRY);
+    Map<String, StreamEntryID> streamQuery1 = singletonMap("xack-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
 
     // Empty Stream
     Response<List<Entry<String, List<StreamEntry>>>> streams1 =
@@ -809,7 +809,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     assertEquals("OK", jedis.xgroupCreate("xpending-stream", "xpending-group", null, false));
 
-    Map<String, StreamEntryID> streamQeury1 = singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY);
+    Map<String, StreamEntryID> streamQeury1 = singletonMap("xpending-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
 
     // Read the event from Stream put it on pending
     Response<List<Entry<String, List<StreamEntry>>>> range = pipe.xreadGroup("xpending-group",
@@ -861,7 +861,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.xgroupCreate("xpending-stream", "xpending-group", null, false);
 
     // read 1 message from the group with each consumer
-    Map<String, StreamEntryID> streamQeury = singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY);
+    Map<String, StreamEntryID> streamQeury = singletonMap("xpending-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     pipe.xreadGroup("xpending-group", "consumer1", XReadGroupParams.xReadGroupParams().count(1), streamQeury);
     pipe.xreadGroup("xpending-group", "consumer2", XReadGroupParams.xReadGroupParams().count(1), streamQeury);
 
@@ -896,7 +896,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     // Read the event from Stream put it on pending
     pipe.xreadGroup("xpending-group", "xpending-consumer",
         XReadGroupParams.xReadGroupParams().count(1).block(1),
-        singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+        singletonMap("xpending-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY));
 
     // Get the pending event
     Response<List<StreamPendingEntry>> pending =
@@ -938,7 +938,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     // Read the event from Stream put it on pending
     pipe.xreadGroup("xpending-group", "xpending-consumer",
         XReadGroupParams.xReadGroupParams().count(1).block(1),
-        singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+        singletonMap("xpending-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY));
 
     // Get the pending event
     Response<List<StreamPendingEntry>> pending =
@@ -976,7 +976,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     // Read the event from Stream put it on pending
     pipe.xreadGroup("xpending-group", "xpending-consumer",
         XReadGroupParams.xReadGroupParams().count(1).block(1),
-        singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+        singletonMap("xpending-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY));
 
     // Get the pending event
     Response<List<StreamPendingEntry>> pending = pipe.xpending("xpending-stream", "xpending-group",
@@ -1016,7 +1016,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     // Read the event from Stream put it on pending
     pipe.xreadGroup("xpending-group", "xpending-consumer",
         XReadGroupParams.xReadGroupParams().count(1).block(1),
-        singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+        singletonMap("xpending-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY));
 
     // Get the pending event
     Response<List<StreamPendingEntry>> pending = pipe.xpending("xpending-stream", "xpending-group",
@@ -1059,7 +1059,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     // Read the event from Stream put it on pending
     pipe.xreadGroup("xpending-group", "xpending-consumer", XReadGroupParams.xReadGroupParams().count(1).block(1),
-        singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+        singletonMap("xpending-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY));
 
     // Get the pending event
     Response<List<StreamPendingEntry>> pending = pipe.xpending("xpending-stream", "xpending-group",
@@ -1095,7 +1095,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     // Read the event from Stream put it on pending
     pipe.xreadGroup("xpending-group", "xpending-consumer",
         XReadGroupParams.xReadGroupParams().count(1).block(1),
-        singletonMap("xpending-stream", StreamEntryID.UNRECEIVED_ENTRY));
+        singletonMap("xpending-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY));
 
     // Get the pending event
     Response<List<StreamPendingEntry>> pending = pipe.xpending("xpending-stream", "xpending-group",
@@ -1281,7 +1281,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     StreamEntryID id2 = jedis.xadd("streamfull2", (StreamEntryID) null, map);
     jedis.xgroupCreate("streamfull2", "xreadGroup-group", null, false);
 
-    Map<String, StreamEntryID> streamQeury1 = singletonMap("streamfull2", StreamEntryID.UNRECEIVED_ENTRY);
+    Map<String, StreamEntryID> streamQeury1 = singletonMap("streamfull2", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
     Response<List<Entry<String, List<StreamEntry>>>> pending = pipe.xreadGroup("xreadGroup-group", "xreadGroup-consumer",
         XReadGroupParams.xReadGroupParams().count(1), streamQeury1);
 

@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Queue;
 
 import redis.clients.jedis.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.util.KeyValue;
@@ -15,6 +16,7 @@ import redis.clients.jedis.util.KeyValue;
  * This is high memory dependent solution as all the appending commands will be hold in memory until
  * {@link MultiClusterPipeline#sync() SYNC} (or {@link MultiClusterPipeline#close() CLOSE}) gets called.
  */
+@Experimental
 public class MultiClusterPipeline extends PipelineBase implements Closeable {
 
   private final CircuitBreakerFailoverConnectionProvider failoverProvider;

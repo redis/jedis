@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class LPosParams implements IParams {
 
   private Integer rank;
@@ -33,4 +35,16 @@ public class LPosParams implements IParams {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    LPosParams that = (LPosParams) o;
+    return Objects.equals(rank, that.rank) && Objects.equals(maxlen, that.maxlen);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(rank, maxlen);
+  }
 }

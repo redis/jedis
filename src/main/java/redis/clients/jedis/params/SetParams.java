@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class SetParams implements IParams {
 
   private Keyword existance;
@@ -105,5 +107,19 @@ public class SetParams implements IParams {
         args.add(expirationValue);
       }
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    SetParams setParams = (SetParams) o;
+    return Objects.equals(existance, setParams.existance) && Objects.equals(expiration, setParams.expiration)
+            && Objects.equals(expirationValue, setParams.expirationValue);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(existance, expiration, expirationValue);
   }
 }

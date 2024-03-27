@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -209,6 +210,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
    * <p>
    */
+  @Experimental
   public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
     this(new CircuitBreakerCommandExecutor(provider), provider);
   }
@@ -492,7 +494,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
-    return executeCommand(commandObjects.expireAt(key, millisecondsTimestamp, expiryOption));
+    return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -3100,9 +3102,20 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map<String, List<StreamEntry>> xreadAsMap(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    return executeCommand(commandObjects.xreadAsMap(xReadParams, streams));
+  }
+
+  @Override
   public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Map<String, List<StreamEntry>> xreadGroupAsMap(String groupName, String consumer,
+      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    return executeCommand(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override

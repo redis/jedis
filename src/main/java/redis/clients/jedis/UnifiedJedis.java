@@ -4926,6 +4926,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(new CommandObject<>(args, BuilderFactory.RAW_OBJECT));
   }
 
+  @Experimental
   public void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
     this.commandObjects.setKeyArgumentPreProcessor(keyPreProcessor);
   }

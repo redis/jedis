@@ -12,6 +12,7 @@ import org.json.JSONObject;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
@@ -59,6 +60,7 @@ public class CommandObjects {
     this.broadcastAndRoundRobinConfig = config;
   }
 
+  @Experimental
   void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
     this.keyPreProcessor = keyPreProcessor;
   }

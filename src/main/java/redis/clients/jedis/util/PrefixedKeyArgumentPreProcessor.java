@@ -1,9 +1,11 @@
 package redis.clients.jedis.util;
 
 import redis.clients.jedis.CommandKeyArgumentPreProcessor;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
 
+@Experimental
 public class PrefixedKeyArgumentPreProcessor implements CommandKeyArgumentPreProcessor {
 
   private final byte[] prefixBytes;

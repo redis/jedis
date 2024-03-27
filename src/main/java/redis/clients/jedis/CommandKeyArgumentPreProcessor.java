@@ -1,5 +1,8 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.annots.Experimental;
+
+@Experimental
 public interface CommandKeyArgumentPreProcessor {
 
   /**

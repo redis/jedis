@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -30,6 +31,7 @@ public class CommandArguments implements Iterable<Rawable> {
     return (ProtocolCommand) args.get(0);
   }
 
+  @Experimental
   void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
     this.keyPreProc = keyPreProcessor;
   }

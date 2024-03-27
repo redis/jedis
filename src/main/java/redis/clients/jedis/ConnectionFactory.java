@@ -1,11 +1,11 @@
 package redis.clients.jedis;
 
-
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisException;
 
@@ -30,6 +30,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
   }
 
+  @Experimental
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache) {
     this.clientConfig = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);

@@ -4,6 +4,7 @@ import java.net.URI;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.CaffeineClientSideCache;
 import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.csc.GuavaClientSideCache;
@@ -76,6 +77,7 @@ public final class JedisURIHelper {
 
   private static final Integer ZERO_INTEGER = 0;
 
+  @Experimental
   public static ClientSideCache getClientSideCache(URI uri) {
     if (uri.getQuery() == null) return null;
 

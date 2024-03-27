@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.hash.CommandLongHasher;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -17,6 +18,7 @@ import redis.clients.jedis.util.SafeEncoder;
  * object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache CaffeineClientSideCache} or
  * {@link redis.clients.jedis.csc.GuavaClientSideCache GuavaClientSideCache} or a custom implementation of their own.
  */
+@Experimental
 public abstract class ClientSideCache {
 
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;

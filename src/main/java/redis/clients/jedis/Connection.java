@@ -15,6 +15,7 @@ import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -67,6 +68,7 @@ public class Connection implements Closeable {
     initializeFromClientConfig(clientConfig);
   }
 
+  @Experimental
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig,
       ClientSideCache clientSideCache) {
     this.socketFactory = socketFactory;

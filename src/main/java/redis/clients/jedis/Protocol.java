@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import redis.clients.jedis.annots.Experimental;
 
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
@@ -211,6 +212,7 @@ public final class Protocol {
     return process(is);
   }
 
+  @Experimental
   public static Object read(final RedisInputStream is, final ClientSideCache cache) {
     readPushes(is, cache);
     return process(is);

@@ -17,6 +17,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -53,6 +54,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     this(masterName, masterClientConfig, null, null, sentinels, sentinelClientConfig);
   }
 
+  @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       ClientSideCache clientSideCache, Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
     this(masterName, masterClientConfig, clientSideCache, null, sentinels, sentinelClientConfig);
@@ -65,6 +67,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
   }
 
+  @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       ClientSideCache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
@@ -79,6 +82,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis);
   }
 
+  @Experimental
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       ClientSideCache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,

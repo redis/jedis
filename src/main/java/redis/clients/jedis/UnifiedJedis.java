@@ -94,6 +94,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(new PooledConnectionProvider(hostAndPort, clientConfig), clientConfig.getRedisProtocol());
   }
 
+  @Experimental
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache), clientConfig.getRedisProtocol(), clientSideCache);
   }
@@ -106,6 +107,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
   }
 
+  @Experimental
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, ClientSideCache clientSideCache) {
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, clientSideCache);
   }
@@ -177,6 +179,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         new ClusterCommandObjects(), protocol);
   }
 
+  @Experimental
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol, ClientSideCache clientSideCache) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
@@ -242,11 +245,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  @Experimental
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol) {
     this(executor, provider, commandObjects, protocol, (ClientSideCache) null);
   }
 
+  @Experimental
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol, ClientSideCache clientSideCache) {
 

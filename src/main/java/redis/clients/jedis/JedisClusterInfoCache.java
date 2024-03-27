@@ -23,6 +23,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -70,6 +71,7 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, null, startNodes);
   }
 
+  @Experimental
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
       final Set<HostAndPort> startNodes) {
     this(clientConfig, clientSideCache, null, startNodes);
@@ -80,6 +82,7 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, poolConfig, startNodes);
   }
 
+  @Experimental
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
     this(clientConfig, clientSideCache, poolConfig, startNodes, null);
@@ -91,6 +94,7 @@ public class JedisClusterInfoCache {
     this(clientConfig, null, poolConfig, startNodes, topologyRefreshPeriod);
   }
 
+  @Experimental
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {

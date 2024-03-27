@@ -1537,8 +1537,18 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<String, List<StreamEntry>>> xreadAsMap(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadAsMap(xReadParams, streams));
+  }
+
+  @Override
   public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<Map<String, List<StreamEntry>>> xreadGroupAsMap(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -3907,6 +3917,16 @@ public abstract class PipeliningBase
   public Response<List<String>> tsQueryIndex(String... filters) {
     return appendCommand(commandObjects.tsQueryIndex(filters));
   }
+
+  @Override
+  public Response<TSInfo> tsInfo(String key) {
+    return appendCommand(commandObjects.tsInfo(key));
+  }
+
+  @Override
+  public Response<TSInfo> tsInfoDebug(String key) {
+    return appendCommand(commandObjects.tsInfoDebug(key));
+  }
   // RedisTimeSeries commands
 
   // RedisBloom commands
@@ -4013,6 +4033,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Boolean> cfExists(String key, String item) {
     return appendCommand(commandObjects.cfExists(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfMExists(String key, String... items) {
+    return appendCommand(commandObjects.cfMExists(key, items));
   }
 
   @Override

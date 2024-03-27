@@ -14,6 +14,7 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
@@ -22,6 +23,7 @@ import redis.clients.jedis.util.KeyValue;
 /**
  * This is high memory dependent solution as all the appending commands will be hold in memory.
  */
+@Experimental
 public class MultiClusterTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;

@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 /**
  * Parameters for ZINCRBY commands. In fact, Redis doesn't have parameters for ZINCRBY. Instead
  * Redis has INCR parameter for ZADD.
@@ -51,4 +53,16 @@ public class ZIncrByParams implements IParams {
     args.add(Keyword.INCR);
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ZIncrByParams that = (ZIncrByParams) o;
+    return existance == that.existance;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(existance);
+  }
 }

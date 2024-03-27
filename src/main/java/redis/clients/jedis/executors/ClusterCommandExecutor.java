@@ -13,6 +13,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -135,6 +136,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */
+  @VisibleForTesting
   protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
     return connection.executeCommand(commandObject);
   }
@@ -193,6 +195,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */
+  @VisibleForTesting
   protected void sleep(long sleepMillis) {
     try {
       TimeUnit.MILLISECONDS.sleep(sleepMillis);

@@ -26,6 +26,8 @@ public interface CuckooFilterPipelineCommands {
 
   Response<Boolean> cfExists(String key, String item);
 
+  Response<List<Boolean>> cfMExists(String key, String... items);
+
   Response<Boolean> cfDel(String key, String item);
 
   Response<Long> cfCount(String key, String item);

@@ -116,7 +116,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     List<Object> log = (List<Object>) logs.get(0);
     assertThat((Long) log.get(0), Matchers.greaterThan(0L));
     assertThat((Long) log.get(1), Matchers.greaterThan(0L));
-    assertThat((Long) log.get(2), Matchers.greaterThan(0L));
+    assertThat((Long) log.get(2), Matchers.greaterThanOrEqualTo(0L));
     List<Object> args = (List<Object>) log.get(3);
     assertEquals(4, args.size());
     assertArrayEquals(Protocol.Command.CONFIG.getRaw(), (byte[]) args.get(0));

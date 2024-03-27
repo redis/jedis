@@ -17,6 +17,8 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
@@ -35,6 +37,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private final JedisClientConfig masterClientConfig;
 
+  private final ClientSideCache clientSideCache;
+
   private final GenericObjectPoolConfig<Connection> masterPoolConfig;
 
   protected final Collection<SentinelListener> sentinelListeners = new ArrayList<>();
@@ -47,7 +51,13 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
-    this(masterName, masterClientConfig, /*poolConfig*/ null, sentinels, sentinelClientConfig);
+    this(masterName, masterClientConfig, null, null, sentinels, sentinelClientConfig);
+  }
+
+  @Experimental
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
+      ClientSideCache clientSideCache, Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
+    this(masterName, masterClientConfig, clientSideCache, null, sentinels, sentinelClientConfig);
   }
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
@@ -57,13 +67,30 @@ public class SentineledConnectionProvider implements ConnectionProvider {
         DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
   }
 
+  @Experimental
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
+      ClientSideCache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
+      Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
+    this(masterName, masterClientConfig, clientSideCache, poolConfig, sentinels, sentinelClientConfig,
+        DEFAULT_SUBSCRIBE_RETRY_WAIT_TIME_MILLIS);
+  }
+
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig,
+      Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
+      final long subscribeRetryWaitTimeMillis) {
+    this(masterName, masterClientConfig, null, poolConfig, sentinels, sentinelClientConfig, subscribeRetryWaitTimeMillis);
+  }
+
+  @Experimental
+  public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
+      ClientSideCache clientSideCache, final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig,
       final long subscribeRetryWaitTimeMillis) {
 
     this.masterName = masterName;
     this.masterClientConfig = masterClientConfig;
+    this.clientSideCache = clientSideCache;
     this.masterPoolConfig = poolConfig;
 
     this.sentinelClientConfig = sentinelClientConfig;
@@ -99,13 +126,14 @@ public class SentineledConnectionProvider implements ConnectionProvider {
       if (!master.equals(currentMaster)) {
         currentMaster = master;
 
-        ConnectionPool newPool = masterPoolConfig != null
-            ? new ConnectionPool(currentMaster, masterClientConfig, masterPoolConfig)
-            : new ConnectionPool(currentMaster, masterClientConfig);
+        ConnectionPool newPool = createNodePool(currentMaster);
 
         ConnectionPool existingPool = pool;
         pool = newPool;
         LOG.info("Created connection pool to master at {}.", master);
+        if (clientSideCache != null) {
+          clientSideCache.clear();
+        }
 
         if (existingPool != null) {
           // although we clear the pool, we still have to check the returned object in getResource,
@@ -113,6 +141,22 @@ public class SentineledConnectionProvider implements ConnectionProvider {
           // existingPool.clear(); // necessary??
           existingPool.close();
         }
+      }
+    }
+  }
+
+  private ConnectionPool createNodePool(HostAndPort master) {
+    if (masterPoolConfig == null) {
+      if (clientSideCache == null) {
+        return new ConnectionPool(master, masterClientConfig);
+      } else {
+        return new ConnectionPool(master, masterClientConfig, clientSideCache);
+      }
+    } else {
+      if (clientSideCache == null) {
+        return new ConnectionPool(master, masterClientConfig, masterPoolConfig);
+      } else {
+        return new ConnectionPool(master, masterClientConfig, clientSideCache, masterPoolConfig);
       }
     }
   }

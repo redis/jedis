@@ -4,12 +4,15 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import redis.clients.jedis.annots.Experimental;
 
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
@@ -58,6 +61,8 @@ public final class Protocol {
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
 
+  private static final byte[] INVALIDATE_BYTES = SafeEncoder.encode("invalidate");
+
   private Protocol() {
     throw new InstantiationError("Must not instantiate this class");
   }
@@ -84,13 +89,9 @@ public final class Protocol {
     // Maybe Read only first 5 bytes instead?
     if (message.startsWith(MOVED_PREFIX)) {
       String[] movedInfo = parseTargetHostAndSlot(message);
-//      throw new JedisMovedDataException(message, new HostAndPort(movedInfo[1],
-//          Integer.parseInt(movedInfo[2])), Integer.parseInt(movedInfo[0]));
       throw new JedisMovedDataException(message, HostAndPort.from(movedInfo[1]), Integer.parseInt(movedInfo[0]));
     } else if (message.startsWith(ASK_PREFIX)) {
       String[] askInfo = parseTargetHostAndSlot(message);
-//      throw new JedisAskDataException(message, new HostAndPort(askInfo[1],
-//          Integer.parseInt(askInfo[2])), Integer.parseInt(askInfo[0]));
       throw new JedisAskDataException(message, HostAndPort.from(askInfo[1]), Integer.parseInt(askInfo[0]));
     } else if (message.startsWith(CLUSTERDOWN_PREFIX)) {
       throw new JedisClusterException(message);
@@ -115,15 +116,6 @@ public final class Protocol {
     return is.readLine();
   }
 
-//  private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
-//    String[] response = new String[3];
-//    String[] messageInfo = clusterRedirectResponse.split(" ");
-//    String[] targetHostAndPort = HostAndPort.extractParts(messageInfo[2]);
-//    response[0] = messageInfo[1];
-//    response[1] = targetHostAndPort[0];
-//    response[2] = targetHostAndPort[1];
-//    return response;
-//  }
   private static String[] parseTargetHostAndSlot(String clusterRedirectResponse) {
     String[] response = new String[2];
     String[] messageInfo = clusterRedirectResponse.split(" ");
@@ -134,7 +126,7 @@ public final class Protocol {
 
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
-    //System.out.println((char) b);
+    //System.out.println("BYTE: " + (char) b);
     switch (b) {
       case PLUS_BYTE:
         return is.readLineBytes();
@@ -192,7 +184,6 @@ public final class Protocol {
   }
 
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-  // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
     final int num = is.readIntCrLf();
     if (num == -1) return null;
     final List<Object> ret = new ArrayList<>(num);
@@ -206,8 +197,6 @@ public final class Protocol {
     return ret;
   }
 
-  // private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-  // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
   private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
     if (num == -1) return null;
@@ -218,8 +207,32 @@ public final class Protocol {
     return ret;
   }
 
+  @Deprecated
   public static Object read(final RedisInputStream is) {
     return process(is);
+  }
+
+  @Experimental
+  public static Object read(final RedisInputStream is, final ClientSideCache cache) {
+    readPushes(is, cache);
+    return process(is);
+  }
+
+  private static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
+    if (cache != null) {
+      while (is.peek(GREATER_THAN_BYTE)) {
+        is.readByte();
+        processPush(is, cache);
+      }
+    }
+  }
+
+  private static void processPush(final RedisInputStream is, ClientSideCache cache) {
+    List<Object> list = processMultiBulkReply(is);
+    if (list.size() == 2 && list.get(0) instanceof byte[]
+        && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
+      cache.invalidate((List) list.get(1));
+    }
   }
 
   public static final byte[] toByteArray(final boolean value) {

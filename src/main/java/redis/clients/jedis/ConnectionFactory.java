@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
-
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisException;
 
 /**
@@ -17,8 +17,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private static final Logger logger = LoggerFactory.getLogger(ConnectionFactory.class);
 
   private final JedisSocketFactory jedisSocketFactory;
-
   private final JedisClientConfig clientConfig;
+  private ClientSideCache clientSideCache = null;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this.clientConfig = DefaultJedisClientConfig.builder().build();
@@ -26,12 +26,19 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
-    this.clientConfig = DefaultJedisClientConfig.copyConfig(clientConfig);
+    this.clientConfig = clientConfig;
     this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
   }
 
+  @Experimental
+  public ConnectionFactory(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache csCache) {
+    this.clientConfig = clientConfig;
+    this.jedisSocketFactory = new DefaultJedisSocketFactory(hostAndPort, this.clientConfig);
+    this.clientSideCache = csCache;
+  }
+
   public ConnectionFactory(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    this.clientConfig = DefaultJedisClientConfig.copyConfig(clientConfig);
+    this.clientConfig = clientConfig;
     this.jedisSocketFactory = jedisSocketFactory;
   }
 
@@ -54,9 +61,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   @Override
   public PooledObject<Connection> makeObject() throws Exception {
-    Connection jedis = null;
     try {
-      jedis = new Connection(jedisSocketFactory, clientConfig);
+      Connection jedis = new Connection(jedisSocketFactory, clientConfig, clientSideCache);
       return new DefaultPooledObject<>(jedis);
     } catch (JedisException je) {
       logger.debug("Error while makeObject", je);

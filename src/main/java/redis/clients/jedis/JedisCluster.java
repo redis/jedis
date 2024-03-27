@@ -6,8 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
@@ -198,6 +199,12 @@ public class JedisCluster extends UnifiedJedis {
         Duration.ofMillis((long) clientConfig.getSocketTimeoutMillis() * maxAttempts), poolConfig);
   }
 
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
+      Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration,
+        clientConfig.getRedisProtocol());
+  }
+
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod, int maxAttempts,
       Duration maxTotalRetriesDuration) {
@@ -205,21 +212,56 @@ public class JedisCluster extends UnifiedJedis {
         maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol());
   }
 
-  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, int maxAttempts,
-      Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig), maxAttempts, maxTotalRetriesDuration,
-        clientConfig.getRedisProtocol());
-  }
-
-  // Uses a fetched connection to process protocol. Should be avoided if possible.
-  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
-      Duration maxTotalRetriesDuration) {
-    super(provider, maxAttempts, maxTotalRetriesDuration);
-  }
-
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
       RedisProtocol protocol) {
     super(provider, maxAttempts, maxTotalRetriesDuration, protocol);
+  }
+
+  @Experimental
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
+    this(clusterNodes, clientConfig, clientSideCache, DEFAULT_MAX_ATTEMPTS,
+        Duration.ofMillis(DEFAULT_MAX_ATTEMPTS * clientConfig.getSocketTimeoutMillis()));
+  }
+
+  @Experimental
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+      int maxAttempts, Duration maxTotalRetriesDuration) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache), maxAttempts, maxTotalRetriesDuration,
+        clientConfig.getRedisProtocol(), clientSideCache);
+  }
+
+  @Experimental
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+      int maxAttempts, Duration maxTotalRetriesDuration, GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig),
+        maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol(), clientSideCache);
+  }
+
+  @Experimental
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+      GenericObjectPoolConfig<Connection> poolConfig) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig),
+        DEFAULT_MAX_ATTEMPTS, Duration.ofMillis(DEFAULT_MAX_ATTEMPTS * clientConfig.getSocketTimeoutMillis()),
+        clientConfig.getRedisProtocol(), clientSideCache);
+  }
+
+  @Experimental
+  public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache, poolConfig, topologyRefreshPeriod),
+        maxAttempts, maxTotalRetriesDuration, clientConfig.getRedisProtocol(), clientSideCache);
+  }
+
+  @Experimental
+  private JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
+      RedisProtocol protocol, ClientSideCache clientSideCache) {
+    super(provider, maxAttempts, maxTotalRetriesDuration, protocol, clientSideCache);
+  }
+
+  // Uses a fetched connection to process protocol. Should be avoided if possible.
+  public JedisCluster(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
+    super(provider, maxAttempts, maxTotalRetriesDuration);
   }
 
   public Map<String, ConnectionPool> getClusterNodes() {

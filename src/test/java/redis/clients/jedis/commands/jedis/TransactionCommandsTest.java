@@ -2,7 +2,6 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.junit.Assert.*;
 
-import static org.mockito.ArgumentMatchers.any;
 import static redis.clients.jedis.Protocol.Command.INCR;
 import static redis.clients.jedis.Protocol.Command.GET;
 import static redis.clients.jedis.Protocol.Command.SET;
@@ -17,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -167,7 +167,9 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     trans.set("b", "b");
 
     try (MockedStatic<Protocol> protocol = Mockito.mockStatic(Protocol.class)) {
-      protocol.when(() -> Protocol.read(any())).thenThrow(JedisConnectionException.class);
+      //protocol.when(() -> Protocol.read(any())).thenThrow(JedisConnectionException.class);
+      protocol.when(() -> Protocol.read(ArgumentMatchers.any(), ArgumentMatchers.isNull()))
+          .thenThrow(JedisConnectionException.class);
 
       trans.discard();
       fail("Should get mocked JedisConnectionException.");
@@ -187,7 +189,9 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     trans.set("b", "b");
 
     try (MockedStatic<Protocol> protocol = Mockito.mockStatic(Protocol.class)) {
-      protocol.when(() -> Protocol.read(any())).thenThrow(JedisConnectionException.class);
+      //protocol.when(() -> Protocol.read(any())).thenThrow(JedisConnectionException.class);
+      protocol.when(() -> Protocol.read(ArgumentMatchers.any(), ArgumentMatchers.isNull()))
+          .thenThrow(JedisConnectionException.class);
 
       trans.exec();
       fail("Should get mocked JedisConnectionException.");

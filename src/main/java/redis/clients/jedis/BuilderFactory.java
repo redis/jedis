@@ -1815,16 +1815,10 @@ public final class BuilderFactory {
       long total = LONG.build(objectList.get(0));
       StreamEntryID minId = STREAM_ENTRY_ID.build(objectList.get(1));
       StreamEntryID maxId = STREAM_ENTRY_ID.build(objectList.get(2));
-      Map<String, Long> map;
-      if (objectList.get(3) == null) {
-        map = null;
-      } else {
-        List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
-        map = new HashMap<>(consumerObjList.size());
-        for (List<Object> consumerObj : consumerObjList) {
-          map.put(STRING.build(consumerObj.get(0)), Long.parseLong(STRING.build(consumerObj.get(1))));
-        }
-      }
+      Map<String, Long> map = objectList.get(3) == null ? null
+          : ((List<List<Object>>) objectList.get(3)).stream().collect(
+              Collectors.toMap(pair -> STRING.build(pair.get(0)),
+                  pair -> Long.parseLong(STRING.build(pair.get(1)))));
       return new StreamPendingSummary(total, minId, maxId, map);
     }
 

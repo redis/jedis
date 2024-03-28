@@ -1812,15 +1812,14 @@ public final class BuilderFactory {
       }
 
       List<Object> objectList = (List<Object>) data;
-      long total = BuilderFactory.LONG.build(objectList.get(0));
-      String minId = SafeEncoder.encode((byte[]) objectList.get(1));
-      String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
-      List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
-      Map<String, Long> map = new HashMap<>(consumerObjList.size());
-      for (List<Object> consumerObj : consumerObjList) {
-        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)), Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
-      }
-      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId), map);
+      long total = LONG.build(objectList.get(0));
+      StreamEntryID minId = STREAM_ENTRY_ID.build(objectList.get(1));
+      StreamEntryID maxId = STREAM_ENTRY_ID.build(objectList.get(2));
+      Map<String, Long> map = objectList.get(3) == null ? null
+          : ((List<List<Object>>) objectList.get(3)).stream().collect(
+              Collectors.toMap(pair -> STRING.build(pair.get(0)),
+                  pair -> Long.parseLong(STRING.build(pair.get(1)))));
+      return new StreamPendingSummary(total, minId, maxId, map);
     }
 
     @Override

@@ -1813,6 +1813,11 @@ public final class BuilderFactory {
 
       List<Object> objectList = (List<Object>) data;
       long total = BuilderFactory.LONG.build(objectList.get(0));
+
+      if (total == 0) {
+        return new StreamPendingSummary(total, null, null, null);
+      }
+
       String minId = SafeEncoder.encode((byte[]) objectList.get(1));
       String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
       List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);

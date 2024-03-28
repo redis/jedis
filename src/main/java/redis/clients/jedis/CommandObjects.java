@@ -4279,6 +4279,16 @@ public class CommandObjects {
   }
   // RedisGears commands
 
+  // Transaction commands
+  public final CommandObject<String> watch(String... keys) {
+    return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> watch(byte[]... keys) {
+    return new CommandObject<>(commandArguments(WATCH).keys((Object[]) keys), BuilderFactory.STRING);
+  }
+  // Transaction commands
+
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
    * default implementation will be created and returned.

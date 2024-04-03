@@ -23,7 +23,7 @@ import redis.clients.jedis.timeseries.TSMRangeElements;
 import redis.clients.jedis.timeseries.TSMRangeParams;
 import redis.clients.jedis.timeseries.TSRangeParams;
 
-public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testTsAdd() {

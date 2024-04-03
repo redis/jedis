@@ -14,7 +14,7 @@ import org.junit.Test;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
-public class UnifiedJedisSetCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testSadd() {

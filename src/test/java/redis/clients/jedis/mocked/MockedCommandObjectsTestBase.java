@@ -39,7 +39,7 @@ import redis.clients.jedis.util.KeyValue;
  * Provides an exhaustive list of mocked {@link redis.clients.jedis.CommandObject}s for use in unit tests.
  */
 @RunWith(MockitoJUnitRunner.class)
-public abstract class MockCommandObjectsTest {
+public abstract class MockedCommandObjectsTestBase {
 
   /**
    * Used for JSON related tests. The fields are not used actually, given that tests are mocked.

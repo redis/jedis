@@ -14,7 +14,7 @@ import java.util.Map;
 import org.junit.Test;
 import redis.clients.jedis.bloom.TDigestMergeParams;
 
-public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisTDigestCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testTdigestAdd() {

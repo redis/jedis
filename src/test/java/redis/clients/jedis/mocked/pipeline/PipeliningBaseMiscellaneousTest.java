@@ -4,9 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -21,12 +18,11 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.json.JsonObjectMapper;
 
 /**
  * {@link redis.clients.jedis.PipeliningBase} tests that don't really fall into any category of commands.
  */
-public class PipeliningBaseAdditionalTest extends PipeliningBaseTestBase {
+public class PipeliningBaseMiscellaneousTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testSendCommandWithStringArgs() {
@@ -81,16 +77,6 @@ public class PipeliningBaseAdditionalTest extends PipeliningBaseTestBase {
 
     assertThat(commands, contains(commandObject));
     assertThat(response, is(predefinedResponse));
-  }
-
-  @Test
-  public void testSetJsonObjectMapper() {
-    JsonObjectMapper jsonObjectMapper = mock(JsonObjectMapper.class);
-    doNothing().when(commandObjects).setJsonObjectMapper(jsonObjectMapper);
-
-    pipeliningBase.setJsonObjectMapper(jsonObjectMapper);
-
-    verify(commandObjects).setJsonObjectMapper(jsonObjectMapper);
   }
 
   @Test

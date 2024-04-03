@@ -12,7 +12,7 @@ import java.util.Map;
 import org.junit.Test;
 import redis.clients.jedis.Response;
 
-public class PipeliningBaseTopKCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseTopKCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testTopkAdd() {

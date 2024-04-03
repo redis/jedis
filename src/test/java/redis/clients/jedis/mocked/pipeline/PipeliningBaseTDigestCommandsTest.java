@@ -12,7 +12,7 @@ import org.junit.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.bloom.TDigestMergeParams;
 
-public class PipeliningBaseTDigestCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseTDigestCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testTdigestAdd() {

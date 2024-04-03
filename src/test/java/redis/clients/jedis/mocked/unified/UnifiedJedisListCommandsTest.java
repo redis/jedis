@@ -14,7 +14,7 @@ import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
-public class UnifiedJedisListCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisListCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testBlmove() {

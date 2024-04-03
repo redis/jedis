@@ -14,7 +14,7 @@ import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
-public class PipeliningBaseListCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testBlmove() {

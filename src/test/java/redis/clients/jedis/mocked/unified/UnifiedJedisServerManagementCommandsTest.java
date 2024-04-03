@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
-public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testConfigSet() {

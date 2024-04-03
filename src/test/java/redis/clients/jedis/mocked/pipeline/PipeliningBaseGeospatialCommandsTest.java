@@ -19,7 +19,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 
-public class PipeliningBaseGeospatialCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseGeospatialCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testGeoadd() {

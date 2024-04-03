@@ -21,7 +21,7 @@ import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.KeyValue;
 
-public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testBzmpop() {

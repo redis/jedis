@@ -23,7 +23,7 @@ import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.KeyValue;
 
-public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testBzmpop() {

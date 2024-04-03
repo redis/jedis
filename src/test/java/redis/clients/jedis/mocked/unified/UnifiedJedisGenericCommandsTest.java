@@ -31,7 +31,7 @@ import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.KeyValue;
 
-public class UnifiedJedisGenericCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testCopy() {

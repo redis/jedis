@@ -14,7 +14,7 @@ import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
 
-public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testBitcount() {

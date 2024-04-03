@@ -14,7 +14,7 @@ import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
-public class UnifiedJedisStringCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testAppend() {

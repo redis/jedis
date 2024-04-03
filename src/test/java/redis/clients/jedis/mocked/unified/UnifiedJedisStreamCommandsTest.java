@@ -33,7 +33,7 @@ import redis.clients.jedis.resps.StreamInfo;
 import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.resps.StreamPendingSummary;
 
-public class UnifiedJedisStreamCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testXack() {

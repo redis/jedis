@@ -25,7 +25,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.search.schemafields.TextField;
 
-public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseSearchAndQueryCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testFtAggregate() {

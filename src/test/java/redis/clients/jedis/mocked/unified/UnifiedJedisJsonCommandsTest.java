@@ -1,6 +1,7 @@
 package redis.clients.jedis.mocked.unified;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,11 +14,12 @@ import org.json.JSONArray;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.json.JsonSetParams;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 
-public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisJsonCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testJsonArrAppendWithPath() {
@@ -1195,6 +1197,15 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisTestBase {
 
     verify(commandExecutor).executeCommand(listLongCommandObject);
     verify(commandObjects).jsonObjLen(key, path);
+  }
+
+  @Test
+  public void testSetJsonObjectMapper() {
+    JsonObjectMapper jsonObjectMapper = mock(JsonObjectMapper.class);
+
+    jedis.setJsonObjectMapper(jsonObjectMapper);
+
+    verify(commandObjects).setJsonObjectMapper(jsonObjectMapper);
   }
 
 }

@@ -27,7 +27,7 @@ import redis.clients.jedis.timeseries.TSMRangeElements;
 import redis.clients.jedis.timeseries.TSMRangeParams;
 import redis.clients.jedis.timeseries.TSRangeParams;
 
-public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testTsAdd() {

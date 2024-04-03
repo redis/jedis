@@ -11,13 +11,13 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.mocked.unified.UnifiedJedisTestBase;
+import redis.clients.jedis.mocked.unified.UnifiedJedisMockedTestBase;
 
 /**
  * These tests are part of the mocked tests for {@link UnifiedJedis}, but, due to {@code protected}
  * visibility of some methods, they must reside in the same package as the tested class.
  */
-public class UnifiedJedisTest extends UnifiedJedisTestBase {
+public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testSendCommandWithProtocolCommand() {

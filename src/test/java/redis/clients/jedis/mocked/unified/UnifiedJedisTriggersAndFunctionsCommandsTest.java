@@ -15,7 +15,7 @@ import redis.clients.jedis.gears.TFunctionListParams;
 import redis.clients.jedis.gears.TFunctionLoadParams;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
 
-public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisTriggersAndFunctionsCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testTFunctionCall() {

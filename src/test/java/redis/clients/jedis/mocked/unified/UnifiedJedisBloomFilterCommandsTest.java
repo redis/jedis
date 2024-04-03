@@ -15,7 +15,7 @@ import org.junit.Test;
 import redis.clients.jedis.bloom.BFInsertParams;
 import redis.clients.jedis.bloom.BFReserveParams;
 
-public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisBloomFilterCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testBfAdd() {

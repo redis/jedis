@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import org.junit.Test;
 
-public class UnifiedJedisPubSubCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisPubSubCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testPublishWithStringChannelAndMessage() {

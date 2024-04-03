@@ -13,7 +13,7 @@ import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
 
-public class PipeliningBaseBitmapCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseBitmapCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testBitcount() {

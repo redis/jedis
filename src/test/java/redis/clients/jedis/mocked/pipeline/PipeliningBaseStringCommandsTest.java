@@ -14,7 +14,7 @@ import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
-public class PipeliningBaseStringCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testAppend() {

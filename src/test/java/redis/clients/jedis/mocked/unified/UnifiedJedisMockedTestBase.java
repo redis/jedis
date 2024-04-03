@@ -7,18 +7,16 @@ import org.junit.Before;
 import org.mockito.Mock;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.CommandObjects;
-import redis.clients.jedis.PipeliningBase;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.executors.CommandExecutor;
-import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.mocked.MockCommandObjectsTest;
+import redis.clients.jedis.mocked.MockedCommandObjectsTestBase;
 import redis.clients.jedis.providers.ConnectionProvider;
 
 /**
  * Base class for {@link UnifiedJedis} mocked unit tests. Exposes a {@link UnifiedJedis} instance that
  * uses mocked executors, providers and command objects, which can be asserted upon.
  */
-public abstract class UnifiedJedisTestBase extends MockCommandObjectsTest {
+public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTestBase {
 
   /**
    * The {@link UnifiedJedis} instance under-test.
@@ -48,16 +46,9 @@ public abstract class UnifiedJedisTestBase extends MockCommandObjectsTest {
   @Mock
   protected CommandObjects commandObjects;
 
-  /**
-   * The {@link GraphCommandObjects} instance used by the {@link PipeliningBase} under-test. Trained
-   * to return specific mocked {@link CommandObject} instances in each test.
-   */
-  @Mock
-  protected GraphCommandObjects graphCommandObjects;
-
   @Before
   public void setUp() {
-    jedis = new UnifiedJedis(commandObjects, graphCommandObjects, commandExecutor, connectionProvider);
+    jedis = new UnifiedJedis(commandExecutor, connectionProvider, commandObjects);
   }
 
   @After

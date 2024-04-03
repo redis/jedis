@@ -29,7 +29,7 @@ import redis.clients.jedis.resps.StreamInfo;
 import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.resps.StreamPendingSummary;
 
-public class PipeliningBaseStreamCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testXack() {

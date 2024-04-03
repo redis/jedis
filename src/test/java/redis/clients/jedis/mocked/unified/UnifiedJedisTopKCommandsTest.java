@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class UnifiedJedisTopKCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisTopKCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testTopkAdd() {

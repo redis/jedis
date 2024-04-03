@@ -13,7 +13,7 @@ import org.junit.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.graph.ResultSet;
 
-public class PipeliningBaseGraphCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testGraphQuery() {

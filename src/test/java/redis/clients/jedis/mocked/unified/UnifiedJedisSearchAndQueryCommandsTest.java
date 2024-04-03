@@ -30,7 +30,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.search.schemafields.TextField;
 
-public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testFtAggregate() {
@@ -824,6 +824,15 @@ public class UnifiedJedisSearchAndQueryCommandsTest extends UnifiedJedisTestBase
 
     verify(commandExecutor).executeCommand(entrySearchResultMapStringObjectCommandObject);
     verify(commandObjects).ftProfileSearch(indexName, profileParams, query, searchParams);
+  }
+
+  @Test
+  public void testSetDefaultSearchDialect() {
+    int dialect = 1;
+
+    jedis.setDefaultSearchDialect(dialect);
+
+    verify(commandObjects).setDefaultSearchDialect(dialect);
   }
 
 }

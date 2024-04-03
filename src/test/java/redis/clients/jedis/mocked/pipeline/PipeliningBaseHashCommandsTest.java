@@ -15,7 +15,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
-public class PipeliningBaseHashCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testHdel() {

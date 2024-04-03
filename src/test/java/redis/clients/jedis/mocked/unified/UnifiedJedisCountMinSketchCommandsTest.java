@@ -12,7 +12,7 @@ import java.util.Map;
 
 import org.junit.Test;
 
-public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testCmsIncrBy() {

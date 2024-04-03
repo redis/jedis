@@ -18,7 +18,7 @@ import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.KeyValue;
 
-public class PipeliningBaseGenericCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testCopy() {

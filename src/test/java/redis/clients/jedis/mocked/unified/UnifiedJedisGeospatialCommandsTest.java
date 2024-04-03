@@ -20,7 +20,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
 
-public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisGeospatialCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testGeoadd() {

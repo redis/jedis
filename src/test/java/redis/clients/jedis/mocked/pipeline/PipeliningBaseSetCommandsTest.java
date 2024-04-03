@@ -13,7 +13,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
-public class PipeliningBaseSetCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseSetCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testSadd() {

@@ -214,7 +214,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
+  @VisibleForTesting
+  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null);
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {
@@ -238,15 +239,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
     this.graphCommandObjects = new GraphCommandObjects(this);
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
-  }
-
-  @VisibleForTesting
-  public UnifiedJedis(CommandObjects commandObjects, GraphCommandObjects graphCommandObjects,
-                      CommandExecutor executor, ConnectionProvider provider) {
-    this.provider = provider;
-    this.executor = executor;
-    this.commandObjects = commandObjects;
-    this.graphCommandObjects = graphCommandObjects;
   }
 
   @Override

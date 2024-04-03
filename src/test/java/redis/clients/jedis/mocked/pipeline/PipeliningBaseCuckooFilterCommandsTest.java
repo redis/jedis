@@ -13,7 +13,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.bloom.CFInsertParams;
 import redis.clients.jedis.bloom.CFReserveParams;
 
-public class PipeliningBaseCuckooFilterCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseCuckooFilterCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testCfAdd() {

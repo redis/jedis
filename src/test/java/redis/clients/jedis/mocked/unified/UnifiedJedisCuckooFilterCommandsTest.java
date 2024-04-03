@@ -15,7 +15,7 @@ import org.junit.Test;
 import redis.clients.jedis.bloom.CFInsertParams;
 import redis.clients.jedis.bloom.CFReserveParams;
 
-public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisCuckooFilterCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testCfAdd() {

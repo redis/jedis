@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import redis.clients.jedis.Response;
 
-public class PipeliningBaseServerManagementCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseServerManagementCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testMemoryUsage() {

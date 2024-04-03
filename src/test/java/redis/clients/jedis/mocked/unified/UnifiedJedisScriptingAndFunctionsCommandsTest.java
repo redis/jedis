@@ -18,7 +18,7 @@ import redis.clients.jedis.args.FunctionRestorePolicy;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 
-public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisTestBase {
+public class UnifiedJedisScriptingAndFunctionsCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
   public void testEval() {

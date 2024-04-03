@@ -13,7 +13,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.bloom.BFInsertParams;
 import redis.clients.jedis.bloom.BFReserveParams;
 
-public class PipeliningBaseBloomFilterCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseBloomFilterCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testBfAdd() {

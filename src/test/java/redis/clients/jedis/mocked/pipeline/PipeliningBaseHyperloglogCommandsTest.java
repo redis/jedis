@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 import org.junit.Test;
 import redis.clients.jedis.Response;
 
-public class PipeliningBaseHyperloglogCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseHyperloglogCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testPfadd() {

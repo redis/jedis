@@ -10,7 +10,7 @@ import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.PipeliningBase;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.graph.GraphCommandObjects;
-import redis.clients.jedis.mocked.MockCommandObjectsTest;
+import redis.clients.jedis.mocked.MockedCommandObjectsTestBase;
 
 /**
  * Base class for unit tests for {@link PipeliningBase}, using Mockito. Given that {@link PipeliningBase}
@@ -18,7 +18,7 @@ import redis.clients.jedis.mocked.MockCommandObjectsTest;
  * to its subclasses, and given that it has many methods, using mocks is the most convenient and
  * reliable way to completely test it.
  */
-public abstract class PipeliningBaseTestBase extends MockCommandObjectsTest {
+public abstract class PipeliningBaseMockedTestBase extends MockedCommandObjectsTestBase {
 
   /**
    * A concrete implementation of {@link PipeliningBase} that collects all commands

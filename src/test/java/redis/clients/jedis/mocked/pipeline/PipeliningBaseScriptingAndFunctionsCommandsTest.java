@@ -15,7 +15,7 @@ import redis.clients.jedis.args.FunctionRestorePolicy;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 
-public class PipeliningBaseScriptingAndFunctionsCommandsTest extends PipeliningBaseTestBase {
+public class PipeliningBaseScriptingAndFunctionsCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test
   public void testEval() {

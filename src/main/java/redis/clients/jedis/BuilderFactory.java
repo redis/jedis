@@ -1420,10 +1420,10 @@ public final class BuilderFactory {
             .collect(Collectors.toList());
       } else {
         List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(list.size());
-        for (Object streamObj : list) {
-          List<Object> stream = (List<Object>) streamObj;
-          String streamKey = STRING.build(stream.get(0));
-          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(stream.get(1));
+        for (Object anObj : list) {
+          List<Object> streamObj = (List<Object>) anObj;
+          String streamKey = STRING.build(streamObj.get(0));
+          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(streamObj.get(1));
           result.add(KeyValue.of(streamKey, streamEntries));
         }
         return result;
@@ -1433,6 +1433,35 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<Entry<String, List<StreamEntry>>>";
+    }
+  };
+
+  public static final Builder<Map<String, List<StreamEntry>>> STREAM_READ_MAP_RESPONSE
+      = new Builder<Map<String, List<StreamEntry>>>() {
+    @Override
+    public Map<String, List<StreamEntry>> build(Object data) {
+      if (data == null) return null;
+      List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) list).stream()
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()), kv -> STREAM_ENTRY_LIST.build(kv.getValue())));
+      } else {
+        Map<String, List<StreamEntry>> result = new HashMap<>(list.size());
+        for (Object anObj : list) {
+          List<Object> streamObj = (List<Object>) anObj;
+          String streamKey = STRING.build(streamObj.get(0));
+          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(streamObj.get(1));
+          result.put(streamKey, streamEntries);
+        }
+        return result;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, List<StreamEntry>>";
     }
   };
 
@@ -1783,15 +1812,14 @@ public final class BuilderFactory {
       }
 
       List<Object> objectList = (List<Object>) data;
-      long total = BuilderFactory.LONG.build(objectList.get(0));
-      String minId = SafeEncoder.encode((byte[]) objectList.get(1));
-      String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
-      List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
-      Map<String, Long> map = new HashMap<>(consumerObjList.size());
-      for (List<Object> consumerObj : consumerObjList) {
-        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)), Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
-      }
-      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId), map);
+      long total = LONG.build(objectList.get(0));
+      StreamEntryID minId = STREAM_ENTRY_ID.build(objectList.get(1));
+      StreamEntryID maxId = STREAM_ENTRY_ID.build(objectList.get(2));
+      Map<String, Long> map = objectList.get(3) == null ? null
+          : ((List<List<Object>>) objectList.get(3)).stream().collect(
+              Collectors.toMap(pair -> STRING.build(pair.get(0)),
+                  pair -> Long.parseLong(STRING.build(pair.get(1)))));
+      return new StreamPendingSummary(total, minId, maxId, map);
     }
 
     @Override

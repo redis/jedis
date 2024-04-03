@@ -208,12 +208,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(executor, (ConnectionProvider) null);
   }
 
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
+  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
     this(executor, provider, new CommandObjects());
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
+  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null);
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {
@@ -225,7 +225,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
+  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol) {
     this.provider = provider;
     this.executor = executor;
@@ -4872,7 +4872,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
       return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
     } else {
-      return new Pipeline(provider.getConnection(), true);
+      return new Pipeline(provider.getConnection(), commandObjects, true);
     }
   }
 
@@ -4882,7 +4882,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
       return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, true, commandObjects);
     } else {
-      return new Transaction(provider.getConnection(), true, true);
+      return new Transaction(provider.getConnection(), commandObjects, true, true);
     }
   }
 

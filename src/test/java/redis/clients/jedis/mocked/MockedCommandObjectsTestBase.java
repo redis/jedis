@@ -107,6 +107,7 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Map.Entry<StreamEntryID, List<StreamEntry>>> entryStreamEntryIdListStreamEntryCommandObject;
   @Mock protected CommandObject<Map.Entry<StreamEntryID, List<StreamEntryID>>> entryStreamEntryIdListStreamEntryIdCommandObject;
   @Mock protected CommandObject<Map<String, List<String>>> mapStringListStringCommandObject;
+  @Mock protected CommandObject<Map<String, List<StreamEntry>>> mapStringListStreamEntryCommandObject;
   @Mock protected CommandObject<Map<String, Long>> mapStringLongCommandObject;
   @Mock protected CommandObject<Map<String, Map<String, Double>>> mapStringMapStringDoubleCommandObject;
   @Mock protected CommandObject<Map<String, Object>> mapStringObjectCommandObject;

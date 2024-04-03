@@ -1,5 +1,6 @@
 package redis.clients.jedis.mocked.unified;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import org.junit.After;
@@ -56,6 +57,7 @@ public abstract class UnifiedJedisMockedTestBase extends MockedCommandObjectsTes
     // We want to be accurate about our mocks, hence we verify no more interactions here.
     // This might mean that some methods need to verify their interactions in a more verbose way,
     // but overall the benefit should be greater than the cost.
+    verify(connectionProvider).getConnection();
     verifyNoMoreInteractions(connectionProvider);
     verifyNoMoreInteractions(commandExecutor);
     verifyNoMoreInteractions(commandObjects);

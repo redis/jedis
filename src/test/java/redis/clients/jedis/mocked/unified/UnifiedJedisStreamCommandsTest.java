@@ -962,6 +962,22 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
   }
 
   @Test
+  public void testXreadAsMap() {
+    XReadParams xReadParams = new XReadParams().count(2).block(0);
+    Map<String, StreamEntryID> stream = Collections.singletonMap("mystream", new StreamEntryID("0-0"));
+    Map<String, List<StreamEntry>> expectedResult = new HashMap<>();
+
+    when(commandObjects.xreadAsMap(xReadParams, stream)).thenReturn(mapStringListStreamEntryCommandObject);
+    when(commandExecutor.executeCommand(mapStringListStreamEntryCommandObject)).thenReturn(expectedResult);
+
+    Map<String, List<StreamEntry>> result = jedis.xreadAsMap(xReadParams, stream);
+
+    assertThat(result, sameInstance(expectedResult));
+    verify(commandExecutor).executeCommand(mapStringListStreamEntryCommandObject);
+    verify(commandObjects).xreadAsMap(xReadParams, stream);
+  }
+
+  @Test
   public void testXreadGroup() {
     String groupName = "mygroup";
     String consumer = "myconsumer";
@@ -997,6 +1013,25 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(listObjectCommandObject);
     verify(commandObjects).xreadGroup(groupName, consumer, xReadGroupParams, stream1);
+  }
+
+  @Test
+  public void testXreadGroupAsMap() {
+    String groupName = "mygroup";
+    String consumer = "myconsumer";
+    XReadGroupParams xReadGroupParams = new XReadGroupParams().count(2).block(0);
+    Map<String, StreamEntryID> stream1 = Collections.singletonMap("mystream", new StreamEntryID());
+    Map<String, List<StreamEntry>> expectedReadGroupAsMapResult = new HashMap<>();
+
+    when(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, stream1)).thenReturn(mapStringListStreamEntryCommandObject);
+    when(commandExecutor.executeCommand(mapStringListStreamEntryCommandObject)).thenReturn(expectedReadGroupAsMapResult);
+
+    Map<String, List<StreamEntry>> result = jedis.xreadGroupAsMap(groupName, consumer, xReadGroupParams, stream1);
+
+    assertThat(result, sameInstance(expectedReadGroupAsMapResult));
+
+    verify(commandExecutor).executeCommand(mapStringListStreamEntryCommandObject);
+    verify(commandObjects).xreadGroupAsMap(groupName, consumer, xReadGroupParams, stream1);
   }
 
   @Test

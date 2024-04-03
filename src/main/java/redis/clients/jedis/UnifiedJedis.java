@@ -10,6 +10,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -213,7 +214,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
+  @VisibleForTesting
+  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null);
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {

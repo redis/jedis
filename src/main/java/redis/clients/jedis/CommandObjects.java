@@ -3623,6 +3623,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
   }
 
+  @Deprecated
   public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object object : objects) {

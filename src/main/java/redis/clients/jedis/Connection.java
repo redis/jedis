@@ -23,7 +23,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.IOUtils;
-import redis.clients.jedis.util.JedisMetaInfo;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
@@ -73,7 +72,7 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
-  final RedisProtocol getRedisProtocol() {
+  public final RedisProtocol getRedisProtocol() {
     return protocol;
   }
 
@@ -388,7 +387,7 @@ public class Connection implements Closeable {
     return true;
   }
 
-  private void initializeFromClientConfig(JedisClientConfig config) {
+  private void initializeFromClientConfig(final JedisClientConfig config) {
     try {
       connect();
 
@@ -415,16 +414,25 @@ public class Connection implements Closeable {
         fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETNAME).add(clientName));
       }
 
-      String libName = JedisMetaInfo.getArtifactId();
-      if (libName != null && validateClientInfo(libName)) {
-        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-            .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));
-      }
+      ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
+      if (setInfoConfig == null) setInfoConfig = ClientSetInfoConfig.DEFAULT;
 
-      String libVersion = JedisMetaInfo.getVersion();
-      if (libVersion != null && validateClientInfo(libVersion)) {
-        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
-            .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
+      if (!setInfoConfig.isDisabled()) {
+        String libName = JedisMetaInfo.getArtifactId();
+        if (libName != null && validateClientInfo(libName)) {
+          String libNameSuffix = setInfoConfig.getLibNameSuffix();
+          if (libNameSuffix != null) { // validation is moved into ClientSetInfoConfig constructor
+            libName = libName + '(' + libNameSuffix + ')';
+          }
+          fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
+              .add(ClientAttributeOption.LIB_NAME.getRaw()).add(libName));
+        }
+
+        String libVersion = JedisMetaInfo.getVersion();
+        if (libVersion != null && validateClientInfo(libVersion)) {
+          fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
+              .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
+        }
       }
 
       for (CommandArguments arg : fireAndForgetMsg) {

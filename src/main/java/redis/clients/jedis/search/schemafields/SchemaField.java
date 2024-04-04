@@ -19,4 +19,12 @@ public abstract class SchemaField implements IParams {
     fieldName.as(attribute);
     return this;
   }
+
+  public final FieldName getFieldName() {
+    return fieldName;
+  }
+
+  public final String getName() {
+    return fieldName.getName();
+  }
 }

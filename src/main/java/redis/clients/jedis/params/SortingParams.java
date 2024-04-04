@@ -1,9 +1,6 @@
 package redis.clients.jedis.params;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
@@ -162,5 +159,18 @@ public class SortingParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     args.addObjects(params);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    SortingParams that = (SortingParams) o;
+    return Objects.equals(params, that.params);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(params);
   }
 }

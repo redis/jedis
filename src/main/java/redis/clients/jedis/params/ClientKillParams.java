@@ -1,6 +1,7 @@
 package redis.clients.jedis.params;
 
 import java.util.ArrayList;
+import java.util.Objects;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
@@ -67,8 +68,31 @@ public class ClientKillParams implements IParams {
     return addParam(Keyword.LADDR, ip + ':' + port);
   }
 
+  /**
+   * Kill clients older than {@code maxAge} seconds.
+   *
+   * @param maxAge Clients older than this number of seconds will be killed.
+   * @return The {@code ClientKillParams} instance, for call chaining.
+   */
+  public ClientKillParams maxAge(long maxAge) {
+    return addParam(Keyword.MAXAGE, maxAge);
+  }
+
   @Override
   public void addParams(CommandArguments args) {
     params.forEach(kv -> args.add(kv.getKey()).add(kv.getValue()));
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ClientKillParams that = (ClientKillParams) o;
+    return Objects.equals(params, that.params);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(params);
   }
 }

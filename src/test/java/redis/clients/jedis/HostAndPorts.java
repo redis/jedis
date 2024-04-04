@@ -8,6 +8,7 @@ public final class HostAndPorts {
   private static List<HostAndPort> redisHostAndPortList = new ArrayList<>();
   private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<>();
   private static List<HostAndPort> clusterHostAndPortList = new ArrayList<>();
+  private static List<HostAndPort> stableClusterHostAndPortList = new ArrayList<>();
 
   static {
     redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT));
@@ -34,6 +35,10 @@ public final class HostAndPorts {
     clusterHostAndPortList.add(new HostAndPort("localhost", 7382));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7383));
     clusterHostAndPortList.add(new HostAndPort("localhost", 7384));
+
+    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7479));
+    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7480));
+    stableClusterHostAndPortList.add(new HostAndPort("localhost", 7481));
   }
 
   public static List<HostAndPort> parseHosts(String envHosts,
@@ -69,6 +74,10 @@ public final class HostAndPorts {
 
   public static List<HostAndPort> getClusterServers() {
     return clusterHostAndPortList;
+  }
+
+  public static List<HostAndPort> getStableClusterServers() {
+    return stableClusterHostAndPortList;
   }
 
   private HostAndPorts() {

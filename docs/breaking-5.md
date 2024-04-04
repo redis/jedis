@@ -113,6 +113,8 @@
 
 - `RedisJsonCommands` and `RedisJsonPipelineCommands` interfaces have been moved into `redis.clients.jedis.json.commands` package.
 
+- `AbortedTransactionException` is removed.
+
 - `Queable` class is removed.
 
 - `Params` abstract class is removed.

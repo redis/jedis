@@ -1,9 +1,10 @@
 package redis.clients.jedis.commands.unified;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNull;
 
@@ -11,6 +12,7 @@ import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -18,9 +20,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.AssertUtil;
@@ -36,6 +40,10 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
   final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
   final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
   final byte[] bbarstar = { 0x05, 0x06, 0x07, 0x08, '*' };
+
+  public HashesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void hset() {
@@ -316,13 +324,20 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
 
   @Test
   public void hscan() {
-    jedis.hset("foo", "b", "b");
-    jedis.hset("foo", "a", "a");
+    jedis.hset("foo", "b", "y");
+    jedis.hset("foo", "a", "x");
 
     ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", SCAN_POINTER_START);
 
     assertEquals(SCAN_POINTER_START, result.getCursor());
-    assertFalse(result.getResult().isEmpty());
+    assertEquals(2, result.getResult().size());
+
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getKey).collect(Collectors.toList()),
+        containsInAnyOrder("a", "b"));
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getValue).collect(Collectors.toList()),
+        containsInAnyOrder("x", "y"));
 
     // binary
     jedis.hset(bfoo, bbar, bcar);
@@ -330,7 +345,14 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY);
 
     assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
-    assertFalse(bResult.getResult().isEmpty());
+    assertEquals(1, bResult.getResult().size());
+
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getKey).collect(Collectors.toList()),
+        containsInAnyOrder(bbar));
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getValue).collect(Collectors.toList()),
+        containsInAnyOrder(bcar));
   }
 
   @Test
@@ -338,13 +360,20 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     ScanParams params = new ScanParams();
     params.match("a*");
 
-    jedis.hset("foo", "b", "b");
-    jedis.hset("foo", "a", "a");
-    jedis.hset("foo", "aa", "aa");
+    jedis.hset("foo", "b", "y");
+    jedis.hset("foo", "a", "x");
+    jedis.hset("foo", "aa", "xx");
     ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", SCAN_POINTER_START, params);
 
     assertEquals(SCAN_POINTER_START, result.getCursor());
-    assertFalse(result.getResult().isEmpty());
+    assertEquals(2, result.getResult().size());
+
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getKey).collect(Collectors.toList()),
+        containsInAnyOrder("a", "aa"));
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getValue).collect(Collectors.toList()),
+        containsInAnyOrder("x", "xx"));
 
     // binary
     params = new ScanParams();
@@ -355,11 +384,17 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset(bfoo, bbar2, bcar);
     jedis.hset(bfoo, bbar3, bcar);
 
-    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY,
-      params);
+    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
-    assertFalse(bResult.getResult().isEmpty());
+    assertEquals(4, bResult.getResult().size());
+
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getKey).collect(Collectors.toList()),
+        containsInAnyOrder(bbar, bbar1, bbar2, bbar3));
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getValue).collect(Collectors.toList()),
+        containsInAnyOrder(bcar, bcar, bcar, bcar));
   }
 
   @Test
@@ -368,12 +403,19 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     params.count(2);
 
     for (int i = 0; i < 10; i++) {
-      jedis.hset("foo", "a" + i, "a" + i);
+      jedis.hset("foo", "a" + i, "x" + i);
     }
 
     ScanResult<Map.Entry<String, String>> result = jedis.hscan("foo", SCAN_POINTER_START, params);
 
     assertFalse(result.getResult().isEmpty());
+
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getKey).map(s -> s.substring(0, 1)).collect(Collectors.toSet()),
+        containsInAnyOrder("a"));
+    assertThat(
+        result.getResult().stream().map(Map.Entry::getValue).map(s -> s.substring(0, 1)).collect(Collectors.toSet()),
+        containsInAnyOrder("x"));
 
     // binary
     params = new ScanParams();
@@ -384,10 +426,109 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     jedis.hset(bfoo, bbar2, bcar);
     jedis.hset(bfoo, bbar3, bcar);
 
-    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY,
-      params);
+    ScanResult<Map.Entry<byte[], byte[]>> bResult = jedis.hscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getKey)
+            .map(a -> Arrays.copyOfRange(a, 0, 4)).map(Arrays::toString).collect(Collectors.toSet()),
+        containsInAnyOrder(Arrays.toString(bbar)));
+    assertThat(
+        bResult.getResult().stream().map(Map.Entry::getValue)
+            .map(a -> Arrays.copyOfRange(a, 0, 4)).map(Arrays::toString).collect(Collectors.toSet()),
+        containsInAnyOrder(Arrays.toString(bcar)));
+  }
+
+  @Test
+  public void hscanNoValues() {
+    jedis.hset("foo", "b", "y");
+    jedis.hset("foo", "a", "x");
+
+    ScanResult<String> result = jedis.hscanNoValues("foo", SCAN_POINTER_START);
+
+    assertEquals(SCAN_POINTER_START, result.getCursor());
+    assertEquals(2, result.getResult().size());
+
+    assertThat(result.getResult(), containsInAnyOrder("a", "b"));
+
+    // binary
+    jedis.hset(bfoo, bbar, bcar);
+
+    ScanResult<byte[]> bResult = jedis.hscanNoValues(bfoo, SCAN_POINTER_START_BINARY);
+
+    assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+    assertEquals(1, bResult.getResult().size());
+
+    assertThat(bResult.getResult(), containsInAnyOrder(bbar));
+  }
+
+  @Test
+  public void hscanNoValuesMatch() {
+    ScanParams params = new ScanParams();
+    params.match("a*");
+
+    jedis.hset("foo", "b", "y");
+    jedis.hset("foo", "a", "x");
+    jedis.hset("foo", "aa", "xx");
+    ScanResult<String> result = jedis.hscanNoValues("foo", SCAN_POINTER_START, params);
+
+    assertEquals(SCAN_POINTER_START, result.getCursor());
+    assertEquals(2, result.getResult().size());
+
+    assertThat(result.getResult(), containsInAnyOrder("a", "aa"));
+
+    // binary
+    params = new ScanParams();
+    params.match(bbarstar);
+
+    jedis.hset(bfoo, bbar, bcar);
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    jedis.hset(bfoo, bbar3, bcar);
+
+    ScanResult<byte[]> bResult = jedis.hscanNoValues(bfoo, SCAN_POINTER_START_BINARY, params);
+
+    assertArrayEquals(SCAN_POINTER_START_BINARY, bResult.getCursorAsBytes());
+    assertEquals(4, bResult.getResult().size());
+
+    assertThat(bResult.getResult(), containsInAnyOrder(bbar, bbar1, bbar2, bbar3));
+  }
+
+  @Test
+  public void hscanNoValuesCount() {
+    ScanParams params = new ScanParams();
+    params.count(2);
+
+    for (int i = 0; i < 10; i++) {
+      jedis.hset("foo", "a" + i, "a" + i);
+    }
+
+    ScanResult<String> result = jedis.hscanNoValues("foo", SCAN_POINTER_START, params);
+
+    assertFalse(result.getResult().isEmpty());
+
+    assertThat(
+        result.getResult().stream().map(s -> s.substring(0, 1)).collect(Collectors.toSet()),
+        containsInAnyOrder("a"));
+
+    // binary
+    params = new ScanParams();
+    params.count(2);
+
+    jedis.hset(bfoo, bbar, bcar);
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    jedis.hset(bfoo, bbar3, bcar);
+
+    ScanResult<byte[]> bResult = jedis.hscanNoValues(bfoo, SCAN_POINTER_START_BINARY, params);
+
+    assertFalse(bResult.getResult().isEmpty());
+
+    assertThat(
+        bResult.getResult().stream()
+            .map(a -> Arrays.copyOfRange(a, 0, 4)).map(Arrays::toString).collect(Collectors.toSet()),
+        containsInAnyOrder(Arrays.toString(bbar)));
   }
 
   @Test

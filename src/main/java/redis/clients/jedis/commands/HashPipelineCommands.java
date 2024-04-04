@@ -50,5 +50,11 @@ public interface HashPipelineCommands {
 
   Response<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params);
 
+  default Response<ScanResult<String>> hscanNoValues(String key, String cursor) {
+    return hscanNoValues(key, cursor, new ScanParams());
+  }
+
+  Response<ScanResult<String>> hscanNoValues(String key, String cursor, ScanParams params);
+
   Response<Long> hstrlen(String key, String field);
 }

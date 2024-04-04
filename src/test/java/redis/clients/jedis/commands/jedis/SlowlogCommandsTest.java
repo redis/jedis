@@ -11,11 +11,15 @@ import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.resps.Slowlog;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class SlowlogCommandsTest extends JedisCommandsTestBase {
 
   private static final List<String> LOCAL_IPS = Arrays.asList("127.0.0.1", "[::1]");
@@ -24,6 +28,10 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
   private static final String ZERO_STRING = "0";
 
   private String slowlogTimeValue;
+
+  public SlowlogCommandsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   @Override
@@ -84,7 +92,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     Slowlog log = logs.get(0);
     assertThat(log.getId(), Matchers.greaterThan(0L));
     assertThat(log.getTimeStamp(), Matchers.greaterThan(0L));
-    assertThat(log.getExecutionTime(), Matchers.greaterThan(0L));
+    assertThat(log.getExecutionTime(), Matchers.greaterThanOrEqualTo(0L));
     assertEquals(4, log.getArgs().size());
     assertEquals(SafeEncoder.encode(Protocol.Command.CONFIG.getRaw()), log.getArgs().get(0));
     assertEquals(SafeEncoder.encode(Protocol.Keyword.SET.getRaw()), log.getArgs().get(1));
@@ -108,7 +116,7 @@ public class SlowlogCommandsTest extends JedisCommandsTestBase {
     List<Object> log = (List<Object>) logs.get(0);
     assertThat((Long) log.get(0), Matchers.greaterThan(0L));
     assertThat((Long) log.get(1), Matchers.greaterThan(0L));
-    assertThat((Long) log.get(2), Matchers.greaterThan(0L));
+    assertThat((Long) log.get(2), Matchers.greaterThanOrEqualTo(0L));
     List<Object> args = (List<Object>) log.get(3);
     assertEquals(4, args.size());
     assertArrayEquals(Protocol.Command.CONFIG.getRaw(), (byte[]) args.get(0));

@@ -10,15 +10,14 @@ on:
       - '**/*.rst'
     branches:
       - master
-      - '[0-9].[0-9]'
-      - '[0-9].x'
+      - '[0-9].*'
   pull_request:
     branches:
       - master
-      - '[0-9].[0-9]'
-      - '[0-9].x'
+      - '[0-9].*'
   schedule:
     - cron: '0 1 * * *' # nightly build
+  workflow_dispatch:
 
 jobs:
 
@@ -52,28 +51,10 @@ jobs:
           mvn javadoc:jar
       - name: Run tests
         run: |
-          TEST="" make test
+          make test
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
-      - name: sleep 10s
-        run: sleep 10s
-      - name: Make - start
-        run: |
-          make start
-          sleep 2s
-      - name: Docker - mod or stack
-        run: docker run -p 52567:6379 -d redis/redis-stack-server:edge
-      - name: Test commands - default protocol
-        run: mvn -Dtest="redis.clients.jedis.commands.**" test
-      - name: Test commands - RESP3 protocol
-        run: mvn -DjedisProtocol=3 -Dtest="redis.clients.jedis.commands.**" test
-      - name: Test module commands - default protocol
-        run: mvn -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
-      - name: Test module commands - RESP3 protocol
-        run: mvn -DjedisProtocol=3 -DmodulesDocker="localhost:52567" -Dtest="redis.clients.jedis.modules.**" test
-      - name: Make - stop
-        run: make stop
       - name: Codecov
         run: |
           bash <(curl -s https://codecov.io/bash)

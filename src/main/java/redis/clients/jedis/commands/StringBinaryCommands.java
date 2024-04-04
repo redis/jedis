@@ -27,6 +27,10 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   byte[] getrange(byte[] key, long startOffset, long endOffset);
 
+  /**
+   * @deprecated Use {@link StringBinaryCommands#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   byte[] getSet(byte[] key, byte[] value);
 
   long setnx(byte[] key, byte[] value);

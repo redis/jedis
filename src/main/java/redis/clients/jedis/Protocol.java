@@ -54,6 +54,7 @@ public final class Protocol {
   private static final String CLUSTERDOWN_PREFIX = "CLUSTERDOWN ";
   private static final String BUSY_PREFIX = "BUSY ";
   private static final String NOSCRIPT_PREFIX = "NOSCRIPT ";
+  private static final String NOAUTH_PREFIX = "NOAUTH";
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
 
@@ -97,9 +98,9 @@ public final class Protocol {
       throw new JedisBusyException(message);
     } else if (message.startsWith(NOSCRIPT_PREFIX)) {
       throw new JedisNoScriptException(message);
-    } else if (message.startsWith(WRONGPASS_PREFIX)) {
-      throw new JedisAccessControlException(message);
-    } else if (message.startsWith(NOPERM_PREFIX)) {
+    } else if (message.startsWith(NOAUTH_PREFIX)
+        || message.startsWith(WRONGPASS_PREFIX)
+        || message.startsWith(NOPERM_PREFIX)) {
       throw new JedisAccessControlException(message);
     }
     throw new JedisDataException(message);
@@ -272,7 +273,7 @@ public final class Protocol {
     SSUBSCRIBE, SUNSUBSCRIBE, SPUBLISH, // <-- pub sub
     SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, PERSIST, ROLE, FAILOVER, SLOWLOG, OBJECT, CLIENT, TIME,
     SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, READONLY, READWRITE, SLAVEOF, REPLICAOF, COPY,
-    SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, LATENCY, WAITAOF;
+    SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF;
 
     private final byte[] raw;
 
@@ -298,9 +299,9 @@ public final class Protocol {
     REV, WITHCOORD, WITHDIST, WITHHASH, ANY, FROMMEMBER, FROMLONLAT, BYRADIUS, BYBOX, BYLEX, BYSCORE,
     STOREDIST, TO, FORCE, TIMEOUT, DB, UNLOAD, ABORT, IDX, MINMATCHLEN, WITHMATCHLEN, FULL,
     DELETE, LIBRARYNAME, WITHCODE, DESCRIPTION, GETKEYS, GETKEYSANDFLAGS, DOCS, FILTERBY, DUMP,
-    MODULE, ACLCAT, PATTERN, DOCTOR, USAGE, SAMPLES, PURGE, STATS, LOADEX, CONFIG, ARGS, RANK,
+    MODULE, ACLCAT, PATTERN, DOCTOR, LATEST, HISTORY, USAGE, SAMPLES, PURGE, STATS, LOADEX, CONFIG, ARGS, RANK,
     NOW, VERSION, ADDR, SKIPME, USER, LADDR,
-    CHANNELS, NUMPAT, NUMSUB, SHARDCHANNELS, SHARDNUMSUB;
+    CHANNELS, NUMPAT, NUMSUB, SHARDCHANNELS, SHARDNUMSUB, NOVALUES, MAXAGE;
 
     private final byte[] raw;
 
@@ -357,7 +358,7 @@ public final class Protocol {
     MEET, RESET, INFO, FAILOVER, SLOTS, NODES, REPLICAS, SLAVES, MYID, ADDSLOTS, DELSLOTS,
     GETKEYSINSLOT, SETSLOT, NODE, MIGRATING, IMPORTING, STABLE, FORGET, FLUSHSLOTS, KEYSLOT,
     COUNTKEYSINSLOT, SAVECONFIG, REPLICATE, LINKS, ADDSLOTSRANGE, DELSLOTSRANGE, BUMPEPOCH,
-    MYSHARDID;
+    MYSHARDID, SHARDS;
 
     private final byte[] raw;
 

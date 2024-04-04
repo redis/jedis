@@ -1,12 +1,15 @@
 package redis.clients.jedis;
 
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.SlidingWindowType;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisValidationException;
 
 import java.time.Duration;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisValidationException;
 
 
 /**
@@ -22,12 +25,14 @@ import java.util.List;
  * not passed through to Jedis users.
  * <p>
  */
+// TODO: move
+@Experimental
 public final class MultiClusterClientConfig {
 
     private static final int RETRY_MAX_ATTEMPTS_DEFAULT = 3;
     private static final int RETRY_WAIT_DURATION_DEFAULT = 500;  // measured in milliseconds
     private static final int RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT = 2;
-    private static final Class RETRY_INCLUDED_EXCEPTIONS_DEFAULT = JedisConnectionException.class;
+    private static final List<Class> RETRY_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
 
     private static final float CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT = 50.0f; // measured as percentage
     private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT = 100;
@@ -35,7 +40,9 @@ public final class MultiClusterClientConfig {
     private static final int CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT = 100;
     private static final int CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT = 60000; // measured in milliseconds
     private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f; // measured as percentage
-    private static final Class CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = JedisConnectionException.class;
+    private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
+
+    private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays.asList(CallNotPermittedException.class);
 
     private final ClusterConfig[] clusterConfigs;
 
@@ -99,6 +106,7 @@ public final class MultiClusterClientConfig {
      * failure nor success, even if the exceptions is part of recordExceptions */
     private List<Class> circuitBreakerIgnoreExceptionList;
 
+    private List<Class<? extends Throwable>> fallbackExceptionList;
 
     public MultiClusterClientConfig(ClusterConfig[] clusterConfigs) {
         this.clusterConfigs = clusterConfigs;
@@ -160,6 +168,10 @@ public final class MultiClusterClientConfig {
         return circuitBreakerSlidingWindowType;
     }
 
+    public List<Class<? extends Throwable>> getFallbackExceptionList() {
+        return fallbackExceptionList;
+    }
+
     public static class ClusterConfig {
 
         private int priority;
@@ -195,8 +207,8 @@ public final class MultiClusterClientConfig {
         private int retryMaxAttempts = RETRY_MAX_ATTEMPTS_DEFAULT;
         private int retryWaitDuration = RETRY_WAIT_DURATION_DEFAULT;
         private int retryWaitDurationExponentialBackoffMultiplier = RETRY_WAIT_DURATION_EXPONENTIAL_BACKOFF_MULTIPLIER_DEFAULT;
-        private List<Class> retryIncludedExceptionList;
-        private List<Class> retryIgnoreExceptionList;
+        private List<Class> retryIncludedExceptionList = RETRY_INCLUDED_EXCEPTIONS_DEFAULT;
+        private List<Class> retryIgnoreExceptionList = null;
 
         private float circuitBreakerFailureRateThreshold = CIRCUIT_BREAKER_FAILURE_RATE_THRESHOLD_DEFAULT;
         private int circuitBreakerSlidingWindowMinCalls = CIRCUIT_BREAKER_SLIDING_WINDOW_MIN_CALLS_DEFAULT;
@@ -204,9 +216,9 @@ public final class MultiClusterClientConfig {
         private int circuitBreakerSlidingWindowSize = CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT;
         private int circuitBreakerSlowCallDurationThreshold = CIRCUIT_BREAKER_SLOW_CALL_DURATION_THRESHOLD_DEFAULT;
         private float circuitBreakerSlowCallRateThreshold = CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT;
-        private List<Class> circuitBreakerIncludedExceptionList;
-        private List<Class> circuitBreakerIgnoreExceptionList;
-        private List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList;
+        private List<Class> circuitBreakerIncludedExceptionList = CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT;
+        private List<Class> circuitBreakerIgnoreExceptionList = null;
+        private List<Class<? extends Throwable>> fallbackExceptionList = FALLBACK_EXCEPTIONS_DEFAULT;
 
         public Builder(ClusterConfig[] clusterConfigs) {
 
@@ -217,6 +229,10 @@ public final class MultiClusterClientConfig {
                 clusterConfigs[i].setPriority(i + 1);
 
             this.clusterConfigs = clusterConfigs;
+        }
+
+        public Builder(List<ClusterConfig> clusterConfigs) {
+            this(clusterConfigs.toArray(new ClusterConfig[0]));
         }
 
         public Builder retryMaxAttempts(int retryMaxAttempts) {
@@ -284,8 +300,16 @@ public final class MultiClusterClientConfig {
             return this;
         }
 
+        /**
+         * @deprecated Use {@link #fallbackExceptionList(java.util.List)}.
+         */
+        @Deprecated
         public Builder circuitBreakerFallbackExceptionList(List<Class<? extends Throwable>> circuitBreakerFallbackExceptionList) {
-            this.circuitBreakerFallbackExceptionList = circuitBreakerFallbackExceptionList;
+            return fallbackExceptionList(circuitBreakerFallbackExceptionList);
+        }
+
+        public Builder fallbackExceptionList(List<Class<? extends Throwable>> fallbackExceptionList) {
+            this.fallbackExceptionList = fallbackExceptionList;
             return this;
         }
 
@@ -296,16 +320,9 @@ public final class MultiClusterClientConfig {
             config.retryWaitDuration = Duration.ofMillis(this.retryWaitDuration);
             config.retryWaitDurationExponentialBackoffMultiplier = this.retryWaitDurationExponentialBackoffMultiplier;
 
-            if (this.retryIncludedExceptionList != null && !retryIncludedExceptionList.isEmpty())
-                config.retryIncludedExceptionList = this.retryIncludedExceptionList;
+            config.retryIncludedExceptionList = this.retryIncludedExceptionList;
 
-            else {
-                config.retryIncludedExceptionList = new ArrayList<>();
-                config.retryIncludedExceptionList.add(RETRY_INCLUDED_EXCEPTIONS_DEFAULT);
-            }
-
-            if (this.retryIgnoreExceptionList != null && !retryIgnoreExceptionList.isEmpty())
-                config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
+            config.retryIgnoreExceptionList = this.retryIgnoreExceptionList;
 
             config.circuitBreakerFailureRateThreshold = this.circuitBreakerFailureRateThreshold;
             config.circuitBreakerSlidingWindowMinCalls = this.circuitBreakerSlidingWindowMinCalls;
@@ -314,16 +331,11 @@ public final class MultiClusterClientConfig {
             config.circuitBreakerSlowCallDurationThreshold = Duration.ofMillis(this.circuitBreakerSlowCallDurationThreshold);
             config.circuitBreakerSlowCallRateThreshold = this.circuitBreakerSlowCallRateThreshold;
 
-            if (this.circuitBreakerIncludedExceptionList != null && !circuitBreakerIncludedExceptionList.isEmpty())
-                config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
+            config.circuitBreakerIncludedExceptionList = this.circuitBreakerIncludedExceptionList;
 
-            else {
-                config.circuitBreakerIncludedExceptionList = new ArrayList<>();
-                config.circuitBreakerIncludedExceptionList.add(CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT);
-            }
+            config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
 
-            if (this.circuitBreakerIgnoreExceptionList != null && !circuitBreakerIgnoreExceptionList.isEmpty())
-                config.circuitBreakerIgnoreExceptionList = this.circuitBreakerIgnoreExceptionList;
+            config.fallbackExceptionList = this.fallbackExceptionList;
 
             return config;
         }

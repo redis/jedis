@@ -59,4 +59,8 @@ public interface RedisTimeSeriesPipelineCommands {
   Response<String> tsDeleteRule(String sourceKey, String destKey);
 
   Response<List<String>> tsQueryIndex(String... filters);
+
+  Response<TSInfo> tsInfo(String key);
+
+  Response<TSInfo> tsInfoDebug(String key);
 }

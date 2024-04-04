@@ -8,17 +8,21 @@ import io.github.resilience4j.core.IntervalFunction;
 import io.github.resilience4j.retry.Retry;
 import io.github.resilience4j.retry.RetryConfig;
 import io.github.resilience4j.retry.RetryRegistry;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.*;
 import redis.clients.jedis.MultiClusterClientConfig.ClusterConfig;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.util.Pool;
-
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 
 /**
@@ -31,6 +35,8 @@ import java.util.function.Consumer;
  * Support for manual failback is provided by way of {@link #setActiveMultiClusterIndex(int)}
  * <p>
  */
+// TODO: move?
+@Experimental
 public class MultiClusterPooledConnectionProvider implements ConnectionProvider {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
@@ -62,6 +68,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
      */
     private Consumer<String> clusterFailoverPostProcessor;
 
+    private List<Class<? extends Throwable>> fallbackExceptionList;
 
     public MultiClusterPooledConnectionProvider(MultiClusterClientConfig multiClusterClientConfig) {
 
@@ -78,7 +85,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         retryConfigBuilder.retryExceptions(multiClusterClientConfig.getRetryIncludedExceptionList().stream().toArray(Class[]::new));
 
         List<Class> retryIgnoreExceptionList = multiClusterClientConfig.getRetryIgnoreExceptionList();
-        if (retryIgnoreExceptionList != null && !retryIgnoreExceptionList.isEmpty())
+        if (retryIgnoreExceptionList != null)
             retryConfigBuilder.ignoreExceptions(retryIgnoreExceptionList.stream().toArray(Class[]::new));
 
         RetryConfig retryConfig = retryConfigBuilder.build();
@@ -96,7 +103,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         circuitBreakerConfigBuilder.automaticTransitionFromOpenToHalfOpenEnabled(false); // State transitions are forced. No half open states are used
 
         List<Class> circuitBreakerIgnoreExceptionList = multiClusterClientConfig.getCircuitBreakerIgnoreExceptionList();
-        if (circuitBreakerIgnoreExceptionList != null && !circuitBreakerIgnoreExceptionList.isEmpty())
+        if (circuitBreakerIgnoreExceptionList != null)
             circuitBreakerConfigBuilder.ignoreExceptions(circuitBreakerIgnoreExceptionList.stream().toArray(Class[]::new));
 
         CircuitBreakerConfig circuitBreakerConfig = circuitBreakerConfigBuilder.build();
@@ -123,10 +130,14 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
             circuitBreakerEventPublisher.onStateTransition(event -> log.warn(String.valueOf(event)));
 
-            multiClusterMap.put(config.getPriority(), new Cluster(new ConnectionPool(config.getHostAndPort(),
-                                                                                     config.getJedisClientConfig()),
-                                                                                     retry, circuitBreaker));
+            multiClusterMap.put(config.getPriority(),
+                    new Cluster(new ConnectionPool(config.getHostAndPort(),
+                            config.getJedisClientConfig()), retry, circuitBreaker));
         }
+
+        /// --- ///
+
+        this.fallbackExceptionList = multiClusterClientConfig.getFallbackExceptionList();
     }
 
     /**
@@ -287,6 +298,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
     public void setClusterFailoverPostProcessor(Consumer<String> clusterFailoverPostProcessor) {
         this.clusterFailoverPostProcessor = clusterFailoverPostProcessor;
+    }
+
+    public List<Class<? extends Throwable>> getFallbackExceptionList() {
+        return fallbackExceptionList;
     }
 
     public static class Cluster {

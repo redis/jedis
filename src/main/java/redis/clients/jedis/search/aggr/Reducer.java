@@ -29,6 +29,18 @@ public abstract class Reducer {
     return this;
   }
 
+  public final String getName() {
+    return name;
+  }
+
+  public final String getField() {
+    return field;
+  }
+
+  public final String getAlias() {
+    return alias;
+  }
+
   protected abstract List<Object> getOwnArgs();
 
   public final void addArgs(List<Object> args) {

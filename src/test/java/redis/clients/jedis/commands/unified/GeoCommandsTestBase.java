@@ -10,6 +10,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
@@ -27,6 +28,10 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   protected final byte[] bNotexist = { 0x0F };
 
   private static final double EPSILON = 1e-5;
+
+  public GeoCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void geoadd() {

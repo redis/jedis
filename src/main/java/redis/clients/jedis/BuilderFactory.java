@@ -997,6 +997,155 @@ public final class BuilderFactory {
     }
   };
 
+  public static final Builder<Map<String, LatencyLatestInfo>> LATENCY_LATEST_RESPONSE = new Builder<Map<String, LatencyLatestInfo>>() {
+    @Override
+    public Map<String, LatencyLatestInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      Map<String, LatencyLatestInfo> map = new HashMap<>(rawList.size());
+
+      for (Object rawLatencyLatestInfo : rawList) {
+        if (rawLatencyLatestInfo == null) {
+          continue;
+        }
+
+        LatencyLatestInfo latestInfo = LatencyLatestInfo.LATENCY_LATEST_BUILDER.build(rawLatencyLatestInfo);
+        String name = latestInfo.getCommand();
+        map.put(name, latestInfo);
+      }
+
+      return map;
+    }
+  };
+
+  public static final Builder<List<LatencyHistoryInfo>> LATENCY_HISTORY_RESPONSE = new Builder<List<LatencyHistoryInfo>>() {
+    @Override
+    public List<LatencyHistoryInfo> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+
+      List<Object> rawList = (List<Object>) data;
+      List<LatencyHistoryInfo> response = new ArrayList<>(rawList.size());
+
+      for (Object rawLatencyHistoryInfo : rawList) {
+        if (rawLatencyHistoryInfo == null) {
+          continue;
+        }
+
+        LatencyHistoryInfo historyInfo = LatencyHistoryInfo.LATENCY_HISTORY_BUILDER.build(rawLatencyHistoryInfo);
+        response.add(historyInfo);
+      }
+
+      return response;
+    }
+  };
+
+  private static final Builder<List<List<Long>>> CLUSTER_SHARD_SLOTS_RANGES = new Builder<List<List<Long>>>() {
+
+    @Override
+    public List<List<Long>> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<Long> rawSlots = (List<Long>) data;
+      List<List<Long>> slotsRanges = new ArrayList<>();
+      for (int i = 0; i < rawSlots.size(); i += 2) {
+        slotsRanges.add(Arrays.asList(rawSlots.get(i), rawSlots.get(i + 1)));
+      }
+      return slotsRanges;
+    }
+  };
+
+  private static final Builder<List<ClusterShardNodeInfo>> CLUSTER_SHARD_NODE_INFO_LIST
+      = new Builder<List<ClusterShardNodeInfo>>() {
+
+    final Map<String, Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String, Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(ClusterShardNodeInfo.ID, STRING);
+      tempMappingFunctions.put(ClusterShardNodeInfo.ENDPOINT, STRING);
+      tempMappingFunctions.put(ClusterShardNodeInfo.IP, STRING);
+      tempMappingFunctions.put(ClusterShardNodeInfo.HOSTNAME, STRING);
+      tempMappingFunctions.put(ClusterShardNodeInfo.PORT, LONG);
+      tempMappingFunctions.put(ClusterShardNodeInfo.TLS_PORT, LONG);
+      tempMappingFunctions.put(ClusterShardNodeInfo.ROLE, STRING);
+      tempMappingFunctions.put(ClusterShardNodeInfo.REPLICATION_OFFSET, LONG);
+      tempMappingFunctions.put(ClusterShardNodeInfo.HEALTH, STRING);
+
+      return tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<ClusterShardNodeInfo> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<ClusterShardNodeInfo> response = new ArrayList<>();
+
+      List<Object> clusterShardNodeInfos = (List<Object>) data;
+      for (Object clusterShardNodeInfoObject : clusterShardNodeInfos) {
+        List<Object> clusterShardNodeInfo = (List<Object>) clusterShardNodeInfoObject;
+        Iterator<Object> iterator = clusterShardNodeInfo.iterator();
+        response.add(new ClusterShardNodeInfo(createMapFromDecodingFunctions(iterator, mappingFunctions)));
+      }
+
+      return response;
+    }
+
+    @Override
+    public String toString() {
+      return "List<ClusterShardNodeInfo>";
+    }
+  };
+
+  public static final Builder<List<ClusterShardInfo>> CLUSTER_SHARD_INFO_LIST
+          = new Builder<List<ClusterShardInfo>>() {
+
+    final Map<String, Builder> mappingFunctions = createDecoderMap();
+
+    private Map<String, Builder> createDecoderMap() {
+
+      Map<String, Builder> tempMappingFunctions = new HashMap<>();
+      tempMappingFunctions.put(ClusterShardInfo.SLOTS, CLUSTER_SHARD_SLOTS_RANGES);
+      tempMappingFunctions.put(ClusterShardInfo.NODES, CLUSTER_SHARD_NODE_INFO_LIST);
+
+      return tempMappingFunctions;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<ClusterShardInfo> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+
+      List<ClusterShardInfo> response = new ArrayList<>();
+
+      List<Object> clusterShardInfos = (List<Object>) data;
+      for (Object clusterShardInfoObject : clusterShardInfos) {
+        List<Object> clusterShardInfo = (List<Object>) clusterShardInfoObject;
+        Iterator<Object> iterator = clusterShardInfo.iterator();
+        response.add(new ClusterShardInfo(createMapFromDecodingFunctions(iterator, mappingFunctions)));
+      }
+
+      return response;
+    }
+
+    @Override
+    public String toString() {
+      return "List<ClusterShardInfo>";
+    }
+  };
+
   public static final Builder<List<Module>> MODULE_LIST = new Builder<List<Module>>() {
     @Override
     public List<Module> build(Object data) {
@@ -1271,10 +1420,10 @@ public final class BuilderFactory {
             .collect(Collectors.toList());
       } else {
         List<Map.Entry<String, List<StreamEntry>>> result = new ArrayList<>(list.size());
-        for (Object streamObj : list) {
-          List<Object> stream = (List<Object>) streamObj;
-          String streamKey = STRING.build(stream.get(0));
-          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(stream.get(1));
+        for (Object anObj : list) {
+          List<Object> streamObj = (List<Object>) anObj;
+          String streamKey = STRING.build(streamObj.get(0));
+          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(streamObj.get(1));
           result.add(KeyValue.of(streamKey, streamEntries));
         }
         return result;
@@ -1284,6 +1433,35 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<Entry<String, List<StreamEntry>>>";
+    }
+  };
+
+  public static final Builder<Map<String, List<StreamEntry>>> STREAM_READ_MAP_RESPONSE
+      = new Builder<Map<String, List<StreamEntry>>>() {
+    @Override
+    public Map<String, List<StreamEntry>> build(Object data) {
+      if (data == null) return null;
+      List list = (List) data;
+      if (list.isEmpty()) return Collections.emptyMap();
+
+      if (list.get(0) instanceof KeyValue) {
+        return ((List<KeyValue>) list).stream()
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()), kv -> STREAM_ENTRY_LIST.build(kv.getValue())));
+      } else {
+        Map<String, List<StreamEntry>> result = new HashMap<>(list.size());
+        for (Object anObj : list) {
+          List<Object> streamObj = (List<Object>) anObj;
+          String streamKey = STRING.build(streamObj.get(0));
+          List<StreamEntry> streamEntries = STREAM_ENTRY_LIST.build(streamObj.get(1));
+          result.put(streamKey, streamEntries);
+        }
+        return result;
+      }
+    }
+
+    @Override
+    public String toString() {
+      return "Map<String, List<StreamEntry>>";
     }
   };
 
@@ -1634,15 +1812,14 @@ public final class BuilderFactory {
       }
 
       List<Object> objectList = (List<Object>) data;
-      long total = BuilderFactory.LONG.build(objectList.get(0));
-      String minId = SafeEncoder.encode((byte[]) objectList.get(1));
-      String maxId = SafeEncoder.encode((byte[]) objectList.get(2));
-      List<List<Object>> consumerObjList = (List<List<Object>>) objectList.get(3);
-      Map<String, Long> map = new HashMap<>(consumerObjList.size());
-      for (List<Object> consumerObj : consumerObjList) {
-        map.put(SafeEncoder.encode((byte[]) consumerObj.get(0)), Long.parseLong(SafeEncoder.encode((byte[]) consumerObj.get(1))));
-      }
-      return new StreamPendingSummary(total, new StreamEntryID(minId), new StreamEntryID(maxId), map);
+      long total = LONG.build(objectList.get(0));
+      StreamEntryID minId = STREAM_ENTRY_ID.build(objectList.get(1));
+      StreamEntryID maxId = STREAM_ENTRY_ID.build(objectList.get(2));
+      Map<String, Long> map = objectList.get(3) == null ? null
+          : ((List<List<Object>>) objectList.get(3)).stream().collect(
+              Collectors.toMap(pair -> STRING.build(pair.get(0)),
+                  pair -> Long.parseLong(STRING.build(pair.get(1)))));
+      return new StreamPendingSummary(total, minId, maxId, map);
     }
 
     @Override
@@ -1821,13 +1998,11 @@ public final class BuilderFactory {
     }
   };
 
-  public static final Builder<List<LibraryInfo>> LIBRARY_LIST = new Builder<List<LibraryInfo>>() {
-    @Override
-    public List<LibraryInfo> build(Object data) {
-      List<Object> list = (List<Object>) data;
-      return list.stream().map(o -> LibraryInfo.LIBRARY_BUILDER.build(o)).collect(Collectors.toList());
-    }
-  };
+  /**
+   * @deprecated Use {@link LibraryInfo#LIBRARY_INFO_LIST}.
+   */
+  @Deprecated
+  public static final Builder<List<LibraryInfo>> LIBRARY_LIST = LibraryInfo.LIBRARY_INFO_LIST;
 
   public static final Builder<List<List<String>>> STRING_LIST_LIST = new Builder<List<List<String>>>() {
     @Override

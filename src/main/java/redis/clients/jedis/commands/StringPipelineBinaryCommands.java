@@ -16,6 +16,8 @@ public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands 
 
   Response<byte[]> get(byte[] key);
 
+  Response<byte[]> setGet(byte[] key, byte[] value);
+
   Response<byte[]> setGet(byte[] key, byte[] value, SetParams params);
 
   Response<byte[]> getDel(byte[] key);
@@ -26,6 +28,10 @@ public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands 
 
   Response<byte[]> getrange(byte[] key, long startOffset, long endOffset);
 
+  /**
+   * @deprecated {@link StringPipelineBinaryCommands#setGet(byte[], byte[], redis.clients.jedis.params.SetParams)}.
+   */
+  @Deprecated
   Response<byte[]> getSet(byte[] key, byte[] value);
 
   Response<Long> setnx(byte[] key, byte[] value);

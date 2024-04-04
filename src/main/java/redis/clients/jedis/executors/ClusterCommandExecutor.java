@@ -13,6 +13,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -43,30 +44,29 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
     boolean isErrored = false;
     T reply = null;
-    JedisBroadcastException holder = new JedisBroadcastException();
+    JedisBroadcastException bcastError = new JedisBroadcastException();
     for (Map.Entry<String, ConnectionPool> entry : connectionMap.entrySet()) {
       HostAndPort node = HostAndPort.from(entry.getKey());
       ConnectionPool pool = entry.getValue();
       try (Connection connection = pool.getResource()) {
-        try {
-          T aReply = execute(connection, commandObject);
-          holder.addReply(node, aReply);
-          if (isErrored) { // already errored
-          } else if (reply == null) {
-            reply = aReply; // ok
-          } else if (reply.equals(aReply)) {
-            // ok
-          } else {
-            isErrored = true;
-            reply = null;
-          }
-        } catch (JedisDataException anError) {
-          holder.addError(node, anError);
+        T aReply = execute(connection, commandObject);
+        bcastError.addReply(node, aReply);
+        if (isErrored) { // already errored
+        } else if (reply == null) {
+          reply = aReply; // ok
+        } else if (reply.equals(aReply)) {
+          // ok
+        } else {
+          isErrored = true;
+          reply = null;
         }
+      } catch (Exception anError) {
+        bcastError.addReply(node, anError);
+        isErrored = true;
       }
     }
     if (isErrored) {
-      throw holder;
+      throw bcastError;
     }
     return reply;
   }
@@ -136,6 +136,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */
+  @VisibleForTesting
   protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
     return connection.executeCommand(commandObject);
   }
@@ -194,6 +195,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * WARNING: This method is accessible for the purpose of testing.
    * This should not be used or overriden.
    */
+  @VisibleForTesting
   protected void sleep(long sleepMillis) {
     try {
       TimeUnit.MILLISECONDS.sleep(sleepMillis);

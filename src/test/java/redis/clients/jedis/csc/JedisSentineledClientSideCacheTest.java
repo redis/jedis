@@ -6,9 +6,11 @@ import static org.junit.Assert.assertNull;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -24,19 +26,32 @@ public class JedisSentineledClientSideCacheTest {
   protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
   protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
 
-  private static final Set<HostAndPort> sentinels = Arrays.asList(sentinel1, sentinel2).stream().collect(Collectors.toSet());
+  private static final Set<HostAndPort> sentinels = new HashSet<>(Arrays.asList(sentinel1, sentinel2));
 
   private static final JedisClientConfig masterClientConfig = DefaultJedisClientConfig.builder().resp3().password("foobared").build();
 
   private static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder().resp3().build();
 
+  protected JedisSentineled control;
+
+  @Before
+  public void setUp() throws Exception {
+    control = new JedisSentineled(MASTER_NAME, masterClientConfig, sentinels, sentinelClientConfig);
+    control.flushAll();
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    control.close();
+  }
+
   @Test
   public void simple() {
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(),
         sentinels, sentinelClientConfig)) {
-      jedis.set("foo", "bar");
+      control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
-      jedis.del("foo");
+      control.del("foo");
       assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
     }
   }
@@ -46,11 +61,11 @@ public class JedisSentineledClientSideCacheTest {
     HashMap<Long, Object> map = new HashMap<>();
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(map),
         sentinels, sentinelClientConfig)) {
-      jedis.set("foo", "bar");
+      control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(1));
-      jedis.del("foo");
+      control.del("foo");
       assertThat(map, Matchers.aMapWithSize(1));
       assertEquals("bar", jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(1));
@@ -65,9 +80,9 @@ public class JedisSentineledClientSideCacheTest {
   public void flushAll() {
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(),
         sentinels, sentinelClientConfig)) {
-      jedis.set("foo", "bar");
+      control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
-      jedis.flushAll();
+      control.flushAll();
       assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
     }
   }
@@ -77,11 +92,11 @@ public class JedisSentineledClientSideCacheTest {
     HashMap<Long, Object> map = new HashMap<>();
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(map),
         sentinels, sentinelClientConfig)) {
-      jedis.set("foo", "bar");
+      control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
       assertEquals("bar", jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(1));
-      jedis.flushAll();
+      control.flushAll();
       assertThat(map, Matchers.aMapWithSize(1));
       assertEquals("bar", jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(1));

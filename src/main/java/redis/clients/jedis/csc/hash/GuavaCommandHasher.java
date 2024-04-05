@@ -4,12 +4,19 @@ import com.google.common.hash.HashFunction;
 import com.google.common.hash.Hasher;
 import redis.clients.jedis.CommandObject;
 
-public class GuavaCommandHasher implements CommandLongHasher {
+/**
+ * An implementation of {@link CommandLongHasher} based on {@link HashFunction} from Google Guava library.
+ */
+public final class GuavaCommandHasher implements CommandLongHasher {
 
   public static final HashFunction DEFAULT_HASH_FUNCTION = com.google.common.hash.Hashing.fingerprint2011();
 
   private final HashFunction function;
 
+  /**
+   * It is advised to use a {@link HashFunction} capable of producing 64-bit hash.
+   * @param function an implementation of hash function
+   */
   public GuavaCommandHasher(HashFunction function) {
     this.function = function;
   }

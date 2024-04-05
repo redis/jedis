@@ -1,12 +1,17 @@
-package redis.clients.jedis.csc.hash;
+package redis.clients.jedis.csc;
 
 import net.openhft.hashing.LongHashFunction;
+import redis.clients.jedis.csc.hash.AbstractSimpleCommandHasher;
 
-public class OpenHftCommandHasher extends PrimitiveArrayCommandHasher implements CommandLongHasher {
+public class OpenHftCommandHasher extends AbstractSimpleCommandHasher {
 
   public static final LongHashFunction DEFAULT_HASH_FUNCTION = LongHashFunction.xx3();
 
   private final LongHashFunction function;
+
+  OpenHftCommandHasher() {
+    this(DEFAULT_HASH_FUNCTION);
+  }
 
   public OpenHftCommandHasher(LongHashFunction function) {
     this.function = function;

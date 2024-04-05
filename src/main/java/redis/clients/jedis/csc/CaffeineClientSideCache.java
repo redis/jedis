@@ -5,18 +5,22 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
 
 import redis.clients.jedis.csc.hash.CommandLongHasher;
-import redis.clients.jedis.csc.hash.OpenHftCommandHasher;
+import redis.clients.jedis.csc.hash.SimpleCommandHasher;
 
 public class CaffeineClientSideCache extends ClientSideCache {
 
   private final Cache<Long, Object> cache;
 
   public CaffeineClientSideCache(Cache<Long, Object> caffeineCache) {
-    this(caffeineCache, DefaultClientSideCacheable.INSTANCE);
+    this(caffeineCache, SimpleCommandHasher.INSTANCE);
+  }
+
+  public CaffeineClientSideCache(Cache<Long, Object> caffeineCache, CommandLongHasher commandHasher) {
+    this(caffeineCache, commandHasher, DefaultClientSideCacheable.INSTANCE);
   }
 
   public CaffeineClientSideCache(Cache<Long, Object> caffeineCache, ClientSideCacheable cacheable) {
-    this(caffeineCache, new OpenHftCommandHasher(OpenHftCommandHasher.DEFAULT_HASH_FUNCTION), cacheable);
+    this(caffeineCache, SimpleCommandHasher.INSTANCE, cacheable);
   }
 
   public CaffeineClientSideCache(Cache<Long, Object> caffeineCache, CommandLongHasher commandHasher, ClientSideCacheable cacheable) {
@@ -55,7 +59,7 @@ public class CaffeineClientSideCache extends ClientSideCache {
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
     // not using a default value to avoid an object creation like 'new OpenHftHashing(hashFunction)'
-    private CommandLongHasher commandHasher = null;
+    private CommandLongHasher commandHasher = SimpleCommandHasher.INSTANCE;
 
     private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
 
@@ -88,8 +92,7 @@ public class CaffeineClientSideCache extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return commandHasher != null ? new CaffeineClientSideCache(cb.build(), commandHasher, cacheable)
-          : new CaffeineClientSideCache(cb.build(), cacheable);
+      return new CaffeineClientSideCache(cb.build(), commandHasher, cacheable);
     }
   }
 }

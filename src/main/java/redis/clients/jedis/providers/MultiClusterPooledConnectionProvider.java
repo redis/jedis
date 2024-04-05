@@ -112,6 +112,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         ClusterConfig[] clusterConfigs = multiClusterClientConfig.getClusterConfigs();
         for (ClusterConfig config : clusterConfigs) {
+            ConnectionPoolConfig poolConfig = config.getConnectionPoolConfig();
+            if (poolConfig == null) {
+                poolConfig = new ConnectionPoolConfig();
+            }
 
             String clusterId = "cluster:" + config.getPriority() + ":" + config.getHostAndPort();
 
@@ -132,7 +136,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
             multiClusterMap.put(config.getPriority(),
                     new Cluster(new ConnectionPool(config.getHostAndPort(),
-                            config.getJedisClientConfig()), retry, circuitBreaker));
+                            config.getJedisClientConfig(), poolConfig), retry, circuitBreaker));
         }
 
         /// --- ///

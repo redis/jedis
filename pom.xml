@@ -93,7 +93,7 @@
 			<groupId>net.openhft</groupId>
 			<artifactId>zero-allocation-hashing</artifactId>
 			<version>0.16</version>
-			<optional>true</optional>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- UNIX socket connection support -->

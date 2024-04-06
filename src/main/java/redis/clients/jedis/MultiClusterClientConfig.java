@@ -182,6 +182,14 @@ public final class MultiClusterClientConfig {
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
             this.clientConfig = clientConfig;
+            connectionPoolConfig = new ConnectionPoolConfig();
+        }
+
+        public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+                             ConnectionPoolConfig connectionPoolConfig) {
+            this.hostAndPort = hostAndPort;
+            this.clientConfig = clientConfig;
+            this.connectionPoolConfig = connectionPoolConfig;
         }
 
         public int getPriority() {
@@ -202,10 +210,6 @@ public final class MultiClusterClientConfig {
 
         public ConnectionPoolConfig getConnectionPoolConfig() {
             return connectionPoolConfig;
-        }
-
-        public void setConnectionPoolConfig(ConnectionPoolConfig connectionPoolConfig) {
-            this.connectionPoolConfig = connectionPoolConfig;
         }
     }
 

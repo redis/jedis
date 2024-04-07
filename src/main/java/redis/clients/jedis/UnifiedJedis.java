@@ -4879,12 +4879,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   public AbstractTransaction multi() {
+    return transaction(true);
+  }
+
+  public AbstractTransaction transaction(boolean doMulti) {
     if (provider == null) {
-      throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+      throw new IllegalStateException("It is not allowed to create Transaction from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, true, commandObjects);
+      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, doMulti, commandObjects);
     } else {
-      return new Transaction(provider.getConnection(), true, true);
+      return new Transaction(provider.getConnection(), doMulti, true);
     }
   }
 

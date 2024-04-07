@@ -63,7 +63,7 @@ public class JedisSharding extends UnifiedJedis {
    * @throws UnsupportedOperationException
    */
   @Override
-  public Transaction multi() {
+  public Transaction transaction(boolean doMulti) {
     throw new UnsupportedOperationException();
   }
 }

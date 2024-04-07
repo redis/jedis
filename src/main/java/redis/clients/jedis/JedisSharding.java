@@ -59,6 +59,7 @@ public class JedisSharding extends UnifiedJedis {
   }
 
   /**
+   * @param doMulti
    * @return nothing
    * @throws UnsupportedOperationException
    */

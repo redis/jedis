@@ -258,6 +258,7 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   /**
+   * @param doMulti
    * @return nothing
    * @throws UnsupportedOperationException
    */

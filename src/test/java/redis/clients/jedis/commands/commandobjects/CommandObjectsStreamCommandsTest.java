@@ -305,6 +305,26 @@ public class CommandObjectsStreamCommandsTest extends CommandObjectsStandaloneTe
   }
 
   @Test
+  public void testXaddWithNullId() {
+    String key = "testStreamWithString";
+
+    // Add two entries, don't specify the IDs
+    StreamEntryID firstId = exec(commandObjects.xadd(key, (StreamEntryID) null, Collections.singletonMap("field", "value")));
+    assertThat(firstId, notNullValue());
+
+    StreamEntryID secondId = exec(commandObjects.xadd(key, (StreamEntryID) null, Collections.singletonMap("field", "value")));
+    assertThat(secondId, notNullValue());
+
+    assertThat(secondId, not(equalTo(firstId)));
+    assertThat(secondId.getSequence(), greaterThanOrEqualTo(firstId.getSequence()));
+
+    List<StreamEntry> xrangeAll = exec(commandObjects.xrange(key, (StreamEntryID) null, null));
+    assertThat(xrangeAll.size(), equalTo(2));
+    assertThat(xrangeAll.get(0).getID(), equalTo(firstId));
+    assertThat(xrangeAll.get(1).getID(), equalTo(secondId));
+  }
+
+  @Test
   public void testXackXpending() {
     String key = "testStreamForXackEffect";
     String group = "testGroup";
@@ -947,10 +967,10 @@ public class CommandObjectsStreamCommandsTest extends CommandObjectsStandaloneTe
     Map<String, String> messageBody1 = Collections.singletonMap("field1", "value1");
     Map<String, String> messageBody2 = Collections.singletonMap("field2", "value2");
 
-    exec(commandObjects.xadd(streamKey, (StreamEntryID) null, messageBody1));
-    exec(commandObjects.xadd(streamKey, (StreamEntryID) null, messageBody2));
+    exec(commandObjects.xadd(streamKey, StreamEntryID.NEW_ENTRY, messageBody1));
+    exec(commandObjects.xadd(streamKey, StreamEntryID.NEW_ENTRY, messageBody2));
 
-    exec(commandObjects.xgroupCreate(streamKey, group, null, true));
+    exec(commandObjects.xgroupCreate(streamKey, group, new StreamEntryID(), true));
 
     XReadGroupParams xReadGroupParams = new XReadGroupParams().count(1);
     Map<String, StreamEntryID> stream = Collections.singletonMap(streamKey, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);

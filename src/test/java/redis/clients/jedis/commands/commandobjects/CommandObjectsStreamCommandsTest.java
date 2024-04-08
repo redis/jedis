@@ -3,8 +3,10 @@ package redis.clients.jedis.commands.commandobjects;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -24,6 +26,7 @@ import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
+import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.resps.StreamConsumerInfo;
 import redis.clients.jedis.resps.StreamConsumersInfo;
 import redis.clients.jedis.resps.StreamEntry;
@@ -568,27 +571,86 @@ public class CommandObjectsStreamCommandsTest extends CommandObjectsStandaloneTe
     Long sizeBeforeTrim = exec(commandObjects.xlen(key));
     assertThat(sizeBeforeTrim, equalTo(10L));
 
-    Long xtrim = exec(commandObjects.xtrim(key, 5, false));
-    assertThat(xtrim, equalTo(5L));
+    Long xtrim = exec(commandObjects.xtrim(key, 6, false));
+    assertThat(xtrim, equalTo(4L));
 
     Long sizeAfterTrim = exec(commandObjects.xlen(key));
-    assertThat(sizeAfterTrim, equalTo(5L));
+    assertThat(sizeAfterTrim, equalTo(6L));
 
-    // Repopulate the stream for byte[] parameter tests.
-    // Adding back 5 entries to ensure we have 10 again.
-    byte[] bKey = key.getBytes();
-    for (int i = 5; i < 10; i++) {
-      exec(commandObjects.xadd(key, StreamEntryID.NEW_ENTRY, Collections.singletonMap("field" + i, "value" + i)));
+    Long xtrimApproximate = exec(commandObjects.xtrim(key, 3, true));
+    assertThat(xtrimApproximate, lessThanOrEqualTo(3L));
+
+    Long sizeAfterApproximateTrim = exec(commandObjects.xlen(key));
+    assertThat(sizeAfterApproximateTrim, greaterThanOrEqualTo(3L));
+  }
+
+  @Test
+  public void testXTrimCommandsBinary() {
+    String keyStr = "testStream";
+    byte[] key = keyStr.getBytes();
+
+    // Populate the stream with more entries than we intend to keep
+    for (int i = 0; i < 10; i++) {
+      exec(commandObjects.xadd(keyStr, StreamEntryID.NEW_ENTRY, Collections.singletonMap("field" + i, "value" + i)));
     }
 
     Long sizeBeforeBinaryTrim = exec(commandObjects.xlen(key));
     assertThat(sizeBeforeBinaryTrim, equalTo(10L));
 
-    Long xtrimBinary = exec(commandObjects.xtrim(bKey, 5, false));
-    assertThat(xtrimBinary, equalTo(5L));
+    Long xtrimBinary = exec(commandObjects.xtrim(key, 6, false));
+    assertThat(xtrimBinary, equalTo(4L));
 
     Long sizeAfterBinaryTrim = exec(commandObjects.xlen(key));
-    assertThat(sizeAfterBinaryTrim, equalTo(5L));
+    assertThat(sizeAfterBinaryTrim, equalTo(6L));
+
+    Long xtrimApproximateBinary = exec(commandObjects.xtrim(key, 3, true));
+    assertThat(xtrimApproximateBinary, lessThanOrEqualTo(3L));
+
+    Long sizeAfterApproximateBinaryTrim = exec(commandObjects.xlen(key));
+    assertThat(sizeAfterApproximateBinaryTrim, greaterThanOrEqualTo(3L));
+  }
+
+  @Test
+  public void testXTrimWithParams() {
+    String key = "testStream";
+
+    // Populate the stream with more entries than we intend to keep
+    for (int i = 0; i < 10; i++) {
+      exec(commandObjects.xadd(key, StreamEntryID.NEW_ENTRY, Collections.singletonMap("field" + i, "value" + i)));
+    }
+
+    Long sizeBeforeTrim = exec(commandObjects.xlen(key));
+    assertThat(sizeBeforeTrim, equalTo(10L));
+
+    XTrimParams params = new XTrimParams().maxLen(6);
+
+    Long xtrim = exec(commandObjects.xtrim(key, params));
+    assertThat(xtrim, equalTo(4L));
+
+    Long sizeAfterTrim = exec(commandObjects.xlen(key));
+    assertThat(sizeAfterTrim, equalTo(6L));
+  }
+
+  @Test
+  public void testXTrimWithParamsBinary() {
+    String keyStr = "testStream";
+    byte[] key = keyStr.getBytes();
+
+    // Populate the stream with more entries than we intend to keep
+    for (int i = 0; i < 10; i++) {
+      exec(commandObjects.xadd(keyStr, StreamEntryID.NEW_ENTRY, Collections.singletonMap("field" + i, "value" + i)));
+    }
+
+    Long sizeBeforeTrim = exec(commandObjects.xlen(key));
+    assertThat(sizeBeforeTrim, equalTo(10L));
+
+    XTrimParams params = new XTrimParams().maxLen(6);
+
+    Long xtrimBinary = exec(commandObjects.xtrim(key, params));
+    assertThat(xtrimBinary, equalTo(4L));
+
+    Long sizeAfterTrim = exec(commandObjects.xlen(key));
+    assertThat(sizeAfterTrim, equalTo(6L));
   }
 
   @Test
@@ -885,10 +947,10 @@ public class CommandObjectsStreamCommandsTest extends CommandObjectsStandaloneTe
     Map<String, String> messageBody1 = Collections.singletonMap("field1", "value1");
     Map<String, String> messageBody2 = Collections.singletonMap("field2", "value2");
 
-    exec(commandObjects.xadd(streamKey, StreamEntryID.NEW_ENTRY, messageBody1));
-    exec(commandObjects.xadd(streamKey, StreamEntryID.NEW_ENTRY, messageBody2));
+    exec(commandObjects.xadd(streamKey, (StreamEntryID) null, messageBody1));
+    exec(commandObjects.xadd(streamKey, (StreamEntryID) null, messageBody2));
 
-    exec(commandObjects.xgroupCreate(streamKey, group, new StreamEntryID(), true));
+    exec(commandObjects.xgroupCreate(streamKey, group, null, true));
 
     XReadGroupParams xReadGroupParams = new XReadGroupParams().count(1);
     Map<String, StreamEntryID> stream = Collections.singletonMap(streamKey, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);

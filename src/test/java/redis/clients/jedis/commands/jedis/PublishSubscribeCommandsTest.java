@@ -4,7 +4,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.CLIENT;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -16,6 +18,7 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -537,4 +540,39 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
 
     return sb.toString();
   }
+
+  @Test
+  public void subscribeInvalidateChannel() {
+    org.junit.Assume.assumeThat(protocol, Matchers.not(RedisProtocol.RESP3));
+
+    final String keyspaceInvalidate = "__redis__:invalidate";
+    final AtomicBoolean onMessage = new AtomicBoolean(false);
+    final JedisPubSub pubsub = new JedisPubSub() {
+      @Override public void onMessage(String channel, String message) {
+        onMessage.set(true);
+        assertEquals(keyspaceInvalidate, channel);
+        assertEquals("foo", message);
+        unsubscribe(channel);
+      }
+
+      @Override public void onSubscribe(String channel, int subscribedChannels) {
+        setKeyValue("foo", "bar");
+      }
+    };
+
+    long clientId = jedis.clientId(); // clientId for REDIRECT; without it test get stuck! :(
+    jedis.sendCommand(CLIENT, "TRACKING", "ON", "REDIRECT", Long.toString(clientId), "BCAST");
+    jedis.subscribe(pubsub, keyspaceInvalidate);
+    assertTrue("Subscriber didn't get any message.", onMessage.get());
+  }
+
+  private void setKeyValue(final String key, final String value) {
+    Thread t = new Thread(() -> {
+      try (Jedis j = createJedis()) {
+        j.set(key, value);
+      }
+    });
+    t.start();
+  }
+
 }

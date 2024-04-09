@@ -117,8 +117,12 @@ public abstract class BinaryJedisPubSub {
         onUnsubscribe(bchannel, subscribedChannels);
       } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
         final byte[] bchannel = (byte[]) reply.get(1);
-        final byte[] bmesg = (byte[]) reply.get(2);
-        onMessage(bchannel, bmesg);
+        final Object mesg = reply.get(2);
+        if (mesg instanceof List) {
+          ((List<byte[]>) mesg).forEach(bmesg -> onMessage(bchannel, bmesg));
+        } else {
+          onMessage(bchannel, (byte[]) mesg);
+        }
       } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final byte[] bchannel = (byte[]) reply.get(2);

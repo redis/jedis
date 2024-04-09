@@ -4,6 +4,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static redis.clients.jedis.Protocol.Command.CLIENT;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.junit.Test;
 
@@ -531,5 +533,70 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
       sb.append((char) ('a' + i % 26));
 
     return sb.toString();
+  }
+
+  @Test(timeout = 5000)
+  public void subscribeCacheInvalidateChannel() {
+    final String cacheInvalidate = "__redis__:invalidate";
+    final AtomicBoolean onMessage = new AtomicBoolean(false);
+    final JedisPubSub pubsub = new JedisPubSub() {
+      @Override public void onMessage(String channel, String message) {
+        onMessage.set(true);
+        assertEquals(cacheInvalidate, channel);
+        if (message != null) {
+          assertEquals("foo", message);
+          consumeJedis(j -> j.flushAll());
+        } else {
+          unsubscribe(channel);
+        }
+      }
+
+      @Override public void onSubscribe(String channel, int subscribedChannels) {
+        assertEquals(cacheInvalidate, channel);
+        consumeJedis(j -> j.set("foo", "bar"));
+      }
+    };
+
+    try (Jedis subscriber = createJedis()) {
+      long clientId = subscriber.clientId();
+      subscriber.sendCommand(CLIENT, "TRACKING", "ON", "REDIRECT", Long.toString(clientId), "BCAST");
+      subscriber.subscribe(pubsub, cacheInvalidate);
+      assertTrue("Subscriber didn't get any message.", onMessage.get());
+    }
+  }
+
+  @Test(timeout = 5000)
+  public void subscribeCacheInvalidateChannelBinary() {
+    final byte[] cacheInvalidate = "__redis__:invalidate".getBytes();
+    final AtomicBoolean onMessage = new AtomicBoolean(false);
+    final BinaryJedisPubSub pubsub = new BinaryJedisPubSub() {
+      @Override public void onMessage(byte[] channel, byte[] message) {
+        onMessage.set(true);
+        assertArrayEquals(cacheInvalidate, channel);
+        if (message != null) {
+          assertArrayEquals("foo".getBytes(), message);
+          consumeJedis(j -> j.flushAll());
+        } else {
+          unsubscribe(channel);
+        }
+      }
+
+      @Override public void onSubscribe(byte[] channel, int subscribedChannels) {
+        assertArrayEquals(cacheInvalidate, channel);
+        consumeJedis(j -> j.set("foo".getBytes(), "bar".getBytes()));
+      }
+    };
+
+    try (Jedis subscriber = createJedis()) {
+      long clientId = subscriber.clientId();
+      subscriber.sendCommand(CLIENT, "TRACKING", "ON", "REDIRECT", Long.toString(clientId), "BCAST");
+      subscriber.subscribe(pubsub, cacheInvalidate);
+      assertTrue("Subscriber didn't get any message.", onMessage.get());
+    }
+  }
+
+  private void consumeJedis(Consumer<Jedis> consumer) {
+    Thread t = new Thread(() -> consumer.accept(jedis));
+    t.start();
   }
 }

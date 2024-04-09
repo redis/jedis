@@ -150,10 +150,13 @@ public abstract class JedisPubSub {
         onUnsubscribe(strchannel, subscribedChannels);
       } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
         final byte[] bchannel = (byte[]) reply.get(1);
-        final byte[] bmesg = (byte[]) reply.get(2);
+        final Object mesg = reply.get(2);
         final String strchannel = (bchannel == null) ? null : SafeEncoder.encode(bchannel);
-        final String strmesg = (bmesg == null) ? null : SafeEncoder.encode(bmesg);
-        onMessage(strchannel, strmesg);
+        if (mesg instanceof List) {
+          ((List<byte[]>) mesg).forEach(bmesg -> onMessage(strchannel, SafeEncoder.encode(bmesg)));
+        } else {
+          onMessage(strchannel, (mesg == null) ? null : SafeEncoder.encode((byte[]) mesg));
+        }
       } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
         final byte[] bpattern = (byte[]) reply.get(1);
         final byte[] bchannel = (byte[]) reply.get(2);

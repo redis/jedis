@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -541,38 +542,72 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
     return sb.toString();
   }
 
-  @Test
-  public void subscribeInvalidateChannel() {
+  @Test(timeout = 5000)
+  public void subscribeCacheInvalidateChannel() {
     org.junit.Assume.assumeThat(protocol, Matchers.not(RedisProtocol.RESP3));
 
-    final String keyspaceInvalidate = "__redis__:invalidate";
+    final String cacheInvalidate = "__redis__:invalidate";
     final AtomicBoolean onMessage = new AtomicBoolean(false);
     final JedisPubSub pubsub = new JedisPubSub() {
       @Override public void onMessage(String channel, String message) {
         onMessage.set(true);
-        assertEquals(keyspaceInvalidate, channel);
-        assertEquals("foo", message);
-        unsubscribe(channel);
+        assertEquals(cacheInvalidate, channel);
+        if (message != null) {
+          assertEquals("foo", message);
+          consumeJedis(j -> j.flushAll());
+        } else {
+          unsubscribe(channel);
+        }
       }
 
       @Override public void onSubscribe(String channel, int subscribedChannels) {
-        setKeyValue("foo", "bar");
+        assertEquals(cacheInvalidate, channel);
+        consumeJedis(j -> j.set("foo", "bar"));
       }
     };
 
-    long clientId = jedis.clientId(); // clientId for REDIRECT; without it test get stuck! :(
-    jedis.sendCommand(CLIENT, "TRACKING", "ON", "REDIRECT", Long.toString(clientId), "BCAST");
-    jedis.subscribe(pubsub, keyspaceInvalidate);
-    assertTrue("Subscriber didn't get any message.", onMessage.get());
+    try (Jedis subscriber = createJedis()) {
+      long clientId = subscriber.clientId();
+      subscriber.sendCommand(CLIENT, "TRACKING", "ON", "REDIRECT", Long.toString(clientId), "BCAST");
+      subscriber.subscribe(pubsub, cacheInvalidate);
+      assertTrue("Subscriber didn't get any message.", onMessage.get());
+    }
   }
 
-  private void setKeyValue(final String key, final String value) {
-    Thread t = new Thread(() -> {
-      try (Jedis j = createJedis()) {
-        j.set(key, value);
+  @Test(timeout = 5000)
+  public void subscribeCacheInvalidateChannelBinary() {
+    org.junit.Assume.assumeThat(protocol, Matchers.not(RedisProtocol.RESP3));
+
+    final byte[] cacheInvalidate = "__redis__:invalidate".getBytes();
+    final AtomicBoolean onMessage = new AtomicBoolean(false);
+    final BinaryJedisPubSub pubsub = new BinaryJedisPubSub() {
+      @Override public void onMessage(byte[] channel, byte[] message) {
+        onMessage.set(true);
+        assertArrayEquals(cacheInvalidate, channel);
+        if (message != null) {
+          assertArrayEquals("foo".getBytes(), message);
+          consumeJedis(j -> j.flushAll());
+        } else {
+          unsubscribe(channel);
+        }
       }
-    });
+
+      @Override public void onSubscribe(byte[] channel, int subscribedChannels) {
+        assertArrayEquals(cacheInvalidate, channel);
+        consumeJedis(j -> j.set("foo".getBytes(), "bar".getBytes()));
+      }
+    };
+
+    try (Jedis subscriber = createJedis()) {
+      long clientId = subscriber.clientId();
+      subscriber.sendCommand(CLIENT, "TRACKING", "ON", "REDIRECT", Long.toString(clientId), "BCAST");
+      subscriber.subscribe(pubsub, cacheInvalidate);
+      assertTrue("Subscriber didn't get any message.", onMessage.get());
+    }
+  }
+
+  private void consumeJedis(Consumer<Jedis> consumer) {
+    Thread t = new Thread(() -> consumer.accept(jedis));
     t.start();
   }
-
 }

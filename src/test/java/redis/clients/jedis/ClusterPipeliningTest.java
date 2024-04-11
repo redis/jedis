@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
@@ -15,6 +17,7 @@ import org.junit.Test;
 
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.GeoRadiusResponse;
@@ -1080,6 +1083,20 @@ public class ClusterPipeliningTest {
         assertThreadsCount();
       }
     }
+  }
+
+  @Test
+  public void clusterPipelineHandlesMovedDataException() {
+    ClusterConnectionProvider provider = spy(new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG));
+    Connection connectionThatThrowsMovedData = mock(Connection.class);
+    doThrow(new JedisMovedDataException("test", new HostAndPort("", 0), 0))
+            .when(connectionThatThrowsMovedData)
+            .getMany(anyInt());
+    doReturn(connectionThatThrowsMovedData).when(provider).getConnection(any(HostAndPort.class));
+    ClusterPipeline p = new ClusterPipeline(provider);
+    p.set("foo", "bar");
+    assertThrows(JedisMovedDataException.class, p::sync);
+    verify(provider).renewSlotCache();
   }
 
   private static void assertThreadsCount() {

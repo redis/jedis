@@ -1,19 +1,22 @@
 package redis.clients.jedis;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -91,7 +94,7 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
   }
 
   @Override
-  public final void sync() {
+  public void sync() {
     if (syncing) {
       return;
     }
@@ -99,15 +102,16 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
 
     ExecutorService executorService = Executors.newFixedThreadPool(MULTI_NODE_PIPELINE_SYNC_WORKERS);
 
-    CountDownLatch countDownLatch = new CountDownLatch(pipelinedResponses.size());
     Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator
         = pipelinedResponses.entrySet().iterator();
+    List<Future<Void>> futures = new ArrayList<>(pipelinedResponses.size());
+
     while (pipelinedResponsesIterator.hasNext()) {
       Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
-      executorService.submit(() -> {
+      Future<Void> future = executorService.submit(() -> {
         try {
           List<Object> unformatted = connection.getMany(queue.size());
           for (Object o : unformatted) {
@@ -119,19 +123,30 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
           pipelinedResponsesIterator.remove();
           connections.remove(nodeKey);
           IOUtils.closeQuietly(connection);
-        } finally {
-          countDownLatch.countDown();
         }
+
+        return null;
       });
+
+      futures.add(future);
     }
 
     try {
-      countDownLatch.await();
+      for (Future<Void> future : futures) {
+        future.get();
+      }
     } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
       log.error("Thread is interrupted during sync.", e);
-    }
+    } catch (ExecutionException e) {
+      if (e.getCause() instanceof JedisException) {
+        throw (JedisException) e.getCause();
+      }
 
-    executorService.shutdownNow();
+      throw new JedisException(e.getCause());
+    } finally {
+      executorService.shutdownNow();
+    }
 
     syncing = false;
   }

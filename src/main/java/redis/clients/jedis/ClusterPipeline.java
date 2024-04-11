@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.time.Duration;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
@@ -52,6 +53,16 @@ public class ClusterPipeline extends MultiNodePipelineBase {
       super.close();
     } finally {
       IOUtils.closeQuietly(closeable);
+    }
+  }
+
+  @Override
+  public void sync() {
+    try {
+      super.sync();
+    } catch (JedisMovedDataException e) {
+      provider.renewSlotCache();
+      throw e;
     }
   }
 

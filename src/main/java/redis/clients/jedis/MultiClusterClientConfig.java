@@ -182,7 +182,6 @@ public final class MultiClusterClientConfig {
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
             this.clientConfig = clientConfig;
-            connectionPoolConfig = new ConnectionPoolConfig();
         }
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,

@@ -140,17 +140,12 @@ public class MultiClusterPooledConnectionProviderTest {
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
         clusterConfigs[0] = new ClusterConfig(hostAndPort1, DefaultJedisClientConfig.builder().build(), poolConfig);
         clusterConfigs[1] = new ClusterConfig(hostAndPort2, DefaultJedisClientConfig.builder().build(), poolConfig);
-        try {
-            provider = new MultiClusterPooledConnectionProvider(new MultiClusterClientConfig.Builder(clusterConfigs).build());
-            MultiClusterPooledConnectionProvider.Cluster activeCluster = provider.getCluster();
+        try (MultiClusterPooledConnectionProvider customProvider = new MultiClusterPooledConnectionProvider(new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
+            MultiClusterPooledConnectionProvider.Cluster activeCluster = customProvider.getCluster();
             ConnectionPool connectionPool = activeCluster.getConnectionPool();
             assertEquals(8, connectionPool.getMaxTotal());
             assertEquals(4, connectionPool.getMaxIdle());
             assertEquals(1, connectionPool.getMinIdle());
-        } finally {
-            if (provider != null) {
-                provider.close();
-            }
         }
     }
 }

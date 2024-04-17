@@ -75,13 +75,6 @@ public class Transaction extends TransactionBase {
     this(connection, doMulti, closeConnection, createCommandObjects(connection));
   }
 
-  private static CommandObjects createCommandObjects(Connection connection) {
-    CommandObjects commandObjects = new CommandObjects();
-    RedisProtocol proto = connection.getRedisProtocol();
-    if (proto != null) commandObjects.setProtocol(proto);
-    return commandObjects;
-  }
-
   /**
    * Creates a new transaction.
    *
@@ -101,6 +94,13 @@ public class Transaction extends TransactionBase {
     graphCommandObjects.setBaseCommandArgumentsCreator(protocolCommand -> commandObjects.commandArguments(protocolCommand));
     setGraphCommands(graphCommandObjects);
     if (doMulti) multi();
+  }
+
+  private static CommandObjects createCommandObjects(Connection connection) {
+    CommandObjects commandObjects = new CommandObjects();
+    RedisProtocol proto = connection.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
+    return commandObjects;
   }
 
   @Override

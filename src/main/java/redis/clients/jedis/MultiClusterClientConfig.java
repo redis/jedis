@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
@@ -207,7 +208,7 @@ public final class MultiClusterClientConfig {
             return clientConfig;
         }
 
-        public ConnectionPoolConfig getConnectionPoolConfig() {
+        public GenericObjectPoolConfig<Connection> getConnectionPoolConfig() {
             return connectionPoolConfig;
         }
     }

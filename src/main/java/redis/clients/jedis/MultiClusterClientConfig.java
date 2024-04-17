@@ -177,7 +177,7 @@ public final class MultiClusterClientConfig {
         private int priority;
         private HostAndPort hostAndPort;
         private JedisClientConfig clientConfig;
-        private ConnectionPoolConfig connectionPoolConfig;
+        private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;

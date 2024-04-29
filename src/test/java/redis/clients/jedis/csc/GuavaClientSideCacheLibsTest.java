@@ -9,6 +9,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 import com.google.common.hash.Hashing;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
@@ -124,6 +125,28 @@ public class GuavaClientSideCacheLibsTest {
       }
     }
     assertThat(guava.stats().evictionCount(), Matchers.greaterThan(count - maxEstimatedSize));
+  }
+
+  @Test
+  public void timeToLive() throws InterruptedException {
+    int count = 1000;
+    for (int i = 0; i < count; i++) {
+      control.set("k" + i, "v" + i);
+    }
+
+    Cache guava = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.SECONDS).recordStats().build();
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaClientSideCache(guava))) {
+      for (int i = 0; i < count; i++) {
+        jedis.get("k" + i);
+      }
+    }
+    assertThat(guava.size(), Matchers.equalTo((long) count));
+    assertThat(guava.stats().evictionCount(), Matchers.equalTo(0L));
+
+    TimeUnit.SECONDS.sleep(2);
+    guava.cleanUp();
+    assertThat(guava.size(), Matchers.equalTo(0L));
+    assertThat(guava.stats().evictionCount(), Matchers.equalTo((long) count));
   }
 
 }

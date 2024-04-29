@@ -8,6 +8,7 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
@@ -106,6 +107,28 @@ public class CaffeineClientSideCacheLibsTest {
       }
     }
     assertThat(caffeine.stats().evictionCount(), Matchers.greaterThan(count - maxEstimatedSize));
+  }
+
+  @Test
+  public void timeToLive() throws InterruptedException {
+    int count = 1000;
+    for (int i = 0; i < count; i++) {
+      control.set("k" + i, "v" + i);
+    }
+
+    Cache caffeine = Caffeine.newBuilder().expireAfterWrite(1, TimeUnit.SECONDS).recordStats().build();
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineClientSideCache(caffeine))) {
+      for (int i = 0; i < count; i++) {
+        jedis.get("k" + i);
+      }
+    }
+    assertThat(caffeine.estimatedSize(), Matchers.equalTo((long) count));
+    assertThat(caffeine.stats().evictionCount(), Matchers.equalTo(0L));
+
+    TimeUnit.SECONDS.sleep(2);
+    caffeine.cleanUp();
+    assertThat(caffeine.estimatedSize(), Matchers.equalTo(0L));
+    assertThat(caffeine.stats().evictionCount(), Matchers.equalTo((long) count));
   }
 
 }

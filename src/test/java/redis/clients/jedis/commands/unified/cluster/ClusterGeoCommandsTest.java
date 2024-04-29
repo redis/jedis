@@ -15,9 +15,9 @@
 //
 //import redis.clients.jedis.GeoCoordinate;
 //import redis.clients.jedis.args.GeoUnit;
+//import redis.clients.jedis.commands.unified.GeoCommandsTestBase;
 //import redis.clients.jedis.params.GeoRadiusParam;
 //import redis.clients.jedis.params.GeoRadiusStoreParam;
-//import redis.clients.jedis.commands.unified.GeoCommandsTestBase;
 //
 //public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
 //
@@ -51,8 +51,8 @@
 //    jedis.geoadd("Sicily {ITA}", coordinateMap);
 //
 //    long size = jedis.georadiusStore("Sicily {ITA}", 15, 37, 200, GeoUnit.KM,
-//      GeoRadiusParam.geoRadiusParam(),
-//      GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
+//        GeoRadiusParam.geoRadiusParam(),
+//        GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
 //    assertEquals(2, size);
 //    List<String> expected = new ArrayList<>();
 //    expected.add("Palermo");
@@ -73,8 +73,8 @@
 //    jedis.geoadd("Sicily {ITA}", 15.087269, 37.502669, "Catania");
 //
 //    long size = jedis.georadiusByMemberStore("Sicily {ITA}", "Agrigento", 100, GeoUnit.KM,
-//      GeoRadiusParam.geoRadiusParam(),
-//      GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
+//        GeoRadiusParam.geoRadiusParam(),
+//        GeoRadiusStoreParam.geoRadiusStoreParam().store("{ITA} SicilyStore"));
 //    assertEquals(2, size);
 //    List<String> expected = new ArrayList<>();
 //    expected.add("Agrigento");
@@ -85,5 +85,15 @@
 //  @Ignore
 //  @Override
 //  public void georadiusByMemberStoreBinary() {
+//  }
+//
+//  @Ignore
+//  @Override
+//  public void geosearchstore() {
+//  }
+//
+//  @Ignore
+//  @Override
+//  public void geosearchstoreWithdist() {
 //  }
 //}

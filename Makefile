@@ -527,7 +527,7 @@ mvn-release:
 
 system-setup:
 	sudo apt install -y gcc g++
-	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch unstable --single-branch redis-git || true
+	[ ! -e redis-git ] && git clone https://github.com/redis/redis.git --branch hash-field-expiry-integ --single-branch redis-git || true
 	$(MAKE) -C redis-git clean
 	$(MAKE) -C redis-git
 

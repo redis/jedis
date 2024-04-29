@@ -726,6 +726,71 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Long>> hexpire(String key, long seconds, String... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(String key, long seconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(String key, long milliseconds, String... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, String... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, String... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireTime(String key, String... fields) {
+    return appendCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireTime(String key, String... fields) {
+    return appendCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> httl(String key, String... fields) {
+    return appendCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpttl(String key, String... fields) {
+    return appendCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpersist(String key, String... fields) {
+    return appendCommand(commandObjects.hpersist(key, fields));
+  }
+
+  @Override
   public Response<Long> sadd(String key, String... members) {
     return appendCommand(commandObjects.sadd(key, members));
   }

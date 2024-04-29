@@ -2,7 +2,9 @@ package redis.clients.jedis.mocked.pipeline;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.HashMap;
@@ -12,6 +14,7 @@ import java.util.Set;
 
 import org.junit.Test;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -500,6 +503,161 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
 
     assertThat(commands, contains(listBytesCommandObject));
     assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void hexpire() {
+    String key = "hash";
+    long seconds = 100;
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hexpire(key, seconds, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpire(key, seconds, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireCondition() {
+    String key = "hash";
+    long seconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hexpire(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpire(key, seconds, condition, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpire() {
+    String key = "hash";
+    long milliseconds = 10000;
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hpexpire(key, milliseconds, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpire(key, milliseconds, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireCondition() {
+    String key = "hash";
+    long milliseconds = 10000;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpire(key, milliseconds, condition, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireAt() {
+    String key = "hash";
+    long seconds = 100;
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hexpireAt(key, seconds, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpireAt(key, seconds, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireAtCondition() {
+    String key = "hash";
+    long seconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpireAt(key, seconds, condition, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireAt() {
+    String key = "hash";
+    long milliseconds = 10000;
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hpexpireAt(key, milliseconds, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpireAt(key, milliseconds, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireAtCondition() {
+    String key = "hash";
+    long milliseconds = 10000;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpireAt(key, milliseconds, condition, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireTime() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hexpireTime(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpireTime(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireTime() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hpexpireTime(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpireTime(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void httl() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.httl(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.httl(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpttl() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hpttl(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpttl(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpersist() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hpersist(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpersist(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
   }
 
 }

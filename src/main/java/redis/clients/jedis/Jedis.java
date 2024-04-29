@@ -9238,6 +9238,84 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<Long> hexpire(String key, long seconds, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpire(String key, long seconds, ExpiryOption condition, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(String key, long milliseconds, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(String key, long unixTimeSeconds, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(String key, long unixTimeMillis, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireTime(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireTime(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> httl(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpttl(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpersist(String key, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hpersist(key, fields));
+  }
+
+  @Override
   public String memoryDoctor() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(MEMORY, DOCTOR);

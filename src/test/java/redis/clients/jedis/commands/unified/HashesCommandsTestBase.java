@@ -1,7 +1,13 @@
 package redis.clients.jedis.commands.unified;
 
+import static java.util.Arrays.asList;
+
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,6 +31,7 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.AssertUtil;
@@ -612,5 +619,79 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     bactual = jedis.hrandfieldWithValues(bfoo, -5);
     assertEquals(5, bactual.size());
     bactual.forEach(e -> assertArrayEquals(bhash.get(e.getKey()), e.getValue()));
+  }
+
+  @Test
+  public void hexpireAndHttl() {
+    long seconds = 20;
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList(1L, -2L), jedis.hexpire("foo", seconds, "bar", "bared"));
+
+    jedis.hset("foo", "bared", "cared");
+    assertEquals(asList(0L, 2L), jedis.hexpire("foo", -1, ExpiryOption.NX, "bar", "bared"));
+
+    assertThat(jedis.httl("foo", "bar", "bare", "bared"),
+        contains(greaterThanOrEqualTo(seconds - 1L), equalTo(-1L), equalTo(-2L)));
+  }
+
+  @Test
+  public void hpexpireAndHpttl() {
+    long millis = 20_000;
+
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList(1L, -2L), jedis.hpexpire("foo", millis, "bar", "bared"));
+
+    jedis.hset("foo", "bared", "cared");
+    assertEquals(asList(2L, 0L), jedis.hpexpire("foo", -100, ExpiryOption.XX, "bar", "bared"));
+
+    assertThat(jedis.hpttl("foo", "bar", "bare", "bared"),
+        contains(equalTo(-2L), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hexpireAtAndExpireTime() {
+    long currSeconds = System.currentTimeMillis() / 1000;
+    long unixSeconds = currSeconds + 20;
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList(1L, -2L), jedis.hexpireAt("foo", unixSeconds, "bar", "bared"));
+
+    jedis.hset("foo", "bared", "cared");
+    assertEquals(asList(2L, 0L), jedis.hexpireAt("foo", currSeconds - 1, ExpiryOption.LT, "bar", "bared"));
+
+    assertThat(jedis.hexpireTime("foo", "bar", "bare", "bared"),
+        contains(equalTo(-2L), equalTo(-1L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hpexpireAtAndPexpireTime() {
+    long currMillis = System.currentTimeMillis();
+    long unixMillis = currMillis + 20_000;
+
+    jedis.hset("foo", "bar", "car");
+    assertEquals(asList(1L, -2L), jedis.hpexpireAt("foo", unixMillis - 100, "bar", "bared"));
+
+    jedis.hset("foo", "bared", "cared");
+    assertEquals(asList(1L, 0L), jedis.hpexpireAt("foo", unixMillis, ExpiryOption.GT, "bar", "bared"));
+
+    assertThat(jedis.hpexpireTime("foo", "bar", "bare", "bared"),
+        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hpersist() {
+    long seconds = 20;
+
+    jedis.hset("foo", "bar", "car");
+    jedis.hset("foo", "bare", "care");
+    assertEquals(asList(1L, -2L), jedis.hexpire("foo", seconds, "bar", "bared"));
+
+    assertEquals(asList(1L, -1L, -2L), jedis.hpersist("foo", "bar", "bare", "bared"));
+
+    assertThat(jedis.httl("foo", "bar", "bare", "bared"),
+        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
   }
 }

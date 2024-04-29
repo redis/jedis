@@ -1600,6 +1600,71 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public long hstrlen(byte[] key, byte[] field) {
     return executeCommand(commandObjects.hstrlen(key, field));
   }
+
+  @Override
+  public List<Long> hexpire(String key, long seconds, String... fields) {
+    return executeCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpire(String key, long seconds, ExpiryOption condition, String... fields) {
+    return executeCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(String key, long milliseconds, String... fields) {
+    return executeCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields) {
+    return executeCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(String key, long unixTimeSeconds, String... fields) {
+    return executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields) {
+    return executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(String key, long unixTimeMillis, String... fields) {
+    return executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields) {
+    return executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireTime(String key, String... fields) {
+    return executeCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireTime(String key, String... fields) {
+    return executeCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> httl(String key, String... fields) {
+    return executeCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpttl(String key, String... fields) {
+    return executeCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpersist(String key, String... fields) {
+    return executeCommand(commandObjects.hpersist(key, fields));
+  }
   // Hash commands
 
   // Set commands

@@ -1,7 +1,9 @@
 package redis.clients.jedis.mocked.unified;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -762,6 +765,213 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(listBytesCommandObject);
     verify(commandObjects).hvals(key);
+  }
+
+  @Test
+  public void hexpire() {
+    String key = "hash";
+    long seconds = 100;
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hexpire(key, seconds, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpire(key, seconds, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpire(key, seconds, fields);
+  }
+
+  @Test
+  public void hexpireCondition() {
+    String key = "hash";
+    long seconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hexpire(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpire(key, seconds, condition, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpire(key, seconds, condition, fields);
+  }
+
+  @Test
+  public void hpexpire() {
+    String key = "hash";
+    long milliseconds = 10000;
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 100L, 200L, 300L );
+
+    when(commandObjects.hpexpire(key, milliseconds, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpire(key, milliseconds, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpire(key, milliseconds, fields);
+  }
+
+  @Test
+  public void hpexpireCondition() {
+    String key = "hash";
+    long milliseconds = 10000;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 100L, 200L, 300L );
+
+    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpire(key, milliseconds, condition, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpire(key, milliseconds, condition, fields);
+  }
+
+  @Test
+  public void hexpireAt() {
+    String key = "hash";
+    long seconds = 100;
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hexpireAt(key, seconds, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpireAt(key, seconds, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpireAt(key, seconds, fields);
+  }
+
+  @Test
+  public void hexpireAtCondition() {
+    String key = "hash";
+    long seconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpireAt(key, seconds, condition, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpireAt(key, seconds, condition, fields);
+  }
+
+  @Test
+  public void hpexpireAt() {
+    String key = "hash";
+    long milliseconds = 10000;
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hpexpireAt(key, milliseconds, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpireAt(key, milliseconds, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpireAt(key, milliseconds, fields);
+  }
+
+  @Test
+  public void hpexpireAtCondition() {
+    String key = "hash";
+    long milliseconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpireAt(key, milliseconds, condition, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpireAt(key, milliseconds, condition, fields);
+  }
+
+  @Test
+  public void hexpireTime() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 10L, 20L, 30L );
+
+    when(commandObjects.hexpireTime(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpireTime(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpireTime(key, fields);
+  }
+
+  @Test
+  public void hpexpireTime() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1000L, 2000L, 3000L );
+
+    when(commandObjects.hpexpireTime(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpireTime(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpireTime(key, fields);
+  }
+
+  @Test
+  public void httl() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 10L, 20L, 30L );
+
+    when(commandObjects.httl(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.httl(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).httl(key, fields);
+  }
+
+  @Test
+  public void hpttl() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1000L, 2000L, 3000L );
+
+    when(commandObjects.hpttl(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpttl(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpttl(key, fields);
+  }
+
+  @Test
+  public void hpersist() {
+    String key = "hash";
+    String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hpersist(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpersist(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpersist(key, fields);
   }
 
 }

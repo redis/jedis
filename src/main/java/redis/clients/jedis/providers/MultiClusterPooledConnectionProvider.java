@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
+
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,6 +114,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
         ClusterConfig[] clusterConfigs = multiClusterClientConfig.getClusterConfigs();
         for (ClusterConfig config : clusterConfigs) {
+            GenericObjectPoolConfig<Connection> poolConfig = config.getConnectionPoolConfig();
 
             String clusterId = "cluster:" + config.getPriority() + ":" + config.getHostAndPort();
 
@@ -130,9 +133,15 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
             circuitBreakerEventPublisher.onSlowCallRateExceeded(event -> log.error(String.valueOf(event)));
             circuitBreakerEventPublisher.onStateTransition(event -> log.warn(String.valueOf(event)));
 
-            multiClusterMap.put(config.getPriority(),
-                    new Cluster(new ConnectionPool(config.getHostAndPort(),
-                            config.getJedisClientConfig()), retry, circuitBreaker));
+            if (poolConfig != null) {
+                multiClusterMap.put(config.getPriority(),
+                        new Cluster(new ConnectionPool(config.getHostAndPort(),
+                                config.getJedisClientConfig(), poolConfig), retry, circuitBreaker));
+            } else {
+                multiClusterMap.put(config.getPriority(),
+                        new Cluster(new ConnectionPool(config.getHostAndPort(),
+                                config.getJedisClientConfig()), retry, circuitBreaker));
+            }
         }
 
         /// --- ///

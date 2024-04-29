@@ -46,7 +46,7 @@ public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
     byte[][] args = { "arg1".getBytes(), "arg2".getBytes() };
     CommandArguments commandArguments = mock(CommandArguments.class);
     CommandArguments commandArgumentsWithArgs = mock(CommandArguments.class);
-    when(commandArguments.addObjects(args)).thenReturn(commandArgumentsWithArgs);
+    when(commandArguments.addObjects((Object[]) args)).thenReturn(commandArgumentsWithArgs);
 
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
@@ -74,7 +74,7 @@ public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
     CommandArguments commandArgumentsWithArgs = mock(CommandArguments.class);
     when(commandArgumentsWithArgs.blocking()).thenReturn(commandArgumentsBlocking);
 
-    when(commandArguments.addObjects(args)).thenReturn(commandArgumentsWithArgs);
+    when(commandArguments.addObjects((Object[]) args)).thenReturn(commandArgumentsWithArgs);
 
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
@@ -98,7 +98,7 @@ public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
     String[] args = { "arg1", "arg2" };
     CommandArguments commandArguments = mock(CommandArguments.class);
     CommandArguments commandArgumentsWithArgs = mock(CommandArguments.class);
-    when(commandArguments.addObjects(args)).thenReturn(commandArgumentsWithArgs);
+    when(commandArguments.addObjects((Object[]) args)).thenReturn(commandArgumentsWithArgs);
 
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");
@@ -126,7 +126,7 @@ public class UnifiedJedisCustomCommandsTest extends UnifiedJedisMockedTestBase {
     CommandArguments commandArgumentsWithArgs = mock(CommandArguments.class);
     when(commandArgumentsWithArgs.blocking()).thenReturn(commandArgumentsBlocking);
 
-    when(commandArguments.addObjects(args)).thenReturn(commandArgumentsWithArgs);
+    when(commandArguments.addObjects((Object[]) args)).thenReturn(commandArgumentsWithArgs);
 
     when(commandObjects.commandArguments(cmd)).thenReturn(commandArguments);
     when(commandExecutor.executeCommand(any())).thenReturn("OK");

@@ -99,4 +99,16 @@ public class ClientSideCacheFunctionalityTest {
     }
   }
 
+  @Test
+  public void multiKeyOperation() {
+    control.set("k1", "v1");
+    control.set("k2", "v2");
+
+    HashMap<Long, Object> map = new HashMap<>();
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache(map))) {
+      jedis.mget("k1", "k2");
+      assertEquals(1, map.size());
+    }
+  }
+
 }

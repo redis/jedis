@@ -798,32 +798,24 @@ public class GeoPipelineCommandsTest extends PipelineCommandsTestBase {
         contains(0L));
   }
 
-  @Test
-  public void geosearchNegative() {
-    // combine byradius and bybox
-    pipe.geosearch("barcelona",
-        new GeoSearchParam().byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
-
-    // without frommember and without fromlonlat
-    pipe.geosearch("barcelona",
-        new GeoSearchParam().byRadius(10, GeoUnit.MI));
-
-    assertThat(pipe.syncAndReturnAll(), contains(
-        instanceOf(JedisDataException.class),
-        instanceOf(JedisDataException.class)
-    ));
+  @Test(expected = IllegalArgumentException.class)
+  public void geosearchSearchParamCombineFromMemberAndFromLonLat() {
+    pipe.geosearch("barcelona", new GeoSearchParam().fromMember("foobar").fromLonLat(10, 10));
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void geosearchSearchParamWithoutRadiousAndWithoutBox() {
-    pipe.geosearch("barcelona",
-        new GeoSearchParam().fromMember("foobar"));
+  public void geosearchSearchParamWithoutFromMemberAndFromLonLat() {
+    pipe.geosearch("barcelona", new GeoSearchParam().byRadius(10, GeoUnit.MI));
   }
 
   @Test(expected = IllegalArgumentException.class)
-  public void geosearchSearchParamCombineMemberAndLonLat() {
-    pipe.geosearch("barcelona",
-        new GeoSearchParam().fromMember("foobar").fromLonLat(10, 10));
+  public void geosearchSearchParamCombineByRadiousAndByBox() {
+    pipe.geosearch("barcelona", new GeoSearchParam().byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void geosearchSearchParamWithoutByRadiousAndByBox() {
+    pipe.geosearch("barcelona", new GeoSearchParam().fromMember("foobar"));
   }
 
   @Test

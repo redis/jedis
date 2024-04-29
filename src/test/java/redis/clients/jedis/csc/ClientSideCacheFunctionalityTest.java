@@ -1,10 +1,14 @@
 package redis.clients.jedis.csc;
 
+import java.util.ArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
@@ -66,6 +70,33 @@ public class ClientSideCacheFunctionalityTest {
     assertEquals(count, map.size());
     clientSideCache.clear();
     assertEquals(0, map.size());
+  }
+
+  @Test
+  public void removeSpecificKey() {
+    int count = 1000;
+    for (int i = 0; i < count; i++) {
+      control.set("k" + i, "v" + i);
+    }
+
+    // By using LinkedHashMap, we can get the hashes (map keys) at the same order of the actual keys.
+    LinkedHashMap<Long, Object> map = new LinkedHashMap<>();
+    ClientSideCache clientSideCache = new MapClientSideCache(map);
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
+      for (int i = 0; i < count; i++) {
+        jedis.get("k" + i);
+      }
+    }
+
+    ArrayList<Long> commandHashes = new ArrayList<>(map.keySet());
+    assertEquals(count, map.size());
+    for (int i = 0; i < count; i++) {
+      String key = "k" + i;
+      Long hash = commandHashes.get(i);
+      assertTrue(map.containsKey(hash));
+      clientSideCache.removeKey(key);
+      assertFalse(map.containsKey(hash));
+    }
   }
 
 }

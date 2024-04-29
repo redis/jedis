@@ -49,6 +49,10 @@ public abstract class ClientSideCache {
     invalidateAllKeysAndCommandHashes();
   }
 
+  public final void removeKey(Object key) {
+    invalidateKeyAndRespectiveCommandHashes(key);
+  }
+
   public final void invalidate(List list) {
     if (list == null) {
       invalidateAllKeysAndCommandHashes();
@@ -64,11 +68,13 @@ public abstract class ClientSideCache {
   }
 
   private void invalidateKeyAndRespectiveCommandHashes(Object key) {
-    if (!(key instanceof byte[])) {
-      throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
-    }
-
-    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
+//    if (!(key instanceof byte[])) {
+//      // This should be called internally. That's why throwing AssertionError instead of IllegalArgumentException.
+//      throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
+//    }
+//
+//    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
+    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
 
     Set<Long> hashes = keyToCommandHashes.get(mapKey);
     if (hashes != null) {
@@ -111,7 +117,7 @@ public abstract class ClientSideCache {
   private ByteBuffer makeKeyForKeyToCommandHashes(Object key) {
     if (key instanceof byte[]) return makeKeyForKeyToCommandHashes((byte[]) key);
     else if (key instanceof String) return makeKeyForKeyToCommandHashes(SafeEncoder.encode((String) key));
-    else throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
+    else throw new IllegalArgumentException("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
   }
 
   private static ByteBuffer makeKeyForKeyToCommandHashes(byte[] b) {

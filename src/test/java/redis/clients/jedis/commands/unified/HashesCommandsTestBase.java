@@ -694,4 +694,78 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertThat(jedis.httl("foo", "bar", "bare", "bared"),
         contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
   }
+
+  @Test
+  public void hexpireAndHttlBinary() {
+    long seconds = 20;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    assertEquals(asList(1L, -2L), jedis.hexpire(bfoo, seconds, bbar1, bbar3));
+
+    jedis.hset(bfoo, bbar3, bcar);
+    assertEquals(asList(0L, 2L), jedis.hexpire(bfoo, -1, ExpiryOption.NX, bbar1, bbar3));
+
+    assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
+        contains(greaterThanOrEqualTo(seconds - 1L), equalTo(-1L), equalTo(-2L)));
+  }
+
+  @Test
+  public void hpexpireAndHpttlBinary() {
+    long millis = 20_000;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    assertEquals(asList(1L, -2L), jedis.hpexpire(bfoo, millis, bbar1, bbar3));
+
+    jedis.hset(bfoo, bbar3, bcar);
+    assertEquals(asList(2L, 0L), jedis.hpexpire(bfoo, -100, ExpiryOption.XX, bbar1, bbar3));
+
+    assertThat(jedis.hpttl(bfoo, bbar1, bbar2, bbar3),
+        contains(equalTo(-2L), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hexpireAtAndExpireTimeBinary() {
+    long currSeconds = System.currentTimeMillis() / 1000;
+    long unixSeconds = currSeconds + 20;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    assertEquals(asList(1L, -2L), jedis.hexpireAt(bfoo, unixSeconds, bbar1, bbar3));
+
+    jedis.hset(bfoo, bbar3, bcar);
+    assertEquals(asList(2L, 0L), jedis.hexpireAt(bfoo, currSeconds - 1, ExpiryOption.LT, bbar1, bbar3));
+
+    assertThat(jedis.hexpireTime(bfoo, bbar1, bbar2, bbar3),
+        contains(equalTo(-2L), equalTo(-1L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hpexpireAtAndPexpireTimeBinary() {
+    long currMillis = System.currentTimeMillis();
+    long unixMillis = currMillis + 20_000;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    assertEquals(asList(1L, -2L), jedis.hpexpireAt(bfoo, unixMillis - 100, bbar1, bbar3));
+
+    jedis.hset(bfoo, bbar3, bcar);
+    assertEquals(asList(1L, 0L), jedis.hpexpireAt(bfoo, unixMillis, ExpiryOption.GT, bbar1, bbar3));
+
+    assertThat(jedis.hpexpireTime(bfoo, bbar1, bbar2, bbar3),
+        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hpersistBinary() {
+    long seconds = 20;
+
+    jedis.hset(bfoo, bbar1, bcar);
+    jedis.hset(bfoo, bbar2, bcar);
+    assertEquals(asList(1L, -2L), jedis.hexpire(bfoo, seconds, bbar1, bbar3));
+
+    assertEquals(asList(1L, -1L, -2L), jedis.hpersist(bfoo, bbar1, bbar2, bbar3));
+
+    assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
+        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+  }
 }

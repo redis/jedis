@@ -20,6 +20,12 @@ import redis.clients.jedis.resps.ScanResult;
 
 public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase {
 
+  private final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+
+  private final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
+  private final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
+  private final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
+
   @Test
   public void testHdel() {
     when(commandObjects.hdel("key", "field1", "field2")).thenReturn(longCommandObject);
@@ -653,6 +659,161 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
   public void hpersist() {
     String key = "hash";
     String[] fields = { "one", "two", "three" };
+
+    when(commandObjects.hpersist(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpersist(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireBinary() {
+    byte[] key = bfoo;
+    long seconds = 100;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hexpire(key, seconds, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpire(key, seconds, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireConditionBinary() {
+    byte[] key = bfoo;
+    long seconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hexpire(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpire(key, seconds, condition, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireBinary() {
+    byte[] key = bfoo;
+    long milliseconds = 10000;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hpexpire(key, milliseconds, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpire(key, milliseconds, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireConditionBinary() {
+    byte[] key = bfoo;
+    long milliseconds = 10000;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpire(key, milliseconds, condition, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireAtBinary() {
+    byte[] key = bfoo;
+    long seconds = 100;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hexpireAt(key, seconds, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpireAt(key, seconds, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireAtConditionBinary() {
+    byte[] key = bfoo;
+    long seconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpireAt(key, seconds, condition, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireAtBinary() {
+    byte[] key = bfoo;
+    long milliseconds = 10000;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hpexpireAt(key, milliseconds, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpireAt(key, milliseconds, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireAtConditionBinary() {
+    byte[] key = bfoo;
+    long milliseconds = 10000;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpireAt(key, milliseconds, condition, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hexpireTimeBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hexpireTime(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hexpireTime(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpexpireTimeBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hpexpireTime(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpexpireTime(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void httlBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.httl(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.httl(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpttlBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+
+    when(commandObjects.hpttl(key, fields)).thenReturn(listLongCommandObject);
+
+    assertThat(pipeliningBase.hpttl(key, fields), is(predefinedResponse));
+    assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void hpersistBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
 
     when(commandObjects.hpersist(key, fields)).thenReturn(listLongCommandObject);
 

@@ -23,6 +23,12 @@ import redis.clients.jedis.resps.ScanResult;
 
 public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
 
+  private final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+
+  private final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
+  private final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
+  private final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
+
   @Test
   public void testHdel() {
     String key = "hashKey";
@@ -963,6 +969,213 @@ public class UnifiedJedisHashCommandsTest extends UnifiedJedisMockedTestBase {
   public void hpersist() {
     String key = "hash";
     String[] fields = { "one", "two", "three" };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hpersist(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpersist(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpersist(key, fields);
+  }
+
+  @Test
+  public void hexpireBinary() {
+    byte[] key = bfoo;
+    long seconds = 100;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hexpire(key, seconds, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpire(key, seconds, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpire(key, seconds, fields);
+  }
+
+  @Test
+  public void hexpireConditionBinary() {
+    byte[] key = bfoo;
+    long seconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hexpire(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpire(key, seconds, condition, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpire(key, seconds, condition, fields);
+  }
+
+  @Test
+  public void hpexpireBinary() {
+    byte[] key = bfoo;
+    long milliseconds = 10000;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 100L, 200L, 300L );
+
+    when(commandObjects.hpexpire(key, milliseconds, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpire(key, milliseconds, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpire(key, milliseconds, fields);
+  }
+
+  @Test
+  public void hpexpireConditionBinary() {
+    byte[] key = bfoo;
+    long milliseconds = 10000;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 100L, 200L, 300L );
+
+    when(commandObjects.hpexpire(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpire(key, milliseconds, condition, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpire(key, milliseconds, condition, fields);
+  }
+
+  @Test
+  public void hexpireAtBinary() {
+    byte[] key = bfoo;
+    long seconds = 100;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hexpireAt(key, seconds, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpireAt(key, seconds, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpireAt(key, seconds, fields);
+  }
+
+  @Test
+  public void hexpireAtConditionBinary() {
+    byte[] key = bfoo;
+    long seconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hexpireAt(key, seconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpireAt(key, seconds, condition, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpireAt(key, seconds, condition, fields);
+  }
+
+  @Test
+  public void hpexpireAtBinary() {
+    byte[] key = bfoo;
+    long milliseconds = 10000;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hpexpireAt(key, milliseconds, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpireAt(key, milliseconds, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpireAt(key, milliseconds, fields);
+  }
+
+  @Test
+  public void hpexpireAtConditionBinary() {
+    byte[] key = bfoo;
+    long milliseconds = 100;
+    ExpiryOption condition = mock(ExpiryOption.class);
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 1L, 2L, 3L );
+
+    when(commandObjects.hpexpireAt(key, milliseconds, condition, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpireAt(key, milliseconds, condition, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpireAt(key, milliseconds, condition, fields);
+  }
+
+  @Test
+  public void hexpireTimeBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 10L, 20L, 30L );
+
+    when(commandObjects.hexpireTime(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hexpireTime(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hexpireTime(key, fields);
+  }
+
+  @Test
+  public void hpexpireTimeBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 1000L, 2000L, 3000L );
+
+    when(commandObjects.hpexpireTime(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpexpireTime(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpexpireTime(key, fields);
+  }
+
+  @Test
+  public void httlBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 10L, 20L, 30L );
+
+    when(commandObjects.httl(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.httl(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).httl(key, fields);
+  }
+
+  @Test
+  public void hpttlBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
+    List<Long> expected = asList( 1000L, 2000L, 3000L );
+
+    when(commandObjects.hpttl(key, fields)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.hpttl(key, fields), equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).hpttl(key, fields);
+  }
+
+  @Test
+  public void hpersistBinary() {
+    byte[] key = bfoo;
+    byte[][] fields = { bbar1, bbar2, bbar3 };
     List<Long> expected = asList( 1L, 2L, 3L );
 
     when(commandObjects.hpersist(key, fields)).thenReturn(listLongCommandObject);

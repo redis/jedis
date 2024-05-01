@@ -1196,6 +1196,46 @@ public class CommandObjects {
         .add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
 
+  public final CommandObject<List<Long>> hexpire(byte[] key, long seconds, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds).add(fields.length)
+        .addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds).add(condition).add(fields.length)
+        .addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpire(byte[] key, long milliseconds, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds).add(fields.length)
+        .addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds).add(condition).add(fields.length)
+        .addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIREAT).key(key).add(unixTimeSeconds)
+        .add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIREAT).key(key).add(unixTimeSeconds).add(condition)
+        .add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIREAT).key(key).add(unixTimeMillis)
+        .add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIREAT).key(key).add(unixTimeMillis).add(condition)
+        .add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
   public final CommandObject<List<Long>> hexpireTime(String key, String... fields) {
     return new CommandObject<>(commandArguments(HEXPIRETIME).key(key).add(fields.length).addObjects((Object[]) fields),
         BuilderFactory.LONG_LIST);
@@ -1216,7 +1256,32 @@ public class CommandObjects {
         BuilderFactory.LONG_LIST);
   }
 
+  public final CommandObject<List<Long>> hexpireTime(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRETIME).key(key).add(fields.length).addObjects((Object[]) fields),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireTime(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRETIME).key(key).add(fields.length).addObjects((Object[]) fields),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> httl(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HTTL).key(key).add(fields.length).addObjects((Object[]) fields),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpttl(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPTTL).key(key).add(fields.length).addObjects((Object[]) fields),
+        BuilderFactory.LONG_LIST);
+  }
+
   public final CommandObject<List<Long>> hpersist(String key, String... fields) {
+    return new CommandObject<>(commandArguments(HPERSIST).key(key).add(fields.length).addObjects((Object[]) fields),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpersist(byte[] key, byte[]... fields) {
     return new CommandObject<>(commandArguments(HPERSIST).key(key).add(fields.length).addObjects((Object[]) fields),
         BuilderFactory.LONG_LIST);
   }

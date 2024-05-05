@@ -1,6 +1,6 @@
 package redis.clients.jedis.search.schemafields;
 
-import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.VECTOR;
+import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -13,6 +13,10 @@ public class VectorField extends SchemaField {
     FLAT,
     HNSW
   }
+
+  private boolean isMissing;
+  private boolean isEmpty;
+  private boolean isNull;
 
   private final VectorAlgorithm algorithm;
   private final Map<String, Object> attributes;
@@ -35,10 +39,29 @@ public class VectorField extends SchemaField {
     return this;
   }
 
+  public VectorField isMissing() {
+    this.isMissing = true;
+    return this;
+  }
+
+  public VectorField isEmpty() {
+    this.isEmpty = true;
+    return this;
+  }
+
+  public VectorField isNull() {
+    this.isNull = true;
+    return this;
+  }
+
   @Override
   public void addParams(CommandArguments args) {
     args.addParams(fieldName);
     args.add(VECTOR);
+
+    if (isMissing) args.add(ISMISSING);
+    if (isEmpty) args.add(ISEMPTY);
+    if (isNull) args.add(ISNULL);
 
     args.add(algorithm);
     args.add(attributes.size() * 2);

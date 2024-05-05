@@ -7,6 +7,9 @@ import redis.clients.jedis.search.FieldName;
 
 public class TextField extends SchemaField {
 
+  private boolean isMissing;
+  private boolean isEmpty;
+  private boolean isNull;
   private boolean sortable;
   private boolean sortableUNF;
   private boolean noStem;
@@ -34,6 +37,21 @@ public class TextField extends SchemaField {
   @Override
   public TextField as(String attribute) {
     super.as(attribute);
+    return this;
+  }
+
+  public TextField isMissing() {
+    this.isMissing = true;
+    return this;
+  }
+
+  public TextField isEmpty() {
+    this.isEmpty = true;
+    return this;
+  }
+
+  public TextField isNull() {
+    this.isNull = true;
     return this;
   }
 
@@ -106,6 +124,10 @@ public class TextField extends SchemaField {
   public void addParams(CommandArguments args) {
     args.addParams(fieldName);
     args.add(TEXT);
+
+    if (isMissing) args.add(ISMISSING);
+    if (isEmpty) args.add(ISEMPTY);
+    if (isNull) args.add(ISNULL);
 
     if (weight != null) {
       args.add(WEIGHT).add(weight);

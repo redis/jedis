@@ -1,6 +1,6 @@
 package redis.clients.jedis.search.schemafields;
 
-import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.GEOSHAPE;
+import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.search.FieldName;
@@ -22,6 +22,10 @@ public class GeoShapeField extends SchemaField {
 
   private final CoordinateSystem system;
 
+  private boolean isMissing;
+  private boolean isEmpty;
+  private boolean isNull;
+
   public GeoShapeField(String fieldName, CoordinateSystem system) {
     super(fieldName);
     this.system = system;
@@ -42,8 +46,28 @@ public class GeoShapeField extends SchemaField {
     return this;
   }
 
+  public GeoShapeField isMissing() {
+    this.isMissing = true;
+    return this;
+  }
+
+  public GeoShapeField isEmpty() {
+    this.isEmpty = true;
+    return this;
+  }
+
+  public GeoShapeField isNull() {
+    this.isNull = true;
+    return this;
+  }
+
   @Override
   public void addParams(CommandArguments args) {
-    args.addParams(fieldName).add(GEOSHAPE).add(system);
+    args.addParams(fieldName);
+    args.add(GEOSHAPE).add(system);
+
+    if (isMissing) args.add(ISMISSING);
+    if (isEmpty) args.add(ISEMPTY);
+    if (isNull) args.add(ISNULL);
   }
 }

@@ -8,6 +8,9 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class TagField extends SchemaField {
 
+  private boolean isMissing;
+  private boolean isEmpty;
+  private boolean isNull;
   private boolean sortable;
   private boolean sortableUNF;
   private boolean noIndex;
@@ -34,6 +37,21 @@ public class TagField extends SchemaField {
   @Override
   public TagField as(String attribute) {
     super.as(attribute);
+    return this;
+  }
+
+  public TagField isMissing() {
+    this.isMissing = true;
+    return this;
+  }
+
+  public TagField isEmpty() {
+    this.isEmpty = true;
+    return this;
+  }
+
+  public TagField isNull() {
+    this.isNull = true;
     return this;
   }
 
@@ -101,6 +119,10 @@ public class TagField extends SchemaField {
   public void addParams(CommandArguments args) {
     args.addParams(fieldName);
     args.add(TAG);
+
+    if (isMissing) args.add(ISMISSING);
+    if (isEmpty) args.add(ISEMPTY);
+    if (isNull) args.add(ISNULL);
 
     if (separator != null) {
       args.add(SEPARATOR).add(separator);

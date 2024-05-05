@@ -13,7 +13,15 @@ public interface RedisTimeSeriesCommands {
   String tsCreate(String key);
 
   /**
-   * {@code TS.CREATE key [RETENTION retentionTime] [ENCODING [UNCOMPRESSED|COMPRESSED]] [CHUNK_SIZE size] [DUPLICATE_POLICY policy] [LABELS label value..]}
+   * {@code
+   * TS.CREATE key
+   *         [RETENTION retentionTime]
+   *         [ENCODING [UNCOMPRESSED|COMPRESSED]]
+   *         [CHUNK_SIZE size]
+   *         [DUPLICATE_POLICY policy]
+   *         [IGNORE ignoreMaxTimediff ignoreMaxValDiff]
+   *         [LABELS {label value}...]
+   * }
    *
    * @param key
    * @param createParams
@@ -31,7 +39,13 @@ public interface RedisTimeSeriesCommands {
   long tsDel(String key, long fromTimestamp, long toTimestamp);
 
   /**
-   * {@code TS.ALTER key [RETENTION retentionTime] [LABELS label value..]}
+   * {@code TS.ALTER key
+   *         [RETENTION retentionTime]
+   *         [CHUNK_SIZE size]
+   *         [DUPLICATE_POLICY policy]
+   *         [IGNORE ignoreMaxTimediff ignoreMaxValDiff]
+   *         [LABELS {label value}...]
+   * }
    *
    * @param key
    * @param alterParams
@@ -59,7 +73,14 @@ public interface RedisTimeSeriesCommands {
   long tsAdd(String key, long timestamp, double value);
 
   /**
-   * {@code TS.ADD key timestamp value [RETENTION retentionTime] [ENCODING [COMPRESSED|UNCOMPRESSED]] [CHUNK_SIZE size] [ON_DUPLICATE policy] [LABELS label value..]}
+   * {@code TS.ADD key timestamp value
+   *         [RETENTION retentionTime]
+   *         [ENCODING [UNCOMPRESSED|COMPRESSED]]
+   *         [CHUNK_SIZE size]
+   *         [DUPLICATE_POLICY policy]
+   *         [IGNORE ignoreMaxTimediff ignoreMaxValDiff]
+   *         [LABELS {label value}...]
+   * }
    *
    * @param key
    * @param timestamp

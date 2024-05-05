@@ -17,6 +17,11 @@ public class TSAlterParams implements IParams {
   private Long retentionPeriod;
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
+
+  private boolean ignore;
+  private long ignoreMaxTimediff;
+  private double ignoreMaxValDiff;
+
   private Map<String, String> labels;
 
   public TSAlterParams() {
@@ -38,6 +43,13 @@ public class TSAlterParams implements IParams {
 
   public TSAlterParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
     this.duplicatePolicy = duplicatePolicy;
+    return this;
+  }
+
+  public TSAlterParams ignore(long maxTimediff, double maxValDiff) {
+    this.ignore = true;
+    this.ignoreMaxTimediff = maxTimediff;
+    this.ignoreMaxValDiff = maxValDiff;
     return this;
   }
 
@@ -71,6 +83,10 @@ public class TSAlterParams implements IParams {
 
     if (duplicatePolicy != null) {
       args.add(DUPLICATE_POLICY).add(duplicatePolicy);
+    }
+
+    if (ignore) {
+      args.add(IGNORE).add(ignoreMaxTimediff).add(ignoreMaxValDiff);
     }
 
     if (labels != null) {

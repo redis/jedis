@@ -289,6 +289,39 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void testCreateIgnore() {
+    assertEquals("OK", client.tsCreate("series-ignore",
+        TSCreateParams.createParams().ignore(5, 2)));
+    //System.out.println(client.tsInfo("series-ignore").getProperties()); // doesn't provide IGNORE info
+
+    client.tsAdd("series-ignore", 0, 0);
+    System.out.println(client.tsAdd("series-ignore", 100, 20)); // should fail, doesn't fail
+    // TODO: complete tests
+  }
+
+  @Test
+  public void testAlterIgnore() {
+    assertEquals("OK", client.tsCreate("series-ignore"));
+    assertEquals("OK", client.tsAlter("series-ignore",
+        TSAlterParams.alterParams().ignore(5, 2)));
+    //System.out.println(client.tsInfo("series-ignore").getProperties()); // doesn't provide IGNORE info
+
+    client.tsAdd("series-ignore", 0, 0);
+    System.out.println(client.tsAdd("series-ignore", 100, 20)); // should fail, doesn't fail
+    // TODO: complete tests
+  }
+
+  @Test
+  public void testAddIgnore() {
+    assertEquals(0, client.tsAdd("series-ignore", 0, 0,
+        TSCreateParams.createParams().ignore(5, 2)));
+    //System.out.println(client.tsInfo("series-ignore").getProperties()); // doesn't provide IGNORE info
+
+    System.out.println(client.tsAdd("series-ignore", 100, 20)); // should fail, doesn't fail
+    // TODO: complete tests
+  }
+
+  @Test
   public void issue75() {
     client.tsMRange(TSMRangeParams.multiRangeParams().filter("id=1"));
   }

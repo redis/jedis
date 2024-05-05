@@ -291,35 +291,21 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
   @Test
   public void testCreateIgnore() {
     assertEquals("OK", client.tsCreate("series-ignore",
-        TSCreateParams.createParams().ignore(5, 2)));
+        TSCreateParams.createParams().ignore(5, 3)));
     //System.out.println(client.tsInfo("series-ignore").getProperties()); // doesn't provide IGNORE info
 
     client.tsAdd("series-ignore", 0, 0);
-    System.out.println(client.tsAdd("series-ignore", 100, 20)); // should fail, doesn't fail
-    // TODO: complete tests
+    System.out.println(client.tsAdd("series-ignore", 1, 1)); // should be ignored? doesn't get ignored
+    System.out.println(client.tsGet("series-ignore")); // >> (1:1.0)
+    System.out.println(client.tsRange("series-ignore", 0, 1000)); // >> [(0:0.0), (1:1.0)]
+    System.out.println(client.tsInfo("series-ignore").getProperties().get("totalSamples")); // >> 2
+    System.out.println(client.tsAdd("series-ignore", 100, 20)); // should be ignored, doesn't get ignored
+    System.out.println(client.tsGet("series-ignore")); // >> (100:20.0)
+    System.out.println(client.tsRange("series-ignore", 0, 1000)); // >> [(0:0.0), (1:1.0), (100:20.0)]
+    System.out.println(client.tsInfo("series-ignore").getProperties().get("totalSamples")); // >> 3
+    // TODO: complete test
   }
-
-  @Test
-  public void testAlterIgnore() {
-    assertEquals("OK", client.tsCreate("series-ignore"));
-    assertEquals("OK", client.tsAlter("series-ignore",
-        TSAlterParams.alterParams().ignore(5, 2)));
-    //System.out.println(client.tsInfo("series-ignore").getProperties()); // doesn't provide IGNORE info
-
-    client.tsAdd("series-ignore", 0, 0);
-    System.out.println(client.tsAdd("series-ignore", 100, 20)); // should fail, doesn't fail
-    // TODO: complete tests
-  }
-
-  @Test
-  public void testAddIgnore() {
-    assertEquals(0, client.tsAdd("series-ignore", 0, 0,
-        TSCreateParams.createParams().ignore(5, 2)));
-    //System.out.println(client.tsInfo("series-ignore").getProperties()); // doesn't provide IGNORE info
-
-    System.out.println(client.tsAdd("series-ignore", 100, 20)); // should fail, doesn't fail
-    // TODO: complete tests
-  }
+  // TODO: more tests from TS.ALTER and TS.ADD instead of TS.CREATE.
 
   @Test
   public void issue75() {

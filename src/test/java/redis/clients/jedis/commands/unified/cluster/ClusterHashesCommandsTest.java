@@ -25,5 +25,4 @@ public class ClusterHashesCommandsTest extends HashesCommandsTestBase {
     jedis.close();
     ClusterCommandsTestHelper.clearClusterData();
   }
-
 }

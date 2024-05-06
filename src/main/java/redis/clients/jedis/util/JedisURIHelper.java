@@ -113,7 +113,7 @@ public final class JedisURIHelper {
           try {
             maxSize = Integer.parseInt(val);
           } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException("Value of cache_max_size must be an integer.", nfe);
+            throw new IllegalArgumentException("Value of cache_max_size must be an integer (no of commands).", nfe);
           }
           break;
 
@@ -121,7 +121,7 @@ public final class JedisURIHelper {
           try {
             ttl = Integer.parseInt(val);
           } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException("Value of cache_ttl must be an integer denoting seconds.", nfe);
+            throw new IllegalArgumentException("Value of cache_ttl must be an integer (in seconds).", nfe);
           }
           break;
       }
@@ -132,7 +132,7 @@ public final class JedisURIHelper {
       return null;
     }
     if (!guava && !caffeine && (maxSize != null || ttl != null)) {
-      throw new IllegalArgumentException("The cache library (guava OR caffeine) must be selected.");
+      throw new IllegalArgumentException("A supported caching library (guava OR caffeine) must be selected.");
     }
     if (ZERO_INTEGER.equals(ttl)) {
       ttl = null; // below, only null will be checked

@@ -1,53 +1,21 @@
 package redis.clients.jedis.csc;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.function.Supplier;
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPoolConfig;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.util.JedisURIHelper;
 
-public class ClientSideCacheFunctionalityTest {
-
-  protected static final HostAndPort hnp = HostAndPorts.getRedisServers().get(1);
-
-  protected Jedis control;
-
-  @Before
-  public void setUp() throws Exception {
-    control = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
-    control.flushAll();
-  }
-
-  @After
-  public void tearDown() throws Exception {
-    control.close();
-  }
-
-  private static final Supplier<JedisClientConfig> clientConfig
-      = () -> DefaultJedisClientConfig.builder().resp3().password("foobared").build();
-
-  private static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig
-      = () -> {
-        ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-        poolConfig.setMaxTotal(1);
-        return poolConfig;
-      };
+public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
   @Test
   public void flushEntireCache() {
@@ -106,6 +74,36 @@ public class ClientSideCacheFunctionalityTest {
       jedis.mget("k1", "k2");
       assertEquals(1, map.size());
     }
+  }
+
+  @Test
+  public void uriNoParam() {
+    URI uri = URI.create(baseUrl + "?");
+    assertNull(JedisURIHelper.getClientSideCache(uri));
+  }
+
+  @Test
+  public void uriUnknownLib() {
+    URI uri = URI.create(baseUrl + "?cache_lib=unknown");
+    IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
+        () -> JedisURIHelper.getClientSideCache(uri));
+    assertEquals("Unsupported library unknown", iae.getMessage());
+  }
+
+  @Test
+  public void uriNoLib() {
+    String[] otherParams
+        = new String[]{
+          "?cache_max_size=1000",
+          "?cache_ttl=10",
+          "?cache_max_size=1000&cache_ttl=10"
+        };
+    Arrays.stream(otherParams).forEach(urlParams -> {
+      URI uri = URI.create(baseUrl + urlParams);
+      IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
+          () -> JedisURIHelper.getClientSideCache(uri));
+      assertEquals("A supported caching library (guava OR caffeine) must be selected.", iae.getMessage());
+    });
   }
 
 }

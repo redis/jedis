@@ -20,7 +20,7 @@ import redis.clients.jedis.util.RedisVersionUtil;
  * This test is only executed when the server/cluster is Redis 6. or more.
  */
 public class ACLJedisPoolTest {
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
 
   @BeforeClass
   public static void prepare() throws Exception {

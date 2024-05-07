@@ -1,5 +1,13 @@
 {
   "standalone0": {
+    "username": "default",
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:6379"
+    ]
+  },
+  "standalone0-acl": {
     "username": "acljedis",
     "password": "fizzbuzz",
     "tls": false,
@@ -73,6 +81,12 @@
     "tls": false,
     "endpoints": [
       "redis://localhost:6389"
+    ]
+  },
+  "modules-docker": {
+    "tls": false,
+    "endpoints": [
+      "redis://localhost:6479"
     ]
   }
 }

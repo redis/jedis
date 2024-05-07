@@ -1,0 +1,78 @@
+{
+  "standalone0": {
+    "username": "acljedis",
+    "password": "fizzbuzz",
+    "tls": false,
+    "endpoints": [
+      "localhost:6379"
+    ]
+  },
+  "standalone1": {
+    "username": "default",
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "localhost:6380"
+    ]
+  },
+  "standalone2-primary": {
+    "username": "default",
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "localhost:6381"
+    ]
+  },
+  "standalone3-replica-of-standalone2": {
+    "username": "default",
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "localhost:6382"
+    ]
+  },
+  "standalone4-replica-of-standalone1": {
+    "username": "default",
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "localhost:6383"
+    ]
+  },
+  "standalone5-primary": {
+    "username": "default",
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "localhost:6384"
+    ]
+  },
+  "standalone6-replica-of-standalone5": {
+    "username": "default",
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "localhost:6385"
+    ]
+  },
+  "standalone7-with-lfu-policy": {
+    "username": "default",
+    "password": "foobared",
+    "tls": false,
+    "endpoints": [
+      "localhost:6386"
+    ]
+  },
+  "standalone9": {
+    "tls": false,
+    "endpoints": [
+      "localhost:6388"
+    ]
+  },
+  "standalone10-replica-of-standalone9": {
+    "tls": false,
+    "endpoints": [
+      "localhost:6389"
+    ]
+  }
+}

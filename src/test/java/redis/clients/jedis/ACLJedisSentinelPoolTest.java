@@ -24,7 +24,6 @@ public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";
 
-  //protected static HostAndPort master = HostAndPortUtil.getRedisServers().get(8);
   protected static HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(4);
 
   protected Set<HostAndPort> sentinels = new HashSet<>();

@@ -16,15 +16,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.AbstractPipeline;
-import redis.clients.jedis.AbstractTransaction;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MultiClusterClientConfig;
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.*;
 import redis.clients.jedis.exceptions.JedisAccessControlException;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
@@ -34,9 +26,10 @@ public class AutomaticFailoverTest {
 
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
 
-  private final HostAndPort hostPort_1 = new HostAndPort(HostAndPorts.getRedisServers().get(0).getHost(), 6378);
-  private final HostAndPort hostPort_1_2 = HostAndPorts.getRedisServers().get(0);
-  private final HostAndPort hostPort_2 = HostAndPorts.getRedisServers().get(7);
+  // TODO(imalinovskyi): Figure out how we deploy this endpoint
+  private final HostAndPort hostPort_1 = new HostAndPort(HostAndPorts.getRedisEndpoint("standalone0").getHost(), 6378);
+  private final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone0");
+  private final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
 
   private final JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
 
@@ -51,7 +44,7 @@ public class AutomaticFailoverTest {
 
   @Before
   public void setUp() {
-    jedis2 = new Jedis(hostPort_2, clientConfig);
+    jedis2 = endpoint2.getJedis();
     jedis2.flushAll();
   }
 
@@ -63,7 +56,7 @@ public class AutomaticFailoverTest {
   @Test
   public void pipelineWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPort_1, hostPort_2)).build());
+        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPort_1, endpoint2.getHostAndPort())).build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractPipeline pipe = client.pipelined();
@@ -80,7 +73,7 @@ public class AutomaticFailoverTest {
   @Test
   public void transactionWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPort_1, hostPort_2)).build());
+        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPort_1, endpoint2.getHostAndPort())).build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractTransaction tx = client.multi();
@@ -100,7 +93,7 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 10;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPort_1, hostPort_2))
+        getClusterConfigs(clientConfig, hostPort_1, endpoint2.getHostAndPort()))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
@@ -138,7 +131,7 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 10;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPort_1, hostPort_2))
+        getClusterConfigs(clientConfig, hostPort_1, endpoint2.getHostAndPort()))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize)
         .fallbackExceptionList(Arrays.asList(JedisConnectionException.class));
@@ -171,7 +164,7 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 10;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPort_1_2, hostPort_2))
+        getClusterConfigs(clientConfig, endpoint1.getHostAndPort(), endpoint2.getHostAndPort()))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize)
         .fallbackExceptionList(Arrays.asList(JedisAccessControlException.class));

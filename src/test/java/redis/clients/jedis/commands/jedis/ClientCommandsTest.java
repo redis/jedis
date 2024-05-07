@@ -21,7 +21,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ClientAttributeOption;
@@ -47,7 +46,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   @Override
   public void setUp() throws Exception {
     super.setUp();
-    client = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    client = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
     client.auth("foobared");
     client.clientSetname(clientName);
   }
@@ -97,7 +96,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void clientIdmultipleConnection() {
-    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
       client2.auth("foobared");
       client2.clientSetname("fancy_jedis_another_name");
 
@@ -233,7 +232,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   @Test
   public void killUser() {
     client.aclSetUser("test_kill", "on", "+acl", ">password1");
-    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
       client2.auth("test_kill", "password1");
 
       assertEquals(1, jedis.clientKill(new ClientKillParams().user("test_kill")));
@@ -250,7 +249,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     // sleep twice the maxAge, to be sure
     Thread.sleep(maxAge * 2 * 1000);
 
-    try (Jedis client2 = new Jedis(hnp.getHost(), hnp.getPort(), 500)) {
+    try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
       client2.auth("foobared");
 
       long killedClients = jedis.clientKill(new ClientKillParams().maxAge(maxAge));
@@ -300,8 +299,8 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void trackingInfoResp3() {
-    Jedis clientResp3 = new Jedis(hnp, DefaultJedisClientConfig.builder()
-            .protocol(RedisProtocol.RESP3).password("foobared").build());
+    Jedis clientResp3 = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+            .protocol(RedisProtocol.RESP3).build());
     TrackingInfo trackingInfo = clientResp3.clientTrackingInfo();
 
     assertEquals(1, trackingInfo.getFlags().size());

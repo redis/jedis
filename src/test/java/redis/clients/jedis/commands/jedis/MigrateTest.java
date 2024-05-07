@@ -32,9 +32,9 @@ public class MigrateTest extends JedisCommandsTestBase {
 
   private Jedis dest;
   private Jedis destAuth;
-  private static final String host = hnp.getHost();
+  private static final String host = endpoint.getHost();
   private static final int port = 6386;
-  private static final int portAuth = hnp.getPort() + 1;
+  private static final int portAuth = endpoint.getPort() + 1;
   private static final int db = 2;
   private static final int dbAuth = 3;
   private static final int timeout = Protocol.DEFAULT_TIMEOUT;
@@ -165,14 +165,14 @@ public class MigrateTest extends JedisCommandsTestBase {
   @Test
   public void migrateAuth2() {
     destAuth.set("foo", "bar");
-    assertEquals("OK", destAuth.migrate(host, hnp.getPort(), 0, timeout,
+    assertEquals("OK", destAuth.migrate(host, endpoint.getPort(), 0, timeout,
       new MigrateParams().auth2("acljedis", "fizzbuzz"), "foo"));
     assertEquals("bar", jedis.get("foo"));
     assertNull(destAuth.get("foo"));
 
     // binary
     dest.set(bfoo1, bbar1);
-    assertEquals("OK", dest.migrate(host, hnp.getPort(), 0, timeout,
+    assertEquals("OK", dest.migrate(host, endpoint.getPort(), 0, timeout,
       new MigrateParams().auth2("acljedis", "fizzbuzz"), bfoo1));
     assertArrayEquals(bbar1, jedis.get(bfoo1));
     assertNull(dest.get(bfoo1));

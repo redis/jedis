@@ -33,9 +33,9 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
   private static final byte[] bfoo3 = { 0x07, 0x08, 0x03 };
   private static final byte[] bbar3 = { 0x09, 0x00, 0x03 };
 
-  private static final String host = hnp.getHost();
+  private static final String host = endpoint.getHost();
   private static final int port = 6386;
-  private static final int portAuth = hnp.getPort() + 1;
+  private static final int portAuth = endpoint.getPort() + 1;
   private static final int db = 2;
   private static final int dbAuth = 3;
   private static final int timeout = Protocol.DEFAULT_TIMEOUT;
@@ -290,7 +290,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     Pipeline p = destAuth.pipelined();
 
     p.set("foo", "bar");
-    p.migrate(host, hnp.getPort(), 0, timeout,
+    p.migrate(host, endpoint.getPort(), 0, timeout,
         new MigrateParams().auth2("acljedis", "fizzbuzz"), "foo");
     p.get("foo");
 
@@ -307,7 +307,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     Pipeline p = dest.pipelined();
 
     p.set(bfoo, bbar);
-    p.migrate(host, hnp.getPort(), 0, timeout,
+    p.migrate(host, endpoint.getPort(), 0, timeout,
         new MigrateParams().auth2("acljedis", "fizzbuzz"), bfoo);
     p.get(bfoo);
 

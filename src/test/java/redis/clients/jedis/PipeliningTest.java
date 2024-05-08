@@ -323,7 +323,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.waitReplicas(1, 10);
     p.sync();
 
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone4");
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone4-replica-of-standalone1");
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());
@@ -338,7 +338,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.waitAOF(1L, 0L, 0L);
     p.sync();
 
-    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone4");
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone4-replica-of-standalone1");
 
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       j.auth(endpoint.getPassword());

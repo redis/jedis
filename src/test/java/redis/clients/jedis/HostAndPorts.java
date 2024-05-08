@@ -43,6 +43,10 @@ public final class HostAndPorts {
   }
 
   public static EndpointConfig getRedisEndpoint(String endpointName) {
+    if (!endpointConfigs.containsKey(endpointName)) {
+      throw new IllegalArgumentException("Unknown Redis endpoint: " + endpointName);
+    }
+
     return endpointConfigs.get(endpointName);
   }
 

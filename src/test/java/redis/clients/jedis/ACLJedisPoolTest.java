@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.BeforeClass;
@@ -21,6 +22,8 @@ import redis.clients.jedis.util.RedisVersionUtil;
  */
 public class ACLJedisPoolTest {
   private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
+
+  private static final EndpointConfig endpointWithDefaultUser = HostAndPorts.getRedisEndpoint("standalone0");
 
   @BeforeClass
   public static void prepare() throws Exception {
@@ -194,7 +197,7 @@ public class ACLJedisPoolTest {
     }
 
     try (JedisPool pool = new JedisPool(
-        endpoint.getCustomizedURI("default", endpoint.getPassword(), "/2"));
+        endpointWithDefaultUser.getCustomizedURI(true, "/2"));
         Jedis jedis = pool.getResource()) {
       assertEquals("bar", jedis.get("foo"));
     }
@@ -202,7 +205,7 @@ public class ACLJedisPoolTest {
 
   @Test(expected = InvalidURIException.class)
   public void shouldThrowInvalidURIExceptionForInvalidURI() throws URISyntaxException {
-    new JedisPool(endpoint.getURI()).close();
+    new JedisPool(new URI("localhost:6379")).close();
   }
 
   @Test
@@ -256,8 +259,9 @@ public class ACLJedisPoolTest {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHost(), endpoint.getPort(), 2000,
-        endpoint.getUsername(), endpoint.getPassword()); Jedis jedis = new Jedis(endpoint.getCustomizedURI(
-        "", endpoint.getPassword(), ""))) {
+            endpoint.getUsername(), "wrongpassword");
+         Jedis jedis = new Jedis(endpointWithDefaultUser.getCustomizedURI(
+                 "", endpointWithDefaultUser.getPassword(), ""))) {
       int currentClientCount = getClientCount(jedis.clientList());
       try {
         pool.getResource();

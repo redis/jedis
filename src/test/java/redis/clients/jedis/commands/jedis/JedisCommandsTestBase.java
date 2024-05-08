@@ -42,7 +42,8 @@ public abstract class JedisCommandsTestBase {
 
   @Before
   public void setUp() throws Exception {
-    jedis = endpoint.getJedis(500);
+    jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .protocol(protocol).timeoutMillis(500).build());
     jedis.flushAll();
   }
 
@@ -52,6 +53,7 @@ public abstract class JedisCommandsTestBase {
   }
 
   protected Jedis createJedis() {
-    return endpoint.getJedis();
+    return new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
+        .protocol(protocol).timeoutMillis(500).build());
   }
 }

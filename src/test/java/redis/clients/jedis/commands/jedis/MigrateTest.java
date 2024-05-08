@@ -53,7 +53,7 @@ public class MigrateTest extends JedisCommandsTestBase {
     dest.select(db);
 
     destAuth = new Jedis(host, portAuth, 500);
-    destAuth.auth("foobared");
+    destAuth.auth(endpoint.getPassword());
     destAuth.flushAll();
     destAuth.select(dbAuth);
   }
@@ -151,13 +151,13 @@ public class MigrateTest extends JedisCommandsTestBase {
   public void migrateAuth() {
     jedis.set("foo", "bar");
     assertEquals("OK",
-      jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), "foo"));
+      jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth(endpoint.getPassword()), "foo"));
     assertEquals("bar", destAuth.get("foo"));
     assertNull(jedis.get("foo"));
 
     jedis.set(bfoo, bbar);
     assertEquals("OK",
-      jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), bfoo));
+      jedis.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth(endpoint.getPassword()), bfoo));
     assertArrayEquals(bbar, destAuth.get(bfoo));
     assertNull(jedis.get(bfoo));
   }
@@ -185,7 +185,7 @@ public class MigrateTest extends JedisCommandsTestBase {
     assertEquals(
       "OK",
       jedis.migrate(host, portAuth, dbAuth, timeout,
-        new MigrateParams().copy().replace().auth("foobared"), "foo"));
+        new MigrateParams().copy().replace().auth(endpoint.getPassword()), "foo"));
     assertEquals("bar1", destAuth.get("foo"));
     assertEquals("bar1", jedis.get("foo"));
 
@@ -194,7 +194,7 @@ public class MigrateTest extends JedisCommandsTestBase {
     assertEquals(
       "OK",
       jedis.migrate(host, portAuth, dbAuth, timeout,
-        new MigrateParams().copy().replace().auth("foobared"), bfoo));
+        new MigrateParams().copy().replace().auth(endpoint.getPassword()), bfoo));
     assertArrayEquals(bbar1, destAuth.get(bfoo));
     assertArrayEquals(bbar1, jedis.get(bfoo));
   }

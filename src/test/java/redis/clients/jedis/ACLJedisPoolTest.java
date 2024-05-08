@@ -29,7 +29,7 @@ public class ACLJedisPoolTest {
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
   }
 
   @Test

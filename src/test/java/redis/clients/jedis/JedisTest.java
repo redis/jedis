@@ -36,7 +36,7 @@ public class JedisTest extends JedisCommandsTestBase {
   @Test
   public void useWithoutConnecting() {
     try (Jedis j = new Jedis()) {
-      j.auth("foobared");
+      j.auth(endpoint.getPassword());
       j.dbSize();
     }
   }
@@ -240,15 +240,17 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    try (Jedis j1 = new Jedis("redis://localhost:6380")) {
-      j1.auth("foobared");
+    EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone1");
+
+    try (Jedis j1 = new Jedis(endpoint1.getURI().toString())) {
+      j1.auth(endpoint1.getPassword());
 //      assertEquals("localhost", j1.getClient().getHost());
 //      assertEquals(6380, j1.getClient().getPort());
       assertEquals(0, j1.getDB());
     }
 
-    try (Jedis j2 = new Jedis("redis://localhost:6380/")) {
-      j2.auth("foobared");
+    try (Jedis j2 = new Jedis(endpoint1.getURI().toString())) {
+      j2.auth(endpoint1.getPassword());
 //      assertEquals("localhost", j2.getClient().getHost());
 //      assertEquals(6380, j2.getClient().getPort());
       assertEquals(0, j2.getDB());
@@ -288,7 +290,7 @@ public class JedisTest extends JedisCommandsTestBase {
   @Test
   public void checkCloseableAfterCommand() {
     Jedis bj = new Jedis();
-    bj.auth("foobared");
+    bj.auth(endpoint.getPassword());
     bj.close();
   }
 

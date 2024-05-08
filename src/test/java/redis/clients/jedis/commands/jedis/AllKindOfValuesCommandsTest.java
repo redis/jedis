@@ -599,8 +599,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   @Test
   public void restoreParams() {
     // take a separate instance
-    Jedis jedis2 = new Jedis(endpoint.getHost(), 6380, 500);
-    jedis2.auth("foobared");
+    Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    jedis2.auth(endpoint.getPassword());
     jedis2.flushAll();
 
     jedis2.set("foo", "bar");
@@ -632,7 +632,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(1000, jedis2.objectIdletime("bar1").longValue());
     jedis2.close();
 
-    Jedis lfuJedis = lfuEndpoint.getJedis();
+    Jedis lfuJedis = lfuEndpoint.getJedis(500);
     lfuJedis.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().frequency(90));
     assertEquals(90, lfuJedis.objectFreq("bar1").longValue());
     lfuJedis.close();
@@ -1141,7 +1141,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals("NOAUTH Authentication required.", ex1.getMessage());
 
     // multi reset
-    jedis.auth("foobared");
+    jedis.auth(endpoint.getPassword());
     jedis.set(counter, "1");
 
     Transaction trans = jedis.multi();
@@ -1151,7 +1151,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     Exception ex2 = assertThrows(JedisDataException.class, trans::exec);
     assertEquals("EXECABORT Transaction discarded because of: NOAUTH Authentication required.", ex2.getMessage());
 
-    jedis.auth("foobared");
+    jedis.auth(endpoint.getPassword());
     assertEquals("1", jedis.get(counter));
   }
 }

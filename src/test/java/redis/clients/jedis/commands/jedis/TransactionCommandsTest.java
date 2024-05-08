@@ -347,7 +347,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   @Test
   public void testResetStateWithFullyExecutedTransaction() {
     Jedis jedis2 = createJedis();
-    jedis2.auth("foobared");
 
     Transaction t = jedis2.multi();
     t.set("mykey", "foo");
@@ -364,8 +363,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   @Test
   public void testCloseable() {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
-    jedis2.auth("foobared");
+    Jedis jedis2 = endpoint.getJedis(500);
 
     Transaction transaction = jedis2.multi();
     transaction.set("a", "1");

@@ -7,12 +7,28 @@
       "redis://localhost:6379"
     ]
   },
+  "standalone0-tls": {
+    "username": "default",
+    "password": "foobared",
+    "tls": true,
+    "endpoints": [
+      "rediss://localhost:6390"
+    ]
+  },
   "standalone0-acl": {
     "username": "acljedis",
     "password": "fizzbuzz",
     "tls": false,
     "endpoints": [
       "redis://localhost:6379"
+    ]
+  },
+  "standalone0-acl-tls": {
+    "username": "acljedis",
+    "password": "fizzbuzz",
+    "tls": true,
+    "endpoints": [
+      "rediss://localhost:6390"
     ]
   },
   "standalone1": {

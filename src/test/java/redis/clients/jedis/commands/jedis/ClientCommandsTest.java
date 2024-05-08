@@ -47,7 +47,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   public void setUp() throws Exception {
     super.setUp();
     client = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
-    client.auth("foobared");
+    client.auth(endpoint.getPassword());
     client.clientSetname(clientName);
   }
 
@@ -97,7 +97,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
   @Test
   public void clientIdmultipleConnection() {
     try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
-      client2.auth("foobared");
+      client2.auth(endpoint.getPassword());
       client2.clientSetname("fancy_jedis_another_name");
 
       // client-id is monotonically increasing
@@ -110,7 +110,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     long clientIdInitial = client.clientId();
     client.disconnect();
     client.connect();
-    client.auth("foobared");
+    client.auth(endpoint.getPassword());
     long clientIdAfterReconnect = client.clientId();
 
     assertTrue(clientIdInitial < clientIdAfterReconnect);
@@ -250,7 +250,7 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     Thread.sleep(maxAge * 2 * 1000);
 
     try (Jedis client2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
-      client2.auth("foobared");
+      client2.auth(endpoint.getPassword());
 
       long killedClients = jedis.clientKill(new ClientKillParams().maxAge(maxAge));
 

@@ -187,8 +187,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
           Thread.sleep(100);
         } catch (InterruptedException e) {
         }
-        Jedis j = new Jedis();
-        j.auth("foobared");
+        Jedis j = new Jedis(endpoint.getHostAndPort());
+        j.auth(endpoint.getPassword());
         for (int i = 0; i < 5; i++) {
           j.incr("foobared");
         }

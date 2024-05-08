@@ -547,7 +547,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   public void testCloseable() throws IOException {
     // we need to test with fresh instance of Jedis
     Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
-    jedis2.auth("foobared");
+    jedis2.auth(endpoint.getPassword());
 
     Pipeline pipeline = jedis2.pipelined();
     Response<String> retFuture1 = pipeline.set("a", "1");

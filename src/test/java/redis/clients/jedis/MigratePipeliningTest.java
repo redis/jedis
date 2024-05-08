@@ -57,7 +57,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     dest.select(db);
 
     destAuth = new Jedis(host, portAuth, 500);
-    destAuth.auth("foobared");
+    destAuth.auth(endpoint.getPassword());
     destAuth.flushAll();
     destAuth.select(dbAuth);
   }
@@ -258,7 +258,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     Pipeline p = jedis.pipelined();
 
     p.set("foo", "bar");
-    p.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), "foo");
+    p.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth(endpoint.getPassword()), "foo");
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
@@ -274,7 +274,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     Pipeline p = jedis.pipelined();
 
     p.set(bfoo, bbar);
-    p.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), bfoo);
+    p.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth(endpoint.getPassword()), bfoo);
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
@@ -286,6 +286,8 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
   @Test
   public void migrateAuth2() {
     assertNull(jedis.get("foo"));
+
+
 
     Pipeline p = destAuth.pipelined();
 

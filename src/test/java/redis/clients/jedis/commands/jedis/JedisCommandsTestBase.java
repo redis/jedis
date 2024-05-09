@@ -54,6 +54,6 @@ public abstract class JedisCommandsTestBase {
 
   protected Jedis createJedis() {
     return new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
-        .protocol(protocol).timeoutMillis(500).build());
+        .protocol(protocol).build());
   }
 }

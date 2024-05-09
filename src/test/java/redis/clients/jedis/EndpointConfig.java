@@ -18,14 +18,14 @@ public class EndpointConfig {
     private List<URI> endpoints;
 
 
-    public EndpointConfig(HostAndPort hnp, String username, String password) {
-        this.tls = false;
+    public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls) {
+        this.tls = tls;
         this.username = username;
         this.password = password;
         this.bdbId = 0;
         this.rawEndpoints = null;
         this.endpoints = Collections.singletonList(
-                URI.create("redis://" + hnp.getHost() + ":" + hnp.getPort())
+                URI.create(getURISchema() + hnp.getHost() + ":" + hnp.getPort())
         );
     }
 
@@ -59,7 +59,7 @@ public class EndpointConfig {
 
     public URI getCustomizedURI(String u, String p, String path) {
         String userInfo = !(u.isEmpty() && p.isEmpty()) ? u + ":" + p + "@" : "";
-        return URI.create((tls ? "rediss" : "redis") + "://" + userInfo + getHost() + ":" + getPort() + path);
+        return URI.create(getURISchema() + userInfo + getHost() + ":" + getPort() + path);
     }
 
     public Connection getConnection() {
@@ -80,6 +80,10 @@ public class EndpointConfig {
 
     public DefaultJedisClientConfig.Builder getClientConfigBuilder() {
         return DefaultJedisClientConfig.builder().user(username).password(password).ssl(tls);
+    }
+
+    private String getURISchema() {
+        return (tls ? "rediss" : "redis") + "://";
     }
 
     public static HashMap<String, EndpointConfig> loadFromJSON(String filePath) throws Exception {

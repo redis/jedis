@@ -43,14 +43,14 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
 
   @BeforeClass
   public static void prepare() {
+    SSLJedisTest.setupTrustStore();
+
     // TODO(imalinovskyi): Remove hardcoded connection settings
     //  once this test is refactored to support RE
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
             RedisVersionUtil.checkRedisMajorVersionNumber(6,
                     new EndpointConfig(new HostAndPort("localhost", 8379),
-                            "default", "cluster")));
-
-    SSLJedisTest.setupTrustStore();
+                            "default", "cluster", true)));
   }
 
   @Test

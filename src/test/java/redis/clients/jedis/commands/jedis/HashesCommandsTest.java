@@ -56,15 +56,6 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
     super(protocol);
   }
 
-  // TODO: remove
-  @org.junit.BeforeClass
-  public static void prepare() {
-    try (redis.clients.jedis.Jedis j = new redis.clients.jedis.Jedis(hnp)) {
-      j.auth("foobared");
-      j.configSet("hash-max-listpack-entries", "0");
-    }
-  }
-
   @Test
   public void hset() {
     assertEquals(1, jedis.hset("foo", "bar", "car"));

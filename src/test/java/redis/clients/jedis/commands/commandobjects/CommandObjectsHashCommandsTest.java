@@ -39,10 +39,6 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
 
   public CommandObjectsHashCommandsTest(RedisProtocol protocol) {
     super(protocol);
-    // TODO: remove -->
-    setUp();
-    exec(commandObjects.configSet("hash-max-listpack-entries", "0"));
-    // <-- TODO: remove
   }
 
   @Test

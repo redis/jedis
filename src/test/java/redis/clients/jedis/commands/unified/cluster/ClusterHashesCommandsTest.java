@@ -17,7 +17,6 @@ public class ClusterHashesCommandsTest extends HashesCommandsTestBase {
   @Before
   public void setUp() {
     jedis = ClusterCommandsTestHelper.getCleanCluster(protocol);
-    jedis.configSet("hash-max-listpack-entries", "0"); // TODO: remove
   }
 
   @After

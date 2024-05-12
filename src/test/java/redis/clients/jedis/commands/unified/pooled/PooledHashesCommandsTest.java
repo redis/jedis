@@ -19,7 +19,6 @@ public class PooledHashesCommandsTest extends HashesCommandsTestBase {
   public void setUp() {
     jedis = PooledCommandsTestHelper.getPooled(protocol);
     PooledCommandsTestHelper.clearData();
-    jedis.configSet("hash-max-listpack-entries", "0"); // TODO: remove
   }
 
   @After

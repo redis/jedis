@@ -9394,6 +9394,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<String> hgetf(String key, HGetFParams params, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetf(key, params, fields));
+  }
+
+  @Override
+  public List<Long> hsetf(String key, HSetFParams params, Map<String, String> fieldValues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetf(key, params, fieldValues));
+  }
+
+  @Override
+  public List<String> hsetfGet(String key, HSetFParams params, HSetFGetOption getOption, Map<String, String> fieldValues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetfGet(key, params, getOption, fieldValues));
+  }
+
+  @Override
   public String memoryDoctor() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(MEMORY, DOCTOR);

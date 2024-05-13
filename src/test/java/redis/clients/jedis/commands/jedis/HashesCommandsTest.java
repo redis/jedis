@@ -1,18 +1,11 @@
 package redis.clients.jedis.commands.jedis;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNull;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
@@ -36,6 +29,9 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.args.HSetFGetOption;
+import redis.clients.jedis.params.HGetFParams;
+import redis.clients.jedis.params.HSetFParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.AssertUtil;
@@ -795,5 +791,50 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
 
     assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
         contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+  }
+
+  @Test
+  public void hgetf() {
+    assertThat(jedis.hgetf("hash", HGetFParams.hgetfParams(), "foo"), nullValue());
+    jedis.hset("hash", "foo", "bar");
+    assertThat(jedis.hgetf("hash", HGetFParams.hgetfParams().ex(20), "foo"),
+        contains(equalTo("bar")));
+    assertThat(jedis.httl("hash", "foo"), contains(greaterThanOrEqualTo(19L)));
+    assertThat(jedis.hgetf("hash", HGetFParams.hgetfParams().lt().px(10_000), "foo"),
+        contains(equalTo("bar")));
+    assertThat(jedis.hpttl("hash", "foo"), contains(lessThanOrEqualTo(10_000L)));
+    assertThat(jedis.hgetf("hash", HGetFParams.hgetfParams().persist(), "foo"),
+        contains(equalTo("bar")));
+    assertThat(jedis.httl("hash", "foo"), contains(equalTo(-1L)));
+  }
+
+  @Test
+  public void hsetf() {
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().doNotCreateKey(),
+        singletonMap("foo", "bar")), nullValue());
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().doNotCreateFields(),
+        singletonMap("foo", "bar")), nullValue());
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().px(20_000),
+        singletonMap("foo", "bar")), contains(equalTo(3L)));
+    assertThat(jedis.hpttl("hash", "foo"), contains(greaterThanOrEqualTo(19_990L)));
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().doNotCreate().doNotCreateFields(),
+        singletonMap("foo", "bar")), contains(equalTo(3L)));
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().doNotCreate().doNotOverwriteFields(),
+        singletonMap("foo", "bar")), contains(equalTo(0L)));
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().doNotOverwriteFields().ex(10),
+        singletonMap("foo", "bar")), contains(equalTo(0L)));
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().gt().ex(10),
+        singletonMap("foo", "bar")), contains(equalTo(1L)));
+    assertThat(jedis.httl("hash", "foo"), contains(equalTo(-1L)));
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().lt().ex(10),
+        singletonMap("foo", "bar")), contains(equalTo(3L)));
+    assertThat(jedis.httl("hash", "foo"), contains(greaterThanOrEqualTo(9L)));
+    assertThat(jedis.hsetf("hash", HSetFParams.hsetfParams().keepTtl(),
+        singletonMap("foo", "bar")), contains(equalTo(1L)));
+    assertThat(jedis.hpttl("hash", "foo"), contains(greaterThanOrEqualTo(9_990L)));
+    assertThat(jedis.hsetfGet("hash", HSetFParams.hsetfParams(), HSetFGetOption.OLD,
+        singletonMap("foo", "bar2")), contains(equalTo("bar")));
+    assertThat(jedis.hsetfGet("hash", HSetFParams.hsetfParams(), HSetFGetOption.NEW,
+        singletonMap("foo", "bared")), contains(equalTo("bared")));
   }
 }

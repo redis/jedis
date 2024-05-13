@@ -1285,6 +1285,21 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HPERSIST).key(key).add(fields.length).addObjects((Object[]) fields),
         BuilderFactory.LONG_LIST);
   }
+
+  public final CommandObject<List<String>> hgetf(String key, HGetFParams params, String... fields) {
+    return new CommandObject<>(commandArguments(HGETF).key(key).addParams(params)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<Long>> hsetf(String key, HSetFParams params, Map<String, String> fieldValues) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETF).key(key).addParams(params)
+        .add(FVS).add(fieldValues.size()), fieldValues), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<String>> hsetfGet(String key, HSetFParams params, HSetFGetOption getOption, Map<String, String> fieldValues) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETF).key(key).addParams(params).add(getOption)
+        .add(FVS).add(fieldValues.size()), fieldValues), BuilderFactory.STRING_LIST);
+  }
   // Hash commands
 
   // Set commands
@@ -4546,18 +4561,12 @@ public class CommandObjects {
   }
 
   private CommandArguments addFlatMapArgs(CommandArguments args, Map<?, ?> map) {
-    for (Map.Entry<? extends Object, ? extends Object> entry : map.entrySet()) {
-      args.add(entry.getKey());
-      args.add(entry.getValue());
-    }
+    map.forEach((key, value) -> args.add(key).add(value));
     return args;
   }
 
   private CommandArguments addSortedSetFlatMapArgs(CommandArguments args, Map<?, Double> map) {
-    for (Map.Entry<? extends Object, Double> entry : map.entrySet()) {
-      args.add(entry.getValue());
-      args.add(entry.getKey());
-    }
+    map.forEach((key, value) -> args.add(value).add(key));
     return args;
   }
 

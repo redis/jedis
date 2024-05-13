@@ -1730,6 +1730,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public List<Long> hpersist(byte[] key, byte[]... fields) {
     return executeCommand(commandObjects.hpersist(key, fields));
   }
+
+  @Override
+  public List<String> hgetf(String key, HGetFParams params, String... fields) {
+    return executeCommand(commandObjects.hgetf(key, params, fields));
+  }
+
+  @Override
+  public List<Long> hsetf(String key, HSetFParams params, Map<String, String> fieldValues) {
+    return executeCommand(commandObjects.hsetf(key, params, fieldValues));
+  }
+
+  @Override
+  public List<String> hsetfGet(String key, HSetFParams params, HSetFGetOption getOption, Map<String, String> fieldValues) {
+    return executeCommand(commandObjects.hsetfGet(key, params, getOption, fieldValues));
+  }
   // Hash commands
 
   // Set commands

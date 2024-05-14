@@ -4735,6 +4735,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<byte[]> hgetf(byte[] key, HGetFParams params, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hgetf(key, params, fields));
+  }
+
+  @Override
+  public List<Long> hsetf(byte[] key, HSetFParams params, Map<byte[], byte[]> fieldValues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetf(key, params, fieldValues));
+  }
+
+  @Override
+  public List<byte[]> hsetfGet(byte[] key, HSetFParams params, HSetFGetOption getOption, Map<byte[], byte[]> fieldValues) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.hsetfGet(key, params, getOption, fieldValues));
+  }
+
+  @Override
   public List<Object> xread(XReadParams xReadParams, Entry<byte[], byte[]>... streams) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xread(xReadParams, streams));

@@ -1296,9 +1296,26 @@ public class CommandObjects {
         .add(FVS).add(fieldValues.size()), fieldValues), BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<List<String>> hsetfGet(String key, HSetFParams params, HSetFGetOption getOption, Map<String, String> fieldValues) {
+  public final CommandObject<List<String>> hsetfGet(String key, HSetFParams params, HSetFGetOption getOption,
+      Map<String, String> fieldValues) {
     return new CommandObject<>(addFlatMapArgs(commandArguments(HSETF).key(key).addParams(params).add(getOption)
         .add(FVS).add(fieldValues.size()), fieldValues), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> hgetf(byte[] key, HGetFParams params, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HGETF).key(key).addParams(params)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<Long>> hsetf(byte[] key, HSetFParams params, Map<byte[], byte[]> fieldValues) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETF).key(key).addParams(params)
+        .add(FVS).add(fieldValues.size()), fieldValues), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> hsetfGet(byte[] key, HSetFParams params, HSetFGetOption getOption,
+      Map<byte[], byte[]> fieldValues) {
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETF).key(key).addParams(params).add(getOption)
+        .add(FVS).add(fieldValues.size()), fieldValues), BuilderFactory.BINARY_LIST);
   }
   // Hash commands
 

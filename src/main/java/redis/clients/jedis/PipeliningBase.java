@@ -791,6 +791,22 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<String>> hgetf(String key, HGetFParams params, String... fields) {
+    return appendCommand(commandObjects.hgetf(key, params, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hsetf(String key, HSetFParams params, Map<String, String> fieldValues) {
+    return appendCommand(commandObjects.hsetf(key, params, fieldValues));
+  }
+
+  @Override
+  public Response<List<String>> hsetfGet(String key, HSetFParams params, HSetFGetOption getOption,
+      Map<String, String> fieldValues) {
+    return appendCommand(commandObjects.hsetfGet(key, params, getOption, fieldValues));
+  }
+
+  @Override
   public Response<Long> sadd(String key, String... members) {
     return appendCommand(commandObjects.sadd(key, members));
   }
@@ -2134,6 +2150,22 @@ public abstract class PipeliningBase
   @Override
   public Response<List<Long>> hpersist(byte[] key, byte[]... fields) {
     return appendCommand(commandObjects.hpersist(key, fields));
+  }
+
+  @Override
+  public Response<List<byte[]>> hgetf(byte[] key, HGetFParams params, byte[]... fields) {
+    return appendCommand(commandObjects.hgetf(key, params, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hsetf(byte[] key, HSetFParams params, Map<byte[], byte[]> fieldValues) {
+    return appendCommand(commandObjects.hsetf(key, params, fieldValues));
+  }
+
+  @Override
+  public Response<List<byte[]>> hsetfGet(byte[] key, HSetFParams params, HSetFGetOption getOption,
+      Map<byte[], byte[]> fieldValues) {
+    return appendCommand(commandObjects.hsetfGet(key, params, getOption, fieldValues));
   }
 
   @Override

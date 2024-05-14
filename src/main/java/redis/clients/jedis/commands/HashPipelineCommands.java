@@ -6,6 +6,9 @@ import java.util.Set;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.args.HSetFGetOption;
+import redis.clients.jedis.params.HGetFParams;
+import redis.clients.jedis.params.HSetFParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -84,4 +87,10 @@ public interface HashPipelineCommands {
   Response<List<Long>> hpttl(String key, String... fields);
 
   Response<List<Long>> hpersist(String key, String... fields);
+
+  Response<List<String>> hgetf(String key, HGetFParams params, String... fields);
+
+  Response<List<Long>> hsetf(String key, HSetFParams params, Map<String, String> fieldValues);
+
+  Response<List<String>> hsetfGet(String key, HSetFParams params, HSetFGetOption getOption, Map<String, String> fieldValues);
 }

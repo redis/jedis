@@ -5,6 +5,9 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.args.HSetFGetOption;
+import redis.clients.jedis.params.HGetFParams;
+import redis.clients.jedis.params.HSetFParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -191,4 +194,18 @@ public interface HashBinaryCommands {
    *         or -1 if the field exists but has no associated expire or -2 if the field does not exist.
    */
   List<Long> hpersist(byte[] key, byte[]... fields);
+
+  /**
+   * For each specified field, returns its value and optionally set the field's remaining expiration
+   * time in seconds / milliseconds.
+   * @param key hash
+   * @param params
+   * @param fields
+   * @return values of fields
+   */
+  List<byte[]> hgetf(byte[] key, HGetFParams params, byte[]... fields);
+
+  List<Long> hsetf(byte[] key, HSetFParams params, Map<byte[], byte[]> fieldValues);
+
+  List<byte[]> hsetfGet(byte[] key, HSetFParams params, HSetFGetOption getOption, Map<byte[], byte[]> fieldValues);
 }

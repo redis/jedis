@@ -1,9 +1,8 @@
 package redis.clients.jedis.params;
 
+import java.util.Objects;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
-
-import java.util.Objects;
 import redis.clients.jedis.args.ExpiryOption;
 
 public class HGetFParams implements IParams {
@@ -72,7 +71,6 @@ public class HGetFParams implements IParams {
     if (condition != null) {
       args.add(condition);
     }
-
     if (expiration != null) {
       args.add(expiration);
       if (expirationValue != null) {
@@ -85,12 +83,14 @@ public class HGetFParams implements IParams {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    HGetFParams that = (HGetFParams) o;
-    return expiration == that.expiration && Objects.equals(expirationValue, that.expirationValue);
+    final HGetFParams that = (HGetFParams) o;
+    return Objects.equals(condition, that.condition)
+        && Objects.equals(expiration, that.expiration)
+        && Objects.equals(expirationValue, that.expirationValue);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(expiration, expirationValue);
+    return Objects.hash(condition, expiration, expirationValue);
   }
 }

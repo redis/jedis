@@ -109,7 +109,6 @@ public class HSetFParams implements IParams {
     if (condition != null) {
       args.add(condition);
     }
-
     if (expiration != null) {
       args.add(expiration);
       if (expirationValue != null) {
@@ -122,13 +121,17 @@ public class HSetFParams implements IParams {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    HSetFParams setParams = (HSetFParams) o;
-    return Objects.equals(condition, setParams.condition) && Objects.equals(expiration, setParams.expiration)
-            && Objects.equals(expirationValue, setParams.expirationValue);
+    final HSetFParams that = (HSetFParams) o;
+    return doNotCreate == that.doNotCreate
+        && doNotCreateFields == that.doNotCreateFields
+        && doNotOverwriteFields == that.doNotOverwriteFields
+        && Objects.equals(condition, that.condition)
+        && Objects.equals(expiration, that.expiration)
+        && Objects.equals(expirationValue, that.expirationValue);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(condition, expiration, expirationValue);
+    return Objects.hash(doNotCreate, doNotCreateFields, doNotOverwriteFields, condition, expiration, expirationValue);
   }
 }

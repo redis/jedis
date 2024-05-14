@@ -10,8 +10,6 @@ public class GetExParams implements IParams {
   private Keyword expiration;
   private Long expirationValue;
 
-  private boolean persist;
-
   public GetExParams() {
   }
 
@@ -82,11 +80,11 @@ public class GetExParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     GetExParams that = (GetExParams) o;
-    return persist == that.persist && expiration == that.expiration && Objects.equals(expirationValue, that.expirationValue);
+    return expiration == that.expiration && Objects.equals(expirationValue, that.expirationValue);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(expiration, expirationValue, persist);
+    return Objects.hash(expiration, expirationValue);
   }
 }

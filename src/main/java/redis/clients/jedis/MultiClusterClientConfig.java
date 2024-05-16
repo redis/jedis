@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
@@ -177,10 +178,18 @@ public final class MultiClusterClientConfig {
         private int priority;
         private HostAndPort hostAndPort;
         private JedisClientConfig clientConfig;
+        private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
             this.clientConfig = clientConfig;
+        }
+
+        public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+                             GenericObjectPoolConfig<Connection> connectionPoolConfig) {
+            this.hostAndPort = hostAndPort;
+            this.clientConfig = clientConfig;
+            this.connectionPoolConfig = connectionPoolConfig;
         }
 
         public int getPriority() {
@@ -197,6 +206,10 @@ public final class MultiClusterClientConfig {
 
         public JedisClientConfig getJedisClientConfig() {
             return clientConfig;
+        }
+
+        public GenericObjectPoolConfig<Connection> getConnectionPoolConfig() {
+            return connectionPoolConfig;
         }
     }
 

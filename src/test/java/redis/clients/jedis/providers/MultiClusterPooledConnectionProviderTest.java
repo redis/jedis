@@ -131,4 +131,22 @@ public class MultiClusterPooledConnectionProviderTest {
         provider.setActiveMultiClusterIndex(3); // Should throw an exception
     }
 
+    @Test
+    public void testConnectionPoolConfigApplied() {
+        ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+        poolConfig.setMaxTotal(8);
+        poolConfig.setMaxIdle(4);
+        poolConfig.setMinIdle(1);
+        ClusterConfig[] clusterConfigs = new ClusterConfig[2];
+        clusterConfigs[0] = new ClusterConfig(hostAndPort1, DefaultJedisClientConfig.builder().build(), poolConfig);
+        clusterConfigs[1] = new ClusterConfig(hostAndPort2, DefaultJedisClientConfig.builder().build(), poolConfig);
+        try (MultiClusterPooledConnectionProvider customProvider = new MultiClusterPooledConnectionProvider(
+                new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
+            MultiClusterPooledConnectionProvider.Cluster activeCluster = customProvider.getCluster();
+            ConnectionPool connectionPool = activeCluster.getConnectionPool();
+            assertEquals(8, connectionPool.getMaxTotal());
+            assertEquals(4, connectionPool.getMaxIdle());
+            assertEquals(1, connectionPool.getMinIdle());
+        }
+    }
 }

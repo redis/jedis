@@ -6,6 +6,7 @@ import java.util.*;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.args.SortingOrder;
 import redis.clients.jedis.params.IParams;
@@ -427,6 +428,7 @@ public class FTSearchParams implements IParams {
    * @param dialect dialect
    * @return this
    */
+  @Internal
   public FTSearchParams dialectOptional(int dialect) {
     if (dialect != 0 && this.dialect == null) {
       this.dialect = dialect;

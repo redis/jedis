@@ -21,12 +21,15 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class JedisPooledTest {
 
-  private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
-  private static final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1"); // password protected
+  private static final EndpointConfig endpointStandalone7 = HostAndPorts.getRedisEndpoint(
+      "standalone7-with-lfu-policy");
+  private static final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint(
+      "standalone1"); // password protected
 
   @Test
   public void checkCloseableConnections() {
-    JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), endpoint1.getHost(), endpoint1.getPort(), 2000);
+    JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), endpointStandalone7.getHost(),
+        endpointStandalone7.getPort(), 2000);
     pool.set("foo", "bar");
     assertEquals("bar", pool.get("foo"));
     pool.close();
@@ -35,7 +38,7 @@ public class JedisPooledTest {
 
   @Test
   public void checkResourceWithConfig() {
-    try (JedisPooled pool = new JedisPooled(endpoint1.getHostAndPort(),
+    try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(),
         DefaultJedisClientConfig.builder().socketTimeoutMillis(5000).build())) {
 
       try (Connection jedis = pool.getPool().getResource()) {
@@ -50,7 +53,7 @@ public class JedisPooledTest {
     GenericObjectPoolConfig<Connection> config = new GenericObjectPoolConfig<>();
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
-    try (JedisPooled pool = new JedisPooled(endpoint1.getHostAndPort(), config);
+    try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), config);
         Connection jedis = pool.getPool().getResource()) {
 
       try (Connection jedis2 = pool.getPool().getResource()) {
@@ -100,7 +103,7 @@ public class JedisPooledTest {
 
   @Test
   public void customClientName() {
-    try (JedisPooled pool = new JedisPooled(endpoint1.getHostAndPort(), DefaultJedisClientConfig.builder()
+    try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), DefaultJedisClientConfig.builder()
         .clientName("my_shiny_client_name").build());
         Connection jedis = pool.getPool().getResource()) {
       assertEquals("my_shiny_client_name", new Jedis(jedis).clientGetname());
@@ -109,7 +112,7 @@ public class JedisPooledTest {
 
   @Test
   public void invalidClientName() {
-    try (JedisPooled pool = new JedisPooled(endpoint1.getHostAndPort(), DefaultJedisClientConfig.builder()
+    try (JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort(), DefaultJedisClientConfig.builder()
         .clientName("invalid client name").build());
          Connection jedis = pool.getPool().getResource()) {
     } catch (Exception e) {
@@ -121,7 +124,7 @@ public class JedisPooledTest {
 
   @Test
   public void getNumActiveWhenPoolIsClosed() {
-    JedisPooled pool = new JedisPooled(endpoint1.getHostAndPort());
+    JedisPooled pool = new JedisPooled(endpointStandalone7.getHostAndPort());
 
     try (Connection j = pool.getPool().getResource()) {
       j.ping();
@@ -133,7 +136,8 @@ public class JedisPooledTest {
 
   @Test
   public void getNumActiveReturnsTheCorrectNumber() {
-    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), endpoint1.getHost(), endpoint1.getPort(), 2000)) {
+    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(),
+        endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
 
       Connection jedis = pool.getPool().getResource();
       assertEquals(1, pool.getPool().getNumActive());
@@ -151,7 +155,8 @@ public class JedisPooledTest {
 
   @Test
   public void closeResourceTwice() {
-    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), endpoint1.getHost(), endpoint1.getPort(), 2000)) {
+    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(),
+        endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
       Connection j = pool.getPool().getResource();
       j.ping();
       j.close();
@@ -161,7 +166,8 @@ public class JedisPooledTest {
 
   @Test
   public void closeBrokenResourceTwice() {
-    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(), endpoint1.getHost(), endpoint1.getPort(), 2000)) {
+    try (JedisPooled pool = new JedisPooled(new ConnectionPoolConfig(),
+        endpointStandalone7.getHost(), endpointStandalone7.getPort(), 2000)) {
       Connection j = pool.getPool().getResource();
       try {
         // make connection broken

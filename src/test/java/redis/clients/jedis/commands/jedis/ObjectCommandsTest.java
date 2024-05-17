@@ -34,7 +34,8 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-    lfuJedis = lfuEndpoint.getJedis();
+    lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(),
+        lfuEndpoint.getClientConfigBuilder().build());
     lfuJedis.connect();
     lfuJedis.flushAll();
   }

@@ -10,23 +10,19 @@ import java.util.*;
 
 public class EndpointConfig {
 
-    private boolean tls;
-    private String username;
-    private String password;
-    private int bdbId;
-    private Object rawEndpoints;
-    private List<URI> endpoints;
-
+    private final boolean tls;
+    private final String username;
+    private final String password;
+    private final int bdbId;
+    private final List<URI> endpoints;
 
     public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls) {
         this.tls = tls;
         this.username = username;
         this.password = password;
         this.bdbId = 0;
-        this.rawEndpoints = null;
         this.endpoints = Collections.singletonList(
-                URI.create(getURISchema() + hnp.getHost() + ":" + hnp.getPort())
-        );
+            URI.create(getURISchema(tls) + hnp.getHost() + ":" + hnp.getPort()));
     }
 
     public HostAndPort getHostAndPort() {
@@ -49,40 +45,68 @@ public class EndpointConfig {
         return getHostAndPort().getPort();
     }
 
+    public int getBdbId() { return bdbId; }
+
     public URI getURI() {
         return endpoints.get(0);
     }
 
-    public URI getCustomizedURI(boolean withCredentials, String path) {
-        return getCustomizedURI(withCredentials ? username : "", withCredentials ? password : "", path);
+    public class EndpointURIBuilder {
+        private boolean tls;
+
+        private String username;
+
+        private String password;
+
+        private String path;
+
+        public EndpointURIBuilder() {
+            this.username = "";
+            this.password = "";
+            this.path = "";
+            this.tls = EndpointConfig.this.tls;
+        }
+
+        public EndpointURIBuilder defaultCredentials() {
+            this.username = EndpointConfig.this.username;
+            this.password = EndpointConfig.this.password;
+            return this;
+        }
+
+        public EndpointURIBuilder tls(boolean v) {
+            this.tls = v;
+            return this;
+        }
+
+        public EndpointURIBuilder path(String v) {
+            this.path = v;
+            return this;
+        }
+
+        public EndpointURIBuilder credentials(String u, String p) {
+            this.username = u;
+            this.password = p;
+            return this;
+        }
+
+        public URI build() {
+            String userInfo = !(this.username.isEmpty() && this.password.isEmpty()) ?
+                this.username + ":" + this.password + "@" :
+                "";
+            return URI.create(
+                getURISchema(this.tls) + userInfo + getHost() + ":" + getPort() + this.path);
+        }
     }
 
-    public URI getCustomizedURI(String u, String p, String path) {
-        String userInfo = !(u.isEmpty() && p.isEmpty()) ? u + ":" + p + "@" : "";
-        return URI.create(getURISchema() + userInfo + getHost() + ":" + getPort() + path);
-    }
-
-    public Connection getConnection() {
-        return new Connection(getHostAndPort(), getClientConfigBuilder().build());
-    }
-
-    public Connection getConnection(int timeoutMillis) {
-        return new Connection(getHostAndPort(), getClientConfigBuilder().timeoutMillis(timeoutMillis).build());
-    }
-
-    public Jedis getJedis() {
-        return new Jedis(getHostAndPort(), getClientConfigBuilder().build());
-    }
-
-    public Jedis getJedis(int timeoutMillis) {
-        return new Jedis(getHostAndPort(), getClientConfigBuilder().timeoutMillis(timeoutMillis).build());
+    public EndpointURIBuilder getURIBuilder() {
+        return new EndpointURIBuilder();
     }
 
     public DefaultJedisClientConfig.Builder getClientConfigBuilder() {
         return DefaultJedisClientConfig.builder().user(username).password(password).ssl(tls);
     }
 
-    private String getURISchema() {
+    protected String getURISchema(boolean tls) {
         return (tls ? "rediss" : "redis") + "://";
     }
 

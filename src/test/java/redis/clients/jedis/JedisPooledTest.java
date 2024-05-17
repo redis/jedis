@@ -22,7 +22,7 @@ import redis.clients.jedis.exceptions.JedisException;
 public class JedisPooledTest {
 
   private static final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
-  private static final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("standalone1"); // password protected
+  private static final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1"); // password protected
 
   @Test
   public void checkCloseableConnections() {
@@ -60,28 +60,29 @@ public class JedisPooledTest {
 
   @Test
   public void startWithUrlString() {
-    try (Jedis j = new Jedis(endpoint2.getHostAndPort())) {
-      j.auth(endpoint2.getPassword());
+    try (Jedis j = new Jedis(endpointStandalone1.getHostAndPort())) {
+      j.auth(endpointStandalone1.getPassword());
       j.select(2);
       j.set("foo", "bar");
     }
 
     try (JedisPooled pool = new JedisPooled(
-        endpoint2.getCustomizedURI("", endpoint2.getPassword(), "/2").toString())) {
+        endpointStandalone1.getURIBuilder().credentials("", endpointStandalone1.getPassword()).path("/2").build()
+            .toString())) {
       assertEquals("bar", pool.get("foo"));
     }
   }
 
   @Test
   public void startWithUrl() throws URISyntaxException {
-    try (Jedis j = new Jedis(endpoint2.getHostAndPort())) {
-      j.auth(endpoint2.getPassword());
+    try (Jedis j = new Jedis(endpointStandalone1.getHostAndPort())) {
+      j.auth(endpointStandalone1.getPassword());
       j.select(2);
       j.set("foo", "bar");
     }
 
     try (JedisPooled pool = new JedisPooled(
-        endpoint2.getCustomizedURI("", endpoint2.getPassword(), "/2"))) {
+        endpointStandalone1.getURIBuilder().credentials("", endpointStandalone1.getPassword()).path("/2").build())) {
       assertEquals("bar", pool.get("foo"));
     }
   }
@@ -93,8 +94,8 @@ public class JedisPooledTest {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() throws URISyntaxException {
-    new JedisPooled(endpoint2.getURI().toString()).close();
-    new JedisPooled(endpoint2.getURI()).close();
+    new JedisPooled(endpointStandalone1.getURI().toString()).close();
+    new JedisPooled(endpointStandalone1.getURI()).close();
   }
 
   @Test
@@ -180,7 +181,7 @@ public class JedisPooledTest {
     DefaultRedisCredentialsProvider credentialsProvider = 
         new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
 
-    try (JedisPooled pool = new JedisPooled(endpoint2.getHostAndPort(), DefaultJedisClientConfig.builder()
+    try (JedisPooled pool = new JedisPooled(endpointStandalone1.getHostAndPort(), DefaultJedisClientConfig.builder()
         .credentialsProvider(credentialsProvider).build())) {
       try {
         pool.get("foo");
@@ -188,7 +189,7 @@ public class JedisPooledTest {
       } catch (JedisException e) { }
       assertEquals(0, pool.getPool().getNumActive());
 
-      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, endpoint2.getPassword()));
+      credentialsProvider.setCredentials(new DefaultRedisCredentials(null, endpointStandalone1.getPassword()));
       assertThat(pool.get("foo"), anything());
     }
   }
@@ -225,7 +226,7 @@ public class JedisPooledTest {
 
           @Override
           public char[] getPassword() {
-            return endpoint2.getPassword().toCharArray();
+            return endpointStandalone1.getPassword().toCharArray();
           }
         };
       }
@@ -240,7 +241,7 @@ public class JedisPooledTest {
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(1);
     poolConfig.setTestOnBorrow(true);
-    try (JedisPooled pool = new JedisPooled(endpoint2.getHostAndPort(), DefaultJedisClientConfig.builder()
+    try (JedisPooled pool = new JedisPooled(endpointStandalone1.getHostAndPort(), DefaultJedisClientConfig.builder()
         .credentialsProvider(credentialsProvider).build(), poolConfig)) {
       try {
         pool.get("foo");

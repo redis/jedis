@@ -17,8 +17,8 @@ import static org.junit.Assert.*;
  */
 public class MultiClusterPooledConnectionProviderTest {
 
-    private final EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone0");
-    private final EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("standalone1");
+    private final EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
+    private final EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
 
     private MultiClusterPooledConnectionProvider provider;
 
@@ -26,8 +26,8 @@ public class MultiClusterPooledConnectionProviderTest {
     public void setUp() {
 
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build());
-        clusterConfigs[1] = new ClusterConfig(endpoint2.getHostAndPort(), endpoint1.getClientConfigBuilder().build());
+        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build());
+        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build());
 
         provider = new MultiClusterPooledConnectionProvider(new MultiClusterClientConfig.Builder(clusterConfigs).build());
     }
@@ -138,8 +138,8 @@ public class MultiClusterPooledConnectionProviderTest {
         poolConfig.setMaxIdle(4);
         poolConfig.setMinIdle(1);
         ClusterConfig[] clusterConfigs = new ClusterConfig[2];
-        clusterConfigs[0] = new ClusterConfig(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build(), poolConfig);
-        clusterConfigs[1] = new ClusterConfig(endpoint2.getHostAndPort(), endpoint1.getClientConfigBuilder().build(), poolConfig);
+        clusterConfigs[0] = new ClusterConfig(endpointStandalone0.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
+        clusterConfigs[1] = new ClusterConfig(endpointStandalone1.getHostAndPort(), endpointStandalone0.getClientConfigBuilder().build(), poolConfig);
         try (MultiClusterPooledConnectionProvider customProvider = new MultiClusterPooledConnectionProvider(
                 new MultiClusterClientConfig.Builder(clusterConfigs).build())) {
             MultiClusterPooledConnectionProvider.Cluster activeCluster = customProvider.getCluster();

@@ -49,7 +49,8 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-    nj = endpoint.getJedis(500);
+    nj = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
   }
 
   @After
@@ -363,7 +364,8 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   @Test
   public void testCloseable() {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = endpoint.getJedis(500);
+    Jedis jedis2 = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());;
 
     Transaction transaction = jedis2.multi();
     transaction.set("a", "1");

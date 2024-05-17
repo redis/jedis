@@ -26,10 +26,10 @@ public class FailoverCommandsTest {
   @Before
   public void prepare() {
     String role1, role2;
-    try (Jedis jedis1 = node1.getJedis()) {
+    try (Jedis jedis1 = new Jedis(node1.getHostAndPort(), node1.getClientConfigBuilder().build())) {
       role1 = (String) jedis1.role().get(0);
     }
-    try (Jedis jedis2 = node2.getJedis()) {
+    try (Jedis jedis2 = new Jedis(node2.getHostAndPort(), node2.getClientConfigBuilder().build())) {
       role2 = (String) jedis2.role().get(0);
     }
 

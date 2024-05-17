@@ -54,10 +54,12 @@ public class SSLACLJedisTest {
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    try (Jedis jedis = new Jedis(endpointWithDefaultUser.getCustomizedURI(true, "").toString())) {
+    try (Jedis jedis = new Jedis(
+        endpointWithDefaultUser.getURIBuilder().defaultCredentials().build().toString())) {
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(endpoint.getCustomizedURI(true, "").toString())) {
+    try (Jedis jedis = new Jedis(
+        endpoint.getURIBuilder().defaultCredentials().build().toString())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -65,10 +67,11 @@ public class SSLACLJedisTest {
   @Test
   public void connectWithUri() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    try (Jedis jedis = new Jedis(endpointWithDefaultUser.getCustomizedURI(true, ""))) {
+    try (Jedis jedis = new Jedis(
+        endpointWithDefaultUser.getURIBuilder().defaultCredentials().build())) {
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(endpoint.getCustomizedURI(true, ""))) {
+    try (Jedis jedis = new Jedis(endpoint.getURIBuilder().defaultCredentials().build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

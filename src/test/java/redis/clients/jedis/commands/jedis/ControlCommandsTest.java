@@ -124,7 +124,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void roleMaster() {
-    try (Jedis master = HostAndPorts.getRedisEndpoint("standalone0").getJedis()) {
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+
+    try (Jedis master = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build())) {
 
       List<Object> role = master.role();
       assertEquals("master", role.get(0));
@@ -142,8 +145,11 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
   @Test
   public void roleSlave() {
     EndpointConfig primaryEndpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    EndpointConfig secondaryEndpoint = HostAndPorts.getRedisEndpoint(
+        "standalone4-replica-of-standalone1");
 
-    try (Jedis slave = HostAndPorts.getRedisEndpoint("standalone4-replica-of-standalone1").getJedis()) {
+    try (Jedis slave = new Jedis(secondaryEndpoint.getHostAndPort(),
+        secondaryEndpoint.getClientConfigBuilder().build())) {
 
       List<Object> role = slave.role();
       assertEquals("slave", role.get(0));

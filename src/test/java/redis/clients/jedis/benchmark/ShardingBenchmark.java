@@ -9,13 +9,13 @@ import redis.clients.jedis.*;
 
 public class ShardingBenchmark {
 
-  private static EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone0");
-  private static EndpointConfig endpoint2 = HostAndPorts.getRedisEndpoint("standalone1");
+  private static EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
   private static final int TOTAL_OPERATIONS = 100000;
 
   public static void main(String[] args) throws UnknownHostException, IOException {
-    try (JedisSharding jedis = new JedisSharding(Arrays.asList(endpoint1.getHostAndPort(), endpoint2.getHostAndPort()),
-        endpoint1.getClientConfigBuilder().build())) {
+    try (JedisSharding jedis = new JedisSharding(Arrays.asList(endpointStandalone0.getHostAndPort(), endpointStandalone1.getHostAndPort()),
+        endpointStandalone0.getClientConfigBuilder().build())) {
 
       long begin = Calendar.getInstance().getTimeInMillis();
 

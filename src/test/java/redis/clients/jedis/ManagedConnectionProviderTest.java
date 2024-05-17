@@ -14,7 +14,8 @@ public class ManagedConnectionProviderTest {
 
   @Before
   public void setUp() {
-    connection = HostAndPorts.getRedisEndpoint("standalone0").getConnection();
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    connection = new Connection(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
   }
 
   @After

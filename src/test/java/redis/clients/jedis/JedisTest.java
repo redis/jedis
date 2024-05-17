@@ -60,7 +60,8 @@ public class JedisTest extends JedisCommandsTestBase {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = endpoint.getJedis()) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -108,7 +109,9 @@ public class JedisTest extends JedisCommandsTestBase {
   public void timeoutConnection() throws Exception {
     final String TIMEOUT_STR = "timeout";
 
-    Jedis jedis = endpoint.getJedis(15000);
+    Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(15000).build());
+
     // read current config
     final String timeout = jedis.configGet(TIMEOUT_STR).get(TIMEOUT_STR);
     try {
@@ -123,7 +126,7 @@ public class JedisTest extends JedisCommandsTestBase {
       jedis.close();
     } finally {
       // reset config
-      jedis = endpoint.getJedis();
+      jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
       jedis.configSet(TIMEOUT_STR, timeout);
       jedis.close();
     }
@@ -172,7 +175,8 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis j2 = new Jedis(endpoint.getCustomizedURI(true, "/2").toString())) {
+    try (Jedis j2 = new Jedis(
+        endpoint.getURIBuilder().defaultCredentials().path("/2").build().toString())) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -187,7 +191,8 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis jedis = new Jedis(endpoint.getCustomizedURI(true, "/2"))) {
+    try (Jedis jedis = new Jedis(
+        endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
       assertEquals("PONG", jedis.ping());
       assertEquals("bar", jedis.get("foo"));
     }
@@ -203,7 +208,8 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis j2 = new Jedis(endpoint.getCustomizedURI(true, "/2?protocol=3").toString())) {
+    try (Jedis j2 = new Jedis(
+        endpoint.getURIBuilder().defaultCredentials().path("/2?protocol=3").build().toString())) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -219,7 +225,8 @@ public class JedisTest extends JedisCommandsTestBase {
       j.set("foo", "bar");
     }
 
-    try (Jedis jedis = new Jedis(endpoint.getCustomizedURI(true, "/2?protocol=3"))) {
+    try (Jedis jedis = new Jedis(
+        endpoint.getURIBuilder().defaultCredentials().path("/2?protocol=3").build())) {
       assertEquals("PONG", jedis.ping());
       assertEquals("bar", jedis.get("foo"));
     }
@@ -240,17 +247,17 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void allowUrlWithNoDBAndNoPassword() {
-    EndpointConfig endpoint1 = HostAndPorts.getRedisEndpoint("standalone1");
+    EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
 
-    try (Jedis j1 = new Jedis(endpoint1.getURI().toString())) {
-      j1.auth(endpoint1.getPassword());
+    try (Jedis j1 = new Jedis(endpointStandalone1.getURI().toString())) {
+      j1.auth(endpointStandalone1.getPassword());
 //      assertEquals("localhost", j1.getClient().getHost());
 //      assertEquals(6380, j1.getClient().getPort());
       assertEquals(0, j1.getDB());
     }
 
-    try (Jedis j2 = new Jedis(endpoint1.getURI().toString())) {
-      j2.auth(endpoint1.getPassword());
+    try (Jedis j2 = new Jedis(endpointStandalone1.getURI().toString())) {
+      j2.auth(endpointStandalone1.getPassword());
 //      assertEquals("localhost", j2.getClient().getHost());
 //      assertEquals(6380, j2.getClient().getPort());
       assertEquals(0, j2.getDB());

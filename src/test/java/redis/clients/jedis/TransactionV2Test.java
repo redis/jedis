@@ -32,9 +32,12 @@ public class TransactionV2Test {
 
   @Before
   public void setUp() throws Exception {
-    conn = endpoint.getConnection(500);
+    conn = new Connection(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
 
-    nj = endpoint.getJedis(500);
+    nj = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
+
     nj.flushAll();
   }
 

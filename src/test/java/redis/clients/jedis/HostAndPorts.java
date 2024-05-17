@@ -20,10 +20,6 @@ public final class HostAndPorts {
       throw new RuntimeException(e);
     }
 
-    // TODO: This is a temporary solution to avoid breaking existing tests.
-    //       We should update the tests to make them compatible
-    //       with RE Discovery Service and OSS Cluster API.
-
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 2));

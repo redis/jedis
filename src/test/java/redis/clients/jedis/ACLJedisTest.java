@@ -83,7 +83,8 @@ public class ACLJedisTest extends JedisCommandsTestBase {
       assertEquals("OK", j.select(2));
       j.set("foo", "bar");
     }
-    try (Jedis j2 = new Jedis(endpoint.getCustomizedURI(true, "/2").toString())) {
+    try (Jedis j2 = new Jedis(
+        endpoint.getURIBuilder().defaultCredentials().path("/2").build().toString())) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }
@@ -96,11 +97,11 @@ public class ACLJedisTest extends JedisCommandsTestBase {
       assertEquals("OK", j.select(2));
       j.set("foo", "bar");
     }
-    try (Jedis j1 = new Jedis(endpoint.getCustomizedURI(true, "/2"))) {
+    try (Jedis j1 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
       assertEquals("PONG", j1.ping());
       assertEquals("bar", j1.get("foo"));
     }
-    try (Jedis j2 = new Jedis(endpoint.getCustomizedURI(true, "/2"))) {
+    try (Jedis j2 = new Jedis(endpoint.getURIBuilder().defaultCredentials().path("/2").build())) {
       assertEquals("PONG", j2.ping());
       assertEquals("bar", j2.get("foo"));
     }

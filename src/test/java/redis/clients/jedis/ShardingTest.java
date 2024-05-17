@@ -21,10 +21,10 @@ public class ShardingTest {
 
   @Before
   public void setUp() {
-    try (Jedis j = redis1.getJedis()) {
+    try (Jedis j = new Jedis(redis1.getHostAndPort(), redis1.getClientConfigBuilder().build())) {
       j.flushAll();
     }
-    try (Jedis j = redis2.getJedis()) {
+    try (Jedis j = new Jedis(redis2.getHostAndPort(), redis2.getClientConfigBuilder().build())) {
       j.flushAll();
     }
   }

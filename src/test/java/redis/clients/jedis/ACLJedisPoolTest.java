@@ -177,7 +177,8 @@ public class ACLJedisPoolTest {
       j.set("foo", "bar");
     }
 
-    try (JedisPool pool = new JedisPool(endpoint.getCustomizedURI(true, "/2"));
+    try (JedisPool pool = new JedisPool(
+        endpoint.getURIBuilder().defaultCredentials().path("/2").build());
         Jedis jedis = pool.getResource()) {
       assertEquals("bar", jedis.get("foo"));
     }
@@ -191,13 +192,14 @@ public class ACLJedisPoolTest {
       j.set("foo", "bar");
     }
 
-    try (JedisPool pool = new JedisPool(endpoint.getCustomizedURI(true, "/2"));
+    try (JedisPool pool = new JedisPool(
+        endpoint.getURIBuilder().defaultCredentials().path("/2").build());
         Jedis jedis = pool.getResource()) {
       assertEquals("bar", jedis.get("foo"));
     }
 
     try (JedisPool pool = new JedisPool(
-        endpointWithDefaultUser.getCustomizedURI(true, "/2"));
+        endpointWithDefaultUser.getURIBuilder().defaultCredentials().path("/2").build());
         Jedis jedis = pool.getResource()) {
       assertEquals("bar", jedis.get("foo"));
     }
@@ -258,10 +260,10 @@ public class ACLJedisPoolTest {
   public void testCloseConnectionOnMakeObject() {
     JedisPoolConfig config = new JedisPoolConfig();
     config.setTestOnBorrow(true);
-    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHost(), endpoint.getPort(), 2000,
-            endpoint.getUsername(), "wrongpassword");
-         Jedis jedis = new Jedis(endpointWithDefaultUser.getCustomizedURI(
-                 "", endpointWithDefaultUser.getPassword(), ""))) {
+    try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpoint.getHost(),
+        endpoint.getPort(), 2000, endpoint.getUsername(), "wrongpassword");
+        Jedis jedis = new Jedis(endpointWithDefaultUser.getURIBuilder()
+            .credentials("", endpointWithDefaultUser.getPassword()).build())) {
       int currentClientCount = getClientCount(jedis.clientList());
       try {
         pool.getResource();

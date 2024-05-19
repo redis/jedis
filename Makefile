@@ -503,7 +503,7 @@ stop:
 test: | start mvn-test stop
 
 mvn-test:
-	mvn -Dtest="redis.clients.jedis.modules.**" clean compile test
+	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
 
 package: | start mvn-package stop
 

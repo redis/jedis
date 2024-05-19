@@ -503,7 +503,7 @@ stop:
 test: | start mvn-test stop
 
 mvn-test:
-	mvn -Dtest=GearsTest clean compile test
+	mvn -Dtest="redis.clients.jedis.modules.**" clean compile test
 
 package: | start mvn-package stop
 

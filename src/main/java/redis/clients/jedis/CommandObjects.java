@@ -1197,23 +1197,23 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Long>> hexpire(byte[] key, long seconds, byte[]... fields) {
-    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds).add(fields.length)
-        .add(FIELDS).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> hexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... fields) {
-    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds).add(condition).add(fields.length)
-        .add(FIELDS).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> hpexpire(byte[] key, long milliseconds, byte[]... fields) {
-    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds).add(fields.length)
-        .add(FIELDS).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> hpexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... fields) {
-    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds).add(condition).add(fields.length)
-        .add(FIELDS).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
 
   public final CommandObject<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, byte[]... fields) {

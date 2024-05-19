@@ -503,7 +503,7 @@ stop:
 test: | start mvn-test stop
 
 mvn-test:
-	mvn -Dtest=${SKIP_SSL}${TEST} clean compile test
+	mvn -Dtest=GearsTest clean compile test
 
 package: | start mvn-package stop
 

@@ -43,6 +43,7 @@ public class SSLACLJedisClusterTest extends JedisClusterTestBase {
 
   @BeforeClass
   public static void prepare() {
+    // We need to set up certificates first before connecting to the endpoint with enabled TLS
     SSLJedisTest.setupTrustStore();
 
     // TODO(imalinovskyi): Remove hardcoded connection settings

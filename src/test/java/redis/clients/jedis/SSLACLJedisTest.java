@@ -28,8 +28,9 @@ public class SSLACLJedisTest {
 
   @BeforeClass
   public static void prepare() {
-    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
+    // We need to set up certificates first before connecting to the endpoint with enabled TLS
     SSLJedisTest.setupTrustStore();
+    // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
         RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
   }

@@ -1,6 +1,5 @@
 {
   "standalone0": {
-    "username": "default",
     "password": "foobared",
     "tls": false,
     "endpoints": [

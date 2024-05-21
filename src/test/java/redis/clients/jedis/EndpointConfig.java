@@ -34,7 +34,7 @@ public class EndpointConfig {
     }
 
     public String getUsername() {
-        return username;
+        return username == null? "default" : username;
     }
 
     public String getHost() {
@@ -68,8 +68,8 @@ public class EndpointConfig {
         }
 
         public EndpointURIBuilder defaultCredentials() {
-            this.username = EndpointConfig.this.username;
-            this.password = EndpointConfig.this.password;
+            this.username = EndpointConfig.this.username == null ? "" : getUsername();
+            this.password = EndpointConfig.this.getPassword();
             return this;
         }
 
@@ -91,7 +91,7 @@ public class EndpointConfig {
 
         public URI build() {
             String userInfo = !(this.username.isEmpty() && this.password.isEmpty()) ?
-                this.username + ":" + this.password + "@" :
+                this.username + ':' + this.password + '@' :
                 "";
             return URI.create(
                 getURISchema(this.tls) + userInfo + getHost() + ":" + getPort() + this.path);
@@ -103,7 +103,14 @@ public class EndpointConfig {
     }
 
     public DefaultJedisClientConfig.Builder getClientConfigBuilder() {
-        return DefaultJedisClientConfig.builder().user(username).password(password).ssl(tls);
+      DefaultJedisClientConfig.Builder builder = DefaultJedisClientConfig.builder()
+          .password(password).ssl(tls);
+
+        if (username != null) {
+          return builder.user(username);
+        }
+
+        return builder;
     }
 
     protected String getURISchema(boolean tls) {

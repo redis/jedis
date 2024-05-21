@@ -27,8 +27,8 @@ public class AutomaticFailoverTest {
   private static final Logger log = LoggerFactory.getLogger(AutomaticFailoverTest.class);
 
   private final HostAndPort hostPortWithFailure = new HostAndPort(HostAndPorts.getRedisEndpoint("standalone0").getHost(), 6378);
-  private final EndpointConfig workingEndpointWithPriority1 = HostAndPorts.getRedisEndpoint("standalone0");
-  private final EndpointConfig workingEndpointWithPriority2 = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
+  private final EndpointConfig endpointForAuthFailure = HostAndPorts.getRedisEndpoint("standalone0");
+  private final EndpointConfig workingEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
 
   private final JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
 
@@ -43,8 +43,8 @@ public class AutomaticFailoverTest {
 
   @Before
   public void setUp() {
-    jedis2 = new Jedis(workingEndpointWithPriority2.getHostAndPort(),
-        workingEndpointWithPriority2.getClientConfigBuilder().build());
+    jedis2 = new Jedis(workingEndpoint.getHostAndPort(),
+        workingEndpoint.getClientConfigBuilder().build());
     jedis2.flushAll();
   }
 
@@ -56,7 +56,7 @@ public class AutomaticFailoverTest {
   @Test
   public void pipelineWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpointWithPriority2.getHostAndPort())).build());
+        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort())).build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractPipeline pipe = client.pipelined();
@@ -73,7 +73,7 @@ public class AutomaticFailoverTest {
   @Test
   public void transactionWithSwitch() {
     MultiClusterPooledConnectionProvider provider = new MultiClusterPooledConnectionProvider(
-        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpointWithPriority2.getHostAndPort())).build());
+        new MultiClusterClientConfig.Builder(getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort())).build());
 
     try (UnifiedJedis client = new UnifiedJedis(provider)) {
       AbstractTransaction tx = client.multi();
@@ -93,7 +93,7 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 10;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpointWithPriority2.getHostAndPort()))
+        getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize);
 
@@ -131,7 +131,7 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 10;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpointWithPriority2.getHostAndPort()))
+        getClusterConfigs(clientConfig, hostPortWithFailure, workingEndpoint.getHostAndPort()))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize)
         .fallbackExceptionList(Arrays.asList(JedisConnectionException.class));
@@ -164,7 +164,7 @@ public class AutomaticFailoverTest {
     int slidingWindowSize = 10;
 
     MultiClusterClientConfig.Builder builder = new MultiClusterClientConfig.Builder(
-        getClusterConfigs(clientConfig, workingEndpointWithPriority1.getHostAndPort(), workingEndpointWithPriority2.getHostAndPort()))
+        getClusterConfigs(clientConfig, endpointForAuthFailure.getHostAndPort(), workingEndpoint.getHostAndPort()))
         .circuitBreakerSlidingWindowMinCalls(slidingWindowMinCalls)
         .circuitBreakerSlidingWindowSize(slidingWindowSize)
         .fallbackExceptionList(Arrays.asList(JedisAccessControlException.class));

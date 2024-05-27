@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
+import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -118,7 +120,9 @@ public class EndpointConfig {
     }
 
     public static HashMap<String, EndpointConfig> loadFromJSON(String filePath) throws Exception {
-        Gson gson = new Gson();
+        Gson gson = new GsonBuilder().setFieldNamingPolicy(
+            FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create();
+
         HashMap<String, EndpointConfig> configs;
         try (FileReader reader = new FileReader(filePath)) {
             configs = gson.fromJson(reader, new TypeToken<HashMap<String, EndpointConfig>>() {

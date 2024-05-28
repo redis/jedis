@@ -10,7 +10,6 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
 
 import java.io.IOException;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.HashMap;
 
 import static org.junit.Assert.*;
@@ -22,6 +21,42 @@ public class DMCRestartTest {
   private final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("re-standalone");
 
   private final FaultInjectionClient faultClient = new FaultInjectionClient();
+
+  public static class FakeApp implements Runnable {
+
+    private FaultInjectionClient.TriggerActionResponse actionResponse = null;
+    private final UnifiedJedis client;
+    private long commandsExecuted = 0;
+    private final String keyName;
+
+    public FakeApp(UnifiedJedis client, String keyName) {
+      this.client = client;
+      this.keyName = keyName;
+    }
+
+    public void setAction(FaultInjectionClient.TriggerActionResponse actionResponse) {
+      this.actionResponse = actionResponse;
+    }
+
+    public long getExecutedCommandsCount() {
+      return commandsExecuted;
+    }
+
+    public void run() {
+      log.info("Starting FakeApp");
+
+      int checkEachSeconds = 5;
+      int keepExecutingForSeconds = 60;
+      int timeoutSeconds = 120;
+
+      while (actionResponse == null || !actionResponse.isCompleted(
+          Duration.ofSeconds(checkEachSeconds), Duration.ofSeconds(keepExecutingForSeconds),
+          Duration.ofSeconds(timeoutSeconds))) {
+        assertTrue(client.incr(keyName) > 0);
+        commandsExecuted++;
+      }
+    }
+  }
 
   @Test
   public void testWithPool() {
@@ -49,6 +84,11 @@ public class DMCRestartTest {
     client.set(keyName, "0");
     assertEquals("0", client.get(keyName));
 
+    // Start thread that imitates an application that uses the client
+    FakeApp fakeApp = new FakeApp(client, keyName);
+    Thread t = new Thread(fakeApp);
+    t.start();
+
     HashMap<String, Object> params = new HashMap<>();
     params.put("bdb_id", endpoint.getBdbId());
 
@@ -62,23 +102,16 @@ public class DMCRestartTest {
     }
 
     log.info("Action id: {}", actionResponse.getActionId());
+    fakeApp.setAction(actionResponse);
 
-    int checkEachSeconds = 5;
-    int keepExecutingForSeconds = 60;
-    int timeoutSeconds = 120;
-    long commandsExecuted = 0;
-
-    while (!actionResponse.isCompleted(Duration.ofSeconds(checkEachSeconds),
-        Duration.ofSeconds(keepExecutingForSeconds), Duration.ofSeconds(timeoutSeconds))) {
-      assertTrue (client.incr(keyName) > 0);
-      commandsExecuted++;
+    try {
+      t.join();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
 
-    log.info("Commands executed: {}", commandsExecuted);
-    log.info("Test took {} seconds",
-        Duration.between(actionResponse.getFirstRequestAt(), Instant.now()).getSeconds());
-
-    assertEquals(commandsExecuted, Long.parseLong(client.get(keyName)));
+    log.info("Commands executed: {}", fakeApp.getExecutedCommandsCount());
+    assertEquals(fakeApp.getExecutedCommandsCount(), Long.parseLong(client.get(keyName)));
 
     client.close();
   }

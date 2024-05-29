@@ -38,6 +38,8 @@ public class JedisClusterInfoCache {
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
   private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
   private final HostAndPort[] slotNodes = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
+  private List<ConnectionPool>[] replicaSlots;
+  private List<HostAndPort>[] replicaSlotNodes;
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -84,6 +86,10 @@ public class JedisClusterInfoCache {
       topologyRefreshExecutor = Executors.newSingleThreadScheduledExecutor();
       topologyRefreshExecutor.scheduleWithFixedDelay(new TopologyRefreshTask(), topologyRefreshPeriod.toMillis(),
           topologyRefreshPeriod.toMillis(), TimeUnit.MILLISECONDS);
+    }
+    if (clientConfig.isReadOnlyForReplica()) {
+      replicaSlots = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
+      replicaSlotNodes = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
     }
   }
 
@@ -144,6 +150,8 @@ public class JedisClusterInfoCache {
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             assignSlotsToNode(slotNums, targetNode);
+          } else if (clientConfig.isReadOnlyForReplica()) {
+            assignSlotsToReplicaNode(slotNums, targetNode);
           }
         }
       }
@@ -236,6 +244,8 @@ public class JedisClusterInfoCache {
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             assignSlotsToNode(slotNums, targetNode);
+          } else if (clientConfig.isReadOnlyForReplica()) {
+            assignSlotsToReplicaNode(slotNums, targetNode);
           }
         }
       }
@@ -307,6 +317,25 @@ public class JedisClusterInfoCache {
     }
   }
 
+  public void assignSlotsToReplicaNode(List<Integer> targetSlots, HostAndPort targetNode) {
+    w.lock();
+    try {
+      ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
+      for (Integer slot : targetSlots) {
+        if (replicaSlots[slot] == null) {
+          replicaSlots[slot] = new ArrayList<>();
+        }
+        replicaSlots[slot].add(targetPool);
+        if (replicaSlotNodes[slot] == null) {
+          replicaSlotNodes[slot] = new ArrayList<>();
+        }
+        replicaSlotNodes[slot].add(targetNode);
+      }
+    } finally {
+      w.unlock();
+    }
+  }
+
   public ConnectionPool getNode(String nodeKey) {
     r.lock();
     try {
@@ -333,6 +362,15 @@ public class JedisClusterInfoCache {
     r.lock();
     try {
       return slotNodes[slot];
+    } finally {
+      r.unlock();
+    }
+  }
+
+  public List<ConnectionPool> getSlotReplicaPools(int slot) {
+    r.lock();
+    try {
+      return replicaSlots[slot];
     } finally {
       r.unlock();
     }

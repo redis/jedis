@@ -435,6 +435,11 @@ public class Connection implements Closeable {
         }
       }
 
+      // set readonly flag to ALL connections (including master nodes) when enable read from replica
+      if (config.isReadOnlyForReplica()) {
+        fireAndForgetMsg.add(new CommandArguments(Command.READONLY));
+      }
+
       for (CommandArguments arg : fireAndForgetMsg) {
         sendCommand(arg);
       }

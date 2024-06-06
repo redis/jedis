@@ -4,18 +4,26 @@ import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.fluent.Request;
 import com.google.gson.Gson;
 import org.apache.hc.client5.http.fluent.Response;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
 import org.apache.hc.core5.http.ContentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FaultInjectionClient {
 
   private static final String BASE_URL = "http://127.0.0.1:20324";
+
+  private static final Logger log = LoggerFactory.getLogger(FaultInjectionClient.class);
 
   public static class TriggerActionResponse {
     private final String actionId;
@@ -56,10 +64,21 @@ public class FaultInjectionClient {
           firstRequestAt = lastRequestTime;
         }
 
+        RequestConfig requestConfig = RequestConfig.custom()
+          .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
+          .setResponseTimeout(5000, TimeUnit.MILLISECONDS).build();
+
+        CloseableHttpClient httpClient = HttpClientBuilder.create()
+          .setDefaultRequestConfig(requestConfig)
+          .build();
+
         Request request = Request.get(BASE_URL + "/action/" + actionId);
+
         try {
-          Response response = request.execute();
+          Response response = request.execute(httpClient);
           String result = response.returnContent().asString();
+
+          log.info("Action status: {}", result);
 
           if (result.contains("success")) {
             completedAt = Instant.now();

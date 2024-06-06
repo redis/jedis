@@ -4,19 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.*;
 
 public class PooledBenchmark {
 
-  private static HostAndPort hnp = HostAndPorts.getRedisServers().get(0);
+  private static EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
   private static final int TOTAL_OPERATIONS = 100000;
 
   public static void main(String[] args) throws Exception {
-    try (Jedis j = new Jedis(hnp.getHost(), hnp.getPort())) {
-      j.auth("foobared");
+    try (Jedis j = new Jedis(endpoint.getHost(), endpoint.getPort())) {
+      j.auth(endpoint.getPassword());
       j.flushAll();
       j.disconnect();
     }
@@ -27,7 +24,7 @@ public class PooledBenchmark {
   }
 
   private static void withPool() throws Exception {
-    final JedisPooled j = new JedisPooled(hnp.getHost(), hnp.getPort(), null, "foobared");
+    final JedisPooled j = new JedisPooled(endpoint.getHost(), endpoint.getPort(), null, endpoint.getPassword());
     List<Thread> tds = new ArrayList<>();
 
     final AtomicInteger ind = new AtomicInteger();

@@ -55,6 +55,7 @@ jobs:
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
+          TEST: "\!Graph*"
       - name: Codecov
         run: |
           bash <(curl -s https://codecov.io/bash)

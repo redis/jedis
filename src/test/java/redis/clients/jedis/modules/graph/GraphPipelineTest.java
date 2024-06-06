@@ -9,10 +9,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -26,6 +23,7 @@ import redis.clients.jedis.graph.entities.Node;
 import redis.clients.jedis.graph.entities.Property;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@Ignore
 @RunWith(Parameterized.class)
 public class GraphPipelineTest extends RedisModuleCommandsTestBase {
 

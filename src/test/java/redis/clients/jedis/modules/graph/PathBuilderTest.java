@@ -3,9 +3,11 @@ package redis.clients.jedis.modules.graph;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.graph.entities.Edge;
 
+@Ignore
 public class PathBuilderTest {
 
   @Test

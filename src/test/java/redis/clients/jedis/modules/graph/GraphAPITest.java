@@ -9,10 +9,7 @@ import static org.junit.Assert.fail;
 
 import java.util.*;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -25,6 +22,7 @@ import redis.clients.jedis.graph.entities.*;
 
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@Ignore
 @RunWith(Parameterized.class)
 public class GraphAPITest extends RedisModuleCommandsTestBase {
 

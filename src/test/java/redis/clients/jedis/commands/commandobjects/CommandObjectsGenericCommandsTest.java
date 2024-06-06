@@ -1082,8 +1082,8 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
 
   private void assertKeyExists(int dstDb, String key, Object expectedValue) {
     // Cheat and use Jedis, it gives us access to any db.
-    try (Jedis jedis = new Jedis(nodeInfo)) {
-      jedis.auth("foobared");
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort())) {
+      jedis.auth(endpoint.getPassword());
       jedis.select(dstDb);
       assertThat(jedis.get(key), equalTo(expectedValue));
     }

@@ -16,6 +16,7 @@ import org.junit.Test;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.Jedis;
@@ -24,13 +25,15 @@ import redis.clients.jedis.JedisPooled;
 
 public class JedisPooledClientSideCacheTest {
 
-  protected static final HostAndPort hnp = HostAndPorts.getRedisServers().get(1);
+  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
+
+  protected static final HostAndPort hnp = endpoint.getHostAndPort();
 
   protected Jedis control;
 
   @Before
   public void setUp() throws Exception {
-    control = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build());
+    control = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build()); // TODO: use EndpointConfig
     control.flushAll();
   }
 
@@ -40,7 +43,7 @@ public class JedisPooledClientSideCacheTest {
   }
 
   private static final Supplier<JedisClientConfig> clientConfig
-      = () -> DefaultJedisClientConfig.builder().resp3().password("foobared").build();
+      = () -> DefaultJedisClientConfig.builder().resp3().password("foobared").build(); // TODO: use EndpointConfig
 
   private static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig
       = () -> {

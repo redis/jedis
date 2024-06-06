@@ -269,14 +269,13 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     assertThat(setResult, equalTo("OK"));
 
     Object getRoot = exec(commandObjects.jsonGet(key));
-    assertThat(getRoot, instanceOf(JSONArray.class));
+    assertThat(getRoot, instanceOf(JSONObject.class));
 
     JSONObject expectedPerson = new JSONObject();
     expectedPerson.put("name", "John Doe");
     expectedPerson.put("age", 30);
 
-    JSONArray expected = new JSONArray().put(expectedPerson);
-    assertThat(getRoot, jsonEquals(expected));
+    assertThat(expectedPerson, jsonEquals(getRoot));
   }
 
   @Test

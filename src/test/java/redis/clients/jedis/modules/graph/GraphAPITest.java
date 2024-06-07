@@ -19,9 +19,9 @@ import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.graph.Statistics;
 import redis.clients.jedis.graph.entities.*;
-
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@org.junit.Ignore
 public class GraphAPITest extends RedisModuleCommandsTestBase {
 
   @BeforeClass

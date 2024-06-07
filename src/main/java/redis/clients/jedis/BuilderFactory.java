@@ -661,6 +661,7 @@ public final class BuilderFactory {
     }
   };
 
+  @Deprecated
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -683,6 +684,7 @@ public final class BuilderFactory {
     }
   };
 
+  @Deprecated
   public static final Builder<Set<Tuple>> TUPLE_ZSET_RESP3 = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")

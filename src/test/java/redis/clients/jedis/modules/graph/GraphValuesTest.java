@@ -3,7 +3,6 @@ package redis.clients.jedis.modules.graph;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -13,7 +12,6 @@ import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
-@Ignore
 @RunWith(Parameterized.class)
 public class GraphValuesTest extends RedisModuleCommandsTestBase {
 

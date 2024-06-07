@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -24,7 +23,6 @@ import redis.clients.jedis.graph.entities.Node;
 import redis.clients.jedis.graph.entities.Property;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
-@Ignore
 @RunWith(Parameterized.class)
 public class GraphTransactionTest extends RedisModuleCommandsTestBase {
 

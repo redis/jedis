@@ -9,12 +9,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.graph.ResultSet;
 
-@Ignore
 public class PipeliningBaseGraphCommandsTest extends PipeliningBaseMockedTestBase {
 
   @Test

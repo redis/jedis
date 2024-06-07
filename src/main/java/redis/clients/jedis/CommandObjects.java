@@ -2150,10 +2150,6 @@ public class CommandObjects {
   private Builder<List<Tuple>> getTupleListBuilder() {
     return protocol == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_LIST_RESP3 : BuilderFactory.TUPLE_LIST;
   }
-
-  private Builder<Set<Tuple>> getTupleSetBuilder() {
-    return protocol == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_ZSET_RESP3 : BuilderFactory.TUPLE_ZSET;
-  }
   // Sorted Set commands
 
   // Geo commands

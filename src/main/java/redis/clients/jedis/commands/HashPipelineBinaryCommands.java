@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -58,4 +59,29 @@ public interface HashPipelineBinaryCommands {
 
   Response<Long> hstrlen(byte[] key, byte[] field);
 
+  Response<List<Long>> hexpire(byte[] key, long seconds, byte[]... fields);
+
+  Response<List<Long>> hexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... fields);
+
+  Response<List<Long>> hpexpire(byte[] key, long milliseconds, byte[]... fields);
+
+  Response<List<Long>> hpexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... fields);
+
+  Response<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, byte[]... fields);
+
+  Response<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... fields);
+
+  Response<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, byte[]... fields);
+
+  Response<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... fields);
+
+  Response<List<Long>> hexpireTime(byte[] key, byte[]... fields);
+
+  Response<List<Long>> hpexpireTime(byte[] key, byte[]... fields);
+
+  Response<List<Long>> httl(byte[] key, byte[]... fields);
+
+  Response<List<Long>> hpttl(byte[] key, byte[]... fields);
+
+  Response<List<Long>> hpersist(byte[] key, byte[]... fields);
 }

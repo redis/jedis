@@ -17,7 +17,6 @@ import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.Transaction;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 

@@ -107,6 +107,18 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  public void publishInTransaction() {
+    try (AbstractTransaction tx = jedis.multi()) {
+      Response<Long> p1 = tx.publish("foo", "bar");
+      Response<Long> p2 = tx.publish("foo".getBytes(), "bar".getBytes());
+      tx.exec();
+
+      assertEquals(0, p1.get().longValue());
+      assertEquals(0, p2.get().longValue());
+    }
+  }
+
+  @Test
   public void broadcast() {
 
     String script_1 = "return 'jedis'";

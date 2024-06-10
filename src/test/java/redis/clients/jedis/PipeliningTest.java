@@ -257,7 +257,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void pipelineWithPubSub() {
+  public void publishInPipeline() {
     Pipeline pipelined = jedis.pipelined();
     Response<Long> p1 = pipelined.publish("foo", "bar");
     Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());

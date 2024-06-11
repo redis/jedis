@@ -257,7 +257,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   }
 
   @Test
-  public void pipelineWithPubSub() {
+  public void publishInPipeline() {
     Pipeline pipelined = jedis.pipelined();
     Response<Long> p1 = pipelined.publish("foo", "bar");
     Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());
@@ -323,8 +323,10 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.waitReplicas(1, 10);
     p.sync();
 
-    try (Jedis j = new Jedis(HostAndPorts.getRedisServers().get(4))) {
-      j.auth("foobared");
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone4-replica-of-standalone1");
+
+    try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
+      j.auth(endpoint.getPassword());
       assertEquals("replicas", j.get("wait"));
     }
   }
@@ -336,8 +338,10 @@ public class PipeliningTest extends JedisCommandsTestBase {
     p.waitAOF(1L, 0L, 0L);
     p.sync();
 
-    try (Jedis j = new Jedis(HostAndPorts.getRedisServers().get(4))) {
-      j.auth("foobared");
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone4-replica-of-standalone1");
+
+    try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
+      j.auth(endpoint.getPassword());
       assertEquals("aof", j.get("wait"));
     }
   }
@@ -523,14 +527,14 @@ public class PipeliningTest extends JedisCommandsTestBase {
   @Test
   public void testSyncWithNoCommandQueued() {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
 
     Pipeline pipeline = jedis2.pipelined();
     pipeline.sync();
 
     jedis2.close();
 
-    jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
+    jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
 
     pipeline = jedis2.pipelined();
     List<Object> resp = pipeline.syncAndReturnAll();
@@ -542,8 +546,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
   @Test
   public void testCloseable() throws IOException {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis2.auth("foobared");
+    Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    jedis2.auth(endpoint.getPassword());
 
     Pipeline pipeline = jedis2.pipelined();
     Response<String> retFuture1 = pipeline.set("a", "1");

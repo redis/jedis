@@ -33,9 +33,17 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
   private static final byte[] bfoo3 = { 0x07, 0x08, 0x03 };
   private static final byte[] bbar3 = { 0x09, 0x00, 0x03 };
 
-  private static final String host = hnp.getHost();
-  private static final int port = 6386;
-  private static final int portAuth = hnp.getPort() + 1;
+  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-acl");
+
+  private static final EndpointConfig destEndpoint = HostAndPorts.getRedisEndpoint(
+      "standalone7-with-lfu-policy");
+
+  private static final EndpointConfig destEndpointWithAuth = HostAndPorts.getRedisEndpoint(
+      "standalone1");
+
+  private static final String host = destEndpoint.getHost();
+  private static final int port = destEndpoint.getPort();
+  private static final int portAuth = destEndpointWithAuth.getPort();
   private static final int db = 2;
   private static final int dbAuth = 3;
   private static final int timeout = Protocol.DEFAULT_TIMEOUT;
@@ -56,8 +64,8 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     dest.flushAll();
     dest.select(db);
 
-    destAuth = new Jedis(host, portAuth, 500);
-    destAuth.auth("foobared");
+    destAuth = new Jedis(destEndpointWithAuth.getHostAndPort(),
+        destEndpointWithAuth.getClientConfigBuilder().build());
     destAuth.flushAll();
     destAuth.select(dbAuth);
   }
@@ -258,7 +266,8 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     Pipeline p = jedis.pipelined();
 
     p.set("foo", "bar");
-    p.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), "foo");
+    p.migrate(host, portAuth, dbAuth, timeout,
+        new MigrateParams().auth(destEndpointWithAuth.getPassword()), "foo");
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
@@ -274,7 +283,8 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     Pipeline p = jedis.pipelined();
 
     p.set(bfoo, bbar);
-    p.migrate(host, portAuth, dbAuth, timeout, new MigrateParams().auth("foobared"), bfoo);
+    p.migrate(host, portAuth, dbAuth, timeout,
+        new MigrateParams().auth(destEndpointWithAuth.getPassword()), bfoo);
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),
@@ -290,8 +300,9 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     Pipeline p = destAuth.pipelined();
 
     p.set("foo", "bar");
-    p.migrate(host, hnp.getPort(), 0, timeout,
-        new MigrateParams().auth2("acljedis", "fizzbuzz"), "foo");
+    p.migrate(endpoint.getHost(), endpoint.getPort(), 0, timeout,
+        new MigrateParams().auth2(endpoint.getUsername(), endpoint.getPassword()),
+        "foo");
     p.get("foo");
 
     assertThat(p.syncAndReturnAll(),
@@ -307,8 +318,9 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     Pipeline p = dest.pipelined();
 
     p.set(bfoo, bbar);
-    p.migrate(host, hnp.getPort(), 0, timeout,
-        new MigrateParams().auth2("acljedis", "fizzbuzz"), bfoo);
+    p.migrate(endpoint.getHost(), endpoint.getPort(), 0, timeout,
+        new MigrateParams().auth2(endpoint.getUsername(), endpoint.getPassword()),
+        bfoo);
     p.get(bfoo);
 
     assertThat(p.syncAndReturnAll(),

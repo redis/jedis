@@ -22,7 +22,9 @@ public class SentinelCommandsTest {
   protected static final String MASTER_NAME = "mymaster";
 
   protected static final List<HostAndPort> nodes =
-      Arrays.asList(HostAndPorts.getRedisServers().get(2), HostAndPorts.getRedisServers().get(3));
+      Arrays.asList(
+          HostAndPorts.getRedisEndpoint("standalone2-primary").getHostAndPort(),
+          HostAndPorts.getRedisEndpoint("standalone3-replica-of-standalone2").getHostAndPort());
   protected static final Set<String> nodesPorts = nodes.stream()
       .map(HostAndPort::getPort).map(String::valueOf).collect(Collectors.toSet());
 

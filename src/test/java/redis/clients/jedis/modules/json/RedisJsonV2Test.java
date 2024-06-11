@@ -50,8 +50,6 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
 
   @Test
   public void basicSetGetShouldSucceed() {
-    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
-
     // naive set with a path
     jsonV2.jsonSetWithEscape("null", ROOT_PATH, (Object) null);
     assertJsonArrayEquals(jsonArray((Object) null), jsonV2.jsonGet("null", ROOT_PATH));
@@ -65,29 +63,6 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
     jsonV2.jsonSetWithEscape("obj", obj);
     Object expected = gson.fromJson(gson.toJson(obj), Object.class);
     assertTrue(expected.equals(jsonV2.jsonGet("obj")));
-
-    // check an update
-    Path2 p = Path2.of(".str");
-    jsonV2.jsonSet("obj", p, gson.toJson("strung"));
-    assertJsonArrayEquals(jsonArray("strung"), jsonV2.jsonGet("obj", p));
-  }
-
-  @Test
-  public void basicSetGetShouldSucceedResp3() {
-    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
-
-    // naive set with a path
-    jsonV2.jsonSetWithEscape("null", ROOT_PATH, (Object) null);
-    assertJsonArrayEquals(jsonArray((Object) null), jsonV2.jsonGet("null", ROOT_PATH));
-
-    // real scalar value and no path
-    jsonV2.jsonSetWithEscape("str", "strong");
-    assertJsonArrayEquals(jsonArray("strong"), jsonV2.jsonGet("str"));
-
-    // a slightly more complex object
-    IRLObject obj = new IRLObject();
-    jsonV2.jsonSetWithEscape("obj", obj);
-    assertJsonArrayEquals(jsonArray(new JSONObject(gson.toJson(obj))), jsonV2.jsonGet("obj"));
 
     // check an update
     Path2 p = Path2.of(".str");

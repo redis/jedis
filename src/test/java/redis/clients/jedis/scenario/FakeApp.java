@@ -10,11 +10,15 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertTrue;
-
 public class FakeApp implements Runnable {
 
   private static final Logger log = LoggerFactory.getLogger(FakeApp.class);
+
+  public void setKeepExecutingForSeconds(int keepExecutingForSeconds) {
+    this.keepExecutingForSeconds = keepExecutingForSeconds;
+  }
+
+  private int keepExecutingForSeconds = 60;
 
   private FaultInjectionClient.TriggerActionResponse actionResponse = null;
   private final UnifiedJedis client;
@@ -23,7 +27,7 @@ public class FakeApp implements Runnable {
 
   @FunctionalInterface
   public interface ExecutedAction {
-      boolean run(UnifiedJedis client);
+    boolean run(UnifiedJedis client);
   }
 
   public FakeApp(UnifiedJedis client, ExecutedAction action) {
@@ -43,7 +47,6 @@ public class FakeApp implements Runnable {
     log.info("Starting FakeApp");
 
     int checkEachSeconds = 5;
-    int keepExecutingForSeconds = 60;
     int timeoutSeconds = 120;
 
     while (actionResponse == null || !actionResponse.isCompleted(
@@ -52,8 +55,7 @@ public class FakeApp implements Runnable {
       try {
         boolean success = action.run(client);
 
-        if (!success)
-          break;
+        if (!success) break;
       } catch (JedisConnectionException e) {
         log.error("Error executing action", e);
         exceptions.add(e);

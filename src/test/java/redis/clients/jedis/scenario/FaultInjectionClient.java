@@ -64,13 +64,7 @@ public class FaultInjectionClient {
           firstRequestAt = lastRequestTime;
         }
 
-        RequestConfig requestConfig = RequestConfig.custom()
-          .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
-          .setResponseTimeout(5000, TimeUnit.MILLISECONDS).build();
-
-        CloseableHttpClient httpClient = HttpClientBuilder.create()
-          .setDefaultRequestConfig(requestConfig)
-          .build();
+        CloseableHttpClient httpClient = getHttpClient();
 
         Request request = Request.get(BASE_URL + "/action/" + actionId);
 
@@ -93,6 +87,15 @@ public class FaultInjectionClient {
     }
   }
 
+  private static CloseableHttpClient getHttpClient() {
+    RequestConfig requestConfig = RequestConfig.custom()
+        .setConnectionRequestTimeout(5000, TimeUnit.MILLISECONDS)
+        .setResponseTimeout(5000, TimeUnit.MILLISECONDS).build();
+
+    return HttpClientBuilder.create()
+        .setDefaultRequestConfig(requestConfig).build();
+  }
+
   public TriggerActionResponse triggerAction(String actionType, HashMap<String, Object> parameters)
       throws IOException {
     Gson gson = new GsonBuilder().setFieldNamingPolicy(
@@ -104,11 +107,12 @@ public class FaultInjectionClient {
 
     String jsonString = gson.toJson(payload);
 
+    CloseableHttpClient httpClient = getHttpClient();
     Request request = Request.post(BASE_URL + "/action");
     request.bodyString(jsonString, ContentType.APPLICATION_JSON);
 
     try {
-      String result = request.execute().returnContent().asString();
+      String result = request.execute(httpClient).returnContent().asString();
       return gson.fromJson(result, new TypeToken<TriggerActionResponse>() {
       }.getType());
     } catch (IOException e) {

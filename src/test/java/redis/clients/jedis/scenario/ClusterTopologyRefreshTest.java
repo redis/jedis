@@ -1,5 +1,6 @@
 package redis.clients.jedis.scenario;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,10 +20,19 @@ public class ClusterTopologyRefreshTest {
 
   private static final Logger log = LoggerFactory.getLogger(ClusterTopologyRefreshTest.class);
 
-  private final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint(
-      "re-single-shard-oss-cluster");
+  private static EndpointConfig endpoint;
 
   private final FaultInjectionClient faultClient = new FaultInjectionClient();
+
+  @BeforeClass
+  public static void beforeClass() {
+    try {
+      ClusterTopologyRefreshTest.endpoint = HostAndPorts.getRedisEndpoint("re-single-shard-oss-cluster");
+    } catch (IllegalArgumentException e) {
+      log.warn("Skipping test because no Redis endpoint is configured");
+      org.junit.Assume.assumeTrue(false);
+    }
+  }
 
   @Test
   public void testWithPool() {
@@ -39,7 +49,8 @@ public class ClusterTopologyRefreshTest {
 
     try (JedisCluster client = new JedisCluster(spyProvider,
         RecommendedSettings.MAX_RETRIES, RecommendedSettings.MAX_TOTAL_RETRIES_DURATION)) {
-      assertEquals(1, client.getClusterNodes().size());
+      assertEquals("Was this BDB used to run this test before?", 1,
+          client.getClusterNodes().size());
 
       AtomicLong commandsExecuted = new AtomicLong();
 

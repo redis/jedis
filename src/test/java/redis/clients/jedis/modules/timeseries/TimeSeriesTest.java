@@ -148,6 +148,21 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void addParams() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+
+    assertEquals(1000L, client.tsAdd("add1", 1000L, 1.1,
+        TSAddParams.addParams().retention(10000).uncompressed().chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.FIRST).onDuplicate(DuplicatePolicy.LAST).labels(labels)));
+
+    assertEquals(1000L, client.tsAdd("add2", 1000L, 1.1,
+        TSAddParams.addParams().retention(10000).compressed().chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.FIRST).onDuplicate(DuplicatePolicy.LAST).labels(labels)));
+  }
+
+  @Test
   public void testAdd() {
     Map<String, String> labels = new HashMap<>();
     labels.put("l1", "v1");
@@ -412,6 +427,29 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
 
     client.tsIncrBy("seriesIncDec", 100);
     client.tsDecrBy("seriesIncDec", 33);
+  }
+
+  @Test
+  public void incrByDecrByParams() {
+    Map<String, String> labels = new HashMap<>();
+    labels.put("l1", "v1");
+    labels.put("l2", "v2");
+
+    assertEquals(1000L, client.tsIncrBy("incr1", 1.1,
+        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).uncompressed().chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
+
+    assertEquals(1000L, client.tsIncrBy("incr2", 1.1,
+        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).compressed().chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
+
+    assertEquals(1000L, client.tsDecrBy("decr1", 1.1,
+        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).uncompressed().chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
+
+    assertEquals(1000L, client.tsDecrBy("decr2", 1.1,
+        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).compressed().chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
   }
 
   @Test

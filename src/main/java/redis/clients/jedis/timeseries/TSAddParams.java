@@ -9,25 +9,26 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
 /**
- * Represents optional arguments of TS.CREATE command.
+ * Represents optional arguments of TS.ADD command.
  */
-public class TSCreateParams implements IParams {
+public class TSAddParams implements IParams {
 
   private Long retentionPeriod;
   private boolean uncompressed;
   private boolean compressed;
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
+  private DuplicatePolicy onDuplicate;
   private Map<String, String> labels;
 
-  public TSCreateParams() {
+  public TSAddParams() {
   }
 
-  public static TSCreateParams createParams() {
-    return new TSCreateParams();
+  public static TSAddParams addParams() {
+    return new TSAddParams();
   }
 
-  public TSCreateParams retention(long retentionPeriod) {
+  public TSAddParams retention(long retentionPeriod) {
     this.retentionPeriod = retentionPeriod;
     return this;
   }
@@ -36,7 +37,7 @@ public class TSCreateParams implements IParams {
    * ENCODING UNCOMPRESSED
    * @return this
    */
-  public TSCreateParams uncompressed() {
+  public TSAddParams uncompressed() {
     this.uncompressed = true;
     this.compressed = false;
     return this;
@@ -46,19 +47,24 @@ public class TSCreateParams implements IParams {
    * ENCODING COMPRESSED
    * @return this
    */
-  public TSCreateParams compressed() {
+  public TSAddParams compressed() {
     this.compressed = true;
     this.uncompressed = false;
     return this;
   }
 
-  public TSCreateParams chunkSize(long chunkSize) {
+  public TSAddParams chunkSize(long chunkSize) {
     this.chunkSize = chunkSize;
     return this;
   }
 
-  public TSCreateParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
+  public TSAddParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
     this.duplicatePolicy = duplicatePolicy;
+    return this;
+  }
+
+  public TSAddParams onDuplicate(DuplicatePolicy onDuplicate) {
+    this.onDuplicate = onDuplicate;
     return this;
   }
 
@@ -68,7 +74,7 @@ public class TSCreateParams implements IParams {
    * @param labels label-value pairs
    * @return the object itself
    */
-  public TSCreateParams labels(Map<String, String> labels) {
+  public TSAddParams labels(Map<String, String> labels) {
     this.labels = labels;
     return this;
   }
@@ -76,7 +82,7 @@ public class TSCreateParams implements IParams {
   /**
    * Add label-value pair. Multiple pairs can be added through chaining.
    */
-  public TSCreateParams label(String label, String value) {
+  public TSAddParams label(String label, String value) {
     if (this.labels == null) {
       this.labels = new LinkedHashMap<>();
     }
@@ -103,6 +109,14 @@ public class TSCreateParams implements IParams {
 
     if (duplicatePolicy != null) {
       args.add(DUPLICATE_POLICY).add(duplicatePolicy);
+    }
+
+    if (duplicatePolicy != null) {
+      args.add(DUPLICATE_POLICY).add(duplicatePolicy);
+    }
+
+    if (onDuplicate != null) {
+      args.add(ON_DUPLICATE).add(onDuplicate);
     }
 
     if (labels != null) {

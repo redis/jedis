@@ -14,6 +14,7 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
@@ -22,6 +23,7 @@ import redis.clients.jedis.util.KeyValue;
 /**
  * This is high memory dependent solution as all the appending commands will be hold in memory.
  */
+@Experimental
 public class MultiClusterTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
@@ -38,6 +40,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * called with this object.
    * @param provider
    */
+  @Deprecated
   public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider) {
     this(provider, true);
   }
@@ -49,6 +52,7 @@ public class MultiClusterTransaction extends TransactionBase {
    * @param provider
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
+  @Deprecated
   public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti) {
     this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
 
@@ -56,6 +60,21 @@ public class MultiClusterTransaction extends TransactionBase {
       RedisProtocol proto = connection.getRedisProtocol();
       if (proto != null) this.commandObjects.setProtocol(proto);
     }
+
+    if (doMulti) multi();
+  }
+
+  /**
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param provider
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param commandObjects command objects
+   */
+  public MultiClusterTransaction(MultiClusterPooledConnectionProvider provider, boolean doMulti, CommandObjects commandObjects) {
+    super(commandObjects);
+    this.failoverProvider = new CircuitBreakerFailoverConnectionProvider(provider);
 
     if (doMulti) multi();
   }

@@ -7,6 +7,8 @@ import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.Rawable;
 
+import java.util.Objects;
+
 public class XPendingParams implements IParams {
 
   private Long idle;
@@ -102,5 +104,18 @@ public class XPendingParams implements IParams {
     if (consumer != null) {
       args.add(consumer);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XPendingParams that = (XPendingParams) o;
+    return Objects.equals(idle, that.idle) && Objects.equals(start, that.start) && Objects.equals(end, that.end) && Objects.equals(count, that.count) && Objects.equals(consumer, that.consumer);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(idle, start, end, count, consumer);
   }
 }

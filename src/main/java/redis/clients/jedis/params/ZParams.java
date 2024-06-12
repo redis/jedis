@@ -2,6 +2,7 @@ package redis.clients.jedis.params;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
@@ -45,5 +46,18 @@ public class ZParams implements IParams {
   @Override
   public void addParams(CommandArguments args) {
     args.addObjects(params);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ZParams zParams = (ZParams) o;
+    return Objects.equals(params, zParams.params);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(params);
   }
 }

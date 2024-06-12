@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -40,6 +41,10 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
   protected final byte[] bhello = { 0x04, 0x02 };
   protected final byte[] bx = { 0x02, 0x04 };
   protected final byte[] bdst = { 0x11, 0x12, 0x13, 0x14 };
+
+  public ListCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void rpush() {

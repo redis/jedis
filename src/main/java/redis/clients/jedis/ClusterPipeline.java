@@ -46,6 +46,13 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     return cco;
   }
 
+  /**
+   * This method must be called after constructor, if graph commands are going to be used.
+   */
+  public void prepareGraphCommands() {
+    super.prepareGraphCommands(provider);
+  }
+
   @Override
   public void close() {
     try {
@@ -65,10 +72,11 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     return provider.getConnection(nodeKey);
   }
 
-  /**
-   * This method must be called after constructor, if graph commands are going to be used.
-   */
-  public void prepareGraphCommands() {
-    super.prepareGraphCommands(provider);
+  public Response<Long> spublish(String channel, String message) {
+    return appendCommand(commandObjects.spublish(channel, message));
+  }
+
+  public Response<Long> spublish(byte[] channel, byte[] message) {
+    return appendCommand(commandObjects.spublish(channel, message));
   }
 }

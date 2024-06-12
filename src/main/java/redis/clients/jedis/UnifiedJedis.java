@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.json.JSONArray;
 
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -192,6 +194,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
    * <p>
    */
+  @Experimental
   public UnifiedJedis(MultiClusterPooledConnectionProvider provider) {
     this(new CircuitBreakerCommandExecutor(provider), provider);
   }
@@ -211,7 +214,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   // Uses a fetched connection to process protocol. Should be avoided if possible.
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
+  @VisibleForTesting
+  public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
     this(executor, provider, commandObjects, null);
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {
@@ -457,7 +461,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long pexpireAt(byte[] key, long millisecondsTimestamp, ExpiryOption expiryOption) {
-    return executeCommand(commandObjects.expireAt(key, millisecondsTimestamp, expiryOption));
+    return executeCommand(commandObjects.pexpireAt(key, millisecondsTimestamp, expiryOption));
   }
 
   @Override
@@ -825,6 +829,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   @Override
   public String getSet(String key, String value) {
     return executeCommand(commandObjects.getSet(key, value));
@@ -845,6 +853,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.psetex(key, milliseconds, value));
   }
 
+  /**
+   * @deprecated Use {@link UnifiedJedis#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   @Override
   public byte[] getSet(byte[] key, byte[] value) {
     return executeCommand(commandObjects.getSet(key, value));
@@ -1550,6 +1562,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public ScanResult<String> hscanNoValues(String key, String cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public long hstrlen(String key, String field) {
     return executeCommand(commandObjects.hstrlen(key, field));
   }
@@ -1575,8 +1592,143 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public ScanResult<byte[]> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return executeCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public long hstrlen(byte[] key, byte[] field) {
     return executeCommand(commandObjects.hstrlen(key, field));
+  }
+
+  @Override
+  public List<Long> hexpire(String key, long seconds, String... fields) {
+    return executeCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpire(String key, long seconds, ExpiryOption condition, String... fields) {
+    return executeCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(String key, long milliseconds, String... fields) {
+    return executeCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields) {
+    return executeCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(String key, long unixTimeSeconds, String... fields) {
+    return executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields) {
+    return executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(String key, long unixTimeMillis, String... fields) {
+    return executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields) {
+    return executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpire(byte[] key, long seconds, byte[]... fields) {
+    return executeCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... fields) {
+    return executeCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(byte[] key, long milliseconds, byte[]... fields) {
+    return executeCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public List<Long> hpexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... fields) {
+    return executeCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(byte[] key, long unixTimeSeconds, byte[]... fields) {
+    return executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public List<Long> hexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... fields) {
+    return executeCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(byte[] key, long unixTimeMillis, byte[]... fields) {
+    return executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... fields) {
+    return executeCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public List<Long> hexpireTime(String key, String... fields) {
+    return executeCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireTime(String key, String... fields) {
+    return executeCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> httl(String key, String... fields) {
+    return executeCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpttl(String key, String... fields) {
+    return executeCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public List<Long> hexpireTime(byte[] key, byte[]... fields) {
+    return executeCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> hpexpireTime(byte[] key, byte[]... fields) {
+    return executeCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public List<Long> httl(byte[] key, byte[]... fields) {
+    return executeCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpttl(byte[] key, byte[]... fields) {
+    return executeCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public List<Long> hpersist(String key, String... fields) {
+    return executeCommand(commandObjects.hpersist(key, fields));
+  }
+
+  @Override
+  public List<Long> hpersist(byte[] key, byte[]... fields) {
+    return executeCommand(commandObjects.hpersist(key, fields));
   }
   // Hash commands
 
@@ -3047,9 +3199,20 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Map<String, List<StreamEntry>> xreadAsMap(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    return executeCommand(commandObjects.xreadAsMap(xReadParams, streams));
+  }
+
+  @Override
   public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Map<String, List<StreamEntry>> xreadGroupAsMap(String groupName, String consumer,
+      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    return executeCommand(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -4839,19 +5002,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (provider == null) {
       throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider);
+      return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
     } else {
       return new Pipeline(provider.getConnection(), true);
     }
   }
 
+  /**
+   * @return transaction object
+   */
   public AbstractTransaction multi() {
+    return transaction(true);
+  }
+
+  /**
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @return transaction object
+   */
+  public AbstractTransaction transaction(boolean doMulti) {
     if (provider == null) {
-      throw new IllegalStateException("It is not allowed to create Pipeline from this " + getClass());
+      throw new IllegalStateException("It is not allowed to create Transaction from this " + getClass());
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
-      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider);
+      return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, doMulti, commandObjects);
     } else {
-      return new Transaction(provider.getConnection(), true, true);
+      return new Transaction(provider.getConnection(), doMulti, true);
     }
   }
 

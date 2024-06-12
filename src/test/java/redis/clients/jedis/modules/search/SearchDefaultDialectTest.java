@@ -10,7 +10,10 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.NumericField;
@@ -21,6 +24,7 @@ import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 
+@RunWith(Parameterized.class)
 public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
 
   private static final String INDEX = "dialect-INDEX";
@@ -29,6 +33,10 @@ public class SearchDefaultDialectTest extends RedisModuleCommandsTestBase {
   @BeforeClass
   public static void prepare() {
     RedisModuleCommandsTestBase.prepare();
+  }
+
+  public SearchDefaultDialectTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Override

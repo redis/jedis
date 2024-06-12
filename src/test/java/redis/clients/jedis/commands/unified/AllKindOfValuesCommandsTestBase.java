@@ -44,7 +44,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.RedisProtocolUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
@@ -65,6 +64,10 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   protected final byte[] bnx = { 0x6E, 0x78 };
   protected final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
+
+  public AllKindOfValuesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void exists() {
@@ -801,7 +804,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetall() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -819,7 +822,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetallResp3() {
-    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
@@ -836,7 +839,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStream() {
-    Assume.assumeFalse(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeFalse(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
@@ -863,7 +866,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {
-    Assume.assumeTrue(RedisProtocolUtil.getRedisProtocol() == RedisProtocol.RESP3);
+    Assume.assumeTrue(protocol == RedisProtocol.RESP3);
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");

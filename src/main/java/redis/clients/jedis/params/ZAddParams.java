@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class ZAddParams implements IParams {
 
   private Keyword existence;
@@ -75,4 +77,16 @@ public class ZAddParams implements IParams {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    ZAddParams that = (ZAddParams) o;
+    return change == that.change && existence == that.existence && comparison == that.comparison;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(existence, comparison, change);
+  }
 }

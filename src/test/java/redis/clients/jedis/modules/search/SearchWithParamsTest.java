@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -29,6 +31,7 @@ import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
   private static final String index = "testindex";
@@ -42,6 +45,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public SearchWithParamsTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   private void addDocument(String key, Map<String, Object> map) {
     client.hset(key, RediSearchUtil.toStringMap(map));

@@ -281,6 +281,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<String> setGet(String key, String value) {
+    return appendCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public Response<String> setGet(String key, String value, SetParams params) {
     return appendCommand(commandObjects.setGet(key, value, params));
   }
@@ -315,6 +320,10 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   @Override
   public Response<String> getSet(String key, String value) {
     return appendCommand(commandObjects.getSet(key, value));
@@ -707,8 +716,78 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<ScanResult<String>> hscanNoValues(String key, String cursor, ScanParams params) {
+    return appendCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public Response<Long> hstrlen(String key, String field) {
     return appendCommand(commandObjects.hstrlen(key, field));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(String key, long seconds, String... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(String key, long seconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(String key, long milliseconds, String... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, String... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, String... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireTime(String key, String... fields) {
+    return appendCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireTime(String key, String... fields) {
+    return appendCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> httl(String key, String... fields) {
+    return appendCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpttl(String key, String... fields) {
+    return appendCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpersist(String key, String... fields) {
+    return appendCommand(commandObjects.hpersist(key, fields));
   }
 
   @Override
@@ -772,7 +851,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> sdiffStore(String dstKey, String... keys) {
+  public Response<Long> sdiffstore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sdiffstore(dstKey, keys));
   }
 
@@ -1523,8 +1602,18 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<String, List<StreamEntry>>> xreadAsMap(XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadAsMap(xReadParams, streams));
+  }
+
+  @Override
   public Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return appendCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<Map<String, List<StreamEntry>>> xreadGroupAsMap(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+    return appendCommand(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
@@ -1973,8 +2062,78 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<ScanResult<byte[]>> hscanNoValues(byte[] key, byte[] cursor, ScanParams params) {
+    return appendCommand(commandObjects.hscanNoValues(key, cursor, params));
+  }
+
+  @Override
   public Response<Long> hstrlen(byte[] key, byte[] field) {
     return appendCommand(commandObjects.hstrlen(key, field));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(byte[] key, long seconds, byte[]... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... fields) {
+    return appendCommand(commandObjects.hexpire(key, seconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(byte[] key, long milliseconds, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpire(key, milliseconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, byte[]... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... fields) {
+    return appendCommand(commandObjects.hexpireAt(key, unixTimeSeconds, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpireAt(key, unixTimeMillis, condition, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hexpireTime(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpexpireTime(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hpexpireTime(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> httl(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.httl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpttl(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hpttl(key, fields));
+  }
+
+  @Override
+  public Response<List<Long>> hpersist(byte[] key, byte[]... fields) {
+    return appendCommand(commandObjects.hpersist(key, fields));
   }
 
   @Override
@@ -2069,7 +2228,7 @@ public abstract class PipeliningBase
 
   @Override
   public Response<Long> expireAt(byte[] key, long unixTime, ExpiryOption expiryOption) {
-    return appendCommand(commandObjects.expireAt(key, unixTime));
+    return appendCommand(commandObjects.expireAt(key, unixTime, expiryOption));
   }
 
   @Override
@@ -3105,6 +3264,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<byte[]> setGet(byte[] key, byte[] value) {
+    return appendCommand(commandObjects.setGet(key, value));
+  }
+
+  @Override
   public Response<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
     return appendCommand(commandObjects.setGet(key, value, params));
   }
@@ -3139,6 +3303,10 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.getrange(key, startOffset, endOffset));
   }
 
+  /**
+   * @deprecated Use {@link PipeliningBase#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   @Override
   public Response<byte[]> getSet(byte[] key, byte[] value) {
     return appendCommand(commandObjects.getSet(key, value));
@@ -3879,6 +4047,16 @@ public abstract class PipeliningBase
   public Response<List<String>> tsQueryIndex(String... filters) {
     return appendCommand(commandObjects.tsQueryIndex(filters));
   }
+
+  @Override
+  public Response<TSInfo> tsInfo(String key) {
+    return appendCommand(commandObjects.tsInfo(key));
+  }
+
+  @Override
+  public Response<TSInfo> tsInfoDebug(String key) {
+    return appendCommand(commandObjects.tsInfoDebug(key));
+  }
   // RedisTimeSeries commands
 
   // RedisBloom commands
@@ -3985,6 +4163,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Boolean> cfExists(String key, String item) {
     return appendCommand(commandObjects.cfExists(key, item));
+  }
+
+  @Override
+  public Response<List<Boolean>> cfMExists(String key, String... items) {
+    return appendCommand(commandObjects.cfMExists(key, items));
   }
 
   @Override

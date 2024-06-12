@@ -14,8 +14,7 @@ import redis.clients.jedis.params.IParams;
 public class TSAddParams implements IParams {
 
   private Long retentionPeriod;
-  private boolean uncompressed;
-  private boolean compressed;
+  private EncodingFormat encoding;
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
   private DuplicatePolicy onDuplicate;
@@ -33,23 +32,8 @@ public class TSAddParams implements IParams {
     return this;
   }
 
-  /**
-   * ENCODING UNCOMPRESSED
-   * @return this
-   */
-  public TSAddParams uncompressed() {
-    this.uncompressed = true;
-    this.compressed = false;
-    return this;
-  }
-
-  /**
-   * ENCODING COMPRESSED
-   * @return this
-   */
-  public TSAddParams compressed() {
-    this.compressed = true;
-    this.uncompressed = false;
+  public TSAddParams encoding(EncodingFormat encoding) {
+    this.encoding = encoding;
     return this;
   }
 
@@ -97,10 +81,8 @@ public class TSAddParams implements IParams {
       args.add(RETENTION).add(toByteArray(retentionPeriod));
     }
 
-    if (uncompressed) {
-      args.add(ENCODING).add(UNCOMPRESSED);
-    } else if (compressed) {
-      args.add(ENCODING).add(COMPRESSED);
+    if (encoding != null) {
+      args.add(ENCODING).add(encoding);
     }
 
     if (chunkSize != null) {

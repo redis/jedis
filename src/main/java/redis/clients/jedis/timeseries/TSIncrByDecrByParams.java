@@ -15,8 +15,7 @@ public class TSIncrByDecrByParams implements IParams {
 
   private Long timestamp;
   private Long retentionPeriod;
-  private boolean uncompressed;
-  private boolean compressed;
+  private EncodingFormat encoding;
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
   private Map<String, String> labels;
@@ -38,23 +37,8 @@ public class TSIncrByDecrByParams implements IParams {
     return this;
   }
 
-  /**
-   * ENCODING UNCOMPRESSED
-   * @return this
-   */
-  public TSIncrByDecrByParams uncompressed() {
-    this.uncompressed = true;
-    this.compressed = false;
-    return this;
-  }
-
-  /**
-   * ENCODING COMPRESSED
-   * @return this
-   */
-  public TSIncrByDecrByParams compressed() {
-    this.compressed = true;
-    this.uncompressed = false;
+  public TSIncrByDecrByParams encoding(EncodingFormat encoding) {
+    this.encoding = encoding;
     return this;
   }
 
@@ -101,10 +85,8 @@ public class TSIncrByDecrByParams implements IParams {
       args.add(RETENTION).add(toByteArray(retentionPeriod));
     }
 
-    if (uncompressed) {
-      args.add(ENCODING).add(UNCOMPRESSED);
-    } else if (compressed) {
-      args.add(ENCODING).add(COMPRESSED);
+    if (encoding != null) {
+      args.add(ENCODING).add(encoding);
     }
 
     if (chunkSize != null) {

@@ -154,12 +154,12 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     labels.put("l2", "v2");
 
     assertEquals(1000L, client.tsAdd("add1", 1000L, 1.1,
-        TSAddParams.addParams().retention(10000).uncompressed().chunkSize(1000)
+        TSAddParams.addParams().retention(10000).encoding(EncodingFormat.UNCOMPRESSED).chunkSize(1000)
             .duplicatePolicy(DuplicatePolicy.FIRST).onDuplicate(DuplicatePolicy.LAST).labels(labels)));
 
     assertEquals(1000L, client.tsAdd("add2", 1000L, 1.1,
-        TSAddParams.addParams().retention(10000).compressed().chunkSize(1000)
-            .duplicatePolicy(DuplicatePolicy.FIRST).onDuplicate(DuplicatePolicy.LAST).labels(labels)));
+        TSAddParams.addParams().retention(10000).encoding(EncodingFormat.COMPRESSED).chunkSize(1000)
+            .duplicatePolicy(DuplicatePolicy.MIN).onDuplicate(DuplicatePolicy.MAX).labels(labels)));
   }
 
   @Test
@@ -436,20 +436,20 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     labels.put("l2", "v2");
 
     assertEquals(1000L, client.tsIncrBy("incr1", 1.1,
-        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).uncompressed().chunkSize(1000)
-            .duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
+        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).encoding(EncodingFormat.UNCOMPRESSED)
+            .chunkSize(1000).duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
 
     assertEquals(1000L, client.tsIncrBy("incr2", 1.1,
-        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).compressed().chunkSize(1000)
-            .duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
+        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).encoding(EncodingFormat.COMPRESSED)
+            .chunkSize(1000).duplicatePolicy(DuplicatePolicy.MIN).labels(labels)));
 
     assertEquals(1000L, client.tsDecrBy("decr1", 1.1,
-        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).uncompressed().chunkSize(1000)
-            .duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
+        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).encoding(EncodingFormat.COMPRESSED)
+            .chunkSize(1000).duplicatePolicy(DuplicatePolicy.LAST).labels(labels)));
 
     assertEquals(1000L, client.tsDecrBy("decr2", 1.1,
-        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).compressed().chunkSize(1000)
-            .duplicatePolicy(DuplicatePolicy.FIRST).labels(labels)));
+        TSIncrByDecrByParams.params().timestamp(1000).retention(10000).encoding(EncodingFormat.UNCOMPRESSED)
+            .chunkSize(1000).duplicatePolicy(DuplicatePolicy.MAX).labels(labels)));
   }
 
   @Test

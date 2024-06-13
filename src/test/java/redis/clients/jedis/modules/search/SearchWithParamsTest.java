@@ -428,42 +428,42 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
         new Coordinate(34.9001, 29.7100), new Coordinate(34.9100, 29.7100),
         new Coordinate(34.9100, 29.7001), new Coordinate(34.9001, 29.7001)});
-    client.hset("small", "geom", small.toString());
+    client.hsetObject("small", "geom", small);
 
     final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
         new Coordinate(34.9001, 29.7200), new Coordinate(34.9200, 29.7200),
         new Coordinate(34.9200, 29.7001), new Coordinate(34.9001, 29.7001)});
-    client.hset("large", "geom", large.toString());
+    client.hsetObject("large", "geom", large);
 
     // within condition
     final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(34.9000, 29.7000),
         new Coordinate(34.9000, 29.7150), new Coordinate(34.9150, 29.7150),
         new Coordinate(34.9150, 29.7000), new Coordinate(34.9000, 29.7000)});
 
-    SearchResult res = client.ftSearch(index, "@geom:[within $poly]",
+    SearchResult result = client.ftSearch(index, "@geom:[within $poly]",
         FTSearchParams.searchParams().addParam("poly", within).dialect(3));
-    assertEquals(1, res.getTotalResults());
-    assertEquals(1, res.getDocuments().size());
-    assertEquals(small, reader.read(res.getDocuments().get(0).getString("geom")));
+    assertEquals(1, result.getTotalResults());
+    assertEquals(1, result.getDocuments().size());
+    assertEquals(small, reader.read(result.getDocuments().get(0).getString("geom")));
 
     // contains condition
     final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(34.9002, 29.7002),
         new Coordinate(34.9002, 29.7050), new Coordinate(34.9050, 29.7050),
         new Coordinate(34.9050, 29.7002), new Coordinate(34.9002, 29.7002)});
 
-    res = client.ftSearch(index, "@geom:[contains $poly]",
+    result = client.ftSearch(index, "@geom:[contains $poly]",
         FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
-    assertEquals(2, res.getTotalResults());
-    assertEquals(2, res.getDocuments().size());
+    assertEquals(2, result.getTotalResults());
+    assertEquals(2, result.getDocuments().size());
 
     // point type
     final Point point = factory.createPoint(new Coordinate(34.9010, 29.7010));
     client.hset("point", "geom", point.toString());
 
-    res = client.ftSearch(index, "@geom:[within $poly]",
+    result = client.ftSearch(index, "@geom:[within $poly]",
         FTSearchParams.searchParams().addParam("poly", within).dialect(3));
-    assertEquals(2, res.getTotalResults());
-    assertEquals(2, res.getDocuments().size());
+    assertEquals(2, result.getTotalResults());
+    assertEquals(2, result.getDocuments().size());
   }
 
   @Test
@@ -474,41 +474,57 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertOK(client.ftCreate(index, GeoShapeField.of("geom", CoordinateSystem.FLAT)));
 
     // polygon type
-    final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
-        new Coordinate(1, 100), new Coordinate(100, 100), new Coordinate(100, 1), new Coordinate(1, 1)});
-    client.hset("small", "geom", small.toString());
+    final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(20, 20),
+        new Coordinate(20, 100), new Coordinate(100, 100), new Coordinate(100, 20), new Coordinate(20, 20)});
+    client.hsetObject("small", "geom", small);
 
-    final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
-        new Coordinate(1, 200), new Coordinate(200, 200), new Coordinate(200, 1), new Coordinate(1, 1)});
-    client.hset("large", "geom", large.toString());
+    final Polygon large = factory.createPolygon(new Coordinate[]{new Coordinate(10, 10),
+        new Coordinate(10, 200), new Coordinate(200, 200), new Coordinate(200, 10), new Coordinate(10, 10)});
+    client.hsetObject("large", "geom", large);
 
     // within condition
     final Polygon within = factory.createPolygon(new Coordinate[]{new Coordinate(0, 0),
         new Coordinate(0, 150), new Coordinate(150, 150), new Coordinate(150, 0), new Coordinate(0, 0)});
 
-    SearchResult res = client.ftSearch(index, "@geom:[within $poly]",
+    SearchResult result = client.ftSearch(index, "@geom:[within $poly]",
         FTSearchParams.searchParams().addParam("poly", within).dialect(3));
-    assertEquals(1, res.getTotalResults());
-    assertEquals(1, res.getDocuments().size());
-    assertEquals(small, reader.read(res.getDocuments().get(0).getString("geom")));
+    assertEquals(1, result.getTotalResults());
+    assertEquals(1, result.getDocuments().size());
+    assertEquals(small, reader.read(result.getDocuments().get(0).getString("geom")));
 
     // contains condition
-    final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(2, 2),
-        new Coordinate(2, 50), new Coordinate(50, 50), new Coordinate(50, 2), new Coordinate(2, 2)});
+    final Polygon contains = factory.createPolygon(new Coordinate[]{new Coordinate(25, 25),
+        new Coordinate(25, 50), new Coordinate(50, 50), new Coordinate(50, 25), new Coordinate(25, 25)});
 
-    res = client.ftSearch(index, "@geom:[contains $poly]",
+    result = client.ftSearch(index, "@geom:[contains $poly]",
         FTSearchParams.searchParams().addParam("poly", contains).dialect(3));
-    assertEquals(2, res.getTotalResults());
-    assertEquals(2, res.getDocuments().size());
+    assertEquals(2, result.getTotalResults());
+    assertEquals(2, result.getDocuments().size());
+
+    // intersects and disjoint
+    final Polygon disjointersect = factory.createPolygon(new Coordinate[]{new Coordinate(150, 150),
+        new Coordinate(150, 250), new Coordinate(250, 250), new Coordinate(250, 150), new Coordinate(150, 150)});
+
+    result = client.ftSearch(index, "@geom:[intersects $poly]",
+        FTSearchParams.searchParams().addParam("poly", disjointersect).dialect(3));
+    assertEquals(1, result.getTotalResults());
+    assertEquals(1, result.getDocuments().size());
+    assertEquals(large, reader.read(result.getDocuments().get(0).getString("geom")));
+
+    result = client.ftSearch(index, "@geom:[disjoint $poly]",
+        FTSearchParams.searchParams().addParam("poly", disjointersect).dialect(3));
+    assertEquals(1, result.getTotalResults());
+    assertEquals(1, result.getDocuments().size());
+    assertEquals(small, reader.read(result.getDocuments().get(0).getString("geom")));
 
     // point type
-    final Point point = factory.createPoint(new Coordinate(10, 10));
-    client.hset("point", "geom", point.toString());
+    final Point point = factory.createPoint(new Coordinate(30, 30));
+    client.hsetObject("point", "geom", point);
 
-    res = client.ftSearch(index, "@geom:[within $poly]",
+    result = client.ftSearch(index, "@geom:[within $poly]",
         FTSearchParams.searchParams().addParam("poly", within).dialect(3));
-    assertEquals(2, res.getTotalResults());
-    assertEquals(2, res.getDocuments().size());
+    assertEquals(2, result.getTotalResults());
+    assertEquals(2, result.getDocuments().size());
   }
 
   @Test

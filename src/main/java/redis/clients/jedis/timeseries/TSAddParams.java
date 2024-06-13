@@ -18,6 +18,11 @@ public class TSAddParams implements IParams {
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
   private DuplicatePolicy onDuplicate;
+
+  private boolean ignore;
+  private long ignoreMaxTimediff;
+  private double ignoreMaxValDiff;
+
   private Map<String, String> labels;
 
   public TSAddParams() {
@@ -52,6 +57,13 @@ public class TSAddParams implements IParams {
     return this;
   }
 
+  public TSAddParams ignore(long maxTimediff, double maxValDiff) {
+    this.ignore = true;
+    this.ignoreMaxTimediff = maxTimediff;
+    this.ignoreMaxValDiff = maxValDiff;
+    return this;
+  }
+
   /**
    * Set label-value pairs
    *
@@ -65,6 +77,9 @@ public class TSAddParams implements IParams {
 
   /**
    * Add label-value pair. Multiple pairs can be added through chaining.
+   * @param label
+   * @param value
+   * @return the object itself
    */
   public TSAddParams label(String label, String value) {
     if (this.labels == null) {
@@ -99,6 +114,10 @@ public class TSAddParams implements IParams {
 
     if (onDuplicate != null) {
       args.add(ON_DUPLICATE).add(onDuplicate);
+    }
+
+    if (ignore) {
+      args.add(IGNORE).add(ignoreMaxTimediff).add(ignoreMaxValDiff);
     }
 
     if (labels != null) {

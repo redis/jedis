@@ -113,7 +113,7 @@ public interface RedisTimeSeriesCommands {
    * @param incrByParams
    * @return timestamp
    */
-  long tsIncrBy(String key, double addend, TSIncrByDecrByParams incrByParams);
+  long tsIncrBy(String key, double addend, TSIncrOrDecrByParams incrByParams);
 
   long tsDecrBy(String key, double value);
 
@@ -134,7 +134,7 @@ public interface RedisTimeSeriesCommands {
    * @param decrByParams
    * @return timestamp
    */
-  long tsDecrBy(String key, double subtrahend, TSIncrByDecrByParams decrByParams);
+  long tsDecrBy(String key, double subtrahend, TSIncrOrDecrByParams decrByParams);
 
   /**
    * {@code TS.RANGE key fromTimestamp toTimestamp}

@@ -17,6 +17,11 @@ public class TSCreateParams implements IParams {
   private EncodingFormat encoding;
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
+
+  private boolean ignore;
+  private long ignoreMaxTimediff;
+  private double ignoreMaxValDiff;
+
   private Map<String, String> labels;
 
   public TSCreateParams() {
@@ -56,6 +61,13 @@ public class TSCreateParams implements IParams {
     return this;
   }
 
+  public TSCreateParams ignore(long maxTimediff, double maxValDiff) {
+    this.ignore = true;
+    this.ignoreMaxTimediff = maxTimediff;
+    this.ignoreMaxValDiff = maxValDiff;
+    return this;
+  }
+
   /**
    * Set label-value pairs
    *
@@ -69,6 +81,9 @@ public class TSCreateParams implements IParams {
 
   /**
    * Add label-value pair. Multiple pairs can be added through chaining.
+   * @param label
+   * @param value
+   * @return the object itself
    */
   public TSCreateParams label(String label, String value) {
     if (this.labels == null) {
@@ -95,6 +110,10 @@ public class TSCreateParams implements IParams {
 
     if (duplicatePolicy != null) {
       args.add(DUPLICATE_POLICY).add(duplicatePolicy);
+    }
+
+    if (ignore) {
+      args.add(IGNORE).add(ignoreMaxTimediff).add(ignoreMaxValDiff);
     }
 
     if (labels != null) {

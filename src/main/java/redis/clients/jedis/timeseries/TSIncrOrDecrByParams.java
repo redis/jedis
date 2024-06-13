@@ -11,44 +11,64 @@ import redis.clients.jedis.params.IParams;
 /**
  * Represents optional arguments of TS.INCRBY or TS.DECRBY commands.
  */
-public class TSIncrByDecrByParams implements IParams {
+public class TSIncrOrDecrByParams implements IParams {
 
   private Long timestamp;
   private Long retentionPeriod;
   private EncodingFormat encoding;
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
+
+  private boolean ignore;
+  private long ignoreMaxTimediff;
+  private double ignoreMaxValDiff;
+
   private Map<String, String> labels;
 
-  public TSIncrByDecrByParams() {
+  public TSIncrOrDecrByParams() {
   }
 
-  public static TSIncrByDecrByParams params() {
-    return new TSIncrByDecrByParams();
+  public static TSIncrOrDecrByParams params() {
+    return new TSIncrOrDecrByParams();
   }
 
-  public TSIncrByDecrByParams timestamp(long timestamp) {
+  public static TSIncrOrDecrByParams incrByParams() {
+    return new TSIncrOrDecrByParams();
+  }
+
+  public static TSIncrOrDecrByParams decrByParams() {
+    return new TSIncrOrDecrByParams();
+  }
+
+  public TSIncrOrDecrByParams timestamp(long timestamp) {
     this.timestamp = timestamp;
     return this;
   }
 
-  public TSIncrByDecrByParams retention(long retentionPeriod) {
+  public TSIncrOrDecrByParams retention(long retentionPeriod) {
     this.retentionPeriod = retentionPeriod;
     return this;
   }
 
-  public TSIncrByDecrByParams encoding(EncodingFormat encoding) {
+  public TSIncrOrDecrByParams encoding(EncodingFormat encoding) {
     this.encoding = encoding;
     return this;
   }
 
-  public TSIncrByDecrByParams chunkSize(long chunkSize) {
+  public TSIncrOrDecrByParams chunkSize(long chunkSize) {
     this.chunkSize = chunkSize;
     return this;
   }
 
-  public TSIncrByDecrByParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
+  public TSIncrOrDecrByParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
     this.duplicatePolicy = duplicatePolicy;
+    return this;
+  }
+
+  public TSIncrOrDecrByParams ignore(long maxTimediff, double maxValDiff) {
+    this.ignore = true;
+    this.ignoreMaxTimediff = maxTimediff;
+    this.ignoreMaxValDiff = maxValDiff;
     return this;
   }
 
@@ -58,15 +78,18 @@ public class TSIncrByDecrByParams implements IParams {
    * @param labels label-value pairs
    * @return the object itself
    */
-  public TSIncrByDecrByParams labels(Map<String, String> labels) {
+  public TSIncrOrDecrByParams labels(Map<String, String> labels) {
     this.labels = labels;
     return this;
   }
 
   /**
    * Add label-value pair. Multiple pairs can be added through chaining.
+   * @param label
+   * @param value
+   * @return the object itself
    */
-  public TSIncrByDecrByParams label(String label, String value) {
+  public TSIncrOrDecrByParams label(String label, String value) {
     if (this.labels == null) {
       this.labels = new LinkedHashMap<>();
     }
@@ -95,6 +118,10 @@ public class TSIncrByDecrByParams implements IParams {
 
     if (duplicatePolicy != null) {
       args.add(DUPLICATE_POLICY).add(duplicatePolicy);
+    }
+
+    if (ignore) {
+      args.add(IGNORE).add(ignoreMaxTimediff).add(ignoreMaxValDiff);
     }
 
     if (labels != null) {

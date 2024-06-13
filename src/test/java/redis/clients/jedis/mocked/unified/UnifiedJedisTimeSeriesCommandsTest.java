@@ -220,7 +220,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
   public void testTsDecrByWithParams() {
     String key = "testKey";
     double value = 1.5;
-    TSIncrByDecrByParams decrByParams = mock(TSIncrByDecrByParams.class);
+    TSIncrOrDecrByParams decrByParams = mock(TSIncrOrDecrByParams.class);
     long expectedResponse = 5L;
 
     when(commandObjects.tsDecrBy(key, value, decrByParams)).thenReturn(longCommandObject);
@@ -341,7 +341,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
   public void testTsIncrByWithParams() {
     String key = "testKey";
     double value = 2.5;
-    TSIncrByDecrByParams incrByParams = mock(TSIncrByDecrByParams.class);
+    TSIncrOrDecrByParams incrByParams = mock(TSIncrOrDecrByParams.class);
     long expectedResponse = 5L;
 
     when(commandObjects.tsIncrBy(key, value, incrByParams)).thenReturn(longCommandObject);

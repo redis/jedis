@@ -3969,7 +3969,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> tsIncrBy(String key, double addend, TSIncrByDecrByParams incrByParams) {
+  public Response<Long> tsIncrBy(String key, double addend, TSIncrOrDecrByParams incrByParams) {
     return appendCommand(commandObjects.tsIncrBy(key, addend, incrByParams));
   }
 
@@ -3984,7 +3984,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> tsDecrBy(String key, double subtrahend, TSIncrByDecrByParams decrByParams) {
+  public Response<Long> tsDecrBy(String key, double subtrahend, TSIncrOrDecrByParams decrByParams) {
     return appendCommand(commandObjects.tsDecrBy(key, subtrahend, decrByParams));
   }
 

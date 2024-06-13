@@ -412,6 +412,9 @@ public class SearchTest extends RedisModuleCommandsTestBase {
 
     Query query =  new Query("@numval:[$min $max]").addParam("min", 1).addParam("max", 2).dialect(2);
     assertEquals(2, client.ftSearch(index, query).getTotalResults());
+
+    query =  new Query("@numval:[$eq]").addParam("eq", 2).dialect(5);
+    assertEquals(1, client.ftSearch(index, query).getTotalResults());
   }
 
   @Test
@@ -532,6 +535,14 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     res = client.ftSearch(index, new Query("@num:[0 10]"));
     assertEquals(1, res.getTotalResults());
     assertEquals("king:2", res.getDocuments().get(0).getId());
+
+    res = client.ftSearch(index, new Query("@num:[42 42]"));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("king:1", res.getDocuments().get(0).getId());
+
+    res = client.ftSearch(index, new Query("@num:[42]").dialect(5));
+    assertEquals(1, res.getTotalResults());
+    assertEquals("king:1", res.getDocuments().get(0).getId());
   }
 
   @Test
@@ -773,6 +784,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, new Query("@category:{yellow}")).getTotalResults());
     assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
     assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\;purple}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{orange;purple}").dialect(5)).getTotalResults());
     assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange;purple")),
@@ -814,6 +826,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, new Query("hello @category:{yellow}")).getTotalResults());
     assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
     assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\,purple}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{orange,purple}").dialect(5)).getTotalResults());
     assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange,purple")),

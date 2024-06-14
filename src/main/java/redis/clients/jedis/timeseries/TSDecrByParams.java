@@ -1,7 +1,7 @@
 package redis.clients.jedis.timeseries;
 
 /**
- * Represents optional arguments of TS.INCRBY command.
+ * Represents optional arguments of TS.DECRBY command.
  */
 public class TSDecrByParams extends TSArithByParams<TSDecrByParams> {
 

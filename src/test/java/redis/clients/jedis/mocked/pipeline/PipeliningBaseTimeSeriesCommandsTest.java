@@ -143,10 +143,10 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
 
   @Test
   public void testTsDecrByWithParams() {
-    TSIncrOrDecrByParams DecrByParams = mock(TSIncrOrDecrByParams.class);
-    when(commandObjects.tsDecrBy("myTimeSeries", 1.0, DecrByParams)).thenReturn(longCommandObject);
+    TSDecrByParams decrByParams = mock(TSDecrByParams.class);
+    when(commandObjects.tsDecrBy("myTimeSeries", 1.0, decrByParams)).thenReturn(longCommandObject);
 
-    Response<Long> response = pipeliningBase.tsDecrBy("myTimeSeries", 1.0, DecrByParams);
+    Response<Long> response = pipeliningBase.tsDecrBy("myTimeSeries", 1.0, decrByParams);
 
     assertThat(commands, contains(longCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -216,7 +216,7 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
 
   @Test
   public void testTsIncrByWithParams() {
-    TSIncrOrDecrByParams incrByParams = mock(TSIncrOrDecrByParams.class);
+    TSIncrByParams incrByParams = mock(TSIncrByParams.class);
     when(commandObjects.tsIncrBy("myTimeSeries", 1.0, incrByParams)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.tsIncrBy("myTimeSeries", 1.0, incrByParams);

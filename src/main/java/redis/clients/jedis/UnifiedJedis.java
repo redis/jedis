@@ -4534,7 +4534,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long tsIncrBy(String key, double addend, TSIncrOrDecrByParams incrByParams) {
+  public long tsIncrBy(String key, double addend, TSIncrByParams incrByParams) {
     return executeCommand(commandObjects.tsIncrBy(key, addend, incrByParams));
   }
 
@@ -4549,7 +4549,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long tsDecrBy(String key, double subtrahend, TSIncrOrDecrByParams decrByParams) {
+  public long tsDecrBy(String key, double subtrahend, TSDecrByParams decrByParams) {
     return executeCommand(commandObjects.tsDecrBy(key, subtrahend, decrByParams));
   }
 

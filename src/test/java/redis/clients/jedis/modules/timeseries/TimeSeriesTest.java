@@ -453,19 +453,19 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     labels.put("l2", "v2");
 
     assertEquals(1000L, client.tsIncrBy("incr1", 1.1,
-        TSIncrOrDecrByParams.incrByParams().timestamp(1000).retention(10000).encoding(EncodingFormat.UNCOMPRESSED)
+        TSIncrByParams.incrByParams().timestamp(1000).retention(10000).encoding(EncodingFormat.UNCOMPRESSED)
             .chunkSize(1000).duplicatePolicy(DuplicatePolicy.FIRST).ignore(50, 12.5).labels(labels)));
 
     assertEquals(1000L, client.tsIncrBy("incr2", 1.1,
-        TSIncrOrDecrByParams.incrByParams().timestamp(1000).retention(10000).encoding(EncodingFormat.COMPRESSED)
+        TSIncrByParams.incrByParams().timestamp(1000).retention(10000).encoding(EncodingFormat.COMPRESSED)
             .chunkSize(1000).duplicatePolicy(DuplicatePolicy.MIN).ignore(50, 12.5).labels(labels)));
 
     assertEquals(1000L, client.tsDecrBy("decr1", 1.1,
-        TSIncrOrDecrByParams.decrByParams().timestamp(1000).retention(10000).encoding(EncodingFormat.COMPRESSED)
+        TSDecrByParams.decrByParams().timestamp(1000).retention(10000).encoding(EncodingFormat.COMPRESSED)
             .chunkSize(1000).duplicatePolicy(DuplicatePolicy.LAST).ignore(50, 12.5).labels(labels)));
 
     assertEquals(1000L, client.tsDecrBy("decr2", 1.1,
-        TSIncrOrDecrByParams.decrByParams().timestamp(1000).retention(10000).encoding(EncodingFormat.UNCOMPRESSED)
+        TSDecrByParams.decrByParams().timestamp(1000).retention(10000).encoding(EncodingFormat.UNCOMPRESSED)
             .chunkSize(1000).duplicatePolicy(DuplicatePolicy.MAX).ignore(50, 12.5).labels(labels)));
   }
 

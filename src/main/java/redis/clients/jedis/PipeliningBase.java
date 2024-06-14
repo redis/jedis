@@ -3949,11 +3949,6 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> tsAdd(String key, long timestamp, double value, TSAddParams addParams) {
-    return appendCommand(commandObjects.tsAdd(key, timestamp, value, addParams));
-  }
-
-  @Override
   public Response<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries) {
     return appendCommand(commandObjects.tsMAdd(entries));
   }
@@ -3969,11 +3964,6 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> tsIncrBy(String key, double addend, TSIncrOrDecrByParams incrByParams) {
-    return appendCommand(commandObjects.tsIncrBy(key, addend, incrByParams));
-  }
-
-  @Override
   public Response<Long> tsDecrBy(String key, double value) {
     return appendCommand(commandObjects.tsDecrBy(key, value));
   }
@@ -3981,11 +3971,6 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> tsDecrBy(String key, double value, long timestamp) {
     return appendCommand(commandObjects.tsDecrBy(key, value, timestamp));
-  }
-
-  @Override
-  public Response<Long> tsDecrBy(String key, double subtrahend, TSIncrOrDecrByParams decrByParams) {
-    return appendCommand(commandObjects.tsDecrBy(key, subtrahend, decrByParams));
   }
 
   @Override

@@ -14,14 +14,10 @@ import redis.clients.jedis.params.IParams;
 public class TSCreateParams implements IParams {
 
   private Long retentionPeriod;
-  private EncodingFormat encoding;
+  private boolean uncompressed;
+  private boolean compressed;
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
-
-  private boolean ignore;
-  private long ignoreMaxTimediff;
-  private double ignoreMaxValDiff;
-
   private Map<String, String> labels;
 
   public TSCreateParams() {
@@ -36,18 +32,13 @@ public class TSCreateParams implements IParams {
     return this;
   }
 
-  // TODO: deprecate
   public TSCreateParams uncompressed() {
-    return encoding(EncodingFormat.UNCOMPRESSED);
+    this.uncompressed = true;
+    return this;
   }
 
-  // TODO: deprecate
   public TSCreateParams compressed() {
-    return encoding(EncodingFormat.COMPRESSED);
-  }
-
-  public TSCreateParams encoding(EncodingFormat encoding) {
-    this.encoding = encoding;
+    this.compressed = true;
     return this;
   }
 
@@ -58,13 +49,6 @@ public class TSCreateParams implements IParams {
 
   public TSCreateParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
     this.duplicatePolicy = duplicatePolicy;
-    return this;
-  }
-
-  public TSCreateParams ignore(long maxTimediff, double maxValDiff) {
-    this.ignore = true;
-    this.ignoreMaxTimediff = maxTimediff;
-    this.ignoreMaxValDiff = maxValDiff;
     return this;
   }
 
@@ -81,9 +65,6 @@ public class TSCreateParams implements IParams {
 
   /**
    * Add label-value pair. Multiple pairs can be added through chaining.
-   * @param label
-   * @param value
-   * @return the object itself
    */
   public TSCreateParams label(String label, String value) {
     if (this.labels == null) {
@@ -100,8 +81,10 @@ public class TSCreateParams implements IParams {
       args.add(RETENTION).add(toByteArray(retentionPeriod));
     }
 
-    if (encoding != null) {
-      args.add(ENCODING).add(encoding);
+    if (uncompressed) {
+      args.add(ENCODING).add(UNCOMPRESSED);
+    } else if (compressed) {
+      args.add(ENCODING).add(COMPRESSED);
     }
 
     if (chunkSize != null) {
@@ -110,10 +93,6 @@ public class TSCreateParams implements IParams {
 
     if (duplicatePolicy != null) {
       args.add(DUPLICATE_POLICY).add(duplicatePolicy);
-    }
-
-    if (ignore) {
-      args.add(IGNORE).add(ignoreMaxTimediff).add(ignoreMaxValDiff);
     }
 
     if (labels != null) {

@@ -18,10 +18,7 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<Long> tsAdd(String key, long timestamp, double value);
 
-  @Deprecated
   Response<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams);
-
-  Response<Long> tsAdd(String key, long timestamp, double value, TSAddParams addParams);
 
   Response<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries);
 
@@ -29,13 +26,9 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<Long> tsIncrBy(String key, double value, long timestamp);
 
-  Response<Long> tsIncrBy(String key, double addend, TSIncrOrDecrByParams incrByParams);
-
   Response<Long> tsDecrBy(String key, double value);
 
   Response<Long> tsDecrBy(String key, double value, long timestamp);
-
-  Response<Long> tsDecrBy(String key, double subtrahend, TSIncrOrDecrByParams decrByParams);
 
   Response<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp);
 

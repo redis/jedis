@@ -4474,11 +4474,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long tsAdd(String key, long timestamp, double value, TSAddParams addParams) {
-    return executeCommand(commandObjects.tsAdd(key, timestamp, value, addParams));
-  }
-
-  @Override
   public List<Long> tsMAdd(Map.Entry<String, TSElement>... entries) {
     return executeCommand(commandObjects.tsMAdd(entries));
   }
@@ -4494,11 +4489,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long tsIncrBy(String key, double addend, TSIncrOrDecrByParams incrByParams) {
-    return executeCommand(commandObjects.tsIncrBy(key, addend, incrByParams));
-  }
-
-  @Override
   public long tsDecrBy(String key, double value) {
     return executeCommand(commandObjects.tsDecrBy(key, value));
   }
@@ -4506,11 +4496,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long tsDecrBy(String key, double value, long timestamp) {
     return executeCommand(commandObjects.tsDecrBy(key, value, timestamp));
-  }
-
-  @Override
-  public long tsDecrBy(String key, double subtrahend, TSIncrOrDecrByParams decrByParams) {
-    return executeCommand(commandObjects.tsDecrBy(key, subtrahend, decrByParams));
   }
 
   @Override

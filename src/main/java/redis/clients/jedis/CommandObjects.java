@@ -3974,7 +3974,7 @@ public class CommandObjects {
         .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> tsIncrBy(String key, double addend, TSIncrOrDecrByParams incrByParams) {
+  public final CommandObject<Long> tsIncrBy(String key, double addend, TSIncrByParams incrByParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.INCRBY).key(key).add(addend)
         .addParams(incrByParams), BuilderFactory.LONG);
   }
@@ -3988,7 +3988,7 @@ public class CommandObjects {
         .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> tsDecrBy(String key, double subtrahend, TSIncrOrDecrByParams decrByParams) {
+  public final CommandObject<Long> tsDecrBy(String key, double subtrahend, TSDecrByParams decrByParams) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(subtrahend)
         .addParams(decrByParams), BuilderFactory.LONG);
   }

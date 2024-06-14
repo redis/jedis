@@ -11,7 +11,7 @@ import redis.clients.jedis.params.IParams;
 /**
  * Represents optional arguments of TS.INCRBY or TS.DECRBY commands.
  */
-public class TSIncrOrDecrByParams implements IParams {
+class TSArithByParams<T extends TSArithByParams<?>> implements IParams {
 
   private Long timestamp;
   private Long retentionPeriod;
@@ -25,51 +25,39 @@ public class TSIncrOrDecrByParams implements IParams {
 
   private Map<String, String> labels;
 
-  public TSIncrOrDecrByParams() {
+  TSArithByParams() {
   }
 
-  public static TSIncrOrDecrByParams params() {
-    return new TSIncrOrDecrByParams();
-  }
-
-  public static TSIncrOrDecrByParams incrByParams() {
-    return new TSIncrOrDecrByParams();
-  }
-
-  public static TSIncrOrDecrByParams decrByParams() {
-    return new TSIncrOrDecrByParams();
-  }
-
-  public TSIncrOrDecrByParams timestamp(long timestamp) {
+  public T timestamp(long timestamp) {
     this.timestamp = timestamp;
-    return this;
+    return (T) this;
   }
 
-  public TSIncrOrDecrByParams retention(long retentionPeriod) {
+  public T retention(long retentionPeriod) {
     this.retentionPeriod = retentionPeriod;
-    return this;
+    return (T) this;
   }
 
-  public TSIncrOrDecrByParams encoding(EncodingFormat encoding) {
+  public T encoding(EncodingFormat encoding) {
     this.encoding = encoding;
-    return this;
+    return (T) this;
   }
 
-  public TSIncrOrDecrByParams chunkSize(long chunkSize) {
+  public T chunkSize(long chunkSize) {
     this.chunkSize = chunkSize;
-    return this;
+    return (T) this;
   }
 
-  public TSIncrOrDecrByParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
+  public T duplicatePolicy(DuplicatePolicy duplicatePolicy) {
     this.duplicatePolicy = duplicatePolicy;
-    return this;
+    return (T) this;
   }
 
-  public TSIncrOrDecrByParams ignore(long maxTimediff, double maxValDiff) {
+  public T ignore(long maxTimediff, double maxValDiff) {
     this.ignore = true;
     this.ignoreMaxTimediff = maxTimediff;
     this.ignoreMaxValDiff = maxValDiff;
-    return this;
+    return (T) this;
   }
 
   /**
@@ -78,9 +66,9 @@ public class TSIncrOrDecrByParams implements IParams {
    * @param labels label-value pairs
    * @return the object itself
    */
-  public TSIncrOrDecrByParams labels(Map<String, String> labels) {
+  public T labels(Map<String, String> labels) {
     this.labels = labels;
-    return this;
+    return (T) this;
   }
 
   /**
@@ -89,12 +77,12 @@ public class TSIncrOrDecrByParams implements IParams {
    * @param value
    * @return the object itself
    */
-  public TSIncrOrDecrByParams label(String label, String value) {
+  public T label(String label, String value) {
     if (this.labels == null) {
       this.labels = new LinkedHashMap<>();
     }
     this.labels.put(label, value);
-    return this;
+    return (T) this;
   }
 
   @Override

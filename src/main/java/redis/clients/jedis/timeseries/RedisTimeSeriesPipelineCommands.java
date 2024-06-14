@@ -29,13 +29,13 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<Long> tsIncrBy(String key, double value, long timestamp);
 
-  Response<Long> tsIncrBy(String key, double addend, TSIncrOrDecrByParams incrByParams);
+  Response<Long> tsIncrBy(String key, double addend, TSIncrByParams incrByParams);
 
   Response<Long> tsDecrBy(String key, double value);
 
   Response<Long> tsDecrBy(String key, double value, long timestamp);
 
-  Response<Long> tsDecrBy(String key, double subtrahend, TSIncrOrDecrByParams decrByParams);
+  Response<Long> tsDecrBy(String key, double subtrahend, TSDecrByParams decrByParams);
 
   Response<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp);
 

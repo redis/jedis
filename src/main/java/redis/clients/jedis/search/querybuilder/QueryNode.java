@@ -61,11 +61,11 @@ public abstract class QueryNode implements Node {
   protected boolean shouldParenthesize(Parenthesize mode) {
     if (mode == Parenthesize.ALWAYS) {
       return true;
-    }
-    if (mode == Parenthesize.NEVER) {
+    } else if (mode == Parenthesize.NEVER) {
       return false;
+    } else {
+      return children.size() > 1;
     }
-    return children.size() > 1;
   }
 
   @Override

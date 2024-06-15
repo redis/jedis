@@ -29,6 +29,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.*;
+import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
@@ -195,19 +196,19 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       addDocument(String.format("doc%d", i), fields);
     }
 
-    SearchResult res = client.ftSearch(index, "hello world",
+    SearchResult result = client.ftSearch(index, "hello world",
         FTSearchParams.searchParams().limit(0, 5).withScores());
-    assertEquals(100, res.getTotalResults());
-    assertEquals(5, res.getDocuments().size());
-    for (Document d : res.getDocuments()) {
+    assertEquals(100, result.getTotalResults());
+    assertEquals(5, result.getDocuments().size());
+    for (Document d : result.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
       assertTrue(d.getScore() < 100);
     }
 
     client.del("doc0");
 
-    res = client.ftSearch(index, "hello world");
-    assertEquals(99, res.getTotalResults());
+    result = client.ftSearch(index, "hello world");
+    assertEquals(99, result.getTotalResults());
 
     assertEquals("OK", client.ftDropIndex(index));
     try {
@@ -215,6 +216,57 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       fail();
     } catch (JedisDataException e) {
     }
+  }
+
+  @Test
+  public void textFieldParams() {
+    assertOK(client.ftCreate("testindex", TextField.of("title").indexMissing().indexEmpty()
+        .weight(2.5).noStem().phonetic("dm:en").withSuffixTrie().sortable()));
+
+    assertOK(client.ftCreate("testunfindex", TextField.of("title").indexMissing().indexEmpty()
+        .weight(2.5).noStem().phonetic("dm:en").withSuffixTrie().sortableUNF()));
+
+    assertOK(client.ftCreate("testnoindex", TextField.of("title").sortable().noIndex()));
+
+    assertOK(client.ftCreate("testunfnoindex", TextField.of("title").sortableUNF().noIndex()));
+  }
+
+  @Test
+  public void searchTextFieldsCondition() {
+    assertOK(client.ftCreate(index, FTCreateParams.createParams(), TextField.of("title"),
+        TextField.of("body").indexMissing().indexEmpty()));
+
+    Map<String, String> regular = new HashMap<>();
+    regular.put("title", "hello world");
+    regular.put("body", "lorem ipsum");
+    client.hset("regular-doc", regular);
+
+    Map<String, String> empty = new HashMap<>();
+    empty.put("title", "hello world");
+    empty.put("body", "");
+    client.hset("empty-doc", empty);
+
+    Map<String, String> missing = new HashMap<>();
+    missing.put("title", "hello world");
+    client.hset("missing-doc", missing);
+
+    SearchResult result = client.ftSearch(index, "", FTSearchParams.searchParams().dialect(2));
+    assertEquals(0, result.getTotalResults());
+    assertEquals(0, result.getDocuments().size());
+
+    result = client.ftSearch(index, "*", FTSearchParams.searchParams().dialect(2));
+    assertEquals(3, result.getTotalResults());
+    assertEquals(3, result.getDocuments().size());
+
+    result = client.ftSearch(index, "@body:''", FTSearchParams.searchParams().dialect(2));
+    assertEquals(1, result.getTotalResults());
+    assertEquals(1, result.getDocuments().size());
+    assertEquals("empty-doc", result.getDocuments().get(0).getId());
+
+    result = client.ftSearch(index, "ismissing(@body)", FTSearchParams.searchParams().dialect(2));
+    assertEquals(1, result.getTotalResults());
+    assertEquals(1, result.getDocuments().size());
+    assertEquals("missing-doc", result.getDocuments().get(0).getId());
   }
 
   @Test
@@ -269,7 +321,15 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
             .filter("price", Double.NEGATIVE_INFINITY, 10));
     assertEquals(11, res.getTotalResults());
     assertEquals(10, res.getDocuments().size());
+  }
 
+  @Test
+  public void numericFieldParams() {
+    assertOK(client.ftCreate("testindex", TextField.of("title"),
+        NumericField.of("price").as("px").indexMissing().sortable()));
+
+    assertOK(client.ftCreate("testnoindex", TextField.of("title"),
+        NumericField.of("price").as("px").sortable().noIndex()));
   }
 
   @Test
@@ -351,11 +411,18 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void geoFieldParams() {
+    assertOK(client.ftCreate("testindex", TextField.of("title"), GeoField.of("location").as("loc").indexMissing().sortable()));
+
+    assertOK(client.ftCreate("testnoindex", TextField.of("title"), GeoField.of("location").as("loc").sortable().noIndex()));
+  }
+
+  @Test
   public void geoShapeFilterSpherical() throws ParseException {
     final WKTReader reader = new WKTReader();
     final GeometryFactory factory = new GeometryFactory();
 
-    assertOK(client.ftCreate(index, GeoShapeField.of("geom", GeoShapeField.CoordinateSystem.SPHERICAL)));
+    assertOK(client.ftCreate(index, GeoShapeField.of("geom", CoordinateSystem.SPHERICAL)));
 
     // polygon type
     final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(34.9001, 29.7001),
@@ -404,7 +471,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     final WKTReader reader = new WKTReader();
     final GeometryFactory factory = new GeometryFactory();
 
-    assertOK(client.ftCreate(index, GeoShapeField.of("geom", GeoShapeField.CoordinateSystem.FLAT)));
+    assertOK(client.ftCreate(index, GeoShapeField.of("geom", CoordinateSystem.FLAT)));
 
     // polygon type
     final Polygon small = factory.createPolygon(new Coordinate[]{new Coordinate(1, 1),
@@ -442,6 +509,13 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
         FTSearchParams.searchParams().addParam("poly", within).dialect(3));
     assertEquals(2, res.getTotalResults());
     assertEquals(2, res.getDocuments().size());
+  }
+
+  @Test
+  public void geoShapeFieldParams() {
+    assertOK(client.ftCreate("testindex", GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").indexMissing()));
+
+    assertOK(client.ftCreate("testnoindex", GeoShapeField.of("geometry", CoordinateSystem.SPHERICAL).as("geom").noIndex()));
   }
 
   @Test
@@ -842,6 +916,23 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void tagFieldParams() {
+    assertOK(client.ftCreate("testindex", TextField.of("title"),
+        TagField.of("category").as("cat").indexMissing().indexEmpty()
+        .separator(',').caseSensitive().withSuffixTrie().sortable()));
+
+    assertOK(client.ftCreate("testunfindex", TextField.of("title"),
+        TagField.of("category").as("cat").indexMissing().indexEmpty()
+        .separator(',').caseSensitive().withSuffixTrie().sortableUNF()));
+
+    assertOK(client.ftCreate("testnoindex", TextField.of("title"),
+        TagField.of("category").as("cat").sortable().noIndex()));
+
+    assertOK(client.ftCreate("testunfnoindex", TextField.of("title"),
+        TagField.of("category").as("cat").sortableUNF().noIndex()));
+  }
+
+  @Test
   public void testReturnFields() {
     assertOK(client.ftCreate(index, TextField.of("field1"), TextField.of("field2")));
 
@@ -1008,14 +1099,14 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void testHNSWVVectorSimilarity() {
+  public void testHNSWVectorSimilarity() {
     Map<String, Object> attr = new HashMap<>();
     attr.put("TYPE", "FLOAT32");
     attr.put("DIM", 2);
     attr.put("DISTANCE_METRIC", "L2");
 
     assertOK(client.ftCreate(index, VectorField.builder().fieldName("v")
-        .algorithm(VectorField.VectorAlgorithm.HNSW).attributes(attr).build()));
+        .algorithm(VectorAlgorithm.HNSW).attributes(attr).build()));
 
     client.hset("a", "v", "aaaaaaaa");
     client.hset("b", "v", "aaaabaaa");
@@ -1035,7 +1126,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void testFlatVectorSimilarity() {
     assertOK(client.ftCreate(index,
         VectorField.builder().fieldName("v")
-            .algorithm(VectorField.VectorAlgorithm.FLAT)
+            .algorithm(VectorAlgorithm.FLAT)
             .addAttribute("TYPE", "FLOAT32")
             .addAttribute("DIM", 2)
             .addAttribute("DISTANCE_METRIC", "L2")
@@ -1055,6 +1146,19 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     Document doc1 = client.ftSearch(index, "*=>[KNN 2 @v $vec]", searchParams).getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
+  }
+
+  @Test
+  public void vectorFieldParams() {
+    Map<String, Object> attr = new HashMap<>();
+    attr.put("TYPE", "FLOAT32");
+    attr.put("DIM", 2);
+    attr.put("DISTANCE_METRIC", "L2");
+
+    assertOK(client.ftCreate("testindex", new VectorField("vector", VectorAlgorithm.HNSW, attr).as("vec").indexMissing()));
+
+    // assertOK(client.ftCreate("testnoindex", new VectorField("vector", VectorAlgorithm.HNSW, attr).as("vec").noIndex()));
+    // throws Field `NOINDEX` does not have a type
   }
 
   @Ignore

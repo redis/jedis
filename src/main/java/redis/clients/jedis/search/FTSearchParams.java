@@ -142,7 +142,7 @@ public class FTSearchParams implements IParams {
     }
 
     if (params != null && !params.isEmpty()) {
-      args.add(PARAMS).add(params.size() * 2);
+      args.add(PARAMS).add(params.size() << 1);
       params.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
     }
 

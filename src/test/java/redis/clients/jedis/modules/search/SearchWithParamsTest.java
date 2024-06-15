@@ -1074,12 +1074,20 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
 
     Map<String, Object> profile = reply.getValue();
     Map<String, Object> iteratorsProfile;
+    List<Map<String, Object>> resultProcessorsProfile;
     if (protocol != RedisProtocol.RESP3) {
-      iteratorsProfile = (Map<String, Object>) profile.get("Iterators profile");
+      iteratorsProfile = (Map) profile.get("Iterators profile");
+      resultProcessorsProfile = (List) profile.get("Result processors profile");
     } else {
-      List iteratorsProfileList = (List) profile.get("Iterators profile");
-      assertEquals(1, iteratorsProfileList.size());
-      iteratorsProfile = (Map<String, Object>) iteratorsProfileList.get(0);
+      if (!profile.containsKey("Shards")) {
+        List iteratorsProfileList = (List) profile.get("Iterators profile");
+        assertEquals(1, iteratorsProfileList.size());
+        iteratorsProfile = (Map) iteratorsProfileList.get(0);
+        resultProcessorsProfile = (List) profile.get("Result processors profile");
+      } else {
+        iteratorsProfile = (Map) ((Map) ((List) profile.get("Shards")).get(0)).get("Iterators profile");
+        resultProcessorsProfile = (List) ((Map) ((List) profile.get("Shards")).get(0)).get("Result processors profile");
+      }
     }
     assertEquals("TEXT", iteratorsProfile.get("Type"));
     assertEquals("foo", iteratorsProfile.get("Term"));
@@ -1088,7 +1096,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertSame(Double.class, iteratorsProfile.get("Time").getClass());
 
     assertEquals(Arrays.asList("Index", "Scorer", "Sorter", "Loader"),
-        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
+        resultProcessorsProfile.stream()
             .map(map -> map.get("Type")).collect(Collectors.toList()));
   }
 

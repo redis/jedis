@@ -4440,7 +4440,10 @@ public class CommandObjects {
 
   private class SearchProfileResponseBuilder<T> extends Builder<Map.Entry<T, Map<String, Object>>> {
 
-    private static final String PROFILE_STR = "profile";
+    private static final String PROFILE_1_STR = "profile";
+
+    private static final String RESULTS_2_STR = "Results";
+    private static final String PROFILE_2_STR = "Profile";
 
     private final Builder<T> replyBuilder;
 
@@ -4454,11 +4457,21 @@ public class CommandObjects {
       if (list == null || list.isEmpty()) return null;
 
       if (list.get(0) instanceof KeyValue) {
+        Object results2 = null, profile2 = null;
         for (KeyValue keyValue : (List<KeyValue>) data) {
-          if (PROFILE_STR.equals(BuilderFactory.STRING.build(keyValue.getKey()))) {
+          String keyStr = BuilderFactory.STRING.build(keyValue.getKey());
+          Object rawVal = keyValue.getValue();
+          if (PROFILE_1_STR.equals(keyStr)) {
             return KeyValue.of(replyBuilder.build(data),
-                BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(keyValue.getValue()));
+                BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(rawVal));
+          } else if (RESULTS_2_STR.equals(keyStr)) {
+            results2 = rawVal;
+          } else if (PROFILE_2_STR.equals(keyStr)) {
+            profile2 = rawVal;
           }
+        }
+        if (results2 != null) {
+          return KeyValue.of(replyBuilder.build(results2), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(profile2));
         }
       }
 

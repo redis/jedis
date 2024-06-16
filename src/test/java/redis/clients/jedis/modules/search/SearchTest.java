@@ -1140,6 +1140,30 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertTrue("Should contain '{K=10 nearest vector'", client.ftExplain(index, query).contains("{K=10 nearest vector"));
   }
 
+  private Map<String, Object> getIteratorsProfile(Map profile) {
+    if (protocol != RedisProtocol.RESP3) {
+      return (Map) profile.get("Iterators profile");
+    } else {
+      if (!profile.containsKey("Shards")) {
+        return (Map) ((List) profile.get("Iterators profile")).get(0);
+      } else {
+        return (Map) ((Map) ((List) profile.get("Shards")).get(0)).get("Iterators profile");
+      }
+    }
+  }
+
+  private List<Map<String, Object>> getResultProcessorsProfile(Map profile) {
+    if (protocol != RedisProtocol.RESP3) {
+      return (List) profile.get("Result processors profile");
+    } else {
+      if (!profile.containsKey("Shards")) {
+        return (List) profile.get("Result processors profile");
+      } else {
+        return (List) ((Map) ((List) profile.get("Shards")).get(0)).get("Result processors profile");
+      }
+    }
+  }
+
   @Test
   public void searchProfile() {
     Schema sc = new Schema().addTextField("t1", 1.0).addTextField("t2", 1.0);
@@ -1158,14 +1182,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(Collections.singletonList("doc1"), result.getDocuments().stream().map(Document::getId).collect(Collectors.toList()));
 
     Map<String, Object> profile = reply.getValue();
-    Map<String, Object> iteratorsProfile;
-    if (protocol != RedisProtocol.RESP3) {
-      iteratorsProfile = (Map<String, Object>) profile.get("Iterators profile");
-    } else {
-      List iteratorsProfileList = (List) profile.get("Iterators profile");
-      assertEquals(1, iteratorsProfileList.size());
-      iteratorsProfile = (Map<String, Object>) iteratorsProfileList.get(0);
-    }
+    Map<String, Object> iteratorsProfile = getIteratorsProfile(profile);
     assertEquals("TEXT", iteratorsProfile.get("Type"));
     assertEquals("foo", iteratorsProfile.get("Term"));
     assertEquals(1L, iteratorsProfile.get("Counter"));
@@ -1173,7 +1190,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertSame(Double.class, iteratorsProfile.get("Time").getClass());
 
     assertEquals(Arrays.asList("Index", "Scorer", "Sorter", "Loader"),
-        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
+        getResultProcessorsProfile(profile).stream()
             .map(map -> map.get("Type")).collect(Collectors.toList()));
   }
 
@@ -1206,13 +1223,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     doc1 = reply.getKey().getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
-    if (protocol != RedisProtocol.RESP3) {
-      assertEquals("VECTOR", ((Map<String, Object>) reply.getValue().get("Iterators profile")).get("Type"));
-    } else {
-      assertEquals(Arrays.asList("VECTOR"),
-          ((List<Map<String, Object>>) reply.getValue().get("Iterators profile")).stream()
-              .map(map -> map.get("Type")).collect(Collectors.toList()));
-    }
+    assertEquals("VECTOR", getIteratorsProfile(reply.getValue()).get("Type"));
   }
 
   @Test
@@ -1244,13 +1255,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     doc1 = reply.getKey().getDocuments().get(0);
     assertEquals("a", doc1.getId());
     assertEquals("0", doc1.get("__v_score"));
-    if (protocol != RedisProtocol.RESP3) {
-      assertEquals("VECTOR", ((Map<String, Object>) reply.getValue().get("Iterators profile")).get("Type"));
-    } else {
-      assertEquals(Arrays.asList("VECTOR"),
-          ((List<Map<String, Object>>) reply.getValue().get("Iterators profile")).stream()
-              .map(map -> map.get("Type")).collect(Collectors.toList()));
-    }
+    assertEquals("VECTOR", getIteratorsProfile(reply.getValue()).get("Type"));
   }
 
   @Test

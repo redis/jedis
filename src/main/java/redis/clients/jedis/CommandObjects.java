@@ -4445,6 +4445,8 @@ public class CommandObjects {
     private static final String RESULTS_2_STR = "Results";
     private static final String PROFILE_2_STR = "Profile";
 
+    private static final String SHARDS_STR = "Shards";
+
     private final Builder<T> replyBuilder;
 
     public SearchProfileResponseBuilder(Builder<T> replyBuilder) {
@@ -4457,21 +4459,23 @@ public class CommandObjects {
       if (list == null || list.isEmpty()) return null;
 
       if (list.get(0) instanceof KeyValue) {
-        Object results2 = null, profile2 = null;
+        Object results = null, profile = null;
         for (KeyValue keyValue : (List<KeyValue>) data) {
-          String keyStr = BuilderFactory.STRING.build(keyValue.getKey());
-          Object rawVal = keyValue.getValue();
-          if (PROFILE_1_STR.equals(keyStr)) {
-            return KeyValue.of(replyBuilder.build(data),
-                BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(rawVal));
-          } else if (RESULTS_2_STR.equals(keyStr)) {
-            results2 = rawVal;
-          } else if (PROFILE_2_STR.equals(keyStr)) {
-            profile2 = rawVal;
+          String keyString = BuilderFactory.STRING.build(keyValue.getKey());
+          Object valueRaw = keyValue.getValue();
+          if (PROFILE_1_STR.equals(keyString)) {
+            profile = valueRaw;
+            results = data;
+            break;
+          } else if (RESULTS_2_STR.equals(keyString)) {
+            results = valueRaw;
+          } else if (PROFILE_2_STR.equals(keyString)) {
+            profile = valueRaw;
           }
         }
-        if (results2 != null) {
-          return KeyValue.of(replyBuilder.build(results2), BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(profile2));
+        if (results != null) {
+          return KeyValue.of(replyBuilder.build(results),
+              BuilderFactory.AGGRESSIVE_ENCODED_OBJECT_MAP.build(profile));
         }
       }
 

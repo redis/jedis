@@ -134,6 +134,30 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     assertEquals("10", rows.get(1).get("sum"));
   }
 
+  private Map<String, Object> getIteratorsProfile(Map profile) {
+    if (protocol != RedisProtocol.RESP3) {
+      return (Map) profile.get("Iterators profile");
+    } else {
+      if (!profile.containsKey("Shards")) {
+        return (Map) ((List) profile.get("Iterators profile")).get(0);
+      } else {
+        return (Map) ((Map) ((List) profile.get("Shards")).get(0)).get("Iterators profile");
+      }
+    }
+  }
+
+  private List<Map<String, Object>> getResultProcessorsProfile(Map profile) {
+    if (protocol != RedisProtocol.RESP3) {
+      return (List) profile.get("Result processors profile");
+    } else {
+      if (!profile.containsKey("Shards")) {
+        return (List) profile.get("Result processors profile");
+      } else {
+        return (List) ((Map) ((List) profile.get("Shards")).get(0)).get("Result processors profile");
+      }
+    }
+  }
+
   @Test
   public void testAggregations2Profile() {
     Schema sc = new Schema();
@@ -168,16 +192,10 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     Map<String, Object> profile = reply.getValue();
 
     assertEquals(Arrays.asList("Index", "Grouper", "Sorter"),
-        ((List<Map<String, Object>>) profile.get("Result processors profile")).stream()
+        getResultProcessorsProfile(profile).stream()
             .map(map -> map.get("Type")).collect(Collectors.toList()));
 
-    if (protocol != RedisProtocol.RESP3) {
-      assertEquals("WILDCARD", ((Map<String, Object>) profile.get("Iterators profile")).get("Type"));
-    } else {
-      assertEquals(Arrays.asList("WILDCARD"),
-          ((List<Map<String, Object>>) profile.get("Iterators profile")).stream()
-              .map(map -> map.get("Type")).collect(Collectors.toList()));
-    }
+    assertEquals("WILDCARD", getIteratorsProfile(profile).get("Type"));
   }
 
   @Test

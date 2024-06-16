@@ -4479,6 +4479,10 @@ public class CommandObjects {
         }
       }
 
+//      if (SHARDS_STR.equals(BuilderFactory.STRING.build(((List) list.get(1)).get(0)))) {
+//        return KeyValue.of(replyBuilder.build(list.get(0)),
+//          SearchBuilderFactory.SEARCH_PROFILE_PROFILE.build(((List) ((List) list.get(1)).get(1)).get(0)));
+//      }
       return KeyValue.of(replyBuilder.build(list.get(0)),
           SearchBuilderFactory.SEARCH_PROFILE_PROFILE.build(list.get(1)));
     }

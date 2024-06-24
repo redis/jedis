@@ -21,17 +21,12 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.Transaction;
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
-import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.params.RestoreParams;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
@@ -57,7 +52,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
 
-  private static final HostAndPort lfuHnp = HostAndPorts.getRedisServers().get(7);
+  private static final EndpointConfig lfuEndpoint = HostAndPorts.getRedisEndpoint("standalone7-with-lfu-policy");
 
   public AllKindOfValuesCommandsTest(RedisProtocol redisProtocol) {
     super(redisProtocol);
@@ -604,8 +599,8 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
   @Test
   public void restoreParams() {
     // take a separate instance
-    Jedis jedis2 = new Jedis(hnp.getHost(), 6380, 500);
-    jedis2.auth("foobared");
+    Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    jedis2.auth(endpoint.getPassword());
     jedis2.flushAll();
 
     jedis2.set("foo", "bar");
@@ -637,7 +632,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(1000, jedis2.objectIdletime("bar1").longValue());
     jedis2.close();
 
-    Jedis lfuJedis = new Jedis(lfuHnp.getHost(), lfuHnp.getPort(), 500);
+    Jedis lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(), lfuEndpoint.getClientConfigBuilder().timeoutMillis(500).build());;
     lfuJedis.restore("bar1", 1000, serialized, RestoreParams.restoreParams().replace().frequency(90));
     assertEquals(90, lfuJedis.objectFreq("bar1").longValue());
     lfuJedis.close();
@@ -1146,7 +1141,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals("NOAUTH Authentication required.", ex1.getMessage());
 
     // multi reset
-    jedis.auth("foobared");
+    jedis.auth(endpoint.getPassword());
     jedis.set(counter, "1");
 
     Transaction trans = jedis.multi();
@@ -1156,7 +1151,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     Exception ex2 = assertThrows(JedisDataException.class, trans::exec);
     assertEquals("EXECABORT Transaction discarded because of: NOAUTH Authentication required.", ex2.getMessage());
 
-    jedis.auth("foobared");
+    jedis.auth(endpoint.getPassword());
     assertEquals("1", jedis.get(counter));
   }
 }

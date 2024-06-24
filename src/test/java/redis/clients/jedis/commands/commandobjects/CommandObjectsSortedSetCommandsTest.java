@@ -1474,6 +1474,60 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
     String key2 = "sortedSet2";
     double score1 = 1.0;
     double score2 = 2.0;
+    String member1 = "member1";
+    String member2 = "member2";
+    double timeout = 0.1;
+
+    exec(commandObjects.zadd(key1, score1, member1));
+    exec(commandObjects.zadd(key1, score2, member2));
+
+    exec(commandObjects.zadd(key2, score1, member1));
+    exec(commandObjects.zadd(key2, score2, member2));
+
+    KeyValue<String, List<Tuple>> bzmpopMax = exec(commandObjects.bzmpop(timeout, SortedSetOption.MAX, key1, key2));
+    assertThat(bzmpopMax, notNullValue());
+    assertThat(bzmpopMax.getKey(), anyOf(equalTo(key1), equalTo(key2)));
+    assertThat(bzmpopMax.getValue(), contains(new Tuple(member2, score2)));
+
+    KeyValue<String, List<Tuple>> bzmpopMin = exec(commandObjects.bzmpop(timeout, SortedSetOption.MIN, key1, key2));
+    assertThat(bzmpopMin, notNullValue());
+    assertThat(bzmpopMin.getKey(), anyOf(equalTo(key1), equalTo(key2)));
+    assertThat(bzmpopMin.getValue(), contains(new Tuple(member1, score1)));
+  }
+
+  @Test
+  public void testBzmpopBinary() {
+    byte[] key1 = "sortedSet1".getBytes();
+    byte[] key2 = "sortedSet2".getBytes();
+    double score1 = 1.0;
+    double score2 = 2.0;
+    byte[] member1 = "member1".getBytes();
+    byte[] member2 = "member2".getBytes();
+    double timeout = 0.1;
+
+    exec(commandObjects.zadd(key1, score1, member1));
+    exec(commandObjects.zadd(key1, score2, member2));
+
+    exec(commandObjects.zadd(key2, score1, member1));
+    exec(commandObjects.zadd(key2, score2, member2));
+
+    KeyValue<byte[], List<Tuple>> bzmpopMax = exec(commandObjects.bzmpop(timeout, SortedSetOption.MAX, key1, key2));
+    assertThat(bzmpopMax, notNullValue());
+    assertThat(bzmpopMax.getKey(), anyOf(equalTo(key1), equalTo(key2)));
+    assertThat(bzmpopMax.getValue(), contains(new Tuple(member2, score2)));
+
+    KeyValue<byte[], List<Tuple>> bzmpopMin = exec(commandObjects.bzmpop(timeout, SortedSetOption.MIN, key1, key2));
+    assertThat(bzmpopMin, notNullValue());
+    assertThat(bzmpopMin.getKey(), anyOf(equalTo(key1), equalTo(key2)));
+    assertThat(bzmpopMin.getValue(), contains(new Tuple(member1, score1)));
+  }
+
+  @Test
+  public void testBzmpopCount() {
+    String key1 = "sortedSet1";
+    String key2 = "sortedSet2";
+    double score1 = 1.0;
+    double score2 = 2.0;
     double timeout = 0.1;
     String member1 = "member1";
     String member2 = "member2";
@@ -1488,7 +1542,7 @@ public class CommandObjectsSortedSetCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
-  public void testBzmpopBinary() {
+  public void testBzmpopCountBinary() {
     byte[] key1 = "sortedSet1".getBytes();
     byte[] key2 = "sortedSet2".getBytes();
     double score1 = 1.0;

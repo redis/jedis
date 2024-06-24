@@ -25,16 +25,19 @@ public class TransactionV2Test {
 
   final byte[] bmykey = { 0x42, 0x02, 0x03, 0x04 };
 
-  private static final HostAndPort hnp = HostAndPorts.getRedisServers().get(0);
+  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
 
   private Connection conn;
   private Jedis nj;
 
   @Before
   public void setUp() throws Exception {
-    conn = new Connection(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
+    conn = new Connection(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
 
-    nj = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
+    nj = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
+
     nj.flushAll();
   }
 
@@ -212,10 +215,6 @@ public class TransactionV2Test {
 
   @Test
   public void testCloseable() {
-    // we need to test with fresh instance of Jedis
-//    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-//    jedis2.auth("foobared");
-
     Transaction transaction = new Transaction(conn);
     transaction.set("a", "1");
     transaction.set("b", "2");

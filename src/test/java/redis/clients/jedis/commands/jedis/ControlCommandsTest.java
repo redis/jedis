@@ -27,15 +27,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisMonitor;
-import redis.clients.jedis.Protocol;
-import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.ClientPauseMode;
 import redis.clients.jedis.args.LatencyEvent;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.HostAndPorts;
 import redis.clients.jedis.params.CommandListFilterByParams;
 import redis.clients.jedis.params.LolwutParams;
 import redis.clients.jedis.resps.CommandDocument;
@@ -129,8 +124,10 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void roleMaster() {
-    try (Jedis master = new Jedis(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().password("foobared").build())) {
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+
+    try (Jedis master = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().build())) {
 
       List<Object> role = master.role();
       assertEquals("master", role.get(0));
@@ -147,19 +144,23 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void roleSlave() {
-    try (Jedis slave = new Jedis(HostAndPorts.getRedisServers().get(4),
-        DefaultJedisClientConfig.builder().password("foobared").build())) {
+    EndpointConfig primaryEndpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    EndpointConfig secondaryEndpoint = HostAndPorts.getRedisEndpoint(
+        "standalone4-replica-of-standalone1");
+
+    try (Jedis slave = new Jedis(secondaryEndpoint.getHostAndPort(),
+        secondaryEndpoint.getClientConfigBuilder().build())) {
 
       List<Object> role = slave.role();
       assertEquals("slave", role.get(0));
-      assertEquals((long) HostAndPorts.getRedisServers().get(0).getPort(), role.get(2));
+      assertEquals((long) primaryEndpoint.getPort(), role.get(2));
       assertEquals("connected", role.get(3));
       assertTrue(role.get(4) instanceof Long);
 
       // binary
       List<Object> brole = slave.roleBinary();
       assertArrayEquals("slave".getBytes(), (byte[]) brole.get(0));
-      assertEquals((long) HostAndPorts.getRedisServers().get(0).getPort(), brole.get(2));
+      assertEquals((long) primaryEndpoint.getPort(), brole.get(2));
       assertArrayEquals("connected".getBytes(), (byte[]) brole.get(3));
       assertTrue(brole.get(4) instanceof Long);
     }
@@ -192,8 +193,8 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
           Thread.sleep(100);
         } catch (InterruptedException e) {
         }
-        Jedis j = new Jedis();
-        j.auth("foobared");
+        Jedis j = new Jedis(endpoint.getHostAndPort());
+        j.auth(endpoint.getPassword());
         for (int i = 0; i < 5; i++) {
           j.incr("foobared");
         }

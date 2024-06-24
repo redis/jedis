@@ -20,7 +20,6 @@ import org.junit.runners.Parameterized;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
@@ -50,7 +49,8 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-    nj = new Jedis(hnp, DefaultJedisClientConfig.builder().timeoutMillis(500).password("foobared").build());
+    nj = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
   }
 
   @After
@@ -348,7 +348,6 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   @Test
   public void testResetStateWithFullyExecutedTransaction() {
     Jedis jedis2 = createJedis();
-    jedis2.auth("foobared");
 
     Transaction t = jedis2.multi();
     t.set("mykey", "foo");
@@ -365,8 +364,8 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   @Test
   public void testCloseable() {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(hnp.getHost(), hnp.getPort(), 500);
-    jedis2.auth("foobared");
+    Jedis jedis2 = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().timeoutMillis(500).build());;
 
     Transaction transaction = jedis2.multi();
     transaction.set("a", "1");

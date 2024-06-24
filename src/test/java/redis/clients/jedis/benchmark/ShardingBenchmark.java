@@ -5,20 +5,17 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Calendar;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.HostAndPorts;
-import redis.clients.jedis.JedisSharding;
+import redis.clients.jedis.*;
 
 public class ShardingBenchmark {
 
-  private static HostAndPort hnp1 = HostAndPorts.getRedisServers().get(0);
-  private static HostAndPort hnp2 = HostAndPorts.getRedisServers().get(1);
+  private static EndpointConfig endpointStandalone0 = HostAndPorts.getRedisEndpoint("standalone0");
+  private static EndpointConfig endpointStandalone1 = HostAndPorts.getRedisEndpoint("standalone1");
   private static final int TOTAL_OPERATIONS = 100000;
 
   public static void main(String[] args) throws UnknownHostException, IOException {
-    try (JedisSharding jedis = new JedisSharding(Arrays.asList(hnp1, hnp2),
-        DefaultJedisClientConfig.builder().password("foobared").build())) {
+    try (JedisSharding jedis = new JedisSharding(Arrays.asList(endpointStandalone0.getHostAndPort(), endpointStandalone1.getHostAndPort()),
+        endpointStandalone0.getClientConfigBuilder().build())) {
 
       long begin = Calendar.getInstance().getTimeInMillis();
 

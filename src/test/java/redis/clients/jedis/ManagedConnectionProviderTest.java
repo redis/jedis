@@ -14,8 +14,8 @@ public class ManagedConnectionProviderTest {
 
   @Before
   public void setUp() {
-    connection = new Connection(HostAndPorts.getRedisServers().get(0),
-        DefaultJedisClientConfig.builder().user("acljedis").password("fizzbuzz").build());
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0");
+    connection = new Connection(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
   }
 
   @After

@@ -8,11 +8,7 @@ import java.util.Collection;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.CommandObjects;
-import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.executors.CommandExecutor;
@@ -52,12 +48,7 @@ public abstract class CommandObjectsTestBase {
   /**
    * Host and port of the Redis server to connect to. Injected from subclasses.
    */
-  protected final HostAndPort nodeInfo;
-
-  /**
-   * Password to use when connecting to the Redis server, if needed. Injected from subclasses.
-   */
-  private final String authPassword;
+  protected final EndpointConfig endpoint;
 
   /**
    * The {@link CommandObjects} to use for the tests. This is the subject-under-test.
@@ -70,10 +61,9 @@ public abstract class CommandObjectsTestBase {
    */
   private CommandExecutor commandExecutor;
 
-  public CommandObjectsTestBase(RedisProtocol protocol, HostAndPort nodeInfo, String authPassword) {
+  public CommandObjectsTestBase(RedisProtocol protocol, EndpointConfig endpoint) {
     this.protocol = protocol;
-    this.nodeInfo = nodeInfo;
-    this.authPassword = authPassword;
+    this.endpoint = endpoint;
     commandObjects = new CommandObjects();
     commandObjects.setProtocol(protocol);
   }
@@ -81,10 +71,11 @@ public abstract class CommandObjectsTestBase {
   @Before
   public void setUp() {
     // Configure a default command executor.
-    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .protocol(protocol).password(authPassword).build();
+    DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder().protocol(protocol)
+        .build();
 
-    ConnectionProvider connectionProvider = new PooledConnectionProvider(nodeInfo, clientConfig);
+    ConnectionProvider connectionProvider = new PooledConnectionProvider(endpoint.getHostAndPort(),
+        clientConfig);
 
     commandExecutor = new DefaultCommandExecutor(connectionProvider);
 

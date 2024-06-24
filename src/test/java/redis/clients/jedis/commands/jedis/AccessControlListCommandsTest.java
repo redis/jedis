@@ -46,7 +46,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
   public static void prepare() throws Exception {
     // Use to check if the ACL test should be ran. ACL are available only in 6.0 and later
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
   }
 
   public AccessControlListCommandsTest(RedisProtocol protocol) {
@@ -359,7 +359,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     // test the ACL Log
-    jedis.auth("default", "foobared");
+    jedis.auth(endpoint.getUsername(), endpoint.getPassword());
 
     List<AccessControlLogEntry> aclEntries = jedis.aclLog();
     assertEquals("Number of log messages ", 1, aclEntries.size());
@@ -385,7 +385,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     // test the ACL Log
-    jedis.auth("default", "foobared");
+    jedis.auth(endpoint.getUsername(), endpoint.getPassword());
     assertEquals("Number of log messages ", 1, jedis.aclLog().size());
     assertEquals(10, jedis.aclLog().get(0).getCount());
     assertEquals("get", jedis.aclLog().get(0).getObject());
@@ -399,7 +399,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
 
     // test the ACL Log
-    jedis.auth("default", "foobared");
+    jedis.auth(endpoint.getUsername(), endpoint.getPassword());
     assertEquals("Number of log messages ", 2, jedis.aclLog().size());
     assertEquals(1, jedis.aclLog().get(0).getCount());
     assertEquals("somekeynotallowed", jedis.aclLog().get(0).getObject());
@@ -418,7 +418,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     }
     t.close();
 
-    jedis.auth("default", "foobared");
+    jedis.auth(endpoint.getUsername(), endpoint.getPassword());
     assertEquals("Number of log messages ", 1, jedis.aclLog().size());
     assertEquals(1, jedis.aclLog().get(0).getCount());
     assertEquals("multi", jedis.aclLog().get(0).getContext());
@@ -439,7 +439,7 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     } catch (JedisAccessControlException e) {
     }
 
-    jedis.auth("default", "foobared");
+    jedis.auth(endpoint.getUsername(), endpoint.getPassword());
     assertEquals("Number of log messages ", 3, jedis.aclLog().size());
     assertEquals("Number of log messages ", 2, jedis.aclLog(2).size());
 

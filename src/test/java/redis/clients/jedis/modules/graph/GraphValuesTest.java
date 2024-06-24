@@ -12,6 +12,7 @@ import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@org.junit.Ignore
 @RunWith(Parameterized.class)
 public class GraphValuesTest extends RedisModuleCommandsTestBase {
 

@@ -24,15 +24,15 @@ public class ACLJedisSentinelPoolTest {
 
   private static final String MASTER_NAME = "aclmaster";
 
-  //protected static HostAndPort master = HostAndPortUtil.getRedisServers().get(8);
   protected static HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(4);
 
   protected Set<HostAndPort> sentinels = new HashSet<>();
 
   @BeforeClass
   public static void prepare() throws Exception {
+    EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone2-primary");
     org.junit.Assume.assumeTrue("Not running ACL test on this version of Redis",
-        RedisVersionUtil.checkRedisMajorVersionNumber(6));
+        RedisVersionUtil.checkRedisMajorVersionNumber(6, endpoint));
   }
 
   @Before

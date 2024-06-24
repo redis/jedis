@@ -84,13 +84,13 @@ public class ClusterGeoCommandsTest extends GeoCommandsTestBase {
   public void georadiusByMemberStoreBinary() {
   }
 
-  @Test
   @Ignore
+  @Override
   public void geosearchstore() {
   }
 
-  @Test
   @Ignore
+  @Override
   public void geosearchstoreWithdist() {
   }
 }

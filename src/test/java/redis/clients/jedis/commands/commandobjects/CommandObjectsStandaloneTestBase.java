@@ -9,7 +9,7 @@ import redis.clients.jedis.RedisProtocol;
 public abstract class CommandObjectsStandaloneTestBase extends CommandObjectsTestBase {
 
   public CommandObjectsStandaloneTestBase(RedisProtocol protocol) {
-    super(protocol, HostAndPorts.getRedisServers().get(0), "foobared");
+    super(protocol, HostAndPorts.getRedisEndpoint("standalone0"));
   }
 
 }

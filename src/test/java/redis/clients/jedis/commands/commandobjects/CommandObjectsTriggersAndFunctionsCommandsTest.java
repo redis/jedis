@@ -7,9 +7,11 @@ import static org.hamcrest.Matchers.hasSize;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import org.junit.After;
 import org.junit.Test;
+
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.gears.TFunctionListParams;
 import redis.clients.jedis.gears.TFunctionLoadParams;
 import redis.clients.jedis.gears.resps.GearsLibraryInfo;
@@ -21,6 +23,13 @@ public class CommandObjectsTriggersAndFunctionsCommandsTest extends CommandObjec
 
   public CommandObjectsTriggersAndFunctionsCommandsTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    try {
+      exec(commandObjects.tFunctionDelete("lib"));
+    } catch (JedisDataException de) { }
   }
 
   @Test

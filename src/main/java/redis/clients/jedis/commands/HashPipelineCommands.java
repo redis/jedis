@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -57,4 +58,30 @@ public interface HashPipelineCommands {
   Response<ScanResult<String>> hscanNoValues(String key, String cursor, ScanParams params);
 
   Response<Long> hstrlen(String key, String field);
+
+  Response<List<Long>> hexpire(String key, long seconds, String... fields);
+
+  Response<List<Long>> hexpire(String key, long seconds, ExpiryOption condition, String... fields);
+
+  Response<List<Long>> hpexpire(String key, long milliseconds, String... fields);
+
+  Response<List<Long>> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields);
+
+  Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, String... fields);
+
+  Response<List<Long>> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields);
+
+  Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, String... fields);
+
+  Response<List<Long>> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields);
+
+  Response<List<Long>> hexpireTime(String key, String... fields);
+
+  Response<List<Long>> hpexpireTime(String key, String... fields);
+
+  Response<List<Long>> httl(String key, String... fields);
+
+  Response<List<Long>> hpttl(String key, String... fields);
+
+  Response<List<Long>> hpersist(String key, String... fields);
 }

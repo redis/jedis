@@ -1,12 +1,16 @@
 package redis.clients.jedis.commands.commandobjects;
 
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -19,6 +23,7 @@ import java.util.Set;
 
 import org.junit.Test;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -26,6 +31,13 @@ import redis.clients.jedis.resps.ScanResult;
  * Tests related to <a href="https://redis.io/commands/?group=hash">Hash</a> commands.
  */
 public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTestBase {
+
+  private final byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
+  private final byte[] bcar = { 0x09, 0x0A, 0x0B, 0x0C };
+
+  private final byte[] bbar1 = { 0x05, 0x06, 0x07, 0x08, 0x0A };
+  private final byte[] bbar2 = { 0x05, 0x06, 0x07, 0x08, 0x0B };
+  private final byte[] bbar3 = { 0x05, 0x06, 0x07, 0x08, 0x0C };
 
   public CommandObjectsHashCommandsTest(RedisProtocol protocol) {
     super(protocol);
@@ -401,5 +413,163 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
 
     Long strlenNonExistingFieldBinary = exec(commandObjects.hstrlen(bkey, "nonExistingField".getBytes()));
     assertThat(strlenNonExistingFieldBinary, equalTo(0L));
+  }
+
+  @Test
+  public void hexpireAndHttl() {
+    long seconds1 = 20;
+    long seconds2 = 10;
+
+    exec(commandObjects.hset("foo", "bar", "car"));
+    exec(commandObjects.hset("foo", "bare", "care"));
+    assertThat(exec(commandObjects.hexpire("foo", seconds1, "bar", "bared")), equalTo(asList(1L, -2L)));
+
+    exec(commandObjects.hset("foo", "bared", "cared"));
+    assertThat(exec(commandObjects.hexpire("foo", seconds2, ExpiryOption.NX, "bar", "bared")), equalTo(asList(0L, 1L)));
+
+    assertThat(exec(commandObjects.httl("foo", "bar", "bare", "bared")),
+        contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
+            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+  }
+
+  @Test
+  public void hexpireAndHttlBinary() {
+    long seconds1 = 20;
+    long seconds2 = 10;
+
+    exec(commandObjects.hset(bfoo, bbar1, bcar));
+    exec(commandObjects.hset(bfoo, bbar2, bcar));
+    assertThat(exec(commandObjects.hexpire(bfoo, seconds1, bbar1, bbar3)), equalTo(asList(1L, -2L)));
+
+    exec(commandObjects.hset(bfoo, bbar3, bcar));
+    assertThat(exec(commandObjects.hexpire(bfoo, seconds2, ExpiryOption.NX, bbar1, bbar3)), equalTo(asList(0L, 1L)));
+
+    assertThat(exec(commandObjects.httl(bfoo, bbar1, bbar2, bbar3)),
+        contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
+            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+  }
+
+  @Test
+  public void hpexpireAndHpttl() {
+    long millis1 = 20_000;
+    long millis2 = 10_000;
+
+    exec(commandObjects.hset("foo", "bar", "car"));
+    assertThat(exec(commandObjects.hpexpire("foo", millis1, "bar", "bared")), equalTo(asList(1L, -2L)));
+
+    exec(commandObjects.hset("foo", "bared", "cared"));
+    assertThat(exec(commandObjects.hpexpire("foo", millis2, ExpiryOption.XX, "bar", "bared")), equalTo(asList(1L, 0L)));
+
+    assertThat(exec(commandObjects.hpttl("foo", "bar", "bare", "bared")),
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hpexpireAndHpttlBinary() {
+    long millis1 = 20_000;
+    long millis2 = 10_000;
+
+    exec(commandObjects.hset(bfoo, bbar1, bcar));
+    assertThat(exec(commandObjects.hpexpire(bfoo, millis1, bbar1, bbar3)), equalTo(asList(1L, -2L)));
+
+    exec(commandObjects.hset(bfoo, bbar3, bcar));
+    assertThat(exec(commandObjects.hpexpire(bfoo, millis2, ExpiryOption.XX, bbar1, bbar3)), equalTo(asList(1L, 0L)));
+
+    assertThat(exec(commandObjects.hpttl(bfoo, bbar1, bbar2, bbar3)),
+        contains(both(lessThanOrEqualTo(millis2)).and(greaterThan(millis2 - 10)), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hexpireAtAndExpireTime() {
+    long currSeconds = System.currentTimeMillis() / 1000;
+    long seconds1 = currSeconds + 20;
+    long seconds2 = currSeconds + 10;
+
+    exec(commandObjects.hset("foo", "bar", "car"));
+    exec(commandObjects.hset("foo", "bare", "care"));
+    assertThat(exec(commandObjects.hexpireAt("foo", seconds1, "bar", "bared")), equalTo(asList(1L, -2L)));
+
+    exec(commandObjects.hset("foo", "bared", "cared"));
+    assertThat(exec(commandObjects.hexpireAt("foo", seconds2, ExpiryOption.LT, "bar", "bared")), equalTo(asList(1L, 1L)));
+
+    assertThat(exec(commandObjects.hexpireTime("foo", "bar", "bare", "bared")),
+        contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)), equalTo(-1L),
+            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+  }
+
+  @Test
+  public void hexpireAtAndExpireTimeBinary() {
+    long currSeconds = System.currentTimeMillis() / 1000;
+    long seconds1 = currSeconds + 20;
+    long seconds2 = currSeconds + 10;
+
+    exec(commandObjects.hset(bfoo, bbar1, bcar));
+    exec(commandObjects.hset(bfoo, bbar2, bcar));
+    assertThat(exec(commandObjects.hexpireAt(bfoo, seconds1, bbar1, bbar3)), equalTo(asList(1L, -2L)));
+
+    exec(commandObjects.hset(bfoo, bbar3, bcar));
+    assertThat(exec(commandObjects.hexpireAt(bfoo, seconds2, ExpiryOption.LT, bbar1, bbar3)), equalTo(asList(1L, 1L)));
+
+    assertThat(exec(commandObjects.hexpireTime(bfoo, bbar1, bbar2, bbar3)),
+        contains(both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1)), equalTo(-1L),
+            both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+  }
+
+  @Test
+  public void hpexpireAtAndPexpireTime() {
+    long currMillis = System.currentTimeMillis();
+    long unixMillis = currMillis + 20_000;
+
+    exec(commandObjects.hset("foo", "bar", "car"));
+    assertThat(exec(commandObjects.hpexpireAt("foo", unixMillis - 100, "bar", "bared")), equalTo(asList(1L, -2L)));
+
+    exec(commandObjects.hset("foo", "bared", "cared"));
+    assertThat(exec(commandObjects.hpexpireAt("foo", unixMillis, ExpiryOption.GT, "bar", "bared")), equalTo(asList(1L, 0L)));
+
+    assertThat(exec(commandObjects.hpexpireTime("foo", "bar", "bare", "bared")),
+        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hpexpireAtAndPexpireTimeBinary() {
+    long currMillis = System.currentTimeMillis();
+    long unixMillis = currMillis + 20_000;
+
+    exec(commandObjects.hset(bfoo, bbar1, bcar));
+    assertThat(exec(commandObjects.hpexpireAt(bfoo, unixMillis - 100, bbar1, bbar3)), equalTo(asList(1L, -2L)));
+
+    exec(commandObjects.hset(bfoo, bbar3, bcar));
+    assertThat(exec(commandObjects.hpexpireAt(bfoo, unixMillis, ExpiryOption.GT, bbar1, bbar3)), equalTo(asList(1L, 0L)));
+
+    assertThat(exec(commandObjects.hpexpireTime(bfoo, bbar1, bbar2, bbar3)),
+        contains(equalTo(unixMillis), equalTo(-2L), equalTo(-1L)));
+  }
+
+  @Test
+  public void hpersist() {
+    long seconds = 20;
+
+    exec(commandObjects.hset("foo", "bar", "car"));
+    exec(commandObjects.hset("foo", "bare", "care"));
+    assertThat(exec(commandObjects.hexpire("foo", seconds, "bar", "bared")), equalTo(asList(1L, -2L)));
+
+    assertThat(exec(commandObjects.hpersist("foo", "bar", "bare", "bared")), equalTo(asList(1L, -1L, -2L)));
+
+    assertThat(exec(commandObjects.httl("foo", "bar", "bare", "bared")),
+        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+  }
+
+  @Test
+  public void hpersistBinary() {
+    long seconds = 20;
+
+    exec(commandObjects.hset(bfoo, bbar1, bcar));
+    exec(commandObjects.hset(bfoo, bbar2, bcar));
+    assertThat(exec(commandObjects.hexpire(bfoo, seconds, bbar1, bbar3)), equalTo(asList(1L, -2L)));
+
+    assertThat(exec(commandObjects.hpersist(bfoo, bbar1, bbar2, bbar3)), equalTo(asList(1L, -1L, -2L)));
+
+    assertThat(exec(commandObjects.httl(bfoo, bbar1, bbar2, bbar3)),
+        contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
   }
 }

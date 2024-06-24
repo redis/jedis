@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.net.URI;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
@@ -26,6 +25,8 @@ import org.junit.Test;
 
 public class SSLJedisTest {
 
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone0-tls");
+
   @BeforeClass
   public static void prepare() {
     setupTrustStore();
@@ -44,31 +45,31 @@ public class SSLJedisTest {
 
   @Test
   public void connectWithSsl() {
-    try (Jedis jedis = new Jedis("localhost", 6390, true)) {
-      jedis.auth("foobared");
+    try (Jedis jedis = new Jedis(endpoint.getHost(), endpoint.getPort(), true)) {
+      jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390),
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         DefaultJedisClientConfig.builder().ssl(true).build())) {
-      jedis.auth("foobared");
+      jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
   public void connectWithConfigInterface() {
-    try (Jedis jedis = new Jedis(new HostAndPort("localhost", 6390),
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
         new JedisClientConfig() {
           @Override
           public boolean isSsl() {
             return true;
           }
         })) {
-      jedis.auth("foobared");
+      jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -79,8 +80,8 @@ public class SSLJedisTest {
   @Test
   public void connectWithUrl() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    try (Jedis jedis = new Jedis("rediss://localhost:6390")) {
-      jedis.auth("foobared");
+    try (Jedis jedis = new Jedis(endpoint.getURI().toString())) {
+      jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -91,8 +92,8 @@ public class SSLJedisTest {
   @Test
   public void connectWithUri() {
     // The "rediss" scheme instructs jedis to open a SSL/TLS connection.
-    try (Jedis jedis = new Jedis(URI.create("rediss://localhost:6390"))) {
-      jedis.auth("foobared");
+    try (Jedis jedis = new Jedis(endpoint.getURI())) {
+      jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
   }

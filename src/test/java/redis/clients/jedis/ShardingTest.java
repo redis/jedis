@@ -14,17 +14,17 @@ import redis.clients.jedis.util.Hashing;
 
 public class ShardingTest {
 
-  private static final HostAndPort redis1 = HostAndPorts.getRedisServers().get(0);
-  private static final HostAndPort redis2 = HostAndPorts.getRedisServers().get(1);
+  private static final EndpointConfig redis1 = HostAndPorts.getRedisEndpoint("standalone0");
+  private static final EndpointConfig redis2 = HostAndPorts.getRedisEndpoint("standalone1");
 
-  private JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().password("foobared").build();
+  private JedisClientConfig clientConfig = redis1.getClientConfigBuilder().build();
 
   @Before
   public void setUp() {
-    try (Jedis j = new Jedis(redis1, clientConfig)) {
+    try (Jedis j = new Jedis(redis1.getHostAndPort(), redis1.getClientConfigBuilder().build())) {
       j.flushAll();
     }
-    try (Jedis j = new Jedis(redis2, clientConfig)) {
+    try (Jedis j = new Jedis(redis2.getHostAndPort(), redis2.getClientConfigBuilder().build())) {
       j.flushAll();
     }
   }
@@ -32,8 +32,8 @@ public class ShardingTest {
   @Test
   public void trySharding() {
     List<HostAndPort> shards = new ArrayList<>();
-    shards.add(redis1);
-    shards.add(redis2);
+    shards.add(redis1.getHostAndPort());
+    shards.add(redis2.getHostAndPort());
     try (JedisSharding jedis = new JedisSharding(shards, clientConfig)) {
       for (int i = 0; i < 1000; i++) {
         jedis.set("key" + i, Integer.toString(i));
@@ -41,14 +41,14 @@ public class ShardingTest {
     }
 
     long totalDbSize = 0;
-    try (Jedis j = new Jedis(redis1)) {
-      j.auth("foobared");
+    try (Jedis j = new Jedis(redis1.getHostAndPort())) {
+      j.auth(redis1.getPassword());
       long dbSize = j.dbSize();
       assertTrue(dbSize > 400);
       totalDbSize += dbSize;
     }
-    try (Jedis j = new Jedis(redis2)) {
-      j.auth("foobared");
+    try (Jedis j = new Jedis(redis2.getHostAndPort())) {
+      j.auth(redis2.getPassword());
       long dbSize = j.dbSize();
       assertTrue(dbSize > 400);
       totalDbSize += dbSize;
@@ -59,8 +59,8 @@ public class ShardingTest {
   @Test
   public void tryShardingWithMurmur() {
     List<HostAndPort> shards = new ArrayList<>();
-    shards.add(redis1);
-    shards.add(redis2);
+    shards.add(redis1.getHostAndPort());
+    shards.add(redis2.getHostAndPort());
     try (JedisSharding jedis = new JedisSharding(shards, clientConfig, Hashing.MURMUR_HASH)) {
       for (int i = 0; i < 1000; i++) {
         jedis.set("key" + i, Integer.toString(i));
@@ -68,14 +68,14 @@ public class ShardingTest {
     }
 
     long totalDbSize = 0;
-    try (Jedis j = new Jedis(redis1)) {
-      j.auth("foobared");
+    try (Jedis j = new Jedis(redis1.getHostAndPort())) {
+      j.auth(redis1.getPassword());
       long dbSize = j.dbSize();
       assertTrue(dbSize > 400);
       totalDbSize += dbSize;
     }
-    try (Jedis j = new Jedis(redis2)) {
-      j.auth("foobared");
+    try (Jedis j = new Jedis(redis2.getHostAndPort())) {
+      j.auth(redis2.getPassword());
       long dbSize = j.dbSize();
       assertTrue(dbSize > 400);
       totalDbSize += dbSize;
@@ -86,8 +86,8 @@ public class ShardingTest {
   @Test
   public void tryShardingWithMD5() {
     List<HostAndPort> shards = new ArrayList<>();
-    shards.add(redis1);
-    shards.add(redis2);
+    shards.add(redis1.getHostAndPort());
+    shards.add(redis2.getHostAndPort());
     try (JedisSharding jedis = new JedisSharding(shards, clientConfig, Hashing.MD5)) {
       for (int i = 0; i < 1000; i++) {
         jedis.set("key" + i, Integer.toString(i));
@@ -95,14 +95,14 @@ public class ShardingTest {
     }
 
     long totalDbSize = 0;
-    try (Jedis j = new Jedis(redis1)) {
-      j.auth("foobared");
+    try (Jedis j = new Jedis(redis1.getHostAndPort())) {
+      j.auth(redis1.getPassword());
       long dbSize = j.dbSize();
       assertTrue(dbSize > 400);
       totalDbSize += dbSize;
     }
-    try (Jedis j = new Jedis(redis2)) {
-      j.auth("foobared");
+    try (Jedis j = new Jedis(redis2.getHostAndPort())) {
+      j.auth(redis2.getPassword());
       long dbSize = j.dbSize();
       totalDbSize += dbSize;
     }
@@ -124,8 +124,8 @@ public class ShardingTest {
   @Test
   public void checkCloseable() {
     List<HostAndPort> shards = new ArrayList<>();
-    shards.add(redis1);
-    shards.add(redis2);
+    shards.add(redis1.getHostAndPort());
+    shards.add(redis2.getHostAndPort());
 
     JedisSharding jedis = new JedisSharding(shards, clientConfig);
     jedis.set("closeable", "true");
@@ -141,8 +141,8 @@ public class ShardingTest {
   @Test
   public void testGeneralCommand() {
     List<HostAndPort> shards = new ArrayList<>();
-    shards.add(redis1);
-    shards.add(redis2);
+    shards.add(redis1.getHostAndPort());
+    shards.add(redis2.getHostAndPort());
 
     try (JedisSharding jedis = new JedisSharding(shards, clientConfig)) {
       jedis.sendCommand("command", SET, "command", "general");

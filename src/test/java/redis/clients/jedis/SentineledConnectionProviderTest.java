@@ -22,9 +22,6 @@ public class SentineledConnectionProviderTest {
 
   private static final String MASTER_NAME = "mymaster";
 
-  //protected static HostAndPort master = HostAndPorts.getRedisServers().get(2);
-  //protected static HostAndPort slave1 = HostAndPorts.getRedisServers().get(3);
-
   protected static final HostAndPort sentinel1 = HostAndPorts.getSentinelServers().get(1);
   protected static final HostAndPort sentinel2 = HostAndPorts.getSentinelServers().get(3);
 

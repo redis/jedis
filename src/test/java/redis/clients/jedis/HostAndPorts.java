@@ -1,27 +1,24 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public final class HostAndPorts {
 
-  private static List<HostAndPort> redisHostAndPortList = new ArrayList<>();
+  private static HashMap<String, EndpointConfig> endpointConfigs;
+
   private static List<HostAndPort> sentinelHostAndPortList = new ArrayList<>();
   private static List<HostAndPort> clusterHostAndPortList = new ArrayList<>();
   private static List<HostAndPort> stableClusterHostAndPortList = new ArrayList<>();
 
   static {
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 1));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 2));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 3));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 4));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 5));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 6));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 7));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 8));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 9));
-    redisHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_PORT + 10));
+    String endpointsPath = System.getenv().getOrDefault("REDIS_ENDPOINTS_CONFIG_PATH", "src/test/resources/endpoints.json");
+    try {
+      endpointConfigs = EndpointConfig.loadFromJSON(endpointsPath);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
 
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT));
     sentinelHostAndPortList.add(new HostAndPort("localhost", Protocol.DEFAULT_SENTINEL_PORT + 1));
@@ -41,31 +38,12 @@ public final class HostAndPorts {
     stableClusterHostAndPortList.add(new HostAndPort("localhost", 7481));
   }
 
-  public static List<HostAndPort> parseHosts(String envHosts,
-      List<HostAndPort> existingHostsAndPorts) {
-
-    if (null != envHosts && 0 < envHosts.length()) {
-
-      String[] hostDefs = envHosts.split(",");
-
-      if (null != hostDefs && 2 <= hostDefs.length) {
-
-        List<HostAndPort> envHostsAndPorts = new ArrayList<>(hostDefs.length);
-
-        for (String hostDef : hostDefs) {
-
-          envHostsAndPorts.add(HostAndPort.from(hostDef));
-        }
-
-        return envHostsAndPorts;
-      }
+  public static EndpointConfig getRedisEndpoint(String endpointName) {
+    if (!endpointConfigs.containsKey(endpointName)) {
+      throw new IllegalArgumentException("Unknown Redis endpoint: " + endpointName);
     }
 
-    return existingHostsAndPorts;
-  }
-
-  public static List<HostAndPort> getRedisServers() {
-    return redisHostAndPortList;
+    return endpointConfigs.get(endpointName);
   }
 
   public static List<HostAndPort> getSentinelServers() {

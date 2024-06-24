@@ -11,12 +11,30 @@ import redis.clients.jedis.util.SafeEncoder;
 public final class RawableFactory {
 
   /**
+   * Get a {@link Rawable} from a {@code boolean}.
+   * @param b boolean value
+   * @return raw
+   */
+  public static Rawable from(boolean b) {
+    return from(toByteArray(b));
+  }
+
+  /**
    * Get a {@link Rawable} from an {@code int}.
    * @param i integer value
    * @return raw
    */
   public static Rawable from(int i) {
     return from(toByteArray(i));
+  }
+
+  /**
+   * Get a {@link Rawable} from a {@code long}.
+   * @param l long value
+   * @return raw
+   */
+  public static Rawable from(long l) {
+    return from(toByteArray(l));
   }
 
   /**

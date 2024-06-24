@@ -1025,6 +1025,18 @@ public class ClusterPipeliningTest {
   }
 
   @Test
+  public void spublishInPipeline() {
+    try (JedisCluster jedis = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+      ClusterPipeline pipelined = jedis.pipelined();
+      Response<Long> p1 = pipelined.publish("foo", "bar");
+      Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());
+      pipelined.sync();
+      assertEquals(0, p1.get().longValue());
+      assertEquals(0, p2.get().longValue());
+    }
+  }
+
+  @Test
   public void simple() { // TODO: move into 'redis.clients.jedis.commands.unified.cluster' package
     try (JedisCluster jedis = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
       final int count = 10;

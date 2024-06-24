@@ -10,20 +10,20 @@ import redis.clients.jedis.util.Hashing;
 
 public class ShardedPipelineTest {
 
-  private static final HostAndPort redis1 = HostAndPorts.getRedisServers().get(0);
-  private static final HostAndPort redis2 = HostAndPorts.getRedisServers().get(1);
+  private static final EndpointConfig redis1 = HostAndPorts.getRedisEndpoint("standalone0");
+  private static final EndpointConfig redis2 = HostAndPorts.getRedisEndpoint("standalone1");
 
   private static final ConnectionPoolConfig DEFAULT_POOL_CONFIG = new ConnectionPoolConfig();
-  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG = DefaultJedisClientConfig
-      .builder().password("foobared").build();
+  private static final DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG = redis1.getClientConfigBuilder()
+      .build();
 
-  private List<HostAndPort> shards = Arrays.asList(redis1, redis2);
+  private List<HostAndPort> shards = Arrays.asList(redis1.getHostAndPort(), redis2.getHostAndPort());
 
   @Before
   public void setUp() {
     for (HostAndPort shard : shards) {
       try (Jedis j = new Jedis(shard)) {
-        j.auth("foobared");
+        j.auth(redis1.getPassword());
         j.flushAll();
       }
     }

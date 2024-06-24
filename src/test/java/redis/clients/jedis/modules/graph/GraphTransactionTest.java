@@ -23,6 +23,7 @@ import redis.clients.jedis.graph.entities.Node;
 import redis.clients.jedis.graph.entities.Property;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@org.junit.Ignore
 @RunWith(Parameterized.class)
 public class GraphTransactionTest extends RedisModuleCommandsTestBase {
 

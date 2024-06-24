@@ -235,9 +235,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
   @Test
   @Deprecated
-  public void testJsonGenericObjectResp2() {
-    assumeThat(protocol, not(equalTo(RedisProtocol.RESP3)));
-
+  public void testJsonGenericObject() {
     String key = "user:1000";
 
     Person person = new Person();
@@ -254,29 +252,6 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     Map<String, Object> resultMap = (Map<String, Object>) getRoot;
     assertThat(resultMap, hasEntry("name", "John Doe"));
     assertThat(resultMap, hasEntry("age", 30.0));
-  }
-
-  @Test
-  @Deprecated
-  public void testJsonGenericObjectResp3() {
-    assumeThat(protocol, equalTo(RedisProtocol.RESP3));
-
-    String key = "user:1000";
-
-    Person person = new Person("John Doe", 30);
-
-    String setResult = exec(commandObjects.jsonSet(key, Path.ROOT_PATH, person));
-    assertThat(setResult, equalTo("OK"));
-
-    Object getRoot = exec(commandObjects.jsonGet(key));
-    assertThat(getRoot, instanceOf(JSONArray.class));
-
-    JSONObject expectedPerson = new JSONObject();
-    expectedPerson.put("name", "John Doe");
-    expectedPerson.put("age", 30);
-
-    JSONArray expected = new JSONArray().put(expectedPerson);
-    assertThat(getRoot, jsonEquals(expected));
   }
 
   @Test

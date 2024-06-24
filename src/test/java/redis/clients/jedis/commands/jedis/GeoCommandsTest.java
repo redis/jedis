@@ -540,30 +540,30 @@ public class GeoCommandsTest extends JedisCommandsTestBase {
     // combine byradius and bybox
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
+          .byRadius(3000, GeoUnit.M)
+          .byBox(300, 300, GeoUnit.M));
       fail();
-    } catch (Exception ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // without byradius and without bybox
     try {
-      jedis.geosearch("barcelona", new GeoSearchParam()
-              .fromMember("foobar"));
+      jedis.geosearch("barcelona", new GeoSearchParam().fromMember("foobar"));
       fail();
-    } catch (Exception ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // combine frommember and fromlonlat
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .fromMember("foobar").fromLonLat(10,10));
+          .fromMember("foobar")
+          .fromLonLat(10,10));
       fail();
-    } catch (Exception ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // without frommember and without fromlonlat
     try {
-      jedis.geosearch("barcelona", new GeoSearchParam()
-              .byRadius(10, GeoUnit.MI));
+      jedis.geosearch("barcelona", new GeoSearchParam().byRadius(10, GeoUnit.MI));
       fail();
-    } catch (Exception ignored) { }
+    } catch (IllegalArgumentException ignored) { }
   }
 
   @Test

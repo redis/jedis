@@ -1,7 +1,6 @@
 package redis.clients.jedis.csc;
 
 import java.nio.ByteBuffer;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,7 +9,6 @@ import java.util.function.Function;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.csc.hash.CommandLongHasher;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -24,26 +22,24 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
-  private final Map<ByteBuffer, Set<Long>> keyToCommandHashes = new ConcurrentHashMap<>();
-  private final CommandLongHasher commandHasher;
+  private final Map<ByteBuffer, Set<CommandObject<?>>> keyToCommandHashes = new ConcurrentHashMap<>();
   private final ClientSideCacheable cacheable;
 
-  protected ClientSideCache(CommandLongHasher commandHasher) {
-    this(commandHasher, DefaultClientSideCacheable.INSTANCE);
+  protected ClientSideCache() {
+    this(DefaultClientSideCacheable.INSTANCE);
   }
 
-  protected ClientSideCache(CommandLongHasher commandHasher, ClientSideCacheable cacheable) {
-    this.commandHasher = commandHasher;
+  protected ClientSideCache(ClientSideCacheable cacheable) {
     this.cacheable = cacheable;
   }
 
-  protected abstract void invalidateAllHashes();
+  protected abstract void invalidateFullCache();
 
-  protected abstract void invalidateHashes(Iterable<Long> hashes);
+  protected abstract void invalidateCache(Iterable<CommandObject<?>> commands);
 
-  protected abstract void putValue(long hash, Object value);
+  protected abstract <T> void putValue(CommandObject<T> command, T value);
 
-  protected abstract Object getValue(long hash);
+  protected abstract <T> T getValue(CommandObject<T> command);
 
   public final void clear() {
     invalidateAllKeysAndCommandHashes();
@@ -63,7 +59,7 @@ public abstract class ClientSideCache {
   }
 
   private void invalidateAllKeysAndCommandHashes() {
-    invalidateAllHashes();
+    invalidateFullCache();
     keyToCommandHashes.clear();
   }
 
@@ -76,9 +72,9 @@ public abstract class ClientSideCache {
 //    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
     final ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
 
-    Set<Long> hashes = keyToCommandHashes.get(mapKey);
-    if (hashes != null) {
-      invalidateHashes(hashes);
+    Set<CommandObject<?>> commands = keyToCommandHashes.get(mapKey);
+    if (commands != null) {
+      invalidateCache(commands);
       keyToCommandHashes.remove(mapKey);
     }
   }
@@ -89,23 +85,21 @@ public abstract class ClientSideCache {
       return loader.apply(command);
     }
 
-    final long hash = commandHasher.hash(command);
-
-    T value = (T) getValue(hash);
+    T value = getValue(command);
     if (value != null) {
       return value;
     }
 
     value = loader.apply(command);
     if (value != null) {
-      putValue(hash, value);
+      putValue(command, value);
       for (Object key : keys) {
         ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
         if (keyToCommandHashes.containsKey(mapKey)) {
-          keyToCommandHashes.get(mapKey).add(hash);
+          keyToCommandHashes.get(mapKey).add(command);
         } else {
-          Set<Long> set = new HashSet<>();
-          set.add(hash);
+          Set<CommandObject<?>> set = ConcurrentHashMap.newKeySet();
+          set.add(command);
           keyToCommandHashes.put(mapKey, set);
         }
       }

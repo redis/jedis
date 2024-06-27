@@ -13,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -64,7 +65,7 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void simpleWithSimpleMap() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache(map),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
@@ -94,7 +95,7 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void flushAllWithSimpleMap() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache(map),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");

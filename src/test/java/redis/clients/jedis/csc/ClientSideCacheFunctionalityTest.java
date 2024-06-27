@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import org.junit.Test;
+
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -24,7 +26,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       control.set("k" + i, "v" + i);
     }
 
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     ClientSideCache clientSideCache = new MapClientSideCache(map);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
       for (int i = 0; i < count; i++) {
@@ -45,7 +47,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
 
     // By using LinkedHashMap, we can get the hashes (map keys) at the same order of the actual keys.
-    LinkedHashMap<Long, Object> map = new LinkedHashMap<>();
+    LinkedHashMap<CommandObject, Object> map = new LinkedHashMap<>();
     ClientSideCache clientSideCache = new MapClientSideCache(map);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
       for (int i = 0; i < count; i++) {
@@ -53,14 +55,14 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       }
     }
 
-    ArrayList<Long> commandHashes = new ArrayList<>(map.keySet());
+    ArrayList<CommandObject> commandHashes = new ArrayList<>(map.keySet());
     assertEquals(count, map.size());
     for (int i = 0; i < count; i++) {
       String key = "k" + i;
-      Long hash = commandHashes.get(i);
-      assertTrue(map.containsKey(hash));
+      CommandObject command = commandHashes.get(i);
+      assertTrue(map.containsKey(command));
       clientSideCache.removeKey(key);
-      assertFalse(map.containsKey(hash));
+      assertFalse(map.containsKey(command));
     }
   }
 
@@ -69,7 +71,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     control.set("k1", "v1");
     control.set("k2", "v2");
 
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache(map))) {
       jedis.mget("k1", "k2");
       assertEquals(1, map.size());

@@ -34,8 +34,7 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
     Cache caffeine = Caffeine.newBuilder().recordStats().build();
 
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new CaffeineClientSideCache(caffeine, new OpenHftCommandHasher()),
-        singleConnectionPoolConfig.get())) {
+        new CaffeineClientSideCache(caffeine), singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, caffeine.estimatedSize());
       assertEquals("bar", jedis.get("foo"));

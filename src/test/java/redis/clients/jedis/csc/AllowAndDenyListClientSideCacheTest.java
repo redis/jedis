@@ -8,6 +8,7 @@ import java.util.HashMap;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.csc.util.AllowAndDenyListWithStringKeys;
@@ -16,7 +17,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
 
   @Test
   public void none() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, null, null)),
         singleConnectionPoolConfig.get())) {
@@ -29,7 +30,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
 
   @Test
   public void whiteListCommand() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(singleton(Protocol.Command.GET), null, null, null)),
         singleConnectionPoolConfig.get())) {
@@ -42,7 +43,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
 
   @Test
   public void blackListCommand() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, singleton(Protocol.Command.GET), null, null)),
         singleConnectionPoolConfig.get())) {
@@ -55,7 +56,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
 
   @Test
   public void whiteListKey() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, singleton("foo"), null)),
         singleConnectionPoolConfig.get())) {
@@ -68,7 +69,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
 
   @Test
   public void blackListKey() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
         new MapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, null, singleton("foo"))),
         singleConnectionPoolConfig.get())) {

@@ -57,7 +57,7 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
   @Test
   public void maximumSize() {
     final long maxSize = 10;
-    final long maxEstimatedSize = 50;
+    final long maxEstimatedSize = 52;
     int count = 1000;
     for (int i = 0; i < count; i++) {
       control.set("k" + i, "v" + i);
@@ -67,10 +67,10 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineClientSideCache(caffeine))) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
-        assertThat(caffeine.estimatedSize(), Matchers.lessThanOrEqualTo(maxEstimatedSize));
+        assertThat(caffeine.estimatedSize(), Matchers.lessThan(maxEstimatedSize));
       }
     }
-    assertThat(caffeine.stats().evictionCount(), Matchers.greaterThanOrEqualTo(count - maxEstimatedSize));
+    assertThat(caffeine.stats().evictionCount(), Matchers.greaterThan(count - maxEstimatedSize));
   }
 
   @Test

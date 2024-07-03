@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -26,15 +27,14 @@ public abstract class ClientSideCache {
 
   private final Map<ByteBuffer, Set<Long>> keyToCommandHashes = new ConcurrentHashMap<>();
   private final CommandLongHasher commandHasher;
-  private final ClientSideCacheable cacheable;
+  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
 
   protected ClientSideCache(CommandLongHasher commandHasher) {
-    this(commandHasher, DefaultClientSideCacheable.INSTANCE);
+    this.commandHasher = commandHasher;
   }
 
-  protected ClientSideCache(CommandLongHasher commandHasher, ClientSideCacheable cacheable) {
-    this.commandHasher = commandHasher;
-    this.cacheable = cacheable;
+  public void setCacheable(ClientSideCacheable cacheable) {
+    this.cacheable = Objects.requireNonNull(cacheable, "'cacheable' must not be null");
   }
 
   protected abstract void invalidateAllHashes();

@@ -18,11 +18,6 @@ public class MapClientSideCache extends ClientSideCache {
     this.cache = map;
   }
 
-  public MapClientSideCache(Map<Long, Object> cache, ClientSideCacheable cacheable) {
-    super(SimpleCommandHasher.INSTANCE, cacheable);
-    this.cache = cache;
-  }
-
   @Override
   protected final void invalidateAllHashes() {
     cache.clear();

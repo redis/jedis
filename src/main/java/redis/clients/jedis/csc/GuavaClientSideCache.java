@@ -25,15 +25,6 @@ public class GuavaClientSideCache extends ClientSideCache {
     this.cache = guavaCache;
   }
 
-  public GuavaClientSideCache(Cache<Long, Object> guavaCache, ClientSideCacheable cacheable) {
-    this(guavaCache, new GuavaCommandHasher(GuavaCommandHasher.DEFAULT_HASH_FUNCTION), cacheable);
-  }
-
-  public GuavaClientSideCache(Cache<Long, Object> cache, CommandLongHasher commandHasher, ClientSideCacheable cacheable) {
-    super(commandHasher, cacheable);
-    this.cache = cache;
-  }
-
   @Override
   protected final void invalidateAllHashes() {
     cache.invalidateAll();
@@ -68,8 +59,6 @@ public class GuavaClientSideCache extends ClientSideCache {
     private HashFunction hashFunction = null;
     private CommandLongHasher commandHasher = null;
 
-    private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
-
     private Builder() { }
 
     public Builder maximumSize(int size) {
@@ -94,11 +83,6 @@ public class GuavaClientSideCache extends ClientSideCache {
       return this;
     }
 
-    public Builder cacheable(ClientSideCacheable cacheable) {
-      this.cacheable = cacheable;
-      return this;
-    }
-
     public GuavaClientSideCache build() {
       CacheBuilder cb = CacheBuilder.newBuilder();
 
@@ -106,9 +90,9 @@ public class GuavaClientSideCache extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return hashFunction != null ? new GuavaClientSideCache(cb.build(), new GuavaCommandHasher(hashFunction), cacheable)
-          : commandHasher != null ? new GuavaClientSideCache(cb.build(), commandHasher, cacheable)
-              : new GuavaClientSideCache(cb.build(), cacheable);
+      return hashFunction != null ? new GuavaClientSideCache(cb.build(), new GuavaCommandHasher(hashFunction))
+          : commandHasher != null ? new GuavaClientSideCache(cb.build(), commandHasher)
+              : new GuavaClientSideCache(cb.build());
     }
   }
 }

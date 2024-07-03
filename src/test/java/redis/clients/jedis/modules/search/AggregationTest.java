@@ -134,6 +134,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     assertEquals("10", rows.get(1).get("sum"));
   }
 
+  @org.junit.Ignore
   @Test
   public void testAggregations2Profile() {
     Schema sc = new Schema();

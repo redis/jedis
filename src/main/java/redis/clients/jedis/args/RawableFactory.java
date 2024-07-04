@@ -3,7 +3,6 @@ package redis.clients.jedis.args;
 import static redis.clients.jedis.Protocol.toByteArray;
 
 import java.util.Arrays;
-import java.util.Objects;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -97,29 +96,12 @@ public final class RawableFactory {
   /**
    * A {@link Rawable} wrapping a {@link String}.
    */
-  public static class RawString implements Rawable {
+  public static class RawString extends Raw {
 
-    private final String str;
+    // TODO: private final String str; ^ implements Rawable
 
     public RawString(String str) {
-      this.str = str;
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return SafeEncoder.encode(str);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      return Objects.equals(str, ((RawString) o).str);
-    }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(str);
+      super(SafeEncoder.encode(str));
     }
   }
 

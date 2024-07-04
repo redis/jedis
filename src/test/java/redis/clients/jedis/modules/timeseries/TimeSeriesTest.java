@@ -240,7 +240,7 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(expectedOverallMaxValues, values);
 
     // MRANGE
-//    assertEquals(Collections.emptyMap(), client.tsMRange(TSMRangeParams.multiRangeParams().filter("l=v"))); // TODO: uncomment
+    assertEquals(Collections.emptyMap(), client.tsMRange(TSMRangeParams.multiRangeParams().filter("l=v"))); // TODO: uncomment
     try {
       client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L).aggregation(AggregationType.COUNT, 1));
       fail();

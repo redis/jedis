@@ -3,6 +3,7 @@ package redis.clients.jedis.csc;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
@@ -23,14 +24,13 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
   private final Map<ByteBuffer, Set<CommandObject<?>>> keyToCommandHashes = new ConcurrentHashMap<>();
-  private final ClientSideCacheable cacheable;
+  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
 
   protected ClientSideCache() {
-    this(DefaultClientSideCacheable.INSTANCE);
   }
 
-  protected ClientSideCache(ClientSideCacheable cacheable) {
-    this.cacheable = cacheable;
+  public void setCacheable(ClientSideCacheable cacheable) {
+    this.cacheable = Objects.requireNonNull(cacheable, "'cacheable' must not be null");
   }
 
   protected abstract void invalidateFullCache();

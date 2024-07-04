@@ -14,11 +14,6 @@ public class GuavaClientSideCache extends ClientSideCache {
     this.cache = guavaCache;
   }
 
-  public GuavaClientSideCache(Cache<CommandObject, Object> cache, ClientSideCacheable cacheable) {
-    super(cacheable);
-    this.cache = cache;
-  }
-
   @Override
   protected final void invalidateFullCache() {
     cache.invalidateAll();
@@ -49,8 +44,6 @@ public class GuavaClientSideCache extends ClientSideCache {
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
-    private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
-
     private Builder() { }
 
     public Builder maximumSize(int size) {
@@ -63,11 +56,6 @@ public class GuavaClientSideCache extends ClientSideCache {
       return this;
     }
 
-    public Builder cacheable(ClientSideCacheable cacheable) {
-      this.cacheable = cacheable;
-      return this;
-    }
-
     public GuavaClientSideCache build() {
       CacheBuilder cb = CacheBuilder.newBuilder();
 
@@ -75,7 +63,7 @@ public class GuavaClientSideCache extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return new GuavaClientSideCache(cb.build(), cacheable);
+      return new GuavaClientSideCache(cb.build());
     }
   }
 }

@@ -10,11 +10,6 @@ public class CaffeineClientSideCache extends ClientSideCache {
   private final Cache<CommandObject, Object> cache;
 
   public CaffeineClientSideCache(Cache<CommandObject, Object> caffeineCache) {
-    this(caffeineCache, DefaultClientSideCacheable.INSTANCE);
-  }
-
-  public CaffeineClientSideCache(Cache<CommandObject, Object> caffeineCache, ClientSideCacheable cacheable) {
-    super(cacheable);
     this.cache = caffeineCache;
   }
 
@@ -48,8 +43,6 @@ public class CaffeineClientSideCache extends ClientSideCache {
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
-    private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
-
     private Builder() { }
 
     public Builder maximumSize(int size) {
@@ -62,11 +55,6 @@ public class CaffeineClientSideCache extends ClientSideCache {
       return this;
     }
 
-    public Builder cacheable(ClientSideCacheable cacheable) {
-      this.cacheable = cacheable;
-      return this;
-    }
-
     public CaffeineClientSideCache build() {
       Caffeine cb = Caffeine.newBuilder();
 
@@ -74,7 +62,7 @@ public class CaffeineClientSideCache extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return new CaffeineClientSideCache(cb.build(), cacheable);
+      return new CaffeineClientSideCache(cb.build());
     }
   }
 }

@@ -18,11 +18,6 @@ public class MapClientSideCache extends ClientSideCache {
     this.cache = map;
   }
 
-  public MapClientSideCache(Map<CommandObject, Object> cache, ClientSideCacheable cacheable) {
-    super(cacheable);
-    this.cache = cache;
-  }
-
   @Override
   protected final void invalidateFullCache() {
     cache.clear();

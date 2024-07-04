@@ -240,20 +240,20 @@ public class TimeSeriesTest extends RedisModuleCommandsTestBase {
     assertEquals(expectedOverallMaxValues, values);
 
     // MRANGE
-//    assertEquals(Collections.emptyMap(), client.tsMRange(TSMRangeParams.multiRangeParams().filter("l=v")));
-//    try {
-//      client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L).aggregation(AggregationType.COUNT, 1));
-//      fail();
-////    } catch (JedisDataException e) {
-//    } catch (IllegalArgumentException e) {
-//    }
-//
-//    try {
-//      client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L).aggregation(AggregationType.COUNT, 1).filter((String) null));
-//      fail();
-////    } catch (JedisDataException e) {
-//    } catch (IllegalArgumentException e) {
-//    }
+//    assertEquals(Collections.emptyMap(), client.tsMRange(TSMRangeParams.multiRangeParams().filter("l=v"))); // TODO: uncomment
+    try {
+      client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L).aggregation(AggregationType.COUNT, 1));
+      fail();
+//    } catch (JedisDataException e) {
+    } catch (IllegalArgumentException e) {
+    }
+
+    try {
+      client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L).aggregation(AggregationType.COUNT, 1).filter((String) null));
+      fail();
+//    } catch (JedisDataException e) {
+    } catch (IllegalArgumentException e) {
+    }
 
     Map<String, TSMRangeElements> ranges = client.tsMRange(TSMRangeParams.multiRangeParams(500L, 4600L)
         .aggregation(AggregationType.COUNT, 1).filter("l1=v1"));

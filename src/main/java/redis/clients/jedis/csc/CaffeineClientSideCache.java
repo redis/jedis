@@ -19,8 +19,8 @@ public class CaffeineClientSideCache extends ClientSideCache {
   }
 
   @Override
-  protected void invalidateCache(Iterable<CommandObject<?>> hashes) {
-    cache.invalidateAll(hashes);
+  protected void invalidateCache(Iterable<CommandObject<?>> commands) {
+    cache.invalidateAll(commands);
   }
 
   @Override

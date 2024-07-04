@@ -2,47 +2,36 @@ package redis.clients.jedis.csc;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.hash.HashFunction;
 import java.util.concurrent.TimeUnit;
-
-import redis.clients.jedis.csc.hash.CommandLongHasher;
-import redis.clients.jedis.csc.hash.GuavaCommandHasher;
+import redis.clients.jedis.CommandObject;
 
 public class GuavaClientSideCache extends ClientSideCache {
 
-  private final Cache<Long, Object> cache;
+  private final Cache<CommandObject, Object> cache;
 
-  public GuavaClientSideCache(Cache<Long, Object> guavaCache) {
-    this(guavaCache, GuavaCommandHasher.DEFAULT_HASH_FUNCTION);
-  }
-
-  public GuavaClientSideCache(Cache<Long, Object> guavaCache, HashFunction hashFunction) {
-    this(guavaCache, new GuavaCommandHasher(hashFunction));
-  }
-
-  public GuavaClientSideCache(Cache<Long, Object> guavaCache, CommandLongHasher commandHasher) {
-    super(commandHasher);
+  public GuavaClientSideCache(Cache<CommandObject, Object> guavaCache) {
+    super();
     this.cache = guavaCache;
   }
 
   @Override
-  protected final void invalidateAllHashes() {
+  protected final void invalidateFullCache() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateHashes(Iterable<Long> hashes) {
-    cache.invalidateAll(hashes);
+  protected void invalidateCache(Iterable<CommandObject<?>> commands) {
+    cache.invalidateAll(commands);
   }
 
   @Override
-  protected void putValue(long hash, Object value) {
-    cache.put(hash, value);
+  protected <T> void putValue(CommandObject<T> command, T value) {
+    cache.put(command, value);
   }
 
   @Override
-  protected Object getValue(long hash) {
-    return cache.getIfPresent(hash);
+  protected <T> T getValue(CommandObject<T> command) {
+    return (T) cache.getIfPresent(command);
   }
 
   public static Builder builder() {
@@ -54,10 +43,6 @@ public class GuavaClientSideCache extends ClientSideCache {
     private long maximumSize = DEFAULT_MAXIMUM_SIZE;
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
-
-    // not using a default value to avoid an object creation like 'new GuavaHashing(hashFunction)'
-    private HashFunction hashFunction = null;
-    private CommandLongHasher commandHasher = null;
 
     private Builder() { }
 
@@ -71,18 +56,6 @@ public class GuavaClientSideCache extends ClientSideCache {
       return this;
     }
 
-    public Builder hashFunction(HashFunction function) {
-      this.hashFunction = function;
-      this.commandHasher = null;
-      return this;
-    }
-
-    public Builder commandHasher(CommandLongHasher commandHasher) {
-      this.commandHasher = commandHasher;
-      this.hashFunction = null;
-      return this;
-    }
-
     public GuavaClientSideCache build() {
       CacheBuilder cb = CacheBuilder.newBuilder();
 
@@ -90,9 +63,7 @@ public class GuavaClientSideCache extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return hashFunction != null ? new GuavaClientSideCache(cb.build(), new GuavaCommandHasher(hashFunction))
-          : commandHasher != null ? new GuavaClientSideCache(cb.build(), commandHasher)
-              : new GuavaClientSideCache(cb.build());
+      return new GuavaClientSideCache(cb.build());
     }
   }
 }

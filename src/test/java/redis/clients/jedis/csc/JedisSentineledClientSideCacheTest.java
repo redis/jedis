@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
@@ -59,7 +60,7 @@ public class JedisSentineledClientSideCacheTest {
 
   @Test
   public void simpleWithSimpleMap() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(map),
         sentinels, sentinelClientConfig)) {
       control.set("foo", "bar");
@@ -90,7 +91,7 @@ public class JedisSentineledClientSideCacheTest {
 
   @Test
   public void flushAllWithSimpleMap() {
-    HashMap<Long, Object> map = new HashMap<>();
+    HashMap<CommandObject, Object> map = new HashMap<>();
     try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(map),
         sentinels, sentinelClientConfig)) {
       control.set("foo", "bar");

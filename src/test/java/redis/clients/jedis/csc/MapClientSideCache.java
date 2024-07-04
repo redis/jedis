@@ -3,38 +3,38 @@ package redis.clients.jedis.csc;
 import java.util.HashMap;
 import java.util.Map;
 
-import redis.clients.jedis.csc.hash.SimpleCommandHasher;
+import redis.clients.jedis.CommandObject;
 
 public class MapClientSideCache extends ClientSideCache {
 
-  private final Map<Long, Object> cache;
+  private final Map<CommandObject, Object> cache;
 
   public MapClientSideCache() {
     this(new HashMap<>());
   }
 
-  public MapClientSideCache(Map<Long, Object> map) {
-    super(SimpleCommandHasher.INSTANCE);
+  public MapClientSideCache(Map<CommandObject, Object> map) {
+    super();
     this.cache = map;
   }
 
   @Override
-  protected final void invalidateAllHashes() {
+  protected final void invalidateFullCache() {
     cache.clear();
   }
 
   @Override
-  protected void invalidateHashes(Iterable<Long> hashes) {
-    hashes.forEach(hash -> cache.remove(hash));
+  protected void invalidateCache(Iterable<CommandObject<?>> commands) {
+    commands.forEach(hash -> cache.remove(hash));
   }
 
   @Override
-  protected void putValue(long hash, Object value) {
-    cache.put(hash, value);
+  protected <T> void putValue(CommandObject<T> command, T value) {
+    cache.put(command, value);
   }
 
   @Override
-  protected Object getValue(long hash) {
-    return cache.get(hash);
+  protected <T> T getValue(CommandObject<T> command) {
+    return (T) cache.get(command);
   }
 }

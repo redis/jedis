@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
-import com.google.common.hash.Hashing;
 
 import java.net.URI;
 import java.util.concurrent.TimeUnit;
@@ -20,8 +19,7 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    GuavaClientSideCache guava = GuavaClientSideCache.builder().maximumSize(10).ttl(10)
-        .hashFunction(Hashing.farmHashFingerprint64()).build();
+    GuavaClientSideCache guava = GuavaClientSideCache.builder().maximumSize(10).ttl(10).build();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));

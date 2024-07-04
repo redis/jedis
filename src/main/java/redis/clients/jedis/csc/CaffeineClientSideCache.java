@@ -3,41 +3,34 @@ package redis.clients.jedis.csc;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
-
-import redis.clients.jedis.csc.hash.CommandLongHasher;
-import redis.clients.jedis.csc.hash.SimpleCommandHasher;
+import redis.clients.jedis.CommandObject;
 
 public class CaffeineClientSideCache extends ClientSideCache {
 
-  private final Cache<Long, Object> cache;
+  private final Cache<CommandObject, Object> cache;
 
-  public CaffeineClientSideCache(Cache<Long, Object> caffeineCache) {
-    this(caffeineCache, SimpleCommandHasher.INSTANCE);
-  }
-
-  public CaffeineClientSideCache(Cache<Long, Object> caffeineCache, CommandLongHasher commandHasher) {
-    super(commandHasher);
+  public CaffeineClientSideCache(Cache<CommandObject, Object> caffeineCache) {
     this.cache = caffeineCache;
   }
 
   @Override
-  protected final void invalidateAllHashes() {
+  protected final void invalidateFullCache() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateHashes(Iterable<Long> hashes) {
-    cache.invalidateAll(hashes);
+  protected void invalidateCache(Iterable<CommandObject<?>> commands) {
+    cache.invalidateAll(commands);
   }
 
   @Override
-  protected void putValue(long hash, Object value) {
-    cache.put(hash, value);
+  protected <T> void putValue(CommandObject<T> command, T value) {
+    cache.put(command, value);
   }
 
   @Override
-  protected Object getValue(long hash) {
-    return cache.getIfPresent(hash);
+  protected <T> T getValue(CommandObject<T> command) {
+    return (T) cache.getIfPresent(command);
   }
 
   public static Builder builder() {
@@ -49,9 +42,6 @@ public class CaffeineClientSideCache extends ClientSideCache {
     private long maximumSize = DEFAULT_MAXIMUM_SIZE;
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
-
-    // not using a default value to avoid an object creation like 'new OpenHftHashing(hashFunction)'
-    private CommandLongHasher commandHasher = SimpleCommandHasher.INSTANCE;
 
     private Builder() { }
 
@@ -65,11 +55,6 @@ public class CaffeineClientSideCache extends ClientSideCache {
       return this;
     }
 
-    public Builder commandHasher(CommandLongHasher commandHasher) {
-      this.commandHasher = commandHasher;
-      return this;
-    }
-
     public CaffeineClientSideCache build() {
       Caffeine cb = Caffeine.newBuilder();
 
@@ -77,7 +62,7 @@ public class CaffeineClientSideCache extends ClientSideCache {
 
       cb.expireAfterWrite(expireTime, expireTimeUnit);
 
-      return new CaffeineClientSideCache(cb.build(), commandHasher);
+      return new CaffeineClientSideCache(cb.build());
     }
   }
 }

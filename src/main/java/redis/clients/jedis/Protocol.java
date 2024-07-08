@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import redis.clients.jedis.annots.Experimental;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -207,23 +207,15 @@ public final class Protocol {
     return ret;
   }
 
-  @Deprecated
   public static Object read(final RedisInputStream is) {
     return process(is);
   }
 
   @Experimental
-  public static Object read(final RedisInputStream is, final ClientSideCache cache) {
-    readPushes(is, cache);
-    return process(is);
-  }
-
-  private static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
-    if (cache != null) {
-      while (is.peek(GREATER_THAN_BYTE)) {
-        is.readByte();
-        processPush(is, cache);
-      }
+  public static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
+    while (is.peek(GREATER_THAN_BYTE)) {
+      is.readByte();
+      processPush(is, cache);
     }
   }
 

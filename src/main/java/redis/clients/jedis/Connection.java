@@ -16,10 +16,10 @@ import java.util.function.Supplier;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -31,12 +31,11 @@ import redis.clients.jedis.util.RedisOutputStream;
 public class Connection implements Closeable {
 
   private ConnectionPool memberOf;
-  private RedisProtocol protocol;
+  protected RedisProtocol protocol;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private ClientSideCache clientSideCache;
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
@@ -66,16 +65,6 @@ public class Connection implements Closeable {
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
     initializeFromClientConfig(clientConfig);
-  }
-
-  @Experimental
-  public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig,
-      ClientSideCache clientSideCache) {
-    this.socketFactory = socketFactory;
-    this.soTimeout = clientConfig.getSocketTimeoutMillis();
-    this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
-    initializeFromClientConfig(clientConfig);
-    initializeClientSideCache(clientSideCache);
   }
 
   @Override
@@ -352,16 +341,26 @@ public class Connection implements Closeable {
     }
   }
 
+  @Experimental
+  @Internal
+  protected Object protocolRead(RedisInputStream is) {
+    return Protocol.read(is);
+  }
+
+  @Experimental
+  @Internal
+  protected void protocolReadPushes(RedisInputStream is) {
+  }
+
+  // TODO: final
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection");
     }
 
     try {
-      return Protocol.read(inputStream, clientSideCache);
-//      Object read = Protocol.read(inputStream);
-//      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(read));
-//      return read;
+      protocolReadPushes(inputStream);
+      return protocolRead(inputStream);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -524,20 +523,5 @@ public class Connection implements Closeable {
       throw new JedisException(status);
     }
     return true;
-  }
-
-  private void initializeClientSideCache(ClientSideCache csCache) {
-    this.clientSideCache = csCache;
-    if (clientSideCache != null) {
-      if (protocol != RedisProtocol.RESP3) {
-        throw new JedisException("Client side caching is only supported with RESP3.");
-      }
-
-      sendCommand(Protocol.Command.CLIENT, "TRACKING", "ON");
-      String reply = getStatusCodeReply();
-      if (!"OK".equals(reply)) {
-        throw new JedisException("Could not enable client tracking. Reply: " + reply);
-      }
-    }
   }
 }

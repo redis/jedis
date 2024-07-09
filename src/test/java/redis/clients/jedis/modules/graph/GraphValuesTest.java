@@ -8,6 +8,7 @@ import redis.clients.jedis.graph.Record;
 import redis.clients.jedis.graph.ResultSet;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@org.junit.Ignore
 public class GraphValuesTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass

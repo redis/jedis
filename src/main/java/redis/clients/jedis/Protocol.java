@@ -12,7 +12,11 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class Protocol {
+  protected static Logger logger = LoggerFactory.getLogger(Protocol.class.getName());
 
   private static final String ASK_PREFIX = "ASK ";
   private static final String MOVED_PREFIX = "MOVED ";
@@ -95,6 +99,16 @@ public final class Protocol {
 
   private static void sendCommand(final RedisOutputStream os, final byte[] command,
       final byte[]... args) {
+
+    if(logger.isDebugEnabled()) {
+      StringBuilder logMessage = new StringBuilder(new String(command));
+        for (final byte[] arg : args) {
+          logMessage.append(" ");
+          logMessage.append(new String(arg));
+        }
+        logger.debug(logMessage.toString());
+    }
+
     try {
       os.write(ASTERISK_BYTE);
       os.writeIntCrLf(args.length + 1);

@@ -62,7 +62,7 @@ jobs:
           make start
           sleep 2s
       - name: Docker - mod or stack
-        run: docker run -p 52567:6379 -d redis/redis-stack-server:edge
+        run: docker run -p 52567:6379 -d redis/redis-stack-server:7.4.0-rc2
       - name: Test commands - default protocol
         run: mvn -Dtest="redis.clients.jedis.commands.**" test
       - name: Test commands - RESP3 protocol

@@ -879,6 +879,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, "@category:{yellow}").getTotalResults());
     assertEquals(0, client.ftSearch(index, "@category:{purple}").getTotalResults());
     assertEquals(1, client.ftSearch(index, "@category:{orange\\;purple}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{orange;purple}",
+        FTSearchParams.searchParams().dialect(5)).getTotalResults());
     assertEquals(4, client.ftSearch(index, "hello").getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange;purple")),
@@ -918,6 +920,8 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, "hello @category:{yellow}").getTotalResults());
     assertEquals(0, client.ftSearch(index, "@category:{purple}").getTotalResults());
     assertEquals(1, client.ftSearch(index, "@category:{orange\\,purple}").getTotalResults());
+    assertEquals(1, client.ftSearch(index, "@category:{orange,purple}",
+        FTSearchParams.searchParams().dialect(5)).getTotalResults());
     assertEquals(4, client.ftSearch(index, "hello").getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange,purple")),

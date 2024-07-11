@@ -784,6 +784,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, new Query("@category:{yellow}")).getTotalResults());
     assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
     assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\;purple}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{orange;purple}").dialect(5)).getTotalResults());
     assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange;purple")),
@@ -825,6 +826,7 @@ public class SearchTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, new Query("hello @category:{yellow}")).getTotalResults());
     assertEquals(0, client.ftSearch(index, new Query("@category:{purple}")).getTotalResults());
     assertEquals(1, client.ftSearch(index, new Query("@category:{orange\\,purple}")).getTotalResults());
+    assertEquals(1, client.ftSearch(index, new Query("@category:{orange,purple}").dialect(5)).getTotalResults());
     assertEquals(4, client.ftSearch(index, new Query("hello")).getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange,purple")),

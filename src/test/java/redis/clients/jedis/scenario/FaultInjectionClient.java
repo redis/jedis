@@ -21,7 +21,11 @@ import org.slf4j.LoggerFactory;
 
 public class FaultInjectionClient {
 
-  private static final String BASE_URL = "http://127.0.0.1:20324";
+  private static final String BASE_URL;
+
+  static {
+    BASE_URL = System.getenv().getOrDefault("FAULT_INJECTION_API_URL", "http://127.0.0.1:20324");
+  }
 
   private static final Logger log = LoggerFactory.getLogger(FaultInjectionClient.class);
 
@@ -40,10 +44,6 @@ public class FaultInjectionClient {
 
     public String getActionId() {
       return actionId;
-    }
-
-    public Instant getFirstRequestAt() {
-      return completedAt;
     }
 
     public boolean isCompleted(Duration checkInterval, Duration delayAfter, Duration timeout) {

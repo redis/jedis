@@ -3,35 +3,34 @@ package redis.clients.jedis.csc;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import java.util.concurrent.TimeUnit;
-import redis.clients.jedis.CommandObject;
 
 public class GuavaClientSideCache extends ClientSideCache {
 
-  private final Cache<CommandObject, Object> cache;
+  private final Cache<CacheKey, CacheEntry> cache;
 
-  public GuavaClientSideCache(Cache<CommandObject, Object> guavaCache) {
+  public GuavaClientSideCache(Cache<CacheKey, CacheEntry> guavaCache) {
     super();
     this.cache = guavaCache;
   }
 
   @Override
-  protected final void invalidateFullCache() {
+  protected final void clear() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateCache(Iterable<CommandObject<?>> commands) {
-    cache.invalidateAll(commands);
+  protected void remove(Iterable<CacheKey<?>> keys) {
+    cache.invalidateAll(keys);
   }
 
   @Override
-  protected <T> void putValue(CommandObject<T> command, T value) {
-    cache.put(command, value);
+  protected void put(CacheKey key, CacheEntry entry) {
+    cache.put(key, entry);
   }
 
   @Override
-  protected <T> T getValue(CommandObject<T> command) {
-    return (T) cache.getIfPresent(command);
+  protected CacheEntry get(CacheKey key) {
+    return cache.getIfPresent(key);
   }
 
   public static Builder builder() {

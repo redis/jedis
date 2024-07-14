@@ -11,7 +11,7 @@ Please post general questions to Google Groups or Github discussions. These can 
 3. Push to your remote branch (`git push origin my_branch`)
 4. Create a pull request on github ([how to create a pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request))
 
-Create a branch with meaningful name, and do not modify the master branch directly.
+Create a branch with a meaningful name, and do not modify the master branch directly.
 
 Please add unit tests to validate your changes work, then ensure your changes pass all unit tests.
 

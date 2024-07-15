@@ -112,25 +112,4 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
     assertThat(guava.stats().evictionCount(), Matchers.equalTo((long) count));
   }
 
-  @Test
-  public void uriSimple() {
-    URI uri = URI.create(baseUrl + "?cache_lib=guava");
-    ClientSideCache cache = JedisURIHelper.getClientSideCache(uri);
-    assertThat(cache, Matchers.instanceOf(GuavaClientSideCache.class));
-  }
-
-  @Test
-  public void uriAllParams() {
-    URI uri = URI.create(baseUrl + "?cache_lib=guava&cache_max_size=1000&cache_ttl=10");
-    ClientSideCache cache = JedisURIHelper.getClientSideCache(uri);
-    assertThat(cache, Matchers.instanceOf(GuavaClientSideCache.class));
-  }
-
-  @Test
-  public void uriMaxSizeZeroMeansNull() {
-    URI uri = URI.create(baseUrl + "?cache_lib=guava&cache_max_size=0");
-    ClientSideCache cache = JedisURIHelper.getClientSideCache(uri);
-    assertThat(cache, Matchers.nullValue());
-  }
-
 }

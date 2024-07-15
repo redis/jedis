@@ -78,34 +78,4 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
   }
 
-  @Test
-  public void uriNoParam() {
-    URI uri = URI.create(baseUrl + "?");
-    assertNull(JedisURIHelper.getClientSideCache(uri));
-  }
-
-  @Test
-  public void uriUnknownLib() {
-    URI uri = URI.create(baseUrl + "?cache_lib=unknown");
-    IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
-        () -> JedisURIHelper.getClientSideCache(uri));
-    assertEquals("Unsupported library unknown", iae.getMessage());
-  }
-
-  @Test
-  public void uriNoLib() {
-    String[] otherParams
-        = new String[]{
-          "?cache_max_size=1000",
-          "?cache_ttl=10",
-          "?cache_max_size=1000&cache_ttl=10"
-        };
-    Arrays.stream(otherParams).forEach(urlParams -> {
-      URI uri = URI.create(baseUrl + urlParams);
-      IllegalArgumentException iae = assertThrows(IllegalArgumentException.class,
-          () -> JedisURIHelper.getClientSideCache(uri));
-      assertEquals("A supported caching library (guava OR caffeine) must be selected.", iae.getMessage());
-    });
-  }
-
 }

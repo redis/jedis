@@ -4444,7 +4444,7 @@ public class CommandObjects {
       } finally {
         mapperLock.unlock();
       }
-      }
+    }
     return localRef;
   }
 

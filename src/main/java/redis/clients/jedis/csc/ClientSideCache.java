@@ -90,6 +90,8 @@ public abstract class ClientSideCache {
     if (cacheEntry != null) {
       // CACHE HIT!!!
       // TODO: connection ...
+      //cacheEntry.getConnection().ping();
+      //cacheEntry = get(cacheKey); // get cache again
       return (T) cacheEntry.getValue();
     }
 

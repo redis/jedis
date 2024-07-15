@@ -47,10 +47,10 @@ public class CacheConnection extends Connection {
   protected void protocolReadPushes(RedisInputStream inputStream) {
     if (lock != null && lock.tryLock()) {
       try {
-        super.setSoTimeout(1);
+        //super.setSoTimeout(1);
         Protocol.readPushes(inputStream, clientSideCache);
       } finally {
-        super.rollbackTimeout();
+        //super.rollbackTimeout();
         lock.unlock();
       }
     }

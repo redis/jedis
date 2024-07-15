@@ -9,10 +9,11 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
 /**
- * Represents optional arguments of TS.CREATE command.
+ * Represents optional arguments of TS.INCRBY or TS.DECRBY commands.
  */
-public class TSCreateParams implements IParams {
+class TSArithByParams<T extends TSArithByParams<?>> implements IParams {
 
+  private Long timestamp;
   private Long retentionPeriod;
   private EncodingFormat encoding;
   private Long chunkSize;
@@ -24,48 +25,39 @@ public class TSCreateParams implements IParams {
 
   private Map<String, String> labels;
 
-  public TSCreateParams() {
+  TSArithByParams() {
   }
 
-  public static TSCreateParams createParams() {
-    return new TSCreateParams();
+  public T timestamp(long timestamp) {
+    this.timestamp = timestamp;
+    return (T) this;
   }
 
-  public TSCreateParams retention(long retentionPeriod) {
+  public T retention(long retentionPeriod) {
     this.retentionPeriod = retentionPeriod;
-    return this;
+    return (T) this;
   }
 
-  // TODO: deprecate
-  public TSCreateParams uncompressed() {
-    return encoding(EncodingFormat.UNCOMPRESSED);
-  }
-
-  // TODO: deprecate
-  public TSCreateParams compressed() {
-    return encoding(EncodingFormat.COMPRESSED);
-  }
-
-  public TSCreateParams encoding(EncodingFormat encoding) {
+  public T encoding(EncodingFormat encoding) {
     this.encoding = encoding;
-    return this;
+    return (T) this;
   }
 
-  public TSCreateParams chunkSize(long chunkSize) {
+  public T chunkSize(long chunkSize) {
     this.chunkSize = chunkSize;
-    return this;
+    return (T) this;
   }
 
-  public TSCreateParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
+  public T duplicatePolicy(DuplicatePolicy duplicatePolicy) {
     this.duplicatePolicy = duplicatePolicy;
-    return this;
+    return (T) this;
   }
 
-  public TSCreateParams ignore(long maxTimediff, double maxValDiff) {
+  public T ignore(long maxTimediff, double maxValDiff) {
     this.ignore = true;
     this.ignoreMaxTimediff = maxTimediff;
     this.ignoreMaxValDiff = maxValDiff;
-    return this;
+    return (T) this;
   }
 
   /**
@@ -74,9 +66,9 @@ public class TSCreateParams implements IParams {
    * @param labels label-value pairs
    * @return the object itself
    */
-  public TSCreateParams labels(Map<String, String> labels) {
+  public T labels(Map<String, String> labels) {
     this.labels = labels;
-    return this;
+    return (T) this;
   }
 
   /**
@@ -85,16 +77,20 @@ public class TSCreateParams implements IParams {
    * @param value
    * @return the object itself
    */
-  public TSCreateParams label(String label, String value) {
+  public T label(String label, String value) {
     if (this.labels == null) {
       this.labels = new LinkedHashMap<>();
     }
     this.labels.put(label, value);
-    return this;
+    return (T) this;
   }
 
   @Override
   public void addParams(CommandArguments args) {
+
+    if (timestamp != null) {
+      args.add(TIMESTAMP).add(timestamp);
+    }
 
     if (retentionPeriod != null) {
       args.add(RETENTION).add(toByteArray(retentionPeriod));

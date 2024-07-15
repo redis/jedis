@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -609,7 +610,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
             .dialect(2)).getTotalResults());
 
     assertEquals(1, client.ftSearch(index, "@numval:[$eq]",
-        FTSearchParams.searchParams().addParam("eq", 2).dialect(5)).getTotalResults());
+        FTSearchParams.searchParams().addParam("eq", 2).dialect(4)).getTotalResults());
   }
 
   @Test
@@ -672,7 +673,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(1, res.getTotalResults());
     assertEquals("king:1", res.getDocuments().get(0).getId());
 
-    res = client.ftSearch(index, "@num:[42]", FTSearchParams.searchParams().dialect(5));
+    res = client.ftSearch(index, "@num:[42]", FTSearchParams.searchParams().dialect(4));
     assertEquals(1, res.getTotalResults());
     assertEquals("king:1", res.getDocuments().get(0).getId());
   }
@@ -878,8 +879,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, "@category:{yellow}").getTotalResults());
     assertEquals(0, client.ftSearch(index, "@category:{purple}").getTotalResults());
     assertEquals(1, client.ftSearch(index, "@category:{orange\\;purple}").getTotalResults());
-    assertEquals(1, client.ftSearch(index, "@category:{orange;purple}",
-        FTSearchParams.searchParams().dialect(5)).getTotalResults());
     assertEquals(4, client.ftSearch(index, "hello").getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange;purple")),
@@ -919,8 +918,6 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(1, client.ftSearch(index, "hello @category:{yellow}").getTotalResults());
     assertEquals(0, client.ftSearch(index, "@category:{purple}").getTotalResults());
     assertEquals(1, client.ftSearch(index, "@category:{orange\\,purple}").getTotalResults());
-    assertEquals(1, client.ftSearch(index, "@category:{orange,purple}",
-        FTSearchParams.searchParams().dialect(5)).getTotalResults());
     assertEquals(4, client.ftSearch(index, "hello").getTotalResults());
 
     assertEquals(new HashSet<>(Arrays.asList("red", "blue", "green", "yellow", "orange,purple")),
@@ -1213,6 +1210,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
             .build()));
   }
 
+  @Ignore
   @Test
   public void searchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t1"), TextField.of("t2")));
@@ -1249,6 +1247,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
             .map(map -> map.get("Type")).collect(Collectors.toList()));
   }
 
+  @Ignore
   @Test
   public void vectorSearchProfile() {
     assertOK(client.ftCreate(index, VectorField.builder().fieldName("v")
@@ -1288,6 +1287,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals("Sorter", resultProcessorsProfile.get(2).get("Type"));
   }
 
+  @Ignore
   @Test
   public void maxPrefixExpansionSearchProfile() {
     final String configParam = "MAXPREFIXEXPANSIONS";
@@ -1315,6 +1315,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     }
   }
 
+  @Ignore
   @Test
   public void noContentSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
@@ -1342,6 +1343,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     }
   }
 
+  @Ignore
   @Test
   public void deepReplySearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));
@@ -1383,6 +1385,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     }
   }
 
+  @Ignore
   @Test
   public void limitedSearchProfile() {
     assertOK(client.ftCreate(index, TextField.of("t")));

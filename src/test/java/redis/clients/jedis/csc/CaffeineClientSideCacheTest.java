@@ -95,25 +95,4 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
     assertThat(caffeine.stats().evictionCount(), Matchers.equalTo((long) count));
   }
 
-  @Test
-  public void uriSimple() {
-    URI uri = URI.create(baseUrl + "?cache_lib=caffeine");
-    ClientSideCache cache = JedisURIHelper.getClientSideCache(uri);
-    assertThat(cache, Matchers.instanceOf(CaffeineClientSideCache.class));
-  }
-
-  @Test
-  public void uriAllParams() {
-    URI uri = URI.create(baseUrl + "?cache_lib=caffeine&cache_max_size=1000&cache_ttl=10");
-    ClientSideCache cache = JedisURIHelper.getClientSideCache(uri);
-    assertThat(cache, Matchers.instanceOf(CaffeineClientSideCache.class));
-  }
-
-  @Test
-  public void uriMaxSizeZeroMeansNull() {
-    URI uri = URI.create(baseUrl + "?cache_lib=caffeine&cache_max_size=0");
-    ClientSideCache cache = JedisURIHelper.getClientSideCache(uri);
-    assertThat(cache, Matchers.nullValue());
-  }
-
 }

@@ -41,10 +41,14 @@ public class Values {
     return new LongRangeValue(from, to);
   }
 
+  // TODO: change to simpler [d] available since RedisStack 7.4.0-rc1;
+  // currently kept for backward compatibility
   public static RangeValue eq(double d) {
     return new DoubleRangeValue(d, d);
   }
 
+  // TODO: change to simpler [i] available since RedisStack 7.4.0-rc1;
+  // currently kept for backward compatibility
   public static RangeValue eq(int i) {
     return new LongRangeValue(i, i);
   }

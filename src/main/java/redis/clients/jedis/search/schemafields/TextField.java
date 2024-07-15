@@ -7,13 +7,15 @@ import redis.clients.jedis.search.FieldName;
 
 public class TextField extends SchemaField {
 
+  private boolean indexMissing;
+  private boolean indexEmpty;
+  private Double weight;
+  private boolean noStem;
+  private String phoneticMatcher;
+  private boolean withSuffixTrie;
   private boolean sortable;
   private boolean sortableUNF;
-  private boolean noStem;
   private boolean noIndex;
-  private String phoneticMatcher;
-  private Double weight;
-  private boolean withSuffixTrie;
 
   public TextField(String fieldName) {
     super(fieldName);
@@ -37,6 +39,52 @@ public class TextField extends SchemaField {
     return this;
   }
 
+  public TextField indexMissing() {
+    this.indexMissing = true;
+    return this;
+  }
+
+  public TextField indexEmpty() {
+    this.indexEmpty = true;
+    return this;
+  }
+
+  /**
+   * Declares the importance of this attribute when calculating result accuracy. This is a
+   * multiplication factor.
+   * @param weight
+   */
+  public TextField weight(double weight) {
+    this.weight = weight;
+    return this;
+  }
+
+  /**
+   * Disable stemming when indexing.
+   */
+  public TextField noStem() {
+    this.noStem = true;
+    return this;
+  }
+
+  /**
+   * Perform phonetic matching.
+   * @param matcher
+   */
+  public TextField phonetic(String matcher) {
+    this.phoneticMatcher = matcher;
+    return this;
+  }
+
+  /**
+   * Keeps a suffix trie with all terms which match the suffix. It is used to optimize
+   * <i>contains</i> and <i>suffix</i> queries.
+   */
+  public TextField withSuffixTrie() {
+    this.withSuffixTrie = true;
+    return this;
+  }
+
   /**
    * Sorts the results by the value of this field.
    */
@@ -54,18 +102,12 @@ public class TextField extends SchemaField {
   }
 
   /**
+   * @deprecated Use {@code TextField#sortableUNF()}.
    * @see TextField#sortableUNF()
    */
+  @Deprecated
   public TextField sortableUnNormalizedForm() {
     return sortableUNF();
-  }
-
-  /**
-   * Disable stemming when indexing.
-   */
-  public TextField noStem() {
-    this.noStem = true;
-    return this;
   }
 
   /**
@@ -76,36 +118,17 @@ public class TextField extends SchemaField {
     return this;
   }
 
-  /**
-   * Perform phonetic matching.
-   */
-  public TextField phonetic(String matcher) {
-    this.phoneticMatcher = matcher;
-    return this;
-  }
-
-  /**
-   * Declares the importance of this attribute when calculating result accuracy. This is a
-   * multiplication factor.
-   */
-  public TextField weight(double weight) {
-    this.weight = weight;
-    return this;
-  }
-
-  /**
-   * Keeps a suffix trie with all terms which match the suffix. It is used to optimize
-   * <i>contains</i> and <i>suffix</i> queries.
-   */
-  public TextField withSuffixTrie() {
-    this.withSuffixTrie = true;
-    return this;
-  }
-
   @Override
   public void addParams(CommandArguments args) {
     args.addParams(fieldName);
     args.add(TEXT);
+
+    if (indexMissing) {
+      args.add(INDEXMISSING);
+    }
+    if (indexEmpty) {
+      args.add(INDEXEMPTY);
+    }
 
     if (weight != null) {
       args.add(WEIGHT).add(weight);

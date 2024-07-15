@@ -108,7 +108,7 @@ public class GraphCommandObjects {
   }
 
   private void createBuilder(String graphName) {
-      builders.computeIfAbsent(graphName, graphNameKey -> new ResultSetBuilder(new GraphCacheImpl(graphNameKey)));
+    builders.computeIfAbsent(graphName, graphNameKey -> new ResultSetBuilder(new GraphCacheImpl(graphNameKey)));
   }
 
   private class GraphCacheImpl implements GraphCache {

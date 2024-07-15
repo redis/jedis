@@ -4432,20 +4432,20 @@ public class CommandObjects {
    * @see DefaultGsonObjectMapper
    */
   private JsonObjectMapper getJsonObjectMapper() {
-      JsonObjectMapper localRef = this.jsonObjectMapper;
-      if (Objects.isNull(localRef)) {
-          mapperLock.lock();
-          
-          try {
-              localRef = this.jsonObjectMapper;
-              if (Objects.isNull(localRef)) {
-                  this.jsonObjectMapper = localRef = new DefaultGsonObjectMapper();
-              }
-          } finally {
-              mapperLock.unlock();
-          }
+    JsonObjectMapper localRef = this.jsonObjectMapper;
+    if (Objects.isNull(localRef)) {
+      mapperLock.lock();
+
+      try {
+        localRef = this.jsonObjectMapper;
+        if (Objects.isNull(localRef)) {
+          this.jsonObjectMapper = localRef = new DefaultGsonObjectMapper();
+        }
+      } finally {
+        mapperLock.unlock();
       }
-      return localRef;
+      }
+    return localRef;
   }
 
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {

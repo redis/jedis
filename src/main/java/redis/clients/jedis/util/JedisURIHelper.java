@@ -4,10 +4,6 @@ import java.net.URI;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.csc.CaffeineClientSideCache;
-import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.GuavaClientSideCache;
 
 public final class JedisURIHelper {
 
@@ -72,84 +68,6 @@ public final class JedisURIHelper {
         throw new IllegalArgumentException("Unknown protocol " + ver);
       }
     }
-    return null; // null (default) when not defined
-  }
-
-  private static final Integer ZERO_INTEGER = 0;
-
-  @Experimental
-  public static ClientSideCache getClientSideCache(URI uri) {
-    if (uri.getQuery() == null) return null;
-
-    boolean guava = false, caffeine = false; // cache_lib
-    Integer maxSize = null; // cache_max_size --> 0 = disbale
-    Integer ttl = null; // cache_ttl --> 0 = no ttl
-    // cache-max-idle
-
-    String[] params = uri.getQuery().split("&");
-    for (String param : params) {
-      int idx = param.indexOf("=");
-      if (idx < 0) continue;
-
-      String key = param.substring(0, idx);
-      String val = param.substring(idx + 1);
-
-      switch (key) {
-
-        case "cache_lib":
-          switch (val) {
-            case "guava":
-              guava = true;
-              break;
-            case "caffeine":
-              caffeine = true;
-              break;
-            default:
-              throw new IllegalArgumentException("Unsupported library " + val);
-          }
-          break;
-
-        case "cache_max_size":
-          try {
-            maxSize = Integer.parseInt(val);
-          } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException("Value of cache_max_size must be an integer (no of commands).", nfe);
-          }
-          break;
-
-        case "cache_ttl":
-          try {
-            ttl = Integer.parseInt(val);
-          } catch (NumberFormatException nfe) {
-            throw new IllegalArgumentException("Value of cache_ttl must be an integer (in seconds).", nfe);
-          }
-          break;
-      }
-    }
-
-    // special cases
-    if (ZERO_INTEGER.equals(maxSize)) {
-      return null;
-    }
-    if (!guava && !caffeine && (maxSize != null || ttl != null)) {
-      throw new IllegalArgumentException("A supported caching library (guava OR caffeine) must be selected.");
-    }
-    if (ZERO_INTEGER.equals(ttl)) {
-      ttl = null; // below, only null will be checked
-    }
-
-    if (guava) {
-      GuavaClientSideCache.Builder guavaBuilder = GuavaClientSideCache.builder();
-      if (maxSize != null) guavaBuilder.maximumSize(maxSize);
-      if (ttl != null) guavaBuilder.ttl(ttl);
-      return guavaBuilder.build();
-    } else if (caffeine) {
-      CaffeineClientSideCache.Builder caffeineBuilder = CaffeineClientSideCache.builder();
-      if (maxSize != null) caffeineBuilder.maximumSize(maxSize);
-      if (ttl != null) caffeineBuilder.ttl(ttl);
-      return caffeineBuilder.build();
-    }
-
     return null; // null (default) when not defined
   }
 

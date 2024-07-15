@@ -75,7 +75,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this(JedisURIHelper.getHostAndPort(uri), DefaultJedisClientConfig.builder()
         .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
         .database(JedisURIHelper.getDBIndex(uri)).protocol(JedisURIHelper.getRedisProtocol(uri))
-        .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build(), JedisURIHelper.getClientSideCache(uri));
+        .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
   }
 
   public UnifiedJedis(final URI uri, JedisClientConfig config) {
@@ -87,8 +87,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
         .protocol(JedisURIHelper.getRedisProtocol(uri))
         .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
-        .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
-        .build(), JedisURIHelper.getClientSideCache(uri));
+        .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier()).build());
   }
 
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {

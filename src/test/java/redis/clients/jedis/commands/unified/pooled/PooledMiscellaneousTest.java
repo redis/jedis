@@ -106,7 +106,6 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
   @Test
   public void watch() {
-    List<Object> resp;
     try (AbstractTransaction tx = jedis.transaction(false)) {
       assertEquals("OK", tx.watch("mykey", "somekey"));
       tx.multi();
@@ -114,10 +113,22 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
       jedis.set("mykey", "bar");
 
       tx.set("mykey", "foo");
-      resp = tx.exec();
+      assertNull(tx.exec());
+
+      assertEquals("bar", jedis.get("mykey"));
     }
-    assertNull(resp);
-    assertEquals("bar", jedis.get("mykey"));
+  }
+
+  @Test
+  public void publishInTransaction() {
+    try (AbstractTransaction tx = jedis.multi()) {
+      Response<Long> p1 = tx.publish("foo", "bar");
+      Response<Long> p2 = tx.publish("foo".getBytes(), "bar".getBytes());
+      tx.exec();
+
+      assertEquals(0, p1.get().longValue());
+      assertEquals(0, p2.get().longValue());
+    }
   }
 
   @Test

@@ -1,5 +1,6 @@
 package redis.clients.jedis.search.schemafields;
 
+import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.INDEXMISSING;
 import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.VECTOR;
 
 import java.util.LinkedHashMap;
@@ -16,6 +17,9 @@ public class VectorField extends SchemaField {
 
   private final VectorAlgorithm algorithm;
   private final Map<String, Object> attributes;
+
+  private boolean indexMissing;
+  // private boolean noIndex; // throws Field `NOINDEX` does not have a type
 
   public VectorField(String fieldName, VectorAlgorithm algorithm, Map<String, Object> attributes) {
     super(fieldName);
@@ -35,14 +39,23 @@ public class VectorField extends SchemaField {
     return this;
   }
 
+  public VectorField indexMissing() {
+    this.indexMissing = true;
+    return this;
+  }
+
   @Override
   public void addParams(CommandArguments args) {
     args.addParams(fieldName);
     args.add(VECTOR);
 
     args.add(algorithm);
-    args.add(attributes.size() * 2);
+    args.add(attributes.size() << 1);
     attributes.forEach((name, value) -> args.add(name).add(value));
+
+    if (indexMissing) {
+      args.add(INDEXMISSING);
+    }
   }
 
   public static Builder builder() {

@@ -15,17 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
-import redis.clients.jedis.timeseries.AggregationType;
-import redis.clients.jedis.timeseries.TSAlterParams;
-import redis.clients.jedis.timeseries.TSCreateParams;
-import redis.clients.jedis.timeseries.TSElement;
-import redis.clients.jedis.timeseries.TSGetParams;
-import redis.clients.jedis.timeseries.TSInfo;
-import redis.clients.jedis.timeseries.TSMGetElement;
-import redis.clients.jedis.timeseries.TSMGetParams;
-import redis.clients.jedis.timeseries.TSMRangeElements;
-import redis.clients.jedis.timeseries.TSMRangeParams;
-import redis.clients.jedis.timeseries.TSRangeParams;
+import redis.clients.jedis.timeseries.*;
 
 public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBase {
 
@@ -70,6 +60,25 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     long timestamp = 1582605077000L;
     double value = 123.45;
     TSCreateParams createParams = new TSCreateParams().retention(86400000L); // 1 day retention
+    long expectedResponse = timestamp; // Timestamp of the added value
+
+    when(commandObjects.tsAdd(key, timestamp, value, createParams)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
+
+    long result = jedis.tsAdd(key, timestamp, value, createParams);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).tsAdd(key, timestamp, value, createParams);
+  }
+
+  @Test
+  public void testTsAddWithParams() {
+    String key = "testKey";
+    long timestamp = 1582605077000L;
+    double value = 123.45;
+    TSAddParams createParams = mock(TSAddParams.class);
     long expectedResponse = timestamp; // Timestamp of the added value
 
     when(commandObjects.tsAdd(key, timestamp, value, createParams)).thenReturn(longCommandObject);
@@ -194,7 +203,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     String key = "testKey";
     double value = 1.5;
     long timestamp = 1582605077000L;
-    long expectedResponse = -1L; // Assuming the decrement results in a total of -1
+    long expectedResponse = 5L;
 
     when(commandObjects.tsDecrBy(key, value, timestamp)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
@@ -205,6 +214,24 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
 
     verify(commandExecutor).executeCommand(longCommandObject);
     verify(commandObjects).tsDecrBy(key, value, timestamp);
+  }
+
+  @Test
+  public void testTsDecrByWithParams() {
+    String key = "testKey";
+    double value = 1.5;
+    TSDecrByParams decrByParams = mock(TSDecrByParams.class);
+    long expectedResponse = 5L;
+
+    when(commandObjects.tsDecrBy(key, value, decrByParams)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
+
+    long result = jedis.tsDecrBy(key, value, decrByParams);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).tsDecrBy(key, value, decrByParams);
   }
 
   @Test
@@ -297,7 +324,7 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     String key = "testKey";
     double value = 2.5;
     long timestamp = 1582605077000L;
-    long expectedResponse = 5L; // Assuming the increment results in a total of 5
+    long expectedResponse = 5L;
 
     when(commandObjects.tsIncrBy(key, value, timestamp)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
@@ -308,6 +335,24 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
 
     verify(commandExecutor).executeCommand(longCommandObject);
     verify(commandObjects).tsIncrBy(key, value, timestamp);
+  }
+
+  @Test
+  public void testTsIncrByWithParams() {
+    String key = "testKey";
+    double value = 2.5;
+    TSIncrByParams incrByParams = mock(TSIncrByParams.class);
+    long expectedResponse = 5L;
+
+    when(commandObjects.tsIncrBy(key, value, incrByParams)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedResponse);
+
+    long result = jedis.tsIncrBy(key, value, incrByParams);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).tsIncrBy(key, value, incrByParams);
   }
 
   @Test

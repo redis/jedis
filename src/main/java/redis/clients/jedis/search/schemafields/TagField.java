@@ -8,12 +8,14 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class TagField extends SchemaField {
 
-  private boolean sortable;
-  private boolean sortableUNF;
-  private boolean noIndex;
+  private boolean indexMissing;
+  private boolean indexEmpty;
   private byte[] separator;
   private boolean caseSensitive;
   private boolean withSuffixTrie;
+  private boolean sortable;
+  private boolean sortableUNF;
+  private boolean noIndex;
 
   public TagField(String fieldName) {
     super(fieldName);
@@ -37,39 +39,19 @@ public class TagField extends SchemaField {
     return this;
   }
 
-  /**
-   * Sorts the results by the value of this field.
-   */
-  public TagField sortable() {
-    this.sortable = true;
+  public TagField indexMissing() {
+    this.indexMissing = true;
     return this;
   }
 
-  /**
-   * Sorts the results by the value of this field without normalization.
-   */
-  public TagField sortableUNF() {
-    this.sortableUNF = true;
-    return this;
-  }
-
-  /**
-   * @see TextField#sortableUNF()
-   */
-  public TagField sortableUnNormalizedForm() {
-    return sortableUNF();
-  }
-
-  /**
-   * Avoid indexing.
-   */
-  public TagField noIndex() {
-    this.noIndex = true;
+  public TagField indexEmpty() {
+    this.indexEmpty = true;
     return this;
   }
 
   /**
    * Indicates how the text contained in the attribute is to be split into individual tags.
+   * @param separator
    */
   public TagField separator(char separator) {
     if (separator < 128) {
@@ -97,10 +79,50 @@ public class TagField extends SchemaField {
     return this;
   }
 
+  /**
+   * Sorts the results by the value of this field.
+   */
+  public TagField sortable() {
+    this.sortable = true;
+    return this;
+  }
+
+  /**
+   * Sorts the results by the value of this field without normalization.
+   */
+  public TagField sortableUNF() {
+    this.sortableUNF = true;
+    return this;
+  }
+
+  /**
+   * @deprecated Use {@code TagField#sortableUNF()}.
+   * @see TagField#sortableUNF()
+   */
+  @Deprecated
+  public TagField sortableUnNormalizedForm() {
+    return sortableUNF();
+  }
+
+  /**
+   * Avoid indexing.
+   */
+  public TagField noIndex() {
+    this.noIndex = true;
+    return this;
+  }
+
   @Override
   public void addParams(CommandArguments args) {
     args.addParams(fieldName);
     args.add(TAG);
+
+    if (indexMissing) {
+      args.add(INDEXMISSING);
+    }
+    if (indexEmpty) {
+      args.add(INDEXEMPTY);
+    }
 
     if (separator != null) {
       args.add(SEPARATOR).add(separator);

@@ -9,14 +9,15 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.params.IParams;
 
 /**
- * Represents optional arguments of TS.CREATE command.
+ * Represents optional arguments of TS.ADD command.
  */
-public class TSCreateParams implements IParams {
+public class TSAddParams implements IParams {
 
   private Long retentionPeriod;
   private EncodingFormat encoding;
   private Long chunkSize;
   private DuplicatePolicy duplicatePolicy;
+  private DuplicatePolicy onDuplicate;
 
   private boolean ignore;
   private long ignoreMaxTimediff;
@@ -24,44 +25,39 @@ public class TSCreateParams implements IParams {
 
   private Map<String, String> labels;
 
-  public TSCreateParams() {
+  public TSAddParams() {
   }
 
-  public static TSCreateParams createParams() {
-    return new TSCreateParams();
+  public static TSAddParams addParams() {
+    return new TSAddParams();
   }
 
-  public TSCreateParams retention(long retentionPeriod) {
+  public TSAddParams retention(long retentionPeriod) {
     this.retentionPeriod = retentionPeriod;
     return this;
   }
 
-  // TODO: deprecate
-  public TSCreateParams uncompressed() {
-    return encoding(EncodingFormat.UNCOMPRESSED);
-  }
-
-  // TODO: deprecate
-  public TSCreateParams compressed() {
-    return encoding(EncodingFormat.COMPRESSED);
-  }
-
-  public TSCreateParams encoding(EncodingFormat encoding) {
+  public TSAddParams encoding(EncodingFormat encoding) {
     this.encoding = encoding;
     return this;
   }
 
-  public TSCreateParams chunkSize(long chunkSize) {
+  public TSAddParams chunkSize(long chunkSize) {
     this.chunkSize = chunkSize;
     return this;
   }
 
-  public TSCreateParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
+  public TSAddParams duplicatePolicy(DuplicatePolicy duplicatePolicy) {
     this.duplicatePolicy = duplicatePolicy;
     return this;
   }
 
-  public TSCreateParams ignore(long maxTimediff, double maxValDiff) {
+  public TSAddParams onDuplicate(DuplicatePolicy onDuplicate) {
+    this.onDuplicate = onDuplicate;
+    return this;
+  }
+
+  public TSAddParams ignore(long maxTimediff, double maxValDiff) {
     this.ignore = true;
     this.ignoreMaxTimediff = maxTimediff;
     this.ignoreMaxValDiff = maxValDiff;
@@ -74,7 +70,7 @@ public class TSCreateParams implements IParams {
    * @param labels label-value pairs
    * @return the object itself
    */
-  public TSCreateParams labels(Map<String, String> labels) {
+  public TSAddParams labels(Map<String, String> labels) {
     this.labels = labels;
     return this;
   }
@@ -85,7 +81,7 @@ public class TSCreateParams implements IParams {
    * @param value
    * @return the object itself
    */
-  public TSCreateParams label(String label, String value) {
+  public TSAddParams label(String label, String value) {
     if (this.labels == null) {
       this.labels = new LinkedHashMap<>();
     }
@@ -110,6 +106,14 @@ public class TSCreateParams implements IParams {
 
     if (duplicatePolicy != null) {
       args.add(DUPLICATE_POLICY).add(duplicatePolicy);
+    }
+
+    if (duplicatePolicy != null) {
+      args.add(DUPLICATE_POLICY).add(duplicatePolicy);
+    }
+
+    if (onDuplicate != null) {
+      args.add(ON_DUPLICATE).add(onDuplicate);
     }
 
     if (ignore) {

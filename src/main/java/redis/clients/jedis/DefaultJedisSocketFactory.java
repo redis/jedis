@@ -60,7 +60,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       Collections.shuffle(hosts);
     }
 
-    JedisConnectionException jce = new JedisConnectionException("Failed to connect to any host resolved for DNS name.");
+    JedisConnectionException jce = new JedisConnectionException("Failed to connect to " + hostAndPort + ".");
     for (InetAddress host : hosts) {
       try {
         Socket socket = new Socket();

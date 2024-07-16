@@ -4427,7 +4427,11 @@ public class CommandObjects {
   /**
    * Get the instance for JsonObjectMapper if not null, otherwise a new instance reference with
    * default implementation will be created and returned.
-   *
+   * <p>This process of checking whether or not
+   * the instance reference exists follows <a
+   * href="https://en.wikipedia.org/wiki/Double-checked_locking#Usage_in_Java"
+   * target="_blank">'double-checked lock optimization'</a> approach to reduce the overhead of
+   * acquiring a lock by testing the lock criteria (the "lock hint") before acquiring the lock.</p>
    * @return the JsonObjectMapper instance reference
    * @see DefaultGsonObjectMapper
    */

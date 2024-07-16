@@ -178,7 +178,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
 
                 throw new JedisConnectionException("Cluster/database endpoint could not failover since the MultiClusterClientConfig was not " +
                                                    "provided with an additional cluster/database endpoint according to its prioritized sequence. " +
-                                                   "If applicable, consider failing back OR restarting with an available cluster/database endpoint");
+                                                   "If applicable, consider failing back OR restarting with an available cluster/database endpoint.");
             }
             else activeMultiClusterIndex++;
 

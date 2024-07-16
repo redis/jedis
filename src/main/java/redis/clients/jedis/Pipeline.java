@@ -10,6 +10,7 @@ import redis.clients.jedis.commands.DatabasePipelineCommands;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 
 public class Pipeline extends PipelineBase implements DatabasePipelineCommands, Closeable {
@@ -57,10 +58,12 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
 
   @Override
   public void close() {
-    sync();
-
-    if (closeConnection) {
-      connection.close();
+    try {
+      sync();
+    } finally {
+      if (closeConnection) {
+        IOUtils.closeQuietly(connection);
+      }
     }
   }
 

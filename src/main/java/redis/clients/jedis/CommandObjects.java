@@ -59,13 +59,13 @@ public class CommandObjects {
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(0);
 
-  void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
-    this.broadcastAndRoundRobinConfig = config;
-  }
-
   @Experimental
   void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
     this.keyPreProcessor = keyPreProcessor;
+  }
+
+  void setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig config) {
+    this.broadcastAndRoundRobinConfig = config;
   }
 
   protected CommandArguments commandArguments(ProtocolCommand command) {

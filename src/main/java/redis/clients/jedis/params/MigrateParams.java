@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class MigrateParams implements IParams {
 
   private boolean copy = false;
@@ -51,5 +53,18 @@ public class MigrateParams implements IParams {
     } else if (password != null) {
       args.add(Keyword.AUTH).add(password);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    MigrateParams that = (MigrateParams) o;
+    return copy == that.copy && replace == that.replace && Objects.equals(username, that.username) && Objects.equals(password, that.password);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(copy, replace, username, password);
   }
 }

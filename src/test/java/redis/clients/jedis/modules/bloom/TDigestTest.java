@@ -8,10 +8,14 @@ import java.util.Map;
 import java.util.Random;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.bloom.TDigestMergeParams;
 import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 
+@RunWith(Parameterized.class)
 public class TDigestTest extends RedisModuleCommandsTestBase {
 
   private static final Random random = new Random();
@@ -25,6 +29,10 @@ public class TDigestTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public TDigestTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   private void assertMergedUnmergedNodes(String key, int mergedNodes, int unmergedNodes) {
     Map<String, Object> info = client.tdigestInfo(key);

@@ -124,16 +124,6 @@ public interface StreamCommands {
   long xgroupDelConsumer(String key, String groupName, String consumerName);
 
   /**
-   * XPENDING key group
-   */
-  StreamPendingSummary xpending(String key, String groupName);
-
-  /**
-   * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
-   */
-  List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params);
-
-  /**
    * XDEL key ID [ID ...]
    */
   long xdel(String key, StreamEntryID... ids);
@@ -147,6 +137,16 @@ public interface StreamCommands {
    * XTRIM key MAXLEN|MINID [=|~] threshold [LIMIT count]
    */
   long xtrim(String key, XTrimParams params);
+
+  /**
+   * XPENDING key group
+   */
+  StreamPendingSummary xpending(String key, String groupName);
+
+  /**
+   * XPENDING key group [[IDLE min-idle-time] start end count [consumer]]
+   */
+  List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params);
 
   /**
    * {@code XCLAIM key group consumer min-idle-time <ID-1> ... <ID-N>
@@ -250,7 +250,19 @@ public interface StreamCommands {
   /**
    * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    */
+  Map<String, List<StreamEntry>> xreadAsMap(XReadParams xReadParams,
+      Map<String, StreamEntryID> streams);
+
+  /**
+   * XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
+   */
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
+      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
+
+  /**
+   * XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
+   */
+  Map<String, List<StreamEntry>> xreadGroupAsMap(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
 }

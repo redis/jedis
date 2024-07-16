@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.time.Duration;
 import java.util.Set;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
@@ -23,6 +24,13 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     this.closeable = this.provider;
   }
 
+  public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
+        createClusterCommandObjects(clientConfig.getRedisProtocol()));
+    this.closeable = this.provider;
+  }
+
   public ClusterPipeline(ClusterConnectionProvider provider) {
     this(provider, new ClusterCommandObjects());
   }
@@ -36,6 +44,13 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     ClusterCommandObjects cco = new ClusterCommandObjects();
     if (protocol == RedisProtocol.RESP3) cco.setProtocol(protocol);
     return cco;
+  }
+
+  /**
+   * This method must be called after constructor, if graph commands are going to be used.
+   */
+  public void prepareGraphCommands() {
+    super.prepareGraphCommands(provider);
   }
 
   @Override
@@ -57,10 +72,11 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     return provider.getConnection(nodeKey);
   }
 
-  /**
-   * This method must be called after constructor, if graph commands are going to be used.
-   */
-  public void prepareGraphCommands() {
-    super.prepareGraphCommands(provider);
+  public Response<Long> spublish(String channel, String message) {
+    return appendCommand(commandObjects.spublish(channel, message));
+  }
+
+  public Response<Long> spublish(byte[] channel, byte[] message) {
+    return appendCommand(commandObjects.spublish(channel, message));
   }
 }

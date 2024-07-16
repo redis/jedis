@@ -1,12 +1,15 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.IParams;
+import redis.clients.jedis.search.RediSearchUtil;
 
 public class CommandArguments implements Iterable<Rawable> {
 
@@ -27,6 +30,35 @@ public class CommandArguments implements Iterable<Rawable> {
     return (ProtocolCommand) args.get(0);
   }
 
+  public CommandArguments add(Rawable arg) {
+    args.add(arg);
+    return this;
+  }
+
+  public CommandArguments add(byte[] arg) {
+    return add(RawableFactory.from(arg));
+  }
+
+  public CommandArguments add(boolean arg) {
+    return add(RawableFactory.from(arg));
+  }
+
+  public CommandArguments add(int arg) {
+    return add(RawableFactory.from(arg));
+  }
+
+  public CommandArguments add(long arg) {
+    return add(RawableFactory.from(arg));
+  }
+
+  public CommandArguments add(double arg) {
+    return add(RawableFactory.from(arg));
+  }
+
+  public CommandArguments add(String arg) {
+    return add(RawableFactory.from(arg));
+  }
+
   public CommandArguments add(Object arg) {
     if (arg == null) {
       throw new IllegalArgumentException("null is not a valid argument.");
@@ -34,10 +66,21 @@ public class CommandArguments implements Iterable<Rawable> {
       args.add((Rawable) arg);
     } else if (arg instanceof byte[]) {
       args.add(RawableFactory.from((byte[]) arg));
+    } else if (arg instanceof Boolean) {
+      args.add(RawableFactory.from((Boolean) arg));
+    } else if (arg instanceof Integer) {
+      args.add(RawableFactory.from((Integer) arg));
+    } else if (arg instanceof Long) {
+      args.add(RawableFactory.from((Long) arg));
+    } else if (arg instanceof Double) {
+      args.add(RawableFactory.from((Double) arg));
+    } else if (arg instanceof float[]) {
+      args.add(RawableFactory.from(RediSearchUtil.toByteArray((float[]) arg)));
     } else if (arg instanceof String) {
       args.add(RawableFactory.from((String) arg));
-    } else if (arg instanceof Boolean) {
-      args.add(RawableFactory.from(Integer.toString((Boolean) arg ? 1 : 0)));
+    } else if (arg instanceof GeoCoordinate) {
+      GeoCoordinate geo = (GeoCoordinate) arg;
+      args.add(RawableFactory.from(geo.getLongitude() + "," + geo.getLatitude()));
     } else {
       args.add(RawableFactory.from(String.valueOf(arg)));
     }
@@ -76,9 +119,12 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public final CommandArguments keys(Object... keys) {
-    for (Object key : keys) {
-      key(key);
-    }
+    Arrays.stream(keys).forEach(this::key);
+    return this;
+  }
+
+  public final CommandArguments keys(Collection keys) {
+    keys.forEach(this::key);
     return this;
   }
 

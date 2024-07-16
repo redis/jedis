@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -28,7 +30,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
   private volatile HostAndPort currentHostMaster;
   
-  private final Object initPoolLock = new Object();
+  private final Lock initPoolLock = new ReentrantLock(true);
 
   public JedisSentinelPool(String masterName, Set<HostAndPort> sentinels,
       final JedisClientConfig masterClientConfig, final JedisClientConfig sentinelClientConfig) {
@@ -213,7 +215,9 @@ public class JedisSentinelPool extends Pool<Jedis> {
   }
 
   private void initMaster(HostAndPort master) {
-    synchronized (initPoolLock) {
+    initPoolLock.lock();
+    
+    try {
       if (!master.equals(currentHostMaster)) {
         currentHostMaster = master;
         factory.setHostAndPort(currentHostMaster);
@@ -223,6 +227,8 @@ public class JedisSentinelPool extends Pool<Jedis> {
 
         LOG.info("Created JedisSentinelPool to master at {}", master);
       }
+    } finally {
+      initPoolLock.unlock();
     }
   }
 

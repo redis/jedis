@@ -528,7 +528,8 @@ public class ClusterPipeliningTest {
     Response<Long> r1 = p.sadd("my{set}", "hello", "hello", "world", "foo", "bar");
     p.sadd("mynew{set}", "hello", "hello", "world");
     Response<Set<String>> r2 = p.sdiff("my{set}", "mynew{set}");
-    Response<Long> r3 = p.sdiffStore("diffset{set}", "my{set}", "mynew{set}");
+    Response<Long> r3deprecated = p.sdiffStore("diffset{set}deprecated", "my{set}", "mynew{set}");
+    Response<Long> r3 = p.sdiffstore("diffset{set}", "my{set}", "mynew{set}");
     Response<Set<String>> r4 = p.smembers("diffset{set}");
     Response<Set<String>> r5 = p.sinter("my{set}", "mynew{set}");
     Response<Long> r6 = p.sinterstore("interset{set}", "my{set}", "mynew{set}");
@@ -548,6 +549,7 @@ public class ClusterPipeliningTest {
     p.sync();
     assertEquals(Long.valueOf(4), r1.get());
     assertEquals(diff, r2.get());
+    assertEquals(Long.valueOf(diff.size()), r3deprecated.get());
     assertEquals(Long.valueOf(diff.size()), r3.get());
     assertEquals(diff, r4.get());
     assertEquals(inter, r5.get());
@@ -1020,6 +1022,18 @@ public class ClusterPipeliningTest {
       assertNull(result0.get());
       assertNull(result1.get());
       assertArrayEquals(SafeEncoder.encode("13"), result2.get());
+    }
+  }
+
+  @Test
+  public void spublishInPipeline() {
+    try (JedisCluster jedis = new JedisCluster(nodes, DEFAULT_CLIENT_CONFIG)) {
+      ClusterPipeline pipelined = jedis.pipelined();
+      Response<Long> p1 = pipelined.publish("foo", "bar");
+      Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());
+      pipelined.sync();
+      assertEquals(0, p1.get().longValue());
+      assertEquals(0, p2.get().longValue());
     }
   }
 

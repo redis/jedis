@@ -8,13 +8,15 @@ public class JedisSentineled extends UnifiedJedis {
 
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
-    this(new SentineledConnectionProvider(masterName, masterClientConfig, sentinels, sentinelClientConfig));
+    super(new SentineledConnectionProvider(masterName, masterClientConfig, sentinels, sentinelClientConfig),
+        masterClientConfig.getRedisProtocol());
   }
 
   public JedisSentineled(String masterName, final JedisClientConfig masterClientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
-    this(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig));
+    super(new SentineledConnectionProvider(masterName, masterClientConfig, poolConfig, sentinels, sentinelClientConfig),
+        masterClientConfig.getRedisProtocol());
   }
 
   public JedisSentineled(SentineledConnectionProvider sentineledConnectionProvider) {
@@ -23,5 +25,10 @@ public class JedisSentineled extends UnifiedJedis {
 
   public HostAndPort getCurrentMaster() {
     return ((SentineledConnectionProvider) provider).getCurrentMaster();
+  }
+
+  @Override
+  public Pipeline pipelined() {
+    return (Pipeline) super.pipelined();
   }
 }

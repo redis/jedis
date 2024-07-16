@@ -115,18 +115,25 @@ public class GeoSearchParam implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
-    if (this.fromMember) {
-      args.add(Keyword.FROMMEMBER).add(this.member);
-    } else if (this.fromLonLat) {
+    if (fromMember && fromLonLat) {
+      throw new IllegalArgumentException("Both FROMMEMBER and FROMLONLAT cannot be used.");
+    } else if (fromMember) {
+      args.add(Keyword.FROMMEMBER).add(member);
+    } else if (fromLonLat) {
       args.add(Keyword.FROMLONLAT).add(coord.getLongitude()).add(coord.getLatitude());
+    } else {
+      throw new IllegalArgumentException("Either FROMMEMBER or FROMLONLAT must be used.");
     }
 
-    if (this.byRadius) {
-      args.add(Keyword.BYRADIUS).add(this.radius);
-    } else if (this.byBox) {
-      args.add(Keyword.BYBOX).add(this.width).add(this.height);
+    if (byRadius && byBox) {
+      throw new IllegalArgumentException("Both BYRADIUS and BYBOX cannot be used.");
+    } else if (byRadius) {
+      args.add(Keyword.BYRADIUS).add(radius).add(unit);
+    } else if (byBox) {
+      args.add(Keyword.BYBOX).add(width).add(height).add(unit);
+    } else {
+      throw new IllegalArgumentException("Either BYRADIUS or BYBOX must be used.");
     }
-    args.add(this.unit);
 
     if (withCoord) {
       args.add(Keyword.WITHCOORD);

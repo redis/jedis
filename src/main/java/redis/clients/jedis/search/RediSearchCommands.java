@@ -40,6 +40,16 @@ public interface RediSearchCommands {
 
   String ftAlter(String indexName, Iterable<SchemaField> schemaFields);
 
+  String ftAliasAdd(String aliasName, String indexName);
+
+  String ftAliasUpdate(String aliasName, String indexName);
+
+  String ftAliasDel(String aliasName);
+
+  String ftDropIndex(String indexName);
+
+  String ftDropIndexDD(String indexName);
+
   default SearchResult ftSearch(String indexName) {
     return ftSearch(indexName, "*");
   }
@@ -72,10 +82,6 @@ public interface RediSearchCommands {
   Map.Entry<SearchResult, Map<String, Object>> ftProfileSearch(String indexName,
       FTProfileParams profileParams, String query, FTSearchParams searchParams);
 
-  String ftDropIndex(String indexName);
-
-  String ftDropIndexDD(String indexName);
-
   String ftSynUpdate(String indexName, String synonymGroupId, String... terms);
 
   Map<String, List<String>> ftSynDump(String indexName);
@@ -100,12 +106,6 @@ public interface RediSearchCommands {
   Map<String, Object> ftInfo(String indexName);
 
   Set<String> ftTagVals(String indexName, String fieldName);
-
-  String ftAliasAdd(String aliasName, String indexName);
-
-  String ftAliasUpdate(String aliasName, String indexName);
-
-  String ftAliasDel(String aliasName);
 
   Map<String, Object> ftConfigGet(String option);
 

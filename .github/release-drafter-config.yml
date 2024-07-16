@@ -1,5 +1,7 @@
 name-template: '$NEXT_MINOR_VERSION'
 tag-template: 'v$NEXT_MINOR_VERSION'
+filter-by-commitish: true
+commitish: master
 autolabeler:
   - label: 'maintenance'
     files:
@@ -35,6 +37,8 @@ categories:
     labels:
       - 'maintenance'
       - 'dependencies'
+      - 'documentation'
+      - 'docs'
       - 'testing'
 change-template: '- $TITLE (#$NUMBER)'
 exclude-labels:

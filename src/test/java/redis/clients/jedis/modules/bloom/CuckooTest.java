@@ -11,7 +11,10 @@ import java.util.Collections;
 import java.util.Map;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.bloom.CFInsertParams;
 import redis.clients.jedis.bloom.CFReserveParams;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -20,6 +23,7 @@ import redis.clients.jedis.modules.RedisModuleCommandsTestBase;
 /**
  * Tests for the Cuckoo Filter Implementation
  */
+@RunWith(Parameterized.class)
 public class CuckooTest extends RedisModuleCommandsTestBase {
 
   @BeforeClass
@@ -31,6 +35,10 @@ public class CuckooTest extends RedisModuleCommandsTestBase {
 //  public static void tearDown() {
 ////    RedisModuleCommandsTestBase.tearDown();
 //  }
+
+  public CuckooTest(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void testReservationCapacityOnly() {

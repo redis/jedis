@@ -36,7 +36,7 @@ public class MultiClusterTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
   
-  private static final String MESSAGE_GRAPH_COMMANDS_NOT_SUPPORTED = "Graph commands are not supported.";
+  private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
 
   private final CircuitBreakerFailoverConnectionProvider failoverProvider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();

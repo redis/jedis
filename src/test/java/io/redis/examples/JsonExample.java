@@ -448,9 +448,7 @@ public class JsonExample {
         
         Object res38 = jedis.jsonGet(
             "bikes:inventory",
-            new Path2(
-                "$.inventory.mountain_bikes[?(@.specs.material =~ @.regex_pat)].model"
-            )
+            new Path2("$.inventory.mountain_bikes[?(@.specs.material =~ @.regex_pat)].model")
         );
         System.out.println(res38);  // >>> ["Quaoar","Weywot"]
         // STEP_END

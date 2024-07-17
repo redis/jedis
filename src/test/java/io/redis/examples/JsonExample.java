@@ -424,8 +424,7 @@ public class JsonExample {
 
         // STEP_START filter4
         jedis.jsonSet(
-            "bikes:inventory",
-            new Path2("$.inventory.mountain_bikes[0].regex_pat"),
+            "bikes:inventory", new Path2("$.inventory.mountain_bikes[0].regex_pat"),
             "\"(?i)al\""
         );
         jedis.jsonSet(

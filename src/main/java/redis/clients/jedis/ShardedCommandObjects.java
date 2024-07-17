@@ -34,7 +34,9 @@ public class ShardedCommandObjects extends CommandObjects {
 
   @Override
   protected ShardedCommandArguments commandArguments(ProtocolCommand command) {
-    return new ShardedCommandArguments(algo, tagPattern, command);
+    ShardedCommandArguments comArgs = new ShardedCommandArguments(algo, tagPattern, command);
+    if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);
+    return comArgs;
   }
 
   @Override

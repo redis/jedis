@@ -348,9 +348,7 @@ public class JsonExample {
 
 
         // STEP_START get_models
-        Object res33 = jedis.jsonGet(
-            "bikes:inventory", new Path2("$..model")
-        );
+        Object res33 = jedis.jsonGet("bikes:inventory", new Path2("$..model"));
         System.out.println(res33);
         // >>> ["Phoebe","Quaoar","Weywot","Salacia","Mimas"]
         // STEP_END

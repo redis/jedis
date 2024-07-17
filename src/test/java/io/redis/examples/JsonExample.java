@@ -36,7 +36,7 @@ public class JsonExample {
         Object res2 = jedis.jsonGet("bike", new Path2("$"));
         System.out.println(res2);   // >>> ["Hyperion"]
 
-        String res3 = jedis.jsonType("bike", new Path2("$")).toString();
+        List<Class<?>> res3 = jedis.jsonType("bike", new Path2("$"));
         System.out.println(res3);   // >>> [class java.lang.String]
         // STEP_END
 

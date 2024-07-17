@@ -492,8 +492,7 @@ public class JsonExample {
 
         // STEP_START update_filters2
         List<Long> res43 = jedis.jsonArrAppendWithEscape(
-            "bikes:inventory",
-            new Path2("$.inventory.*[?(@.price<2000)].colors"),
+            "bikes:inventory", new Path2("$.inventory.*[?(@.price<2000)].colors"),
             "\"pink\""
         );
         System.out.println(res43);  // >>> [3, 3]

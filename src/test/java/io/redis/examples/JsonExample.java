@@ -374,9 +374,7 @@ public class JsonExample {
         // STEP_START filter1
         Object res35 = jedis.jsonGet(
             "bikes:inventory",
-            new Path2(
-                "$..mountain_bikes[?(@.price < 3000 && @.specs.weight < 10)]"
-            )
+            new Path2("$..mountain_bikes[?(@.price < 3000 && @.specs.weight < 10)]")
         );
         System.out.println(res35);
         // >>> [{"specs":{"material":"aluminium","weight":7.9},"price":2072,...

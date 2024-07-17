@@ -27,6 +27,8 @@ import redis.clients.jedis.util.KeyValue;
 public class MultiClusterTransaction extends TransactionBase {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
+  
+  private static final String GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE = "Graph commands are not supported.";
 
   private final CircuitBreakerFailoverConnectionProvider failoverProvider;
   private final AtomicInteger extraCommandCount = new AtomicInteger();
@@ -213,52 +215,52 @@ public class MultiClusterTransaction extends TransactionBase {
   // RedisGraph commands
   @Override
   public Response<ResultSet> graphQuery(String name, String query) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<ResultSet> graphReadonlyQuery(String name, String query) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<ResultSet> graphQuery(String name, String query, long timeout) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<ResultSet> graphReadonlyQuery(String name, String query, long timeout) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<ResultSet> graphQuery(String name, String query, Map<String, Object> params, long timeout) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<ResultSet> graphReadonlyQuery(String name, String query, Map<String, Object> params, long timeout) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<String> graphDelete(String name) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
 
   @Override
   public Response<List<String>> graphProfile(String graphName, String query) {
-    throw new UnsupportedOperationException("Graph commands are not supported.");
+    throw new UnsupportedOperationException(GRAPH_COMMANDS_NOT_SUPPORTED_MESSAGE);
   }
   // RedisGraph commands
 }

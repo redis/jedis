@@ -14,6 +14,7 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
@@ -84,7 +85,7 @@ public class RedisInputStream extends FilterInputStream {
     }
 
     final String reply = sb.toString();
-    if (reply.length() == 0) {
+    if (reply.isEmpty()) {
       throw new JedisConnectionException("It seems like server has closed the connection.");
     }
 

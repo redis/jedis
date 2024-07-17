@@ -355,7 +355,7 @@ public class Connection implements Closeable {
   // TODO: final
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
-      throw new JedisConnectionException("Attempting to read from a broken connection");
+      throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {

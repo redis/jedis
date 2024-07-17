@@ -133,7 +133,7 @@ public class JsonExample {
         System.out.println(res18);  // >>> [["Norem"]]
 
         List<Long> res19 = jedis.jsonArrInsertWithEscape(
-            "riders", new Path2("$"),1,
+            "riders", new Path2("$"), 1,
             "Prickett", "Royce", "Castilla"
         );
         System.out.println(res19);  // >>> [4]

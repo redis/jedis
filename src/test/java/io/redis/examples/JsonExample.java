@@ -482,11 +482,7 @@ public class JsonExample {
 
 
         // STEP_START update_filters1
-        jedis.jsonSet(
-            "bikes:inventory",
-            new Path2("$.inventory.*[?(@.price<2000)].price"),
-            1500
-        );
+        jedis.jsonSet("bikes:inventory", new Path2("$.inventory.*[?(@.price<2000)].price"), 1500);
         Object res42 = jedis.jsonGet(
             "bikes:inventory", new Path2("$..price")
         );

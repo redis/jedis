@@ -497,9 +497,7 @@ public class JsonExample {
         );
         System.out.println(res43);  // >>> [3, 3]
 
-        Object res44 = jedis.jsonGet(
-            "bikes:inventory", new Path2("$..[*].colors")
-        );
+        Object res44 = jedis.jsonGet("bikes:inventory", new Path2("$..[*].colors"));
         System.out.println(res44);
         // >>> [["black","silver","\"pink\""],["black","white"],["black","silver","\"pink\""]]
         // STEP_END

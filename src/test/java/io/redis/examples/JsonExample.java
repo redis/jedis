@@ -272,9 +272,7 @@ public class JsonExample {
 
 
         // STEP_START get_bikes
-        Object res29 = jedis.jsonGet(
-            "bikes:inventory", new Path2("$.inventory.*")
-        );
+        Object res29 = jedis.jsonGet("bikes:inventory", new Path2("$.inventory.*"));
         System.out.println(res29);
         // >>> [[{"specs":{"material":"carbon","weight":13.1},"price":1920, ...
         // STEP_END

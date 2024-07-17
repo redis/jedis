@@ -328,8 +328,7 @@ public class JsonExample {
         System.out.println(res30);  // >>> ["Phoebe","Quaoar","Weywot"]
 
         Object res31 = jedis.jsonGet(
-            "bikes:inventory",
-            new Path2("$.inventory[\"mountain_bikes\"][*].model")
+            "bikes:inventory", new Path2("$.inventory[\"mountain_bikes\"][*].model")
         );
         System.out.println(res31);  // >>> ["Phoebe","Quaoar","Weywot"]
 

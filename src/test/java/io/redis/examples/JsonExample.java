@@ -22,12 +22,12 @@ public class JsonExample {
     @Test
     public void run() {
         UnifiedJedis jedis = new UnifiedJedis("redis://localhost:6379");
+// HIDE_END
 
         //REMOVE_START
         // Clear any keys here before using them in tests.
         jedis.del("bike", "bike:1", "crashes", "newbike", "riders", "bikes:inventory");
         //REMOVE_END
-// HIDE_END
 
         // STEP_START set_get
         String res1 = jedis.jsonSet("bike", new Path2("$"), "\"Hyperion\"");

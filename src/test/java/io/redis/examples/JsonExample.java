@@ -126,9 +126,7 @@ public class JsonExample {
         String res16 = jedis.jsonSet("riders", new Path2("$"), new JSONArray());
         System.out.println(res16);  // >>> OK
 
-        List<Long> res17 = jedis.jsonArrAppendWithEscape(
-            "riders", new Path2("$"), "Norem"
-        );
+        List<Long> res17 = jedis.jsonArrAppendWithEscape("riders", new Path2("$"), "Norem");
         System.out.println(res17);  // >>> [1]
 
         Object res18 = jedis.jsonGet("riders", new Path2("$"));

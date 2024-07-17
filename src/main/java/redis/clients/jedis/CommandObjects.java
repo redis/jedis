@@ -5,6 +5,8 @@ import static redis.clients.jedis.Protocol.Keyword.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
@@ -50,6 +52,7 @@ public class CommandObjects {
     return protocol;
   }
 
+  private Lock mapperLock = new ReentrantLock(true);    
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(0);
 
@@ -4435,11 +4438,15 @@ public class CommandObjects {
   private JsonObjectMapper getJsonObjectMapper() {
     JsonObjectMapper localRef = this.jsonObjectMapper;
     if (Objects.isNull(localRef)) {
-      synchronized (this) {
+      mapperLock.lock();
+
+      try {
         localRef = this.jsonObjectMapper;
         if (Objects.isNull(localRef)) {
           this.jsonObjectMapper = localRef = new DefaultGsonObjectMapper();
         }
+      } finally {
+        mapperLock.unlock();
       }
     }
     return localRef;

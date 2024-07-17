@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.slf4j.Logger;
@@ -47,7 +49,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
   private final long subscribeRetryWaitTimeMillis;
 
-  private final Object initPoolLock = new Object();
+  private final Lock initPoolLock = new ReentrantLock(true);
 
   public SentineledConnectionProvider(String masterName, final JedisClientConfig masterClientConfig,
       Set<HostAndPort> sentinels, final JedisClientConfig sentinelClientConfig) {
@@ -122,7 +124,9 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   private void initMaster(HostAndPort master) {
-    synchronized (initPoolLock) {
+    initPoolLock.lock();
+    
+    try {
       if (!master.equals(currentMaster)) {
         currentMaster = master;
 
@@ -142,6 +146,8 @@ public class SentineledConnectionProvider implements ConnectionProvider {
           existingPool.close();
         }
       }
+    } finally {
+      initPoolLock.unlock();
     }
   }
 

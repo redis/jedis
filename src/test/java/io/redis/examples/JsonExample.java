@@ -172,9 +172,9 @@ public class JsonExample {
         // STEP_START obj
         String res25 = jedis.jsonSet("bike:1", new Path2("$"),
             new JSONObject()
-            .put("model", "Deimos")
-            .put("brand", "Ergonom")
-            .put("price", 4972)    
+                .put("model", "Deimos")
+                .put("brand", "Ergonom")
+                .put("price", 4972)
         );
         System.out.println(res25);  // >>> OK
 

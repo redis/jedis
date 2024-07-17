@@ -94,9 +94,7 @@ public class JsonExample {
         String res11 = jedis.jsonSet("newbike", new Path2("$"),
             new JSONArray()
                 .put("Deimos")
-                .put(new JSONObject()
-                    .put("crashes", 0)
-                )
+                .put(new JSONObject().put("crashes", 0))
                 .put((Object) null)
         );
         System.out.println(res11);  // >>> OK

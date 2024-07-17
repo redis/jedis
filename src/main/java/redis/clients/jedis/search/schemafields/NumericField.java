@@ -1,14 +1,13 @@
 package redis.clients.jedis.search.schemafields;
 
-import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.NOINDEX;
-import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.NUMERIC;
-import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.SORTABLE;
+import static redis.clients.jedis.search.SearchProtocol.SearchKeyword.*;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.search.FieldName;
 
 public class NumericField extends SchemaField {
 
+  private boolean indexMissing;
   private boolean sortable;
   private boolean noIndex;
 
@@ -34,6 +33,11 @@ public class NumericField extends SchemaField {
     return this;
   }
 
+  public NumericField indexMissing() {
+    this.indexMissing = true;
+    return this;
+  }
+
   /**
    * Sorts the results by the value of this field.
    */
@@ -54,6 +58,10 @@ public class NumericField extends SchemaField {
   public void addParams(CommandArguments args) {
     args.addParams(fieldName);
     args.add(NUMERIC);
+
+    if (indexMissing) {
+      args.add(INDEXMISSING);
+    }
 
     if (sortable) {
       args.add(SORTABLE);

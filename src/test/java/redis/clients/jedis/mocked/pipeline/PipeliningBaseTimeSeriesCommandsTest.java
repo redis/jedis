@@ -3,6 +3,7 @@ package redis.clients.jedis.mocked.pipeline;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.AbstractMap;
@@ -11,17 +12,7 @@ import java.util.Map;
 
 import org.junit.Test;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.timeseries.AggregationType;
-import redis.clients.jedis.timeseries.TSAlterParams;
-import redis.clients.jedis.timeseries.TSCreateParams;
-import redis.clients.jedis.timeseries.TSElement;
-import redis.clients.jedis.timeseries.TSGetParams;
-import redis.clients.jedis.timeseries.TSInfo;
-import redis.clients.jedis.timeseries.TSMGetElement;
-import redis.clients.jedis.timeseries.TSMGetParams;
-import redis.clients.jedis.timeseries.TSMRangeElements;
-import redis.clients.jedis.timeseries.TSMRangeParams;
-import redis.clients.jedis.timeseries.TSRangeParams;
+import redis.clients.jedis.timeseries.*;
 
 public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTestBase {
 
@@ -52,6 +43,18 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
     when(commandObjects.tsAdd("myTimeSeries", 1000L, 42.0, createParams)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.tsAdd("myTimeSeries", 1000L, 42.0, createParams);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsAddWithParams() {
+    TSAddParams addParams = mock(TSAddParams.class);
+
+    when(commandObjects.tsAdd("myTimeSeries", 1000L, 42.0, addParams)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.tsAdd("myTimeSeries", 1000L, 42.0, addParams);
 
     assertThat(commands, contains(longCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -139,6 +142,17 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   }
 
   @Test
+  public void testTsDecrByWithParams() {
+    TSDecrByParams decrByParams = mock(TSDecrByParams.class);
+    when(commandObjects.tsDecrBy("myTimeSeries", 1.0, decrByParams)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.tsDecrBy("myTimeSeries", 1.0, decrByParams);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
   public void testTsDel() {
     when(commandObjects.tsDel("myTimeSeries", 1000L, 2000L)).thenReturn(longCommandObject);
 
@@ -195,6 +209,17 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
     when(commandObjects.tsIncrBy("myTimeSeries", 1.0, 1000L)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.tsIncrBy("myTimeSeries", 1.0, 1000L);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsIncrByWithParams() {
+    TSIncrByParams incrByParams = mock(TSIncrByParams.class);
+    when(commandObjects.tsIncrBy("myTimeSeries", 1.0, incrByParams)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.tsIncrBy("myTimeSeries", 1.0, incrByParams);
 
     assertThat(commands, contains(longCommandObject));
     assertThat(response, is(predefinedResponse));

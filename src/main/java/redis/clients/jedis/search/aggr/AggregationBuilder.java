@@ -66,7 +66,7 @@ public class AggregationBuilder implements IParams {
 
   public AggregationBuilder sortBy(SortedField... fields) {
     aggrArgs.add(SearchKeyword.SORTBY);
-    aggrArgs.add(Integer.toString(fields.length * 2));
+    aggrArgs.add(fields.length << 1);
     for (SortedField field : fields) {
       aggrArgs.add(field.getField());
       aggrArgs.add(field.getOrder());
@@ -172,7 +172,7 @@ public class AggregationBuilder implements IParams {
 
   public AggregationBuilder params(Map<String, Object> params) {
     aggrArgs.add(SearchKeyword.PARAMS);
-    aggrArgs.add(params.size() * 2);
+    aggrArgs.add(params.size() << 1);
     params.forEach((k, v) -> {
       aggrArgs.add(k);
       aggrArgs.add(v);

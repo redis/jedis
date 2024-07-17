@@ -261,9 +261,7 @@ public class JsonExample {
         + "    }"
         + "}";
 
-        String res28 = jedis.jsonSet(
-            "bikes:inventory", new Path2("$"), inventory_json
-        );
+        String res28 = jedis.jsonSet("bikes:inventory", new Path2("$"), inventory_json);
         System.out.println(res28);  // >>> OK
         // STEP_END
 

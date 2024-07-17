@@ -469,9 +469,7 @@ public class JsonExample {
         );
         System.out.println(res40);  // >>> [1820,1972,3164,1375,3841]
 
-        Object res41 = jedis.jsonNumIncrBy(
-            "bikes:inventory", new Path2("$..price"), 100
-        );
+        Object res41 = jedis.jsonNumIncrBy("bikes:inventory", new Path2("$..price"), 100);
         System.out.println(res41);  // >>> [1920,2072,3264,1475,3941]
         // STEP_END
 

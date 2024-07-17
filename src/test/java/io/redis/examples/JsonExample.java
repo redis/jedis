@@ -450,9 +450,7 @@ public class JsonExample {
 
 
         // STEP_START update_bikes
-        Object res39 = jedis.jsonGet(
-            "bikes:inventory", new Path2("$..price")
-        );
+        Object res39 = jedis.jsonGet("bikes:inventory", new Path2("$..price"));
         System.out.println(res39);
         // >>> [1920,2072,3264,1475,3941]
 

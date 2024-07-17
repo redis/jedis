@@ -52,9 +52,7 @@ public class JsonExample {
         List<Long> res4 = jedis.jsonStrLen("bike", new Path2("$"));
         System.out.println(res4);   // >>> [8]
 
-        List<Long> res5 = jedis.jsonStrAppend(
-            "bike", new Path2("$"), " (Enduro bikes)"
-        );
+        List<Long> res5 = jedis.jsonStrAppend("bike", new Path2("$"), " (Enduro bikes)");
         System.out.println(res5);   // >>> [23]
 
         Object res6 = jedis.jsonGet("bike", new Path2("$"));

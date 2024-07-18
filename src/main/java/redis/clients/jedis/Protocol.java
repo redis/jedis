@@ -126,7 +126,7 @@ public final class Protocol {
 
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
-    //System.out.println("BYTE: " + (char) b);
+    // System.out.println("BYTE: " + (char) b);
     switch (b) {
       case PLUS_BYTE:
         return is.readLineBytes();
@@ -185,7 +185,8 @@ public final class Protocol {
 
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
-    if (num == -1) return null;
+    if (num == -1)
+      return null;
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
@@ -199,7 +200,8 @@ public final class Protocol {
 
   private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
-    if (num == -1) return null;
+    if (num == -1)
+      return null;
     final List<KeyValue> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       ret.add(new KeyValue(process(is), process(is)));
@@ -213,7 +215,12 @@ public final class Protocol {
 
   @Experimental
   public static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
-    while (is.peek(GREATER_THAN_BYTE)) {
+    boolean available = false;
+
+    int counter = 0;
+    // TODO : we need to find away to get away from peekSafe
+    while (is.peekSafe(GREATER_THAN_BYTE)) {
+      counter++;
       is.readByte();
       processPush(is, cache);
     }

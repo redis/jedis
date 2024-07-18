@@ -1,21 +1,25 @@
 package redis.clients.jedis.csc;
 
+import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * The class to manage the client-side caching. User can provide any of implementation of this class to the client
- * object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache CaffeineClientSideCache} or
- * {@link redis.clients.jedis.csc.GuavaClientSideCache GuavaClientSideCache} or a custom implementation of their own.
+ * The class to manage the client-side caching. User can provide any of
+ * implementation of this class to the client
+ * object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache
+ * CaffeineClientSideCache} or
+ * {@link redis.clients.jedis.csc.GuavaClientSideCache GuavaClientSideCache} or
+ * a custom implementation of their own.
  */
 @Experimental
 public abstract class ClientSideCache {
@@ -64,12 +68,14 @@ public abstract class ClientSideCache {
   }
 
   private void invalidateRedisKeyAndRespectiveCacheEntries(Object key) {
-//    if (!(key instanceof byte[])) {
-//      // This should be called internally. That's why throwing AssertionError instead of IllegalArgumentException.
-//      throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
-//    }
-//
-//    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
+    // if (!(key instanceof byte[])) {
+    // // This should be called internally. That's why throwing AssertionError
+    // instead of IllegalArgumentException.
+    // throw new AssertionError("" + key.getClass().getSimpleName() + " is not
+    // supported. Value: " + String.valueOf(key));
+    // }
+    //
+    // final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
     final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
 
     Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
@@ -79,26 +85,34 @@ public abstract class ClientSideCache {
     }
   }
 
-  public final <T> T get(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
+  public final <T> T get(DataProvider dataProvider, CommandObject<T> command, Object... keys) {
 
     if (!cacheable.isCacheable(command.getArguments().getCommand(), keys)) {
-      return loader.apply(command);
+      return dataProvider.getData(command);
     }
 
     final CacheKey cacheKey = new CacheKey(command);
     CacheEntry cacheEntry = get(cacheKey);
     if (cacheEntry != null) {
-      // CACHE HIT!!!
-      // TODO: connection ...
-      //cacheEntry.getConnection().ping();
-      //cacheEntry = get(cacheKey); // get cache again
-      return (T) cacheEntry.getValue();
+      Connection cacheOwner = (Connection) cacheEntry.getConnection().get();
+      if (cacheOwner == null) {
+        remove(Collections.singleton(cacheKey));
+        // TODO: remove it from redisKeysToCacheKeys as well
+      } else {
+        if (cacheOwner == dataProvider.getSource()) {
+          dataProvider.consumeInvalidationMessages();
+        }
+        cacheEntry = get(cacheKey);
+        if (cacheEntry != null) {
+          return (T) cacheEntry.getValue();
+        }
+      }
     }
 
     // CACHE MISS!!
-    T value = loader.apply(command);
+    T value = dataProvider.getData(command);
     if (value != null) {
-      cacheEntry = new CacheEntry(cacheKey, value, /*connection*/ null); // TODO: connection
+      cacheEntry = new CacheEntry(cacheKey, value, new WeakReference(dataProvider.getSource()));
       put(cacheKey, cacheEntry);
       for (Object key : keys) {
         ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);

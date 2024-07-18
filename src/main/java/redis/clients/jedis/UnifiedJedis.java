@@ -309,10 +309,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   private <T> T checkAndClientSideCacheCommand(CommandObject<T> command, Object... keys) {
-    if (clientSideCache != null) {
-      return clientSideCache.get((cmd) -> executeCommand(cmd), command, keys);
-    }
-
     return executeCommand(command);
   }
 

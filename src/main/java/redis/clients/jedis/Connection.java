@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
+import javax.net.ssl.SSLSocket;
+
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
@@ -167,7 +169,8 @@ public class Connection implements Closeable {
       Protocol.sendCommand(outputStream, args);
     } catch (JedisConnectionException ex) {
       /*
-       * When client send request which formed by invalid protocol, Redis send back error message
+       * When client send request which formed by invalid protocol, Redis send back
+       * error message
        * before close connection. We try to read it to provide reason of failure.
        */
       try {
@@ -177,8 +180,10 @@ public class Connection implements Closeable {
         }
       } catch (Exception e) {
         /*
-         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
-         * ignore. This approach is safe because reading error message is optional and connection
+         * Catch any IOException or JedisConnectionException occurred from
+         * InputStream#read and just
+         * ignore. This approach is safe because reading error message is optional and
+         * connection
          * will eventually be closed.
          */
       }
@@ -192,7 +197,7 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        soTimeout = socket.getSoTimeout(); //?
+        soTimeout = socket.getSoTimeout(); // ?
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -367,6 +372,29 @@ public class Connection implements Closeable {
     }
   }
 
+  protected void readPushesWithCheckingBroken() {
+    if (broken) {
+      throw new JedisConnectionException("Attempting to read from a broken connection.");
+    }
+
+    try {
+      if (socket instanceof SSLSocket) {
+        this.ping();
+      } else {
+        try {
+          if (inputStream.available() > 0) {
+            protocolReadPushes(inputStream);
+          }
+        } catch (IOException e) {
+          // TODO: handle this properly
+        }
+      }
+    } catch (JedisConnectionException exc) {
+      broken = true;
+      throw exc;
+    }
+  }
+
   public List<Object> getMany(final int count) {
     flush();
     final List<Object> responses = new ArrayList<>(count);
@@ -382,6 +410,7 @@ public class Connection implements Closeable {
 
   /**
    * Check if the client name libname, libver, characters are legal
+   * 
    * @param info the name
    * @return Returns true if legal, false throws exception
    * @throws JedisException if characters illegal
@@ -425,7 +454,8 @@ public class Connection implements Closeable {
       }
 
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
-      if (setInfoConfig == null) setInfoConfig = ClientSetInfoConfig.DEFAULT;
+      if (setInfoConfig == null)
+        setInfoConfig = ClientSetInfoConfig.DEFAULT;
 
       if (!setInfoConfig.isDisabled()) {
         String libName = JedisMetaInfo.getArtifactId();

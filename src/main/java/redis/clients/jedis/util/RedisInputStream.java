@@ -51,6 +51,12 @@ public class RedisInputStream extends FilterInputStream {
     return buf[count] == b;
   }
 
+  @Experimental
+  public boolean peekSafe(byte b) throws JedisConnectionException {
+    ensureFillSafe(); // in current design, at least one reply is expected. so ensureFillSafe() is not necessary.
+    return buf[count] == b;
+  }
+
   public byte readByte() throws JedisConnectionException {
     ensureFill();
     return buf[count++];
@@ -257,6 +263,20 @@ public class RedisInputStream extends FilterInputStream {
         }
       } catch (IOException e) {
         throw new JedisConnectionException(e);
+      }
+    }
+  }
+
+  private void ensureFillSafe() {
+    if (count >= limit) {
+      try {
+        limit = in.read(buf);
+        count = 0;
+        if (limit == -1) {
+          throw new JedisConnectionException("Unexpected end of stream.");
+        }
+      } catch (IOException e) {
+        // do nothing
       }
     }
   }

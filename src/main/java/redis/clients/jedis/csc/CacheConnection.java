@@ -60,7 +60,7 @@ public class CacheConnection extends Connection implements DataProvider {
   @Override
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     System.out.println("this is the interceptor for cache");
-    T data = clientSideCache.get(this, commandObject);
+    T data = clientSideCache.get(this, commandObject, commandObject.getArguments().keys());
     return data;
   }
 

@@ -169,8 +169,7 @@ public class Connection implements Closeable {
       Protocol.sendCommand(outputStream, args);
     } catch (JedisConnectionException ex) {
       /*
-       * When client send request which formed by invalid protocol, Redis send back
-       * error message
+       * When client send request which formed by invalid protocol, Redis send back error message
        * before close connection. We try to read it to provide reason of failure.
        */
       try {
@@ -180,10 +179,8 @@ public class Connection implements Closeable {
         }
       } catch (Exception e) {
         /*
-         * Catch any IOException or JedisConnectionException occurred from
-         * InputStream#read and just
-         * ignore. This approach is safe because reading error message is optional and
-         * connection
+         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
+         * ignore. This approach is safe because reading error message is optional and connection
          * will eventually be closed.
          */
       }
@@ -197,7 +194,7 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        soTimeout = socket.getSoTimeout(); // ?
+        soTimeout = socket.getSoTimeout(); //?
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -354,7 +351,7 @@ public class Connection implements Closeable {
 
   @Experimental
   @Internal
-  protected void protocolReadPushes(RedisInputStream is) {
+  protected void protocolReadPushes(RedisInputStream is, boolean onlyPendingBuffer) {
   }
 
   // TODO: final
@@ -364,7 +361,7 @@ public class Connection implements Closeable {
     }
 
     try {
-      protocolReadPushes(inputStream);
+      protocolReadPushes(inputStream, false);
       return protocolRead(inputStream);
     } catch (JedisConnectionException exc) {
       broken = true;
@@ -383,7 +380,7 @@ public class Connection implements Closeable {
       } else {
         try {
           if (inputStream.available() > 0) {
-            protocolReadPushes(inputStream);
+            protocolReadPushes(inputStream, true);
           }
         } catch (IOException e) {
           // TODO: handle this properly

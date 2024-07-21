@@ -45,13 +45,11 @@ public class CacheConnection extends Connection implements DataProvider {
   }
 
   @Override
-  protected void protocolReadPushes(RedisInputStream inputStream) {
+  protected void protocolReadPushes(RedisInputStream inputStream, boolean onlyPendingBuffer) {
     if (lock != null && lock.tryLock()) {
       try {
-        // super.setSoTimeout(1);
-        Protocol.readPushes(inputStream, clientSideCache);
+        Protocol.readPushes(inputStream, clientSideCache, onlyPendingBuffer);
       } finally {
-        // super.rollbackTimeout();
         lock.unlock();
       }
     }
@@ -59,7 +57,7 @@ public class CacheConnection extends Connection implements DataProvider {
 
   @Override
   public <T> T executeCommand(final CommandObject<T> commandObject) {
-    T data = clientSideCache.get(this, commandObject, commandObject.getArguments().keys());
+    T data = clientSideCache.get(this, commandObject, commandObject.getArguments().getKeys());
     return data;
   }
 

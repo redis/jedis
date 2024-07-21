@@ -68,8 +68,8 @@ public class JedisSentineledClientSideCacheTest {
       assertThat(map, Matchers.aMapWithSize(1));
       control.del("foo");
       assertThat(map, Matchers.aMapWithSize(1));
-      assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(null, jedis.get("foo"));
+      assertThat(map, Matchers.aMapWithSize(0));
       jedis.ping();
       assertThat(map, Matchers.aMapWithSize(0));
       assertNull(jedis.get("foo"));
@@ -99,8 +99,8 @@ public class JedisSentineledClientSideCacheTest {
       assertThat(map, Matchers.aMapWithSize(1));
       control.flushAll();
       assertThat(map, Matchers.aMapWithSize(1));
-      assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
+      assertEquals(null, jedis.get("foo"));
+      assertThat(map, Matchers.aMapWithSize(0));
       jedis.ping();
       assertThat(map, Matchers.aMapWithSize(0));
       assertNull(jedis.get("foo"));

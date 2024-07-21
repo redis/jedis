@@ -117,6 +117,7 @@ public class CommandArguments implements Iterable<Rawable> {
     } else {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
+    keys.add(key);
     return this;
   }
 
@@ -136,7 +137,6 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   protected CommandArguments processKey(byte[] key) {
-    keys.add(key);
     return this;
   }
 
@@ -148,7 +148,6 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   protected CommandArguments processKey(String key) {
-    keys.add(key);
     return this;
   }
 
@@ -168,7 +167,7 @@ public class CommandArguments implements Iterable<Rawable> {
     return args.iterator();
   }
 
-  public Object[] keys() {
+  public Object[] getKeys() {
     return keys.toArray();
   }
 

@@ -14,12 +14,10 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * The class to manage the client-side caching. User can provide any of
- * implementation of this class to the client
- * object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache
- * CaffeineClientSideCache} or
- * {@link redis.clients.jedis.csc.GuavaClientSideCache GuavaClientSideCache} or
- * a custom implementation of their own.
+ * The class to manage the client-side caching. User can provide any of implementation of this class
+ * to the client object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache
+ * CaffeineClientSideCache} or {@link redis.clients.jedis.csc.GuavaClientSideCache
+ * GuavaClientSideCache} or a custom implementation of their own.
  */
 @Experimental
 public abstract class ClientSideCache {
@@ -78,6 +76,10 @@ public abstract class ClientSideCache {
     // final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
     final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
 
+    // TODO: dont forget to clean up this
+    // System.out.println(
+    // "invalidation message received for :" + (key instanceof String ? (String) key
+    // : new String((byte[]) key)));
     Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
     if (commands != null) {
       remove(commands);
@@ -93,40 +95,61 @@ public abstract class ClientSideCache {
 
     final CacheKey cacheKey = new CacheKey(command);
     CacheEntry cacheEntry = get(cacheKey);
+
+    // CACHE HIT !!
     if (cacheEntry != null) {
-      Connection cacheOwner = (Connection) cacheEntry.getConnection().get();
-      if (cacheOwner == null) {
-        remove(Collections.singleton(cacheKey));
-        // TODO: remove it from redisKeysToCacheKeys as well
-      } else {
-        if (cacheOwner == dataProvider.getSource()) {
-          dataProvider.consumeInvalidationMessages();
-        }
-        cacheEntry = get(cacheKey);
-        if (cacheEntry != null) {
-          return (T) cacheEntry.getValue();
-        }
+      cacheEntry = validateEntry(dataProvider, cacheKey, cacheEntry, keys);
+      if (cacheEntry != null) {
+        return (T) cacheEntry.getValue();
       }
     }
 
     // CACHE MISS!!
     T value = dataProvider.getData(command);
     if (value != null) {
-      cacheEntry = new CacheEntry(cacheKey, value, new WeakReference(dataProvider.getSource()));
-      put(cacheKey, cacheEntry);
-      for (Object key : keys) {
-        ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
+      storeInCache(dataProvider, cacheKey, value, keys);
+    }
+    return value;
+  }
+
+  private CacheEntry validateEntry(DataProvider provider, CacheKey cacheKey, CacheEntry cacheEntry,
+      Object... redisKeys) {
+    Connection cacheOwner = (Connection) cacheEntry.getConnection().get();
+    if (cacheOwner == null) {
+      remove(Collections.singleton(cacheKey));
+
+      // TODO: remove it from redisKeysToCacheKeys as well
+      for (Object redisKey : redisKeys) {
+        ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
         if (redisKeysToCacheKeys.containsKey(mapKey)) {
-          redisKeysToCacheKeys.get(mapKey).add(cacheKey);
-        } else {
-          Set<CacheKey<?>> set = ConcurrentHashMap.newKeySet();
-          set.add(cacheKey);
-          redisKeysToCacheKeys.put(mapKey, set);
+          redisKeysToCacheKeys.get(mapKey).remove(cacheKey);
         }
       }
+      cacheEntry = null;
+    } else {
+      if (cacheOwner == provider.getSource()) {
+        provider.consumeInvalidationMessages();
+        cacheEntry = get(cacheKey);
+      }
     }
+    return cacheEntry;
+  }
 
-    return value;
+  private void storeInCache(DataProvider provider, CacheKey cacheKey, Object value,
+      Object... redisKeys) {
+    CacheEntry cacheEntry = new CacheEntry(cacheKey, value,
+        new WeakReference(provider.getSource()));
+    put(cacheKey, cacheEntry);
+    for (Object redisKey : redisKeys) {
+      ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
+      if (redisKeysToCacheKeys.containsKey(mapKey)) {
+        redisKeysToCacheKeys.get(mapKey).add(cacheKey);
+      } else {
+        Set<CacheKey<?>> set = ConcurrentHashMap.newKeySet();
+        set.add(cacheKey);
+        redisKeysToCacheKeys.put(mapKey, set);
+      }
+    }
   }
 
   private ByteBuffer makeKeyForRedisKeysToCacheKeys(Object key) {

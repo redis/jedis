@@ -51,12 +51,6 @@ public class RedisInputStream extends FilterInputStream {
     return buf[count] == b;
   }
 
-  @Experimental
-  public boolean peekSafe(byte b) throws JedisConnectionException {
-    ensureFillSafe(); // in current design, at least one reply is expected. so ensureFillSafe() is not necessary.
-    return buf[count] == b;
-  }
-
   public byte readByte() throws JedisConnectionException {
     ensureFill();
     return buf[count++];
@@ -190,9 +184,12 @@ public class RedisInputStream extends FilterInputStream {
 
     ensureCrLf();
     switch (b) {
-      case 't': return true;
-      case 'f': return false;
-      default: throw new JedisConnectionException("Unexpected character!");
+      case 't':
+        return true;
+      case 'f':
+        return false;
+      default:
+        throw new JedisConnectionException("Unexpected character!");
     }
   }
 
@@ -267,17 +264,11 @@ public class RedisInputStream extends FilterInputStream {
     }
   }
 
-  private void ensureFillSafe() {
-    if (count >= limit) {
-      try {
-        limit = in.read(buf);
-        count = 0;
-        if (limit == -1) {
-          throw new JedisConnectionException("Unexpected end of stream.");
-        }
-      } catch (IOException e) {
-        // do nothing
-      }
-    }
+  @Override
+  public int available() throws IOException {
+    int availableInBuf = limit - count;
+    int availableInSocket = this.in.available();
+    return (availableInBuf > availableInSocket) ? availableInBuf : availableInSocket;
   }
+
 }

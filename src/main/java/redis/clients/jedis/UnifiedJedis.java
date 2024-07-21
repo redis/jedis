@@ -116,8 +116,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * The constructor to directly use a custom {@link JedisSocketFactory}.
    * <p>
-   * WARNING: Using this constructor means a {@link NullPointerException} will be
-   * occurred if
+   * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
    */
   public UnifiedJedis(JedisSocketFactory socketFactory) {
@@ -127,8 +126,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * The constructor to directly use a custom {@link JedisSocketFactory}.
    * <p>
-   * WARNING: Using this constructor means a {@link NullPointerException} will be
-   * occurred if
+   * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
    */
   public UnifiedJedis(JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
@@ -138,8 +136,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * The constructor to directly use a {@link Connection}.
    * <p>
-   * WARNING: Using this constructor means a {@link NullPointerException} will be
-   * occurred if
+   * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
    */
   public UnifiedJedis(Connection connection) {
@@ -213,13 +210,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * Constructor which supports multiple cluster/database endpoints each with
-   * their own isolated connection pool.
+   * Constructor which supports multiple cluster/database endpoints each with their own isolated connection pool.
    * <p>
-   * With this Constructor users can seamlessly failover to Disaster Recovery
-   * (DR), Backup, and Active-Active cluster(s)
-   * by using simple configuration which is passed through from Resilience4j -
-   * https://resilience4j.readme.io/docs
+   * With this Constructor users can seamlessly failover to Disaster Recovery (DR), Backup, and Active-Active cluster(s)
+   * by using simple configuration which is passed through from Resilience4j - https://resilience4j.readme.io/docs
    * <p>
    */
   @Experimental
@@ -230,8 +224,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   /**
    * The constructor to use a custom {@link CommandExecutor}.
    * <p>
-   * WARNING: Using this constructor means a {@link NullPointerException} will be
-   * occurred if
+   * WARNING: Using this constructor means a {@link NullPointerException} will be occurred if
    * {@link UnifiedJedis#provider} is accessed.
    */
   public UnifiedJedis(CommandExecutor executor) {
@@ -714,7 +707,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @param batchCount COUNT for each batch execution
-   * @param match      pattern
+   * @param match pattern
    * @return scan iteration
    */
   public ScanIteration scanIteration(int batchCount, String match) {
@@ -723,8 +716,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * @param batchCount COUNT for each batch execution
-   * @param match      pattern
-   * @param type       key type
+   * @param match pattern
+   * @param type key type
    * @return scan iteration
    */
   public ScanIteration scanIteration(int batchCount, String match, String type) {
@@ -874,8 +867,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @deprecated Use
-   *             {@link UnifiedJedis#setGet(java.lang.String, java.lang.String)}.
+   * @deprecated Use {@link UnifiedJedis#setGet(java.lang.String, java.lang.String)}.
    */
   @Deprecated
   @Override
@@ -2830,20 +2822,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
-      GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit,
-      GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadius(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
@@ -2858,26 +2847,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit,
-      GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit,
-      GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
   @Override
-  public long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit,
-      GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+  public long georadiusStore(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
   @Override
-  public long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param,
-      GeoRadiusStoreParam storeParam) {
+  public long georadiusByMemberStore(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 
@@ -2942,20 +2927,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit) {
+  public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
     return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
   }
 
   @Override
-  public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
-      GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadius(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadius(key, longitude, latitude, radius, unit, param));
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius,
-      GeoUnit unit, GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
   }
 
@@ -2970,26 +2952,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit,
-      GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMember(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusByMember(key, member, radius, unit, param));
   }
 
   @Override
-  public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit,
-      GeoRadiusParam param) {
+  public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
     return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
   }
 
   @Override
-  public long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit,
-      GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
+  public long georadiusStore(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(commandObjects.georadiusStore(key, longitude, latitude, radius, unit, param, storeParam));
   }
 
   @Override
-  public long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param,
-      GeoRadiusStoreParam storeParam) {
+  public long georadiusByMemberStore(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param, GeoRadiusStoreParam storeParam) {
     return executeCommand(commandObjects.georadiusByMemberStore(key, member, radius, unit, param, storeParam));
   }
 
@@ -3203,26 +3181,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<StreamEntry> xclaim(String key, String group, String consumerName, long minIdleTime, XClaimParams params,
-      StreamEntryID... ids) {
+  public List<StreamEntry> xclaim(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return executeCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<StreamEntryID> xclaimJustId(String key, String group, String consumerName, long minIdleTime,
-      XClaimParams params, StreamEntryID... ids) {
+  public List<StreamEntryID> xclaimJustId(String key, String group, String consumerName, long minIdleTime, XClaimParams params, StreamEntryID... ids) {
     return executeCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+  public Map.Entry<StreamEntryID, List<StreamEntry>> xautoclaim(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     return executeCommand(commandObjects.xautoclaim(key, group, consumerName, minIdleTime, start, params));
   }
 
   @Override
-  public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName,
-      long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
+  public Map.Entry<StreamEntryID, List<StreamEntryID>> xautoclaimJustId(String key, String group, String consumerName, long minIdleTime, StreamEntryID start, XAutoClaimParams params) {
     return executeCommand(commandObjects.xautoclaimJustId(key, group, consumerName, minIdleTime, start, params));
   }
 
@@ -3267,14 +3241,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
-      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+  public List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
 
   @Override
-  public Map<String, List<StreamEntry>> xreadGroupAsMap(String groupName, String consumer,
-      XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
+  public Map<String, List<StreamEntry>> xreadGroupAsMap(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return executeCommand(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
   }
 
@@ -3364,26 +3336,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params,
-      byte[]... ids) {
+  public List<byte[]> xclaim(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
     return executeCommand(commandObjects.xclaim(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params,
-      byte[]... ids) {
+  public List<byte[]> xclaimJustId(byte[] key, byte[] group, byte[] consumerName, long minIdleTime, XClaimParams params, byte[]... ids) {
     return executeCommand(commandObjects.xclaimJustId(key, group, consumerName, minIdleTime, params, ids));
   }
 
   @Override
-  public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start,
-      XAutoClaimParams params) {
+  public List<Object> xautoclaim(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
     return executeCommand(commandObjects.xautoclaim(key, groupName, consumerName, minIdleTime, start, params));
   }
 
   @Override
-  public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime,
-      byte[] start, XAutoClaimParams params) {
+  public List<Object> xautoclaimJustId(byte[] key, byte[] groupName, byte[] consumerName, long minIdleTime, byte[] start, XAutoClaimParams params) {
     return executeCommand(commandObjects.xautoclaimJustId(key, groupName, consumerName, minIdleTime, start, params));
   }
 
@@ -3418,8 +3386,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams,
-      Map.Entry<byte[], byte[]>... streams) {
+  public List<Object> xreadGroup(byte[] groupName, byte[] consumer, XReadGroupParams xReadGroupParams, Map.Entry<byte[], byte[]>... streams) {
     return executeCommand(commandObjects.xreadGroup(groupName, consumer, xReadGroupParams, streams));
   }
   // Stream commands
@@ -3923,8 +3890,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * 
    * @param batchSize batch size
    * @param indexName index name
-   * @param query     query
-   * @param params    limit will be ignored
+   * @param query query
+   * @param params limit will be ignored
    * @return search iteration
    */
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, String query, FTSearchParams params) {
@@ -3938,10 +3905,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * {@link Query#limit(java.lang.Integer, java.lang.Integer)} will be ignored.
-   * 
    * @param batchSize batch size
    * @param indexName index name
-   * @param query     limit will be ignored
+   * @param query limit will be ignored
    * @return search iteration
    */
   public FtSearchIteration ftSearchIteration(int batchSize, String indexName, Query query) {
@@ -3981,9 +3947,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   /**
    * {@link AggregationBuilder#cursor(int, long) CURSOR} must be set.
-   * 
    * @param indexName index name
-   * @param aggr      cursor must be set
+   * @param aggr cursor must be set
    * @return aggregate iteration
    */
   public FtAggregateIteration ftAggregateIteration(String indexName, AggregationBuilder aggr) {
@@ -4646,8 +4611,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration,
-      long alignTimestamp) {
+  public String tsCreateRule(String sourceKey, String destKey, AggregationType aggregationType, long bucketDuration, long alignTimestamp) {
     return executeCommand(
         commandObjects.tsCreateRule(sourceKey, destKey, aggregationType, bucketDuration, alignTimestamp));
   }
@@ -5085,8 +5049,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // RedisGears commands
 
   /**
-   * @return pipeline object. Use {@link AbstractPipeline} instead of
-   *         {@link PipelineBase}.
+   * @return pipeline object. Use {@link AbstractPipeline} instead of {@link PipelineBase}.
    */
   public PipelineBase pipelined() {
     if (provider == null) {
@@ -5106,8 +5069,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH
-   *                and MULTI
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @return transaction object
    */
   public AbstractTransaction transaction(boolean doMulti) {

@@ -41,8 +41,8 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
       assertEquals(1, guava.size());
       control.flushAll();
       assertEquals(1, guava.size());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, guava.size());
+      assertEquals(null, jedis.get("foo"));
+      assertEquals(0, guava.size());
       jedis.ping();
       assertEquals(0, guava.size());
       assertNull(jedis.get("foo"));

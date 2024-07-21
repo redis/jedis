@@ -214,15 +214,25 @@ public final class Protocol {
   }
 
   @Experimental
-  public static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
+  public static void readPushes(final RedisInputStream is, final ClientSideCache cache, boolean onlyPendingBuffer) {
     boolean available = false;
 
-    int counter = 0;
-    // TODO : we need to find away to get away from peekSafe
-    while (is.peekSafe(GREATER_THAN_BYTE)) {
-      counter++;
-      is.readByte();
-      processPush(is, cache);
+    if (onlyPendingBuffer) {
+      try {
+        while (is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
+          is.readByte();
+          processPush(is, cache);
+        }
+      } catch (JedisConnectionException e) {
+        // TODO handle it properly
+      } catch (IOException e) {
+        // TODO handle it properly
+      }
+    } else {
+      while (is.peek(GREATER_THAN_BYTE)) {
+        is.readByte();
+        processPush(is, cache);
+      }
     }
   }
 

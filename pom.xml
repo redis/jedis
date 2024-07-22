@@ -79,7 +79,7 @@
 		<dependency>
 			<groupId>com.kohlschutter.junixsocket</groupId>
 			<artifactId>junixsocket-core</artifactId>
-			<version>2.9.1</version>
+			<version>2.10.0</version>
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>

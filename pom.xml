@@ -49,7 +49,7 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.17.1</jackson.version>
+		<jackson.version>2.17.2</jackson.version>
 		<maven.surefire.version>3.2.5</maven.surefire.version>
 	</properties>
 

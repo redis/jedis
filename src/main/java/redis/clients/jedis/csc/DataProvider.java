@@ -1,7 +1,5 @@
 package redis.clients.jedis.csc;
 
-import java.lang.ref.WeakReference;
-
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 

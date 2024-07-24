@@ -87,7 +87,7 @@ public abstract class ClientSideCache {
     }
   }
 
-  public final <T> T get(DataProvider dataProvider, CommandObject<T> command, Object... keys) {
+  protected final <T> T get(DataProvider dataProvider, CommandObject<T> command, Object... keys) {
 
     if (!cacheable.isCacheable(command.getArguments().getCommand(), keys)) {
       return dataProvider.getData(command);
@@ -98,7 +98,7 @@ public abstract class ClientSideCache {
 
     // CACHE HIT !!
     if (cacheEntry != null) {
-      cacheEntry = validateEntry(dataProvider, cacheKey, cacheEntry, keys);
+      cacheEntry = validateEntry(dataProvider, cacheEntry, keys);
       if (cacheEntry != null) {
         return (T) cacheEntry.getValue();
       }
@@ -112,8 +112,9 @@ public abstract class ClientSideCache {
     return value;
   }
 
-  private CacheEntry validateEntry(DataProvider provider, CacheKey cacheKey, CacheEntry cacheEntry,
+  private CacheEntry validateEntry(DataProvider provider, CacheEntry cacheEntry,
       Object... redisKeys) {
+    CacheKey cacheKey = cacheEntry.getCacheKey();
     Connection cacheOwner = (Connection) cacheEntry.getConnection().get();
     if (cacheOwner == null) {
       remove(Collections.singleton(cacheKey));

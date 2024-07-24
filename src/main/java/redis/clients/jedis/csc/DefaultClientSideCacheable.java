@@ -1,6 +1,5 @@
 package redis.clients.jedis.csc;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 

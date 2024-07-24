@@ -1,20 +1,19 @@
 package redis.clients.jedis.csc;
 
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+
+import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.UnifiedJedis;
 
 public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
@@ -77,4 +76,36 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
   }
 
+  @Test
+  public void testInvalidationWithUnifiedJedis() {
+    GuavaClientSideCache clientSideCacheGuava = GuavaClientSideCache.builder()
+        .maximumSize(1000)
+        .ttl(100)
+        .build();
+
+    CaffeineClientSideCache clientSideCacheCaffeine = CaffeineClientSideCache.builder()
+        .maximumSize(1000)
+        .ttl(100)
+        .build();
+
+    GuavaClientSideCache mock = Mockito.spy(clientSideCacheGuava);
+    UnifiedJedis client = new UnifiedJedis(hnp, clientConfig.get(), mock);
+    UnifiedJedis clientCaffeine = new UnifiedJedis(hnp, clientConfig.get(), clientSideCacheCaffeine);
+
+    // "foo" is cached
+    client.set("foo", "bar");
+    client.get("foo"); // read from the server
+    Assert.assertEquals("bar", client.get("foo")); // cache hit
+
+    // Using another connection
+    clientCaffeine.set("foo", "bar2");
+    Assert.assertEquals("bar2", clientCaffeine.get("foo"));
+
+    //invalidating the cache and read it back from server
+    Assert.assertEquals("bar2", client.get("foo"));
+
+    ArgumentCaptor<GuavaClientSideCache> argumentCaptor = ArgumentCaptor.forClass(GuavaClientSideCache.class);
+    Mockito.verify(mock, Mockito.times(1)).invalidate(Mockito.anyList());
+    Mockito.verify(mock, Mockito.times(2)).put(Mockito.any(CacheKey.class), Mockito.any(CacheEntry.class));
+  }
 }

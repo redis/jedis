@@ -215,8 +215,6 @@ public final class Protocol {
 
   @Experimental
   public static void readPushes(final RedisInputStream is, final ClientSideCache cache, boolean onlyPendingBuffer) {
-    boolean available = false;
-
     if (onlyPendingBuffer) {
       try {
         while (is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {

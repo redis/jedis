@@ -46,6 +46,11 @@ public class RetryableCommandExecutor implements CommandExecutor {
   }
 
   @Override
+  public final <T> T executeCommand(CommandObject<T> commandObject) {
+    return executeCommand(commandObject, null);
+  }
+
+  @Override
   public final <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
 
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
@@ -69,9 +74,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
           consecutiveConnectionFailures = 0;
         }
       } finally {
-        if (connection != null) {
-          connection.close();
-        }
+        IOUtils.closeQuietly(connection);
       }
       if (Instant.now().isAfter(deadline)) {
         throw new JedisException("Retry deadline exceeded.");

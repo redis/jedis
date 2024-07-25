@@ -84,6 +84,11 @@ public class ClusterCommandExecutor implements CommandExecutor {
   }
 
   @Override
+  public final <T> T executeCommand(CommandObject<T> commandObject) {
+    return executeCommand(commandObject, null);
+  }
+
+  @Override
   public final <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 

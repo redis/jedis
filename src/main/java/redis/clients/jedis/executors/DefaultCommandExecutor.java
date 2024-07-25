@@ -29,6 +29,11 @@ public class DefaultCommandExecutor implements CommandExecutor {
   }
 
   @Override
+  public final <T> T executeCommand(CommandObject<T> commandObject) {
+    return executeCommand(commandObject, null);
+  }
+
+  @Override
   public final <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
     try (Connection connection = provider.getConnection(commandObject.getArguments())) {
       if (cache != null && keys != null) {

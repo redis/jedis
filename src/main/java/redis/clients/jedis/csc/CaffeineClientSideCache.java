@@ -3,34 +3,33 @@ package redis.clients.jedis.csc;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import java.util.concurrent.TimeUnit;
-import redis.clients.jedis.CommandObject;
 
 public class CaffeineClientSideCache extends ClientSideCache {
 
-  private final Cache<CommandObject, Object> cache;
+  private final Cache<CacheKey, CacheEntry> cache;
 
-  public CaffeineClientSideCache(Cache<CommandObject, Object> caffeineCache) {
+  public CaffeineClientSideCache(Cache<CacheKey, CacheEntry> caffeineCache) {
     this.cache = caffeineCache;
   }
 
   @Override
-  protected final void invalidateFullCache() {
+  protected final void clear() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void invalidateCache(Iterable<CommandObject<?>> commands) {
-    cache.invalidateAll(commands);
+  protected void remove(Iterable<CacheKey<?>> keys) {
+    cache.invalidateAll(keys);
   }
 
   @Override
-  protected <T> void putValue(CommandObject<T> command, T value) {
-    cache.put(command, value);
+  protected void put(CacheKey key, CacheEntry entry) {
+    cache.put(key, entry);
   }
 
   @Override
-  protected <T> T getValue(CommandObject<T> command) {
-    return (T) cache.getIfPresent(command);
+  protected CacheEntry get(CacheKey key) {
+    return cache.getIfPresent(key);
   }
 
   public static Builder builder() {

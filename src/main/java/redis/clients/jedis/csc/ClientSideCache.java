@@ -23,7 +23,7 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
-  private final Map<ByteBuffer, Set<CommandObject<?>>> keyToCommandHashes = new ConcurrentHashMap<>();
+  private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
   private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
 
   protected ClientSideCache() {
@@ -33,49 +33,49 @@ public abstract class ClientSideCache {
     this.cacheable = Objects.requireNonNull(cacheable, "'cacheable' must not be null");
   }
 
-  protected abstract void invalidateFullCache();
+  protected abstract void clear();
 
-  protected abstract void invalidateCache(Iterable<CommandObject<?>> commands);
+  protected abstract void remove(Iterable<CacheKey<?>> keys);
 
-  protected abstract <T> void putValue(CommandObject<T> command, T value);
+  protected abstract void put(CacheKey key, CacheEntry entry);
 
-  protected abstract <T> T getValue(CommandObject<T> command);
+  protected abstract CacheEntry get(CacheKey key);
 
-  public final void clear() {
-    invalidateAllKeysAndCommandHashes();
+  public final void flush() {
+    invalidateAllRedisKeysAndCacheEntries();
   }
 
-  public final void removeKey(Object key) {
-    invalidateKeyAndRespectiveCommandHashes(key);
+  public final void invalidateKey(Object key) {
+    invalidateRedisKeyAndRespectiveCacheEntries(key);
   }
 
   public final void invalidate(List list) {
     if (list == null) {
-      invalidateAllKeysAndCommandHashes();
+      invalidateAllRedisKeysAndCacheEntries();
       return;
     }
 
-    list.forEach(this::invalidateKeyAndRespectiveCommandHashes);
+    list.forEach(this::invalidateRedisKeyAndRespectiveCacheEntries);
   }
 
-  private void invalidateAllKeysAndCommandHashes() {
-    invalidateFullCache();
-    keyToCommandHashes.clear();
+  private void invalidateAllRedisKeysAndCacheEntries() {
+    clear();
+    redisKeysToCacheKeys.clear();
   }
 
-  private void invalidateKeyAndRespectiveCommandHashes(Object key) {
+  private void invalidateRedisKeyAndRespectiveCacheEntries(Object key) {
 //    if (!(key instanceof byte[])) {
 //      // This should be called internally. That's why throwing AssertionError instead of IllegalArgumentException.
 //      throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
 //    }
 //
 //    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
-    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
+    final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
 
-    Set<CommandObject<?>> commands = keyToCommandHashes.get(mapKey);
+    Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
     if (commands != null) {
-      invalidateCache(commands);
-      keyToCommandHashes.remove(mapKey);
+      remove(commands);
+      redisKeysToCacheKeys.remove(mapKey);
     }
   }
 
@@ -85,22 +85,29 @@ public abstract class ClientSideCache {
       return loader.apply(command);
     }
 
-    T value = getValue(command);
-    if (value != null) {
-      return value;
+    final CacheKey cacheKey = new CacheKey(command);
+    CacheEntry cacheEntry = get(cacheKey);
+    if (cacheEntry != null) {
+      // CACHE HIT!!!
+      // TODO: connection ...
+      //cacheEntry.getConnection().ping();
+      //cacheEntry = get(cacheKey); // get cache again
+      return (T) cacheEntry.getValue();
     }
 
-    value = loader.apply(command);
+    // CACHE MISS!!
+    T value = loader.apply(command);
     if (value != null) {
-      putValue(command, value);
+      cacheEntry = new CacheEntry(cacheKey, value, /*connection*/ null); // TODO: connection
+      put(cacheKey, cacheEntry);
       for (Object key : keys) {
-        ByteBuffer mapKey = makeKeyForKeyToCommandHashes(key);
-        if (keyToCommandHashes.containsKey(mapKey)) {
-          keyToCommandHashes.get(mapKey).add(command);
+        ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
+        if (redisKeysToCacheKeys.containsKey(mapKey)) {
+          redisKeysToCacheKeys.get(mapKey).add(cacheKey);
         } else {
-          Set<CommandObject<?>> set = ConcurrentHashMap.newKeySet();
-          set.add(command);
-          keyToCommandHashes.put(mapKey, set);
+          Set<CacheKey<?>> set = ConcurrentHashMap.newKeySet();
+          set.add(cacheKey);
+          redisKeysToCacheKeys.put(mapKey, set);
         }
       }
     }
@@ -108,13 +115,18 @@ public abstract class ClientSideCache {
     return value;
   }
 
-  private ByteBuffer makeKeyForKeyToCommandHashes(Object key) {
-    if (key instanceof byte[]) return makeKeyForKeyToCommandHashes((byte[]) key);
-    else if (key instanceof String) return makeKeyForKeyToCommandHashes(SafeEncoder.encode((String) key));
-    else throw new IllegalArgumentException("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
+  private ByteBuffer makeKeyForRedisKeysToCacheKeys(Object key) {
+    if (key instanceof byte[]) {
+      return makeKeyForRedisKeysToCacheKeys((byte[]) key);
+    } else if (key instanceof String) {
+      return makeKeyForRedisKeysToCacheKeys(SafeEncoder.encode((String) key));
+    } else {
+      throw new IllegalArgumentException(key.getClass().getSimpleName() + " is not supported."
+          + " Value: \"" + String.valueOf(key) + "\".");
+    }
   }
 
-  private static ByteBuffer makeKeyForKeyToCommandHashes(byte[] b) {
+  private static ByteBuffer makeKeyForRedisKeysToCacheKeys(byte[] b) {
     return ByteBuffer.wrap(b);
   }
 }

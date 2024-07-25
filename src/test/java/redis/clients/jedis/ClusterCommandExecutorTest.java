@@ -11,6 +11,8 @@ import static org.mockito.Mockito.when;
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongConsumer;
+import java.util.function.Supplier;
+
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -39,7 +41,7 @@ public class ClusterCommandExecutorTest {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         return (T) "foo";
       }
       @Override
@@ -57,7 +59,7 @@ public class ClusterCommandExecutorTest {
       boolean isFirstCall = true;
 
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         if (isFirstCall) {
           isFirstCall = false;
           throw new JedisConnectionException("Borkenz");
@@ -81,7 +83,7 @@ public class ClusterCommandExecutorTest {
     final LongConsumer sleep = mock(LongConsumer.class);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, ONE_SECOND) {
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         throw new JedisConnectionException("Connection failed");
       }
 
@@ -113,7 +115,7 @@ public class ClusterCommandExecutorTest {
       boolean isFirstCall = true;
 
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         if (isFirstCall) {
           isFirstCall = false;
 
@@ -150,7 +152,7 @@ public class ClusterCommandExecutorTest {
       boolean isFirstCall = true;
 
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         if (isFirstCall) {
           isFirstCall = false;
 
@@ -201,7 +203,7 @@ public class ClusterCommandExecutorTest {
     final HostAndPort movedTarget = new HostAndPort(null, 0);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 5, ONE_SECOND) {
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         if (redirecter == connection) {
           // First attempt, report moved
           throw new JedisMovedDataException("Moved", movedTarget, 0);
@@ -269,7 +271,7 @@ public class ClusterCommandExecutorTest {
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 5, ONE_SECOND) {
 
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         assertNotNull(connection);
 
         if (connection.toString().equals("master")) {
@@ -305,7 +307,7 @@ public class ClusterCommandExecutorTest {
 
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, Duration.ZERO) {
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         return null;
       }
 
@@ -326,7 +328,7 @@ public class ClusterCommandExecutorTest {
     final AtomicLong totalSleepMs = new AtomicLong();
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 3, Duration.ZERO) {
       @Override
-      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+      public <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
         try {
           // exceed deadline
           Thread.sleep(2L);

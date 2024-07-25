@@ -3,12 +3,15 @@ package redis.clients.jedis.executors;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.VisibleForTesting;
+import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheCommandExecutorHelper;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
@@ -22,11 +25,19 @@ public class RetryableCommandExecutor implements CommandExecutor {
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
 
+  private final ClientSideCacheCommandExecutorHelper cache;
+
   public RetryableCommandExecutor(ConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
+    this(provider, maxAttempts, maxTotalRetriesDuration, (ClientSideCache) null);
+  }
+
+  public RetryableCommandExecutor(ConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration, ClientSideCache cache) {
     this.provider = provider;
     this.maxAttempts = maxAttempts;
     this.maxTotalRetriesDuration = maxTotalRetriesDuration;
+    this.cache = new ClientSideCacheCommandExecutorHelper(cache);
   }
 
   @Override
@@ -36,6 +47,11 @@ public class RetryableCommandExecutor implements CommandExecutor {
 
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
+    return executeCommand(commandObject, null);
+  }
+
+  @Override
+  public final <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
 
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
@@ -46,7 +62,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
       try {
         connection = provider.getConnection(commandObject.getArguments());
 
-        return execute(connection, commandObject);
+        return execute(connection, commandObject, keys);
 
       } catch (JedisConnectionException jce) {
         lastException = jce;
@@ -58,9 +74,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
           consecutiveConnectionFailures = 0;
         }
       } finally {
-        if (connection != null) {
-          connection.close();
-        }
+        IOUtils.closeQuietly(connection);
       }
       if (Instant.now().isAfter(deadline)) {
         throw new JedisException("Retry deadline exceeded.");
@@ -77,8 +91,12 @@ public class RetryableCommandExecutor implements CommandExecutor {
    * This should not be used or overriden.
    */
   @VisibleForTesting
-  protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
-    return connection.executeCommand(commandObject);
+  protected <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
+    if (this.cache != null && keys != null) {
+      return this.cache.get(connection, commandObject, (Object[]) keys.get());
+    } else {
+      return connection.executeCommand(commandObject);
+    }
   }
 
   /**

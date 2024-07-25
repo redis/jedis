@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +15,8 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.annots.VisibleForTesting;
+import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.ClientSideCacheCommandExecutorHelper;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -26,11 +29,19 @@ public class ClusterCommandExecutor implements CommandExecutor {
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
 
+  private final ClientSideCacheCommandExecutorHelper cache;
+
   public ClusterCommandExecutor(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
+    this(provider, maxAttempts, maxTotalRetriesDuration, (ClientSideCache) null);
+  }
+
+  public ClusterCommandExecutor(ClusterConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration, ClientSideCache cache) {
     this.provider = provider;
     this.maxAttempts = maxAttempts;
     this.maxTotalRetriesDuration = maxTotalRetriesDuration;
+    this.cache = cache == null ? null : new ClientSideCacheCommandExecutorHelper(cache);
   }
 
   @Override
@@ -49,9 +60,10 @@ public class ClusterCommandExecutor implements CommandExecutor {
       HostAndPort node = HostAndPort.from(entry.getKey());
       ConnectionPool pool = entry.getValue();
       try (Connection connection = pool.getResource()) {
-        T aReply = execute(connection, commandObject);
+        T aReply = execute(connection, commandObject, null);
         bcastError.addReply(node, aReply);
-        if (isErrored) { // already errored
+        if (isErrored) {
+          // already errored
         } else if (reply == null) {
           reply = aReply; // ok
         } else if (reply.equals(aReply)) {
@@ -72,7 +84,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
   }
 
   @Override
-  public final <T> T executeCommand(CommandObject<T> commandObject) {
+  public final <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
     JedisRedirectionException redirect = null;
@@ -91,7 +103,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
           connection = provider.getConnection(commandObject.getArguments());
         }
 
-        return execute(connection, commandObject);
+        return execute(connection, commandObject, keys);
 
       } catch (JedisClusterOperationException jnrcne) {
         throw jnrcne;
@@ -137,8 +149,12 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * This should not be used or overriden.
    */
   @VisibleForTesting
-  protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
-    return connection.executeCommand(commandObject);
+  protected <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
+    if (cache != null && keys != null) {
+      return cache.get(connection, commandObject, (Object[]) keys.get());
+    } else {
+      return connection.executeCommand(commandObject);
+    }
   }
 
   /**

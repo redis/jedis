@@ -56,7 +56,7 @@ public class JedisClusterClientSideCacheTest {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 
@@ -86,7 +86,7 @@ public class JedisClusterClientSideCacheTest {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 

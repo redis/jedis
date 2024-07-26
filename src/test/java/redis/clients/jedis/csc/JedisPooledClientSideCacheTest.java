@@ -56,12 +56,11 @@ public class JedisPooledClientSideCacheTest {
 
   @Before
   public void setUp() throws Exception {
-    control = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build()); // TODO: use
-                                                                                               // EndpointConfig
+
+    control = new Jedis(hnp, endpoint.getClientConfigBuilder().build());
     control.flushAll();
-    
-    sslControl = new Jedis(sslEndpoint.getHostAndPort(),
-        DefaultJedisClientConfig.builder().password("foobared").ssl(true).build());
+
+    sslControl = new Jedis(sslEndpoint.getHostAndPort(), sslEndpoint.getClientConfigBuilder().build());
     sslControl.flushAll();
   }
 
@@ -70,8 +69,7 @@ public class JedisPooledClientSideCacheTest {
     control.close();
   }
 
-  private static final Supplier<JedisClientConfig> clientConfig = () -> DefaultJedisClientConfig.builder().resp3()
-      .password("foobared").build(); // TODO: use EndpointConfig
+  private static final Supplier<JedisClientConfig> clientConfig = () -> endpoint.getClientConfigBuilder().resp3().build();
 
   private static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig = () -> {
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
@@ -85,7 +83,7 @@ public class JedisPooledClientSideCacheTest {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 
@@ -97,7 +95,7 @@ public class JedisPooledClientSideCacheTest {
       sslControl.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       sslControl.del("foo");
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 
@@ -127,7 +125,7 @@ public class JedisPooledClientSideCacheTest {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 

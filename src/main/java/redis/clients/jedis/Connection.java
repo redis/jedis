@@ -375,17 +375,12 @@ public class Connection implements Closeable {
     }
 
     try {
-      if (socket instanceof SSLSocket) {
-        this.ping();
-      } else {
-        try {
-          if (inputStream.available() > 0) {
-            protocolReadPushes(inputStream, true);
-          }
-        } catch (IOException e) {
-          // TODO: handle this properly
-        }
+      if (inputStream.available() > 0) {
+        protocolReadPushes(inputStream, true);
       }
+    } catch (IOException e) {
+      broken = true;
+      throw new JedisConnectionException("Failed to check buffer on connection.", e);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;

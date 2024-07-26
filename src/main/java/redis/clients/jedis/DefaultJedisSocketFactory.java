@@ -94,11 +94,13 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         if (null == _sslSocketFactory) {
           _sslSocketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
         }
+        Socket plainSocket = socket;
         socket = _sslSocketFactory.createSocket(socket, _hostAndPort.getHost(), _hostAndPort.getPort(), true);
 
         if (null != sslParameters) {
           ((SSLSocket) socket).setSSLParameters(sslParameters);
         }
+        socket = new SSLSocketWrapper((SSLSocket) socket, plainSocket);
 
         if (null != hostnameVerifier
             && !hostnameVerifier.verify(_hostAndPort.getHost(), ((SSLSocket) socket).getSession())) {

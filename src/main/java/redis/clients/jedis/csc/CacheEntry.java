@@ -8,6 +8,7 @@ import java.lang.ref.WeakReference;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Internal;
+import redis.clients.jedis.exceptions.JedisCacheException;
 
 @Internal
 public class CacheEntry<T> {
@@ -42,8 +43,7 @@ public class CacheEntry<T> {
       oos.close();
       return baos.toByteArray();
     } catch (Exception e) {
-      // TODO: handle this properly
-      throw new RuntimeException(e);
+      throw new JedisCacheException("Failed to serialize object", e);
     }
   }
 
@@ -52,8 +52,7 @@ public class CacheEntry<T> {
         ObjectInputStream ois = new ObjectInputStream(bais)) {
       return (T) ois.readObject();
     } catch (Exception e) {
-      // TODO: handle this properly
-      throw new RuntimeException(e);
+      throw new JedisCacheException("Failed to deserialize object", e);
     }
   }
 }

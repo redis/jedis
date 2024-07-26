@@ -72,6 +72,8 @@ public class CaffeineClientSideCache extends ClientSideCache {
     }
   }
 
+  // TODO: we should discuss if/how we utilize Caffeine and get back to here !
+
   @Override
   public int getSize() {
     return (int) cache.estimatedSize();

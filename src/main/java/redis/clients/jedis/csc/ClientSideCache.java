@@ -95,11 +95,6 @@ public abstract class ClientSideCache implements Cache {
   public List<CacheKey> deleteByRedisKey(Object key) {
     final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
 
-    // TODO: dont forget to clean up this
-    // System.out.println(
-    // "invalidation message received for :" + (key instanceof String ? (String) key
-    // : new String((byte[]) key)));
-
     Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
     List<CacheKey> cacheKeys = new ArrayList<>();
     if (commands != null) {

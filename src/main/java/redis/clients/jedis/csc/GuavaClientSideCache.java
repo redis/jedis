@@ -81,6 +81,8 @@ public class GuavaClientSideCache extends ClientSideCache {
     }
   }
 
+  // TODO: we should discuss if/how we utilize Guava and get back to here !
+
   @Override
   public int getSize() {
     return (int) cache.size();

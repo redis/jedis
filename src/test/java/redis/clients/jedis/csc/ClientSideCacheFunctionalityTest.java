@@ -25,7 +25,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
 
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    ClientSideCache clientSideCache = new MapClientSideCache(map);
+    Cache clientSideCache = new TestCache(map);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
@@ -46,7 +46,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
     // By using LinkedHashMap, we can get the hashes (map keys) at the same order of the actual keys.
     LinkedHashMap<CacheKey, CacheEntry> map = new LinkedHashMap<>();
-    ClientSideCache clientSideCache = new MapClientSideCache(map);
+    Cache clientSideCache = new TestCache(map);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
@@ -59,7 +59,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       String key = "k" + i;
       CacheKey command = commandHashes.get(i);
       assertTrue(map.containsKey(command));
-      clientSideCache.invalidateKey(key);
+      clientSideCache.deleteByRedisKey(key);
       assertFalse(map.containsKey(command));
     }
   }
@@ -70,7 +70,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     control.set("k2", "v2");
 
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache(map))) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new TestCache(map))) {
       jedis.mget("k1", "k2");
       assertEquals(1, map.size());
     }
@@ -78,34 +78,30 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
   @Test
   public void testInvalidationWithUnifiedJedis() {
-    GuavaClientSideCache clientSideCacheGuava = GuavaClientSideCache.builder()
-        .maximumSize(1000)
-        .ttl(100)
-        .build();
-
-    CaffeineClientSideCache clientSideCacheCaffeine = CaffeineClientSideCache.builder()
-        .maximumSize(1000)
-        .ttl(100)
-        .build();
-
-    GuavaClientSideCache mock = Mockito.spy(clientSideCacheGuava);
+    Cache cache = new TestCache();
+    Cache mock = Mockito.spy(cache);
     UnifiedJedis client = new UnifiedJedis(hnp, clientConfig.get(), mock);
-    UnifiedJedis clientCaffeine = new UnifiedJedis(hnp, clientConfig.get(), clientSideCacheCaffeine);
+    UnifiedJedis controlClient = new UnifiedJedis(hnp, clientConfig.get());
 
-    // "foo" is cached
-    client.set("foo", "bar");
-    client.get("foo"); // read from the server
-    Assert.assertEquals("bar", client.get("foo")); // cache hit
+    try {
+      // "foo" is cached
+      client.set("foo", "bar");
+      client.get("foo"); // read from the server
+      Assert.assertEquals("bar", client.get("foo")); // cache hit
 
-    // Using another connection
-    clientCaffeine.set("foo", "bar2");
-    Assert.assertEquals("bar2", clientCaffeine.get("foo"));
+      // Using another connection
+      controlClient.set("foo", "bar2");
+      Assert.assertEquals("bar2", controlClient.get("foo"));
 
-    //invalidating the cache and read it back from server
-    Assert.assertEquals("bar2", client.get("foo"));
+      //invalidating the cache and read it back from server
+      Assert.assertEquals("bar2", client.get("foo"));
 
-    ArgumentCaptor<GuavaClientSideCache> argumentCaptor = ArgumentCaptor.forClass(GuavaClientSideCache.class);
-    Mockito.verify(mock, Mockito.times(1)).invalidate(Mockito.anyList());
-    Mockito.verify(mock, Mockito.times(2)).put(Mockito.any(CacheKey.class), Mockito.any(CacheEntry.class));
+      // ArgumentCaptor<GuavaClientSideCache> argumentCaptor = ArgumentCaptor.forClass(GuavaClientSideCache.class);
+      Mockito.verify(mock, Mockito.times(1)).deleteByRedisKeys(Mockito.anyList());
+      Mockito.verify(mock, Mockito.times(2)).set(Mockito.any(CacheKey.class), Mockito.any(CacheEntry.class));
+    } finally {
+      client.close();
+      controlClient.close();
+    }
   }
 }

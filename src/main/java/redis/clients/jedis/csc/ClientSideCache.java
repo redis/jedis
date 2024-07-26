@@ -1,15 +1,14 @@
 package redis.clients.jedis.csc;
 
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.Connection;
+import java.util.stream.Collectors;
+
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -20,128 +19,45 @@ import redis.clients.jedis.util.SafeEncoder;
  * GuavaClientSideCache} or a custom implementation of their own.
  */
 @Experimental
-public abstract class ClientSideCache {
+public abstract class ClientSideCache implements Cache {
 
-  protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
-  protected static final int DEFAULT_EXPIRE_SECONDS = 100;
-
-  private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
   private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
+  private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
+  private final int maximumSize;
 
-  protected ClientSideCache() {
+  protected ClientSideCache(int maximumSize) {
+    this.maximumSize = maximumSize;
   }
 
-  public void setCacheable(ClientSideCacheable cacheable) {
-    this.cacheable = Objects.requireNonNull(cacheable, "'cacheable' must not be null");
+  protected ClientSideCache(int maximumSize,ClientSideCacheable cacheable ) {
+    this.maximumSize = maximumSize;
+    this.cacheable = cacheable;
   }
 
-  protected abstract void clear();
+  // Cache interface methods
 
-  protected abstract void remove(Iterable<CacheKey<?>> keys);
-
-  protected abstract void put(CacheKey key, CacheEntry entry);
-
-  protected abstract CacheEntry get(CacheKey key);
-
-  public final void flush() {
-    invalidateAllRedisKeysAndCacheEntries();
+  @Override
+  public int getMaxSize() {
+    return maximumSize;
   }
 
-  public final void invalidateKey(Object key) {
-    invalidateRedisKeyAndRespectiveCacheEntries(key);
+  @Override
+  public abstract int getSize();
+
+  @Override
+  public abstract Collection<CacheEntry> getCacheEntries();
+
+  @Override
+  public CacheEntry get(CacheKey cacheKey) {
+    return getFromStore(cacheKey);
   }
 
-  public final void invalidate(List list) {
-    if (list == null) {
-      invalidateAllRedisKeysAndCacheEntries();
-      return;
-    }
-
-    list.forEach(this::invalidateRedisKeyAndRespectiveCacheEntries);
-  }
-
-  private void invalidateAllRedisKeysAndCacheEntries() {
-    clear();
-    redisKeysToCacheKeys.clear();
-  }
-
-  private void invalidateRedisKeyAndRespectiveCacheEntries(Object key) {
-    // if (!(key instanceof byte[])) {
-    // // This should be called internally. That's why throwing AssertionError
-    // instead of IllegalArgumentException.
-    // throw new AssertionError("" + key.getClass().getSimpleName() + " is not
-    // supported. Value: " + String.valueOf(key));
-    // }
-    //
-    // final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
-    final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
-
-    // TODO: dont forget to clean up this
-    // System.out.println(
-    // "invalidation message received for :" + (key instanceof String ? (String) key
-    // : new String((byte[]) key)));
-    Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
-    if (commands != null) {
-      remove(commands);
-      redisKeysToCacheKeys.remove(mapKey);
-    }
-  }
-
-  protected final <T> T get(DataProvider dataProvider, CommandObject<T> command, Object... keys) {
-
-    if (!cacheable.isCacheable(command.getArguments().getCommand(), keys)) {
-      return dataProvider.getData(command);
-    }
-
-    final CacheKey cacheKey = new CacheKey(command);
-    CacheEntry cacheEntry = get(cacheKey);
-
-    // CACHE HIT !!
-    if (cacheEntry != null) {
-      cacheEntry = validateEntry(dataProvider, cacheEntry, keys);
-      if (cacheEntry != null) {
-        return (T) cacheEntry.getValue();
-      }
-    }
-
-    // CACHE MISS!!
-    T value = dataProvider.getData(command);
-    if (value != null) {
-      storeInCache(dataProvider, cacheKey, value, keys);
-    }
-    return value;
-  }
-
-  private CacheEntry validateEntry(DataProvider provider, CacheEntry cacheEntry,
-      Object... redisKeys) {
-    CacheKey cacheKey = cacheEntry.getCacheKey();
-    Connection cacheOwner = (Connection) cacheEntry.getConnection().get();
-    if (cacheOwner == null) {
-      remove(Collections.singleton(cacheKey));
-
-      // TODO: remove it from redisKeysToCacheKeys as well
-      for (Object redisKey : redisKeys) {
-        ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
-        if (redisKeysToCacheKeys.containsKey(mapKey)) {
-          redisKeysToCacheKeys.get(mapKey).remove(cacheKey);
-        }
-      }
-      cacheEntry = null;
-    } else {
-      if (cacheOwner == provider.getSource()) {
-        provider.consumeInvalidationMessages();
-        cacheEntry = get(cacheKey);
-      }
-    }
-    return cacheEntry;
-  }
-
-  private void storeInCache(DataProvider provider, CacheKey cacheKey, Object value,
-      Object... redisKeys) {
-    CacheEntry cacheEntry = new CacheEntry(cacheKey, value,
-        new WeakReference(provider.getSource()));
-    put(cacheKey, cacheEntry);
-    for (Object redisKey : redisKeys) {
+  @Override
+  public CacheEntry set(CacheKey cacheKey, CacheEntry entry) {
+    entry = putIntoStore(cacheKey, entry);
+    getEvictionPolicy().touch(cacheKey);
+    getEvictionPolicy().evictNext();
+    for (Object redisKey : cacheKey.getRedisKeys()) {
       ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
       if (redisKeysToCacheKeys.containsKey(mapKey)) {
         redisKeysToCacheKeys.get(mapKey).add(cacheKey);
@@ -151,7 +67,97 @@ public abstract class ClientSideCache {
         redisKeysToCacheKeys.put(mapKey, set);
       }
     }
+    return entry;
   }
+
+  @Override
+  public Boolean delete(CacheKey cacheKey) {
+    boolean removed = removeFromStore(cacheKey);
+    getEvictionPolicy().reset(cacheKey);
+
+    // removing it from redisKeysToCacheKeys as well
+    // TODO: considering not doing it, what is the impact of not doing it ??
+    for (Object redisKey : cacheKey.getRedisKeys()) {
+      ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
+      if (redisKeysToCacheKeys.containsKey(mapKey)) {
+        redisKeysToCacheKeys.get(mapKey).remove(cacheKey);
+      }
+    }
+    return removed;
+  }
+
+  @Override
+  public List<Boolean> delete(List<CacheKey> cacheKeys) {
+    return cacheKeys.stream().map(this::delete).collect(Collectors.toList());
+  }
+
+  @Override
+  public List<CacheKey> deleteByRedisKey(Object key) {
+    final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
+
+    // TODO: dont forget to clean up this
+    // System.out.println(
+    // "invalidation message received for :" + (key instanceof String ? (String) key
+    // : new String((byte[]) key)));
+
+    Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
+    List<CacheKey> cacheKeys = new ArrayList<>();
+    if (commands != null) {
+      cacheKeys.addAll(commands.stream().filter(this::removeFromStore).collect(Collectors.toList()));
+      redisKeysToCacheKeys.remove(mapKey);
+    }
+    return cacheKeys;
+  }
+
+  @Override
+  public List<CacheKey> deleteByRedisKeys(List keys) {
+    if (keys == null) {
+      flush();
+      return null;
+    }
+    
+    return ((List<Object>) keys).stream()
+        .map(this::deleteByRedisKey).flatMap(List::stream).collect(Collectors.toList());
+  }
+
+  @Override
+  public int flush() {
+    int result = this.getSize();
+    clearStore();
+    redisKeysToCacheKeys.clear();
+    getEvictionPolicy().resetAll();
+    return result;
+  }
+
+  @Override
+  public Boolean isCacheable(CacheKey cacheKey) {
+    return cacheable.isCacheable(cacheKey.getCommand().getArguments().getCommand(), cacheKey.getRedisKeys());
+  }
+
+  @Override
+  public Boolean hasCacheKey(CacheKey cacheKey) {
+    return containsKeyInStore(cacheKey);
+  }
+
+  @Override
+  public abstract EvictionPolicy getEvictionPolicy();
+
+  // End of Cache interface methods
+
+  // abstract methods to be implemented by the concrete classes
+  protected abstract CacheEntry getFromStore(CacheKey cacheKey);
+
+  protected abstract CacheEntry putIntoStore(CacheKey cacheKey, CacheEntry entry);
+
+  protected abstract Boolean removeFromStore(CacheKey cacheKey);
+
+  // protected abstract Collection<CacheKey> remove(Set<CacheKey<?>> commands);
+
+  protected abstract void clearStore();
+
+  protected abstract Boolean containsKeyInStore(CacheKey cacheKey);
+
+  // End of abstract methods to be implemented by the concrete classes
 
   private ByteBuffer makeKeyForRedisKeysToCacheKeys(Object key) {
     if (key instanceof byte[]) {

@@ -19,7 +19,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
-import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.gears.TFunctionListParams;
@@ -95,7 +95,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
+  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache), clientConfig.getRedisProtocol(),
         clientSideCache);
   }
@@ -109,7 +109,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, ClientSideCache clientSideCache) {
+  protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache clientSideCache) {
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, clientSideCache);
   }
 
@@ -183,7 +183,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Experimental
   protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
-      RedisProtocol protocol, ClientSideCache clientSideCache) {
+      RedisProtocol protocol, Cache clientSideCache) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol, clientSideCache);
   }
@@ -254,12 +254,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Experimental
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol) {
-    this(executor, provider, commandObjects, protocol, (ClientSideCache) null);
+    this(executor, provider, commandObjects, protocol, (Cache) null);
   }
 
   @Experimental
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
-      RedisProtocol protocol, ClientSideCache clientSideCache) {
+      RedisProtocol protocol, Cache clientSideCache) {
 
     if (clientSideCache != null && protocol != RedisProtocol.RESP3) {
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");

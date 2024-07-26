@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import redis.clients.jedis.*;
-import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.MapClientSideCache;
+import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.csc.TestCache;
 
 public class CSCPooleadBenchmark {
 
@@ -27,7 +27,7 @@ public class CSCPooleadBenchmark {
             withoutCache += runBenchmark(null);
         }
         for (int i = 0; i < totalRounds; i++) {
-            withCache += runBenchmark(new MapClientSideCache());
+            withCache += runBenchmark(new TestCache());
         }
         System.out.println(String.format("after first round withoutCache: %d ms,  withCache: %d ms", withoutCache, withCache));
 
@@ -35,13 +35,13 @@ public class CSCPooleadBenchmark {
             withoutCache += runBenchmark(null);
         }
         for (int i = 0; i < totalRounds; i++) {
-            withCache += runBenchmark(new MapClientSideCache());
+            withCache += runBenchmark(new TestCache());
         }
         System.out.println(String.format("after second round withoutCache: %d ms,  withCache: %d ms", withoutCache, withCache));
         System.out.println("execution time ratio: " + (double) withCache / withoutCache);
     }
 
-    private static long runBenchmark(ClientSideCache cache) throws Exception {
+    private static long runBenchmark(Cache cache) throws Exception {
         long start = System.currentTimeMillis();
         withPool(cache);
         long elapsed = System.currentTimeMillis() - start;
@@ -49,7 +49,7 @@ public class CSCPooleadBenchmark {
         return elapsed;
     }
 
-    private static void withPool(ClientSideCache cache) throws Exception {
+    private static void withPool(Cache cache) throws Exception {
         JedisPooled jedis = null;
         JedisClientConfig config = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3).password(endpoint.getPassword()).build();
         jedis = new JedisPooled(endpoint.getHostAndPort(), config, cache);

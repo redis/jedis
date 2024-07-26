@@ -2,33 +2,39 @@ package redis.clients.jedis.csc;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
+import redis.clients.jedis.annots.Experimental;
+
+import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+@Experimental
 public class CaffeineClientSideCache extends ClientSideCache {
 
   private final Cache<CacheKey, CacheEntry> cache;
+  protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
+  protected static final int DEFAULT_EXPIRE_SECONDS = 100;
+  private final LRUEviction evictionPolicy;
 
   public CaffeineClientSideCache(Cache<CacheKey, CacheEntry> caffeineCache) {
+    super(DEFAULT_MAXIMUM_SIZE);
     this.cache = caffeineCache;
+    this.evictionPolicy = new LRUEviction(this, DEFAULT_MAXIMUM_SIZE);
   }
 
   @Override
-  protected final void clear() {
+  protected final void clearStore() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void remove(Iterable<CacheKey<?>> keys) {
-    cache.invalidateAll(keys);
-  }
-
-  @Override
-  protected void put(CacheKey key, CacheEntry entry) {
+  public CacheEntry putIntoStore(CacheKey key, CacheEntry entry) {
     cache.put(key, entry);
+    return entry;
   }
 
   @Override
-  protected CacheEntry get(CacheKey key) {
+  public CacheEntry getFromStore(CacheKey key) {
     return cache.getIfPresent(key);
   }
 
@@ -42,7 +48,8 @@ public class CaffeineClientSideCache extends ClientSideCache {
     private long expireTime = DEFAULT_EXPIRE_SECONDS;
     private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
 
-    private Builder() { }
+    private Builder() {
+    }
 
     public Builder maximumSize(int size) {
       this.maximumSize = size;
@@ -64,4 +71,31 @@ public class CaffeineClientSideCache extends ClientSideCache {
       return new CaffeineClientSideCache(cb.build());
     }
   }
+
+  @Override
+  public int getSize() {
+    return (int) cache.estimatedSize();
+  }
+
+  @Override
+  public Collection<CacheEntry> getCacheEntries() {
+    throw new UnsupportedOperationException("Unimplemented method 'getCacheEntries'");
+  }
+
+  @Override
+  public EvictionPolicy getEvictionPolicy() {
+    return this.evictionPolicy;
+  }
+
+  @Override
+  protected Boolean removeFromStore(CacheKey cacheKey) {
+    cache.invalidate(cacheKey);
+    return true;
+  }
+
+  @Override
+  protected Boolean containsKeyInStore(CacheKey cacheKey) {
+    return cache.getIfPresent(cacheKey) != null;
+  }
+
 }

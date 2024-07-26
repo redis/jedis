@@ -12,7 +12,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
@@ -214,7 +214,7 @@ public final class Protocol {
   }
 
   @Experimental
-  public static void readPushes(final RedisInputStream is, final ClientSideCache cache, boolean onlyPendingBuffer) {
+  public static void readPushes(final RedisInputStream is, final Cache cache, boolean onlyPendingBuffer) {
     if (onlyPendingBuffer) {
       try {
         while (is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
@@ -234,11 +234,11 @@ public final class Protocol {
     }
   }
 
-  private static void processPush(final RedisInputStream is, ClientSideCache cache) {
+  private static void processPush(final RedisInputStream is, Cache cache) {
     List<Object> list = processMultiBulkReply(is);
     if (list.size() == 2 && list.get(0) instanceof byte[]
         && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
-      cache.invalidate((List) list.get(1));
+      cache.deleteByRedisKeys((List) list.get(1));
     }
   }
 

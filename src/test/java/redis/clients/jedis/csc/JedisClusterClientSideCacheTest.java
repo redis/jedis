@@ -52,7 +52,7 @@ public class JedisClusterClientSideCacheTest {
 
   @Test
   public void simple() {
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapClientSideCache())) {
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new TestCache())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -63,7 +63,7 @@ public class JedisClusterClientSideCacheTest {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapClientSideCache(map),
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new TestCache(map),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -82,7 +82,7 @@ public class JedisClusterClientSideCacheTest {
 
   @Test
   public void flushAll() {
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapClientSideCache())) {
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new TestCache())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
@@ -93,7 +93,7 @@ public class JedisClusterClientSideCacheTest {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new MapClientSideCache(map),
+    try (JedisCluster jedis = new JedisCluster(hnp, clientConfig.get(), new TestCache(map),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));

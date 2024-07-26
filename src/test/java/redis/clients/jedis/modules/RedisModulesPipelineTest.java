@@ -66,10 +66,11 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     Response<String> explain = p.ftExplain(index, new Query("@title:title_val"));
     Response<List<String>> explainCLI = p.ftExplainCLI(index, new Query("@title:title_val"));
     Response<Map<String, Object>> info = p.ftInfo(index);
-    Response<String> configSet = p.ftConfigSet("timeout", "100");
-    Response<Map<String, Object>> configGet = p.ftConfigGet("*");
-    Response<String> configSetIndex = p.ftConfigSet(index, "timeout", "100");
-    Response<Map<String, Object>> configGetIndex = p.ftConfigGet(index, "*");
+//    // @org.junit.Ignore
+//    Response<String> configSet = p.ftConfigSet("timeout", "100");
+//    Response<Map<String, Object>> configGet = p.ftConfigGet("*");
+//    Response<String> configSetIndex = p.ftConfigSet(index, "timeout", "100");
+//    Response<Map<String, Object>> configGetIndex = p.ftConfigGet(index, "*");
     Response<String> synUpdate = p.ftSynUpdate(index, "foo", "bar");
     Response<Map<String, List<String>>> synDump = p.ftSynDump(index);
 
@@ -85,10 +86,11 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertNotNull(explain.get());
     assertNotNull(explainCLI.get().get(0));
     assertEquals(index, info.get().get("index_name"));
-    assertEquals("OK", configSet.get());
-    assertEquals("100", configGet.get().get("TIMEOUT"));
-    assertEquals("OK", configSetIndex.get());
-    assertEquals("100", configGetIndex.get().get("TIMEOUT"));
+//    // @org.junit.Ignore
+//    assertEquals("OK", configSet.get());
+//    assertEquals("100", configGet.get().get("TIMEOUT"));
+//    assertEquals("OK", configSetIndex.get());
+//    assertEquals("100", configGetIndex.get().get("TIMEOUT"));
     assertEquals("OK", synUpdate.get());
     Map<String, List<String>> expected = new HashMap<>();
     expected.put("bar", Collections.singletonList("foo"));

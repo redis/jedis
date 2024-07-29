@@ -96,17 +96,12 @@ public final class RawableFactory {
   /**
    * A {@link Rawable} wrapping a {@link String}.
    */
-  public static class RawString implements Rawable {
+  public static class RawString extends Raw {
 
-    private final byte[] raw;
+    // TODO: private final String str; ^ implements Rawable
 
     public RawString(String str) {
-      this.raw = SafeEncoder.encode(str);
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return raw;
+      super(SafeEncoder.encode(str));
     }
   }
 

@@ -1192,7 +1192,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void float16StorageType() {
     assertOK(client.ftCreate(index,
         VectorField.builder().fieldName("v")
-            .algorithm(VectorField.VectorAlgorithm.HNSW)
+            .algorithm(VectorAlgorithm.HNSW)
             .addAttribute("TYPE", "FLOAT16")
             .addAttribute("DIM", 4)
             .addAttribute("DISTANCE_METRIC", "L2")
@@ -1203,7 +1203,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
   public void bfloat16StorageType() {
     assertOK(client.ftCreate(index,
         VectorField.builder().fieldName("v")
-            .algorithm(VectorField.VectorAlgorithm.HNSW)
+            .algorithm(VectorAlgorithm.HNSW)
             .addAttribute("TYPE", "BFLOAT16")
             .addAttribute("DIM", 4)
             .addAttribute("DISTANCE_METRIC", "L2")

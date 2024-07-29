@@ -7,7 +7,8 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
@@ -27,7 +28,7 @@ public class JedisPooled extends UnifiedJedis {
    * @param url
    */
   public JedisPooled(final String url) {
-    this(URI.create(url));
+    super(url);
   }
 
   /**
@@ -74,6 +75,11 @@ public class JedisPooled extends UnifiedJedis {
 
   public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig) {
     super(hostAndPort, clientConfig);
+  }
+
+  @Experimental
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
+    super(hostAndPort, clientConfig, clientSideCache);
   }
 
   public JedisPooled(PooledObjectFactory<Connection> factory) {
@@ -374,6 +380,13 @@ public class JedisPooled extends UnifiedJedis {
   public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig,
       final GenericObjectPoolConfig<Connection> poolConfig) {
     super(new PooledConnectionProvider(hostAndPort, clientConfig, poolConfig), clientConfig.getRedisProtocol());
+  }
+
+  @Experimental
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+      final GenericObjectPoolConfig<Connection> poolConfig) {
+    super(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache, poolConfig),
+        clientConfig.getRedisProtocol(), clientSideCache);
   }
 
   public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig,

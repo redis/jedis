@@ -19,6 +19,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
+import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.gears.TFunctionListParams;
@@ -50,7 +51,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
     AutoCloseable {
 
-  protected RedisProtocol protocol = null;
+  @Deprecated protected RedisProtocol protocol = null;
+  private final ClientSideCache clientSideCache;
   protected final ConnectionProvider provider;
   protected final CommandExecutor executor;
   protected final CommandObjects commandObjects;
@@ -85,12 +87,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
         .protocol(JedisURIHelper.getRedisProtocol(uri))
         .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
-        .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
-        .build());
+        .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier()).build());
   }
 
   public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig), clientConfig.getRedisProtocol());
+  }
+
+  @Experimental
+  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, ClientSideCache clientSideCache) {
+    this(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache), clientConfig.getRedisProtocol(), clientSideCache);
   }
 
   public UnifiedJedis(ConnectionProvider provider) {
@@ -99,6 +105,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol) {
     this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
+  }
+
+  @Experimental
+  protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, ClientSideCache clientSideCache) {
+    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, clientSideCache);
   }
 
   /**
@@ -134,6 +145,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     RedisProtocol proto = connection.getRedisProtocol();
     if (proto != null) this.commandObjects.setProtocol(proto);
     this.graphCommandObjects = new GraphCommandObjects(this);
+    this.clientSideCache = null; // TODO:
   }
 
   @Deprecated
@@ -165,6 +177,13 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       RedisProtocol protocol) {
     this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         new ClusterCommandObjects(), protocol);
+  }
+
+  @Experimental
+  protected UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration,
+      RedisProtocol protocol, ClientSideCache clientSideCache) {
+    this(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+        new ClusterCommandObjects(), protocol, clientSideCache);
   }
 
   /**
@@ -216,7 +235,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // Uses a fetched connection to process protocol. Should be avoided if possible.
   @VisibleForTesting
   public UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
-    this(executor, provider, commandObjects, null);
+    this(executor, provider, commandObjects, null, null);
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {
         if (conn != null) {
@@ -227,18 +246,30 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  @Experimental
   private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
       RedisProtocol protocol) {
+    this(executor, provider, commandObjects, protocol, (ClientSideCache) null);
+  }
+
+  @Experimental
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
+      RedisProtocol protocol, ClientSideCache clientSideCache) {
+
+    if (clientSideCache != null && protocol != RedisProtocol.RESP3) {
+      throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
+    }
+
     this.provider = provider;
     this.executor = executor;
 
     this.commandObjects = commandObjects;
-    if (protocol != null) {
-      this.commandObjects.setProtocol(protocol);
-    }
+    if (protocol != null) this.commandObjects.setProtocol(protocol);
 
     this.graphCommandObjects = new GraphCommandObjects(this);
     this.graphCommandObjects.setBaseCommandArgumentsCreator((comm) -> this.commandObjects.commandArguments(comm));
+
+    this.clientSideCache = clientSideCache;
   }
 
   @Override
@@ -277,6 +308,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     this.commandObjects.setBroadcastAndRoundRobinConfig(this.broadcastAndRoundRobinConfig);
   }
 
+  private <T> T checkAndClientSideCacheCommand(CommandObject<T> command, Object... keys) {
+    if (clientSideCache != null) {
+      return clientSideCache.get((cmd) -> executeCommand(cmd), command, keys);
+    }
+
+    return executeCommand(command);
+  }
+
   public String ping() {
     return checkAndBroadcastCommand(commandObjects.ping());
   }
@@ -296,12 +335,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   // Key commands
   @Override
   public boolean exists(String key) {
-    return executeCommand(commandObjects.exists(key));
+    return checkAndClientSideCacheCommand(commandObjects.exists(key), key);
   }
 
   @Override
   public long exists(String... keys) {
-    return executeCommand(commandObjects.exists(keys));
+    return checkAndClientSideCacheCommand(commandObjects.exists(keys), (Object[]) keys);
   }
 
   @Override
@@ -311,17 +350,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String type(String key) {
-    return executeCommand(commandObjects.type(key));
+    return checkAndClientSideCacheCommand(commandObjects.type(key), key);
   }
 
   @Override
   public boolean exists(byte[] key) {
-    return executeCommand(commandObjects.exists(key));
+    return checkAndClientSideCacheCommand(commandObjects.exists(key), key);
   }
 
   @Override
   public long exists(byte[]... keys) {
-    return executeCommand(commandObjects.exists(keys));
+    return checkAndClientSideCacheCommand(commandObjects.exists(keys), (Object[]) keys);
   }
 
   @Override
@@ -331,7 +370,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String type(byte[] key) {
-    return executeCommand(commandObjects.type(key));
+    return checkAndClientSideCacheCommand(commandObjects.type(key), key);
   }
 
   @Override
@@ -731,7 +770,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String get(String key) {
-    return executeCommand(commandObjects.get(key));
+    return checkAndClientSideCacheCommand(commandObjects.get(key), key);
   }
 
   @Override
@@ -766,7 +805,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public byte[] get(byte[] key) {
-    return executeCommand(commandObjects.get(key));
+    return checkAndClientSideCacheCommand(commandObjects.get(key), key);
   }
 
   @Override
@@ -796,7 +835,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public boolean getbit(String key, long offset) {
-    return executeCommand(commandObjects.getbit(key, offset));
+    return checkAndClientSideCacheCommand(commandObjects.getbit(key, offset), key);
   }
 
   @Override
@@ -806,7 +845,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String getrange(String key, long startOffset, long endOffset) {
-    return executeCommand(commandObjects.getrange(key, startOffset, endOffset));
+    return checkAndClientSideCacheCommand(commandObjects.getrange(key, startOffset, endOffset), key);
   }
 
   @Override
@@ -816,7 +855,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public boolean getbit(byte[] key, long offset) {
-    return executeCommand(commandObjects.getbit(key, offset));
+    return checkAndClientSideCacheCommand(commandObjects.getbit(key, offset), key);
   }
 
   @Override
@@ -826,7 +865,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public byte[] getrange(byte[] key, long startOffset, long endOffset) {
-    return executeCommand(commandObjects.getrange(key, startOffset, endOffset));
+    return checkAndClientSideCacheCommand(commandObjects.getrange(key, startOffset, endOffset), key);
   }
 
   /**
@@ -929,7 +968,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<String> mget(String... keys) {
-    return executeCommand(commandObjects.mget(keys));
+    return checkAndClientSideCacheCommand(commandObjects.mget(keys), (Object[]) keys);
   }
 
   @Override
@@ -944,7 +983,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<byte[]> mget(byte[]... keys) {
-    return executeCommand(commandObjects.mget(keys));
+    return checkAndClientSideCacheCommand(commandObjects.mget(keys), (Object[]) keys);
   }
 
   @Override
@@ -964,12 +1003,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String substr(String key, int start, int end) {
-    return executeCommand(commandObjects.substr(key, start, end));
+    return checkAndClientSideCacheCommand(commandObjects.substr(key, start, end), key);
   }
 
   @Override
   public long strlen(String key) {
-    return executeCommand(commandObjects.strlen(key));
+    return checkAndClientSideCacheCommand(commandObjects.strlen(key), key);
   }
 
   @Override
@@ -979,62 +1018,62 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public byte[] substr(byte[] key, int start, int end) {
-    return executeCommand(commandObjects.substr(key, start, end));
+    return checkAndClientSideCacheCommand(commandObjects.substr(key, start, end), key);
   }
 
   @Override
   public long strlen(byte[] key) {
-    return executeCommand(commandObjects.strlen(key));
+    return checkAndClientSideCacheCommand(commandObjects.strlen(key), key);
   }
 
   @Override
   public long bitcount(String key) {
-    return executeCommand(commandObjects.bitcount(key));
+    return checkAndClientSideCacheCommand(commandObjects.bitcount(key), key);
   }
 
   @Override
   public long bitcount(String key, long start, long end) {
-    return executeCommand(commandObjects.bitcount(key, start, end));
+    return checkAndClientSideCacheCommand(commandObjects.bitcount(key, start, end), key);
   }
 
   @Override
   public long bitcount(String key, long start, long end, BitCountOption option) {
-    return executeCommand(commandObjects.bitcount(key, start, end, option));
+    return checkAndClientSideCacheCommand(commandObjects.bitcount(key, start, end, option), key);
   }
 
   @Override
   public long bitpos(String key, boolean value) {
-    return executeCommand(commandObjects.bitpos(key, value));
+    return checkAndClientSideCacheCommand(commandObjects.bitpos(key, value), key);
   }
 
   @Override
   public long bitpos(String key, boolean value, BitPosParams params) {
-    return executeCommand(commandObjects.bitpos(key, value, params));
+    return checkAndClientSideCacheCommand(commandObjects.bitpos(key, value, params), key);
   }
 
   @Override
   public long bitcount(byte[] key) {
-    return executeCommand(commandObjects.bitcount(key));
+    return checkAndClientSideCacheCommand(commandObjects.bitcount(key), key);
   }
 
   @Override
   public long bitcount(byte[] key, long start, long end) {
-    return executeCommand(commandObjects.bitcount(key, start, end));
+    return checkAndClientSideCacheCommand(commandObjects.bitcount(key, start, end), key);
   }
 
   @Override
   public long bitcount(byte[] key, long start, long end, BitCountOption option) {
-    return executeCommand(commandObjects.bitcount(key, start, end, option));
+    return checkAndClientSideCacheCommand(commandObjects.bitcount(key, start, end, option), key);
   }
 
   @Override
   public long bitpos(byte[] key, boolean value) {
-    return executeCommand(commandObjects.bitpos(key, value));
+    return checkAndClientSideCacheCommand(commandObjects.bitpos(key, value), key);
   }
 
   @Override
   public long bitpos(byte[] key, boolean value, BitPosParams params) {
-    return executeCommand(commandObjects.bitpos(key, value, params));
+    return checkAndClientSideCacheCommand(commandObjects.bitpos(key, value, params), key);
   }
 
   @Override
@@ -1044,7 +1083,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<Long> bitfieldReadonly(String key, String... arguments) {
-    return executeCommand(commandObjects.bitfieldReadonly(key, arguments));
+    return checkAndClientSideCacheCommand(commandObjects.bitfieldReadonly(key, arguments), key);
   }
 
   @Override
@@ -1054,7 +1093,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<Long> bitfieldReadonly(byte[] key, byte[]... arguments) {
-    return executeCommand(commandObjects.bitfieldReadonly(key, arguments));
+    return checkAndClientSideCacheCommand(commandObjects.bitfieldReadonly(key, arguments), key);
   }
 
   @Override
@@ -1069,12 +1108,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public LCSMatchResult lcs(String keyA, String keyB, LCSParams params) {
-    return executeCommand(commandObjects.lcs(keyA, keyB, params));
+    return checkAndClientSideCacheCommand(commandObjects.lcs(keyA, keyB, params), keyA, keyB);
   }
 
   @Override
   public LCSMatchResult lcs(byte[] keyA, byte[] keyB, LCSParams params) {
-    return executeCommand(commandObjects.lcs(keyA, keyB, params));
+    return checkAndClientSideCacheCommand(commandObjects.lcs(keyA, keyB, params), keyA, keyB);
   }
   // String commands
 
@@ -1091,12 +1130,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long llen(String key) {
-    return executeCommand(commandObjects.llen(key));
+    return checkAndClientSideCacheCommand(commandObjects.llen(key), key);
   }
 
   @Override
   public List<String> lrange(String key, long start, long stop) {
-    return executeCommand(commandObjects.lrange(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.lrange(key, start, stop), key);
   }
 
   @Override
@@ -1106,7 +1145,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String lindex(String key, long index) {
-    return executeCommand(commandObjects.lindex(key, index));
+    return checkAndClientSideCacheCommand(commandObjects.lindex(key, index), key);
   }
 
   @Override
@@ -1121,12 +1160,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long llen(byte[] key) {
-    return executeCommand(commandObjects.llen(key));
+    return checkAndClientSideCacheCommand(commandObjects.llen(key), key);
   }
 
   @Override
   public List<byte[]> lrange(byte[] key, long start, long stop) {
-    return executeCommand(commandObjects.lrange(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.lrange(key, start, stop), key);
   }
 
   @Override
@@ -1136,7 +1175,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public byte[] lindex(byte[] key, long index) {
-    return executeCommand(commandObjects.lindex(key, index));
+    return checkAndClientSideCacheCommand(commandObjects.lindex(key, index), key);
   }
 
   @Override
@@ -1181,32 +1220,32 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Long lpos(String key, String element) {
-    return executeCommand(commandObjects.lpos(key, element));
+    return checkAndClientSideCacheCommand(commandObjects.lpos(key, element), key);
   }
 
   @Override
   public Long lpos(String key, String element, LPosParams params) {
-    return executeCommand(commandObjects.lpos(key, element, params));
+    return checkAndClientSideCacheCommand(commandObjects.lpos(key, element, params), key);
   }
 
   @Override
   public List<Long> lpos(String key, String element, LPosParams params, long count) {
-    return executeCommand(commandObjects.lpos(key, element, params, count));
+    return checkAndClientSideCacheCommand(commandObjects.lpos(key, element, params, count), key);
   }
 
   @Override
   public Long lpos(byte[] key, byte[] element) {
-    return executeCommand(commandObjects.lpos(key, element));
+    return checkAndClientSideCacheCommand(commandObjects.lpos(key, element), key);
   }
 
   @Override
   public Long lpos(byte[] key, byte[] element, LPosParams params) {
-    return executeCommand(commandObjects.lpos(key, element, params));
+    return checkAndClientSideCacheCommand(commandObjects.lpos(key, element, params), key);
   }
 
   @Override
   public List<Long> lpos(byte[] key, byte[] element, LPosParams params, long count) {
-    return executeCommand(commandObjects.lpos(key, element, params, count));
+    return checkAndClientSideCacheCommand(commandObjects.lpos(key, element, params, count), key);
   }
 
   @Override
@@ -1413,7 +1452,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public String hget(String key, String field) {
-    return executeCommand(commandObjects.hget(key, field));
+    return checkAndClientSideCacheCommand(commandObjects.hget(key, field), key);
   }
 
   @Override
@@ -1428,7 +1467,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<String> hmget(String key, String... fields) {
-    return executeCommand(commandObjects.hmget(key, fields));
+    return checkAndClientSideCacheCommand(commandObjects.hmget(key, fields), key);
   }
 
   @Override
@@ -1443,7 +1482,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public byte[] hget(byte[] key, byte[] field) {
-    return executeCommand(commandObjects.hget(key, field));
+    return checkAndClientSideCacheCommand(commandObjects.hget(key, field), key);
   }
 
   @Override
@@ -1458,7 +1497,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<byte[]> hmget(byte[] key, byte[]... fields) {
-    return executeCommand(commandObjects.hmget(key, fields));
+    return checkAndClientSideCacheCommand(commandObjects.hmget(key, fields), key);
   }
 
   @Override
@@ -1473,7 +1512,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public boolean hexists(String key, String field) {
-    return executeCommand(commandObjects.hexists(key, field));
+    return checkAndClientSideCacheCommand(commandObjects.hexists(key, field), key);
   }
 
   @Override
@@ -1483,7 +1522,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long hlen(String key) {
-    return executeCommand(commandObjects.hlen(key));
+    return checkAndClientSideCacheCommand(commandObjects.hlen(key), key);
   }
 
   @Override
@@ -1498,7 +1537,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public boolean hexists(byte[] key, byte[] field) {
-    return executeCommand(commandObjects.hexists(key, field));
+    return checkAndClientSideCacheCommand(commandObjects.hexists(key, field), key);
   }
 
   @Override
@@ -1508,37 +1547,37 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long hlen(byte[] key) {
-    return executeCommand(commandObjects.hlen(key));
+    return checkAndClientSideCacheCommand(commandObjects.hlen(key), key);
   }
 
   @Override
   public Set<String> hkeys(String key) {
-    return executeCommand(commandObjects.hkeys(key));
+    return checkAndClientSideCacheCommand(commandObjects.hkeys(key), key);
   }
 
   @Override
   public List<String> hvals(String key) {
-    return executeCommand(commandObjects.hvals(key));
+    return checkAndClientSideCacheCommand(commandObjects.hvals(key), key);
   }
 
   @Override
   public Map<String, String> hgetAll(String key) {
-    return executeCommand(commandObjects.hgetAll(key));
+    return checkAndClientSideCacheCommand(commandObjects.hgetAll(key), key);
   }
 
   @Override
   public Set<byte[]> hkeys(byte[] key) {
-    return executeCommand(commandObjects.hkeys(key));
+    return checkAndClientSideCacheCommand(commandObjects.hkeys(key), key);
   }
 
   @Override
   public List<byte[]> hvals(byte[] key) {
-    return executeCommand(commandObjects.hvals(key));
+    return checkAndClientSideCacheCommand(commandObjects.hvals(key), key);
   }
 
   @Override
   public Map<byte[], byte[]> hgetAll(byte[] key) {
-    return executeCommand(commandObjects.hgetAll(key));
+    return checkAndClientSideCacheCommand(commandObjects.hgetAll(key), key);
   }
 
   @Override
@@ -1568,7 +1607,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long hstrlen(String key, String field) {
-    return executeCommand(commandObjects.hstrlen(key, field));
+    return checkAndClientSideCacheCommand(commandObjects.hstrlen(key, field), key);
   }
 
   @Override
@@ -1598,7 +1637,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long hstrlen(byte[] key, byte[] field) {
-    return executeCommand(commandObjects.hstrlen(key, field));
+    return checkAndClientSideCacheCommand(commandObjects.hstrlen(key, field), key);
   }
 
   @Override
@@ -1740,7 +1779,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Set<String> smembers(String key) {
-    return executeCommand(commandObjects.smembers(key));
+    return checkAndClientSideCacheCommand(commandObjects.smembers(key), key);
   }
 
   @Override
@@ -1760,17 +1799,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long scard(String key) {
-    return executeCommand(commandObjects.scard(key));
+    return checkAndClientSideCacheCommand(commandObjects.scard(key), key);
   }
 
   @Override
   public boolean sismember(String key, String member) {
-    return executeCommand(commandObjects.sismember(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.sismember(key, member), key);
   }
 
   @Override
   public List<Boolean> smismember(String key, String... members) {
-    return executeCommand(commandObjects.smismember(key, members));
+    return checkAndClientSideCacheCommand(commandObjects.smismember(key, members), key);
   }
 
   @Override
@@ -1780,7 +1819,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Set<byte[]> smembers(byte[] key) {
-    return executeCommand(commandObjects.smembers(key));
+    return checkAndClientSideCacheCommand(commandObjects.smembers(key), key);
   }
 
   @Override
@@ -1800,17 +1839,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long scard(byte[] key) {
-    return executeCommand(commandObjects.scard(key));
+    return checkAndClientSideCacheCommand(commandObjects.scard(key), key);
   }
 
   @Override
   public boolean sismember(byte[] key, byte[] member) {
-    return executeCommand(commandObjects.sismember(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.sismember(key, member), key);
   }
 
   @Override
   public List<Boolean> smismember(byte[] key, byte[]... members) {
-    return executeCommand(commandObjects.smismember(key, members));
+    return checkAndClientSideCacheCommand(commandObjects.smismember(key, members), key);
   }
 
   @Override
@@ -1845,7 +1884,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Set<String> sdiff(String... keys) {
-    return executeCommand(commandObjects.sdiff(keys));
+    return checkAndClientSideCacheCommand(commandObjects.sdiff(keys), (Object[]) keys);
   }
 
   @Override
@@ -1855,7 +1894,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Set<String> sinter(String... keys) {
-    return executeCommand(commandObjects.sinter(keys));
+    return checkAndClientSideCacheCommand(commandObjects.sinter(keys), (Object[]) keys);
   }
 
   @Override
@@ -1875,7 +1914,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Set<String> sunion(String... keys) {
-    return executeCommand(commandObjects.sunion(keys));
+    return checkAndClientSideCacheCommand(commandObjects.sunion(keys), (Object[]) keys);
   }
 
   @Override
@@ -1890,7 +1929,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Set<byte[]> sdiff(byte[]... keys) {
-    return executeCommand(commandObjects.sdiff(keys));
+    return checkAndClientSideCacheCommand(commandObjects.sdiff(keys), (Object[]) keys);
   }
 
   @Override
@@ -1900,7 +1939,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Set<byte[]> sinter(byte[]... keys) {
-    return executeCommand(commandObjects.sinter(keys));
+    return checkAndClientSideCacheCommand(commandObjects.sinter(keys), (Object[]) keys);
   }
 
   @Override
@@ -1920,7 +1959,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Set<byte[]> sunion(byte[]... keys) {
-    return executeCommand(commandObjects.sunion(keys));
+    return checkAndClientSideCacheCommand(commandObjects.sunion(keys), (Object[]) keys);
   }
 
   @Override
@@ -2002,22 +2041,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Long zrank(String key, String member) {
-    return executeCommand(commandObjects.zrank(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zrank(key, member), key);
   }
 
   @Override
   public Long zrevrank(String key, String member) {
-    return executeCommand(commandObjects.zrevrank(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrank(key, member), key);
   }
 
   @Override
   public KeyValue<Long, Double> zrankWithScore(String key, String member) {
-    return executeCommand(commandObjects.zrankWithScore(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zrankWithScore(key, member), key);
   }
 
   @Override
   public KeyValue<Long, Double> zrevrankWithScore(String key, String member) {
-    return executeCommand(commandObjects.zrevrankWithScore(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrankWithScore(key, member), key);
   }
 
   @Override
@@ -2037,22 +2076,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Long zrank(byte[] key, byte[] member) {
-    return executeCommand(commandObjects.zrank(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zrank(key, member), key);
   }
 
   @Override
   public Long zrevrank(byte[] key, byte[] member) {
-    return executeCommand(commandObjects.zrevrank(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrank(key, member), key);
   }
 
   @Override
   public KeyValue<Long, Double> zrankWithScore(byte[] key, byte[] member) {
-    return executeCommand(commandObjects.zrankWithScore(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zrankWithScore(key, member), key);
   }
 
   @Override
   public KeyValue<Long, Double> zrevrankWithScore(byte[] key, byte[] member) {
-    return executeCommand(commandObjects.zrevrankWithScore(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrankWithScore(key, member), key);
   }
 
   @Override
@@ -2072,17 +2111,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long zcard(String key) {
-    return executeCommand(commandObjects.zcard(key));
+    return checkAndClientSideCacheCommand(commandObjects.zcard(key), key);
   }
 
   @Override
   public Double zscore(String key, String member) {
-    return executeCommand(commandObjects.zscore(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zscore(key, member), key);
   }
 
   @Override
   public List<Double> zmscore(String key, String... members) {
-    return executeCommand(commandObjects.zmscore(key, members));
+    return checkAndClientSideCacheCommand(commandObjects.zmscore(key, members), key);
   }
 
   @Override
@@ -2102,17 +2141,17 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long zcard(byte[] key) {
-    return executeCommand(commandObjects.zcard(key));
+    return checkAndClientSideCacheCommand(commandObjects.zcard(key), key);
   }
 
   @Override
   public Double zscore(byte[] key, byte[] member) {
-    return executeCommand(commandObjects.zscore(key, member));
+    return checkAndClientSideCacheCommand(commandObjects.zscore(key, member), key);
   }
 
   @Override
   public List<Double> zmscore(byte[] key, byte[]... members) {
-    return executeCommand(commandObjects.zmscore(key, members));
+    return checkAndClientSideCacheCommand(commandObjects.zmscore(key, members), key);
   }
 
   @Override
@@ -2137,12 +2176,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long zcount(String key, double min, double max) {
-    return executeCommand(commandObjects.zcount(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zcount(key, min, max), key);
   }
 
   @Override
   public long zcount(String key, String min, String max) {
-    return executeCommand(commandObjects.zcount(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zcount(key, min, max), key);
   }
 
   @Override
@@ -2167,42 +2206,42 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long zcount(byte[] key, double min, double max) {
-    return executeCommand(commandObjects.zcount(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zcount(key, min, max), key);
   }
 
   @Override
   public long zcount(byte[] key, byte[] min, byte[] max) {
-    return executeCommand(commandObjects.zcount(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zcount(key, min, max), key);
   }
 
   @Override
   public List<String> zrange(String key, long start, long stop) {
-    return executeCommand(commandObjects.zrange(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.zrange(key, start, stop), key);
   }
 
   @Override
   public List<String> zrevrange(String key, long start, long stop) {
-    return executeCommand(commandObjects.zrevrange(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrange(key, start, stop), key);
   }
 
   @Override
   public List<Tuple> zrangeWithScores(String key, long start, long stop) {
-    return executeCommand(commandObjects.zrangeWithScores(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeWithScores(key, start, stop), key);
   }
 
   @Override
   public List<Tuple> zrevrangeWithScores(String key, long start, long stop) {
-    return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeWithScores(key, start, stop), key);
   }
 
   @Override
   public List<String> zrange(String key, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrange(key, zRangeParams));
+    return checkAndClientSideCacheCommand(commandObjects.zrange(key, zRangeParams), key);
   }
 
   @Override
   public List<Tuple> zrangeWithScores(String key, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeWithScores(key, zRangeParams), key);
   }
 
   @Override
@@ -2212,112 +2251,112 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<String> zrangeByScore(String key, double min, double max) {
-    return executeCommand(commandObjects.zrangeByScore(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScore(key, min, max), key);
   }
 
   @Override
   public List<String> zrangeByScore(String key, String min, String max) {
-    return executeCommand(commandObjects.zrangeByScore(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScore(key, min, max), key);
   }
 
   @Override
   public List<String> zrevrangeByScore(String key, double max, double min) {
-    return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScore(key, max, min), key);
   }
 
   @Override
   public List<String> zrangeByScore(String key, double min, double max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScore(key, min, max, offset, count), key);
   }
 
   @Override
   public List<String> zrevrangeByScore(String key, String max, String min) {
-    return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScore(key, max, min), key);
   }
 
   @Override
   public List<String> zrangeByScore(String key, String min, String max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScore(key, min, max, offset, count), key);
   }
 
   @Override
   public List<String> zrevrangeByScore(String key, double max, double min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count), key);
   }
 
   @Override
   public List<Tuple> zrangeByScoreWithScores(String key, double min, double max) {
-    return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScoreWithScores(key, min, max), key);
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
-    return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min), key);
   }
 
   @Override
   public List<Tuple> zrangeByScoreWithScores(String key, double min, double max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count), key);
   }
 
   @Override
   public List<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count), key);
   }
 
   @Override
   public List<Tuple> zrangeByScoreWithScores(String key, String min, String max) {
-    return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScoreWithScores(key, min, max), key);
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
-    return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min), key);
   }
 
   @Override
   public List<Tuple> zrangeByScoreWithScores(String key, String min, String max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count), key);
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, double max, double min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count), key);
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(String key, String max, String min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count), key);
   }
 
   @Override
   public List<byte[]> zrange(byte[] key, long start, long stop) {
-    return executeCommand(commandObjects.zrange(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.zrange(key, start, stop), key);
   }
 
   @Override
   public List<byte[]> zrevrange(byte[] key, long start, long stop) {
-    return executeCommand(commandObjects.zrevrange(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrange(key, start, stop), key);
   }
 
   @Override
   public List<Tuple> zrangeWithScores(byte[] key, long start, long stop) {
-    return executeCommand(commandObjects.zrangeWithScores(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeWithScores(key, start, stop), key);
   }
 
   @Override
   public List<Tuple> zrevrangeWithScores(byte[] key, long start, long stop) {
-    return executeCommand(commandObjects.zrevrangeWithScores(key, start, stop));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeWithScores(key, start, stop), key);
   }
 
   @Override
   public List<byte[]> zrange(byte[] key, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrange(key, zRangeParams));
+    return checkAndClientSideCacheCommand(commandObjects.zrange(key, zRangeParams), key);
   }
 
   @Override
   public List<Tuple> zrangeWithScores(byte[] key, ZRangeParams zRangeParams) {
-    return executeCommand(commandObjects.zrangeWithScores(key, zRangeParams));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeWithScores(key, zRangeParams), key);
   }
 
   @Override
@@ -2327,82 +2366,82 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<byte[]> zrangeByScore(byte[] key, double min, double max) {
-    return executeCommand(commandObjects.zrangeByScore(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScore(key, min, max), key);
   }
 
   @Override
   public List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max) {
-    return executeCommand(commandObjects.zrangeByScore(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScore(key, min, max), key);
   }
 
   @Override
   public List<byte[]> zrevrangeByScore(byte[] key, double max, double min) {
-    return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScore(key, max, min), key);
   }
 
   @Override
   public List<byte[]> zrangeByScore(byte[] key, double min, double max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScore(key, min, max, offset, count), key);
   }
 
   @Override
   public List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min) {
-    return executeCommand(commandObjects.zrevrangeByScore(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScore(key, max, min), key);
   }
 
   @Override
   public List<byte[]> zrangeByScore(byte[] key, byte[] min, byte[] max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByScore(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScore(key, min, max, offset, count), key);
   }
 
   @Override
   public List<byte[]> zrevrangeByScore(byte[] key, double max, double min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count), key);
   }
 
   @Override
   public List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max) {
-    return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScoreWithScores(key, min, max), key);
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min) {
-    return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min), key);
   }
 
   @Override
   public List<Tuple> zrangeByScoreWithScores(byte[] key, double min, double max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count), key);
   }
 
   @Override
   public List<byte[]> zrevrangeByScore(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScore(key, max, min, offset, count), key);
   }
 
   @Override
   public List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max) {
-    return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScoreWithScores(key, min, max), key);
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min) {
-    return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min), key);
   }
 
   @Override
   public List<Tuple> zrangeByScoreWithScores(byte[] key, byte[] min, byte[] max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByScoreWithScores(key, min, max, offset, count), key);
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, double max, double min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count), key);
   }
 
   @Override
   public List<Tuple> zrevrangeByScoreWithScores(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByScoreWithScores(key, max, min, offset, count), key);
   }
 
   @Override
@@ -2437,27 +2476,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long zlexcount(String key, String min, String max) {
-    return executeCommand(commandObjects.zlexcount(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zlexcount(key, min, max), key);
   }
 
   @Override
   public List<String> zrangeByLex(String key, String min, String max) {
-    return executeCommand(commandObjects.zrangeByLex(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByLex(key, min, max), key);
   }
 
   @Override
   public List<String> zrangeByLex(String key, String min, String max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByLex(key, min, max, offset, count), key);
   }
 
   @Override
   public List<String> zrevrangeByLex(String key, String max, String min) {
-    return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByLex(key, max, min), key);
   }
 
   @Override
   public List<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count), key);
   }
 
   @Override
@@ -2467,27 +2506,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long zlexcount(byte[] key, byte[] min, byte[] max) {
-    return executeCommand(commandObjects.zlexcount(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zlexcount(key, min, max), key);
   }
 
   @Override
   public List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max) {
-    return executeCommand(commandObjects.zrangeByLex(key, min, max));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByLex(key, min, max), key);
   }
 
   @Override
   public List<byte[]> zrangeByLex(byte[] key, byte[] min, byte[] max, int offset, int count) {
-    return executeCommand(commandObjects.zrangeByLex(key, min, max, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrangeByLex(key, min, max, offset, count), key);
   }
 
   @Override
   public List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min) {
-    return executeCommand(commandObjects.zrevrangeByLex(key, max, min));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByLex(key, max, min), key);
   }
 
   @Override
   public List<byte[]> zrevrangeByLex(byte[] key, byte[] max, byte[] min, int offset, int count) {
-    return executeCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count));
+    return checkAndClientSideCacheCommand(commandObjects.zrevrangeByLex(key, max, min, offset, count), key);
   }
 
   @Override
@@ -2726,22 +2765,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Double geodist(String key, String member1, String member2) {
-    return executeCommand(commandObjects.geodist(key, member1, member2));
+    return checkAndClientSideCacheCommand(commandObjects.geodist(key, member1, member2), key);
   }
 
   @Override
   public Double geodist(String key, String member1, String member2, GeoUnit unit) {
-    return executeCommand(commandObjects.geodist(key, member1, member2, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geodist(key, member1, member2, unit), key);
   }
 
   @Override
   public List<String> geohash(String key, String... members) {
-    return executeCommand(commandObjects.geohash(key, members));
+    return checkAndClientSideCacheCommand(commandObjects.geohash(key, members), key);
   }
 
   @Override
   public List<GeoCoordinate> geopos(String key, String... members) {
-    return executeCommand(commandObjects.geopos(key, members));
+    return checkAndClientSideCacheCommand(commandObjects.geopos(key, members), key);
   }
 
   @Override
@@ -2761,22 +2800,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Double geodist(byte[] key, byte[] member1, byte[] member2) {
-    return executeCommand(commandObjects.geodist(key, member1, member2));
+    return checkAndClientSideCacheCommand(commandObjects.geodist(key, member1, member2), key);
   }
 
   @Override
   public Double geodist(byte[] key, byte[] member1, byte[] member2, GeoUnit unit) {
-    return executeCommand(commandObjects.geodist(key, member1, member2, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geodist(key, member1, member2, unit), key);
   }
 
   @Override
   public List<byte[]> geohash(byte[] key, byte[]... members) {
-    return executeCommand(commandObjects.geohash(key, members));
+    return checkAndClientSideCacheCommand(commandObjects.geohash(key, members), key);
   }
 
   @Override
   public List<GeoCoordinate> geopos(byte[] key, byte[]... members) {
-    return executeCommand(commandObjects.geopos(key, members));
+    return checkAndClientSideCacheCommand(commandObjects.geopos(key, members), key);
   }
 
   @Override
@@ -2786,7 +2825,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
+    return checkAndClientSideCacheCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit), key);
   }
 
   @Override
@@ -2796,7 +2835,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(String key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
+    return checkAndClientSideCacheCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param), key);
   }
 
   @Override
@@ -2806,7 +2845,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
+    return checkAndClientSideCacheCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit), key);
   }
 
   @Override
@@ -2816,7 +2855,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(String key, String member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
+    return checkAndClientSideCacheCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param), key);
   }
 
   @Override
@@ -2831,27 +2870,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> geosearch(String key, String member, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.geosearch(key, member, radius, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, member, radius, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.geosearch(key, coord, radius, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, coord, radius, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> geosearch(String key, String member, double width, double height, GeoUnit unit) {
-    return executeCommand(commandObjects.geosearch(key, member, width, height, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, member, width, height, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> geosearch(String key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
-    return executeCommand(commandObjects.geosearch(key, coord, width, height, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, coord, width, height, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> geosearch(String key, GeoSearchParam params) {
-    return executeCommand(commandObjects.geosearch(key, params));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, params), key);
   }
 
   @Override
@@ -2891,7 +2930,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit));
+    return checkAndClientSideCacheCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit), key);
   }
 
   @Override
@@ -2901,7 +2940,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> georadiusReadonly(byte[] key, double longitude, double latitude, double radius, GeoUnit unit, GeoRadiusParam param) {
-    return executeCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param));
+    return checkAndClientSideCacheCommand(commandObjects.georadiusReadonly(key, longitude, latitude, radius, unit, param), key);
   }
 
   @Override
@@ -2911,7 +2950,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit));
+    return checkAndClientSideCacheCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit), key);
   }
 
   @Override
@@ -2921,7 +2960,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> georadiusByMemberReadonly(byte[] key, byte[] member, double radius, GeoUnit unit, GeoRadiusParam param) {
-    return executeCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param));
+    return checkAndClientSideCacheCommand(commandObjects.georadiusByMemberReadonly(key, member, radius, unit, param), key);
   }
 
   @Override
@@ -2936,27 +2975,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.geosearch(key, member, radius, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, member, radius, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double radius, GeoUnit unit) {
-    return executeCommand(commandObjects.geosearch(key, coord, radius, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, coord, radius, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> geosearch(byte[] key, byte[] member, double width, double height, GeoUnit unit) {
-    return executeCommand(commandObjects.geosearch(key, member, width, height, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, member, width, height, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> geosearch(byte[] key, GeoCoordinate coord, double width, double height, GeoUnit unit) {
-    return executeCommand(commandObjects.geosearch(key, coord, width, height, unit));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, coord, width, height, unit), key);
   }
 
   @Override
   public List<GeoRadiusResponse> geosearch(byte[] key, GeoSearchParam params) {
-    return executeCommand(commandObjects.geosearch(key, params));
+    return checkAndClientSideCacheCommand(commandObjects.geosearch(key, params), key);
   }
 
   @Override
@@ -3045,47 +3084,47 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long xlen(String key) {
-    return executeCommand(commandObjects.xlen(key));
+    return checkAndClientSideCacheCommand(commandObjects.xlen(key), key);
   }
 
   @Override
   public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end) {
-    return executeCommand(commandObjects.xrange(key, start, end));
+    return checkAndClientSideCacheCommand(commandObjects.xrange(key, start, end), key);
   }
 
   @Override
   public List<StreamEntry> xrange(String key, StreamEntryID start, StreamEntryID end, int count) {
-    return executeCommand(commandObjects.xrange(key, start, end, count));
+    return checkAndClientSideCacheCommand(commandObjects.xrange(key, start, end, count), key);
   }
 
   @Override
   public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start) {
-    return executeCommand(commandObjects.xrevrange(key, end, start));
+    return checkAndClientSideCacheCommand(commandObjects.xrevrange(key, end, start), key);
   }
 
   @Override
   public List<StreamEntry> xrevrange(String key, StreamEntryID end, StreamEntryID start, int count) {
-    return executeCommand(commandObjects.xrevrange(key, end, start, count));
+    return checkAndClientSideCacheCommand(commandObjects.xrevrange(key, end, start, count), key);
   }
 
   @Override
   public List<StreamEntry> xrange(String key, String start, String end) {
-    return executeCommand(commandObjects.xrange(key, start, end));
+    return checkAndClientSideCacheCommand(commandObjects.xrange(key, start, end), key);
   }
 
   @Override
   public List<StreamEntry> xrange(String key, String start, String end, int count) {
-    return executeCommand(commandObjects.xrange(key, start, end, count));
+    return checkAndClientSideCacheCommand(commandObjects.xrange(key, start, end, count), key);
   }
 
   @Override
   public List<StreamEntry> xrevrange(String key, String end, String start) {
-    return executeCommand(commandObjects.xrevrange(key, end, start));
+    return checkAndClientSideCacheCommand(commandObjects.xrevrange(key, end, start), key);
   }
 
   @Override
   public List<StreamEntry> xrevrange(String key, String end, String start, int count) {
-    return executeCommand(commandObjects.xrevrange(key, end, start, count));
+    return checkAndClientSideCacheCommand(commandObjects.xrevrange(key, end, start, count), key);
   }
 
   @Override
@@ -3120,12 +3159,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public StreamPendingSummary xpending(String key, String groupName) {
-    return executeCommand(commandObjects.xpending(key, groupName));
+    return checkAndClientSideCacheCommand(commandObjects.xpending(key, groupName), key);
   }
 
   @Override
   public List<StreamPendingEntry> xpending(String key, String groupName, XPendingParams params) {
-    return executeCommand(commandObjects.xpending(key, groupName, params));
+    return checkAndClientSideCacheCommand(commandObjects.xpending(key, groupName, params), key);
   }
 
   @Override
@@ -3222,27 +3261,27 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public long xlen(byte[] key) {
-    return executeCommand(commandObjects.xlen(key));
+    return checkAndClientSideCacheCommand(commandObjects.xlen(key), key);
   }
 
   @Override
   public List<Object> xrange(byte[] key, byte[] start, byte[] end) {
-    return executeCommand(commandObjects.xrange(key, start, end));
+    return checkAndClientSideCacheCommand(commandObjects.xrange(key, start, end), key);
   }
 
   @Override
   public List<Object> xrange(byte[] key, byte[] start, byte[] end, int count) {
-    return executeCommand(commandObjects.xrange(key, start, end, count));
+    return checkAndClientSideCacheCommand(commandObjects.xrange(key, start, end, count), key);
   }
 
   @Override
   public List<Object> xrevrange(byte[] key, byte[] end, byte[] start) {
-    return executeCommand(commandObjects.xrevrange(key, end, start));
+    return checkAndClientSideCacheCommand(commandObjects.xrevrange(key, end, start), key);
   }
 
   @Override
   public List<Object> xrevrange(byte[] key, byte[] end, byte[] start, int count) {
-    return executeCommand(commandObjects.xrevrange(key, end, start, count));
+    return checkAndClientSideCacheCommand(commandObjects.xrevrange(key, end, start, count), key);
   }
 
   @Override
@@ -3292,12 +3331,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Object xpending(byte[] key, byte[] groupName) {
-    return executeCommand(commandObjects.xpending(key, groupName));
+    return checkAndClientSideCacheCommand(commandObjects.xpending(key, groupName), key);
   }
 
   @Override
   public List<Object> xpending(byte[] key, byte[] groupName, XPendingParams params) {
-    return executeCommand(commandObjects.xpending(key, groupName, params));
+    return checkAndClientSideCacheCommand(commandObjects.xpending(key, groupName, params), key);
   }
 
   @Override
@@ -4115,47 +4154,47 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public Object jsonGet(String key) {
-    return executeCommand(commandObjects.jsonGet(key));
+    return checkAndClientSideCacheCommand(commandObjects.jsonGet(key), key);
   }
 
   @Override
   @Deprecated
   public <T> T jsonGet(String key, Class<T> clazz) {
-    return executeCommand(commandObjects.jsonGet(key, clazz));
+    return checkAndClientSideCacheCommand(commandObjects.jsonGet(key, clazz), key);
   }
 
   @Override
   public Object jsonGet(String key, Path2... paths) {
-    return executeCommand(commandObjects.jsonGet(key, paths));
+    return checkAndClientSideCacheCommand(commandObjects.jsonGet(key, paths), key);
   }
 
   @Override
   @Deprecated
   public Object jsonGet(String key, Path... paths) {
-    return executeCommand(commandObjects.jsonGet(key, paths));
+    return checkAndClientSideCacheCommand(commandObjects.jsonGet(key, paths), key);
   }
 
   @Override
   @Deprecated
   public String jsonGetAsPlainString(String key, Path path) {
-    return executeCommand(commandObjects.jsonGetAsPlainString(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonGetAsPlainString(key, path), key);
   }
 
   @Override
   @Deprecated
   public <T> T jsonGet(String key, Class<T> clazz, Path... paths) {
-    return executeCommand(commandObjects.jsonGet(key, clazz, paths));
+    return checkAndClientSideCacheCommand(commandObjects.jsonGet(key, clazz, paths), key);
   }
 
   @Override
   public List<JSONArray> jsonMGet(Path2 path, String... keys) {
-    return executeCommand(commandObjects.jsonMGet(path, keys));
+    return checkAndClientSideCacheCommand(commandObjects.jsonMGet(path, keys), (Object[]) keys);
   }
 
   @Override
   @Deprecated
   public <T> List<T> jsonMGet(Path path, Class<T> clazz, String... keys) {
-    return executeCommand(commandObjects.jsonMGet(path, clazz, keys));
+    return checkAndClientSideCacheCommand(commandObjects.jsonMGet(path, clazz, keys), (Object[]) keys);
   }
 
   @Override
@@ -4204,18 +4243,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   @Deprecated
   public Class<?> jsonType(String key) {
-    return executeCommand(commandObjects.jsonType(key));
+    return checkAndClientSideCacheCommand(commandObjects.jsonType(key), key);
   }
 
   @Override
   public List<Class<?>> jsonType(String key, Path2 path) {
-    return executeCommand(commandObjects.jsonType(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonType(key, path), key);
   }
 
   @Override
   @Deprecated
   public Class<?> jsonType(String key, Path path) {
-    return executeCommand(commandObjects.jsonType(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonType(key, path), key);
   }
 
   @Override
@@ -4238,18 +4277,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   @Deprecated
   public Long jsonStrLen(String key) {
-    return executeCommand(commandObjects.jsonStrLen(key));
+    return checkAndClientSideCacheCommand(commandObjects.jsonStrLen(key), key);
   }
 
   @Override
   public List<Long> jsonStrLen(String key, Path2 path) {
-    return executeCommand(commandObjects.jsonStrLen(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonStrLen(key, path), key);
   }
 
   @Override
   @Deprecated
   public Long jsonStrLen(String key, Path path) {
-    return executeCommand(commandObjects.jsonStrLen(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonStrLen(key, path), key);
   }
 
   @Override
@@ -4281,18 +4320,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<Long> jsonArrIndex(String key, Path2 path, Object scalar) {
-    return executeCommand(commandObjects.jsonArrIndex(key, path, scalar));
+    return checkAndClientSideCacheCommand(commandObjects.jsonArrIndex(key, path, scalar), key);
   }
 
   @Override
   public List<Long> jsonArrIndexWithEscape(String key, Path2 path, Object scalar) {
-    return executeCommand(commandObjects.jsonArrIndexWithEscape(key, path, scalar));
+    return checkAndClientSideCacheCommand(commandObjects.jsonArrIndexWithEscape(key, path, scalar), key);
   }
 
   @Override
   @Deprecated
   public long jsonArrIndex(String key, Path path, Object scalar) {
-    return executeCommand(commandObjects.jsonArrIndex(key, path, scalar));
+    return checkAndClientSideCacheCommand(commandObjects.jsonArrIndex(key, path, scalar), key);
   }
 
   @Override
@@ -4360,18 +4399,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   @Deprecated
   public Long jsonArrLen(String key) {
-    return executeCommand(commandObjects.jsonArrLen(key));
+    return checkAndClientSideCacheCommand(commandObjects.jsonArrLen(key), key);
   }
 
   @Override
   public List<Long> jsonArrLen(String key, Path2 path) {
-    return executeCommand(commandObjects.jsonArrLen(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonArrLen(key, path), key);
   }
 
   @Override
   @Deprecated
   public Long jsonArrLen(String key, Path path) {
-    return executeCommand(commandObjects.jsonArrLen(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonArrLen(key, path), key);
   }
 
   @Override
@@ -4388,35 +4427,35 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   @Deprecated
   public Long jsonObjLen(String key) {
-    return executeCommand(commandObjects.jsonObjLen(key));
+    return checkAndClientSideCacheCommand(commandObjects.jsonObjLen(key), key);
   }
 
   @Override
   @Deprecated
   public Long jsonObjLen(String key, Path path) {
-    return executeCommand(commandObjects.jsonObjLen(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonObjLen(key, path), key);
   }
 
   @Override
   public List<Long> jsonObjLen(String key, Path2 path) {
-    return executeCommand(commandObjects.jsonObjLen(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonObjLen(key, path), key);
   }
 
   @Override
   @Deprecated
   public List<String> jsonObjKeys(String key) {
-    return executeCommand(commandObjects.jsonObjKeys(key));
+    return checkAndClientSideCacheCommand(commandObjects.jsonObjKeys(key), key);
   }
 
   @Override
   @Deprecated
   public List<String> jsonObjKeys(String key, Path path) {
-    return executeCommand(commandObjects.jsonObjKeys(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonObjKeys(key, path), key);
   }
 
   @Override
   public List<List<String>> jsonObjKeys(String key, Path2 path) {
-    return executeCommand(commandObjects.jsonObjKeys(key, path));
+    return checkAndClientSideCacheCommand(commandObjects.jsonObjKeys(key, path), key);
   }
 
   @Override
@@ -4515,22 +4554,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public List<TSElement> tsRange(String key, long fromTimestamp, long toTimestamp) {
-    return executeCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp));
+    return checkAndClientSideCacheCommand(commandObjects.tsRange(key, fromTimestamp, toTimestamp), key);
   }
 
   @Override
   public List<TSElement> tsRange(String key, TSRangeParams rangeParams) {
-    return executeCommand(commandObjects.tsRange(key, rangeParams));
+    return checkAndClientSideCacheCommand(commandObjects.tsRange(key, rangeParams), key);
   }
 
   @Override
   public List<TSElement> tsRevRange(String key, long fromTimestamp, long toTimestamp) {
-    return executeCommand(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp));
+    return checkAndClientSideCacheCommand(commandObjects.tsRevRange(key, fromTimestamp, toTimestamp), key);
   }
 
   @Override
   public List<TSElement> tsRevRange(String key, TSRangeParams rangeParams) {
-    return executeCommand(commandObjects.tsRevRange(key, rangeParams));
+    return checkAndClientSideCacheCommand(commandObjects.tsRevRange(key, rangeParams), key);
   }
 
   @Override
@@ -4555,12 +4594,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public TSElement tsGet(String key) {
-    return executeCommand(commandObjects.tsGet(key));
+    return checkAndClientSideCacheCommand(commandObjects.tsGet(key), key);
   }
 
   @Override
   public TSElement tsGet(String key, TSGetParams getParams) {
-    return executeCommand(commandObjects.tsGet(key, getParams));
+    return checkAndClientSideCacheCommand(commandObjects.tsGet(key, getParams), key);
   }
 
   @Override
@@ -4590,7 +4629,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   @Override
   public TSInfo tsInfo(String key) {
-    return executor.executeCommand(commandObjects.tsInfo(key));
+    return checkAndClientSideCacheCommand(commandObjects.tsInfo(key), key);
   }
 
   @Override

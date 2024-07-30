@@ -15,7 +15,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.ClientSideCacheCommandExecutorHelper;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -28,7 +27,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
 
-  private final ClientSideCacheCommandExecutorHelper cache;
+  private final ClientSideCache cache;
 
   public ClusterCommandExecutor(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
@@ -40,7 +39,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
     this.provider = provider;
     this.maxAttempts = maxAttempts;
     this.maxTotalRetriesDuration = maxTotalRetriesDuration;
-    this.cache = cache == null ? null : new ClientSideCacheCommandExecutorHelper(cache);
+    this.cache = cache;
   }
 
   @Override

@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.Connection;
 
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
@@ -22,7 +24,7 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
-  ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
+  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
 
   protected ClientSideCache() {
   }
@@ -77,7 +79,37 @@ public abstract class ClientSideCache {
     }
   }
 
-  final void putInner(final CacheEntry cacheEntry) {
+  public final <T> T get(final Connection connection, CommandObject<T> command) {
+
+    if (!cacheable.isCacheable(command.getArguments().getCommand(), command.getArguments().getKeys())) {
+      return connection.executeCommand(command);
+    }
+
+    final CacheKey cacheKey = new CacheKey(command);
+    CacheEntry<T> cacheEntry = get(cacheKey);
+    if (cacheEntry != null) {
+      // CACHE HIT!!!
+      // TODO: connection ...
+      cacheEntry.getConnection().ping();
+
+      // cache entry can be invalidated; so recheck
+      cacheEntry = get(cacheKey);
+      if (cacheEntry != null) {
+        return cacheEntry.getValue();
+      }
+    }
+
+    // CACHE MISS!!
+    T value = connection.executeCommand(command);
+    if (value != null) {
+      cacheEntry = new CacheEntry(cacheKey, value, connection);
+      putInner(cacheEntry);
+    }
+
+    return value;
+  }
+
+  private void putInner(final CacheEntry cacheEntry) {
     final CacheKey cacheKey = cacheEntry.getCacheKey();
     put(cacheKey, cacheEntry);
     for (Object key : cacheEntry.getCacheKey().getCommandKeys()) {

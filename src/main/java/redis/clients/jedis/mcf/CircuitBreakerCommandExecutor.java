@@ -8,7 +8,6 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.ClientSideCacheCommandExecutorHelper;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
@@ -24,7 +23,7 @@ import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluste
 @Experimental
 public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase implements CommandExecutor {
 
-    private final ClientSideCacheCommandExecutorHelper cache;
+    private final ClientSideCache cache;
 
     public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider) {
         this(provider, (ClientSideCache) null);
@@ -32,7 +31,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
 
     public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider, ClientSideCache cache) {
         super(provider);
-        this.cache = cache == null ? null : new ClientSideCacheCommandExecutorHelper(cache);
+        this.cache = cache;
     }
 
     @Override

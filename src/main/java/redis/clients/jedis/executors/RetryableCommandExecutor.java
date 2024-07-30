@@ -10,7 +10,6 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.csc.ClientSideCache;
-import redis.clients.jedis.csc.ClientSideCacheCommandExecutorHelper;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
@@ -24,7 +23,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
 
-  private final ClientSideCacheCommandExecutorHelper cache;
+  private final ClientSideCache cache;
 
   public RetryableCommandExecutor(ConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
@@ -36,7 +35,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
     this.provider = provider;
     this.maxAttempts = maxAttempts;
     this.maxTotalRetriesDuration = maxTotalRetriesDuration;
-    this.cache = cache == null ? null : new ClientSideCacheCommandExecutorHelper(cache);
+    this.cache = cache;
   }
 
   @Override

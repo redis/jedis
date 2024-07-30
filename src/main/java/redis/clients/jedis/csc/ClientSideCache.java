@@ -77,10 +77,10 @@ public abstract class ClientSideCache {
     }
   }
 
-  final void putInner(final CacheEntry cacheEntry, Object... keys) {
+  final void putInner(final CacheEntry cacheEntry) {
     final CacheKey cacheKey = cacheEntry.getCacheKey();
     put(cacheKey, cacheEntry);
-    for (Object key : keys) {
+    for (Object key : cacheEntry.getCacheKey().getCommandKeys()) {
       ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
       if (redisKeysToCacheKeys.containsKey(mapKey)) {
         redisKeysToCacheKeys.get(mapKey).add(cacheKey);

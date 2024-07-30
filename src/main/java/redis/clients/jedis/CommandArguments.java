@@ -3,7 +3,9 @@ package redis.clients.jedis;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
@@ -16,6 +18,8 @@ public class CommandArguments implements Iterable<Rawable> {
   private final ArrayList<Rawable> args;
 
   private boolean blocking;
+
+  private List keys;
 
   private CommandArguments() {
     throw new InstantiationError();
@@ -99,7 +103,7 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
-  public CommandArguments key(Object key) {
+  public final CommandArguments key(Object key) {
     if (key instanceof Rawable) {
       Rawable raw = (Rawable) key;
       processKey(raw.getRaw());
@@ -115,7 +119,23 @@ public class CommandArguments implements Iterable<Rawable> {
     } else {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
+
+    addKeyInKeys(key);
+
     return this;
+  }
+
+  private void addKeyInKeys(Object key) {
+    if (keys == null) {
+      keys = Collections.singletonList(key);
+    } else if (keys.size() == 1) {
+      List oldKeys = keys;
+      keys = new ArrayList();
+      keys.addAll(oldKeys);
+      keys.add(key);
+    } else {
+      keys.add(key);
+    }
   }
 
   public final CommandArguments keys(Object... keys) {
@@ -155,6 +175,10 @@ public class CommandArguments implements Iterable<Rawable> {
       processKey(key);
     }
     return this;
+  }
+
+  public List getKeys() {
+    return keys;
   }
 
   public int size() {

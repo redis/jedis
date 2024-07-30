@@ -3,7 +3,6 @@ package redis.clients.jedis.executors;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +36,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
     this.provider = provider;
     this.maxAttempts = maxAttempts;
     this.maxTotalRetriesDuration = maxTotalRetriesDuration;
-    this.cache = new ClientSideCacheCommandExecutorHelper(cache);
+    this.cache = cache == null ? null : new ClientSideCacheCommandExecutorHelper(cache);
   }
 
   @Override
@@ -47,11 +46,6 @@ public class RetryableCommandExecutor implements CommandExecutor {
 
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
-    return executeCommand(commandObject, null);
-  }
-
-  @Override
-  public final <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
 
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
@@ -62,7 +56,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
       try {
         connection = provider.getConnection(commandObject.getArguments());
 
-        return execute(connection, commandObject, keys);
+        return execute(connection, commandObject);
 
       } catch (JedisConnectionException jce) {
         lastException = jce;
@@ -91,9 +85,9 @@ public class RetryableCommandExecutor implements CommandExecutor {
    * This should not be used or overriden.
    */
   @VisibleForTesting
-  protected <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
-    if (this.cache != null && keys != null) {
-      return this.cache.get(connection, commandObject, (Object[]) keys.get());
+  protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
+    if (this.cache != null) {
+      return this.cache.get(connection, commandObject);
     } else {
       return connection.executeCommand(commandObject);
     }

@@ -3,7 +3,6 @@ package redis.clients.jedis.mcf;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.decorators.Decorators;
 import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
-import java.util.function.Supplier;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
@@ -33,24 +32,19 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
 
     public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider, ClientSideCache cache) {
         super(provider);
-        this.cache = new ClientSideCacheCommandExecutorHelper(cache);
+        this.cache = cache == null ? null : new ClientSideCacheCommandExecutorHelper(cache);
     }
 
     @Override
     public final <T> T executeCommand(CommandObject<T> commandObject) {
-        return executeCommand(commandObject, null);
-    }
-
-    @Override
-    public <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
         Cluster cluster = provider.getCluster(); // Pass this by reference for thread safety
 
-        DecorateSupplier<T> supplier = Decorators.ofSupplier(() -> this.handleExecuteCommand(commandObject, cluster, keys));
+        DecorateSupplier<T> supplier = Decorators.ofSupplier(() -> this.handleExecuteCommand(commandObject, cluster));
 
         supplier.withRetry(cluster.getRetry());
         supplier.withCircuitBreaker(cluster.getCircuitBreaker());
         supplier.withFallback(provider.getFallbackExceptionList(),
-                e -> this.handleClusterFailover(commandObject, cluster.getCircuitBreaker(), keys));
+                e -> this.handleClusterFailover(commandObject, cluster.getCircuitBreaker()));
 
         return supplier.decorate().get();
     }
@@ -58,10 +52,10 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
     /**
      * Functional interface wrapped in retry and circuit breaker logic to handle happy path scenarios
      */
-    private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster, Supplier<Object[]> keys) {
+    private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster) {
         try (Connection connection = cluster.getConnection()) {
-            if (cache != null && keys != null) {
-                return cache.get(connection, commandObject, (Object[]) keys.get());
+            if (cache != null) {
+                return cache.get(connection, commandObject);
             } else {
                 return connection.executeCommand(commandObject);
             }
@@ -71,12 +65,12 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
     /**
      * Functional interface wrapped in retry and circuit breaker logic to handle open circuit breaker failure scenarios
      */
-    private <T> T handleClusterFailover(CommandObject<T> commandObject, CircuitBreaker circuitBreaker, Supplier<Object[]> keys) {
+    private <T> T handleClusterFailover(CommandObject<T> commandObject, CircuitBreaker circuitBreaker) {
 
         clusterFailover(circuitBreaker);
 
         // Recursive call to the initiating method so the operation can be retried on the next cluster connection
-        return executeCommand(commandObject, keys);
+        return executeCommand(commandObject);
     }
 
 }

@@ -1,6 +1,5 @@
 package redis.clients.jedis.executors;
 
-import java.util.function.Supplier;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.csc.ClientSideCache;
@@ -20,7 +19,7 @@ public class DefaultCommandExecutor implements CommandExecutor {
 
   public DefaultCommandExecutor(ConnectionProvider provider, ClientSideCache cache) {
     this.provider = provider;
-    this.cache = new ClientSideCacheCommandExecutorHelper(cache);
+    this.cache = cache == null ? null : new ClientSideCacheCommandExecutorHelper(cache);
   }
 
   @Override
@@ -30,14 +29,9 @@ public class DefaultCommandExecutor implements CommandExecutor {
 
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
-    return executeCommand(commandObject, null);
-  }
-
-  @Override
-  public final <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
     try (Connection connection = provider.getConnection(commandObject.getArguments())) {
-      if (cache != null && keys != null) {
-        return cache.get(connection, commandObject, (Object[]) keys.get());
+      if (cache != null) {
+        return cache.get(connection, commandObject);
       } else {
         return connection.executeCommand(commandObject);
       }

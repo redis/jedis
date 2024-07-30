@@ -13,9 +13,9 @@ public final class ClientSideCacheCommandExecutorHelper {
     this.cache = cache;
   }
 
-  public final <T> T get(final Connection connection, CommandObject<T> command, Object... keys) {
+  public final <T> T get(final Connection connection, CommandObject<T> command) {
 
-    if (!cache.cacheable.isCacheable(command.getArguments().getCommand(), keys)) {
+    if (!cache.cacheable.isCacheable(command.getArguments().getCommand(), command.getArguments().getKeys())) {
       return connection.executeCommand(command);
     }
 
@@ -37,7 +37,7 @@ public final class ClientSideCacheCommandExecutorHelper {
     T value = connection.executeCommand(command);
     if (value != null) {
       cacheEntry = new CacheEntry(cacheKey, value, connection);
-      cache.putInner(cacheEntry, keys);
+      cache.putInner(cacheEntry);
     }
 
     return value;

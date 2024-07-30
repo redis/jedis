@@ -5,7 +5,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,7 +59,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
       HostAndPort node = HostAndPort.from(entry.getKey());
       ConnectionPool pool = entry.getValue();
       try (Connection connection = pool.getResource()) {
-        T aReply = execute(connection, commandObject, null);
+        T aReply = execute(connection, commandObject);
         bcastError.addReply(node, aReply);
         if (isErrored) {
           // already errored
@@ -85,11 +84,6 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
-    return executeCommand(commandObject, null);
-  }
-
-  @Override
-  public final <T> T executeCommand(CommandObject<T> commandObject, Supplier<Object[]> keys) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
     JedisRedirectionException redirect = null;
@@ -108,7 +102,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
           connection = provider.getConnection(commandObject.getArguments());
         }
 
-        return execute(connection, commandObject, keys);
+        return execute(connection, commandObject);
 
       } catch (JedisClusterOperationException jnrcne) {
         throw jnrcne;
@@ -154,9 +148,9 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * This should not be used or overriden.
    */
   @VisibleForTesting
-  protected <T> T execute(Connection connection, CommandObject<T> commandObject, Supplier<Object[]> keys) {
-    if (cache != null && keys != null) {
-      return cache.get(connection, commandObject, (Object[]) keys.get());
+  protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
+    if (cache != null) {
+      return cache.get(connection, commandObject);
     } else {
       return connection.executeCommand(commandObject);
     }

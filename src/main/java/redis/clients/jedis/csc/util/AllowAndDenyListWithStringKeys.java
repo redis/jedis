@@ -1,5 +1,6 @@
 package redis.clients.jedis.csc.util;
 
+import java.util.List;
 import java.util.Set;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.csc.ClientSideCacheable;
@@ -21,7 +22,7 @@ public class AllowAndDenyListWithStringKeys implements ClientSideCacheable {
   }
 
   @Override
-  public boolean isCacheable(ProtocolCommand command, Object... keys) {
+  public boolean isCacheable(ProtocolCommand command, List keys) {
     if (allowCommands != null && !allowCommands.contains(command)) return false;
     if (denyCommands != null && denyCommands.contains(command)) return false;
 

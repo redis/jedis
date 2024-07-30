@@ -7,6 +7,7 @@ import redis.clients.jedis.providers.ConnectionProvider;
 
 public class DefaultCommandExecutor implements CommandExecutor {
 
+  // TODO: private
   protected final ConnectionProvider provider;
 
   public DefaultCommandExecutor(ConnectionProvider provider) {

@@ -27,7 +27,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
     }
 
     @Override
-    public <T> T executeCommand(CommandObject<T> commandObject) {
+    public final <T> T executeCommand(CommandObject<T> commandObject) {
         Cluster cluster = provider.getCluster(); // Pass this by reference for thread safety
 
         DecorateSupplier<T> supplier = Decorators.ofSupplier(() -> this.handleExecuteCommand(commandObject, cluster));

@@ -41,12 +41,11 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
       assertEquals(1, caffeine.estimatedSize());
       control.flushAll();
       assertEquals(1, caffeine.estimatedSize());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, caffeine.estimatedSize());
-      jedis.ping();
-      assertEquals(0, caffeine.estimatedSize());
       assertNull(jedis.get("foo"));
       assertEquals(0, caffeine.estimatedSize());
+      control.set("foo", "bar2");
+      assertEquals("bar2", jedis.get("foo"));
+      assertEquals(1, caffeine.estimatedSize());
     }
 
     CacheStats stats = caffeine.stats();
@@ -57,7 +56,7 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
   @Test
   public void maximumSize() {
     final long maxSize = 10;
-    final long maxEstimatedSize = 52;
+    final long maxEstimatedSize = 53;
     int count = 1000;
     for (int i = 0; i < count; i++) {
       control.set("k" + i, "v" + i);

@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.annots.Experimental;
@@ -24,12 +23,12 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
-  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
+  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile ??
 
   protected ClientSideCache() {
   }
 
-  public void setCacheable(ClientSideCacheable cacheable) {
+  public final void setCacheable(ClientSideCacheable cacheable) {
     this.cacheable = Objects.requireNonNull(cacheable, "'cacheable' must not be null");
   }
 
@@ -79,40 +78,49 @@ public abstract class ClientSideCache {
     }
   }
 
-  public final <T> T get(Function<CommandObject<T>, T> loader, CommandObject<T> command, Object... keys) {
+  public final <T> T get(final CacheConnection connection, CommandObject<T> command) {
 
-    if (!cacheable.isCacheable(command.getArguments().getCommand(), keys)) {
-      return loader.apply(command);
+    if (!cacheable.isCacheable(command.getArguments().getCommand(), command.getArguments().getKeys())) {
+      return connection.executePlainCommand(command);
     }
 
     final CacheKey cacheKey = new CacheKey(command);
-    CacheEntry cacheEntry = get(cacheKey);
+    CacheEntry<T> cacheEntry = get(cacheKey);
     if (cacheEntry != null) {
       // CACHE HIT!!!
       // TODO: connection ...
-      //cacheEntry.getConnection().ping();
-      //cacheEntry = get(cacheKey); // get cache again
-      return (T) cacheEntry.getValue();
-    }
+      cacheEntry.getConnection().ping();
 
-    // CACHE MISS!!
-    T value = loader.apply(command);
-    if (value != null) {
-      cacheEntry = new CacheEntry(cacheKey, value, /*connection*/ null); // TODO: connection
-      put(cacheKey, cacheEntry);
-      for (Object key : keys) {
-        ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
-        if (redisKeysToCacheKeys.containsKey(mapKey)) {
-          redisKeysToCacheKeys.get(mapKey).add(cacheKey);
-        } else {
-          Set<CacheKey<?>> set = ConcurrentHashMap.newKeySet();
-          set.add(cacheKey);
-          redisKeysToCacheKeys.put(mapKey, set);
-        }
+      // cache entry can be invalidated; so recheck
+      cacheEntry = get(cacheKey);
+      if (cacheEntry != null) {
+        return cacheEntry.getValue();
       }
     }
 
+    // CACHE MISS!!
+    T value = connection.executePlainCommand(command);
+    if (value != null) {
+      cacheEntry = new CacheEntry(cacheKey, value, connection);
+      putInner(cacheEntry);
+    }
+
     return value;
+  }
+
+  private void putInner(final CacheEntry cacheEntry) {
+    final CacheKey cacheKey = cacheEntry.getCacheKey();
+    put(cacheKey, cacheEntry);
+    for (Object key : cacheEntry.getCacheKey().getCommandKeys()) {
+      ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
+      if (redisKeysToCacheKeys.containsKey(mapKey)) {
+        redisKeysToCacheKeys.get(mapKey).add(cacheKey);
+      } else {
+        Set<CacheKey<?>> set = ConcurrentHashMap.newKeySet();
+        set.add(cacheKey);
+        redisKeysToCacheKeys.put(mapKey, set);
+      }
+    }
   }
 
   private ByteBuffer makeKeyForRedisKeysToCacheKeys(Object key) {

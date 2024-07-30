@@ -1,16 +1,12 @@
 package redis.clients.jedis.csc;
 
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.annots.Internal;
-
-@Internal
-public class CacheEntry<T> {
+class CacheEntry<T> {
 
   private final CacheKey<T> cacheKey;
   private final T value;
-  private final Connection connection;
+  private final CacheConnection connection;
 
-  public CacheEntry(CacheKey<T> cacheKey, T value, Connection connection) {
+  public CacheEntry(CacheKey<T> cacheKey, T value, CacheConnection connection) {
     this.cacheKey = cacheKey;
     this.value = value;
     this.connection = connection;
@@ -24,7 +20,7 @@ public class CacheEntry<T> {
     return value;
   }
 
-  public Connection getConnection() {
+  public CacheConnection getConnection() {
     return connection;
   }
 }

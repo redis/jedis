@@ -58,9 +58,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
           consecutiveConnectionFailures = 0;
         }
       } finally {
-        if (connection != null) {
-          connection.close();
-        }
+        IOUtils.closeQuietly(connection);
       }
       if (Instant.now().isAfter(deadline)) {
         throw new JedisException("Retry deadline exceeded.");

@@ -734,7 +734,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     String key = "mystream";
     String groupName = "mygroup";
     StreamPendingSummary expectedSummary = new StreamPendingSummary(10L,
-        new StreamEntryID("0-0"), new StreamEntryID("0-1"), Collections.emptyMap());
+            new StreamEntryID("0-0"), new StreamEntryID("0-1"), Collections.emptyMap());
 
     when(commandObjects.xpending(key, groupName)).thenReturn(streamPendingSummaryCommandObject);
     when(commandExecutor.executeCommand(streamPendingSummaryCommandObject)).thenReturn(expectedSummary);
@@ -827,8 +827,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] start = "0-0".getBytes();
     byte[] end = "+".getBytes();
     List<Object> expectedRange = Arrays.asList(
-        new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")),
-        new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
+            new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")),
+            new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
 
     when(commandObjects.xrange(key, start, end)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedRange);
@@ -870,8 +870,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] end = "+".getBytes();
     int count = 2;
     List<Object> expectedRange = Arrays.asList(
-        new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")),
-        new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
+            new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")),
+            new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
 
     when(commandObjects.xrange(key, start, end, count)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedRange);
@@ -1061,8 +1061,8 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] end = "+".getBytes();
     byte[] start = "0-0".getBytes();
     List<Object> expectedReverseRange = Arrays.asList(
-        new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")),
-        new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")));
+            new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")),
+            new StreamEntry(new StreamEntryID("0-0"), Collections.singletonMap("field1", "value1")));
 
     when(commandObjects.xrevrange(key, end, start)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReverseRange);
@@ -1104,7 +1104,7 @@ public class UnifiedJedisStreamCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] start = "0-0".getBytes();
     int count = 1;
     List<Object> expectedReverseRange = Collections.singletonList(
-        new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
+            new StreamEntry(new StreamEntryID("0-1"), Collections.singletonMap("field2", "value2")));
 
     when(commandObjects.xrevrange(key, end, start, count)).thenReturn(listObjectCommandObject);
     when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(expectedReverseRange);

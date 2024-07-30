@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.VisibleForTesting;
-import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
@@ -23,19 +22,11 @@ public class RetryableCommandExecutor implements CommandExecutor {
   protected final int maxAttempts;
   protected final Duration maxTotalRetriesDuration;
 
-  private final ClientSideCache cache;
-
   public RetryableCommandExecutor(ConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
-    this(provider, maxAttempts, maxTotalRetriesDuration, (ClientSideCache) null);
-  }
-
-  public RetryableCommandExecutor(ConnectionProvider provider, int maxAttempts,
-      Duration maxTotalRetriesDuration, ClientSideCache cache) {
     this.provider = provider;
     this.maxAttempts = maxAttempts;
     this.maxTotalRetriesDuration = maxTotalRetriesDuration;
-    this.cache = cache;
   }
 
   @Override
@@ -85,11 +76,7 @@ public class RetryableCommandExecutor implements CommandExecutor {
    */
   @VisibleForTesting
   protected <T> T execute(Connection connection, CommandObject<T> commandObject) {
-    if (this.cache != null) {
-      return this.cache.get(connection, commandObject);
-    } else {
-      return connection.executeCommand(commandObject);
-    }
+    return connection.executeCommand(commandObject);
   }
 
   /**

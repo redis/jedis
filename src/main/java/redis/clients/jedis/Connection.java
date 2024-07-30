@@ -130,15 +130,15 @@ public class Connection implements Closeable {
     return getOne();
   }
 
-  public <T> T executeCommand(final CommandObject<T> commandObject) {
-    final CommandArguments args = commandObject.getArguments();
+  public <T> T executeCommand(final CommandObject<T> command) {
+    final CommandArguments args = command.getArguments();
     sendCommand(args);
     if (!args.isBlocking()) {
-      return commandObject.getBuilder().build(getOne());
+      return command.getBuilder().build(getOne());
     } else {
       try {
         setTimeoutInfinite();
-        return commandObject.getBuilder().build(getOne());
+        return command.getBuilder().build(getOne());
       } finally {
         rollbackTimeout();
       }

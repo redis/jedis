@@ -2,6 +2,7 @@ package redis.clients.jedis.csc;
 
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
@@ -54,6 +55,15 @@ public class CacheConnection extends Connection {
         lock.unlock();
       }
     }
+  }
+
+  @Override
+  public <T> T executeCommand(CommandObject<T> command) { // should we put the logic here or there?
+    return clientSideCache.get(this, command);
+  }
+
+  public <T> T executePlainCommand(CommandObject<T> command) { // to support the logic 'there'
+    return super.executeCommand(command);
   }
 
   private void initializeClientSideCache() {

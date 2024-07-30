@@ -3,10 +3,8 @@ package redis.clients.jedis.csc;
 import java.util.List;
 import java.util.Objects;
 import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.annots.Internal;
 
-@Internal
-public class CacheKey<T> {
+class CacheKey<T> {
 
   private final CommandObject<T> command;
 

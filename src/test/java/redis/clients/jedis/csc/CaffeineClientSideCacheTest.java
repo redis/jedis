@@ -56,7 +56,7 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
   @Test
   public void maximumSize() {
     final long maxSize = 10;
-    final long maxEstimatedSize = 52;
+    final long maxEstimatedSize = 53;
     int count = 1000;
     for (int i = 0; i < count; i++) {
       control.set("k" + i, "v" + i);

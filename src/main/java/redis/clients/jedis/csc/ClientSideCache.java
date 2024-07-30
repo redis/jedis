@@ -6,9 +6,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.Connection;
 
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -24,7 +23,7 @@ public abstract class ClientSideCache {
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
 
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
-  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
+  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile ??
 
   protected ClientSideCache() {
   }
@@ -79,10 +78,10 @@ public abstract class ClientSideCache {
     }
   }
 
-  public final <T> T get(final Connection connection, CommandObject<T> command) {
+  public final <T> T get(final CacheConnection connection, CommandObject<T> command) {
 
     if (!cacheable.isCacheable(command.getArguments().getCommand(), command.getArguments().getKeys())) {
-      return connection.executeCommand(command);
+      return connection.executePlainCommand(command);
     }
 
     final CacheKey cacheKey = new CacheKey(command);
@@ -100,7 +99,7 @@ public abstract class ClientSideCache {
     }
 
     // CACHE MISS!!
-    T value = connection.executeCommand(command);
+    T value = connection.executePlainCommand(command);
     if (value != null) {
       cacheEntry = new CacheEntry(cacheKey, value, connection);
       putInner(cacheEntry);

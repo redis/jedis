@@ -7,7 +7,6 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.csc.ClientSideCache;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider;
 import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluster;
@@ -23,15 +22,8 @@ import redis.clients.jedis.providers.MultiClusterPooledConnectionProvider.Cluste
 @Experimental
 public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase implements CommandExecutor {
 
-    private final ClientSideCache cache;
-
     public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider) {
-        this(provider, (ClientSideCache) null);
-    }
-
-    public CircuitBreakerCommandExecutor(MultiClusterPooledConnectionProvider provider, ClientSideCache cache) {
         super(provider);
-        this.cache = cache;
     }
 
     @Override
@@ -53,11 +45,7 @@ public class CircuitBreakerCommandExecutor extends CircuitBreakerFailoverBase im
      */
     private <T> T handleExecuteCommand(CommandObject<T> commandObject, Cluster cluster) {
         try (Connection connection = cluster.getConnection()) {
-            if (cache != null) {
-                return cache.get(connection, commandObject);
-            } else {
-                return connection.executeCommand(commandObject);
-            }
+            return connection.executeCommand(commandObject);
         }
     }
 

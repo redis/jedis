@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import redis.clients.jedis.annots.Experimental;
@@ -24,12 +25,13 @@ public abstract class ClientSideCache implements Cache {
   private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
   private final int maximumSize;
+  private ReentrantLock lock = new ReentrantLock();
 
   protected ClientSideCache(int maximumSize) {
     this.maximumSize = maximumSize;
   }
 
-  protected ClientSideCache(int maximumSize,ClientSideCacheable cacheable ) {
+  protected ClientSideCache(int maximumSize, ClientSideCacheable cacheable) {
     this.maximumSize = maximumSize;
     this.cacheable = cacheable;
   }
@@ -54,54 +56,74 @@ public abstract class ClientSideCache implements Cache {
 
   @Override
   public CacheEntry set(CacheKey cacheKey, CacheEntry entry) {
-    entry = putIntoStore(cacheKey, entry);
-    getEvictionPolicy().touch(cacheKey);
-    getEvictionPolicy().evictNext();
-    for (Object redisKey : cacheKey.getRedisKeys()) {
-      ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
-      if (redisKeysToCacheKeys.containsKey(mapKey)) {
-        redisKeysToCacheKeys.get(mapKey).add(cacheKey);
-      } else {
-        Set<CacheKey<?>> set = ConcurrentHashMap.newKeySet();
-        set.add(cacheKey);
-        redisKeysToCacheKeys.put(mapKey, set);
+    lock.lock();
+    try {
+      entry = putIntoStore(cacheKey, entry);
+      getEvictionPolicy().touch(cacheKey);
+      getEvictionPolicy().evictNext();
+      for (Object redisKey : cacheKey.getRedisKeys()) {
+        ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
+        if (redisKeysToCacheKeys.containsKey(mapKey)) {
+          redisKeysToCacheKeys.get(mapKey).add(cacheKey);
+        } else {
+          Set<CacheKey<?>> set = ConcurrentHashMap.newKeySet();
+          set.add(cacheKey);
+          redisKeysToCacheKeys.put(mapKey, set);
+        }
       }
+      return entry;
+    } finally {
+      lock.unlock();
     }
-    return entry;
   }
 
   @Override
   public Boolean delete(CacheKey cacheKey) {
-    boolean removed = removeFromStore(cacheKey);
-    getEvictionPolicy().reset(cacheKey);
+    lock.lock();
+    try {
+      boolean removed = removeFromStore(cacheKey);
+      getEvictionPolicy().reset(cacheKey);
 
-    // removing it from redisKeysToCacheKeys as well
-    // TODO: considering not doing it, what is the impact of not doing it ??
-    for (Object redisKey : cacheKey.getRedisKeys()) {
-      ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
-      if (redisKeysToCacheKeys.containsKey(mapKey)) {
-        redisKeysToCacheKeys.get(mapKey).remove(cacheKey);
+      // removing it from redisKeysToCacheKeys as well
+      // TODO: considering not doing it, what is the impact of not doing it ??
+      for (Object redisKey : cacheKey.getRedisKeys()) {
+        ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
+        if (redisKeysToCacheKeys.containsKey(mapKey)) {
+          redisKeysToCacheKeys.get(mapKey).remove(cacheKey);
+        }
       }
+      return removed;
+    } finally {
+      lock.unlock();
     }
-    return removed;
   }
 
   @Override
   public List<Boolean> delete(List<CacheKey> cacheKeys) {
-    return cacheKeys.stream().map(this::delete).collect(Collectors.toList());
+    lock.lock();
+    try {
+      return cacheKeys.stream().map(this::delete).collect(Collectors.toList());
+    } finally {
+      lock.unlock();
+    }
   }
 
   @Override
   public List<CacheKey> deleteByRedisKey(Object key) {
-    final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
+    lock.lock();
+    try {
+      final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
 
-    Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
-    List<CacheKey> cacheKeys = new ArrayList<>();
-    if (commands != null) {
-      cacheKeys.addAll(commands.stream().filter(this::removeFromStore).collect(Collectors.toList()));
-      redisKeysToCacheKeys.remove(mapKey);
+      Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
+      List<CacheKey> cacheKeys = new ArrayList<>();
+      if (commands != null) {
+        cacheKeys.addAll(commands.stream().filter(this::removeFromStore).collect(Collectors.toList()));
+        redisKeysToCacheKeys.remove(mapKey);
+      }
+      return cacheKeys;
+    } finally {
+      lock.unlock();
     }
-    return cacheKeys;
   }
 
   @Override
@@ -110,18 +132,27 @@ public abstract class ClientSideCache implements Cache {
       flush();
       return null;
     }
-    
-    return ((List<Object>) keys).stream()
-        .map(this::deleteByRedisKey).flatMap(List::stream).collect(Collectors.toList());
+    lock.lock();
+    try {
+      return ((List<Object>) keys).stream()
+          .map(this::deleteByRedisKey).flatMap(List::stream).collect(Collectors.toList());
+    } finally {
+      lock.unlock();
+    }
   }
 
   @Override
   public int flush() {
-    int result = this.getSize();
-    clearStore();
-    redisKeysToCacheKeys.clear();
-    getEvictionPolicy().resetAll();
-    return result;
+    lock.lock();
+    try {
+      int result = this.getSize();
+      clearStore();
+      redisKeysToCacheKeys.clear();
+      getEvictionPolicy().resetAll();
+      return result;
+    } finally {
+      lock.unlock();
+    }
   }
 
   @Override

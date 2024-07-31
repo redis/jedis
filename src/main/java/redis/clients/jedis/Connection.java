@@ -418,7 +418,7 @@ public class Connection implements Closeable {
     return true;
   }
 
-  private void initializeFromClientConfig(final JedisClientConfig config) {
+  protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
       connect();
 

@@ -15,7 +15,7 @@ import redis.clients.jedis.util.RedisInputStream;
 public class CacheConnection extends Connection {
 
   private final Cache clientSideCache;
-  private final ReentrantLock lock;
+  private ReentrantLock lock;
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache clientSideCache) {
     super(socketFactory, clientConfig);
@@ -25,27 +25,27 @@ public class CacheConnection extends Connection {
     }
     this.clientSideCache = Objects.requireNonNull(clientSideCache);
     initializeClientSideCache();
+  }
 
+  @Override
+  protected void initializeFromClientConfig(JedisClientConfig config) {
     lock = new ReentrantLock();
+    super.initializeFromClientConfig(config);
   }
 
   @Override
   protected Object protocolRead(RedisInputStream inputStream) {
-    if (lock != null) {
-      lock.lock();
-      try {
-        return Protocol.read(inputStream);
-      } finally {
-        lock.unlock();
-      }
-    } else {
+    lock.lock();
+    try {
       return Protocol.read(inputStream);
+    } finally {
+      lock.unlock();
     }
   }
 
   @Override
   protected void protocolReadPushes(RedisInputStream inputStream, boolean onlyPendingBuffer) {
-    if (lock != null && lock.tryLock()) {
+    if (lock.tryLock()) {
       try {
         Protocol.readPushes(inputStream, clientSideCache, onlyPendingBuffer);
       } finally {
@@ -92,16 +92,20 @@ public class CacheConnection extends Connection {
   }
 
   private CacheEntry validateEntry(CacheEntry cacheEntry) {
-    Connection cacheOwner = (Connection) cacheEntry.getConnection().get();
-    if (cacheOwner == null) {
+    CacheConnection cacheOwner = (CacheConnection) cacheEntry.getConnection().get();
+    if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected()) {
       clientSideCache.delete(cacheEntry.getCacheKey());
       return null;
     } else {
-      if (cacheOwner == this) {
-        this.readPushesWithCheckingBroken();
-        cacheEntry = clientSideCache.get(cacheEntry.getCacheKey());
+      try {
+        cacheOwner.readPushesWithCheckingBroken();
+      } catch (JedisException e) {
+        clientSideCache.delete(cacheEntry.getCacheKey());
+        return null;
       }
+
+      cacheEntry = clientSideCache.get(cacheEntry.getCacheKey());
+      return cacheEntry;
     }
-    return cacheEntry;
   }
 }

@@ -51,7 +51,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
       try (Connection connection = pool.getResource()) {
         T aReply = execute(connection, commandObject);
         bcastError.addReply(node, aReply);
-        if (isErrored) { // already errored
+        if (isErrored) {
+          // already errored
         } else if (reply == null) {
           reply = aReply; // ok
         } else if (reply.equals(aReply)) {

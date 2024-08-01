@@ -48,7 +48,7 @@ public class JedisSentineledClientSideCacheTest {
 
   @Test
   public void simple() {
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(),
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new DefaultClientSideCache(),
         sentinels, sentinelClientConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -60,7 +60,7 @@ public class JedisSentineledClientSideCacheTest {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(map),
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new DefaultClientSideCache(map),
         sentinels, sentinelClientConfig)) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -68,18 +68,17 @@ public class JedisSentineledClientSideCacheTest {
       assertThat(map, Matchers.aMapWithSize(1));
       control.del("foo");
       assertThat(map, Matchers.aMapWithSize(1));
-      assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
-      jedis.ping();
-      assertThat(map, Matchers.aMapWithSize(0));
       assertNull(jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(0));
+      control.set("foo", "bar2");
+      assertEquals("bar2", jedis.get("foo"));
+      assertThat(map, Matchers.aMapWithSize(1));
     }
   }
 
   @Test
   public void flushAll() {
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(),
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new DefaultClientSideCache(),
         sentinels, sentinelClientConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -91,7 +90,7 @@ public class JedisSentineledClientSideCacheTest {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new MapClientSideCache(map),
+    try (JedisSentineled jedis = new JedisSentineled(MASTER_NAME, masterClientConfig, new DefaultClientSideCache(map),
         sentinels, sentinelClientConfig)) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -99,12 +98,11 @@ public class JedisSentineledClientSideCacheTest {
       assertThat(map, Matchers.aMapWithSize(1));
       control.flushAll();
       assertThat(map, Matchers.aMapWithSize(1));
-      assertEquals("bar", jedis.get("foo"));
-      assertThat(map, Matchers.aMapWithSize(1));
-      jedis.ping();
-      assertThat(map, Matchers.aMapWithSize(0));
       assertNull(jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(0));
+      control.set("foo", "bar2");
+      assertEquals("bar2", jedis.get("foo"));
+      assertThat(map, Matchers.aMapWithSize(1));
     }
   }
 }

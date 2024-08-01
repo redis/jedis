@@ -1,4 +1,4 @@
-package redis.clients.jedis.csc;
+package redis.clients.jedis.csc.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -8,19 +8,17 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.csc.ClientSideCacheTestBase;
 
 public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    CaffeineClientSideCache caffeine = CaffeineClientSideCache.builder().maximumSize(10).ttl(10).build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineClientSideCache())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -41,12 +39,11 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
       assertEquals(1, caffeine.estimatedSize());
       control.flushAll();
       assertEquals(1, caffeine.estimatedSize());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, caffeine.estimatedSize());
-      jedis.ping();
-      assertEquals(0, caffeine.estimatedSize());
       assertNull(jedis.get("foo"));
       assertEquals(0, caffeine.estimatedSize());
+      control.set("foo", "bar2");
+      assertEquals("bar2", jedis.get("foo"));
+      assertEquals(1, caffeine.estimatedSize());
     }
 
     CacheStats stats = caffeine.stats();
@@ -57,7 +54,7 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
   @Test
   public void maximumSize() {
     final long maxSize = 10;
-    final long maxEstimatedSize = 52;
+    final long maxEstimatedSize = 53;
     int count = 1000;
     for (int i = 0; i < count; i++) {
       control.set("k" + i, "v" + i);

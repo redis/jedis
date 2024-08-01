@@ -1,4 +1,4 @@
-package redis.clients.jedis.csc;
+package redis.clients.jedis.csc.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -8,19 +8,17 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.csc.ClientSideCacheTestBase;
 
 public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    GuavaClientSideCache guava = GuavaClientSideCache.builder().maximumSize(10).ttl(10).build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaClientSideCache())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -41,12 +39,11 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
       assertEquals(1, guava.size());
       control.flushAll();
       assertEquals(1, guava.size());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, guava.size());
-      jedis.ping();
-      assertEquals(0, guava.size());
       assertNull(jedis.get("foo"));
       assertEquals(0, guava.size());
+      control.set("foo", "bar2");
+      assertEquals("bar2", jedis.get("foo"));
+      assertEquals(1, guava.size());
     }
 
     CacheStats stats = guava.stats();

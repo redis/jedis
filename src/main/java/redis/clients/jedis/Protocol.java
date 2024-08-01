@@ -214,6 +214,12 @@ public final class Protocol {
   }
 
   @Experimental
+  public static Object read(final RedisInputStream is, final Cache cache) {
+    readPushes(is, cache, false);
+    return process(is);
+  }
+
+  @Experimental
   public static void readPushes(final RedisInputStream is, final Cache cache, boolean onlyPendingBuffer) {
     if (onlyPendingBuffer) {
       try {

@@ -37,17 +37,17 @@ public class CacheConnection extends Connection {
   protected Object protocolRead(RedisInputStream inputStream) {
     lock.lock();
     try {
-      return Protocol.read(inputStream);
+      return Protocol.read(inputStream, clientSideCache);
     } finally {
       lock.unlock();
     }
   }
 
   @Override
-  protected void protocolReadPushes(RedisInputStream inputStream, boolean onlyPendingBuffer) {
+  protected void protocolReadPushes(RedisInputStream inputStream) {
     if (lock.tryLock()) {
       try {
-        Protocol.readPushes(inputStream, clientSideCache, onlyPendingBuffer);
+        Protocol.readPushes(inputStream, clientSideCache, true);
       } finally {
         lock.unlock();
       }
@@ -58,6 +58,7 @@ public class CacheConnection extends Connection {
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     CacheKey key = new CacheKey<>(commandObject);
     if (!clientSideCache.isCacheable(key)) {
+      clientSideCache.getStats().nonCacheable();
       return super.executeCommand(commandObject);
     }
 
@@ -68,11 +69,13 @@ public class CacheConnection extends Connection {
     if (cacheEntry != null) {
       cacheEntry = validateEntry(cacheEntry);
       if (cacheEntry != null) {
+        clientSideCache.getStats().hit();
         return (T) cacheEntry.getValue();
       }
     }
 
     // CACHE MISS!!
+    clientSideCache.getStats().miss();
     T value = super.executeCommand(commandObject);
     if (value != null) {
       cacheEntry = new CacheEntry<T>(cacheKey, value, new WeakReference(this));

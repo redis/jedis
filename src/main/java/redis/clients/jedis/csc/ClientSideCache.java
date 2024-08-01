@@ -26,6 +26,7 @@ public abstract class ClientSideCache implements Cache {
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
   private final int maximumSize;
   private ReentrantLock lock = new ReentrantLock();
+  private volatile CacheStats stats = new CacheStats();
 
   protected ClientSideCache(int maximumSize) {
     this.maximumSize = maximumSize;
@@ -60,7 +61,9 @@ public abstract class ClientSideCache implements Cache {
     try {
       entry = putIntoStore(cacheKey, entry);
       getEvictionPolicy().touch(cacheKey);
-      getEvictionPolicy().evictNext();
+      if (getEvictionPolicy().evictNext() != null) {
+        stats.evict();
+      }
       for (Object redisKey : cacheKey.getRedisKeys()) {
         ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
         if (redisKeysToCacheKeys.containsKey(mapKey)) {
@@ -71,6 +74,7 @@ public abstract class ClientSideCache implements Cache {
           redisKeysToCacheKeys.put(mapKey, set);
         }
       }
+      stats.load();
       return entry;
     } finally {
       lock.unlock();
@@ -88,8 +92,9 @@ public abstract class ClientSideCache implements Cache {
       // TODO: considering not doing it, what is the impact of not doing it ??
       for (Object redisKey : cacheKey.getRedisKeys()) {
         ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(redisKey);
-        if (redisKeysToCacheKeys.containsKey(mapKey)) {
-          redisKeysToCacheKeys.get(mapKey).remove(cacheKey);
+        Set<CacheKey<?>> cacheKeysRelatedtoRedisKey = redisKeysToCacheKeys.get(mapKey);
+        if (cacheKeysRelatedtoRedisKey != null) {
+          cacheKeysRelatedtoRedisKey.remove(cacheKey);
         }
       }
       return removed;
@@ -118,8 +123,10 @@ public abstract class ClientSideCache implements Cache {
       List<CacheKey> cacheKeys = new ArrayList<>();
       if (commands != null) {
         cacheKeys.addAll(commands.stream().filter(this::removeFromStore).collect(Collectors.toList()));
+        stats.invalidationByServer(cacheKeys.size());
         redisKeysToCacheKeys.remove(mapKey);
       }
+      stats.invalidationMessages();
       return cacheKeys;
     } finally {
       lock.unlock();
@@ -149,6 +156,7 @@ public abstract class ClientSideCache implements Cache {
       clearStore();
       redisKeysToCacheKeys.clear();
       getEvictionPolicy().resetAll();
+      getStats().flush();
       return result;
     } finally {
       lock.unlock();
@@ -167,6 +175,18 @@ public abstract class ClientSideCache implements Cache {
 
   @Override
   public abstract EvictionPolicy getEvictionPolicy();
+
+  @Override
+  public CacheStats getStats() {
+    return stats;
+  }
+
+  @Override
+  public CacheStats getAndResetStats() {
+    CacheStats result = stats;
+    stats = new CacheStats();
+    return result;
+  }
 
   // End of Cache interface methods
 
@@ -199,4 +219,5 @@ public abstract class ClientSideCache implements Cache {
   private static ByteBuffer makeKeyForRedisKeysToCacheKeys(byte[] b) {
     return ByteBuffer.wrap(b);
   }
+
 }

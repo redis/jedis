@@ -4,18 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
@@ -26,11 +21,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
-import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
+import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.EndpointConfig;
@@ -39,11 +31,13 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPooled;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(Parameterized.class)
 public class JedisPooledClientSideCacheTest {
@@ -104,13 +98,22 @@ public class JedisPooledClientSideCacheTest {
     return poolConfig;
   };
 
+  private void sleep() {
+    try {
+      Thread.sleep(10);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+  }
+
   @Test
   public void simple() {
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), new TestCache())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertEquals(null, jedis.get("foo"));
+      sleep();
+      assertNull(jedis.get("foo"));
     }
   }
 
@@ -125,10 +128,12 @@ public class JedisPooledClientSideCacheTest {
       assertThat(map, Matchers.aMapWithSize(1));
       control.del("foo");
       assertThat(map, Matchers.aMapWithSize(1));
-      assertEquals(null, jedis.get("foo"));
+      sleep();
+      assertNull(jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(0));
-      jedis.ping();
+      sleep();
       assertThat(map, Matchers.aMapWithSize(0));
+      sleep();
       assertNull(jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(0));
     }
@@ -140,7 +145,8 @@ public class JedisPooledClientSideCacheTest {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
-      assertEquals(null, jedis.get("foo"));
+      sleep();
+      assertNull(jedis.get("foo"));
     }
   }
 
@@ -155,41 +161,42 @@ public class JedisPooledClientSideCacheTest {
       assertThat(map, Matchers.aMapWithSize(1));
       control.flushAll();
       assertThat(map, Matchers.aMapWithSize(1));
-      assertEquals(null, jedis.get("foo"));
+      sleep();
+      assertNull(jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(0));
-      jedis.ping();
-      assertThat(map, Matchers.aMapWithSize(0));
+      sleep();
       assertNull(jedis.get("foo"));
       assertThat(map, Matchers.aMapWithSize(0));
     }
   }
 
   @Test
-  public void testConcurrentAccess() throws InterruptedException {
+  public void testSequentialAccess() throws InterruptedException {
     int threadCount = 10;
-    int iterations = 1000;
+    int iterations = 10000;
 
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get())) {
-      String finalValue = jedis.set("foo", "0");
+      jedis.set("foo", "0");
     }
 
     ReentrantLock lock = new ReentrantLock(true);
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
     // Create the shared mock instance of cache
-    TestCache mockedCache = Mockito.spy(new TestCache());
+    TestCache testCache = new TestCache();
 
     // Submit multiple threads to perform concurrent operations
-    CountDownLatch latch = new CountDownLatch(10);
+    CountDownLatch latch = new CountDownLatch(threadCount);
     for (int i = 0; i < threadCount; i++) {
       executorService.submit(() -> {
-        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), mockedCache)) {
+        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
           for (int j = 0; j < iterations; j++) {
             lock.lock();
             try {
               // Simulate continious get and update operations and consume invalidation events meanwhile
-              Integer value = new Integer(jedis.get("foo")) + 1;
-              jedis.set("foo", value.toString());
+              Integer value = new Integer(jedis.get("foo"));
+              assertEquals(control.get("foo"), value.toString());
+              assertEquals("OK", jedis.set("foo", (++value).toString()));
             } finally {
               lock.unlock();
             }
@@ -208,6 +215,135 @@ public class JedisPooledClientSideCacheTest {
       String finalValue = jedis.get("foo");
       assertEquals(threadCount * iterations, Integer.parseInt(finalValue));
     }
+  }
+
+  @Test
+  public void testConcurrentAccessWithStats() throws InterruptedException {
+    int threadCount = 10;
+    int iterations = 10000;
+
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get())) {
+      jedis.set("foo", "0");
+    }
+
+    ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+
+    // Create the shared mock instance of cache
+    TestCache testCache = new TestCache();
+
+    // Submit multiple threads to perform concurrent operations
+    CountDownLatch latch = new CountDownLatch(threadCount);
+    for (int i = 0; i < threadCount; i++) {
+      executorService.submit(() -> {
+        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+          for (int j = 0; j < iterations; j++) {
+            // Simulate continious get and update operations and consume invalidation events meanwhile
+            Integer value = new Integer(jedis.get("foo")) + 1;
+            assertEquals("OK", jedis.set("foo", value.toString()));
+          }
+        } finally {
+          latch.countDown();
+        }
+      });
+    }
+
+    // wait for all threads to complete
+    latch.await();
+
+    CacheStats stats = testCache.getStats();
+    assertEquals(threadCount * iterations, stats.getMissCount() + stats.getHitCount());
+    assertEquals(stats.getMissCount(), stats.getLoadCount());
+  }
+
+  @Test
+  public void testMaxSize() throws InterruptedException {
+    int threadCount = 10;
+    int iterations = 11000;
+    int maxSize = 1000;
+
+    ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+
+    ConcurrentHashMap<CacheKey, CacheEntry> map = new ConcurrentHashMap<CacheKey, CacheEntry>();
+    // Create the shared mock instance of cache
+    TestCache testCache = new TestCache(maxSize, map, DefaultClientSideCacheable.INSTANCE);
+
+    // Submit multiple threads to perform concurrent operations
+    CountDownLatch latch = new CountDownLatch(threadCount);
+    for (int i = 0; i < threadCount; i++) {
+      executorService.submit(() -> {
+        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+          for (int j = 0; j < iterations; j++) {
+            // Simulate continious get and update operations and consume invalidation events meanwhile
+            assertEquals("OK", jedis.set("foo" + j, "foo" + j));
+            jedis.get("foo" + j);
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
+        } finally {
+          latch.countDown();
+        }
+      });
+    }
+
+    // wait for all threads to complete
+    latch.await();
+
+    CacheStats stats = testCache.getStats();
+
+    assertEquals(threadCount * iterations, stats.getMissCount() + stats.getHitCount());
+    assertEquals(stats.getMissCount(), stats.getLoadCount());
+    assertEquals(threadCount * iterations, stats.getNonCacheableCount());
+    assertTrue(maxSize >= testCache.getSize());
+  }
+
+  @Test
+  public void testEvictionPolicy() throws InterruptedException {
+    int maxSize = 100;
+    int expectedEvictions = 20;
+    int touchOffset = 10;
+
+    ConcurrentHashMap<CacheKey, CacheEntry> map = new ConcurrentHashMap<CacheKey, CacheEntry>();
+    TestCache testCache = new TestCache(maxSize, map, DefaultClientSideCacheable.INSTANCE);
+
+    // fill the cache for maxSize
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+      for (int i = 0; i < maxSize; i++) {
+        jedis.set("foo" + i, "bar" + i);
+        assertEquals("bar" + i, jedis.get("foo" + i));
+      }
+    }
+
+    // touch a set of keys to prevent from eviction
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+      for (int i = touchOffset; i < touchOffset + expectedEvictions; i++) {
+        assertEquals("bar" + i, jedis.get("foo" + i));
+      }
+    }
+
+    // add more keys to trigger eviction
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+      for (int i = maxSize; i < maxSize + expectedEvictions; i++) {
+        jedis.set("foo" + i, "bar" + i);
+        assertEquals("bar" + i, jedis.get("foo" + i));
+      }
+    }
+
+    // check touched keys not evicted
+    for (int i = touchOffset; i < touchOffset + expectedEvictions; i++) {
+      assertTrue(map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
+    }
+
+    // check expected evictions are done till the offset
+    for (int i = 0; i < touchOffset; i++) {
+      assertTrue(!map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
+    }
+
+    /// check expected evictions are done after the touched keys
+    for (int i = touchOffset + expectedEvictions; i < (2 * expectedEvictions); i++) {
+      assertTrue(!map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
+    }
+
+    assertEquals(maxSize, testCache.getSize());
   }
 
 }

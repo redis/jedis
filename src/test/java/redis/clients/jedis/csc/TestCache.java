@@ -17,4 +17,8 @@ public class TestCache extends DefaultCache {
     super(1000, map, cacheable);
   }
 
+  public TestCache(int maxSize, Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
+    super(maxSize, map, cacheable);
+  }
+
 }

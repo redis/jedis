@@ -95,4 +95,14 @@ public interface Cache {
      * @return The eviction policy that is used by the cache
      */
     EvictionPolicy getEvictionPolicy();
+
+    /**
+     * @return The statistics of the cache
+     */
+    public CacheStats getStats();
+
+    /**
+     * @return The statistics of the cache
+     */
+    public CacheStats getAndResetStats();
 }

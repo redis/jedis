@@ -13,12 +13,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 
-import javax.net.ssl.SSLSocket;
-
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -344,24 +341,20 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  @Internal
   protected Object protocolRead(RedisInputStream is) {
     return Protocol.read(is);
   }
 
   @Experimental
-  @Internal
-  protected void protocolReadPushes(RedisInputStream is, boolean onlyPendingBuffer) {
+  protected void protocolReadPushes(RedisInputStream is) {
   }
 
-  // TODO: final
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {
-      protocolReadPushes(inputStream, false);
       return protocolRead(inputStream);
     } catch (JedisConnectionException exc) {
       broken = true;
@@ -376,7 +369,7 @@ public class Connection implements Closeable {
 
     try {
       if (inputStream.available() > 0) {
-        protocolReadPushes(inputStream, true);
+        protocolReadPushes(inputStream);
       }
     } catch (IOException e) {
       broken = true;

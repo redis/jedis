@@ -18,10 +18,6 @@ public class CommandArguments implements Iterable<Rawable> {
 
   private boolean blocking;
 
-  private CommandArguments() {
-    throw new InstantiationError();
-  }
-
   public CommandArguments(ProtocolCommand command) {
     args = new ArrayList<>();
     args.add(command);

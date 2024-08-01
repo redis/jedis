@@ -1,6 +1,7 @@
 package redis.clients.jedis.csc;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Simple L(east) R(ecently) U(sed) eviction policy
@@ -17,6 +18,7 @@ public class LRUEviction implements EvictionPolicy {
     private final Cache cache;
     private final LinkedHashMap<CacheKey, Long> accessTimes;
     private CacheKey lastEvicted = null;
+    private AtomicLong evictedCount = new AtomicLong(0);
 
     /**
      *  Constructor that gets the cache passed
@@ -26,12 +28,15 @@ public class LRUEviction implements EvictionPolicy {
      */
     public LRUEviction(Cache cache, int initialCapacity) {
         this.cache = cache;
-        this.accessTimes = new LinkedHashMap<CacheKey, Long>(initialCapacity, 0.75F, true) {
+        this.accessTimes = new LinkedHashMap<CacheKey, Long>(initialCapacity, 1F, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<CacheKey, Long> eldest) {
                 boolean result = size() > LRUEviction.this.cache.getMaxSize();
                 if (result) {
-                    lastEvicted = eldest.getKey();
+                    if (LRUEviction.this.cache.delete(eldest.getKey())) {
+                        lastEvicted = eldest.getKey();
+                        evictedCount.incrementAndGet();
+                    }
                 }
                 return result;
             }
@@ -56,9 +61,7 @@ public class LRUEviction implements EvictionPolicy {
     @Override
     public CacheKey evictNext() {
         // its already done, thanks to the LinkedHashMap
-        CacheKey temp = lastEvicted;
-        lastEvicted = null;
-        return temp;
+        return evictedCount.decrementAndGet() == 0 ? null : lastEvicted;
     }
 
     @Override
@@ -85,6 +88,8 @@ public class LRUEviction implements EvictionPolicy {
     public int resetAll() {
         int result = this.accessTimes.size();
         accessTimes.clear();
+        lastEvicted = null;
+        evictedCount.set(0);
         return result;
     }
 }

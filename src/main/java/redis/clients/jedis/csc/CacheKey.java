@@ -3,13 +3,18 @@ package redis.clients.jedis.csc;
 import java.util.List;
 import java.util.Objects;
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.commands.ProtocolCommand;
 
-class CacheKey<T> {
+public class CacheKey<T> {
 
   private final CommandObject<T> command;
 
   public CacheKey(CommandObject<T> command) {
     this.command = Objects.requireNonNull(command);
+  }
+
+  public ProtocolCommand getProtocolCommand() {
+    return command.getArguments().getCommand();
   }
 
   public List getCommandKeys() {

@@ -1,140 +1,122 @@
 package redis.clients.jedis.csc;
 
-import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.annots.Internal;
 
 /**
- * The class to manage the client-side caching. User can provide any of implementation of this class to the client
- * object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache CaffeineClientSideCache} or
- * {@link redis.clients.jedis.csc.GuavaClientSideCache GuavaClientSideCache} or a custom implementation of their own.
+ * The cache that is used by a connection
  */
 @Experimental
-public abstract class ClientSideCache {
+public interface ClientSideCache {
 
-  protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
-  protected static final int DEFAULT_EXPIRE_SECONDS = 100;
-
-  private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
-  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile ??
-
-  protected ClientSideCache() {
-  }
-
-  public final void setCacheable(ClientSideCacheable cacheable) {
-    this.cacheable = Objects.requireNonNull(cacheable, "'cacheable' must not be null");
-  }
-
-  protected abstract void clear();
-
-  protected abstract void remove(Iterable<CacheKey<?>> keys);
-
-  protected abstract void put(CacheKey key, CacheEntry entry);
-
-  protected abstract CacheEntry get(CacheKey key);
-
-  public final void flush() {
-    invalidateAllRedisKeysAndCacheEntries();
-  }
-
-  public final void invalidateKey(Object key) {
-    invalidateRedisKeyAndRespectiveCacheEntries(key);
-  }
-
-  public final void invalidate(List list) {
+  @Internal
+  default void invalidate(List list) {
     if (list == null) {
-      invalidateAllRedisKeysAndCacheEntries();
-      return;
-    }
-
-    list.forEach(this::invalidateRedisKeyAndRespectiveCacheEntries);
-  }
-
-  private void invalidateAllRedisKeysAndCacheEntries() {
-    clear();
-    redisKeysToCacheKeys.clear();
-  }
-
-  private void invalidateRedisKeyAndRespectiveCacheEntries(Object key) {
-//    if (!(key instanceof byte[])) {
-//      // This should be called internally. That's why throwing AssertionError instead of IllegalArgumentException.
-//      throw new AssertionError("" + key.getClass().getSimpleName() + " is not supported. Value: " + String.valueOf(key));
-//    }
-//
-//    final ByteBuffer mapKey = makeKeyForKeyToCommandHashes((byte[]) key);
-    final ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
-
-    Set<CacheKey<?>> commands = redisKeysToCacheKeys.get(mapKey);
-    if (commands != null) {
-      remove(commands);
-      redisKeysToCacheKeys.remove(mapKey);
-    }
-  }
-
-  public final <T> T get(final CacheConnection connection, CommandObject<T> command) {
-
-    if (!cacheable.isCacheable(command.getArguments().getCommand(), command.getArguments().getKeys())) {
-      return connection.executePlainCommand(command);
-    }
-
-    final CacheKey cacheKey = new CacheKey(command);
-    CacheEntry<T> cacheEntry = get(cacheKey);
-    if (cacheEntry != null) {
-      // CACHE HIT!!!
-      // TODO: connection ...
-      cacheEntry.getConnection().ping();
-
-      // cache entry can be invalidated; so recheck
-      cacheEntry = get(cacheKey);
-      if (cacheEntry != null) {
-        return cacheEntry.getValue();
-      }
-    }
-
-    // CACHE MISS!!
-    T value = connection.executePlainCommand(command);
-    if (value != null) {
-      cacheEntry = new CacheEntry(cacheKey, value, connection);
-      putInner(cacheEntry);
-    }
-
-    return value;
-  }
-
-  private void putInner(final CacheEntry cacheEntry) {
-    final CacheKey cacheKey = cacheEntry.getCacheKey();
-    put(cacheKey, cacheEntry);
-    for (Object key : cacheEntry.getCacheKey().getCommandKeys()) {
-      ByteBuffer mapKey = makeKeyForRedisKeysToCacheKeys(key);
-      if (redisKeysToCacheKeys.containsKey(mapKey)) {
-        redisKeysToCacheKeys.get(mapKey).add(cacheKey);
-      } else {
-        Set<CacheKey<?>> set = ConcurrentHashMap.newKeySet();
-        set.add(cacheKey);
-        redisKeysToCacheKeys.put(mapKey, set);
-      }
-    }
-  }
-
-  private ByteBuffer makeKeyForRedisKeysToCacheKeys(Object key) {
-    if (key instanceof byte[]) {
-      return makeKeyForRedisKeysToCacheKeys((byte[]) key);
-    } else if (key instanceof String) {
-      return makeKeyForRedisKeysToCacheKeys(SafeEncoder.encode((String) key));
+      flush();
     } else {
-      throw new IllegalArgumentException(key.getClass().getSimpleName() + " is not supported."
-          + " Value: \"" + String.valueOf(key) + "\".");
+      list.forEach(this::deleteByRedisKey);
     }
   }
 
-  private static ByteBuffer makeKeyForRedisKeysToCacheKeys(byte[] b) {
-    return ByteBuffer.wrap(b);
-  }
+  @Internal
+  <T> T get(final CacheConnection connection, CommandObject<T> command);
+//
+//    /**
+//     * @return The size of the cache
+//     */
+//    int getMaxSize();
+
+    /**
+     * @return The current size of the cache
+     */
+    int getSize();
+
+    /**
+     * @return All the entries within the cache
+     */
+    Collection<CacheEntry> getCacheEntries();
+
+    /**
+     * Fetches a value from the cache
+     *
+     * @param cacheKey The key within the cache
+     * @return The entry within the cache
+     */
+    <T> T get(CacheKey<T> cacheKey);
+
+    /**
+     * Puts a value into the cache
+     *
+     * @param cacheKey The key by which the value can be accessed within the cache
+     * @param value The value to be put into the cache
+     * @param cacheConnection
+     * @return The cache entry
+     */
+    <T> CacheEntry<T> set(CacheKey<T> cacheKey, T value, CacheConnection cacheConnection);
+
+    /**
+     * Delete an entry by cache key
+     * @param cacheKey The cache key of the entry in the cache
+     * @return True if the entry could be deleted, false if the entry wasn't found.
+     */
+    boolean delete(CacheKey cacheKey);
+
+    /**
+     * Delete entries by cache key from the cache
+     *
+     * @param cacheKeys The cache keys of the entries that should be deleted
+     * @return True for every entry that could be deleted. False if the entry was not there.
+     */
+    default List<Boolean> delete(List<CacheKey> cacheKeys) {
+      return cacheKeys.stream().map(this::delete).collect(Collectors.toList());
+    }
+
+    /**
+     * Delete an entry by the Redis key from the cache
+     *
+     * @param key The Redis key as binary
+     * @return True if the entry could be deleted. False if the entry was not there.
+     */
+    Set<CacheKey> deleteByRedisKey(Object key);
+
+    /**
+     * Delete entries by the Redis key from the cache
+     *
+     * @param keys The Redis keys as binaries
+     * @return True for every entry that could be deleted. False if the entry was not there.
+     */
+    default Set<CacheKey> deleteByRedisKey(List<Object> keys) {
+      return keys.stream().map(this::deleteByRedisKey).flatMap(Set::stream).collect(Collectors.toSet());
+    }
+
+    /**
+     * Flushes the entire cache
+     *
+     * @return Return the number of entries that were flushed
+     */
+    int flush();
+
+    /**
+     * @param cacheKey The key of the cache entry
+     * @return True if the entry is cachable, false otherwise
+     */
+    boolean isCacheable(CacheKey cacheKey);
+
+    /**
+     *
+     * @param cacheKey The key of the cache entry
+     * @return True if the cache already contains the key
+     */
+    boolean hasCacheKey(CacheKey cacheKey);
+//
+//    /**
+//     * @return The eviction policy that is used by the cache
+//     */
+//    IEvictionPolicy getEvictionPolicy();
 }

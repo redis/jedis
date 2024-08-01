@@ -1,6 +1,6 @@
 package redis.clients.jedis.csc;
 
-class CacheEntry<T> {
+public class CacheEntry<T> {
 
   private final CacheKey<T> cacheKey;
   private final T value;

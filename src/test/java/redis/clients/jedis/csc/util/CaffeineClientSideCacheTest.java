@@ -1,4 +1,4 @@
-package redis.clients.jedis.csc;
+package redis.clients.jedis.csc.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -8,19 +8,17 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.util.JedisURIHelper;
+import redis.clients.jedis.csc.ClientSideCacheTestBase;
 
 public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    CaffeineClientSideCache caffeine = CaffeineClientSideCache.builder().maximumSize(10).ttl(10).build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineClientSideCache())) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");

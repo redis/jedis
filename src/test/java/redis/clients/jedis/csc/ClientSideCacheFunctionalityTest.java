@@ -1,20 +1,14 @@
 package redis.clients.jedis.csc;
 
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import org.junit.Test;
-
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.util.JedisURIHelper;
 
 public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
@@ -26,7 +20,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
 
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    ClientSideCache clientSideCache = new MapClientSideCache(map);
+    ClientSideCache clientSideCache = new DefaultClientSideCache(map);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
@@ -47,7 +41,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
     // By using LinkedHashMap, we can get the hashes (map keys) at the same order of the actual keys.
     LinkedHashMap<CacheKey, CacheEntry> map = new LinkedHashMap<>();
-    ClientSideCache clientSideCache = new MapClientSideCache(map);
+    ClientSideCache clientSideCache = new DefaultClientSideCache(map);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
@@ -60,7 +54,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       String key = "k" + i;
       CacheKey command = commandHashes.get(i);
       assertTrue(map.containsKey(command));
-      clientSideCache.invalidateKey(key);
+      clientSideCache.deleteByRedisKey(key);
       assertFalse(map.containsKey(command));
     }
   }
@@ -71,7 +65,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     control.set("k2", "v2");
 
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new MapClientSideCache(map))) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new DefaultClientSideCache(map))) {
       jedis.mget("k1", "k2");
       assertEquals(1, map.size());
     }

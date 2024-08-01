@@ -8,10 +8,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -36,8 +33,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.ArrayList;
-import java.util.List;
 
 @RunWith(Parameterized.class)
 public class JedisPooledClientSideCacheTest {
@@ -345,5 +340,6 @@ public class JedisPooledClientSideCacheTest {
 
     assertEquals(maxSize, testCache.getSize());
   }
+
 
 }

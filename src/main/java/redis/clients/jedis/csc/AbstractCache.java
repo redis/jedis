@@ -20,7 +20,7 @@ import redis.clients.jedis.util.SafeEncoder;
  * GuavaClientSideCache} or a custom implementation of their own.
  */
 @Experimental
-public abstract class ClientSideCache implements Cache {
+public abstract class AbstractCache implements Cache {
 
   private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
@@ -28,11 +28,11 @@ public abstract class ClientSideCache implements Cache {
   private ReentrantLock lock = new ReentrantLock();
   private volatile CacheStats stats = new CacheStats();
 
-  protected ClientSideCache(int maximumSize) {
+  protected AbstractCache(int maximumSize) {
     this.maximumSize = maximumSize;
   }
 
-  protected ClientSideCache(int maximumSize, ClientSideCacheable cacheable) {
+  protected AbstractCache(int maximumSize, ClientSideCacheable cacheable) {
     this.maximumSize = maximumSize;
     this.cacheable = cacheable;
   }

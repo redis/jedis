@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 @Experimental
-public class GuavaClientSideCache extends ClientSideCache {
+public class GuavaClientSideCache extends AbstractCache {
 
   private final Cache<CacheKey, CacheEntry> cache;
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;

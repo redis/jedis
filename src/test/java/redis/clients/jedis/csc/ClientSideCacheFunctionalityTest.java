@@ -3,15 +3,19 @@ package redis.clients.jedis.csc;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.UnifiedJedis;
 
@@ -102,6 +106,32 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     } finally {
       client.close();
       controlClient.close();
+    }
+  }
+
+  @Test
+  public void differentInstanceOnEachCacheHit() {
+    ConcurrentHashMap<CacheKey, CacheEntry> map = new ConcurrentHashMap<CacheKey, CacheEntry>();
+    TestCache testCache = new TestCache(map);
+
+    // fill the cache for maxSize
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), testCache)) {
+      jedis.sadd("foo", "a");
+      jedis.sadd("foo", "b");
+
+      Set<String> expected = new HashSet<String>();
+      expected.add("a");
+      expected.add("b");
+
+      Set<String> members1 = jedis.smembers("foo");
+      Set<String> members2 = jedis.smembers("foo");
+
+      Set<String> fromMap = (Set<String>) testCache.get(new CacheKey<>(new CommandObjects().smembers("foo"))).getValue();
+      assertEquals(expected, members1);
+      assertEquals(expected, members2);
+      assertEquals(expected, fromMap);
+      assertTrue(members1 != members2);
+      assertTrue(members1 != fromMap);
     }
   }
 }

@@ -9,7 +9,7 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 @Experimental
-public class CaffeineClientSideCache extends ClientSideCache {
+public class CaffeineClientSideCache extends AbstractCache {
 
   private final Cache<CacheKey, CacheEntry> cache;
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;

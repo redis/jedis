@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DefaultCache extends ClientSideCache {
+public class DefaultCache extends AbstractCache {
 
     protected final Map<CacheKey, CacheEntry> cache;
     private final LRUEviction evictionPolicy;

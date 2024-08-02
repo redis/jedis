@@ -189,8 +189,8 @@ public class JedisPooledClientSideCacheTest {
             lock.lock();
             try {
               // Simulate continious get and update operations and consume invalidation events meanwhile
+              assertEquals(control.get("foo"), jedis.get("foo"));
               Integer value = new Integer(jedis.get("foo"));
-              assertEquals(control.get("foo"), value.toString());
               assertEquals("OK", jedis.set("foo", (++value).toString()));
             } finally {
               lock.unlock();
@@ -206,10 +206,9 @@ public class JedisPooledClientSideCacheTest {
     latch.await();
 
     // Verify the final value of "foo" in Redis
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get())) {
-      String finalValue = jedis.get("foo");
-      assertEquals(threadCount * iterations, Integer.parseInt(finalValue));
-    }
+    String finalValue = control.get("foo");
+    assertEquals(threadCount * iterations, Integer.parseInt(finalValue));
+
   }
 
   @Test
@@ -340,6 +339,5 @@ public class JedisPooledClientSideCacheTest {
 
     assertEquals(maxSize, testCache.getSize());
   }
-
 
 }

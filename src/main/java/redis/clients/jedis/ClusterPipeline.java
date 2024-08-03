@@ -72,6 +72,11 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     return provider.getConnection(nodeKey);
   }
 
+  @Override
+  protected void refreshConnection() {
+    provider.renewSlotCache();
+  }
+
   public Response<Long> spublish(String channel, String message) {
     return appendCommand(commandObjects.spublish(channel, message));
   }

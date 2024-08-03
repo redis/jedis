@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
@@ -53,6 +54,8 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
 
   protected abstract Connection getConnection(HostAndPort nodeKey);
 
+  protected abstract void refreshConnection();
+
   @Override
   protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     HostAndPort nodeKey = getNodeKey(commandObject.getArguments());
@@ -86,7 +89,6 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
     try {
       sync();
     } finally {
-      pipelinedResponses.clear();
       connections.values().forEach(IOUtils::closeQuietly);
     }
   }
@@ -112,6 +114,9 @@ public abstract class MultiNodePipelineBase extends PipelineBase {
         try {
           List<Object> unformatted = connection.getMany(queue.size());
           for (Object o : unformatted) {
+            if (o instanceof JedisMovedDataException) {
+              refreshConnection();
+            }
             queue.poll().set(o);
           }
         } catch (JedisConnectionException jce) {

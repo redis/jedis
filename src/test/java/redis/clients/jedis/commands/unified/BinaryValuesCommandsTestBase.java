@@ -20,6 +20,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.util.SafeEncoder;
@@ -34,6 +35,10 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   protected int expireSeconds = 2;
   protected long expireMillis = expireSeconds * 1000;
   protected byte[] binaryValue;
+
+  public BinaryValuesCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Before
   public void startUp() {

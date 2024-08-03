@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class LCSParams implements IParams {
 
   private boolean len = false;
@@ -64,5 +66,18 @@ public class LCSParams implements IParams {
     if (withMatchLen) {
       args.add(Keyword.WITHMATCHLEN);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    LCSParams lcsParams = (LCSParams) o;
+    return len == lcsParams.len && idx == lcsParams.idx && withMatchLen == lcsParams.withMatchLen && Objects.equals(minMatchLen, lcsParams.minMatchLen);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(len, idx, minMatchLen, withMatchLen);
   }
 }

@@ -3,6 +3,8 @@ package redis.clients.jedis.params;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
+import java.util.Objects;
+
 public class XReadGroupParams implements IParams {
 
   private Integer count = null;
@@ -39,5 +41,18 @@ public class XReadGroupParams implements IParams {
     if (noack) {
       args.add(Keyword.NOACK);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    XReadGroupParams that = (XReadGroupParams) o;
+    return noack == that.noack && Objects.equals(count, that.count) && Objects.equals(block, that.block);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(count, block, noack);
   }
 }

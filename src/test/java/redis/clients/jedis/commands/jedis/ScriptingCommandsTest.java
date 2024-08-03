@@ -12,6 +12,8 @@ import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
@@ -24,10 +26,14 @@ import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 import redis.clients.jedis.util.ClientKillerUtil;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.RedisProtocolUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
+@RunWith(Parameterized.class)
 public class ScriptingCommandsTest extends JedisCommandsTestBase {
+
+  public ScriptingCommandsTest(RedisProtocol redisProtocol) {
+    super(redisProtocol);
+  }
 
   @Before
   @Override
@@ -390,7 +396,7 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     assertEquals(functionCode, response.getLibraryCode());
 
     // Binary
-    if (RedisProtocolUtil.getRedisProtocol() != RedisProtocol.RESP3) {
+    if (protocol != RedisProtocol.RESP3) {
 
       List<Object> bresponse = (List<Object>) jedis.functionListBinary().get(0);
       assertArrayEquals(library.getBytes(), (byte[]) bresponse.get(1));

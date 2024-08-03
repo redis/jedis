@@ -76,7 +76,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       // check HostAndPort ??
       return jedis.isConnected() && jedis.ping();
     } catch (final Exception e) {
-      logger.error("Error while validating pooled Connection object.", e);
+      logger.warn("Error while validating pooled Connection object.", e);
       return false;
     }
   }

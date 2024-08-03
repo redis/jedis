@@ -10,6 +10,7 @@ import java.util.Map;
 import org.junit.Test;
 
 import redis.clients.jedis.GeoCoordinate;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
@@ -27,6 +28,10 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   protected final byte[] bNotexist = { 0x0F };
 
   private static final double EPSILON = 1e-5;
+
+  public GeoCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void geoadd() {
@@ -532,30 +537,30 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
     // combine byradius and bybox
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .byRadius(3000, GeoUnit.M).byBox(300, 300, GeoUnit.M));
+          .byRadius(3000, GeoUnit.M)
+          .byBox(300, 300, GeoUnit.M));
       fail();
-    } catch (redis.clients.jedis.exceptions.JedisDataException ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // without byradius and without bybox
     try {
-      jedis.geosearch("barcelona", new GeoSearchParam()
-              .fromMember("foobar"));
+      jedis.geosearch("barcelona", new GeoSearchParam().fromMember("foobar"));
       fail();
-    } catch (java.lang.IllegalArgumentException ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // combine frommember and fromlonlat
     try {
       jedis.geosearch("barcelona", new GeoSearchParam()
-              .fromMember("foobar").fromLonLat(10,10));
+          .fromMember("foobar")
+          .fromLonLat(10,10));
       fail();
-    } catch (java.lang.IllegalArgumentException ignored) { }
+    } catch (IllegalArgumentException ignored) { }
 
     // without frommember and without fromlonlat
     try {
-      jedis.geosearch("barcelona", new GeoSearchParam()
-              .byRadius(10, GeoUnit.MI));
+      jedis.geosearch("barcelona", new GeoSearchParam().byRadius(10, GeoUnit.MI));
       fail();
-    } catch (redis.clients.jedis.exceptions.JedisDataException ignored) { }
+    } catch (IllegalArgumentException ignored) { }
   }
 
   @Test

@@ -343,13 +343,13 @@ public class Connection implements Closeable {
 
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
-      throw new JedisConnectionException("Attempting to read from a broken connection");
+      throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {
       return Protocol.read(inputStream);
 //      Object read = Protocol.read(inputStream);
-//      System.out.println(SafeEncoder.encodeObject(read));
+//      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(read));
 //      return read;
     } catch (JedisConnectionException exc) {
       broken = true;

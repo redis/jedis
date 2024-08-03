@@ -1,50 +1,41 @@
 package redis.clients.jedis.commands.unified.pooled;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.Pipeline;
-import redis.clients.jedis.Response;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.AbstractTransaction;
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 
+@RunWith(Parameterized.class)
 public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
-  protected Pipeline pipeline;
-  protected AbstractTransaction transaction;
-
-  @BeforeClass
-  public static void prepare() throws InterruptedException {
-    jedis = PooledCommandsTestHelper.getPooled();
-  }
-
-  @AfterClass
-  public static void cleanUp() {
-    jedis.close();
+  public PooledMiscellaneousTest(RedisProtocol protocol) {
+    super(protocol);
   }
 
   @Before
   public void setUp() {
+    jedis = PooledCommandsTestHelper.getPooled(protocol);
     PooledCommandsTestHelper.clearData();
-    pipeline = ((JedisPooled) jedis).pipelined();
-    transaction = jedis.multi();
   }
 
   @After
-  public void tearDown() {
-    pipeline.close();
-    transaction.close();
+  public void cleanUp() {
+    jedis.close();
   }
 
   @Test
@@ -62,15 +53,18 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
 
     List<Response<?>> responses = new ArrayList<>(totalCount);
     List<Object> expected = new ArrayList<>(totalCount);
-    for (int i = 0; i < count; i++) {
-      responses.add(pipeline.get("foo" + i));
-      expected.add("bar" + i);
+
+    try (AbstractPipeline pipeline = jedis.pipelined()) {
+      for (int i = 0; i < count; i++) {
+        responses.add(pipeline.get("foo" + i));
+        expected.add("bar" + i);
+      }
+      for (int i = 0; i < count; i++) {
+        responses.add(pipeline.lrange("foobar" + i, 0, -1));
+        expected.add(Arrays.asList("foo" + i, "bar" + i));
+      }
+      pipeline.sync();
     }
-    for (int i = 0; i < count; i++) {
-      responses.add(pipeline.lrange("foobar" + i, 0, -1));
-      expected.add(Arrays.asList("foo" + i, "bar" + i));
-    }
-    pipeline.sync();
 
     for (int i = 0; i < totalCount; i++) {
       assertEquals(expected.get(i), responses.get(i).get());
@@ -90,19 +84,50 @@ public class PooledMiscellaneousTest extends UnifiedJedisCommandsTestBase {
     }
     totalCount += count;
 
+    List<Object> responses;
     List<Object> expected = new ArrayList<>(totalCount);
-    for (int i = 0; i < count; i++) {
-      transaction.get("foo" + i);
-      expected.add("bar" + i);
-    }
-    for (int i = 0; i < count; i++) {
-      transaction.lrange("foobar" + i, 0, -1);
-      expected.add(Arrays.asList("foo" + i, "bar" + i));
+
+    try (AbstractTransaction transaction = jedis.multi()) {
+      for (int i = 0; i < count; i++) {
+        transaction.get("foo" + i);
+        expected.add("bar" + i);
+      }
+      for (int i = 0; i < count; i++) {
+        transaction.lrange("foobar" + i, 0, -1);
+        expected.add(Arrays.asList("foo" + i, "bar" + i));
+      }
+      responses = transaction.exec();
     }
 
-    List<Object> responses = transaction.exec();
     for (int i = 0; i < totalCount; i++) {
       assertEquals(expected.get(i), responses.get(i));
+    }
+  }
+
+  @Test
+  public void watch() {
+    try (AbstractTransaction tx = jedis.transaction(false)) {
+      assertEquals("OK", tx.watch("mykey", "somekey"));
+      tx.multi();
+
+      jedis.set("mykey", "bar");
+
+      tx.set("mykey", "foo");
+      assertNull(tx.exec());
+
+      assertEquals("bar", jedis.get("mykey"));
+    }
+  }
+
+  @Test
+  public void publishInTransaction() {
+    try (AbstractTransaction tx = jedis.multi()) {
+      Response<Long> p1 = tx.publish("foo", "bar");
+      Response<Long> p2 = tx.publish("foo".getBytes(), "bar".getBytes());
+      tx.exec();
+
+      assertEquals(0, p1.get().longValue());
+      assertEquals(0, p2.get().longValue());
     }
   }
 

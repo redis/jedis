@@ -17,12 +17,13 @@ public class GuavaClientSideCache extends AbstractCache {
   private final Cache<CacheKey, CacheEntry> cache;
   protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
   protected static final int DEFAULT_EXPIRE_SECONDS = 100;
-  private final LRUEviction evictionPolicy;
+  private final EvictionPolicy evictionPolicy;
 
   public GuavaClientSideCache(Cache<CacheKey, CacheEntry> guavaCache) {
     super(DEFAULT_MAXIMUM_SIZE);
     this.cache = guavaCache;
-    this.evictionPolicy = new LRUEviction(this, DEFAULT_MAXIMUM_SIZE);
+    this.evictionPolicy = new LRUEviction(DEFAULT_MAXIMUM_SIZE);
+    this.evictionPolicy.setCache(this);
   }
 
   @Override

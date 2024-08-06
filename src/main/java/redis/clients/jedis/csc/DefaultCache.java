@@ -7,26 +7,25 @@ import java.util.Map;
 public class DefaultCache extends AbstractCache {
 
     protected final Map<CacheKey, CacheEntry> cache;
-    private final LRUEviction evictionPolicy;
+    private final EvictionPolicy evictionPolicy;
 
     public DefaultCache(int maximumSize) {
         this(maximumSize, new HashMap<CacheKey, CacheEntry>());
     }
 
     public DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map) {
-        super(maximumSize);
-        this.cache = map;
-        this.evictionPolicy = new LRUEviction(this, maximumSize);
+        this(maximumSize, map, DefaultClientSideCacheable.INSTANCE, new LRUEviction(maximumSize));
     }
 
     public DefaultCache(int maximumSize, ClientSideCacheable cacheable) {
-        this(maximumSize, null, cacheable);
+        this(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, new LRUEviction(maximumSize));
     }
 
-    public DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
+    public DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable, EvictionPolicy evictionPolicy) {
         super(maximumSize, cacheable);
         this.cache = map;
-        this.evictionPolicy = new LRUEviction(this, maximumSize);
+        this.evictionPolicy = evictionPolicy;
+        this.evictionPolicy.setCache(this);
     }
 
     @Override

@@ -22,14 +22,14 @@ import redis.clients.jedis.util.SafeEncoder;
 @Experimental
 public abstract class AbstractCache implements Cache {
 
-  private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE; // TODO: volatile
+  private ClientSideCacheable cacheable;
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
   private final int maximumSize;
   private ReentrantLock lock = new ReentrantLock();
   private volatile CacheStats stats = new CacheStats();
 
   protected AbstractCache(int maximumSize) {
-    this.maximumSize = maximumSize;
+    this(maximumSize, DefaultClientSideCacheable.INSTANCE);
   }
 
   protected AbstractCache(int maximumSize, ClientSideCacheable cacheable) {

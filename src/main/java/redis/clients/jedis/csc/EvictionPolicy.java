@@ -27,6 +27,12 @@ public interface EvictionPolicy {
     Cache getCache();
 
     /**
+     * Sets the cache that is associated to this policy instance
+     * @param cache The cache instance
+     */
+    void setCache(Cache cache);
+
+    /**
      * @return The type of policy
      */
     EvictionType getType();

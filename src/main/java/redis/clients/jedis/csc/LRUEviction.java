@@ -15,10 +15,11 @@ public class LRUEviction implements EvictionPolicy {
     /**
      * The cache that is associated to that policy instance
      */
-    private final Cache cache;
-    private final LinkedHashMap<CacheKey, Long> accessTimes;
+    private Cache cache;
+    private LinkedHashMap<CacheKey, Long> accessTimes;
     private CacheKey lastEvicted = null;
     private AtomicLong evictedCount = new AtomicLong(0);
+    private int initialCapacity;
 
     /**
      *  Constructor that gets the cache passed
@@ -26,19 +27,17 @@ public class LRUEviction implements EvictionPolicy {
      * @param cache
      * @param initialCapacity
      */
-    public LRUEviction(Cache cache, int initialCapacity) {
+    public LRUEviction(int initialCapacity) {
+        this.initialCapacity = initialCapacity;
+    }
+
+    @Override
+    public void setCache(Cache cache) {
         this.cache = cache;
-        this.accessTimes = new LinkedHashMap<CacheKey, Long>(initialCapacity, 1F, true) {
+        this.accessTimes = new LinkedHashMap<CacheKey, Long>(initialCapacity, 0.75f, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<CacheKey, Long> eldest) {
-                boolean result = size() > LRUEviction.this.cache.getMaxSize();
-                if (result) {
-                    if (LRUEviction.this.cache.delete(eldest.getKey())) {
-                        lastEvicted = eldest.getKey();
-                        evictedCount.incrementAndGet();
-                    }
-                }
-                return result;
+                return evictFromCache(eldest);
             }
         };
     }
@@ -90,6 +89,17 @@ public class LRUEviction implements EvictionPolicy {
         accessTimes.clear();
         lastEvicted = null;
         evictedCount.set(0);
+        return result;
+    }
+
+    private boolean evictFromCache(Map.Entry<CacheKey, Long> eldest) {
+        boolean result = accessTimes.size() > cache.getMaxSize();
+        if (result) {
+            if (cache.delete(eldest.getKey())) {
+                lastEvicted = eldest.getKey();
+                evictedCount.incrementAndGet();
+            }
+        }
         return result;
     }
 }

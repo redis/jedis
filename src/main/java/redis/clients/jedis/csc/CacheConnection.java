@@ -55,6 +55,12 @@ public class CacheConnection extends Connection {
   }
 
   @Override
+  public void disconnect() {
+    super.disconnect();
+    clientSideCache.flush();
+  }
+
+  @Override
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     CacheKey key = new CacheKey<>(commandObject);
     if (!clientSideCache.isCacheable(key)) {

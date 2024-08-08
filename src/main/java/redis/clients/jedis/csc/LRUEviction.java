@@ -24,7 +24,6 @@ public class LRUEviction implements EvictionPolicy {
     /**
      *  Constructor that gets the cache passed
      *
-     * @param cache
      * @param initialCapacity
      */
     public LRUEviction(int initialCapacity) {

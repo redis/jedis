@@ -14,11 +14,12 @@ public class TestCache extends DefaultCache {
   }
 
   public TestCache(Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
-    super(1000, map, cacheable);
+
+    super(1000, map, cacheable, new LRUEviction(1000));
   }
 
   public TestCache(int maxSize, Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
-    super(maxSize, map, cacheable);
+    super(maxSize, map, cacheable, new LRUEviction(maxSize));
   }
 
 }

@@ -12,7 +12,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
@@ -126,7 +126,7 @@ public final class Protocol {
 
   private static Object process(final RedisInputStream is) {
     final byte b = is.readByte();
-    //System.out.println("BYTE: " + (char) b);
+    // System.out.println("BYTE: " + (char) b);
     switch (b) {
       case PLUS_BYTE:
         return is.readLineBytes();
@@ -185,7 +185,8 @@ public final class Protocol {
 
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
-    if (num == -1) return null;
+    if (num == -1)
+      return null;
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
@@ -199,7 +200,8 @@ public final class Protocol {
 
   private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
-    if (num == -1) return null;
+    if (num == -1)
+      return null;
     final List<KeyValue> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       ret.add(new KeyValue(process(is), process(is)));
@@ -212,18 +214,37 @@ public final class Protocol {
   }
 
   @Experimental
-  public static void readPushes(final RedisInputStream is, final ClientSideCache cache) {
-    while (is.peek(GREATER_THAN_BYTE)) {
-      is.readByte();
-      processPush(is, cache);
+  public static Object read(final RedisInputStream is, final Cache cache) {
+    readPushes(is, cache, false);
+    return process(is);
+  }
+
+  @Experimental
+  public static void readPushes(final RedisInputStream is, final Cache cache, boolean onlyPendingBuffer) {
+    if (onlyPendingBuffer) {
+      try {
+        while (is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
+          is.readByte();
+          processPush(is, cache);
+        }
+      } catch (JedisConnectionException e) {
+        // TODO handle it properly
+      } catch (IOException e) {
+        // TODO handle it properly
+      }
+    } else {
+      while (is.peek(GREATER_THAN_BYTE)) {
+        is.readByte();
+        processPush(is, cache);
+      }
     }
   }
 
-  private static void processPush(final RedisInputStream is, ClientSideCache cache) {
+  private static void processPush(final RedisInputStream is, Cache cache) {
     List<Object> list = processMultiBulkReply(is);
     if (list.size() == 2 && list.get(0) instanceof byte[]
         && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
-      cache.invalidate((List) list.get(1));
+      cache.deleteByRedisKeys((List) list.get(1));
     }
   }
 

@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
-import redis.clients.jedis.csc.ClientSideCache;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
@@ -48,7 +48,7 @@ public class JedisClusterInfoCache {
 
   private final GenericObjectPoolConfig<Connection> poolConfig;
   private final JedisClientConfig clientConfig;
-  private final ClientSideCache clientSideCache;
+  private final Cache clientSideCache;
   private final Set<HostAndPort> startNodes;
 
   private static final int MASTER_NODE_INDEX = 2;
@@ -72,7 +72,7 @@ public class JedisClusterInfoCache {
   }
 
   @Experimental
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
       final Set<HostAndPort> startNodes) {
     this(clientConfig, clientSideCache, null, startNodes);
   }
@@ -83,7 +83,7 @@ public class JedisClusterInfoCache {
   }
 
   @Experimental
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes) {
     this(clientConfig, clientSideCache, poolConfig, startNodes, null);
   }
@@ -95,7 +95,7 @@ public class JedisClusterInfoCache {
   }
 
   @Experimental
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, ClientSideCache clientSideCache,
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {
     this.poolConfig = poolConfig;

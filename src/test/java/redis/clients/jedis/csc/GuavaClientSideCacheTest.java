@@ -24,7 +24,7 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 
@@ -41,8 +41,8 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
       assertEquals(1, guava.size());
       control.flushAll();
       assertEquals(1, guava.size());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, guava.size());
+      assertEquals(null, jedis.get("foo"));
+      assertEquals(0, guava.size());
       jedis.ping();
       assertEquals(0, guava.size());
       assertNull(jedis.get("foo"));

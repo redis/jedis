@@ -16,7 +16,6 @@ import java.util.function.Supplier;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -342,25 +341,39 @@ public class Connection implements Closeable {
   }
 
   @Experimental
-  @Internal
   protected Object protocolRead(RedisInputStream is) {
     return Protocol.read(is);
   }
 
   @Experimental
-  @Internal
   protected void protocolReadPushes(RedisInputStream is) {
   }
 
-  // TODO: final
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {
-      protocolReadPushes(inputStream);
       return protocolRead(inputStream);
+    } catch (JedisConnectionException exc) {
+      broken = true;
+      throw exc;
+    }
+  }
+
+  protected void readPushesWithCheckingBroken() {
+    if (broken) {
+      throw new JedisConnectionException("Attempting to read from a broken connection.");
+    }
+
+    try {
+      if (inputStream.available() > 0) {
+        protocolReadPushes(inputStream);
+      }
+    } catch (IOException e) {
+      broken = true;
+      throw new JedisConnectionException("Failed to check buffer on connection.", e);
     } catch (JedisConnectionException exc) {
       broken = true;
       throw exc;
@@ -382,6 +395,7 @@ public class Connection implements Closeable {
 
   /**
    * Check if the client name libname, libver, characters are legal
+   * 
    * @param info the name
    * @return Returns true if legal, false throws exception
    * @throws JedisException if characters illegal
@@ -397,7 +411,7 @@ public class Connection implements Closeable {
     return true;
   }
 
-  private void initializeFromClientConfig(final JedisClientConfig config) {
+  protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
       connect();
 
@@ -425,7 +439,8 @@ public class Connection implements Closeable {
       }
 
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
-      if (setInfoConfig == null) setInfoConfig = ClientSetInfoConfig.DEFAULT;
+      if (setInfoConfig == null)
+        setInfoConfig = ClientSetInfoConfig.DEFAULT;
 
       if (!setInfoConfig.isDisabled()) {
         String libName = JedisMetaInfo.getArtifactId();

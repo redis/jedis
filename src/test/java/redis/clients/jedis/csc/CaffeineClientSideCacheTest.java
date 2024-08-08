@@ -8,12 +8,10 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.util.JedisURIHelper;
 
 public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
 
@@ -24,7 +22,7 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 
@@ -41,8 +39,8 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
       assertEquals(1, caffeine.estimatedSize());
       control.flushAll();
       assertEquals(1, caffeine.estimatedSize());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, caffeine.estimatedSize());
+      assertEquals(null, jedis.get("foo"));
+      assertEquals(0, caffeine.estimatedSize());
       jedis.ping();
       assertEquals(0, caffeine.estimatedSize());
       assertNull(jedis.get("foo"));

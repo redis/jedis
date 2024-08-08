@@ -2,9 +2,9 @@ package redis.clients.jedis.csc.util;
 
 import java.util.Set;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.csc.ClientSideCacheable;
+import redis.clients.jedis.csc.DefaultClientSideCacheable;
 
-public class AllowAndDenyListWithStringKeys implements ClientSideCacheable {
+public class AllowAndDenyListWithStringKeys extends DefaultClientSideCacheable {
 
   private final Set<ProtocolCommand> allowCommands;
   private final Set<ProtocolCommand> denyCommands;
@@ -22,15 +22,20 @@ public class AllowAndDenyListWithStringKeys implements ClientSideCacheable {
 
   @Override
   public boolean isCacheable(ProtocolCommand command, Object... keys) {
-    if (allowCommands != null && !allowCommands.contains(command)) return false;
-    if (denyCommands != null && denyCommands.contains(command)) return false;
+    if (allowCommands != null && !allowCommands.contains(command))
+      return false;
+    if (denyCommands != null && denyCommands.contains(command))
+      return false;
 
     for (Object key : keys) {
-      if (!(key instanceof String)) return false;
-      if (allowKeys != null && !allowKeys.contains((String) key)) return false;
-      if (denyKeys != null && denyKeys.contains((String) key)) return false;
+      if (!(key instanceof String))
+        return false;
+      if (allowKeys != null && !allowKeys.contains((String) key))
+        return false;
+      if (denyKeys != null && denyKeys.contains((String) key))
+        return false;
     }
 
-    return true;
+    return super.isCacheable(command, keys);
   }
 }

@@ -5,7 +5,6 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -38,8 +37,8 @@ public class Connection implements Closeable {
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
-  private boolean strValActive;
-  private String strVal;
+  private HostAndPort remoteHostAndPort;
+  private HostAndPort localHostAndPort;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -72,42 +71,7 @@ public class Connection implements Closeable {
 
   @Override
   public String toString() {
-    if (strValActive == broken && strVal != null) {
-      return strVal;
-    }
-
-    int id = hashCode();
-    SocketAddress remoteAddr = socket.getRemoteSocketAddress();
-    SocketAddress localAddr = socket.getLocalSocketAddress();
-    if (remoteAddr != null) {
-      StringBuilder buf = new StringBuilder(96)
-          .append("[id: 0x")
-          .append(id)
-          .append(", L:")
-          .append(localAddr)
-          .append(broken? " ! " : " - ")
-          .append("R:")
-          .append(remoteAddr)
-          .append(']');
-      strVal = buf.toString();
-    } else if (localAddr != null) {
-      StringBuilder buf = new StringBuilder(64)
-          .append("[id: 0x")
-          .append(id)
-          .append(", L:")
-          .append(localAddr)
-          .append(']');
-      strVal = buf.toString();
-    } else {
-      StringBuilder buf = new StringBuilder(16)
-          .append("[id: 0x")
-          .append(id)
-          .append(']');
-      strVal = buf.toString();
-    }
-
-    strValActive = broken;
-    return strVal;
+    return "Connection{" + socketFactory + "}";
   }
 
   public final RedisProtocol getRedisProtocol() {
@@ -120,6 +84,35 @@ public class Connection implements Closeable {
 
   final HostAndPort getHostAndPort() {
     return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
+  }
+
+  /**
+   * @return the remote host and port if socket connected or null
+   */
+  public final HostAndPort getRemoteHostAndPort() {
+    if (!isConnected()) {
+      return null;
+    }
+    if (remoteHostAndPort != null) {
+      return remoteHostAndPort;
+    }
+    String remoteAddress = socket.getRemoteSocketAddress().toString();
+    remoteHostAndPort = HostAndPort.from(remoteAddress.substring(1));
+    return remoteHostAndPort;
+  }
+
+  /**
+   * @return the local host and port if socket connected or null
+   */
+  public final HostAndPort getLocalHostAndPort() {
+    if (!isConnected()) {
+      return null;
+    }
+    if (localHostAndPort != null) {
+      return localHostAndPort;
+    }
+    localHostAndPort = new HostAndPort(socket.getLocalAddress().getHostAddress(), socket.getLocalPort());
+    return localHostAndPort;
   }
 
   public int getSoTimeout() {

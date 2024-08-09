@@ -5,6 +5,10 @@ import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 public class ConnectionTest {
 
   private Connection client;
@@ -40,4 +44,22 @@ public class ConnectionTest {
     client.connect();
     client.close();
   }
+
+  @Test
+  public void testConnectionPeerAddrInfo() {
+    client = new Connection("127.0.0.1", 6379);
+    HostAndPort remoteAddr = client.getRemoteHostAndPort();
+    HostAndPort localAddr = client.getLocalHostAndPort();
+    assertNull(remoteAddr);
+    assertNull(localAddr);
+
+    client.connect();
+    remoteAddr = client.getRemoteHostAndPort();
+    localAddr = client.getLocalHostAndPort();
+    assertEquals(remoteAddr, HostAndPort.from("127.0.0.1:6379"));
+    assertEquals(localAddr.getHost(), "127.0.0.1");
+    assertTrue(localAddr.getPort() >= 0 && localAddr.getPort() < 65536);
+    client.close();
+  }
+
 }

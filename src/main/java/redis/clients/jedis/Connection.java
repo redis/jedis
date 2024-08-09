@@ -37,6 +37,8 @@ public class Connection implements Closeable {
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
+  private HostAndPort remoteHostAndPort;
+  private HostAndPort localHostAndPort;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -82,6 +84,35 @@ public class Connection implements Closeable {
 
   final HostAndPort getHostAndPort() {
     return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
+  }
+
+  /**
+   * @return the remote host and port if socket connected or null
+   */
+  public final HostAndPort getRemoteHostAndPort() {
+    if (!isConnected()) {
+      return null;
+    }
+    if (remoteHostAndPort != null) {
+      return remoteHostAndPort;
+    }
+    String remoteAddress = socket.getRemoteSocketAddress().toString();
+    remoteHostAndPort = HostAndPort.from(remoteAddress.substring(1));
+    return remoteHostAndPort;
+  }
+
+  /**
+   * @return the local host and port if socket connected or null
+   */
+  public final HostAndPort getLocalHostAndPort() {
+    if (!isConnected()) {
+      return null;
+    }
+    if (localHostAndPort != null) {
+      return localHostAndPort;
+    }
+    localHostAndPort = new HostAndPort(socket.getLocalAddress().getHostAddress(), socket.getLocalPort());
+    return localHostAndPort;
   }
 
   public int getSoTimeout() {

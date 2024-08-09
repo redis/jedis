@@ -90,6 +90,9 @@ public class JedisClusterInfoCache {
     if (clientConfig.isReadOnlyForReplica()) {
       replicaSlots = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
       replicaSlotNodes = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
+    } else {
+      replicaSlots = null;
+      replicaSlotNodes = null;
     }
   }
 

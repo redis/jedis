@@ -38,8 +38,8 @@ public class JedisClusterInfoCache {
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
   private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
   private final HostAndPort[] slotNodes = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
-  private List<ConnectionPool>[] replicaSlots;
-  private List<HostAndPort>[] replicaSlotNodes;
+  private final List<ConnectionPool>[] replicaSlots;
+  private final List<HostAndPort>[] replicaSlotNodes;
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();

@@ -73,6 +73,14 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   @Override
   public final <T> T executeCommand(CommandObject<T> commandObject) {
+    return doExecuteCommand(commandObject, false);
+  }
+
+  public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
+    return doExecuteCommand(commandObject, true);
+  }
+
+  private <T> T doExecuteCommand(CommandObject<T> commandObject, boolean toReplica) {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
     JedisRedirectionException redirect = null;
@@ -88,7 +96,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
             connection.executeCommand(Protocol.Command.ASKING);
           }
         } else {
-          connection = provider.getConnection(commandObject.getArguments());
+          connection = toReplica ? provider.getReplicaConnection(commandObject.getArguments())
+              : provider.getConnection(commandObject.getArguments());
         }
 
         return execute(connection, commandObject);

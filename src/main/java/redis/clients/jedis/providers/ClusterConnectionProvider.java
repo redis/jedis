@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.ClusterCommandArguments;
@@ -102,6 +104,11 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     return slot >= 0 ? getConnectionFromSlot(slot) : getConnection();
   }
 
+  public Connection getReplicaConnection(CommandArguments args) {
+    final int slot = ((ClusterCommandArguments) args).getCommandHashSlot();
+    return slot >= 0 ? getReplicaConnectionFromSlot(slot) : getConnection();
+  }
+
   @Override
   public Connection getConnection() {
     // In antirez's redis-rb-cluster implementation, getRandomConnection always
@@ -156,6 +163,25 @@ public class ClusterConnectionProvider implements ConnectionProvider {
         return getConnection();
       }
     }
+  }
+
+  public Connection getReplicaConnectionFromSlot(int slot) {
+    List<ConnectionPool> connectionPools = cache.getSlotReplicaPools(slot);
+    ThreadLocalRandom random = ThreadLocalRandom.current();
+    if (connectionPools != null && !connectionPools.isEmpty()) {
+      // pick up randomly a connection
+      int idx = random.nextInt(connectionPools.size());
+      return connectionPools.get(idx).getResource();
+    }
+
+    renewSlotCache();
+    connectionPools = cache.getSlotReplicaPools(slot);
+    if (connectionPools != null && !connectionPools.isEmpty()) {
+      int idx = random.nextInt(connectionPools.size());
+      return connectionPools.get(idx).getResource();
+    }
+
+    return getConnectionFromSlot(slot);
   }
 
   @Override

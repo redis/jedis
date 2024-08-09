@@ -80,6 +80,10 @@ public interface JedisClientConfig {
     return null;
   }
 
+  default boolean isReadOnlyForReplica() {
+    return false;
+  }
+
   /**
    * Modify the behavior of internally executing CLIENT SETINFO command.
    * @return CLIENT SETINFO config

@@ -39,7 +39,6 @@ public class JedisClusterInfoCache {
   private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
   private final HostAndPort[] slotNodes = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
   private final List<ConnectionPool>[] replicaSlots;
-  private final List<HostAndPort>[] replicaSlotNodes;
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -89,10 +88,8 @@ public class JedisClusterInfoCache {
     }
     if (clientConfig.isReadOnlyForReplica()) {
       replicaSlots = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
-      replicaSlotNodes = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
     } else {
       replicaSlots = null;
-      replicaSlotNodes = null;
     }
   }
 
@@ -329,10 +326,6 @@ public class JedisClusterInfoCache {
           replicaSlots[slot] = new ArrayList<>();
         }
         replicaSlots[slot].add(targetPool);
-        if (replicaSlotNodes[slot] == null) {
-          replicaSlotNodes[slot] = new ArrayList<>();
-        }
-        replicaSlotNodes[slot].add(targetNode);
       }
     } finally {
       w.unlock();

@@ -76,7 +76,6 @@ public class ClusterCommandExecutor implements CommandExecutor {
     return doExecuteCommand(commandObject, false);
   }
 
-  @Override
   public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
     return doExecuteCommand(commandObject, true);
   }

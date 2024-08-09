@@ -256,10 +256,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executor.executeCommand(commandObject);
   }
 
-  public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
-    return executor.executeCommandToReplica(commandObject);
-  }
-
   public final <T> T broadcastCommand(CommandObject<T> commandObject) {
     return executor.broadcastCommand(commandObject);
   }

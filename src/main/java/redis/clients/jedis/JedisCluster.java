@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
@@ -265,5 +266,12 @@ public class JedisCluster extends UnifiedJedis {
   @Override
   public AbstractTransaction transaction(boolean doMulti) {
     throw new UnsupportedOperationException();
+  }
+
+  public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
+    if (!(executor instanceof ClusterCommandExecutor)) {
+      throw new UnsupportedOperationException("Support only execute to replica in ClusterCommandExecutor");
+    }
+    return ((ClusterCommandExecutor) executor).executeCommandToReplica(commandObject);
   }
 }

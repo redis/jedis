@@ -113,8 +113,7 @@ public class CacheConnection extends Connection {
         return null;
       }
 
-      cacheEntry = clientSideCache.get(cacheEntry.getCacheKey());
-      return cacheEntry;
+      return clientSideCache.get(cacheEntry.getCacheKey());
     }
   }
 }

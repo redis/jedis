@@ -29,19 +29,19 @@ public class CacheStats {
         evicts.incrementAndGet();
     }
 
-    public void nonCacheable() {
+    protected void nonCacheable() {
         nonCacheable.incrementAndGet();
     }
 
-    public void flush() {
+    protected void flush() {
         flush.incrementAndGet();
     }
 
-    public void invalidationByServer(int size) {
+    protected void invalidationByServer(int size) {
         invalidationsByServer.addAndGet(size);
     }
 
-    public void invalidationMessages() {
+    protected void invalidationMessages() {
         invalidationMessages.incrementAndGet();
     }
 

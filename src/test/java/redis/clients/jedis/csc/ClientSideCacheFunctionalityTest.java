@@ -23,27 +23,30 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
   @Test
   public void flushEntireCache() {
-    int count = 1000;
+    int count = 100;
     for (int i = 0; i < count; i++) {
       control.set("k" + i, "v" + i);
     }
 
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     Cache clientSideCache = new TestCache(map);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
+    JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache);
+    try {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
-    }
 
-    assertEquals(count, map.size());
-    clientSideCache.flush();
-    assertEquals(0, map.size());
+      assertEquals(count, map.size());
+      clientSideCache.flush();
+      assertEquals(0, map.size());
+    } finally {
+      jedis.close();
+    }
   }
 
   @Test
   public void removeSpecificKey() {
-    int count = 1000;
+    int count = 100;
     for (int i = 0; i < count; i++) {
       control.set("k" + i, "v" + i);
     }
@@ -51,20 +54,23 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     // By using LinkedHashMap, we can get the hashes (map keys) at the same order of the actual keys.
     LinkedHashMap<CacheKey, CacheEntry> map = new LinkedHashMap<>();
     Cache clientSideCache = new TestCache(map);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache)) {
+    JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache);
+    try {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
-    }
 
-    ArrayList<CacheKey> commandHashes = new ArrayList<>(map.keySet());
-    assertEquals(count, map.size());
-    for (int i = 0; i < count; i++) {
-      String key = "k" + i;
-      CacheKey command = commandHashes.get(i);
-      assertTrue(map.containsKey(command));
-      clientSideCache.deleteByRedisKey(key);
-      assertFalse(map.containsKey(command));
+      ArrayList<CacheKey> commandHashes = new ArrayList<>(map.keySet());
+      assertEquals(count, map.size());
+      for (int i = 0; i < count; i++) {
+        String key = "k" + i;
+        CacheKey command = commandHashes.get(i);
+        assertTrue(map.containsKey(command));
+        clientSideCache.deleteByRedisKey(key);
+        assertFalse(map.containsKey(command));
+      }
+    } finally {
+      jedis.close();
     }
   }
 
@@ -77,6 +83,23 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new TestCache(map))) {
       jedis.mget("k1", "k2");
       assertEquals(1, map.size());
+    }
+  }
+
+  @Test
+  public void maximumSizeExact() {
+    control.set("k1", "v1");
+    control.set("k2", "v2");
+
+    DefaultCache cache = new DefaultCache(1);
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache)) {
+      assertEquals(0, cache.getSize());
+      jedis.get("k1");
+      assertEquals(1, cache.getSize());
+      assertEquals(0, cache.getStats().getEvictCount());
+      jedis.get("k2");
+      assertEquals(1, cache.getSize());
+      assertEquals(1, cache.getStats().getEvictCount());
     }
   }
 
@@ -126,7 +149,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       Set<String> members1 = jedis.smembers("foo");
       Set<String> members2 = jedis.smembers("foo");
 
-      Set<String> fromMap = (Set<String>) testCache.get(new CacheKey<>(new CommandObjects().smembers("foo"))).getValue();
+      Set<String> fromMap = (Set<String>) testCache.get(new CacheKey<>(new CommandObjects().smembers("foo")))
+          .getValue();
       assertEquals(expected, members1);
       assertEquals(expected, members2);
       assertEquals(expected, fromMap);

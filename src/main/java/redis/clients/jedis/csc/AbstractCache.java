@@ -52,7 +52,11 @@ public abstract class AbstractCache implements Cache {
 
   @Override
   public CacheEntry get(CacheKey cacheKey) {
-    return getFromStore(cacheKey);
+    CacheEntry entry = getFromStore(cacheKey);
+    if (entry != null) {
+      getEvictionPolicy().touch(cacheKey);
+    }
+    return entry;
   }
 
   @Override
@@ -60,8 +64,11 @@ public abstract class AbstractCache implements Cache {
     lock.lock();
     try {
       entry = putIntoStore(cacheKey, entry);
-      getEvictionPolicy().touch(cacheKey);
-      if (getEvictionPolicy().evictNext() != null) {
+      EvictionPolicy policy = getEvictionPolicy();
+      policy.touch(cacheKey);
+      CacheKey evictedKey = policy.evictNext();
+      if (evictedKey != null) {
+        delete(evictedKey);
         stats.evict();
       }
       for (Object redisKey : cacheKey.getRedisKeys()) {

@@ -2,6 +2,7 @@ package redis.clients.jedis.csc;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
@@ -42,7 +43,7 @@ public class CacheEntry<T> {
       oos.flush();
       oos.close();
       return baos.toByteArray();
-    } catch (Exception e) {
+    } catch (IOException e) {
       throw new JedisCacheException("Failed to serialize object", e);
     }
   }
@@ -51,7 +52,9 @@ public class CacheEntry<T> {
     try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
         ObjectInputStream ois = new ObjectInputStream(bais)) {
       return (T) ois.readObject();
-    } catch (Exception e) {
+    } catch (IOException e) {
+      throw new JedisCacheException("Failed to deserialize object", e);
+    } catch (ClassNotFoundException e) {
       throw new JedisCacheException("Failed to deserialize object", e);
     }
   }

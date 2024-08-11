@@ -10,16 +10,21 @@ public class TestCache extends DefaultCache {
   }
 
   public TestCache(Map<CacheKey, CacheEntry> map) {
-    super(1000, map);
+    super(10000, map);
   }
 
   public TestCache(Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
 
-    super(1000, map, cacheable, new LRUEviction(1000));
+    super(10000, map, cacheable, new LRUEviction(10000));
   }
 
   public TestCache(int maxSize, Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
-    super(maxSize, map, cacheable, new LRUEviction(maxSize));
+    this(maxSize, map, cacheable, new LRUEviction(maxSize));
+  }
+
+  public TestCache(int maxSize, Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable,
+      EvictionPolicy evictionPolicy) {
+    super(maxSize, map, cacheable, evictionPolicy);
   }
 
 }

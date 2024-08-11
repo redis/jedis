@@ -5,9 +5,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.function.Supplier;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.hamcrest.Matchers;
@@ -18,6 +20,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.locationtech.jts.util.Assert;
 
 import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.Connection;
@@ -32,6 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
 @RunWith(Parameterized.class)
@@ -296,7 +300,7 @@ public class JedisPooledClientSideCacheTest {
     int expectedEvictions = 20;
     int touchOffset = 10;
 
-    ConcurrentHashMap<CacheKey, CacheEntry> map = new ConcurrentHashMap<CacheKey, CacheEntry>();
+    HashMap<CacheKey, CacheEntry> map = new HashMap<CacheKey, CacheEntry>();
     TestCache testCache = new TestCache(maxSize, map, DefaultClientSideCacheable.INSTANCE);
 
     // fill the cache for maxSize
@@ -305,39 +309,79 @@ public class JedisPooledClientSideCacheTest {
         jedis.set("foo" + i, "bar" + i);
         assertEquals("bar" + i, jedis.get("foo" + i));
       }
-    }
 
-    // touch a set of keys to prevent from eviction
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+      // touch a set of keys to prevent from eviction from index 10 to 29
       for (int i = touchOffset; i < touchOffset + expectedEvictions; i++) {
         assertEquals("bar" + i, jedis.get("foo" + i));
       }
-    }
 
-    // add more keys to trigger eviction
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+      // add more keys to trigger eviction, adding from 100 to 119
       for (int i = maxSize; i < maxSize + expectedEvictions; i++) {
         jedis.set("foo" + i, "bar" + i);
         assertEquals("bar" + i, jedis.get("foo" + i));
       }
-    }
 
-    // check touched keys not evicted
-    for (int i = touchOffset; i < touchOffset + expectedEvictions; i++) {
-      assertTrue(map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
-    }
+      // check touched keys not evicted
+      for (int i = touchOffset; i < touchOffset + expectedEvictions; i++) {
 
-    // check expected evictions are done till the offset
-    for (int i = 0; i < touchOffset; i++) {
-      assertTrue(!map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
-    }
+        assertTrue(map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
+      }
 
-    /// check expected evictions are done after the touched keys
-    for (int i = touchOffset + expectedEvictions; i < (2 * expectedEvictions); i++) {
-      assertTrue(!map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
-    }
+      // check expected evictions are done till the offset
+      for (int i = 0; i < touchOffset; i++) {
+        assertTrue(!map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
+      }
 
-    assertEquals(maxSize, testCache.getSize());
+      /// check expected evictions are done after the touched keys
+      for (int i = touchOffset + expectedEvictions; i < (2 * expectedEvictions); i++) {
+        assertTrue(!map.containsKey(new CacheKey(new CommandObjects().get("foo" + i))));
+      }
+
+      assertEquals(maxSize, testCache.getSize());
+    }
+  }
+
+  @Test
+  public void testEvictionPolicyMultithreaded() throws InterruptedException {
+    int NUMBER_OF_THREADS = 100;
+    int TOTAL_OPERATIONS = 1000000;
+    int NUMBER_OF_DISTINCT_KEYS = 53;
+    int MAX_SIZE = 20;
+    List<Exception> exceptions = new ArrayList<>();
+
+    TestCache cache = new TestCache(MAX_SIZE, new HashMap<>(), DefaultClientSideCacheable.INSTANCE);
+    List<Thread> tds = new ArrayList<>();
+    final AtomicInteger ind = new AtomicInteger();
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cache)) {
+      for (int i = 0; i < NUMBER_OF_THREADS; i++) {
+        Thread hj = new Thread(new Runnable() {
+          @Override
+          public void run() {
+            for (int i = 0; (i = ind.getAndIncrement()) < TOTAL_OPERATIONS;) {
+              try {
+                final String key = "foo" + i % NUMBER_OF_DISTINCT_KEYS;
+                if (i < NUMBER_OF_DISTINCT_KEYS) {
+                  jedis.set(key, key);
+                }
+                jedis.get(key);
+              } catch (Exception e) {
+                exceptions.add(e);
+                throw e;
+              }
+            }
+          }
+        });
+        tds.add(hj);
+        hj.start();
+      }
+
+      for (Thread t : tds) {
+        t.join();
+      }
+
+      Assert.equals(MAX_SIZE, cache.getSize());
+      Assert.equals(0, exceptions.size());
+    }
   }
 
 }

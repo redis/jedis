@@ -7,7 +7,6 @@ import redis.clients.jedis.annots.Experimental;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -15,14 +14,16 @@ import java.util.stream.StreamSupport;
 public class GuavaClientSideCache extends AbstractCache {
 
   private final Cache<CacheKey, CacheEntry> cache;
-  protected static final int DEFAULT_MAXIMUM_SIZE = 10_000;
-  protected static final int DEFAULT_EXPIRE_SECONDS = 100;
   private final EvictionPolicy evictionPolicy;
 
-  public GuavaClientSideCache(Cache<CacheKey, CacheEntry> guavaCache) {
-    super(DEFAULT_MAXIMUM_SIZE);
-    this.cache = guavaCache;
-    this.evictionPolicy = new LRUEviction(DEFAULT_MAXIMUM_SIZE);
+  public GuavaClientSideCache(int maximumSize) {
+    this(maximumSize, new LRUEviction(maximumSize));
+  }
+
+  public GuavaClientSideCache(int maximumSize, EvictionPolicy evictionPolicy) {
+    super(maximumSize);
+    this.cache = CacheBuilder.newBuilder().build();
+    this.evictionPolicy = evictionPolicy;
     this.evictionPolicy.setCache(this);
   }
 
@@ -46,40 +47,6 @@ public class GuavaClientSideCache extends AbstractCache {
   @Override
   public CacheEntry getFromStore(CacheKey key) {
     return cache.getIfPresent(key);
-  }
-
-  public static Builder builder() {
-    return new Builder();
-  }
-
-  public static class Builder {
-
-    private long maximumSize = DEFAULT_MAXIMUM_SIZE;
-    private long expireTime = DEFAULT_EXPIRE_SECONDS;
-    private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
-
-    private Builder() {
-    }
-
-    public Builder maximumSize(int size) {
-      this.maximumSize = size;
-      return this;
-    }
-
-    public Builder ttl(int seconds) {
-      this.expireTime = seconds;
-      return this;
-    }
-
-    public GuavaClientSideCache build() {
-      CacheBuilder cb = CacheBuilder.newBuilder();
-
-      cb.maximumSize(maximumSize);
-
-      cb.expireAfterWrite(expireTime, expireTimeUnit);
-
-      return new GuavaClientSideCache(cb.build());
-    }
   }
 
   // TODO: we should discuss if/how we utilize Guava and get back to here !

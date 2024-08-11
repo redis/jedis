@@ -219,6 +219,7 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
       ClusterCommandObjects commandObjects = new ClusterCommandObjects();
       assertEquals("read-from-replicas", jedisCluster.executeCommandToReplica(commandObjects.get("test")));
+      // TODO: ensure data being served from replica node(s)
     }
 
     nodeSlave2.clusterReset(ClusterResetType.SOFT);

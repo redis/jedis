@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.Test;
 
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -17,6 +18,10 @@ import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.util.SafeEncoder;
 
 public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
+
+  public BitCommandsTestBase(RedisProtocol protocol) {
+    super(protocol);
+  }
 
   @Test
   public void setAndgetbit() {

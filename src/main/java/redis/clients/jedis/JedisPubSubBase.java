@@ -133,10 +133,13 @@ public abstract class JedisPubSubBase<T> {
           onUnsubscribe(enchannel, subscribedChannels);
         } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
           final byte[] bchannel = (byte[]) listReply.get(1);
-          final byte[] bmesg = (byte[]) listReply.get(2);
+          final Object mesg = listReply.get(2);
           final T enchannel = (bchannel == null) ? null : encode(bchannel);
-          final T enmesg = (bmesg == null) ? null : encode(bmesg);
-          onMessage(enchannel, enmesg);
+          if (mesg instanceof List) {
+            ((List<byte[]>) mesg).forEach(bmesg -> onMessage(enchannel, encode(bmesg)));
+          } else {
+            onMessage(enchannel, (mesg == null) ? null : encode((byte[]) mesg));
+          }
         } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
           final byte[] bpattern = (byte[]) listReply.get(1);
           final byte[] bchannel = (byte[]) listReply.get(2);

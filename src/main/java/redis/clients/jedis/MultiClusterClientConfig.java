@@ -7,6 +7,8 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisValidationException;
 
@@ -25,6 +27,7 @@ import redis.clients.jedis.exceptions.JedisValidationException;
  * <p>
  */
 // TODO: move
+@Experimental
 public final class MultiClusterClientConfig {
 
     private static final int RETRY_MAX_ATTEMPTS_DEFAULT = 3;
@@ -40,8 +43,7 @@ public final class MultiClusterClientConfig {
     private static final float CIRCUIT_BREAKER_SLOW_CALL_RATE_THRESHOLD_DEFAULT = 100.0f; // measured as percentage
     private static final List<Class> CIRCUIT_BREAKER_INCLUDED_EXCEPTIONS_DEFAULT = Arrays.asList(JedisConnectionException.class);
 
-    private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT =
-        Arrays.asList(CallNotPermittedException.class, JedisConnectionException.class);
+    private static final List<Class<? extends Throwable>> FALLBACK_EXCEPTIONS_DEFAULT = Arrays.asList(CallNotPermittedException.class);
 
     private final ClusterConfig[] clusterConfigs;
 
@@ -176,10 +178,18 @@ public final class MultiClusterClientConfig {
         private int priority;
         private HostAndPort hostAndPort;
         private JedisClientConfig clientConfig;
+        private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
         public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
             this.hostAndPort = hostAndPort;
             this.clientConfig = clientConfig;
+        }
+
+        public ClusterConfig(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+                             GenericObjectPoolConfig<Connection> connectionPoolConfig) {
+            this.hostAndPort = hostAndPort;
+            this.clientConfig = clientConfig;
+            this.connectionPoolConfig = connectionPoolConfig;
         }
 
         public int getPriority() {
@@ -196,6 +206,10 @@ public final class MultiClusterClientConfig {
 
         public JedisClientConfig getJedisClientConfig() {
             return clientConfig;
+        }
+
+        public GenericObjectPoolConfig<Connection> getConnectionPoolConfig() {
+            return connectionPoolConfig;
         }
     }
 

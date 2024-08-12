@@ -197,7 +197,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
           && jedis.getConnection().isConnected()
           && jedis.ping().equals("PONG");
     } catch (final Exception e) {
-      logger.error("Error while validating pooled Jedis object.", e);
+      logger.warn("Error while validating pooled Jedis object.", e);
       return false;
     }
   }

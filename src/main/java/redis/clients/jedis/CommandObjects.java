@@ -5,6 +5,8 @@ import static redis.clients.jedis.Protocol.Keyword.*;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
@@ -50,6 +52,7 @@ public class CommandObjects {
     return protocol;
   }
 
+  private Lock mapperLock = new ReentrantLock(true);    
   private volatile JsonObjectMapper jsonObjectMapper;
   private final AtomicInteger searchDialect = new AtomicInteger(0);
 
@@ -447,8 +450,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> setGet(String key, String value, SetParams params) {
-    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params)
-        .add(Keyword.GET), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params).add(Keyword.GET),
+        BuilderFactory.STRING);
   }
 
   public final CommandObject<String> getDel(String key) {
@@ -468,8 +471,8 @@ public class CommandObjects {
   }
 
   public final CommandObject<byte[]> setGet(byte[] key, byte[] value, SetParams params) {
-    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params)
-        .add(Keyword.GET), BuilderFactory.BINARY);
+    return new CommandObject<>(commandArguments(Command.SET).key(key).add(value).addParams(params).add(Keyword.GET),
+        BuilderFactory.BINARY);
   }
 
   public final CommandObject<byte[]> getDel(byte[] key) {
@@ -480,10 +483,18 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.GETEX).key(key).addParams(params), BuilderFactory.BINARY);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#setGet(java.lang.String, java.lang.String)}.
+   */
+  @Deprecated
   public final CommandObject<String> getSet(String key, String value) {
     return new CommandObject<>(commandArguments(Command.GETSET).key(key).add(value), BuilderFactory.STRING);
   }
 
+  /**
+   * @deprecated Use {@link CommandObjects#setGet(byte[], byte[])}.
+   */
+  @Deprecated
   public final CommandObject<byte[]> getSet(byte[] key, byte[] value) {
     return new CommandObject<>(commandArguments(Command.GETSET).key(key).add(value), BuilderFactory.BINARY);
   }
@@ -1132,10 +1143,6 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params).add(NOVALUES), BuilderFactory.SCAN_RESPONSE);
   }
 
-  public final CommandObject<Long> hstrlen(String key, String field) {
-    return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), BuilderFactory.LONG);
-  }
-
   public final CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> hscan(byte[] key, byte[] cursor, ScanParams params) {
     return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params), BuilderFactory.HSCAN_BINARY_RESPONSE);
   }
@@ -1144,8 +1151,142 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HSCAN).key(key).add(cursor).addParams(params).add(NOVALUES), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
+  public final CommandObject<Long> hstrlen(String key, String field) {
+    return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> hstrlen(byte[] key, byte[] field) {
     return new CommandObject<>(commandArguments(HSTRLEN).key(key).add(field), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<Long>> hexpire(String key, long seconds, String... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpire(String key, long seconds, ExpiryOption condition, String... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpire(String key, long milliseconds, String... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpire(String key, long milliseconds, ExpiryOption condition, String... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpireAt(String key, long unixTimeSeconds, String... fields) {
+    return new CommandObject<>(commandArguments(HEXPIREAT).key(key).add(unixTimeSeconds)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... fields) {
+    return new CommandObject<>(commandArguments(HEXPIREAT).key(key).add(unixTimeSeconds).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireAt(String key, long unixTimeMillis, String... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIREAT).key(key).add(unixTimeMillis)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIREAT).key(key).add(unixTimeMillis).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpire(byte[] key, long seconds, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRE).key(key).add(seconds).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpire(byte[] key, long milliseconds, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRE).key(key).add(milliseconds).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIREAT).key(key).add(unixTimeSeconds)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIREAT).key(key).add(unixTimeSeconds).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIREAT).key(key).add(unixTimeMillis)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIREAT).key(key).add(unixTimeMillis).add(condition)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpireTime(String key, String... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRETIME).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireTime(String key, String... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRETIME).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> httl(String key, String... fields) {
+    return new CommandObject<>(commandArguments(HTTL).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpttl(String key, String... fields) {
+    return new CommandObject<>(commandArguments(HPTTL).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hexpireTime(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HEXPIRETIME).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpexpireTime(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPEXPIRETIME).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> httl(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HTTL).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpttl(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPTTL).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpersist(String key, String... fields) {
+    return new CommandObject<>(commandArguments(HPERSIST).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> hpersist(byte[] key, byte[]... fields) {
+    return new CommandObject<>(commandArguments(HPERSIST).key(key)
+        .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
   // Hash commands
 
@@ -2012,10 +2153,6 @@ public class CommandObjects {
   private Builder<List<Tuple>> getTupleListBuilder() {
     return protocol == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_LIST_RESP3 : BuilderFactory.TUPLE_LIST;
   }
-
-  private Builder<Set<Tuple>> getTupleSetBuilder() {
-    return protocol == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_ZSET_RESP3 : BuilderFactory.TUPLE_ZSET;
-  }
   // Sorted Set commands
 
   // Geo commands
@@ -2658,6 +2795,15 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE);
   }
 
+  public final CommandObject<Map<String, List<StreamEntry>>> xreadAsMap(
+      XReadParams xReadParams, Map<String, StreamEntryID> streams) {
+    CommandArguments args = commandArguments(XREAD).addParams(xReadParams).add(STREAMS);
+    Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
+    entrySet.forEach(entry -> args.key(entry.getKey()));
+    entrySet.forEach(entry -> args.add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_MAP_RESPONSE);
+  }
+
   public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(
       String groupName, String consumer, XReadGroupParams xReadGroupParams,
       Map<String, StreamEntryID> streams) {
@@ -2668,6 +2814,18 @@ public class CommandObjects {
     entrySet.forEach(entry -> args.key(entry.getKey()));
     entrySet.forEach(entry -> args.add(entry.getValue()));
     return new CommandObject<>(args, BuilderFactory.STREAM_READ_RESPONSE);
+  }
+
+  public final CommandObject<Map<String, List<StreamEntry>>> xreadGroupAsMap(
+      String groupName, String consumer, XReadGroupParams xReadGroupParams,
+      Map<String, StreamEntryID> streams) {
+    CommandArguments args = commandArguments(XREADGROUP)
+        .add(GROUP).add(groupName).add(consumer)
+        .addParams(xReadGroupParams).add(STREAMS);
+    Set<Map.Entry<String, StreamEntryID>> entrySet = streams.entrySet();
+    entrySet.forEach(entry -> args.key(entry.getKey()));
+    entrySet.forEach(entry -> args.add(entry.getValue()));
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_MAP_RESPONSE);
   }
 
   public final CommandObject<List<Object>> xread(XReadParams xReadParams, Map.Entry<byte[], byte[]>... streams) {
@@ -3466,8 +3624,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Object> jsonGet(String key) {
-    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key),
-        protocol != RedisProtocol.RESP3 ? JSON_GENERIC_OBJECT : JsonBuilderFactory.JSON_OBJECT);
+    return new CommandObject<>(commandArguments(JsonCommand.GET).key(key), JSON_GENERIC_OBJECT);
   }
 
   @Deprecated
@@ -3594,6 +3751,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
   }
 
+  @Deprecated
   public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);
     for (Object object : objects) {
@@ -3791,9 +3949,15 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(timestamp).add(value), BuilderFactory.LONG);
   }
 
+  @Deprecated
   public final CommandObject<Long> tsAdd(String key, long timestamp, double value, TSCreateParams createParams) {
-    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key)
-        .add(timestamp).add(value).addParams(createParams), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(timestamp).add(value)
+        .addParams(createParams), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsAdd(String key, long timestamp, double value, TSAddParams addParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.ADD).key(key).add(timestamp).add(value)
+        .addParams(addParams), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> tsMAdd(Map.Entry<String, TSElement>... entries) {
@@ -3813,6 +3977,11 @@ public class CommandObjects {
         .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> tsIncrBy(String key, double addend, TSIncrByParams incrByParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.INCRBY).key(key).add(addend)
+        .addParams(incrByParams), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Long> tsDecrBy(String key, double value) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(value), BuilderFactory.LONG);
   }
@@ -3820,6 +3989,11 @@ public class CommandObjects {
   public final CommandObject<Long> tsDecrBy(String key, double value, long timestamp) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(value)
         .add(TimeSeriesKeyword.TIMESTAMP).add(timestamp), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> tsDecrBy(String key, double subtrahend, TSDecrByParams decrByParams) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.DECRBY).key(key).add(subtrahend)
+        .addParams(decrByParams), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<TSElement>> tsRange(String key, long fromTimestamp, long toTimestamp) {
@@ -4264,11 +4438,15 @@ public class CommandObjects {
   private JsonObjectMapper getJsonObjectMapper() {
     JsonObjectMapper localRef = this.jsonObjectMapper;
     if (Objects.isNull(localRef)) {
-      synchronized (this) {
+      mapperLock.lock();
+
+      try {
         localRef = this.jsonObjectMapper;
         if (Objects.isNull(localRef)) {
           this.jsonObjectMapper = localRef = new DefaultGsonObjectMapper();
         }
+      } finally {
+        mapperLock.unlock();
       }
     }
     return localRef;

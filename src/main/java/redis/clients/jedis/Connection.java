@@ -5,6 +5,7 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -37,6 +38,8 @@ public class Connection implements Closeable {
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
+  private boolean strValActive;
+  private String strVal;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -70,6 +73,63 @@ public class Connection implements Closeable {
   @Override
   public String toString() {
     return "Connection{" + socketFactory + "}";
+  }
+
+  public String toIdentityString() {
+    if (strValActive == broken && strVal != null) {
+      return strVal;
+    }
+
+    int id = hashCode();
+    String classInfo = getClass().toString();
+
+    if (socket == null) {
+      StringBuilder buf = new StringBuilder(56)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(']');
+      return buf.toString();
+    }
+
+    SocketAddress remoteAddr = socket.getRemoteSocketAddress();
+    SocketAddress localAddr = socket.getLocalSocketAddress();
+    if (remoteAddr != null) {
+      StringBuilder buf = new StringBuilder(101)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(", L:")
+          .append(localAddr)
+          .append(broken? " ! " : " - ")
+          .append("R:")
+          .append(remoteAddr)
+          .append(']');
+      strVal = buf.toString();
+    } else if (localAddr != null) {
+      StringBuilder buf = new StringBuilder(64)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(", L:")
+          .append(localAddr)
+          .append(']');
+      strVal = buf.toString();
+    } else {
+      StringBuilder buf = new StringBuilder(56)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(']');
+      strVal = buf.toString();
+    }
+
+    strValActive = broken;
+    return strVal;
   }
 
   public final RedisProtocol getRedisProtocol() {

@@ -213,11 +213,11 @@ public class JedisClusterTest extends JedisClusterTestBase {
 
     DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG
         = DefaultJedisClientConfig.builder().password("cluster").readOnlyForReplicas().build();
+    ClusterCommandObjects commandObjects = new ClusterCommandObjects();
     try (JedisCluster jedisCluster = new JedisCluster(nodeInfo1, READ_REPLICAS_CLIENT_CONFIG,
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
       assertEquals("OK", jedisCluster.set("test", "read-from-replicas"));
 
-      ClusterCommandObjects commandObjects = new ClusterCommandObjects();
       assertEquals("read-from-replicas", jedisCluster.executeCommandToReplica(commandObjects.get("test")));
       // TODO: ensure data being served from replica node(s)
     }

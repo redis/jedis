@@ -81,11 +81,25 @@ public class Connection implements Closeable {
     }
 
     int id = hashCode();
+    String classInfo = getClass().toString();
+
+    if (socket == null) {
+      StringBuilder buf = new StringBuilder(56)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(']');
+      return buf.toString();
+    }
+
     SocketAddress remoteAddr = socket.getRemoteSocketAddress();
     SocketAddress localAddr = socket.getLocalSocketAddress();
     if (remoteAddr != null) {
-      StringBuilder buf = new StringBuilder(96)
-          .append("[id: 0x")
+      StringBuilder buf = new StringBuilder(101)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
           .append(id)
           .append(", L:")
           .append(localAddr)
@@ -96,15 +110,19 @@ public class Connection implements Closeable {
       strVal = buf.toString();
     } else if (localAddr != null) {
       StringBuilder buf = new StringBuilder(64)
-          .append("[id: 0x")
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
           .append(id)
           .append(", L:")
           .append(localAddr)
           .append(']');
       strVal = buf.toString();
     } else {
-      StringBuilder buf = new StringBuilder(16)
-          .append("[id: 0x")
+      StringBuilder buf = new StringBuilder(56)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
           .append(id)
           .append(']');
       strVal = buf.toString();

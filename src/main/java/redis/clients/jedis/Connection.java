@@ -70,6 +70,11 @@ public class Connection implements Closeable {
     initializeFromClientConfig(clientConfig);
   }
 
+  @Override
+  public String toString() {
+    return "Connection{" + socketFactory + "}";
+  }
+
   public String toIdentityString() {
     if (strValActive == broken && strVal != null) {
       return strVal;

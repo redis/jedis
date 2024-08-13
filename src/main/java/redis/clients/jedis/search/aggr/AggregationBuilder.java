@@ -170,6 +170,11 @@ public class AggregationBuilder implements IParams {
     return this;
   }
 
+  public AggregationBuilder addScores() {
+    aggrArgs.add(SearchKeyword.ADDSCORES);
+    return this;
+  }
+
   public AggregationBuilder params(Map<String, Object> params) {
     aggrArgs.add(SearchKeyword.PARAMS);
     aggrArgs.add(params.size() << 1);

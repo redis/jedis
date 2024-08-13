@@ -7,7 +7,6 @@ import org.junit.Before;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
-import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.HostAndPorts;
@@ -20,13 +19,11 @@ abstract class ClientSideCacheTestBase {
 
   protected static final HostAndPort hnp = endpoint.getHostAndPort();
 
-  protected static final String baseUrl = "redis://:foobared@" + hnp.toString() + "/"; // TODO: use EndpointConfig
-
   protected Jedis control;
 
   @Before
   public void setUp() throws Exception {
-    control = new Jedis(hnp, DefaultJedisClientConfig.builder().password("foobared").build()); // TODO: use EndpointConfig
+    control = new Jedis(hnp, endpoint.getClientConfigBuilder().build());
     control.flushAll();
   }
 
@@ -35,14 +32,12 @@ abstract class ClientSideCacheTestBase {
     control.close();
   }
 
-  protected static final Supplier<JedisClientConfig> clientConfig
-      = () -> DefaultJedisClientConfig.builder().resp3().password("foobared").build(); // TODO: use EndpointConfig
+  protected static final Supplier<JedisClientConfig> clientConfig = () -> endpoint.getClientConfigBuilder().resp3().build();
 
-  protected static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig
-      = () -> {
-        ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
-        poolConfig.setMaxTotal(1);
-        return poolConfig;
-      };
+  protected static final Supplier<GenericObjectPoolConfig<Connection>> singleConnectionPoolConfig = () -> {
+    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+    poolConfig.setMaxTotal(1);
+    return poolConfig;
+  };
 
 }

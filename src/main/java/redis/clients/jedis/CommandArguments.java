@@ -14,16 +14,14 @@ import redis.clients.jedis.search.RediSearchUtil;
 public class CommandArguments implements Iterable<Rawable> {
 
   private final ArrayList<Rawable> args;
+  private final ArrayList<Object> keys;
 
   private boolean blocking;
-
-  private CommandArguments() {
-    throw new InstantiationError();
-  }
 
   public CommandArguments(ProtocolCommand command) {
     args = new ArrayList<>();
     args.add(command);
+    keys = new ArrayList<>();
   }
 
   public ProtocolCommand getCommand() {
@@ -115,6 +113,7 @@ public class CommandArguments implements Iterable<Rawable> {
     } else {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
+    keys.add(key);
     return this;
   }
 
@@ -134,7 +133,6 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   protected CommandArguments processKey(byte[] key) {
-    // do nothing
     return this;
   }
 
@@ -146,7 +144,6 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   protected CommandArguments processKey(String key) {
-    // do nothing
     return this;
   }
 
@@ -164,6 +161,10 @@ public class CommandArguments implements Iterable<Rawable> {
   @Override
   public Iterator<Rawable> iterator() {
     return args.iterator();
+  }
+
+  public Object[] getKeys() {
+    return keys.toArray();
   }
 
   public boolean isBlocking() {

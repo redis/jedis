@@ -15,9 +15,8 @@ import redis.clients.jedis.csc.util.AllowAndDenyListWithStringKeys;
 
 public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase {
 
-  private static MapClientSideCache createMapClientSideCache(Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
-    MapClientSideCache mapCache = new MapClientSideCache(map);
-    mapCache.setCacheable(cacheable);
+  private static Cache createTestCache(Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
+    Cache mapCache = new TestCache(map, cacheable);
     return mapCache;
   }
 
@@ -25,7 +24,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
   public void none() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createMapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, null, null)),
+        createTestCache(map, new AllowAndDenyListWithStringKeys(null, null, null, null)),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -38,7 +37,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
   public void whiteListCommand() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createMapClientSideCache(map, new AllowAndDenyListWithStringKeys(singleton(Protocol.Command.GET), null, null, null)),
+        createTestCache(map, new AllowAndDenyListWithStringKeys(singleton(Protocol.Command.GET), null, null, null)),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -51,7 +50,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
   public void blackListCommand() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createMapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, singleton(Protocol.Command.GET), null, null)),
+        createTestCache(map, new AllowAndDenyListWithStringKeys(null, singleton(Protocol.Command.GET), null, null)),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -64,7 +63,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
   public void whiteListKey() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createMapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, singleton("foo"), null)),
+        createTestCache(map, new AllowAndDenyListWithStringKeys(null, null, singleton("foo"), null)),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -77,7 +76,7 @@ public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase
   public void blackListKey() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        createMapClientSideCache(map, new AllowAndDenyListWithStringKeys(null, null, null, singleton("foo"))),
+        createTestCache(map, new AllowAndDenyListWithStringKeys(null, null, null, singleton("foo"))),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));

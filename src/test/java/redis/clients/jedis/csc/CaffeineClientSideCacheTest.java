@@ -8,91 +8,82 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.stats.CacheStats;
 
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.util.JedisURIHelper;
 
 public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    CaffeineClientSideCache caffeine = CaffeineClientSideCache.builder().maximumSize(10).ttl(10).build();
+    CaffeineClientSideCache caffeine = new CaffeineClientSideCache(10);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 
   @Test
   public void individualCommandsAndThenStats() {
 
-    Cache caffeine = Caffeine.newBuilder().recordStats().build();
+    CaffeineClientSideCache caffeine = new CaffeineClientSideCache(100);
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(),
-        new CaffeineClientSideCache(caffeine), singleConnectionPoolConfig.get())) {
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine, singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
-      assertEquals(0, caffeine.estimatedSize());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, caffeine.estimatedSize());
+      assertEquals(0, caffeine.getSize());
+      assertEquals("bar", jedis.get("foo")); // cache miss
+      assertEquals(1, caffeine.getSize());
       control.flushAll();
-      assertEquals(1, caffeine.estimatedSize());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, caffeine.estimatedSize());
+      assertEquals(1, caffeine.getSize());
+      assertEquals(null, jedis.get("foo")); // cache miss
+      assertEquals(0, caffeine.getSize());
       jedis.ping();
-      assertEquals(0, caffeine.estimatedSize());
-      assertNull(jedis.get("foo"));
-      assertEquals(0, caffeine.estimatedSize());
+      assertEquals(0, caffeine.getSize());
+      assertNull(jedis.get("foo")); // cache miss
+      assertEquals(0, caffeine.getSize());
     }
 
-    CacheStats stats = caffeine.stats();
-    assertEquals(1L, stats.hitCount());
-    assertThat(stats.missCount(), Matchers.greaterThan(0L));
+    assertEquals(0, caffeine.getStats().getHitCount());
+    assertEquals(caffeine.getStats().getMissCount(), 3);
+  }
+
+  @Test
+  public void maximumSizeExact() {
+    control.set("k1", "v1");
+    control.set("k2", "v2");
+
+    CaffeineClientSideCache caffeine = new CaffeineClientSideCache(1);
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
+      assertEquals(0, caffeine.getSize());
+      jedis.get("k1");
+      assertEquals(1, caffeine.getSize());
+      assertEquals(0, caffeine.getStats().getEvictCount());
+      jedis.get("k2");
+      assertEquals(1, caffeine.getSize());
+      assertEquals(1, caffeine.getStats().getEvictCount());
+    }
   }
 
   @Test
   public void maximumSize() {
-    final long maxSize = 10;
-    final long maxEstimatedSize = 52;
+    final int maxSize = 10;
+    final int maxEstimatedSize = 10;
     int count = 1000;
     for (int i = 0; i < count; i++) {
       control.set("k" + i, "v" + i);
     }
 
-    Cache caffeine = Caffeine.newBuilder().maximumSize(maxSize).recordStats().build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineClientSideCache(caffeine))) {
+    CaffeineClientSideCache caffeine = new CaffeineClientSideCache(maxSize);
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
-        assertThat(caffeine.estimatedSize(), Matchers.lessThanOrEqualTo(maxEstimatedSize));
+        assertThat(caffeine.getSize(), Matchers.lessThanOrEqualTo(maxEstimatedSize));
       }
     }
-    assertThat(caffeine.stats().evictionCount(), Matchers.greaterThanOrEqualTo(count - maxEstimatedSize));
-  }
-
-  @Test
-  public void timeToLive() throws InterruptedException {
-    int count = 1000;
-    for (int i = 0; i < count; i++) {
-      control.set("k" + i, "v" + i);
-    }
-
-    Cache caffeine = Caffeine.newBuilder().expireAfterWrite(1, TimeUnit.SECONDS).recordStats().build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new CaffeineClientSideCache(caffeine))) {
-      for (int i = 0; i < count; i++) {
-        jedis.get("k" + i);
-      }
-    }
-    assertThat(caffeine.estimatedSize(), Matchers.equalTo((long) count));
-    assertThat(caffeine.stats().evictionCount(), Matchers.equalTo(0L));
-
-    TimeUnit.SECONDS.sleep(2);
-    caffeine.cleanUp();
-    assertThat(caffeine.estimatedSize(), Matchers.equalTo(0L));
-    assertThat(caffeine.stats().evictionCount(), Matchers.equalTo((long) count));
+    assertThat(caffeine.getStats().getEvictCount(), Matchers.greaterThanOrEqualTo((long) count - maxEstimatedSize));
   }
 
 }

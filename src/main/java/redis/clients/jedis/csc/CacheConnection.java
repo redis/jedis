@@ -1,7 +1,9 @@
 package redis.clients.jedis.csc;
 
+import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
@@ -12,12 +14,10 @@ import redis.clients.jedis.util.RedisInputStream;
 
 public class CacheConnection extends Connection {
 
-  private final ClientSideCache clientSideCache;
-  private final ReentrantLock lock;
+  private final Cache clientSideCache;
+  private ReentrantLock lock;
 
-  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig,
-      ClientSideCache clientSideCache) {
-
+  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache clientSideCache) {
     super(socketFactory, clientConfig);
 
     if (protocol != RedisProtocol.RESP3) {
@@ -25,35 +25,71 @@ public class CacheConnection extends Connection {
     }
     this.clientSideCache = Objects.requireNonNull(clientSideCache);
     initializeClientSideCache();
+  }
 
+  @Override
+  protected void initializeFromClientConfig(JedisClientConfig config) {
     lock = new ReentrantLock();
+    super.initializeFromClientConfig(config);
   }
 
   @Override
   protected Object protocolRead(RedisInputStream inputStream) {
-    if (lock != null) {
-      lock.lock();
-      try {
-        return Protocol.read(inputStream);
-      } finally {
-        lock.unlock();
-      }
-    } else {
-      return Protocol.read(inputStream);
+    lock.lock();
+    try {
+      return Protocol.read(inputStream, clientSideCache);
+    } finally {
+      lock.unlock();
     }
   }
 
   @Override
   protected void protocolReadPushes(RedisInputStream inputStream) {
-    if (lock != null && lock.tryLock()) {
+    if (lock.tryLock()) {
       try {
-        //super.setSoTimeout(1);
-        Protocol.readPushes(inputStream, clientSideCache);
+        Protocol.readPushes(inputStream, clientSideCache, true);
       } finally {
-        //super.rollbackTimeout();
         lock.unlock();
       }
     }
+  }
+
+  @Override
+  public void disconnect() {
+    super.disconnect();
+    clientSideCache.flush();
+  }
+
+  @Override
+  public <T> T executeCommand(final CommandObject<T> commandObject) {
+    CacheKey key = new CacheKey<>(commandObject);
+    if (!clientSideCache.isCacheable(key)) {
+      clientSideCache.getStats().nonCacheable();
+      return super.executeCommand(commandObject);
+    }
+
+    final CacheKey cacheKey = new CacheKey(commandObject);
+    CacheEntry<T> cacheEntry = clientSideCache.get(cacheKey);
+
+    // CACHE HIT !!
+    if (cacheEntry != null) {
+      cacheEntry = validateEntry(cacheEntry);
+      if (cacheEntry != null) {
+        clientSideCache.getStats().hit();
+        return (T) cacheEntry.getValue();
+      }
+    }
+
+    // CACHE MISS!!
+    clientSideCache.getStats().miss();
+    T value = super.executeCommand(commandObject);
+    if (value != null) {
+      cacheEntry = new CacheEntry<T>(cacheKey, value, new WeakReference(this));
+      clientSideCache.set(cacheKey, cacheEntry);
+      // this line actually provides a deep copy of cached object instance 
+      value = cacheEntry.getValue();
+    }
+    return value;
   }
 
   private void initializeClientSideCache() {
@@ -61,6 +97,23 @@ public class CacheConnection extends Connection {
     String reply = getStatusCodeReply();
     if (!"OK".equals(reply)) {
       throw new JedisException("Could not enable client tracking. Reply: " + reply);
+    }
+  }
+
+  private CacheEntry validateEntry(CacheEntry cacheEntry) {
+    CacheConnection cacheOwner = (CacheConnection) cacheEntry.getConnection().get();
+    if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected()) {
+      clientSideCache.delete(cacheEntry.getCacheKey());
+      return null;
+    } else {
+      try {
+        cacheOwner.readPushesWithCheckingBroken();
+      } catch (JedisException e) {
+        clientSideCache.delete(cacheEntry.getCacheKey());
+        return null;
+      }
+
+      return clientSideCache.get(cacheEntry.getCacheKey());
     }
   }
 }

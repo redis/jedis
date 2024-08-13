@@ -25,4 +25,12 @@ public class CacheKey<T> {
     final CacheKey other = (CacheKey) obj;
     return Objects.equals(this.command, other.command);
   }
+
+  public Object[] getRedisKeys() {
+    return command.getArguments().getKeys();
+  }
+
+  public CommandObject<T> getCommand() {
+    return command;
+  }
 }

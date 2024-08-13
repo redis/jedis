@@ -4,54 +4,47 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheStats;
-
-import java.net.URI;
 import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
-import redis.clients.jedis.util.JedisURIHelper;
 
 public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    GuavaClientSideCache guava = GuavaClientSideCache.builder().maximumSize(10).ttl(10).build();
+    GuavaClientSideCache guava = new GuavaClientSideCache(10);
     try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
-      assertThat(jedis.get("foo"), Matchers.oneOf("bar", null)); // ?
+      assertEquals(null, jedis.get("foo"));
     }
   }
 
   @Test
   public void individualCommandsAndThenStats() {
 
-    Cache guava = CacheBuilder.newBuilder().recordStats().build();
+    GuavaClientSideCache guava = new GuavaClientSideCache(10000);
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaClientSideCache(guava),
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava,
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
-      assertEquals(0, guava.size());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, guava.size());
+      assertEquals(0, guava.getSize());
+      assertEquals("bar", jedis.get("foo")); // cache miss
+      assertEquals(1, guava.getSize());
       control.flushAll();
-      assertEquals(1, guava.size());
-      assertEquals("bar", jedis.get("foo"));
-      assertEquals(1, guava.size());
+      assertEquals(1, guava.getSize());
+      assertEquals(null, jedis.get("foo")); // cache miss
+      assertEquals(0, guava.getSize());
       jedis.ping();
-      assertEquals(0, guava.size());
-      assertNull(jedis.get("foo"));
-      assertEquals(0, guava.size());
+      assertEquals(0, guava.getSize());
+      assertNull(jedis.get("foo")); // cache miss
+      assertEquals(0, guava.getSize());
     }
 
-    CacheStats stats = guava.stats();
-    assertEquals(1L, stats.hitCount());
-    assertThat(stats.missCount(), Matchers.greaterThan(0L));
+    assertEquals(0, guava.getStats().getHitCount());
+    assertEquals(guava.getStats().getMissCount(), 3);
   }
 
   @Test
@@ -59,57 +52,35 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
     control.set("k1", "v1");
     control.set("k2", "v2");
 
-    Cache guava = CacheBuilder.newBuilder().maximumSize(1).recordStats().build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaClientSideCache(guava))) {
-      assertEquals(0, guava.size());
+    GuavaClientSideCache guava = new GuavaClientSideCache(1);
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
+      assertEquals(0, guava.getSize());
       jedis.get("k1");
-      assertEquals(1, guava.size());
-      assertEquals(0, guava.stats().evictionCount());
+      assertEquals(1, guava.getSize());
+      assertEquals(0, guava.getStats().getEvictCount());
       jedis.get("k2");
-      assertEquals(1, guava.size());
-      assertEquals(1, guava.stats().evictionCount());
+      assertEquals(1, guava.getSize());
+      assertEquals(1, guava.getStats().getEvictCount());
     }
   }
 
   @Test
   public void maximumSize() {
-    final long maxSize = 10;
-    final long maxEstimatedSize = 40;
+    final int maxSize = 10;
+    final int maxEstimatedSize = 40;
     int count = 1000;
     for (int i = 0; i < count; i++) {
       control.set("k" + i, "v" + i);
     }
 
-    Cache guava = CacheBuilder.newBuilder().maximumSize(maxSize).recordStats().build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaClientSideCache(guava))) {
+    GuavaClientSideCache guava = new GuavaClientSideCache(maxSize);
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
-        assertThat(guava.size(), Matchers.lessThanOrEqualTo(maxEstimatedSize));
+        assertThat(guava.getSize(), Matchers.lessThanOrEqualTo(maxEstimatedSize));
       }
     }
-    assertThat(guava.stats().evictionCount(), Matchers.greaterThan(count - maxEstimatedSize));
-  }
-
-  @Test
-  public void timeToLive() throws InterruptedException {
-    int count = 1000;
-    for (int i = 0; i < count; i++) {
-      control.set("k" + i, "v" + i);
-    }
-
-    Cache guava = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.SECONDS).recordStats().build();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new GuavaClientSideCache(guava))) {
-      for (int i = 0; i < count; i++) {
-        jedis.get("k" + i);
-      }
-    }
-    assertThat(guava.size(), Matchers.equalTo((long) count));
-    assertThat(guava.stats().evictionCount(), Matchers.equalTo(0L));
-
-    TimeUnit.SECONDS.sleep(2);
-    guava.cleanUp();
-    assertThat(guava.size(), Matchers.equalTo(0L));
-    assertThat(guava.stats().evictionCount(), Matchers.equalTo((long) count));
+    assertThat(guava.getStats().getEvictCount(), Matchers.greaterThan((long) count - maxEstimatedSize));
   }
 
 }

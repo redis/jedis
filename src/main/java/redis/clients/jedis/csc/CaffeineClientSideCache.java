@@ -2,66 +2,70 @@ package redis.clients.jedis.csc;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import java.util.concurrent.TimeUnit;
 
-public class CaffeineClientSideCache extends ClientSideCache {
+import redis.clients.jedis.annots.Experimental;
+
+import java.util.Collection;
+
+@Experimental
+public class CaffeineClientSideCache extends AbstractCache {
 
   private final Cache<CacheKey, CacheEntry> cache;
+  private final EvictionPolicy evictionPolicy;
 
-  public CaffeineClientSideCache(Cache<CacheKey, CacheEntry> caffeineCache) {
-    this.cache = caffeineCache;
+  public CaffeineClientSideCache(int maximumSize) {
+    this(maximumSize, new LRUEviction(maximumSize));
+  }
+
+  public CaffeineClientSideCache(int maximumSize, EvictionPolicy evictionPolicy) {
+    super(maximumSize);
+    this.cache = Caffeine.newBuilder().build();
+    this.evictionPolicy = evictionPolicy;
+    this.evictionPolicy.setCache(this);
   }
 
   @Override
-  protected final void clear() {
+  protected final void clearStore() {
     cache.invalidateAll();
   }
 
   @Override
-  protected void remove(Iterable<CacheKey<?>> keys) {
-    cache.invalidateAll(keys);
-  }
-
-  @Override
-  protected void put(CacheKey key, CacheEntry entry) {
+  public CacheEntry putIntoStore(CacheKey key, CacheEntry entry) {
     cache.put(key, entry);
+    return entry;
   }
 
   @Override
-  protected CacheEntry get(CacheKey key) {
+  public CacheEntry getFromStore(CacheKey key) {
     return cache.getIfPresent(key);
   }
 
-  public static Builder builder() {
-    return new Builder();
+  // TODO: we should discuss if/how we utilize Caffeine and get back to here !
+
+  @Override
+  public int getSize() {
+    return (int) cache.estimatedSize();
   }
 
-  public static class Builder {
-
-    private long maximumSize = DEFAULT_MAXIMUM_SIZE;
-    private long expireTime = DEFAULT_EXPIRE_SECONDS;
-    private final TimeUnit expireTimeUnit = TimeUnit.SECONDS;
-
-    private Builder() { }
-
-    public Builder maximumSize(int size) {
-      this.maximumSize = size;
-      return this;
-    }
-
-    public Builder ttl(int seconds) {
-      this.expireTime = seconds;
-      return this;
-    }
-
-    public CaffeineClientSideCache build() {
-      Caffeine cb = Caffeine.newBuilder();
-
-      cb.maximumSize(maximumSize);
-
-      cb.expireAfterWrite(expireTime, expireTimeUnit);
-
-      return new CaffeineClientSideCache(cb.build());
-    }
+  @Override
+  public Collection<CacheEntry> getCacheEntries() {
+    throw new UnsupportedOperationException("Unimplemented method 'getCacheEntries'");
   }
+
+  @Override
+  public EvictionPolicy getEvictionPolicy() {
+    return this.evictionPolicy;
+  }
+
+  @Override
+  protected Boolean removeFromStore(CacheKey cacheKey) {
+    cache.invalidate(cacheKey);
+    return true;
+  }
+
+  @Override
+  protected Boolean containsKeyInStore(CacheKey cacheKey) {
+    return cache.getIfPresent(cacheKey) != null;
+  }
+
 }

@@ -8,10 +8,8 @@ import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.exceptions.JedisCacheException;
 
-@Internal
 public class CacheEntry<T> {
 
   private final CacheKey<T> cacheKey;
@@ -52,9 +50,7 @@ public class CacheEntry<T> {
     try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
         ObjectInputStream ois = new ObjectInputStream(bais)) {
       return (T) ois.readObject();
-    } catch (IOException e) {
-      throw new JedisCacheException("Failed to deserialize object", e);
-    } catch (ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException e) {
       throw new JedisCacheException("Failed to deserialize object", e);
     }
   }

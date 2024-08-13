@@ -89,7 +89,7 @@ public abstract class AbstractCache implements Cache {
   }
 
   @Override
-  public Boolean delete(CacheKey cacheKey) {
+  public boolean delete(CacheKey cacheKey) {
     lock.lock();
     try {
       boolean removed = removeFromStore(cacheKey);
@@ -171,12 +171,12 @@ public abstract class AbstractCache implements Cache {
   }
 
   @Override
-  public Boolean isCacheable(CacheKey cacheKey) {
-    return cacheable.isCacheable(cacheKey.getCommand().getArguments().getCommand(), cacheKey.getRedisKeys());
+  public boolean isCacheable(CacheKey cacheKey) {
+    return cacheable.isCacheable(cacheKey.getRedisCommand(), cacheKey.getRedisKeys());
   }
 
   @Override
-  public Boolean hasCacheKey(CacheKey cacheKey) {
+  public boolean hasCacheKey(CacheKey cacheKey) {
     return containsKeyInStore(cacheKey);
   }
 
@@ -202,13 +202,13 @@ public abstract class AbstractCache implements Cache {
 
   protected abstract CacheEntry putIntoStore(CacheKey cacheKey, CacheEntry entry);
 
-  protected abstract Boolean removeFromStore(CacheKey cacheKey);
+  protected abstract boolean removeFromStore(CacheKey cacheKey);
 
   // protected abstract Collection<CacheKey> remove(Set<CacheKey<?>> commands);
 
   protected abstract void clearStore();
 
-  protected abstract Boolean containsKeyInStore(CacheKey cacheKey);
+  protected abstract boolean containsKeyInStore(CacheKey cacheKey);
 
   // End of abstract methods to be implemented by the concrete classes
 

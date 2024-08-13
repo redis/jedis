@@ -3,7 +3,9 @@ package redis.clients.jedis;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
@@ -14,14 +16,20 @@ import redis.clients.jedis.search.RediSearchUtil;
 public class CommandArguments implements Iterable<Rawable> {
 
   private final ArrayList<Rawable> args;
-  private final ArrayList<Object> keys;
+
+  private List<Object> keys;
 
   private boolean blocking;
+
+  private CommandArguments() {
+    throw new InstantiationError();
+  }
 
   public CommandArguments(ProtocolCommand command) {
     args = new ArrayList<>();
     args.add(command);
-    keys = new ArrayList<>();
+
+    keys = Collections.emptyList();
   }
 
   public ProtocolCommand getCommand() {
@@ -113,8 +121,23 @@ public class CommandArguments implements Iterable<Rawable> {
     } else {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
-    keys.add(key);
+
+    addKeyInKeys(key);
+
     return this;
+  }
+
+  private void addKeyInKeys(Object key) {
+    if (keys.isEmpty()) {
+      keys = Collections.singletonList(key);
+    } else if (keys.size() == 1) {
+      List oldKeys = keys;
+      keys = new ArrayList();
+      keys.addAll(oldKeys);
+      keys.add(key);
+    } else {
+      keys.add(key);
+    }
   }
 
   public final CommandArguments keys(Object... keys) {
@@ -133,6 +156,7 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   protected CommandArguments processKey(byte[] key) {
+    // do nothing
     return this;
   }
 
@@ -144,6 +168,7 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   protected CommandArguments processKey(String key) {
+    // do nothing
     return this;
   }
 
@@ -163,8 +188,8 @@ public class CommandArguments implements Iterable<Rawable> {
     return args.iterator();
   }
 
-  public Object[] getKeys() {
-    return keys.toArray();
+  public List<Object> getKeys() {
+    return keys;
   }
 
   public boolean isBlocking() {

@@ -54,7 +54,7 @@ public class DefaultCache extends AbstractCache {
     }
 
     @Override
-    public Boolean removeFromStore(CacheKey key) {
+    public boolean removeFromStore(CacheKey key) {
         return cache.remove(key) != null;
     }
 
@@ -64,7 +64,7 @@ public class DefaultCache extends AbstractCache {
     }
 
     @Override
-    protected Boolean containsKeyInStore(CacheKey cacheKey) {
+    protected boolean containsKeyInStore(CacheKey cacheKey) {
         return cache.containsKey(cacheKey);
     }
 

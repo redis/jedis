@@ -117,7 +117,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
-        assertThat(map, aMapWithSize(count));
+      assertThat(map, aMapWithSize(count));
 
       ArrayList<CacheKey> cacheKeys = new ArrayList<>(map.keySet());
       for (int i = 0; i < count; i++) {
@@ -148,7 +148,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
-      assertEquals(count, map.size());
+      assertThat(map, aMapWithSize(count));
 
       List<String> keysToDelete = new ArrayList<>(delete);
       for (int i = 0; i < delete; i++) {
@@ -156,7 +156,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
         keysToDelete.add(key);
       }
       assertThat(clientSideCache.deleteByRedisKeys(keysToDelete), hasSize(delete));
-      assertEquals(count - delete, map.size());
+      assertThat(map, aMapWithSize(count - delete));
     }
   }
 
@@ -173,16 +173,15 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
-      assertEquals(count, map.size());
+      assertThat(map, aMapWithSize(count));
 
       List<CacheKey> cacheKeys = new ArrayList<>(map.keySet());
       for (int i = 0; i < count; i++) {
         CacheKey cacheKey = cacheKeys.get(i);
         assertTrue(clientSideCache.delete(cacheKey));
         assertFalse(map.containsKey(cacheKey));
-        assertEquals(count - i - 1, map.size());
+        assertThat(map, aMapWithSize(count - i - 1));
       }
-      assertEquals(0, map.size());
     }
   }
 
@@ -200,13 +199,13 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
       }
-      assertEquals(count, map.size());
+      assertThat(map, aMapWithSize(count));
 
       List<CacheKey> cacheKeysToDelete = new ArrayList<>(map.keySet()).subList(0, delete);
       List<Boolean> isDeleted = clientSideCache.delete(cacheKeysToDelete);
       assertThat(isDeleted, hasSize(delete));
       isDeleted.forEach(Assert::assertTrue);
-      assertEquals(count - delete, map.size());
+      assertThat(map, aMapWithSize(count - delete));
     }
   }
 
@@ -215,10 +214,10 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     control.set("k1", "v1");
     control.set("k2", "v2");
 
-    HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new TestCache(map))) {
+    Cache cache = new TestCache();
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache)) {
       jedis.mget("k1", "k2");
-      assertEquals(1, map.size());
+      assertEquals(1, cache.getSize());
     }
   }
 

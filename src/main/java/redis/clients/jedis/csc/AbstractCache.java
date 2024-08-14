@@ -14,10 +14,8 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * The class to manage the client-side caching. User can provide any of implementation of this class
- * to the client object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache
- * CaffeineClientSideCache} or {@link redis.clients.jedis.csc.GuavaClientSideCache
- * GuavaClientSideCache} or a custom implementation of their own.
+ * The class to manage the client-side caching. User can provide an of implementation of this class
+ * to the client object.
  */
 @Experimental
 public abstract class AbstractCache implements Cache {

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -188,6 +189,7 @@ public class CommandArguments implements Iterable<Rawable> {
     return args.iterator();
   }
 
+  @Internal
   public List<Object> getKeys() {
     return keys;
   }

@@ -9,6 +9,8 @@ import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.csc.CacheConfig;
+import redis.clients.jedis.csc.CacheProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.Pool;
@@ -78,8 +80,13 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   @Experimental
-  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache clientSideCache) {
+  protected JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache clientSideCache) {
     super(hostAndPort, clientConfig, clientSideCache);
+  }
+
+  @Experimental
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, CacheConfig cacheConfig) {
+    this(hostAndPort, clientConfig, new CacheProvider().getCache(cacheConfig));
   }
 
   public JedisPooled(PooledObjectFactory<Connection> factory) {
@@ -383,10 +390,16 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   @Experimental
-  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache clientSideCache,
+  protected JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig) {
     super(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache, poolConfig),
         clientConfig.getRedisProtocol(), clientSideCache);
+  }
+
+  @Experimental
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, CacheConfig cacheConfig,
+      final GenericObjectPoolConfig<Connection> poolConfig) {
+    this(hostAndPort, clientConfig, new CacheProvider().getCache(cacheConfig), poolConfig);
   }
 
   public JedisPooled(final GenericObjectPoolConfig<Connection> poolConfig,

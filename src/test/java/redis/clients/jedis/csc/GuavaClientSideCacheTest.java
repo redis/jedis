@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
@@ -14,7 +13,7 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
   @Test
   public void simple() {
     GuavaClientSideCache guava = new GuavaClientSideCache(10);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), guava)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -27,7 +26,7 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
 
     GuavaClientSideCache guava = new GuavaClientSideCache(10000);
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava,
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), guava,
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertEquals(0, guava.getSize());
@@ -53,7 +52,7 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
     control.set("k2", "v2");
 
     GuavaClientSideCache guava = new GuavaClientSideCache(1);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), guava)) {
       assertEquals(0, guava.getSize());
       jedis.get("k1");
       assertEquals(1, guava.getSize());
@@ -74,7 +73,7 @@ public class GuavaClientSideCacheTest extends ClientSideCacheTestBase {
     }
 
     GuavaClientSideCache guava = new GuavaClientSideCache(maxSize);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), guava)) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), guava)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
         assertThat(guava.getSize(), Matchers.lessThanOrEqualTo(maxEstimatedSize));

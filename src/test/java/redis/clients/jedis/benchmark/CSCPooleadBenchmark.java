@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import redis.clients.jedis.*;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.TestCache;
+import redis.clients.jedis.csc.TestJedisPooled;
 
 public class CSCPooleadBenchmark {
 
@@ -50,7 +51,7 @@ public class CSCPooleadBenchmark {
                 .password(endpoint.getPassword()).build();
         List<Thread> tds = new ArrayList<>();
         final AtomicInteger ind = new AtomicInteger();
-        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), config, cache)) {
+        try (JedisPooled jedis = new TestJedisPooled(endpoint.getHostAndPort(), config, cache) ) {
             for (int i = 0; i < NUMBER_OF_THREADS; i++) {
                 Thread hj = new Thread(new Runnable() {
                     @Override

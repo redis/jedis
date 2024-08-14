@@ -27,6 +27,13 @@ public class GuavaClientSideCache extends AbstractCache {
     this.evictionPolicy.setCache(this);
   }
 
+  public GuavaClientSideCache(int maximumSize, ClientSideCacheable clientSideCacheable, EvictionPolicy evictionPolicy) {
+    super(maximumSize, clientSideCacheable);
+    this.cache = CacheBuilder.newBuilder().build();
+    this.evictionPolicy = evictionPolicy;
+    this.evictionPolicy.setCache(this);
+  }
+
   @Override
   public final void clearStore() {
     cache.invalidateAll();

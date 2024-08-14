@@ -30,7 +30,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
     Cache clientSideCache = new TestCache(map);
-    JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache);
+    JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), clientSideCache);
     try {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
@@ -54,7 +54,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     // By using LinkedHashMap, we can get the hashes (map keys) at the same order of the actual keys.
     LinkedHashMap<CacheKey, CacheEntry> map = new LinkedHashMap<>();
     Cache clientSideCache = new TestCache(map);
-    JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), clientSideCache);
+    JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), clientSideCache);
     try {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
@@ -80,7 +80,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     control.set("k2", "v2");
 
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), new TestCache(map))) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), new TestCache(map))) {
       jedis.mget("k1", "k2");
       assertEquals(1, map.size());
     }
@@ -92,7 +92,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     control.set("k2", "v2");
 
     DefaultCache cache = new DefaultCache(1);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache)) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), cache)) {
       assertEquals(0, cache.getSize());
       jedis.get("k1");
       assertEquals(1, cache.getSize());
@@ -107,7 +107,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   public void testInvalidationWithUnifiedJedis() {
     Cache cache = new TestCache();
     Cache mock = Mockito.spy(cache);
-    UnifiedJedis client = new UnifiedJedis(hnp, clientConfig.get(), mock);
+    UnifiedJedis client = new UnifiedJedis(hnp, clientConfig.get(), mock) {
+    };
     UnifiedJedis controlClient = new UnifiedJedis(hnp, clientConfig.get());
 
     try {
@@ -123,7 +124,6 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       //invalidating the cache and read it back from server
       Assert.assertEquals("bar2", client.get("foo"));
 
-      // ArgumentCaptor<GuavaClientSideCache> argumentCaptor = ArgumentCaptor.forClass(GuavaClientSideCache.class);
       Mockito.verify(mock, Mockito.times(1)).deleteByRedisKeys(Mockito.anyList());
       Mockito.verify(mock, Mockito.times(2)).set(Mockito.any(CacheKey.class), Mockito.any(CacheEntry.class));
     } finally {
@@ -138,7 +138,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     TestCache testCache = new TestCache(map);
 
     // fill the cache for maxSize
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), testCache)) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), testCache)) {
       jedis.sadd("foo", "a");
       jedis.sadd("foo", "b");
 

@@ -107,7 +107,8 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void simple() {
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), new TestCache())) {
+    CacheConfig cacheConfig = new CacheConfig.Builder().maxSize(1000).build();
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cacheConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -119,7 +120,7 @@ public class JedisPooledClientSideCacheTest {
   @Test
   public void simpleWithSimpleMap() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), new TestCache(map),
+    try (JedisPooled jedis = new TestJedisPooled(endpoint.getHostAndPort(), clientConfig.get(), new TestCache(map),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -140,7 +141,8 @@ public class JedisPooledClientSideCacheTest {
 
   @Test
   public void flushAll() {
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), new TestCache())) {
+    CacheConfig cacheConfig = new CacheConfig.Builder().maxSize(1000).build();
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cacheConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.flushAll();
@@ -152,7 +154,7 @@ public class JedisPooledClientSideCacheTest {
   @Test
   public void flushAllWithSimpleMap() {
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), new TestCache(map),
+    try (JedisPooled jedis = new TestJedisPooled(endpoint.getHostAndPort(), clientConfig.get(), new TestCache(map),
         singleConnectionPoolConfig.get())) {
       control.set("foo", "bar");
       assertThat(map, Matchers.aMapWithSize(0));
@@ -181,38 +183,37 @@ public class JedisPooledClientSideCacheTest {
     ReentrantLock lock = new ReentrantLock(true);
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
-    // Create the shared mock instance of cache
-    TestCache testCache = new TestCache();
-
-    // Submit multiple threads to perform concurrent operations
     CountDownLatch latch = new CountDownLatch(threadCount);
-    for (int i = 0; i < threadCount; i++) {
-      executorService.submit(() -> {
-        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
-          for (int j = 0; j < iterations; j++) {
-            lock.lock();
-            try {
-              // Simulate continious get and update operations and consume invalidation events meanwhile
-              assertEquals(control.get("foo"), jedis.get("foo"));
-              Integer value = new Integer(jedis.get("foo"));
-              assertEquals("OK", jedis.set("foo", (++value).toString()));
-            } finally {
-              lock.unlock();
+    CacheConfig cacheConfig = new CacheConfig.Builder().maxSize(1000).build();
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cacheConfig)) {
+
+      // Submit multiple threads to perform concurrent operations
+      for (int i = 0; i < threadCount; i++) {
+        executorService.submit(() -> {
+          try {
+            for (int j = 0; j < iterations; j++) {
+              lock.lock();
+              try {
+                // Simulate continious get and update operations and consume invalidation events meanwhile
+                assertEquals(control.get("foo"), jedis.get("foo"));
+                Integer value = new Integer(jedis.get("foo"));
+                assertEquals("OK", jedis.set("foo", (++value).toString()));
+              } finally {
+                lock.unlock();
+              }
             }
+          } finally {
+            latch.countDown();
           }
-        } finally {
-          latch.countDown();
-        }
-      });
+        });
+      }
+      // wait for all threads to complete
+      latch.await();
+
+      // Verify the final value of "foo" in Redis
+      String finalValue = control.get("foo");
+      assertEquals(threadCount * iterations, Integer.parseInt(finalValue));
     }
-
-    // wait for all threads to complete
-    latch.await();
-
-    // Verify the final value of "foo" in Redis
-    String finalValue = control.get("foo");
-    assertEquals(threadCount * iterations, Integer.parseInt(finalValue));
-
   }
 
   @Test
@@ -231,26 +232,28 @@ public class JedisPooledClientSideCacheTest {
 
     // Submit multiple threads to perform concurrent operations
     CountDownLatch latch = new CountDownLatch(threadCount);
-    for (int i = 0; i < threadCount; i++) {
-      executorService.submit(() -> {
-        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
-          for (int j = 0; j < iterations; j++) {
-            // Simulate continious get and update operations and consume invalidation events meanwhile
-            Integer value = new Integer(jedis.get("foo")) + 1;
-            assertEquals("OK", jedis.set("foo", value.toString()));
+    try (JedisPooled jedis = new TestJedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+      for (int i = 0; i < threadCount; i++) {
+        executorService.submit(() -> {
+          try {
+            for (int j = 0; j < iterations; j++) {
+              // Simulate continious get and update operations and consume invalidation events meanwhile
+              Integer value = new Integer(jedis.get("foo")) + 1;
+              assertEquals("OK", jedis.set("foo", value.toString()));
+            }
+          } finally {
+            latch.countDown();
           }
-        } finally {
-          latch.countDown();
-        }
-      });
+        });
+      }
+
+      // wait for all threads to complete
+      latch.await();
+
+      CacheStats stats = testCache.getStats();
+      assertEquals(threadCount * iterations, stats.getMissCount() + stats.getHitCount());
+      assertEquals(stats.getMissCount(), stats.getLoadCount());
     }
-
-    // wait for all threads to complete
-    latch.await();
-
-    CacheStats stats = testCache.getStats();
-    assertEquals(threadCount * iterations, stats.getMissCount() + stats.getHitCount());
-    assertEquals(stats.getMissCount(), stats.getLoadCount());
   }
 
   @Test
@@ -269,7 +272,7 @@ public class JedisPooledClientSideCacheTest {
     CountDownLatch latch = new CountDownLatch(threadCount);
     for (int i = 0; i < threadCount; i++) {
       executorService.submit(() -> {
-        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+        try (JedisPooled jedis = new TestJedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
           for (int j = 0; j < iterations; j++) {
             // Simulate continious get and update operations and consume invalidation events meanwhile
             assertEquals("OK", jedis.set("foo" + j, "foo" + j));
@@ -304,7 +307,7 @@ public class JedisPooledClientSideCacheTest {
     TestCache testCache = new TestCache(maxSize, map, DefaultClientSideCacheable.INSTANCE);
 
     // fill the cache for maxSize
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+    try (JedisPooled jedis = new TestJedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
       for (int i = 0; i < maxSize; i++) {
         jedis.set("foo" + i, "bar" + i);
         assertEquals("bar" + i, jedis.get("foo" + i));
@@ -352,7 +355,7 @@ public class JedisPooledClientSideCacheTest {
     TestCache cache = new TestCache(MAX_SIZE, new HashMap<>(), DefaultClientSideCacheable.INSTANCE);
     List<Thread> tds = new ArrayList<>();
     final AtomicInteger ind = new AtomicInteger();
-    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cache)) {
+    try (JedisPooled jedis = new TestJedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cache)) {
       for (int i = 0; i < NUMBER_OF_THREADS; i++) {
         Thread hj = new Thread(new Runnable() {
           @Override

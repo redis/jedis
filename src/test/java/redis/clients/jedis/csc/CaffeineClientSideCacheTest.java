@@ -4,21 +4,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.stats.CacheStats;
-
-import java.util.concurrent.TimeUnit;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import redis.clients.jedis.JedisPooled;
+import redis.clients.jedis.csc.CacheConfig.CacheType;
 
 public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    CaffeineClientSideCache caffeine = new CaffeineClientSideCache(10);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
+    CacheConfig caffeineConfig = new CacheConfig.Builder().cacheType(CacheType.CAFFEINE).build();
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeineConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
       control.del("foo");
@@ -31,7 +27,8 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
 
     CaffeineClientSideCache caffeine = new CaffeineClientSideCache(100);
 
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine, singleConnectionPoolConfig.get())) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), caffeine, singleConnectionPoolConfig.get()) {
+    }) {
       control.set("foo", "bar");
       assertEquals(0, caffeine.getSize());
       assertEquals("bar", jedis.get("foo")); // cache miss
@@ -56,7 +53,7 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
     control.set("k2", "v2");
 
     CaffeineClientSideCache caffeine = new CaffeineClientSideCache(1);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), caffeine)) {
       assertEquals(0, caffeine.getSize());
       jedis.get("k1");
       assertEquals(1, caffeine.getSize());
@@ -77,7 +74,7 @@ public class CaffeineClientSideCacheTest extends ClientSideCacheTestBase {
     }
 
     CaffeineClientSideCache caffeine = new CaffeineClientSideCache(maxSize);
-    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), caffeine)) {
+    try (JedisPooled jedis = new TestJedisPooled(hnp, clientConfig.get(), caffeine)) {
       for (int i = 0; i < count; i++) {
         jedis.get("k" + i);
         assertThat(caffeine.getSize(), Matchers.lessThanOrEqualTo(maxEstimatedSize));

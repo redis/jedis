@@ -24,6 +24,13 @@ public class CaffeineClientSideCache extends AbstractCache {
     this.evictionPolicy.setCache(this);
   }
 
+  public CaffeineClientSideCache(int maximumSize, ClientSideCacheable cacheable, EvictionPolicy evictionPolicy) {
+    super(maximumSize, cacheable);
+    this.cache = Caffeine.newBuilder().build();
+    this.evictionPolicy = evictionPolicy;
+    this.evictionPolicy.setCache(this);
+  }
+
   @Override
   protected final void clearStore() {
     cache.invalidateAll();

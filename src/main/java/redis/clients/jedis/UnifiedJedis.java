@@ -95,7 +95,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Experimental
-  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache) {
+  protected  UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache) {
     this(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache), clientConfig.getRedisProtocol(),
         clientSideCache);
   }

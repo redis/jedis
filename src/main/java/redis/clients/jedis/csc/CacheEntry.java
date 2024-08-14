@@ -14,11 +14,13 @@ public class CacheEntry<T> {
   private final CacheKey<T> cacheKey;
   private final WeakReference<CacheConnection> connection;
   private final byte[] bytes;
+  private final boolean inProgress;
 
-  public CacheEntry(CacheKey<T> cacheKey, T value, CacheConnection connection) {
+  private CacheEntry(CacheKey<T> cacheKey, T value, CacheConnection connection, boolean inProgress) {
     this.cacheKey = cacheKey;
     this.connection = new WeakReference<>(connection);
     this.bytes = toBytes(value);
+    this.inProgress = inProgress;
   }
 
   public CacheKey<T> getCacheKey() {
@@ -31,6 +33,10 @@ public class CacheEntry<T> {
 
   public CacheConnection getConnection() {
     return connection.get();
+  }
+
+  public boolean inProgress() {
+    return inProgress;
   }
 
   private static byte[] toBytes(Object object) {
@@ -52,5 +58,28 @@ public class CacheEntry<T> {
     } catch (IOException | ClassNotFoundException e) {
       throw new JedisCacheException("Failed to deserialize object", e);
     }
+  }
+
+  /**
+   * Creates a new {@link CacheEntry} that is still being processed before being put into the cache.
+   *
+   * @param cacheKey The key of the cache entry
+   * @param connection The connection that is currently processing the cache entry
+   * @return A new CacheEntry
+   */
+  public static <T> CacheEntry<T> inProgress(CacheKey<T> cacheKey, Connection connection) {
+    return new CacheEntry<T>(cacheKey, null, new WeakReference<>(connection), true);
+  }
+
+  /**
+   * Creates a new {@link CacheEntry} that is ready to be put into the cache.
+   *
+   * @param cacheKey The key of the cache entry
+   * @param connection The connection that is currently processing the cache entry
+   * @param value The value of the cache entry
+   * @return A new CacheEntry
+   */
+  public  static <T> CacheEntry<T> newCacheEntry(CacheKey<T>  cacheKey, Connection connection, T value) {
+    return new CacheEntry<T>(cacheKey, value, new WeakReference<>(connection), true);
   }
 }

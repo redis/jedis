@@ -50,7 +50,8 @@ public class DefaultCache extends AbstractCache {
 
     @Override
     public CacheEntry putIntoStore(CacheKey key, CacheEntry entry) {
-        return cache.put(key, entry);
+        cache.put(key, entry);
+        return entry;
     }
 
     @Override

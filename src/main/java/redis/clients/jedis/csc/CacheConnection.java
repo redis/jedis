@@ -62,29 +62,39 @@ public class CacheConnection extends Connection {
 
   @Override
   public <T> T executeCommand(final CommandObject<T> commandObject) {
-    CacheKey key = new CacheKey<>(commandObject);
-    if (!clientSideCache.isCacheable(key)) {
+    final CacheKey<T> cacheKey = new CacheKey<>(commandObject);
+
+    // Check if key is cachable at all, if not just execute the command as if there is no cache enabled
+    if (!clientSideCache.isCacheable(cacheKey)) {
       clientSideCache.getStats().nonCacheable();
       return super.executeCommand(commandObject);
     }
 
-    final CacheKey cacheKey = new CacheKey(commandObject);
     CacheEntry<T> cacheEntry = clientSideCache.get(cacheKey);
 
-    // CACHE HIT !!
+    // Check if the cache contains an entry for the provided key
     if (cacheEntry != null) {
       cacheEntry = validateEntry(cacheEntry);
       if (cacheEntry != null) {
+        // We only return the key if it is valid, otherwise we follow the flow if there was no cache hit
         clientSideCache.getStats().hit();
         return (T) cacheEntry.getValue();
       }
     }
 
-    // CACHE MISS!!
+    // ---
+    // At this point we know there is no valid cache entry to return, so we attempt to pull one from the server and cache it
+    // ---
     clientSideCache.getStats().miss();
+    cacheEntry = CacheEntry.inProgress(cacheKey, this);
+    clientSideCache.set(cacheKey, cacheEntry);
+
     T value = super.executeCommand(commandObject);
-    if (value != null) {
-      cacheEntry = new CacheEntry<>(cacheKey, value, this);
+    cacheEntry = clientSideCache.get(cacheKey);
+    if (value != null && cacheEntry.inProgress()) {
+      // the cache entry is valid only if it is not null there wasn't an invalidation attempt in the meantime
+      // TODO shouldn't we cache null values?
+      cacheEntry = CacheEntry.newCacheEntry(cacheKey, this, value);
       clientSideCache.set(cacheKey, cacheEntry);
       // this line actually provides a deep copy of cached object instance 
       value = cacheEntry.getValue();
@@ -102,11 +112,14 @@ public class CacheConnection extends Connection {
 
   private CacheEntry validateEntry(CacheEntry cacheEntry) {
     CacheConnection cacheOwner = cacheEntry.getConnection();
-    if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected()) {
+    if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected() || cacheEntry.inProgress()) {
+      // in any of the cases above we need to delete the cache entry and disregard the cached result
+      // the logic should be able to recover by assuming this is not a cache hit, but a cache miss
       clientSideCache.delete(cacheEntry.getCacheKey());
       return null;
     } else {
       try {
+        // verify no invalidations are waiting for us in the read buffer
         cacheOwner.readPushesWithCheckingBroken();
       } catch (JedisException e) {
         clientSideCache.delete(cacheEntry.getCacheKey());

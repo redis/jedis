@@ -14,14 +14,14 @@ public class DefaultCache extends AbstractCache {
     }
 
     public DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map) {
-        this(maximumSize, map, DefaultClientSideCacheable.INSTANCE, new LRUEviction(maximumSize));
+        this(maximumSize, map, DefaultCacheable.INSTANCE, new LRUEviction(maximumSize));
     }
 
-    public DefaultCache(int maximumSize, ClientSideCacheable cacheable) {
+    public DefaultCache(int maximumSize, Cacheable cacheable) {
         this(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, new LRUEviction(maximumSize));
     }
 
-    public DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable, EvictionPolicy evictionPolicy) {
+    public DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable, EvictionPolicy evictionPolicy) {
         super(maximumSize, cacheable);
         this.cache = map;
         this.evictionPolicy = evictionPolicy;

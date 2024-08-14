@@ -335,7 +335,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
     ConcurrentHashMap<CacheKey, CacheEntry> map = new ConcurrentHashMap<>();
     // Create the shared mock instance of cache
-    TestCache testCache = new TestCache(maxSize, map, DefaultClientSideCacheable.INSTANCE);
+    TestCache testCache = new TestCache(maxSize, map, DefaultCacheable.INSTANCE);
 
     // Submit multiple threads to perform concurrent operations
     CountDownLatch latch = new CountDownLatch(threadCount);
@@ -373,7 +373,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     int touchOffset = 10;
 
     HashMap<CacheKey, CacheEntry> map = new HashMap<>();
-    TestCache testCache = new TestCache(maxSize, map, DefaultClientSideCacheable.INSTANCE);
+    TestCache testCache = new TestCache(maxSize, map, DefaultCacheable.INSTANCE);
 
     // fill the cache for maxSize
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
@@ -421,7 +421,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     int MAX_SIZE = 20;
     List<Exception> exceptions = new ArrayList<>();
 
-    TestCache cache = new TestCache(MAX_SIZE, new HashMap<>(), DefaultClientSideCacheable.INSTANCE);
+    TestCache cache = new TestCache(MAX_SIZE, new HashMap<>(), DefaultCacheable.INSTANCE);
     List<Thread> tds = new ArrayList<>();
     final AtomicInteger ind = new AtomicInteger();
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cache)) {

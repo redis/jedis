@@ -83,7 +83,8 @@ public class CacheConnection extends Connection {
     }
 
     // ---
-    // At this point we know there is no valid cache entry to return, so we attempt to pull one from the server and cache it
+    // At this point we know there is no valid cache entry to return,
+    // so we attempt to pull one from the server and cache it
     // ---
     clientSideCache.getStats().miss();
     cacheEntry = CacheEntry.inProgress(cacheKey, this);
@@ -91,9 +92,7 @@ public class CacheConnection extends Connection {
 
     T value = super.executeCommand(commandObject);
     cacheEntry = clientSideCache.get(cacheKey);
-    if (value != null && cacheEntry.inProgress()) {
-      // the cache entry is valid only if it is not null there wasn't an invalidation attempt in the meantime
-      // TODO shouldn't we cache null values?
+    if (shouldCacheEntry(value, cacheEntry)) {
       cacheEntry = CacheEntry.newCacheEntry(cacheKey, this, value);
       clientSideCache.set(cacheKey, cacheEntry);
       // this line actually provides a deep copy of cached object instance 
@@ -108,6 +107,18 @@ public class CacheConnection extends Connection {
     if (!"OK".equals(reply)) {
       throw new JedisException("Could not enable client tracking. Reply: " + reply);
     }
+  }
+
+  private <T> boolean shouldCacheEntry(T value, CacheEntry cacheEntry) {
+    // the cache entry is valid only if it is not null there wasn't an invalidation attempt in the meantime
+    if(value == null){
+      // TODO shouldn't we cache null values?
+      return false;
+    }
+
+    // if cache entry was null or is not in progress then either it was invalidated before we were able to get
+    // the data or some other thread has managed to update it before us, we should assume the value is no longer valid
+    return cacheEntry != null && cacheEntry.inProgress();
   }
 
   private CacheEntry validateEntry(CacheEntry cacheEntry) {

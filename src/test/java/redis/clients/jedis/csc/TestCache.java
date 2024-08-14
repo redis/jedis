@@ -14,7 +14,6 @@ public class TestCache extends DefaultCache {
   }
 
   public TestCache(Map<CacheKey, CacheEntry> map, Cacheable cacheable) {
-
     super(10000, map, cacheable, new LRUEviction(10000));
   }
 

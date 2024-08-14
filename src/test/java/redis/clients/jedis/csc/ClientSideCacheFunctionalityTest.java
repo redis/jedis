@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,6 +21,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -46,6 +48,41 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(count, cache.getSize());
       cache.flush();
       assertEquals(0, cache.getSize());
+    }
+  }
+
+  @Test // T.4.1
+  public void lruEvictionTest() {
+    final int count = 100;
+    final int extra = 10;
+
+    // Add 100 + 10 keys to Redis (e.g., SET key:1 ... SET key:100)
+    for (int i = 0; i < count + extra; i++) {
+      control.set("key:" + i, "value" + i);
+    }
+
+    Map<CacheKey, CacheEntry> map = new LinkedHashMap<>(count);
+    Cache cache = new DefaultCache(count, map);
+    try (JedisPooled jedis = new JedisPooled(hnp, clientConfig.get(), cache)) {
+
+      // Retrieve the 100 keys in the same order (e.g., GET key:1 ... GET key:100)
+      for (int i = 0; i < count; i++) {
+        jedis.get("key:" + i);
+      }
+      assertThat(map, Matchers.aMapWithSize(count));
+
+      List<CacheKey> earlierKeys = new ArrayList<>(map.keySet()).subList(0, extra);
+      // earlier keys in map
+      earlierKeys.forEach(cacheKey -> assertThat(map, Matchers.hasKey(cacheKey)));
+
+      // Retrieve the 10 extra keys
+      for (int i = count; i < count + extra; i++) {
+        jedis.get("key:" + i);
+      }
+
+      // earlier keys NOT in map
+      earlierKeys.forEach(cacheKey -> assertThat(map, Matchers.not(Matchers.hasKey(cacheKey))));
+      assertThat(map, Matchers.aMapWithSize(count));
     }
   }
 

@@ -14,25 +14,23 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * The class to manage the client-side caching. User can provide any of implementation of this class
- * to the client object; e.g. {@link redis.clients.jedis.csc.CaffeineClientSideCache
- * CaffeineClientSideCache} or {@link redis.clients.jedis.csc.GuavaClientSideCache
- * GuavaClientSideCache} or a custom implementation of their own.
+ * The class to manage the client-side caching. User can provide an of implementation of this class
+ * to the client object.
  */
 @Experimental
 public abstract class AbstractCache implements Cache {
 
-  private ClientSideCacheable cacheable;
+  private Cacheable cacheable;
   private final Map<ByteBuffer, Set<CacheKey<?>>> redisKeysToCacheKeys = new ConcurrentHashMap<>();
   private final int maximumSize;
   private ReentrantLock lock = new ReentrantLock();
   private volatile CacheStats stats = new CacheStats();
 
   protected AbstractCache(int maximumSize) {
-    this(maximumSize, DefaultClientSideCacheable.INSTANCE);
+    this(maximumSize, DefaultCacheable.INSTANCE);
   }
 
-  protected AbstractCache(int maximumSize, ClientSideCacheable cacheable) {
+  protected AbstractCache(int maximumSize, Cacheable cacheable) {
     this.maximumSize = maximumSize;
     this.cacheable = cacheable;
   }
@@ -89,7 +87,7 @@ public abstract class AbstractCache implements Cache {
   }
 
   @Override
-  public Boolean delete(CacheKey cacheKey) {
+  public boolean delete(CacheKey cacheKey) {
     lock.lock();
     try {
       boolean removed = removeFromStore(cacheKey);
@@ -171,12 +169,12 @@ public abstract class AbstractCache implements Cache {
   }
 
   @Override
-  public Boolean isCacheable(CacheKey cacheKey) {
-    return cacheable.isCacheable(cacheKey.getCommand().getArguments().getCommand(), cacheKey.getRedisKeys());
+  public boolean isCacheable(CacheKey cacheKey) {
+    return cacheable.isCacheable(cacheKey.getRedisCommand(), cacheKey.getRedisKeys());
   }
 
   @Override
-  public Boolean hasCacheKey(CacheKey cacheKey) {
+  public boolean hasCacheKey(CacheKey cacheKey) {
     return containsKeyInStore(cacheKey);
   }
 
@@ -202,13 +200,13 @@ public abstract class AbstractCache implements Cache {
 
   protected abstract CacheEntry putIntoStore(CacheKey cacheKey, CacheEntry entry);
 
-  protected abstract Boolean removeFromStore(CacheKey cacheKey);
+  protected abstract boolean removeFromStore(CacheKey cacheKey);
 
   // protected abstract Collection<CacheKey> remove(Set<CacheKey<?>> commands);
 
   protected abstract void clearStore();
 
-  protected abstract Boolean containsKeyInStore(CacheKey cacheKey);
+  protected abstract boolean containsKeyInStore(CacheKey cacheKey);
 
   // End of abstract methods to be implemented by the concrete classes
 

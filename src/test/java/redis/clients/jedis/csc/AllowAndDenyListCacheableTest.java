@@ -13,9 +13,9 @@ import redis.clients.jedis.JedisPooled;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.csc.util.AllowAndDenyListWithStringKeys;
 
-public class AllowAndDenyListClientSideCacheTest extends ClientSideCacheTestBase {
+public class AllowAndDenyListCacheableTest extends ClientSideCacheTestBase {
 
-  private static Cache createTestCache(Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable) {
+  private static Cache createTestCache(Map<CacheKey, CacheEntry> map, Cacheable cacheable) {
     Cache mapCache = new TestCache(map, cacheable);
     return mapCache;
   }

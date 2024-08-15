@@ -102,7 +102,7 @@ public class Connection implements Closeable {
           .append(id)
           .append(", L:")
           .append(localAddr)
-          .append(broken? " ! " : " - ")
+          .append(broken ? " ! " : " - ")
           .append("R:")
           .append(remoteAddr)
           .append(']');
@@ -455,7 +455,7 @@ public class Connection implements Closeable {
 
   /**
    * Check if the client name libname, libver, characters are legal
-   * 
+   *
    * @param info the name
    * @return Returns true if legal, false throws exception
    * @throws JedisException if characters illegal
@@ -499,8 +499,9 @@ public class Connection implements Closeable {
       }
 
       ClientSetInfoConfig setInfoConfig = config.getClientSetInfoConfig();
-      if (setInfoConfig == null)
+      if (setInfoConfig == null) {
         setInfoConfig = ClientSetInfoConfig.DEFAULT;
+      }
 
       if (!setInfoConfig.isDisabled()) {
         String libName = JedisMetaInfo.getArtifactId();

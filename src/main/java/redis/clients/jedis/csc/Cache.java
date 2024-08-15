@@ -45,7 +45,7 @@ public interface Cache {
      * @param cacheKey The cache key of the entry in the cache
      * @return True if the entry could be deleted, false if the entry wasn't found.
      */
-    Boolean delete(CacheKey cacheKey);
+    boolean delete(CacheKey cacheKey);
 
     /**
      * Delete entries by cache key from the cache
@@ -82,14 +82,14 @@ public interface Cache {
      * @param cacheKey The key of the cache entry
      * @return True if the entry is cachable, false otherwise
      */
-    Boolean isCacheable(CacheKey cacheKey);
+    boolean isCacheable(CacheKey cacheKey);
 
     /**
      *
      * @param cacheKey The key of the cache entry
      * @return True if the cache already contains the key
      */
-    Boolean hasCacheKey(CacheKey cacheKey);
+    boolean hasCacheKey(CacheKey cacheKey);
 
     /**
      * @return The eviction policy that is used by the cache
@@ -99,10 +99,10 @@ public interface Cache {
     /**
      * @return The statistics of the cache
      */
-    public CacheStats getStats();
+    CacheStats getStats();
 
     /**
      * @return The statistics of the cache
      */
-    public CacheStats getAndResetStats();
+    CacheStats getAndResetStats();
 }

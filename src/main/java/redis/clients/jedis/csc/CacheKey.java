@@ -1,10 +1,11 @@
 package redis.clients.jedis.csc;
 
+import java.util.List;
 import java.util.Objects;
-import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.annots.Internal;
 
-@Internal
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.commands.ProtocolCommand;
+
 public class CacheKey<T> {
 
   private final CommandObject<T> command;
@@ -26,11 +27,11 @@ public class CacheKey<T> {
     return Objects.equals(this.command, other.command);
   }
 
-  public Object[] getRedisKeys() {
+  public List<Object> getRedisKeys() {
     return command.getArguments().getKeys();
   }
 
-  public CommandObject<T> getCommand() {
-    return command;
+  public ProtocolCommand getRedisCommand() {
+    return command.getArguments().getCommand();
   }
 }

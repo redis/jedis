@@ -15,7 +15,7 @@ import redis.clients.jedis.JedisClientConfig;
 
 abstract class ClientSideCacheTestBase {
 
-  private static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
+  protected static final EndpointConfig endpoint = HostAndPorts.getRedisEndpoint("standalone1");
 
   protected static final HostAndPort hnp = endpoint.getHostAndPort();
 

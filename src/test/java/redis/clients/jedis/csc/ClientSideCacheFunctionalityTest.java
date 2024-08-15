@@ -331,6 +331,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       latch.await();
     }
 
+    executorService.shutdownNow();
+
     // Verify the final value of "foo" in Redis
     String finalValue = control.get("foo");
     assertEquals(threadCount * iterations, Integer.parseInt(finalValue));
@@ -368,6 +370,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       latch.await();
     }
 
+    executorService.shutdownNow();
+
     CacheStats stats = testCache.getStats();
     assertEquals(threadCount * iterations, stats.getMissCount() + stats.getHitCount());
     assertEquals(stats.getMissCount(), stats.getLoadCount());
@@ -385,26 +389,28 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     // Create the shared mock instance of cache
     TestCache testCache = new TestCache(maxSize, map, DefaultCacheable.INSTANCE);
 
-    // Submit multiple threads to perform concurrent operations
-    CountDownLatch latch = new CountDownLatch(threadCount);
-    for (int i = 0; i < threadCount; i++) {
-      executorService.submit(() -> {
-        try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
-          for (int j = 0; j < iterations; j++) {
-            // Simulate continious get and update operations and consume invalidation events meanwhile
-            assertEquals("OK", jedis.set("foo" + j, "foo" + j));
-            jedis.get("foo" + j);
+    try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), testCache)) {
+      // Submit multiple threads to perform concurrent operations
+      CountDownLatch latch = new CountDownLatch(threadCount);
+      for (int i = 0; i < threadCount; i++) {
+        executorService.submit(() -> {
+          try {
+            for (int j = 0; j < iterations; j++) {
+              // Simulate continious get and update operations and consume invalidation events meanwhile
+              assertEquals("OK", jedis.set("foo" + j, "foo" + j));
+              jedis.get("foo" + j);
+            }
+          } finally {
+            latch.countDown();
           }
-        } catch (Exception e) {
-          e.printStackTrace();
-        } finally {
-          latch.countDown();
-        }
-      });
+        });
+      }
+
+      // wait for all threads to complete
+      latch.await();
     }
 
-    // wait for all threads to complete
-    latch.await();
+    executorService.shutdownNow();
 
     CacheStats stats = testCache.getStats();
 

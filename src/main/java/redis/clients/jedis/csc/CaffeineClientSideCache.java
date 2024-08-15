@@ -24,7 +24,7 @@ public class CaffeineClientSideCache extends AbstractCache {
     this.evictionPolicy.setCache(this);
   }
 
-  public CaffeineClientSideCache(int maximumSize, ClientSideCacheable cacheable, EvictionPolicy evictionPolicy) {
+  public CaffeineClientSideCache(int maximumSize, Cacheable cacheable, EvictionPolicy evictionPolicy) {
     super(maximumSize, cacheable);
     this.cache = Caffeine.newBuilder().build();
     this.evictionPolicy = evictionPolicy;
@@ -65,13 +65,13 @@ public class CaffeineClientSideCache extends AbstractCache {
   }
 
   @Override
-  protected Boolean removeFromStore(CacheKey cacheKey) {
+  protected boolean removeFromStore(CacheKey cacheKey) {
     cache.invalidate(cacheKey);
     return true;
   }
 
   @Override
-  protected Boolean containsKeyInStore(CacheKey cacheKey) {
+  protected boolean containsKeyInStore(CacheKey cacheKey) {
     return cache.getIfPresent(cacheKey) != null;
   }
 

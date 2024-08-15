@@ -12,7 +12,7 @@ public class CacheConfig {
 
     private int maxSize;
     private EvictionPolicyType evictionPolicyType;
-    private ClientSideCacheable cacheable;
+    private Cacheable cacheable;
     private CacheType cacheType;
 
     public int getMaxSize() {
@@ -27,14 +27,14 @@ public class CacheConfig {
         return evictionPolicyType;
     }
 
-    public ClientSideCacheable getCacheable() {
+    public Cacheable getCacheable() {
         return cacheable;
     }
 
     public static class Builder {
         private int maxSize;
         private EvictionPolicyType evictionPolicyType = EvictionPolicyType.DEFAULT;
-        private ClientSideCacheable cacheable = DefaultClientSideCacheable.INSTANCE;
+        private Cacheable cacheable = DefaultCacheable.INSTANCE;
         private CacheType cacheType;
 
         public Builder maxSize(int maxSize) {
@@ -52,7 +52,7 @@ public class CacheConfig {
             return this;
         }
 
-        public Builder cacheable(ClientSideCacheable cacheable) {
+        public Builder cacheable(Cacheable cacheable) {
             this.cacheable = cacheable;
             return this;
         }

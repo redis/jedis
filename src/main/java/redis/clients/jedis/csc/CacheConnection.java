@@ -1,8 +1,8 @@
 package redis.clients.jedis.csc;
 
-import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
+
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
@@ -84,7 +84,7 @@ public class CacheConnection extends Connection {
     clientSideCache.getStats().miss();
     T value = super.executeCommand(commandObject);
     if (value != null) {
-      cacheEntry = new CacheEntry<T>(cacheKey, value, new WeakReference(this));
+      cacheEntry = new CacheEntry<>(cacheKey, value, this);
       clientSideCache.set(cacheKey, cacheEntry);
       // this line actually provides a deep copy of cached object instance 
       value = cacheEntry.getValue();
@@ -101,7 +101,7 @@ public class CacheConnection extends Connection {
   }
 
   private CacheEntry validateEntry(CacheEntry cacheEntry) {
-    CacheConnection cacheOwner = (CacheConnection) cacheEntry.getConnection().get();
+    CacheConnection cacheOwner = cacheEntry.getConnection();
     if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected()) {
       clientSideCache.delete(cacheEntry.getCacheKey());
       return null;

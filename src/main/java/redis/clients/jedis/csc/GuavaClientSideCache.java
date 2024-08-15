@@ -27,7 +27,7 @@ public class GuavaClientSideCache extends AbstractCache {
     this.evictionPolicy.setCache(this);
   }
 
-  public GuavaClientSideCache(int maximumSize, ClientSideCacheable clientSideCacheable, EvictionPolicy evictionPolicy) {
+  public GuavaClientSideCache(int maximumSize, Cacheable clientSideCacheable, EvictionPolicy evictionPolicy) {
     super(maximumSize, clientSideCacheable);
     this.cache = CacheBuilder.newBuilder().build();
     this.evictionPolicy = evictionPolicy;
@@ -74,13 +74,13 @@ public class GuavaClientSideCache extends AbstractCache {
   }
 
   @Override
-  protected Boolean removeFromStore(CacheKey cacheKey) {
+  protected boolean removeFromStore(CacheKey cacheKey) {
     cache.invalidate(cacheKey);
     return true;
   }
 
   @Override
-  protected Boolean containsKeyInStore(CacheKey cacheKey) {
+  protected boolean containsKeyInStore(CacheKey cacheKey) {
     return cache.getIfPresent(cacheKey) != null;
   }
 

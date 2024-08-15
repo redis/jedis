@@ -14,14 +14,14 @@ public class DefaultCache extends AbstractCache {
     }
 
     protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map) {
-        this(maximumSize, map, DefaultClientSideCacheable.INSTANCE, new LRUEviction(maximumSize));
+        this(maximumSize, map, DefaultCacheable.INSTANCE, new LRUEviction(maximumSize));
     }
 
-    protected DefaultCache(int maximumSize, ClientSideCacheable cacheable) {
+    protected DefaultCache(int maximumSize, Cacheable cacheable) {
         this(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, new LRUEviction(maximumSize));
     }
 
-    protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, ClientSideCacheable cacheable, EvictionPolicy evictionPolicy) {
+    protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable, EvictionPolicy evictionPolicy) {
         super(maximumSize, cacheable);
         this.cache = map;
         this.evictionPolicy = evictionPolicy;
@@ -54,7 +54,7 @@ public class DefaultCache extends AbstractCache {
     }
 
     @Override
-    public Boolean removeFromStore(CacheKey key) {
+    public boolean removeFromStore(CacheKey key) {
         return cache.remove(key) != null;
     }
 
@@ -64,7 +64,7 @@ public class DefaultCache extends AbstractCache {
     }
 
     @Override
-    protected Boolean containsKeyInStore(CacheKey cacheKey) {
+    protected boolean containsKeyInStore(CacheKey cacheKey) {
         return cache.containsKey(cacheKey);
     }
 

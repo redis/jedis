@@ -7,20 +7,17 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
 
-import redis.clients.jedis.Connection;
-import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.exceptions.JedisCacheException;
 
-@Internal
 public class CacheEntry<T> {
 
   private final CacheKey<T> cacheKey;
-  private final WeakReference<Connection> connection;
+  private final WeakReference<CacheConnection> connection;
   private final byte[] bytes;
 
-  public CacheEntry(CacheKey<T> cacheKey, T value, WeakReference<Connection> connection) {
+  public CacheEntry(CacheKey<T> cacheKey, T value, CacheConnection connection) {
     this.cacheKey = cacheKey;
-    this.connection = connection;
+    this.connection = new WeakReference<>(connection);
     this.bytes = toBytes(value);
   }
 
@@ -32,8 +29,8 @@ public class CacheEntry<T> {
     return toObject(bytes);
   }
 
-  public WeakReference<Connection> getConnection() {
-    return connection;
+  public CacheConnection getConnection() {
+    return connection.get();
   }
 
   private static byte[] toBytes(Object object) {
@@ -52,9 +49,7 @@ public class CacheEntry<T> {
     try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
         ObjectInputStream ois = new ObjectInputStream(bais)) {
       return (T) ois.readObject();
-    } catch (IOException e) {
-      throw new JedisCacheException("Failed to deserialize object", e);
-    } catch (ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException e) {
       throw new JedisCacheException("Failed to deserialize object", e);
     }
   }

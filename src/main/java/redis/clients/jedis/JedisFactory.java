@@ -1,19 +1,17 @@
 package redis.clients.jedis;
 
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import redis.clients.jedis.exceptions.InvalidURIException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.JedisURIHelper;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
-
-import org.apache.commons.pool2.PooledObject;
-import org.apache.commons.pool2.PooledObjectFactory;
-import org.apache.commons.pool2.impl.DefaultPooledObject;
-
-import redis.clients.jedis.exceptions.InvalidURIException;
-import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.JedisURIHelper;
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * PoolableObjectFactory custom impl.
@@ -54,7 +52,7 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
     this(host, port, connectionTimeout, soTimeout, null, password, database, clientName, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
   }
 
-  JedisFactory(final String host, final int port, final int connectionTimeout,
+  protected JedisFactory(final String host, final int port, final int connectionTimeout,
                final int soTimeout, final String user, final String password, final int database, final String clientName,
                final boolean ssl, final SSLSocketFactory sslSocketFactory, final SSLParameters sslParameters,
                final HostnameVerifier hostnameVerifier) {
@@ -141,56 +139,37 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
 
   @Override
   public PooledObject<Jedis> makeObject() throws Exception {
-    final HostAndPort hp = this.hostAndPort.get();
-    final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout,
-        infiniteSoTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-
-    try {
-      jedis.connect();
-      if (user != null) {
-        jedis.auth(user, password);
-      } else if (password != null) {
-        jedis.auth(password);
-      }
-      if (database != 0) {
-        jedis.select(database);
-      }
-      if (clientName != null) {
-        jedis.clientSetname(clientName);
-      }
-    } catch (JedisException je) {
-      jedis.close();
-      throw je;
-    }
-
-    return new DefaultPooledObject<>(jedis);
+    return new DefaultPooledObject<>(newJedis());
   }
     
-    protected Jedis newJedis() {
-        return newJedis(this.hostAndPort.get());
-    }
-    
-    private Jedis newJedis(HostAndPort hp) {
-        final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
-        try {
-            jedis.connect();
-            if (user != null) {
-                jedis.auth(user, password);
-            } else if (password != null) {
-                jedis.auth(password);
-            }
-            if (database != 0) {
-                jedis.select(database);
-            }
-            if (clientName != null) {
-                jedis.clientSetname(clientName);
-            }
-        } catch (JedisException je) {
-            jedis.close();
-            throw je;
-        }
-        return jedis;
-    }
+  protected Jedis newJedis() {
+      return newJedis(this.hostAndPort.get());
+  }
+  
+  private Jedis newJedis(HostAndPort hp) {
+      final Jedis jedis = new Jedis(hp.getHost(), hp.getPort(), connectionTimeout, soTimeout,
+          infiniteSoTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
+  
+      try {
+          jedis.connect();
+          if (user != null) {
+              jedis.auth(user, password);
+          } else if (password != null) {
+              jedis.auth(password);
+          }
+          if (database != 0) {
+              jedis.select(database);
+          }
+          if (clientName != null) {
+              jedis.clientSetname(clientName);
+          }
+      } catch (JedisException je) {
+          jedis.close();
+          throw je;
+      }
+      
+      return jedis;
+  }
 
   @Override
   public void passivateObject(PooledObject<Jedis> pooledJedis) throws Exception {

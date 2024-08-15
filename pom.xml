@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
     <artifactId>xy.mmm.jedis.external.API</artifactId>
-    <version>5.4.3.2.1.2021.12.11.2-SNAPSHOT</version>
+    <version>5.4.3.2.1.2023.02.10.1-SNAPSHOT</version>
     <name>${artifactId}</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
   <url>https://github.com/xetorthio/jedis</url>
@@ -207,12 +207,14 @@
 			      <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
 			    </archive> 
 			  </configuration>
-			</plugin> 
+			</plugin>
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>
 				<version>1.5</version>
 				<executions>
+					<!-- mmm:modified 
 					<execution>
 						<id>sign-artifacts</id>
 						<phase>verify</phase>
@@ -220,6 +222,7 @@
 							<goal>sign</goal>
 						</goals>
 					</execution>
+					-->
 				</executions>
 			</plugin>
 			<plugin>

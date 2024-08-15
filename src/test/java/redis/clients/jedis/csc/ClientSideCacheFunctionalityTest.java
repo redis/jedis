@@ -334,6 +334,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     // Verify the final value of "foo" in Redis
     String finalValue = control.get("foo");
     assertEquals(threadCount * iterations, Integer.parseInt(finalValue));
+
+    executorService.shutdownNow();
   }
 
   @Test
@@ -371,6 +373,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     CacheStats stats = testCache.getStats();
     assertEquals(threadCount * iterations, stats.getMissCount() + stats.getHitCount());
     assertEquals(stats.getMissCount(), stats.getLoadCount());
+
+    executorService.shutdownNow();
   }
 
   @Test

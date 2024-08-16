@@ -67,8 +67,8 @@ public class CacheEntry<T> {
    * @param connection The connection that is currently processing the cache entry
    * @return A new CacheEntry
    */
-  public static <T> CacheEntry<T> inProgress(CacheKey<T> cacheKey, Connection connection) {
-    return new CacheEntry<T>(cacheKey, null, new WeakReference<>(connection), true);
+  public static <T> CacheEntry<T> inProgress(CacheKey<T> cacheKey, CacheConnection connection) {
+    return new CacheEntry<T>(cacheKey, null, connection, true);
   }
 
   /**
@@ -79,7 +79,7 @@ public class CacheEntry<T> {
    * @param value The value of the cache entry
    * @return A new CacheEntry
    */
-  public  static <T> CacheEntry<T> newCacheEntry(CacheKey<T>  cacheKey, Connection connection, T value) {
-    return new CacheEntry<T>(cacheKey, value, new WeakReference<>(connection), true);
+  public  static <T> CacheEntry<T> newCacheEntry(CacheKey<T>  cacheKey, CacheConnection connection, T value) {
+    return new CacheEntry<T>(cacheKey, value, connection, true);
   }
 }

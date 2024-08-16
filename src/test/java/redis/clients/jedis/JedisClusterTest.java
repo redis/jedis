@@ -199,6 +199,33 @@ public class JedisClusterTest extends JedisClusterTestBase {
     nodeSlave2.flushDB();
   }
 
+  @Test
+  public void testReadFromReplicas() throws Exception {
+    node1.clusterMeet(LOCAL_IP, nodeInfoSlave2.getPort());
+    JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, nodeSlave2);
+
+    for (String nodeInfo : node2.clusterNodes().split("\n")) {
+      if (nodeInfo.contains("myself")) {
+        nodeSlave2.clusterReplicate(nodeInfo.split(" ")[0]);
+        break;
+      }
+    }
+
+    DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG
+        = DefaultJedisClientConfig.builder().password("cluster").readOnlyForReplicas().build();
+    ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+    try (JedisCluster jedisCluster = new JedisCluster(nodeInfo1, READ_REPLICAS_CLIENT_CONFIG,
+        DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {
+      assertEquals("OK", jedisCluster.set("test", "read-from-replicas"));
+
+      assertEquals("read-from-replicas", jedisCluster.executeCommandToReplica(commandObjects.get("test")));
+      // TODO: ensure data being served from replica node(s)
+    }
+
+    nodeSlave2.clusterReset(ClusterResetType.SOFT);
+    nodeSlave2.flushDB();
+  }
+
   /**
    * slot->nodes 15363 node3 e
    */

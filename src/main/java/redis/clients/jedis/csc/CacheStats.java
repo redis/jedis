@@ -11,6 +11,7 @@ public class CacheStats {
     private AtomicLong nonCacheable = new AtomicLong(0);
     private AtomicLong flush = new AtomicLong(0);
     private AtomicLong invalidationsByServer = new AtomicLong(0);
+    private AtomicLong invalidationsByChecks = new AtomicLong(0);
     private AtomicLong invalidationMessages = new AtomicLong(0);
 
     protected void hit() {
@@ -39,6 +40,10 @@ public class CacheStats {
 
     protected void invalidationByServer(int size) {
         invalidationsByServer.addAndGet(size);
+    }
+
+    protected void invalidationByCheck() {
+        invalidationsByChecks.incrementAndGet();
     }
 
     protected void invalidationMessages() {
@@ -71,6 +76,10 @@ public class CacheStats {
 
     public long getInvalidationCount() {
         return invalidationsByServer.get();
+    }
+
+    public long getInvalidationByChecksCount() {
+        return invalidationsByChecks.get();
     }
 
     public String toString() {

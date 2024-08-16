@@ -79,7 +79,6 @@ public abstract class AbstractCache implements Cache {
           redisKeysToCacheKeys.put(mapKey, set);
         }
       }
-      stats.load();
       return entry;
     } finally {
       lock.unlock();

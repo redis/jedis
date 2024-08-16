@@ -86,6 +86,7 @@ public class CacheConnection extends Connection {
     // At this point we know there is no valid cache entry to return,
     // so we attempt to pull one from the server and cache it
     // ---
+
     clientSideCache.getStats().miss();
     cacheEntry = CacheEntry.inProgress(cacheKey, this);
     clientSideCache.set(cacheKey, cacheEntry);
@@ -95,6 +96,8 @@ public class CacheConnection extends Connection {
     if (shouldCacheEntry(value, cacheEntry)) {
       cacheEntry = CacheEntry.newCacheEntry(cacheKey, this, value);
       clientSideCache.set(cacheKey, cacheEntry);
+      clientSideCache.getStats().load();
+
       // this line actually provides a deep copy of cached object instance 
       value = cacheEntry.getValue();
     }
@@ -110,15 +113,19 @@ public class CacheConnection extends Connection {
   }
 
   private <T> boolean shouldCacheEntry(T value, CacheEntry cacheEntry) {
-    // the cache entry is valid only if it is not null there wasn't an invalidation attempt in the meantime
-    if(value == null){
-      // TODO shouldn't we cache null values?
-      return false;
+
+    if(cacheEntry != null){
+      if (value != null && cacheEntry.inProgress()){
+        // TODO shouldn't we cache null values?
+        return true;
+      }
+
+      clientSideCache.delete(cacheEntry.getCacheKey());
     }
 
     // if cache entry was null or is not in progress then either it was invalidated before we were able to get
     // the data or some other thread has managed to update it before us, we should assume the value is no longer valid
-    return cacheEntry != null && cacheEntry.inProgress();
+    return false;
   }
 
   private CacheEntry validateEntry(CacheEntry cacheEntry) {
@@ -126,6 +133,7 @@ public class CacheConnection extends Connection {
     if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected() || cacheEntry.inProgress()) {
       // in any of the cases above we need to delete the cache entry and disregard the cached result
       // the logic should be able to recover by assuming this is not a cache hit, but a cache miss
+      clientSideCache.getStats().invalidationByCheck();
       clientSideCache.delete(cacheEntry.getCacheKey());
       return null;
     } else {

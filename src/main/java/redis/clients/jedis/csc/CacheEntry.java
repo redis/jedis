@@ -80,6 +80,6 @@ public class CacheEntry<T> {
    * @return A new CacheEntry
    */
   public  static <T> CacheEntry<T> newCacheEntry(CacheKey<T>  cacheKey, CacheConnection connection, T value) {
-    return new CacheEntry<T>(cacheKey, value, connection, true);
+    return new CacheEntry<T>(cacheKey, value, connection, false);
   }
 }

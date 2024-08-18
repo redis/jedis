@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -192,7 +193,6 @@ public final class Protocol {
   }
 
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-  // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
     final int num = is.readIntCrLf();
     if (num == -1) return null;
     final List<Object> ret = new ArrayList<>(num);
@@ -206,16 +206,21 @@ public final class Protocol {
     return ret;
   }
 
-  // private static List<Object> processMultiBulkReply(final RedisInputStream is) {
-  // private static List<Object> processMultiBulkReply(final int num, final RedisInputStream is) {
-  private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
+  // TODO: generic Object works, but doesn't feel right
+  private static Object processMapKeyValueReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
-    if (num == -1) return null;
-    final List<KeyValue> ret = new ArrayList<>(num);
-    for (int i = 0; i < num; i++) {
-      ret.add(new KeyValue(process(is), process(is)));
+    switch (num) {
+      case -1:
+        return null;
+      case 0:
+        return Collections.emptyMap();
+      default:
+        final List<KeyValue> ret = new ArrayList<>(num);
+        for (int i = 0; i < num; i++) {
+          ret.add(new KeyValue(process(is), process(is)));
+        }
+        return ret;
     }
-    return ret;
   }
 
   public static Object read(final RedisInputStream is) {

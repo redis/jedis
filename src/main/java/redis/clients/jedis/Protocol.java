@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,7 +50,7 @@ public final class Protocol {
   public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
   public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
 
-  static final List<KeyValue> PROTOCOL_EMPTY_MAP = new ArrayList<>(0);
+  static final List<KeyValue> PROTOCOL_EMPTY_MAP = Collections.unmodifiableList(new ArrayList<>(0));
 
   private static final String ASK_PREFIX = "ASK ";
   private static final String MOVED_PREFIX = "MOVED ";

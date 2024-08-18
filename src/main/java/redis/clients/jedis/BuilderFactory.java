@@ -385,7 +385,9 @@ public final class BuilderFactory {
 
       if (data instanceof List) {
         final List list = (List) data;
-        if (list.isEmpty()) return list;
+        if (list.isEmpty()) {
+          return list == Protocol.PROTOCOL_EMPTY_MAP ? Collections.emptyMap() : Collections.emptyList();
+        }
 
         if (list.get(0) instanceof KeyValue) {
           return ((List<KeyValue>) data).stream()
@@ -397,7 +399,7 @@ public final class BuilderFactory {
         }
       } else if (data instanceof byte[]) {
         return STRING.build(data);
-      } else { // also covers empty map
+      } else {
         return data;
       }
     }

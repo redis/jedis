@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -49,6 +48,8 @@ public final class Protocol {
 
   public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
   public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
+
+  static final List<KeyValue> PROTOCOL_EMPTY_MAP = new ArrayList<>(0);
 
   private static final String ASK_PREFIX = "ASK ";
   private static final String MOVED_PREFIX = "MOVED ";
@@ -206,14 +207,13 @@ public final class Protocol {
     return ret;
   }
 
-  // TODO: generic Object works, but doesn't feel right
-  private static Object processMapKeyValueReply(final RedisInputStream is) {
+  private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
     switch (num) {
       case -1:
         return null;
       case 0:
-        return Collections.emptyMap();
+        return PROTOCOL_EMPTY_MAP;
       default:
         final List<KeyValue> ret = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {

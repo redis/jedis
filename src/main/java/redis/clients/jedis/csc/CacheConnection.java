@@ -17,7 +17,8 @@ public class CacheConnection extends Connection {
   private final Cache clientSideCache;
   private ReentrantLock lock;
 
-  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache clientSideCache) {
+  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig,
+      Cache clientSideCache) {
     super(socketFactory, clientConfig);
 
     if (protocol != RedisProtocol.RESP3) {
@@ -70,16 +71,13 @@ public class CacheConnection extends Connection {
       return super.executeCommand(commandObject);
     }
 
-    CacheEntry<T> cacheEntry = clientSideCache.get(cacheKey);
-
     // Check if the cache contains an entry for the provided key
+    CacheEntry<T> cacheEntry = clientSideCache.get(cacheKey);
+    cacheEntry = validateEntry(cacheEntry);
     if (cacheEntry != null) {
-      cacheEntry = validateEntry(cacheEntry);
-      if (cacheEntry != null) {
-        // We only return the key if it is valid, otherwise we follow the flow if there was no cache hit
-        clientSideCache.getStats().hit();
-        return (T) cacheEntry.getValue();
-      }
+      // We only return the key if it is valid, otherwise we follow the flow if there was no cache hit
+      clientSideCache.getStats().hit();
+      return (T) cacheEntry.getValue();
     }
 
     // ---
@@ -114,8 +112,8 @@ public class CacheConnection extends Connection {
 
   private <T> boolean shouldCacheEntry(T value, CacheEntry cacheEntry) {
 
-    if(cacheEntry != null){
-      if (value != null && cacheEntry.inProgress()){
+    if (cacheEntry != null) {
+      if (value != null && cacheEntry.inProgress()) {
         // TODO shouldn't we cache null values?
         return true;
       }
@@ -129,23 +127,30 @@ public class CacheConnection extends Connection {
   }
 
   private CacheEntry validateEntry(CacheEntry cacheEntry) {
-    CacheConnection cacheOwner = cacheEntry.getConnection();
-    if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected() || cacheEntry.inProgress()) {
-      // in any of the cases above we need to delete the cache entry and disregard the cached result
-      // the logic should be able to recover by assuming this is not a cache hit, but a cache miss
-      clientSideCache.getStats().invalidationByCheck();
-      clientSideCache.delete(cacheEntry.getCacheKey());
+
+    if (cacheEntry == null) {
       return null;
-    } else {
-      try {
-        // verify no invalidations are waiting for us in the read buffer
+    }
+
+    CacheConnection cacheOwner = cacheEntry.getConnection();
+    try {
+      if (cacheOwner != null && !cacheOwner.isBroken() && cacheOwner.isConnected()) {
         cacheOwner.readPushesWithCheckingBroken();
-      } catch (JedisException e) {
-        clientSideCache.delete(cacheEntry.getCacheKey());
-        return null;
+        CacheEntry updated = clientSideCache.get(cacheEntry.getCacheKey());
+        if (updated != null && !updated.inProgress()) {
+          return updated;
+        }
       }
 
-      return clientSideCache.get(cacheEntry.getCacheKey());
+    } catch (JedisException e) {
+      // continue below to invalidate the key, no different action required
     }
+
+    // in any of the cases above we need to delete the cache entry and disregard the cached result
+    // the logic should be able to recover by assuming this is not a cache hit, but a cache miss
+    clientSideCache.getStats().invalidationByCheck();
+    clientSideCache.delete(cacheEntry.getCacheKey());
+    return null;
   }
+
 }

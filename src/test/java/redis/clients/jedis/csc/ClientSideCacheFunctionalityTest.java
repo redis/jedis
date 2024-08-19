@@ -260,7 +260,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
       // ArgumentCaptor<GuavaClientSideCache> argumentCaptor = ArgumentCaptor.forClass(GuavaClientSideCache.class);
       Mockito.verify(mock, Mockito.times(1)).deleteByRedisKeys(Mockito.anyList());
-      Mockito.verify(mock, Mockito.times(2))
+      Mockito.verify(mock, Mockito.times(4))
           .set(Mockito.any(CacheKey.class), Mockito.any(CacheEntry.class));
     } finally {
       client.close();

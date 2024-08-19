@@ -304,6 +304,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
     ReentrantLock lock = new ReentrantLock(true);
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+    List<Exception> exceptions = new ArrayList<>();
 
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(),
         new TestCache())) {
@@ -323,7 +324,9 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
                 lock.unlock();
               }
             }
-          } finally {
+          } catch (Exception e) {
+            exceptions.add(e);
+          } finally{
             latch.countDown();
           }
         });
@@ -338,6 +341,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     // Verify the final value of "foo" in Redis
     String finalValue = control.get("foo");
     assertEquals(threadCount * iterations, Integer.parseInt(finalValue));
+    assertTrue(exceptions.isEmpty());
   }
 
   @Test
@@ -348,6 +352,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     control.set("foo", "0");
 
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+    List<Exception> exceptions = new ArrayList<>();
 
     // Create the shared mock instance of cache
     TestCache testCache = new TestCache();
@@ -363,6 +368,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
               Integer value = new Integer(jedis.get("foo")) + 1;
               assertEquals("OK", jedis.set("foo", value.toString()));
             }
+          } catch (Exception e) {
+            exceptions.add(e);
           } finally {
             latch.countDown();
           }
@@ -378,6 +385,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     CacheStats stats = testCache.getStats();
     assertEquals(threadCount * iterations, stats.getMissCount() + stats.getHitCount());
     assertThat("Each load was caused by a miss", stats.getMissCount() >= stats.getLoadCount());
+    assertTrue(exceptions.isEmpty());
   }
 
   @Test
@@ -391,6 +399,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     ConcurrentHashMap<CacheKey, CacheEntry> map = new ConcurrentHashMap<>();
     // Create the shared mock instance of cache
     TestCache testCache = new TestCache(maxSize, map, DefaultCacheable.INSTANCE);
+    List<Exception> exceptions = new ArrayList<>();
 
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(),
         testCache)) {
@@ -405,7 +414,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
               jedis.get("foo" + j);
             }
           } catch (Exception e) {
-            e.printStackTrace();
+            exceptions.add(e);
           } finally {
             latch.countDown();
           }
@@ -424,6 +433,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     assertThat("Each load was caused by a miss", stats.getMissCount() >= stats.getLoadCount());
     assertEquals(threadCount * iterations, stats.getNonCacheableCount());
     assertTrue(maxSize >= testCache.getSize());
+    assertTrue(exceptions.isEmpty());
   }
 
   @Test

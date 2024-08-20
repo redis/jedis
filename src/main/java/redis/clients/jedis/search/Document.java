@@ -135,13 +135,13 @@ public class Document implements Serializable {
   }
 
   /**
-   * 
+   * Parse document object from FT.SEARCH reply.
    * @param id
    * @param score
    * @param fields
    * @param decode
    * @param isFieldDecode checked only if {@code decode=true}
-   * @return 
+   * @return document
    */
   public static Document load(String id, double score, List<byte[]> fields, boolean decode,
       Map<String, Boolean> isFieldDecode) {

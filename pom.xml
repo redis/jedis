@@ -50,7 +50,7 @@
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.17.2</jackson.version>
-		<maven.surefire.version>3.2.5</maven.surefire.version>
+		<maven.surefire.version>3.3.1</maven.surefire.version>
 	</properties>
 
 	<dependencies>

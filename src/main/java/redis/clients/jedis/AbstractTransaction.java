@@ -5,6 +5,7 @@ import java.util.List;
 
 public abstract class AbstractTransaction extends PipeliningBase implements Closeable {
 
+  @Deprecated
   protected AbstractTransaction() {
     super(new CommandObjects());
   }
@@ -35,5 +36,13 @@ public abstract class AbstractTransaction extends PipeliningBase implements Clos
 
   public Response<Long> waitReplicas(int replicas, long timeout) {
     return appendCommand(commandObjects.waitReplicas(replicas, timeout));
+  }
+
+  public Response<Long> publish(String channel, String message) {
+    return appendCommand(commandObjects.publish(channel, message));
+  }
+
+  public Response<Long> publish(byte[] channel, byte[] message) {
+    return appendCommand(commandObjects.publish(channel, message));
   }
 }

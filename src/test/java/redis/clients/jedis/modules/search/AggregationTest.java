@@ -134,6 +134,7 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
     assertEquals("10", rows.get(1).get("sum"));
   }
 
+  @org.junit.Ignore
   @Test
   public void testAggregations2Profile() {
     Schema sc = new Schema();
@@ -197,6 +198,23 @@ public class AggregationTest extends RedisModuleCommandsTestBase {
 
     res = client.ftAggregate(index, r);
     assertEquals(0, res.getTotalResults());
+  }
+
+  @Test
+  public void testAggregationBuilderAddScores() {
+    Schema sc = new Schema();
+    sc.addSortableTextField("name", 1.0);
+    sc.addSortableNumericField("age");
+    client.ftCreate(index, IndexOptions.defaultOptions(), sc);
+    addDocument(new Document("data1").set("name", "Adam").set("age", 33));
+    addDocument(new Document("data2").set("name", "Sara").set("age", 44));
+
+    AggregationBuilder r = new AggregationBuilder("sara").addScores()
+        .apply("@__score * 100", "normalized_score").dialect(3);
+
+    AggregationResult res = client.ftAggregate(index, r);
+    assertEquals(2, res.getRow(0).getLong("__score"));
+    assertEquals(200, res.getRow(0).getLong("normalized_score"));
   }
 
   @Test

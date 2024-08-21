@@ -5,6 +5,7 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -15,6 +16,7 @@ import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -37,6 +39,8 @@ public class Connection implements Closeable {
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
+  private boolean strValActive;
+  private String strVal;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -70,6 +74,64 @@ public class Connection implements Closeable {
   @Override
   public String toString() {
     return "Connection{" + socketFactory + "}";
+  }
+
+  @Experimental
+  public String toIdentityString() {
+    if (strValActive == broken && strVal != null) {
+      return strVal;
+    }
+
+    int id = hashCode();
+    String classInfo = getClass().toString();
+
+    if (socket == null) {
+      StringBuilder buf = new StringBuilder(56)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(']');
+      return buf.toString();
+    }
+
+    SocketAddress remoteAddr = socket.getRemoteSocketAddress();
+    SocketAddress localAddr = socket.getLocalSocketAddress();
+    if (remoteAddr != null) {
+      StringBuilder buf = new StringBuilder(101)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(", L:")
+          .append(localAddr)
+          .append(broken? " ! " : " - ")
+          .append("R:")
+          .append(remoteAddr)
+          .append(']');
+      strVal = buf.toString();
+    } else if (localAddr != null) {
+      StringBuilder buf = new StringBuilder(64)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(", L:")
+          .append(localAddr)
+          .append(']');
+      strVal = buf.toString();
+    } else {
+      StringBuilder buf = new StringBuilder(56)
+          .append("[")
+          .append(classInfo)
+          .append(", id: 0x")
+          .append(id)
+          .append(']');
+      strVal = buf.toString();
+    }
+
+    strValActive = broken;
+    return strVal;
   }
 
   public final RedisProtocol getRedisProtocol() {
@@ -343,13 +405,13 @@ public class Connection implements Closeable {
 
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
-      throw new JedisConnectionException("Attempting to read from a broken connection");
+      throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
     try {
       return Protocol.read(inputStream);
 //      Object read = Protocol.read(inputStream);
-//      System.out.println(SafeEncoder.encodeObject(read));
+//      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(read));
 //      return read;
     } catch (JedisConnectionException exc) {
       broken = true;
@@ -433,6 +495,11 @@ public class Connection implements Closeable {
           fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
               .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
         }
+      }
+
+      // set readonly flag to ALL connections (including master nodes) when enable read from replica
+      if (config.isReadOnlyForReplica()) {
+        fireAndForgetMsg.add(new CommandArguments(Command.READONLY));
       }
 
       for (CommandArguments arg : fireAndForgetMsg) {

@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.Test;
 
+import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -16,8 +17,8 @@ public class FailoverCommandsTest {
 
   private static final int INVALID_PORT = 6000;
 
-  private static final HostAndPort node1 = HostAndPorts.getRedisServers().get(9);
-  private static final HostAndPort node2 = HostAndPorts.getRedisServers().get(10);
+  private static final EndpointConfig node1 = HostAndPorts.getRedisEndpoint("standalone9");
+  private static final EndpointConfig node2 = HostAndPorts.getRedisEndpoint("standalone10-replica-of-standalone9");
 
   private HostAndPort masterAddress;
   private HostAndPort replicaAddress;
@@ -25,19 +26,19 @@ public class FailoverCommandsTest {
   @Before
   public void prepare() {
     String role1, role2;
-    try (Jedis jedis1 = new Jedis(node1)) {
+    try (Jedis jedis1 = new Jedis(node1.getHostAndPort(), node1.getClientConfigBuilder().build())) {
       role1 = (String) jedis1.role().get(0);
     }
-    try (Jedis jedis2 = new Jedis(node2)) {
+    try (Jedis jedis2 = new Jedis(node2.getHostAndPort(), node2.getClientConfigBuilder().build())) {
       role2 = (String) jedis2.role().get(0);
     }
 
     if ("master".equals(role1) && "slave".equals(role2)) {
-      masterAddress = node1;
-      replicaAddress = node2;
+      masterAddress = node1.getHostAndPort();
+      replicaAddress = node2.getHostAndPort();
     } else if ("master".equals(role2) && "slave".equals(role1)) {
-      masterAddress = node2;
-      replicaAddress = node1;
+      masterAddress = node2.getHostAndPort();
+      replicaAddress = node1.getHostAndPort();
     } else {
       fail();
     }

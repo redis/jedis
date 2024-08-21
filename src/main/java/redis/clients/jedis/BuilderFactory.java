@@ -385,7 +385,9 @@ public final class BuilderFactory {
 
       if (data instanceof List) {
         final List list = (List) data;
-        if (list.isEmpty()) return Collections.emptyMap();
+        if (list.isEmpty()) {
+          return list == Protocol.PROTOCOL_EMPTY_MAP ? Collections.emptyMap() : Collections.emptyList();
+        }
 
         if (list.get(0) instanceof KeyValue) {
           return ((List<KeyValue>) data).stream()
@@ -397,8 +399,9 @@ public final class BuilderFactory {
         }
       } else if (data instanceof byte[]) {
         return STRING.build(data);
+      } else {
+        return data;
       }
-      return data;
     }
   };
 
@@ -661,6 +664,7 @@ public final class BuilderFactory {
     }
   };
 
+  @Deprecated
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")
@@ -683,6 +687,7 @@ public final class BuilderFactory {
     }
   };
 
+  @Deprecated
   public static final Builder<Set<Tuple>> TUPLE_ZSET_RESP3 = new Builder<Set<Tuple>>() {
     @Override
     @SuppressWarnings("unchecked")

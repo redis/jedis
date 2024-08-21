@@ -10,6 +10,7 @@ import redis.clients.jedis.commands.DatabasePipelineCommands;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 import redis.clients.jedis.params.*;
+import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 
 public class Pipeline extends PipelineBase implements DatabasePipelineCommands, Closeable {
@@ -28,12 +29,23 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
   }
 
   public Pipeline(Connection connection, boolean closeConnection) {
-    super(new CommandObjects());
+    this(connection, closeConnection, createCommandObjects(connection));
+  }
+
+  private static CommandObjects createCommandObjects(Connection connection) {
+    CommandObjects commandObjects = new CommandObjects();
+    RedisProtocol proto = connection.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
+    return commandObjects;
+  }
+
+  Pipeline(Connection connection, boolean closeConnection, CommandObjects commandObjects) {
+    super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
-    RedisProtocol proto = this.connection.getRedisProtocol();
-    if (proto != null) this.commandObjects.setProtocol(proto);
-    setGraphCommands(new GraphCommandObjects(this.connection));
+    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this.connection);
+    graphCommandObjects.setBaseCommandArgumentsCreator(protocolCommand -> commandObjects.commandArguments(protocolCommand));
+    setGraphCommands(graphCommandObjects);
   }
 
   @Override
@@ -46,10 +58,12 @@ public class Pipeline extends PipelineBase implements DatabasePipelineCommands, 
 
   @Override
   public void close() {
-    sync();
-
-    if (closeConnection) {
-      connection.close();
+    try {
+      sync();
+    } finally {
+      if (closeConnection) {
+        IOUtils.closeQuietly(connection);
+      }
     }
   }
 

@@ -4,7 +4,6 @@ import static redis.clients.jedis.Protocol.Command.DISCARD;
 import static redis.clients.jedis.Protocol.Command.EXEC;
 import static redis.clients.jedis.Protocol.Command.MULTI;
 import static redis.clients.jedis.Protocol.Command.UNWATCH;
-import static redis.clients.jedis.Protocol.Command.WATCH;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -16,7 +15,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.graph.GraphCommandObjects;
 
 /**
- * A pipeline based transaction.
+ * A transaction based on <a href="https://redis.io/docs/manual/pipelining/">pipelining</a>.
  */
 public class Transaction extends TransactionBase {
 
@@ -59,7 +58,7 @@ public class Transaction extends TransactionBase {
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    */
   public Transaction(Connection connection, boolean doMulti) {
-    this(connection, doMulti, false);
+    this(connection, doMulti, false, createCommandObjects(connection));
   }
 
   /**
@@ -73,10 +72,35 @@ public class Transaction extends TransactionBase {
    * @param closeConnection should the 'connection' be closed when 'close()' is called?
    */
   public Transaction(Connection connection, boolean doMulti, boolean closeConnection) {
+    this(connection, doMulti, closeConnection, createCommandObjects(connection));
+  }
+
+  /**
+   * Creates a new transaction.
+   *
+   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
+   * be {@code doMulti=false}.
+   *
+   * @param connection connection
+   * @param commandObjects command objects
+   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
+   * @param closeConnection should the 'connection' be closed when 'close()' is called?
+   */
+  Transaction(Connection connection, boolean doMulti, boolean closeConnection, CommandObjects commandObjects) {
+    super(commandObjects);
     this.connection = connection;
     this.closeConnection = closeConnection;
-    setGraphCommands(new GraphCommandObjects(this.connection));
+    GraphCommandObjects graphCommandObjects = new GraphCommandObjects(this.connection);
+    graphCommandObjects.setBaseCommandArgumentsCreator(protocolCommand -> commandObjects.commandArguments(protocolCommand));
+    setGraphCommands(graphCommandObjects);
     if (doMulti) multi();
+  }
+
+  private static CommandObjects createCommandObjects(Connection connection) {
+    CommandObjects commandObjects = new CommandObjects();
+    RedisProtocol proto = connection.getRedisProtocol();
+    if (proto != null) commandObjects.setProtocol(proto);
+    return commandObjects;
   }
 
   @Override
@@ -88,16 +112,14 @@ public class Transaction extends TransactionBase {
 
   @Override
   public String watch(final String... keys) {
-    connection.sendCommand(WATCH, keys);
-    String status = connection.getStatusCodeReply();
+    String status = connection.executeCommand(commandObjects.watch(keys));
     inWatch = true;
     return status;
   }
 
   @Override
   public String watch(final byte[]... keys) {
-    connection.sendCommand(WATCH, keys);
-    String status = connection.getStatusCodeReply();
+    String status = connection.executeCommand(commandObjects.watch(keys));
     inWatch = true;
     return status;
   }

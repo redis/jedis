@@ -57,6 +57,7 @@ public class TimeSeriesProtocol {
     UNCOMPRESSED,
     CHUNK_SIZE,
     DUPLICATE_POLICY,
+    IGNORE,
     ON_DUPLICATE,
     ALIGN,
     FILTER_BY_TS,

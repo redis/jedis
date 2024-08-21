@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -39,5 +40,15 @@ public class ConnectionTest {
     client = new Connection("localhost", 6379);
     client.connect();
     client.close();
+  }
+
+  @Test
+  public void checkIdentityString() {
+    client = new Connection("localhost", 6379);
+    Assert.assertFalse(client.toIdentityString().contains("6379"));
+    client.connect();
+    Assert.assertTrue(client.toIdentityString().contains("6379"));
+    client.close();
+    Assert.assertTrue(client.toIdentityString().contains("6379"));
   }
 }

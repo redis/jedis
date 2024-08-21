@@ -329,6 +329,12 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  public void emptyLuaTableReply() {
+    Object reply = jedis.eval("return {}");
+    assertEquals(Collections.emptyList(), reply);
+  }
+
+  @Test
   public void functionLoadAndDelete() {
     String engine = "Lua";
     String library = "mylib";

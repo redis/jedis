@@ -16,6 +16,7 @@ import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -75,6 +76,7 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
+  @Experimental
   public String toIdentityString() {
     if (strValActive == broken && strVal != null) {
       return strVal;

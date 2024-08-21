@@ -74,6 +74,7 @@ public class Connection implements Closeable {
     return "Connection{" + socketFactory + "}";
   }
 
+  @Experimental
   public String toIdentityString() {
     if (strValActive == broken && strVal != null) {
       return strVal;

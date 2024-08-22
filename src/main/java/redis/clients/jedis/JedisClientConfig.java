@@ -58,7 +58,7 @@ public interface JedisClientConfig {
   }
 
   /**
-   * @return <code>true</code> - to create a TLS connection. <code>false</code> - otherwise.
+   * @return {@code true} - to create TLS connection(s). {@code false} - otherwise.
    */
   default boolean isSsl() {
     return false;
@@ -80,7 +80,11 @@ public interface JedisClientConfig {
     return null;
   }
 
-  default boolean isReadOnlyForReplica() {
+  /**
+   * Execute READONLY command for Redis Cluster replica nodes.
+   * @return {@code true} - to execute READONLY command to connection(s). {@code false} - otherwise.
+   */
+  default boolean isReadOnlyForRedisClusterReplicas() {
     return false;
   }
 

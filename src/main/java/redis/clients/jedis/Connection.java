@@ -73,7 +73,7 @@ public class Connection implements Closeable {
 
   @Override
   public String toString() {
-    return "Connection{" + socketFactory + "}";
+    return getClass().getSimpleName() + "{" + socketFactory + "}";
   }
 
   @Experimental
@@ -82,52 +82,22 @@ public class Connection implements Closeable {
       return strVal;
     }
 
+    String className = getClass().getSimpleName();
     int id = hashCode();
-    String classInfo = getClass().toString();
 
     if (socket == null) {
-      StringBuilder buf = new StringBuilder(56)
-          .append("[")
-          .append(classInfo)
-          .append(", id: 0x")
-          .append(id)
-          .append(']');
-      return buf.toString();
+      return String.format("%s{id: 0x%X}", className, id);
     }
 
     SocketAddress remoteAddr = socket.getRemoteSocketAddress();
     SocketAddress localAddr = socket.getLocalSocketAddress();
     if (remoteAddr != null) {
-      StringBuilder buf = new StringBuilder(101)
-          .append("[")
-          .append(classInfo)
-          .append(", id: 0x")
-          .append(id)
-          .append(", L:")
-          .append(localAddr)
-          .append(broken? " ! " : " - ")
-          .append("R:")
-          .append(remoteAddr)
-          .append(']');
-      strVal = buf.toString();
+      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id,
+          localAddr, (broken ? '!' : '-'), remoteAddr);
     } else if (localAddr != null) {
-      StringBuilder buf = new StringBuilder(64)
-          .append("[")
-          .append(classInfo)
-          .append(", id: 0x")
-          .append(id)
-          .append(", L:")
-          .append(localAddr)
-          .append(']');
-      strVal = buf.toString();
+      strVal = String.format("%s{id: 0x%X, L:%s}", className, id, localAddr);
     } else {
-      StringBuilder buf = new StringBuilder(56)
-          .append("[")
-          .append(classInfo)
-          .append(", id: 0x")
-          .append(id)
-          .append(']');
-      strVal = buf.toString();
+      strVal = String.format("%s{id: 0x%X}", className, id);
     }
 
     strValActive = broken;
@@ -156,7 +126,7 @@ public class Connection implements Closeable {
       try {
         this.socket.setSoTimeout(soTimeout);
       } catch (SocketException ex) {
-        broken = true;
+        setBroken();
         throw new JedisConnectionException(ex);
       }
     }
@@ -169,7 +139,7 @@ public class Connection implements Closeable {
       }
       socket.setSoTimeout(infiniteSoTimeout);
     } catch (SocketException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -178,7 +148,7 @@ public class Connection implements Closeable {
     try {
       socket.setSoTimeout(this.soTimeout);
     } catch (SocketException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -245,7 +215,7 @@ public class Connection implements Closeable {
          */
       }
       // Any other exceptions related to connection?
-      broken = true;
+      setBroken();
       throw ex;
     }
   }
@@ -398,7 +368,7 @@ public class Connection implements Closeable {
     try {
       outputStream.flush();
     } catch (IOException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -414,7 +384,7 @@ public class Connection implements Closeable {
 //      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(read));
 //      return read;
     } catch (JedisConnectionException exc) {
-      broken = true;
+      setBroken();
       throw exc;
     }
   }

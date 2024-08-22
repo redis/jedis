@@ -1,6 +1,7 @@
 //package redis.clients.jedis.commands.unified.cluster;
 //
 //import static org.junit.Assert.assertEquals;
+//import static org.junit.Assert.assertNull;
 //
 //import java.util.ArrayList;
 //import java.util.Collections;
@@ -148,6 +149,8 @@
 //  @Test
 //  @Override
 //  public void bzpopmax() {
+//    assertNull(jedis.bzpopmax(1, "f{:}oo", "b{:}ar"));
+//
 //    jedis.zadd("f{:}oo", 1d, "a", ZAddParams.zAddParams().nx());
 //    jedis.zadd("f{:}oo", 10d, "b", ZAddParams.zAddParams().nx());
 //    jedis.zadd("b{:}ar", 0.1d, "c", ZAddParams.zAddParams().nx());
@@ -157,6 +160,8 @@
 //  @Test
 //  @Override
 //  public void bzpopmin() {
+//    assertNull(jedis.bzpopmin(1, "ba{:}r", "fo{:}o"));
+//
 //    jedis.zadd("fo{:}o", 1d, "a", ZAddParams.zAddParams().nx());
 //    jedis.zadd("fo{:}o", 10d, "b", ZAddParams.zAddParams().nx());
 //    jedis.zadd("ba{:}r", 0.1d, "c", ZAddParams.zAddParams().nx());

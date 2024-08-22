@@ -81,7 +81,10 @@ public interface JedisClientConfig {
   }
 
   /**
-   * Execute READONLY command for Redis Cluster replica nodes.
+   * Execute READONLY command to connections.
+   * <p>
+   * READONLY command is specific to Redis Cluster replica nodes. So this config param is only
+   * intended for Redis Cluster connections.
    * @return {@code true} - to execute READONLY command to connection(s). {@code false} - otherwise.
    */
   default boolean isReadOnlyForRedisClusterReplicas() {

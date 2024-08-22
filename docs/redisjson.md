@@ -81,7 +81,7 @@ If we want to be able to query this JSON, we'll need to create an index. Let's c
 3. Then we actually create the index, called "student-index", by calling `ftCreate()`.
 
 ```java
-Schema schema = new Schema().addTextField("$.firstName", 1.0).addTextField("$" + ".lastName", 1.0);
+Schema schema = new Schema().addTextField("$.firstName", 1.0).addTextField("$.lastName", 1.0);
 
 IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON)
         .setPrefixes(new String[]{"student:"});
@@ -89,11 +89,27 @@ IndexDefinition rule = new IndexDefinition(IndexDefinition.Type.JSON)
 client.ftCreate("student-index", IndexOptions.defaultOptions().setDefinition(rule), schema);
 ```
 
+Alternatively creating the same index using FTCreateParams: 
+
+```java
+client.ftCreate("student-index",
+        FTCreateParams.createParams().on(IndexDataType.JSON).prefix("student:"),
+        TextField.of("$.firstName"), TextField.of("$.lastName"));
+```
+
 With an index now defined, we can query our JSON. Let's find all students whose name begins with "maya":
 
 ```java
-Query q = new Query("@\\$\\" + ".firstName:maya*");
+Query q = new Query("@\\$\\.firstName:maya*");
 SearchResult mayaSearch = client.ftSearch("student-index", q);
+```
+
+Same query can be done using FTSearchParams:
+
+```java
+SearchResult mayaSearch = client.ftSearch("student-index",
+        "@\\$\\.firstName:maya*",
+        FTSearchParams.searchParams());
 ```
 
 We can then iterate over our search results:

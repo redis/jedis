@@ -48,8 +48,8 @@ client.ftCreate("item-index",
                 .prefix("item:", "product:")
                 .filter("@price>100"),
 
-        TextField.of("title").weight(5),
-        TextField.of("body").weight(1),
+        TextField.of("title").weight(5.0),
+        TextField.of("body"),
         NumericField.of("price")
 );
 ```

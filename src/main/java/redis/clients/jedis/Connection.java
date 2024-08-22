@@ -467,8 +467,8 @@ public class Connection implements Closeable {
         }
       }
 
-      // set readonly flag to ALL connections (including master nodes) when enable read from replica
-      if (config.isReadOnlyForReplica()) {
+      // set READONLY flag to ALL connections (including master nodes) when enable read from replica
+      if (config.isReadOnlyForRedisClusterReplicas()) {
         fireAndForgetMsg.add(new CommandArguments(Command.READONLY));
       }
 

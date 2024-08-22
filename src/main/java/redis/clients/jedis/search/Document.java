@@ -162,7 +162,8 @@ public class Document implements Serializable {
   /// <-- RESP2
 
   /// RESP3 -->
-  static final Builder<Document> SEARCH_DOCUMENT = new PerFieldDecoderDocumentBuilder((Map) null);
+  // TODO: final
+  static Builder<Document> SEARCH_DOCUMENT = new PerFieldDecoderDocumentBuilder((Map) null);
 
   static final class PerFieldDecoderDocumentBuilder extends Builder<Document> {
 

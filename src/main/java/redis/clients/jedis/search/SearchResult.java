@@ -95,7 +95,8 @@ public class SearchResult {
   }
 
   /// RESP3 -->
-  public static final Builder<SearchResult> SEARCH_RESULT_BUILDER
+  // TODO: final
+  public static Builder<SearchResult> SEARCH_RESULT_BUILDER
       = new PerFieldDecoderSearchResultBuilder(Document.SEARCH_DOCUMENT);
 
   @Internal

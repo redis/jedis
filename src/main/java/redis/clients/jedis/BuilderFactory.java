@@ -598,10 +598,9 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public KeyValue<String, Tuple> build(Object data) {
-      List<Object> l = (List<Object>) data; // never null
-      if (l.isEmpty()) {
-        return null;
-      }
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      if (l.isEmpty()) return null;
       return KeyValue.of(STRING.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
     }
 
@@ -615,10 +614,9 @@ public final class BuilderFactory {
     @Override
     @SuppressWarnings("unchecked")
     public KeyValue<byte[], Tuple> build(Object data) {
-      List<Object> l = (List<Object>) data; // never null
-      if (l.isEmpty()) {
-        return null;
-      }
+      if (data == null) return null;
+      List<Object> l = (List<Object>) data;
+      if (l.isEmpty()) return null;
       return KeyValue.of(BINARY.build(l.get(0)), new Tuple(BINARY.build(l.get(1)), DOUBLE.build(l.get(2))));
     }
 

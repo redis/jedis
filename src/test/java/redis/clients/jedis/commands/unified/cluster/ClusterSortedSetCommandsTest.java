@@ -3,6 +3,7 @@ package redis.clients.jedis.commands.unified.cluster;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
@@ -154,6 +155,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   @Test
   @Override
   public void bzpopmax() {
+    assertNull(jedis.bzpopmax(1, "f{:}oo", "b{:}ar"));
+
     jedis.zadd("f{:}oo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("f{:}oo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("b{:}ar", 0.1d, "c", ZAddParams.zAddParams().nx());
@@ -163,6 +166,8 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   @Test
   @Override
   public void bzpopmin() {
+    assertNull(jedis.bzpopmin(1, "ba{:}r", "fo{:}o"));
+
     jedis.zadd("fo{:}o", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("fo{:}o", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("ba{:}r", 0.1d, "c", ZAddParams.zAddParams().nx());

@@ -211,8 +211,8 @@ public class JedisClusterTest extends JedisClusterTestBase {
       }
     }
 
-    DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG
-        = DefaultJedisClientConfig.builder().password("cluster").readOnlyForReplicas().build();
+    DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
+        .password("cluster").readOnlyForRedisClusterReplicas().build();
     ClusterCommandObjects commandObjects = new ClusterCommandObjects();
     try (JedisCluster jedisCluster = new JedisCluster(nodeInfo1, READ_REPLICAS_CLIENT_CONFIG,
         DEFAULT_REDIRECTIONS, DEFAULT_POOL_CONFIG)) {

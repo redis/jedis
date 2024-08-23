@@ -26,13 +26,13 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final ClientSetInfoConfig clientSetInfoConfig;
 
-  private final boolean readOnlyForReplica;
+  private final boolean readOnlyForRedisClusterReplicas;
 
   private DefaultJedisClientConfig(RedisProtocol protocol, int connectionTimeoutMillis, int soTimeoutMillis,
       int blockingSocketTimeoutMillis, Supplier<RedisCredentials> credentialsProvider, int database,
       String clientName, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters,
       HostnameVerifier hostnameVerifier, HostAndPortMapper hostAndPortMapper,
-      ClientSetInfoConfig clientSetInfoConfig, boolean readOnlyForReplica) {
+      ClientSetInfoConfig clientSetInfoConfig, boolean readOnlyForRedisClusterReplicas) {
     this.redisProtocol = protocol;
     this.connectionTimeoutMillis = connectionTimeoutMillis;
     this.socketTimeoutMillis = soTimeoutMillis;
@@ -46,7 +46,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.hostnameVerifier = hostnameVerifier;
     this.hostAndPortMapper = hostAndPortMapper;
     this.clientSetInfoConfig = clientSetInfoConfig;
-    this.readOnlyForReplica = readOnlyForReplica;
+    this.readOnlyForRedisClusterReplicas = readOnlyForRedisClusterReplicas;
   }
 
   @Override
@@ -126,8 +126,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   }
 
   @Override
-  public boolean isReadOnlyForReplica() {
-    return readOnlyForReplica;
+  public boolean isReadOnlyForRedisClusterReplicas() {
+    return readOnlyForRedisClusterReplicas;
   }
 
   public static Builder builder() {
@@ -157,7 +157,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     private ClientSetInfoConfig clientSetInfoConfig = ClientSetInfoConfig.DEFAULT;
 
-    private boolean readOnlyForReplicas = false;
+    private boolean readOnlyForRedisClusterReplicas = false;
 
     private Builder() {
     }
@@ -171,7 +171,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return new DefaultJedisClientConfig(redisProtocol, connectionTimeoutMillis, socketTimeoutMillis,
           blockingSocketTimeoutMillis, credentialsProvider, database, clientName, ssl,
           sslSocketFactory, sslParameters, hostnameVerifier, hostAndPortMapper, clientSetInfoConfig,
-          readOnlyForReplicas);
+          readOnlyForRedisClusterReplicas);
     }
 
     /**
@@ -267,8 +267,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
-    public Builder readOnlyForReplicas() {
-      this.readOnlyForReplicas = true;
+    public Builder readOnlyForRedisClusterReplicas() {
+      this.readOnlyForRedisClusterReplicas = true;
       return this;
     }
   }
@@ -290,6 +290,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
         copy.getBlockingSocketTimeoutMillis(), copy.getCredentialsProvider(),
         copy.getDatabase(), copy.getClientName(), copy.isSsl(), copy.getSslSocketFactory(),
         copy.getSslParameters(), copy.getHostnameVerifier(), copy.getHostAndPortMapper(),
-        copy.getClientSetInfoConfig(), copy.isReadOnlyForReplica());
+        copy.getClientSetInfoConfig(), copy.isReadOnlyForRedisClusterReplicas());
   }
 }

@@ -299,6 +299,10 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         return multiClusterMap.get(activeMultiClusterIndex);
     }
 
+    public Cluster getCluster(int multiClusterIndex) {
+        return multiClusterMap.get(multiClusterIndex);
+    }
+
     public CircuitBreaker getClusterCircuitBreaker() {
         return multiClusterMap.get(activeMultiClusterIndex).getCircuitBreaker();
     }

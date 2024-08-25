@@ -20,6 +20,8 @@ EVAL
 EVALSHA
 Failback
 Failover
+FTCreateParams
+FTSearchParams
 GSON
 GenericObjectPool
 GenericObjectPoolConfig

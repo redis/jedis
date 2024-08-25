@@ -1,7 +1,9 @@
 package redis.clients.jedis;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import org.hamcrest.Matchers;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Test;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -45,10 +47,28 @@ public class ConnectionTest {
   @Test
   public void checkIdentityString() {
     client = new Connection("localhost", 6379);
-    Assert.assertFalse(client.toIdentityString().contains("6379"));
+
+    String idString = "id: 0x" + Integer.toHexString(client.hashCode()).toUpperCase();
+
+    String identityString = client.toIdentityString();
+    assertThat(identityString, Matchers.startsWith("Connection{"));
+    assertThat(identityString, Matchers.endsWith("}"));
+    assertThat(identityString, Matchers.containsString(idString));
+
     client.connect();
-    Assert.assertTrue(client.toIdentityString().contains("6379"));
+    identityString = client.toIdentityString();
+    assertThat(identityString, Matchers.startsWith("Connection{"));
+    assertThat(identityString, Matchers.endsWith("}"));
+    assertThat(identityString, Matchers.containsString(idString));
+    assertThat(identityString, Matchers.containsString(", L:"));
+    assertThat(identityString, Matchers.containsString(" - R:"));
+
     client.close();
-    Assert.assertTrue(client.toIdentityString().contains("6379"));
+    identityString = client.toIdentityString();
+    assertThat(identityString, Matchers.startsWith("Connection{"));
+    assertThat(identityString, Matchers.endsWith("}"));
+    assertThat(identityString, Matchers.containsString(idString));
+    assertThat(identityString, Matchers.containsString(", L:"));
+    assertThat(identityString, Matchers.containsString(" ! R:"));
   }
 }

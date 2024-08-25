@@ -1,6 +1,6 @@
 # RediSearch Jedis Quick Start
 
-To use RediSearch features with Jedis, you'll need to use and implementation of RediSearchCommands.
+To use RediSearch features with Jedis, you'll need to use an implementation of RediSearchCommands.
 
 ## Creating the RediSearch client
 
@@ -22,6 +22,8 @@ JedisCluster client = new JedisCluster(nodes);
 
 ## Indexing and querying
 
+### Indexing
+
 Defining a schema for an index and creating it:
 
 ```java
@@ -37,6 +39,23 @@ IndexDefinition def = new IndexDefinition()
 client.ftCreate("item-index", IndexOptions.defaultOptions().setDefinition(def), sc);
 ```
 
+Alternatively, we can create the same index using FTCreateParams:
+
+```java
+client.ftCreate("item-index",
+
+        FTCreateParams.createParams()
+                .prefix("item:", "product:")
+                .filter("@price>100"),
+
+        TextField.of("title").weight(5.0),
+        TextField.of("body"),
+        NumericField.of("price")
+);
+```
+
+### Inserting
+
 Adding documents to the index:
 
 ```java
@@ -49,18 +68,37 @@ fields.put("price", 1337);
 client.hset("item:hw", RediSearchUtil.toStringMap(fields));
 ```
 
+Another way to insert documents:
+
+```java
+client.hsetObject("item:hw", fields);
+```
+
+### Querying
+
 Searching the index:
 
 ```java
-// creating a complex query
 Query q = new Query("hello world")
         .addFilter(new Query.NumericFilter("price", 0, 1000))
         .limit(0, 5);
 
-// actual search
 SearchResult sr = client.ftSearch("item-index", q);
+```
 
-// aggregation query
+Alternative searching using FTSearchParams:
+
+```java
+SearchResult sr = client.ftSearch("item-index",
+        "hello world",
+        FTSearchParams.searchParams()
+                .filter("price", 0, 1000)
+                .limit(0, 5));
+```
+
+Aggregation query:
+
+```java
 AggregationBuilder ab = new AggregationBuilder("hello")
         .apply("@price/1000", "k")
         .groupBy("@state", Reducers.avg("@k").as("avgprice"))

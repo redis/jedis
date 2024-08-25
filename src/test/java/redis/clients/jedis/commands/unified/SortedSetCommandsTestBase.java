@@ -1513,12 +1513,16 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
   @Test
   public void bzpopmax() {
+    assertNull(jedis.bzpopmax(1, "foo", "bar"));
+
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
     assertEquals(new KeyValue<>("foo", new Tuple("b", 10d)), jedis.bzpopmax(0, "foo", "bar"));
 
     // Binary
+    assertNull(jedis.bzpopmax(1, bfoo, bbar));
+
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);
@@ -1529,12 +1533,16 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
   @Test
   public void bzpopmin() {
+    assertNull(jedis.bzpopmin(1, "bar", "foo"));
+
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
     jedis.zadd("bar", 0.1d, "c", ZAddParams.zAddParams().nx());
     assertEquals(new KeyValue<>("bar", new Tuple("c", 0.1)), jedis.bzpopmin(0, "bar", "foo"));
 
     // Binary
+    assertNull(jedis.bzpopmin(1, bbar, bfoo));
+
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
     jedis.zadd(bbar, 0.1d, bc);

@@ -77,7 +77,7 @@ public class CacheConnection extends Connection {
     if (cacheEntry != null) {
       // We only return the key if it is valid, otherwise we follow the flow if there was no cache hit
       clientSideCache.getStats().hit();
-      return (T) cacheEntry.getValue();
+      return cacheEntry.getValue();
     }
 
     // ---

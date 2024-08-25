@@ -5,6 +5,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -51,6 +52,8 @@ public final class Protocol {
 
   public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
   public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
+
+  static final List<KeyValue> PROTOCOL_EMPTY_MAP = Collections.unmodifiableList(new ArrayList<>(0));
 
   private static final String ASK_PREFIX = "ASK ";
   private static final String MOVED_PREFIX = "MOVED ";
@@ -200,13 +203,18 @@ public final class Protocol {
 
   private static List<KeyValue> processMapKeyValueReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
-    if (num == -1)
-      return null;
-    final List<KeyValue> ret = new ArrayList<>(num);
-    for (int i = 0; i < num; i++) {
-      ret.add(new KeyValue(process(is), process(is)));
+    switch (num) {
+      case -1:
+        return null;
+      case 0:
+        return PROTOCOL_EMPTY_MAP;
+      default:
+        final List<KeyValue> ret = new ArrayList<>(num);
+        for (int i = 0; i < num; i++) {
+          ret.add(new KeyValue(process(is), process(is)));
+        }
+        return ret;
     }
-    return ret;
   }
 
   public static Object read(final RedisInputStream is) {

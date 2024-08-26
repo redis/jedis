@@ -299,6 +299,7 @@ public class MultiClusterPooledConnectionProvider implements ConnectionProvider 
         return multiClusterMap.get(activeMultiClusterIndex);
     }
 
+    @VisibleForTesting
     public Cluster getCluster(int multiClusterIndex) {
         return multiClusterMap.get(multiClusterIndex);
     }

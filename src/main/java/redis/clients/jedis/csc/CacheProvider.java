@@ -18,12 +18,6 @@ public class CacheProvider {
 
     public Cache getCache(CacheConfig config, HashMap<CacheKey, CacheEntry> map) {
         switch (config.getCacheType()) {
-            case GUAVA:
-                return new GuavaClientSideCache(config.getMaxSize(), config.getCacheable(),
-                        getEvictionPolicy(config.getEvictionPolicyType(), config.getMaxSize()));
-            case CAFFEINE:
-                return new CaffeineClientSideCache(config.getMaxSize(), config.getCacheable(),
-                        getEvictionPolicy(config.getEvictionPolicyType(), config.getMaxSize()));
             default:
                 return new DefaultCache(config.getMaxSize(), map, config.getCacheable(),
                         getEvictionPolicy(config.getEvictionPolicyType(), config.getMaxSize()));

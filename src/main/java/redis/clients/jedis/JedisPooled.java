@@ -80,7 +80,7 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   @Experimental
-  protected JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache clientSideCache) {
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache clientSideCache) {
     super(hostAndPort, clientConfig, clientSideCache);
   }
 
@@ -390,7 +390,7 @@ public class JedisPooled extends UnifiedJedis {
   }
 
   @Experimental
-  protected JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache clientSideCache,
+  public JedisPooled(final HostAndPort hostAndPort, final JedisClientConfig clientConfig, Cache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig) {
     super(new PooledConnectionProvider(hostAndPort, clientConfig, clientSideCache, poolConfig),
         clientConfig.getRedisProtocol(), clientSideCache);

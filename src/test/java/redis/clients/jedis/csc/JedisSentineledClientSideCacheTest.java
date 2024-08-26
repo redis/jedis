@@ -35,7 +35,7 @@ public class JedisSentineledClientSideCacheTest extends UnifiedJedisClientSideCa
 
   @Override
   protected JedisSentineled createCachedJedis(CacheConfig cacheConfig) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new JedisSentineled(MASTER_NAME, masterClientConfig, cacheConfig, sentinels, sentinelClientConfig);
   }
 
 }

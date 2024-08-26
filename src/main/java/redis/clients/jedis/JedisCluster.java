@@ -11,6 +11,8 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.csc.CacheConfig;
+import redis.clients.jedis.csc.CacheProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class JedisCluster extends UnifiedJedis {
@@ -226,9 +228,15 @@ public class JedisCluster extends UnifiedJedis {
   }
 
   @Experimental
+  public JedisCluster(Set<HostAndPort> hnp, JedisClientConfig jedisClientConfig, CacheConfig cacheConfig) {
+    this(hnp, jedisClientConfig, new CacheProvider().getCache(cacheConfig));
+  }
+
+  @Experimental
   public JedisCluster(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
       int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache), maxAttempts, maxTotalRetriesDuration,
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, clientSideCache), maxAttempts,
+        maxTotalRetriesDuration,
         clientConfig.getRedisProtocol(), clientSideCache);
   }
 

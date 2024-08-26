@@ -40,7 +40,7 @@ public class JedisClusterClientSideCacheTest extends UnifiedJedisClientSideCache
 
   @Override
   protected JedisCluster createCachedJedis(CacheConfig cacheConfig) {
-    throw new UnsupportedOperationException("Not supported yet.");
+    return new JedisCluster(hnp, clientConfig.get(), cacheConfig);
   }
 
 }

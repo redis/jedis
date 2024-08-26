@@ -7,7 +7,7 @@ public class CacheConfig {
     }
 
     public enum CacheType {
-        DEFAULT, GUAVA, CAFFEINE
+        DEFAULT,
     }
 
     private int maxSize;

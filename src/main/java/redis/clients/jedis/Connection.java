@@ -71,60 +71,31 @@ public class Connection implements Closeable {
 
   @Override
   public String toString() {
-    return "Connection{" + socketFactory + "}";
+    return getClass().getSimpleName() + "{" + socketFactory + "}";
   }
 
+  @Experimental
   public String toIdentityString() {
     if (strValActive == broken && strVal != null) {
       return strVal;
     }
 
+    String className = getClass().getSimpleName();
     int id = hashCode();
-    String classInfo = getClass().toString();
 
     if (socket == null) {
-      StringBuilder buf = new StringBuilder(56)
-          .append("[")
-          .append(classInfo)
-          .append(", id: 0x")
-          .append(id)
-          .append(']');
-      return buf.toString();
+      return String.format("%s{id: 0x%X}", className, id);
     }
 
     SocketAddress remoteAddr = socket.getRemoteSocketAddress();
     SocketAddress localAddr = socket.getLocalSocketAddress();
     if (remoteAddr != null) {
-      StringBuilder buf = new StringBuilder(101)
-          .append("[")
-          .append(classInfo)
-          .append(", id: 0x")
-          .append(id)
-          .append(", L:")
-          .append(localAddr)
-          .append(broken ? " ! " : " - ")
-          .append("R:")
-          .append(remoteAddr)
-          .append(']');
-      strVal = buf.toString();
+      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id,
+          localAddr, (broken ? '!' : '-'), remoteAddr);
     } else if (localAddr != null) {
-      StringBuilder buf = new StringBuilder(64)
-          .append("[")
-          .append(classInfo)
-          .append(", id: 0x")
-          .append(id)
-          .append(", L:")
-          .append(localAddr)
-          .append(']');
-      strVal = buf.toString();
+      strVal = String.format("%s{id: 0x%X, L:%s}", className, id, localAddr);
     } else {
-      StringBuilder buf = new StringBuilder(56)
-          .append("[")
-          .append(classInfo)
-          .append(", id: 0x")
-          .append(id)
-          .append(']');
-      strVal = buf.toString();
+      strVal = String.format("%s{id: 0x%X}", className, id);
     }
 
     strValActive = broken;
@@ -153,7 +124,7 @@ public class Connection implements Closeable {
       try {
         this.socket.setSoTimeout(soTimeout);
       } catch (SocketException ex) {
-        broken = true;
+        setBroken();
         throw new JedisConnectionException(ex);
       }
     }
@@ -166,7 +137,7 @@ public class Connection implements Closeable {
       }
       socket.setSoTimeout(infiniteSoTimeout);
     } catch (SocketException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -175,7 +146,7 @@ public class Connection implements Closeable {
     try {
       socket.setSoTimeout(this.soTimeout);
     } catch (SocketException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -242,7 +213,7 @@ public class Connection implements Closeable {
          */
       }
       // Any other exceptions related to connection?
-      broken = true;
+      setBroken();
       throw ex;
     }
   }
@@ -395,7 +366,7 @@ public class Connection implements Closeable {
     try {
       outputStream.flush();
     } catch (IOException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -435,7 +406,7 @@ public class Connection implements Closeable {
       broken = true;
       throw new JedisConnectionException("Failed to check buffer on connection.", e);
     } catch (JedisConnectionException exc) {
-      broken = true;
+      setBroken();
       throw exc;
     }
   }
@@ -521,8 +492,8 @@ public class Connection implements Closeable {
         }
       }
 
-      // set readonly flag to ALL connections (including master nodes) when enable read from replica
-      if (config.isReadOnlyForReplica()) {
+      // set READONLY flag to ALL connections (including master nodes) when enable read from replica
+      if (config.isReadOnlyForRedisClusterReplicas()) {
         fireAndForgetMsg.add(new CommandArguments(Command.READONLY));
       }
 

@@ -109,7 +109,7 @@ public class JedisClusterInfoCache {
       topologyRefreshExecutor.scheduleWithFixedDelay(new TopologyRefreshTask(), topologyRefreshPeriod.toMillis(),
           topologyRefreshPeriod.toMillis(), TimeUnit.MILLISECONDS);
     }
-    if (clientConfig.isReadOnlyForReplica()) {
+    if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
       replicaSlots = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
     } else {
       replicaSlots = null;
@@ -173,7 +173,7 @@ public class JedisClusterInfoCache {
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             assignSlotsToNode(slotNums, targetNode);
-          } else if (clientConfig.isReadOnlyForReplica()) {
+          } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);
           }
         }
@@ -270,7 +270,7 @@ public class JedisClusterInfoCache {
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             assignSlotsToNode(slotNums, targetNode);
-          } else if (clientConfig.isReadOnlyForReplica()) {
+          } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);
           }
         }

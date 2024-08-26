@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.RawableFactory;
@@ -16,6 +17,7 @@ import redis.clients.jedis.search.RediSearchUtil;
 
 public class CommandArguments implements Iterable<Rawable> {
 
+  private CommandKeyArgumentPreProcessor keyPreProc = null;
   private final ArrayList<Rawable> args;
 
   private List<Object> keys;
@@ -35,6 +37,11 @@ public class CommandArguments implements Iterable<Rawable> {
 
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
+  }
+
+  @Experimental
+  void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
+    this.keyPreProc = keyPreProcessor;
   }
 
   public CommandArguments add(Rawable arg) {
@@ -107,6 +114,10 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public CommandArguments key(Object key) {
+    if (keyPreProc != null) {
+      key = keyPreProc.actualKey(key);
+    }
+
     if (key instanceof Rawable) {
       Rawable raw = (Rawable) key;
       processKey(raw.getRaw());

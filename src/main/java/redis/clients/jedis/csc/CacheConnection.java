@@ -62,25 +62,23 @@ public class CacheConnection extends Connection {
 
   @Override
   public <T> T executeCommand(final CommandObject<T> commandObject) {
-    CacheKey key = new CacheKey<>(commandObject);
-    if (!clientSideCache.isCacheable(key)) {
+    final CacheKey cacheKey = new CacheKey(commandObject);
+    if (!clientSideCache.isCacheable(cacheKey)) {
       clientSideCache.getStats().nonCacheable();
       return super.executeCommand(commandObject);
     }
 
-    final CacheKey cacheKey = new CacheKey(commandObject);
     CacheEntry<T> cacheEntry = clientSideCache.get(cacheKey);
-
-    // CACHE HIT !!
-    if (cacheEntry != null) {
+    if (cacheEntry != null) { // (probable) CACHE HIT !!
       cacheEntry = validateEntry(cacheEntry);
       if (cacheEntry != null) {
+        // CACHE HIT confirmed !!!
         clientSideCache.getStats().hit();
-        return (T) cacheEntry.getValue();
+        return cacheEntry.getValue();
       }
     }
 
-    // CACHE MISS!!
+    // CACHE MISS !!
     clientSideCache.getStats().miss();
     T value = super.executeCommand(commandObject);
     if (value != null) {

@@ -56,8 +56,7 @@ public class ActiveActiveFailoverTest {
     builder.circuitBreakerSlidingWindowType(CircuitBreakerConfig.SlidingWindowType.TIME_BASED);
     builder.circuitBreakerSlidingWindowSize(1); // SLIDING WINDOW SIZE IN SECONDS
     builder.circuitBreakerSlidingWindowMinCalls(1);
-    builder.circuitBreakerFailureRateThreshold(
-        10.0f); // percentage of failures to trigger circuit breaker
+    builder.circuitBreakerFailureRateThreshold(10.0f); // percentage of failures to trigger circuit breaker
 
     builder.retryWaitDuration(10);
     builder.retryMaxAttempts(1);

@@ -17,11 +17,8 @@ public class CacheProvider {
     }
 
     public Cache getCache(CacheConfig config, HashMap<CacheKey, CacheEntry> map) {
-        switch (config.getCacheType()) {
-            default:
-                return new DefaultCache(config.getMaxSize(), map, config.getCacheable(),
-                        getEvictionPolicy(config.getEvictionPolicyType(), config.getMaxSize()));
-        }
+        return new DefaultCache(config.getMaxSize(), map, config.getCacheable(),
+                getEvictionPolicy(config.getEvictionPolicyType(), config.getMaxSize()));
     }
 
     private EvictionPolicy getEvictionPolicy(EvictionPolicyType evictionPolicyType, int initialCapacity) {

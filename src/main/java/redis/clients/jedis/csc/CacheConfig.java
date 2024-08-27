@@ -14,13 +14,16 @@ public class CacheConfig {
         return maxSize;
     }
 
-
     public EvictionPolicyType getEvictionPolicyType() {
         return evictionPolicyType;
     }
 
     public Cacheable getCacheable() {
         return cacheable;
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     public static class Builder {

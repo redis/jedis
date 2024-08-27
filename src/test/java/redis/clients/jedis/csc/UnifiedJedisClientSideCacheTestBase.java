@@ -39,7 +39,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void simple() {
-    CacheConfig cacheConfig = new CacheConfig.Builder().maxSize(1000).build();
+    CacheConfig cacheConfig = CacheConfig.builder().maxSize(1000).build();
     try (UnifiedJedis jedis = createCachedJedis(cacheConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));
@@ -68,7 +68,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
 
   @Test
   public void flushAll() {
-    CacheConfig cacheConfig = new CacheConfig.Builder().maxSize(1000).build();
+    CacheConfig cacheConfig = CacheConfig.builder().maxSize(1000).build();
     try (UnifiedJedis jedis = createCachedJedis(cacheConfig)) {
       control.set("foo", "bar");
       assertEquals("bar", jedis.get("foo"));

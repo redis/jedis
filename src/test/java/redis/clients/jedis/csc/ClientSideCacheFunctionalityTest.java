@@ -303,7 +303,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     ReentrantLock lock = new ReentrantLock(true);
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
-    CacheConfig cacheConfig = new CacheConfig.Builder().maxSize(1000).build();
+    CacheConfig cacheConfig = CacheConfig.builder().maxSize(1000).build();
     try (JedisPooled jedis = new JedisPooled(endpoint.getHostAndPort(), clientConfig.get(), cacheConfig)) {
       // Submit multiple threads to perform concurrent operations
       CountDownLatch latch = new CountDownLatch(threadCount);

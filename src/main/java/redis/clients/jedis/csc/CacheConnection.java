@@ -14,16 +14,16 @@ import redis.clients.jedis.util.RedisInputStream;
 
 public class CacheConnection extends Connection {
 
-  private final Cache clientSideCache;
+  private final Cache cache;
   private ReentrantLock lock;
 
-  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache clientSideCache) {
+  public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
 
     if (protocol != RedisProtocol.RESP3) {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }
-    this.clientSideCache = Objects.requireNonNull(clientSideCache);
+    this.cache = Objects.requireNonNull(cache);
     initializeClientSideCache();
   }
 
@@ -37,7 +37,7 @@ public class CacheConnection extends Connection {
   protected Object protocolRead(RedisInputStream inputStream) {
     lock.lock();
     try {
-      return Protocol.read(inputStream, clientSideCache);
+      return Protocol.read(inputStream, cache);
     } finally {
       lock.unlock();
     }
@@ -47,7 +47,7 @@ public class CacheConnection extends Connection {
   protected void protocolReadPushes(RedisInputStream inputStream) {
     if (lock.tryLock()) {
       try {
-        Protocol.readPushes(inputStream, clientSideCache, true);
+        Protocol.readPushes(inputStream, cache, true);
       } finally {
         lock.unlock();
       }
@@ -57,37 +57,41 @@ public class CacheConnection extends Connection {
   @Override
   public void disconnect() {
     super.disconnect();
-    clientSideCache.flush();
+    cache.flush();
   }
 
   @Override
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     final CacheKey cacheKey = new CacheKey(commandObject);
-    if (!clientSideCache.isCacheable(cacheKey)) {
-      clientSideCache.getStats().nonCacheable();
+    if (!cache.isCacheable(cacheKey)) {
+      cache.getStats().nonCacheable();
       return super.executeCommand(commandObject);
     }
 
-    CacheEntry<T> cacheEntry = clientSideCache.get(cacheKey);
+    CacheEntry<T> cacheEntry = cache.get(cacheKey);
     if (cacheEntry != null) { // (probable) CACHE HIT !!
       cacheEntry = validateEntry(cacheEntry);
       if (cacheEntry != null) {
         // CACHE HIT confirmed !!!
-        clientSideCache.getStats().hit();
+        cache.getStats().hit();
         return cacheEntry.getValue();
       }
     }
 
     // CACHE MISS !!
-    clientSideCache.getStats().miss();
+    cache.getStats().miss();
     T value = super.executeCommand(commandObject);
     if (value != null) {
       cacheEntry = new CacheEntry<>(cacheKey, value, this);
-      clientSideCache.set(cacheKey, cacheEntry);
+      cache.set(cacheKey, cacheEntry);
       // this line actually provides a deep copy of cached object instance 
       value = cacheEntry.getValue();
     }
     return value;
+  }
+
+  public Cache getCache() {
+    return cache;
   }
 
   private void initializeClientSideCache() {
@@ -101,17 +105,17 @@ public class CacheConnection extends Connection {
   private CacheEntry validateEntry(CacheEntry cacheEntry) {
     CacheConnection cacheOwner = cacheEntry.getConnection();
     if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected()) {
-      clientSideCache.delete(cacheEntry.getCacheKey());
+      cache.delete(cacheEntry.getCacheKey());
       return null;
     } else {
       try {
         cacheOwner.readPushesWithCheckingBroken();
       } catch (JedisException e) {
-        clientSideCache.delete(cacheEntry.getCacheKey());
+        cache.delete(cacheEntry.getCacheKey());
         return null;
       }
 
-      return clientSideCache.get(cacheEntry.getCacheKey());
+      return cache.get(cacheEntry.getCacheKey());
     }
   }
 }

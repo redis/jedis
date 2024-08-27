@@ -3,9 +3,13 @@ package redis.clients.jedis.search;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.util.KeyValue;
 
 /**
@@ -43,10 +47,18 @@ public class SearchResult {
     private final boolean hasScores;
     private final boolean decode;
 
+    private final Map<String, Boolean> isFieldDecode;
+
     public SearchResultBuilder(boolean hasContent, boolean hasScores, boolean decode) {
+      this(hasContent, hasScores, decode, null);
+    }
+
+    public SearchResultBuilder(boolean hasContent, boolean hasScores, boolean decode,
+        Map<String, Boolean> isFieldDecode) {
       this.hasContent = hasContent;
       this.hasScores = hasScores;
       this.decode = decode;
+      this.isFieldDecode = isFieldDecode;
     }
 
     @Override
@@ -75,17 +87,33 @@ public class SearchResult {
         double score = hasScores ? BuilderFactory.DOUBLE.build(resp.get(i + scoreOffset)) : 1.0;
         List<byte[]> fields = hasContent ? (List<byte[]>) resp.get(i + contentOffset) : null;
 
-        documents.add(Document.load(id, score, fields, decode));
+        documents.add(Document.load(id, score, fields, decode, isFieldDecode));
       }
 
       return new SearchResult(totalResults, documents);
     }
   }
 
-  public static Builder<SearchResult> SEARCH_RESULT_BUILDER = new Builder<SearchResult>() {
+  /// RESP3 -->
+  // TODO: final
+  public static Builder<SearchResult> SEARCH_RESULT_BUILDER
+      = new PerFieldDecoderSearchResultBuilder(Document.SEARCH_DOCUMENT);
+
+  @Internal
+  public static final class PerFieldDecoderSearchResultBuilder extends Builder<SearchResult> {
 
     private static final String TOTAL_RESULTS_STR = "total_results";
     private static final String RESULTS_STR = "results";
+
+    private final Builder<Document> documentBuilder;
+
+    public PerFieldDecoderSearchResultBuilder(Map<String, Boolean> isFieldDecode) {
+      this(new Document.PerFieldDecoderDocumentBuilder(isFieldDecode));
+    }
+
+    private PerFieldDecoderSearchResultBuilder(Builder<Document> builder) {
+      this.documentBuilder = Objects.requireNonNull(builder);
+    }
 
     @Override
     public SearchResult build(Object data) {
@@ -100,7 +128,7 @@ public class SearchResult {
             break;
           case RESULTS_STR:
             results = ((List<Object>) kv.getValue()).stream()
-                .map(Document.SEARCH_DOCUMENT::build)
+                .map(documentBuilder::build)
                 .collect(Collectors.toList());
             break;
         }
@@ -108,4 +136,5 @@ public class SearchResult {
       return new SearchResult(totalResults, results);
     }
   };
+  /// <-- RESP3
 }

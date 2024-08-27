@@ -2,29 +2,22 @@ package redis.clients.jedis.csc;
 
 import java.util.HashMap;
 
-import redis.clients.jedis.csc.CacheConfig.EvictionPolicyType;
-
 public class CacheProvider {
 
     public Cache getCache(CacheConfig config) {
-        switch (config.getEvictionPolicyType()) {
-            case LRU:
-                return new DefaultCache(config.getMaxSize(), new HashMap<CacheKey, CacheEntry>(), config.getCacheable(),
-                        new LRUEviction(0));
-            default:
-                return new DefaultCache(config.getMaxSize(), config.getCacheable());
-        }
+        return getCache(config, new HashMap<CacheKey, CacheEntry>());
     }
 
     public Cache getCache(CacheConfig config, HashMap<CacheKey, CacheEntry> map) {
         return new DefaultCache(config.getMaxSize(), map, config.getCacheable(),
-                getEvictionPolicy(config.getEvictionPolicyType(), config.getMaxSize()));
+                getEvictionPolicy(config));
     }
 
-    private EvictionPolicy getEvictionPolicy(EvictionPolicyType evictionPolicyType, int initialCapacity) {
-        switch (evictionPolicyType) {
-            default:
-                return new LRUEviction(initialCapacity);
+    private EvictionPolicy getEvictionPolicy(CacheConfig config) {
+        if (config.getEvictionPolicy() == null) {
+            // It will be default to LRUEviction, until we have other eviction implementations
+            return new LRUEviction(config.getMaxSize());
         }
+        return config.getEvictionPolicy();
     }
 }

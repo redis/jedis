@@ -20,7 +20,9 @@ import redis.clients.jedis.commands.SampleBinaryKeyedCommands;
 import redis.clients.jedis.commands.SampleKeyedCommands;
 import redis.clients.jedis.commands.RedisModuleCommands;
 import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheConnection;
+import redis.clients.jedis.csc.CacheProvider;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.executors.*;
 import redis.clients.jedis.gears.TFunctionListParams;
@@ -102,6 +104,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         cache);
   }
 
+  @Experimental
+  public UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig) {
+    this(hostAndPort, clientConfig, new CacheProvider().getCache(cacheConfig));
+  }
+
   public UnifiedJedis(ConnectionProvider provider) {
     this(new DefaultCommandExecutor(provider), provider);
   }
@@ -149,7 +156,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     if (proto != null)
       this.commandObjects.setProtocol(proto);
     this.graphCommandObjects = new GraphCommandObjects(this);
-    if(connection instanceof CacheConnection) {
+    if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
     } else {
       this.cache = null;
@@ -324,7 +331,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public Cache getCache() {
     return cache;
   }
-  
+
   public String ping() {
     return checkAndBroadcastCommand(commandObjects.ping());
   }

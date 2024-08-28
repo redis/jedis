@@ -5019,7 +5019,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
       return new MultiClusterPipeline((MultiClusterPooledConnectionProvider) provider, commandObjects);
     } else {
-      return new Pipeline(provider.getConnection(), true);
+      return new Pipeline(provider.getConnection(), true, commandObjects);
     }
   }
 
@@ -5040,7 +5040,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     } else if (provider instanceof MultiClusterPooledConnectionProvider) {
       return new MultiClusterTransaction((MultiClusterPooledConnectionProvider) provider, doMulti, commandObjects);
     } else {
-      return new Transaction(provider.getConnection(), doMulti, true);
+      return new Transaction(provider.getConnection(), doMulti, true, commandObjects);
     }
   }
 
@@ -5082,6 +5082,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   public Object executeCommand(CommandArguments args) {
     return executeCommand(new CommandObject<>(args, BuilderFactory.RAW_OBJECT));
+  }
+
+  @Experimental
+  public void setKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
+    this.commandObjects.setKeyArgumentPreProcessor(keyPreProcessor);
   }
 
   public void setJsonObjectMapper(JsonObjectMapper jsonObjectMapper) {

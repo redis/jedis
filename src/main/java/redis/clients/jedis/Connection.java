@@ -5,6 +5,7 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -15,6 +16,7 @@ import java.util.function.Supplier;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ClientAttributeOption;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -37,6 +39,8 @@ public class Connection implements Closeable {
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
+  private boolean strValActive;
+  private String strVal;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -69,7 +73,35 @@ public class Connection implements Closeable {
 
   @Override
   public String toString() {
-    return "Connection{" + socketFactory + "}";
+    return getClass().getSimpleName() + "{" + socketFactory + "}";
+  }
+
+  @Experimental
+  public String toIdentityString() {
+    if (strValActive == broken && strVal != null) {
+      return strVal;
+    }
+
+    String className = getClass().getSimpleName();
+    int id = hashCode();
+
+    if (socket == null) {
+      return String.format("%s{id: 0x%X}", className, id);
+    }
+
+    SocketAddress remoteAddr = socket.getRemoteSocketAddress();
+    SocketAddress localAddr = socket.getLocalSocketAddress();
+    if (remoteAddr != null) {
+      strVal = String.format("%s{id: 0x%X, L:%s %c R:%s}", className, id,
+          localAddr, (broken ? '!' : '-'), remoteAddr);
+    } else if (localAddr != null) {
+      strVal = String.format("%s{id: 0x%X, L:%s}", className, id, localAddr);
+    } else {
+      strVal = String.format("%s{id: 0x%X}", className, id);
+    }
+
+    strValActive = broken;
+    return strVal;
   }
 
   public final RedisProtocol getRedisProtocol() {
@@ -94,7 +126,7 @@ public class Connection implements Closeable {
       try {
         this.socket.setSoTimeout(soTimeout);
       } catch (SocketException ex) {
-        broken = true;
+        setBroken();
         throw new JedisConnectionException(ex);
       }
     }
@@ -107,7 +139,7 @@ public class Connection implements Closeable {
       }
       socket.setSoTimeout(infiniteSoTimeout);
     } catch (SocketException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -116,7 +148,7 @@ public class Connection implements Closeable {
     try {
       socket.setSoTimeout(this.soTimeout);
     } catch (SocketException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -183,7 +215,7 @@ public class Connection implements Closeable {
          */
       }
       // Any other exceptions related to connection?
-      broken = true;
+      setBroken();
       throw ex;
     }
   }
@@ -336,7 +368,7 @@ public class Connection implements Closeable {
     try {
       outputStream.flush();
     } catch (IOException ex) {
-      broken = true;
+      setBroken();
       throw new JedisConnectionException(ex);
     }
   }
@@ -352,7 +384,7 @@ public class Connection implements Closeable {
 //      System.out.println(redis.clients.jedis.util.SafeEncoder.encodeObject(read));
 //      return read;
     } catch (JedisConnectionException exc) {
-      broken = true;
+      setBroken();
       throw exc;
     }
   }
@@ -433,6 +465,11 @@ public class Connection implements Closeable {
           fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.SETINFO)
               .add(ClientAttributeOption.LIB_VER.getRaw()).add(libVersion));
         }
+      }
+
+      // set READONLY flag to ALL connections (including master nodes) when enable read from replica
+      if (config.isReadOnlyForRedisClusterReplicas()) {
+        fireAndForgetMsg.add(new CommandArguments(Command.READONLY));
       }
 
       for (CommandArguments arg : fireAndForgetMsg) {

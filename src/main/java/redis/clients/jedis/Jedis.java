@@ -3431,7 +3431,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * All the fields are in the form field:value
    *
    * <pre>
-   * edis_version:0.07
+   * redis_version:0.07
    * connected_clients:1
    * connected_slaves:0
    * used_memory:3187

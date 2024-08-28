@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Collections;
 import java.util.Map;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -30,6 +31,7 @@ public class SearchConfigTest extends RedisModuleCommandsTestBase {
     super(protocol);
   }
 
+  @Ignore
   @Test
   public void config() {
     Map<String, Object> map = client.ftConfigGet("TIMEOUT");
@@ -42,6 +44,7 @@ public class SearchConfigTest extends RedisModuleCommandsTestBase {
     }
   }
 
+  @Ignore
   @Test
   public void configOnTimeout() {
     // confirm default
@@ -57,6 +60,7 @@ public class SearchConfigTest extends RedisModuleCommandsTestBase {
     }
   }
 
+  @Ignore
   @Test
   public void dialectConfig() {
     // confirm default

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.util.KeyValue;
@@ -50,24 +51,6 @@ public class Document implements Serializable {
     return fields.entrySet();
   }
 
-  public static Document load(String id, double score, byte[] payload, List<byte[]> fields) {
-    return Document.load(id, score, fields, true);
-  }
-
-  public static Document load(String id, double score, List<byte[]> fields, boolean decode) {
-    Document ret = new Document(id, score);
-    if (fields != null) {
-      for (int i = 0; i < fields.size(); i += 2) {
-        byte[] rawKey = fields.get(i);
-        byte[] rawValue = fields.get(i + 1);
-        String key = SafeEncoder.encode(rawKey);
-        Object value = rawValue == null ? null : decode ? SafeEncoder.encode(rawValue) : rawValue;
-        ret.set(key, value);
-      }
-    }
-    return ret;
-  }
-
   /**
    * @return the document's id
    */
@@ -102,16 +85,22 @@ public class Document implements Serializable {
    */
   public String getString(String key) {
     Object value = fields.get(key);
-    if (value instanceof String) {
+    if (value == null) {
+      return null;
+    } else if (value instanceof String) {
       return (String) value;
+    } else if (value instanceof byte[]) {
+      return SafeEncoder.encode((byte[]) value);
+    } else {
+      return String.valueOf(value);
     }
-    return value instanceof byte[] ? SafeEncoder.encode((byte[]) value) : value.toString();
   }
 
   public boolean hasProperty(String key) {
     return fields.containsKey(key);
   }
 
+  // TODO: private ??
   public Document set(String key, Object value) {
     fields.put(key, value);
     return this;
@@ -122,7 +111,9 @@ public class Document implements Serializable {
    *
    * @param score new score to set
    * @return the document itself
+   * @deprecated
    */
+  @Deprecated
   public Document setScore(float score) {
     this.score = (double) score;
     return this;
@@ -134,12 +125,57 @@ public class Document implements Serializable {
             ", properties:" + this.getProperties();
   }
 
-  static Builder<Document> SEARCH_DOCUMENT = new Builder<Document>() {
+  /// RESP2 -->
+  public static Document load(String id, double score, byte[] payload, List<byte[]> fields) {
+    return Document.load(id, score, fields, true);
+  }
+
+  public static Document load(String id, double score, List<byte[]> fields, boolean decode) {
+    return load(id, score, fields, decode, null);
+  }
+
+  /**
+   * Parse document object from FT.SEARCH reply.
+   * @param id
+   * @param score
+   * @param fields
+   * @param decode
+   * @param isFieldDecode checked only if {@code decode=true}
+   * @return document
+   */
+  public static Document load(String id, double score, List<byte[]> fields, boolean decode,
+      Map<String, Boolean> isFieldDecode) {
+    Document ret = new Document(id, score);
+    if (fields != null) {
+      for (int i = 0; i < fields.size(); i += 2) {
+        byte[] rawKey = fields.get(i);
+        byte[] rawValue = fields.get(i + 1);
+        String key = SafeEncoder.encode(rawKey);
+        Object value = rawValue == null ? null
+            : (decode && (isFieldDecode == null || !Boolean.FALSE.equals(isFieldDecode.get(key))))
+            ? SafeEncoder.encode(rawValue) : rawValue;
+        ret.set(key, value);
+      }
+    }
+    return ret;
+  }
+  /// <-- RESP2
+
+  /// RESP3 -->
+  // TODO: final
+  static Builder<Document> SEARCH_DOCUMENT = new PerFieldDecoderDocumentBuilder((Map) null);
+
+  static final class PerFieldDecoderDocumentBuilder extends Builder<Document> {
 
     private static final String ID_STR = "id";
     private static final String SCORE_STR = "score";
-    // private static final String FIELDS_STR = "fields";
     private static final String FIELDS_STR = "extra_attributes";
+
+    private final Map<String, Boolean> isFieldDecode;
+
+    public PerFieldDecoderDocumentBuilder(Map<String, Boolean> isFieldDecode) {
+      this.isFieldDecode = isFieldDecode != null ? isFieldDecode : Collections.emptyMap();
+    }
 
     @Override
     public Document build(Object data) {
@@ -157,13 +193,28 @@ public class Document implements Serializable {
             score = BuilderFactory.DOUBLE.build(kv.getValue());
             break;
           case FIELDS_STR:
-            fields = BuilderFactory.ENCODED_OBJECT_MAP.build(kv.getValue());
+            fields = makeFieldsMap(isFieldDecode, kv.getValue());
             break;
         }
       }
-//      assert id != null;
-//      if (fields == null) fields = Collections.emptyMap();
       return new Document(id, score, fields);
     }
   };
+
+  private static Map<String, Object> makeFieldsMap(Map<String, Boolean> isDecode, Object data) {
+    if (data == null) return null;
+
+    final List<KeyValue> list = (List) data;
+
+    Map<String, Object> map = new HashMap<>(list.size(), 1f);
+    list.stream().filter((kv) -> (kv != null && kv.getKey() != null && kv.getValue() != null))
+        .forEach((kv) -> {
+          String key = BuilderFactory.STRING.build(kv.getKey());
+          map.put(key,
+              (Boolean.FALSE.equals(isDecode.get(key)) ? BuilderFactory.RAW_OBJECT
+                  : BuilderFactory.AGGRESSIVE_ENCODED_OBJECT).build(kv.getValue()));
+        });
+    return map;
+  }
+  /// <-- RESP3
 }

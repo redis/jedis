@@ -81,12 +81,10 @@ public class CacheConnection extends Connection {
     // CACHE MISS !!
     clientSideCache.getStats().miss();
     T value = super.executeCommand(commandObject);
-    if (value != null) {
-      cacheEntry = new CacheEntry<>(cacheKey, value, this);
-      clientSideCache.set(cacheKey, cacheEntry);
-      // this line actually provides a deep copy of cached object instance 
-      value = cacheEntry.getValue();
-    }
+    cacheEntry = new CacheEntry<>(cacheKey, value, this);
+    clientSideCache.set(cacheKey, cacheEntry);
+    // this line actually provides a deep copy of cached object instance 
+    value = cacheEntry.getValue();
     return value;
   }
 
